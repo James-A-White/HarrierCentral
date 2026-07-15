@@ -747,6 +747,34 @@ enum HashRunPointTypes {
     '⚖️',
     'gavel.png',
     // Note: gavel.png asset not yet added; map overlay falls back to gavel icon.
+  ),
+  // Admin time-boundary markers. Not trail marks — an admin drops these at a
+  // chosen point on the timeline to declare the official start/end of the run.
+  // All clients (and GetPositions server-side) treat any track data before AST
+  // or after AEN as out-of-bounds and ignore it. The marker's `ts` is the
+  // boundary; its lat/lng is irrelevant. Reversible: move = drop a newer one,
+  // clear = delete it. See PackTrack admin trim.
+  adminStart(
+    'AST',
+    14,
+    '🚦 Official Start 🚦',
+    MaterialCommunityIcons.flag_checkered,
+    customRed,
+    'Official Start',
+    '🚦',
+    'adminstart.png',
+    // Note: adminstart.png asset not yet added; overlay falls back to icon.
+  ),
+  adminEnd(
+    'AEN',
+    15,
+    '🏁 Official End 🏁',
+    MaterialCommunityIcons.flag_checkered,
+    customRed,
+    'Official End',
+    '🏁',
+    'adminend.png',
+    // Note: adminend.png asset not yet added; overlay falls back to icon.
   );
 
   final String key;

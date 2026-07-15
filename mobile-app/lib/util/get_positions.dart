@@ -18,12 +18,28 @@ class GetPositionsApi {
   Future<UserPositionsPayload> fetchPositions({
     required String eventId,
     required String latestClientTimestampMs,
+    String? userId,
+    bool includeTrimmed = false,
     List<Map<String, dynamic>> users = const [],
     Duration timeout = const Duration(seconds: 15),
   }) async {
     final uri = _baseUri;
 
     var body = <String, dynamic>{'eventId': eventId, 'users': users};
+
+    // Optional server-side filter to a single runner (used by the resume seed
+    // to fetch only the caller's own track).
+    if (userId != null && userId.isNotEmpty) {
+      body['userId'] = userId;
+    }
+
+    // Admin-only: ask the server to return the FULL track (points outside the
+    // trim window included) plus the current window, so the trim editor can
+    // show everything and drag the handles back outward. Normal viewers omit
+    // this and receive the trimmed track.
+    if (includeTrimmed) {
+      body['includeTrimmed'] = true;
+    }
 
     if (latestClientTimestampMs.isNotEmpty) {
       body['AfterTimestamp'] = latestClientTimestampMs;

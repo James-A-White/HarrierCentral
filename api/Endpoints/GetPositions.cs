@@ -48,6 +48,10 @@ namespace HcWebApi.Endpoints
                 return new BadRequestObjectResult("An eventId is required in the query string or request body.");
             }
 
+            // Admin trim editor may also request the untrimmed track via query.
+            request.IncludeTrimmed = request.IncludeTrimmed
+                || string.Equals(GetQueryValue(req, "includeTrimmed"), "true", StringComparison.OrdinalIgnoreCase);
+
             const string eventTableName = "EventPositions"; // PK = eventId, RK = serverTs-callerTs
             TableClient eventTable = _tableServiceClient.GetTableClient(eventTableName);
             await eventTable.CreateIfNotExistsAsync();
@@ -61,6 +65,16 @@ namespace HcWebApi.Endpoints
             var userLookup = new Dictionary<string, List<PositionResponse>>(StringComparer.OrdinalIgnoreCase);
             long? afterTimestampBoundary = ParseTimestampToLong(request.AfterTimestamp);
             string? latestServerTimestamp = null;
+
+            // Admin trim window (epoch-ms), derived from the newest AST/AEN
+            // boundary markers and cached per event (5-min TTL). Looked up
+            // independently of the returned range so incremental polls — whose
+            // window is set by markers placed earlier, outside the polled range —
+            // still filter correctly. Always resolved (for the response); only
+            // ENFORCED for normal viewers — the admin editor (includeTrimmed)
+            // gets the full track so it can drag the handles back outward.
+            (long? trimStartMs, long? trimEndMs) = await GetTrimWindowAsync(eventTable, request.EventId);
+            bool applyTrim = !request.IncludeTrimmed;
 
             await foreach (var entity in eventTable.QueryAsync<TableEntity>(filter))
             {
@@ -93,6 +107,16 @@ namespace HcWebApi.Endpoints
                     continue;
                 }
 
+                // Trim: drop points before the official start or after the
+                // official end. Boundary markers sit exactly at start/end, so
+                // they survive (< / > are strict) and viewers still see the
+                // official-start/end flags. Skipped entirely for the admin editor.
+                if (applyTrim)
+                {
+                    if (trimStartMs.HasValue && timestampMs < trimStartMs.Value) continue;
+                    if (trimEndMs.HasValue && timestampMs > trimEndMs.Value) continue;
+                }
+
                 if (!userLookup.TryGetValue(userId, out var positions))
                 {
                     positions = new List<PositionResponse>();
@@ -113,6 +137,8 @@ namespace HcWebApi.Endpoints
             {
                 EventId = request.EventId,
                 LatestServerTimestamp = latestServerTimestamp,
+                TrimStartMs = trimStartMs,
+                TrimEndMs = trimEndMs,
                 Users = userLookup
                     .OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase)
                     .Select(kvp => new UserPositionsResponse
@@ -360,6 +386,74 @@ namespace HcWebApi.Endpoints
         private static double RoundCoordinate(double value)
             => Math.Round(value, 5, MidpointRounding.AwayFromZero);
 
+        // Per-event trim window cache. Static so it survives across invocations
+        // while the function host is warm. 5-minute TTL: a just-moved boundary
+        // takes up to 5 min to affect other viewers — an accepted edge case that
+        // keeps incremental polls off a per-request marker query.
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, TrimWindowCacheEntry> _trimCache = new();
+        private static readonly TimeSpan _trimCacheTtl = TimeSpan.FromMinutes(5);
+
+        // Resolves the official run window (epoch-ms) from the newest AST (start)
+        // and AEN (end) boundary markers for the event. Either side may be null
+        // (unbounded). Fails open — any lookup error serves an untrimmed window
+        // so positions are never blocked on trim resolution.
+        private async Task<(long? start, long? end)> GetTrimWindowAsync(TableClient eventTable, string eventId)
+        {
+            if (_trimCache.TryGetValue(eventId, out var cached) && cached.ExpiresUtc > DateTimeOffset.UtcNow)
+            {
+                return (cached.StartMs, cached.EndMs);
+            }
+
+            long? startMs = null; long? startWrittenAt = null;
+            long? endMs = null; long? endWrittenAt = null;
+
+            // Markers-only query — a handful of rows even on a large event.
+            string filter =
+                $"PartitionKey eq '{EscapeForFilter(eventId)}' and (Type eq 'AST' or Type eq 'AEN')";
+            try
+            {
+                await foreach (var entity in eventTable.QueryAsync<TableEntity>(filter))
+                {
+                    string? type = entity.GetString("Type");
+                    string? tsText = entity.GetString("TimestampMs") ?? ExtractTimestampFromRowKey(entity.RowKey);
+                    string? serverText = entity.GetString("ServerTimestampMs") ?? ExtractServerTimestampFromRowKey(entity.RowKey);
+                    if (!long.TryParse(tsText, out long ts)) continue;
+                    long written = long.TryParse(serverText, out long w) ? w : 0;
+
+                    // Newest-written marker wins, so an admin moves a boundary by
+                    // simply dropping a fresh one.
+                    if (string.Equals(type, "AST", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (startWrittenAt is null || written >= startWrittenAt) { startWrittenAt = written; startMs = ts; }
+                    }
+                    else if (string.Equals(type, "AEN", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (endWrittenAt is null || written >= endWrittenAt) { endWrittenAt = written; endMs = ts; }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning("GetPositions: trim-window lookup failed for event {EventId}: {Message}. Serving untrimmed.", eventId, ex.Message);
+                return (null, null);
+            }
+
+            _trimCache[eventId] = new TrimWindowCacheEntry
+            {
+                StartMs = startMs,
+                EndMs = endMs,
+                ExpiresUtc = DateTimeOffset.UtcNow.Add(_trimCacheTtl)
+            };
+            return (startMs, endMs);
+        }
+
+        private class TrimWindowCacheEntry
+        {
+            public long? StartMs { get; set; }
+            public long? EndMs { get; set; }
+            public DateTimeOffset ExpiresUtc { get; set; }
+        }
+
         // Fetches the owning kennel's PackTrack trail-type config JSON for this
         // event (via [HC6].[publicWeb_getEventTrailTypes]). Best-effort: any
         // failure — unparseable event id, missing connection string, SQL error,
@@ -424,6 +518,10 @@ namespace HcWebApi.Endpoints
             [JsonProperty("eventId")] public string EventId { get; set; } = string.Empty;
             [JsonProperty("userId")] public string? UserId { get; set; }
             [JsonProperty("afterTimestampMs")] public string? AfterTimestamp { get; set; }
+            // Admin trim editor only: return the FULL track (out-of-window points
+            // included) plus the current window so the handles can be dragged
+            // back outward. Normal viewers omit this and receive the trimmed track.
+            [JsonProperty("includeTrimmed")] public bool IncludeTrimmed { get; set; }
         }
 
         internal class EventPositionsResponse
@@ -431,6 +529,11 @@ namespace HcWebApi.Endpoints
             [JsonProperty("eventId")] public string EventId { get; set; } = string.Empty;
             [JsonProperty("latestServerTimestampMs", NullValueHandling = NullValueHandling.Ignore)] public string? LatestServerTimestamp { get; set; }
             [JsonProperty("trailTypesConfigJson", NullValueHandling = NullValueHandling.Ignore)] public string? TrailTypesConfigJson { get; set; }
+            // Official run window (epoch-ms) from the admin AST/AEN markers. Null
+            // on the unbounded side. Lets the trim editor place its handles and
+            // clients clamp the timeline without rescanning for the markers.
+            [JsonProperty("trimStartMs", NullValueHandling = NullValueHandling.Ignore)] public long? TrimStartMs { get; set; }
+            [JsonProperty("trimEndMs", NullValueHandling = NullValueHandling.Ignore)] public long? TrimEndMs { get; set; }
             [JsonProperty("users")] public List<UserPositionsResponse> Users { get; set; } = new();
         }
 

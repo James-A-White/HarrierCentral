@@ -68,6 +68,12 @@ class LocationService extends GetxService {
   // Prevents the ever(joinRunTracking) worker from resetting the session track
   // when transitioning from paused → tracking (vs. a fresh start).
   bool _isResumingFromPause = false;
+  // Set when Start is pressed on a run that already holds a stored track (the
+  // app was closed or tracking stopped mid-run). Tells the tracking-start
+  // worker to keep the seeded session track instead of clearing it, so the
+  // live distance HUD continues from where it left off instead of restarting
+  // at zero. See [seedSessionTrack].
+  bool _isResumingExistingTrack = false;
   Worker? _trackingWorker;
 
   // Last-known GPS coordinates held in memory only — not persisted to disk.
@@ -104,12 +110,14 @@ class LocationService extends GetxService {
     _trackingWorker = ever<bool>(joinRunTracking, (value) async {
       if (value) {
         // Starting or resuming tracking. Only reset the session track on a
-        // fresh start — resuming from pause continues the same session.
-        if (!_isResumingFromPause) {
+        // fresh start — resuming from pause OR seeding an existing stored track
+        // (app closed mid-run) both continue the same session.
+        if (!_isResumingFromPause && !_isResumingExistingTrack) {
           _sessionTrack.clear();
           filteredSessionDistanceMeters.value = 0.0;
         }
         _isResumingFromPause = false;
+        _isResumingExistingTrack = false;
 
         final locationSettings = getLocSettings(
           _trackingDistanceFilter(),
@@ -326,6 +334,24 @@ class LocationService extends GetxService {
     joinRunTracking.value = true; // ever worker: _isResumingFromPause==true → no reset
   }
 
+  /// Seeds the in-memory session track from an already-stored track so the live
+  /// distance HUD continues from where it left off instead of restarting at
+  /// zero when a runner reopens the app and resumes a run.
+  ///
+  /// Must be called BEFORE setting [joinRunTracking] true — it sets a flag the
+  /// tracking-start worker checks so the seeded points survive the fresh-start
+  /// reset. Distance is recomputed with the same [TrackPointFilter] the live
+  /// accumulator and the map view use, so all three agree.
+  void seedSessionTrack(List<TrackPoint> existing) {
+    _sessionTrack
+      ..clear()
+      ..addAll(existing);
+    final filtered = _sessionFilter.filterAndInterpolate(_sessionTrack);
+    filteredSessionDistanceMeters.value =
+        TrackPointFilter.cumulativeDistanceMeters(filtered);
+    _isResumingExistingTrack = true;
+  }
+
   // Fully ends the session regardless of current state (tracking or paused).
   Future<void> stopTracking() async {
     _pausePoint = null;
@@ -440,6 +466,46 @@ class LocationService extends GetxService {
       await buf.flush();
       buf.dispose();
     }
+  }
+
+  /// Stores an admin time-boundary marker (AST = Official Start, AEN = Official
+  /// End) at [timestampMs] for the given event/user. Unlike [markPointAt] this
+  /// does NOT read GPS: a boundary marker's position is irrelevant — only its
+  /// timestamp matters — so an admin can set it during replay, away from the
+  /// run. All clients and GetPositions treat data before AST / after AEN as
+  /// out-of-bounds. Reversible: move = drop a newer marker (newest wins);
+  /// clear = delete it via DeletePositions.
+  Future<void> markBoundaryAt({
+    required HashRunPointTypes boundaryType,
+    required int timestampMs,
+    required String overrideEventId,
+    required String overrideUserId,
+    double lat = 0.0,
+    double lng = 0.0,
+  }) async {
+    assert(
+      boundaryType == HashRunPointTypes.adminStart ||
+          boundaryType == HashRunPointTypes.adminEnd,
+      'markBoundaryAt is only for AST/AEN boundary markers',
+    );
+    final point = UserEventLocation(
+      ts: pad19(timestampMs),
+      lat: double.parse(lat.toStringAsFixed(5)),
+      lng: double.parse(lng.toStringAsFixed(5)),
+      acc: 0.0,
+      alt: 0.0,
+      type: boundaryType.key,
+    );
+    // Always a one-shot buffer (never the live tracking buffer) so it works
+    // whether or not this device is currently tracking the run.
+    final buf = RunPointBuffer(
+      apiUrl: STORE_POSITIONS_URL,
+      eventId: overrideEventId,
+      userId: overrideUserId,
+    );
+    buf.enqueue(point);
+    await buf.flush();
+    buf.dispose();
   }
 
   // Private method to handle location updates from the stream/one-time fetch

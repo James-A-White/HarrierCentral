@@ -486,9 +486,16 @@ class FutureRunListPageController extends GetxController {
   Future<void> openList() async {
     final controller = Get.find<MainNavigationController>();
     controller.bottomNavigationKey.currentState?.setPage(0);
-    runsToDisplay.value = RunsToDisplay.onMap;
-    runsTimeScope.value = RunsTimeScope.all;
+    // Return to normal chip mode with the Map chip on — NOT the legacy
+    // onMap/all-scope view. Staying in future scope keeps the inline "Past Runs"
+    // section alive (showsInlinePast requires future scope); the Map chip filters
+    // the list to the map bounds the map controller already primed. Setting
+    // all-scope here silently dropped the past section and left no way back to it.
+    runsToDisplay.value = RunsToDisplay.allRuns;
+    runsTimeScope.value = RunsTimeScope.future;
+    filterMap.value = true;
     await refreshFromTable(true);
+    scrollToInitialAnchor();
   }
 
   void openMap() {

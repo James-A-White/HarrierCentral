@@ -12,6 +12,11 @@ abstract class UserPositionsPayload with _$UserPositionsPayload {
     // Per-kennel PackTrack trail-type config JSON, bundled by GetPositions on
     // the full fetch only (null on incremental polls — the client caches it).
     String? trailTypesConfigJson,
+    // Official run window (epoch-ms) derived server-side from the admin AST/AEN
+    // boundary markers. Null on the unbounded side / when no marker is set.
+    // Drives the admin trim editor's handles and lets the timeline clamp.
+    int? trimStartMs,
+    int? trimEndMs,
     required List<UserTrack> users,
   }) = _UserPositionsPayload;
 

@@ -12,6 +12,8 @@ _UserPositionsPayload _$UserPositionsPayloadFromJson(
   eventId: json['eventId'] as String,
   latestServerTimestampMs: json['latestServerTimestampMs'] as String?,
   trailTypesConfigJson: json['trailTypesConfigJson'] as String?,
+  trimStartMs: (json['trimStartMs'] as num?)?.toInt(),
+  trimEndMs: (json['trimEndMs'] as num?)?.toInt(),
   users: (json['users'] as List<dynamic>)
       .map((e) => UserTrack.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -23,6 +25,8 @@ Map<String, dynamic> _$UserPositionsPayloadToJson(
   'eventId': instance.eventId,
   'latestServerTimestampMs': instance.latestServerTimestampMs,
   'trailTypesConfigJson': instance.trailTypesConfigJson,
+  'trimStartMs': instance.trimStartMs,
+  'trimEndMs': instance.trimEndMs,
   'users': instance.users,
 };
 

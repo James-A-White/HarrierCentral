@@ -97,28 +97,122 @@ class LiveRunGeneralController extends GetxController {
     return DateFormat('h:mm a').format(opensAt);
   }
 
-  void toggleTracking() {
+  Future<void> toggleTracking() async {
     final newValue = !_locationService.joinRunTracking.value;
     _locationService.eventId = run.event.eventId;
     _locationService.userId = getStringPref(StringPrefsEnum.userId);
 
-    if (newValue) {
-      _preRunTimer?.cancel();
-      _preRunTimer = null;
-      _trackingStartedAt = DateTime.now();
-      distanceKm.value = 0.0;
-      elapsed.value = Duration.zero;
+    if (!newValue) {
+      _locationService.joinRunTracking.value = false;
+      _stopElapsedTicker();
+      return;
     }
+
+    // Starting. Default to a fresh session…
+    _preRunTimer?.cancel();
+    _preRunTimer = null;
+    _trackingStartedAt = DateTime.now();
+    distanceKm.value = 0.0;
+    elapsed.value = Duration.zero;
+
+    // …but if the server already holds a track for this runner+event (the app
+    // was closed or tracking stopped mid-run), continue it: seed the distance
+    // and elapsed clock from the stored track so the HUD doesn't reset to zero,
+    // and strip any On-Inn terminator so the resumed points render as one line.
+    await _resumeExistingTrackIfAny();
 
     _locationService.joinRunTracking.value = newValue;
 
-    if (newValue) {
-      // Tag the new track with the declared lane so playback can label/filter
-      // it. Fire-and-forget — joinRunTracking is true so the point is buffered.
-      unawaited(_locationService.declareTrailType(selectedTrailValue.value));
-    } else {
-      _stopElapsedTicker();
+    // Tag the (new or continued) track with the declared lane so playback can
+    // label/filter it. Fire-and-forget — joinRunTracking is true so it buffers.
+    unawaited(_locationService.declareTrailType(selectedTrailValue.value));
+  }
+
+  /// Detects an already-stored track for this runner on this event and, if
+  /// present, continues it instead of starting from scratch. Reads the stored
+  /// points once, seeds [LocationService.seedSessionTrack] so live distance
+  /// carries on, re-bases the elapsed clock on the earliest point, and deletes
+  /// any terminator marks so the continuation draws as a single track.
+  ///
+  /// Entirely best-effort: any failure (offline, endpoint not yet deployed,
+  /// parse error) is swallowed and the run simply starts fresh — never blocks
+  /// the user from tracking.
+  Future<void> _resumeExistingTrackIfAny() async {
+    final userId = _locationService.userId;
+    final eventId = _locationService.eventId;
+    if (userId == null || userId.isEmpty || eventId == null || eventId.isEmpty) {
+      return;
     }
+
+    final api = GetPositionsApi();
+    try {
+      final payload = await api.fetchPositions(
+        eventId: eventId,
+        latestClientTimestampMs: '0000000000000000000',
+        userId: userId,
+      );
+      final mine = payload.users.firstWhereOrNull(
+        (u) => normalizeUuid(u.id) == normalizeUuid(userId),
+      );
+      final positions = mine?.positions ?? const <TrackPoint>[];
+      if (positions.isEmpty) return; // genuinely fresh run — nothing to resume
+
+      // Seed live distance from the stored track (recomputed with the same
+      // filter the map uses) so the HUD continues rather than restarting at 0.
+      _locationService.seedSessionTrack(positions);
+      distanceKm.value =
+          _locationService.filteredSessionDistanceMeters.value / 1000.0;
+
+      // Re-base the elapsed clock on the earliest stored point.
+      final firstTs = positions
+          .map((p) => p.timestampMs)
+          .reduce((a, b) => a < b ? a : b);
+      _trackingStartedAt = DateTime.fromMillisecondsSinceEpoch(firstTs);
+      elapsed.value = DateTime.now().difference(_trackingStartedAt!);
+
+      // Strip any terminator(s) so the resumed portion isn't cut off. OIN (On
+      // Inn) stops the drawn polyline at the first occurrence, so a stale one
+      // from before the stop would hide everything after it.
+      await _stripTrackTerminators(eventId, userId, positions);
+    } catch (e) {
+      if (kDebugMode) debugPrint('[LiveRun] resume-existing-track failed: $e');
+    } finally {
+      api.dispose();
+    }
+  }
+
+  /// Deletes any On-Inn terminator points from the stored track so a resumed
+  /// run renders continuously. Identifies terminators locally (same rule the
+  /// map uses) and asks the server to remove exactly those points by timestamp.
+  Future<void> _stripTrackTerminators(
+    String eventId,
+    String userId,
+    List<TrackPoint> positions,
+  ) async {
+    final terminatorTsMs = positions
+        .where((p) => _isTerminatorType(p.type))
+        .map((p) => p.timestampMs)
+        .toList(growable: false);
+    if (terminatorTsMs.isEmpty) return;
+
+    final api = DeletePositionsApi();
+    try {
+      await api.deletePoints(
+        eventId: eventId,
+        userId: userId,
+        timestampsMs: terminatorTsMs,
+      );
+    } finally {
+      api.dispose();
+    }
+  }
+
+  /// True if [type] is an On-Inn terminator (the only mark that stops the drawn
+  /// track). Compares the key directly rather than via [HashRunPointTypes.fromKey],
+  /// which throws on non-enum keys (e.g. new-style `I-NNN.png` slot icons).
+  bool _isTerminatorType(String? type) {
+    if (type == null || type.isEmpty) return false;
+    return type.split('::').first.trim() == HashRunPointTypes.onInn.key;
   }
 
   /// Sets the runner's declared trail lane. If tracking is already underway,

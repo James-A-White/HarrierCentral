@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
+import 'package:flutter_compass/flutter_compass.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:harrier_central/widgets/camera_photo_marker.dart';
 import 'package:latlong2/latlong.dart' as latlng;
@@ -34,24 +35,47 @@ class RunTrackerMapController extends GetxController
   static const double _zoomFastThreshold = 15.0;
   static const double _zoomSlowThreshold = 22.0;
   // Playback duration scales with the trail's length, not a fixed wall-clock
-  // time: the zoomed-out rate is 1 s/km (a 28 km run plays in 28 s, a 5 km run
-  // in 5 s), and zooming in slows that down toward 8 s/km so detail is
-  // watchable. The rate is interpolated by zoom between the two thresholds.
-  static const double _msPerKmFast = 1000.0; // 1 s/km — fully zoomed out (≤ 15)
-  static const double _msPerKmSlow = 8000.0; // 8 s/km — fully zoomed in (≥ 22)
+  // time: the zoomed-out rate is 2.5 s/km, and zooming in slows that toward
+  // 20 s/km so detail is watchable. The rate is interpolated by zoom between
+  // the two thresholds. Constants match public-web (MS_PER_KM_FAST/SLOW,
+  // MIN_DURATION_MS) so a given run plays at the same speed on app and web.
+  static const double _msPerKmFast = 2500.0; // 2.5 s/km — fully zoomed out (≤ 15)
+  static const double _msPerKmSlow = 20000.0; // 20 s/km — fully zoomed in (≥ 22)
   static const Duration _minPlaybackDuration =
-      Duration(seconds: 3); // floor so a very short trail doesn't flash past
+      Duration(seconds: 5); // floor so a very short trail doesn't flash past
   static const Duration _autoUpdateInterval = Duration(seconds: 15);
 
+  // Stable per-runner colour palette, matched to public-web's TRACK_COLORS so a
+  // runner reads the same colour on app and web. Assigned by order of appearance
+  // in the loaded set (see [_assignRunnerColors]) and keyed by id, so filtering
+  // trail lanes never reshuffles the colours.
+  static const List<Color> _trackColors = <Color>[
+    Color(0xFFEF4444), Color(0xFF3B82F6), Color(0xFF22C55E), Color(0xFFF59E0B),
+    Color(0xFFA855F7), Color(0xFFEC4899), Color(0xFF06B6D4), Color(0xFFF97316),
+  ];
+  final Map<String, Color> _colorById = <String, Color>{};
+
+  // Manual playback-speed steps cycled by the speed button (matches web
+  // SPEED_STEPS). Tilt control is continuous and overrides this while on.
+  static const List<double> _speedSteps = <double>[0.5, 1.0, 2.0, 4.0];
+  final RxDouble playbackSpeed = 1.0.obs;
+
+  // Horizontal runner carousel (replaces the old Cupertino wheel picker). One
+  // tile per visible runner; the centred tile is the selection. This is the
+  // scroll geometry the controller uses to snap/centre — see [onCarouselScrollEnd].
+  static const double runnerTileExtent = 60.0;
+
   final MapController mapController = MapController();
-  final FixedExtentScrollController runnerPickerController =
-      FixedExtentScrollController();
+  final ScrollController runnerCarouselController = ScrollController();
 
   late final AnimationController _playbackController;
   bool _mapReady = false;
   bool _isVisible = false;
   double? _lastRotationDeg;
   Duration? _lastPlaybackDuration;
+  // Speed-1 duration for the current zoom; drives the tilt ticker so tilt speed
+  // is independent of the manual speed button.
+  Duration? _lastBaseDuration;
   double _lastMarkerZoom = 0.0;
 
   // ── Domain state ──────────────────────────────────────────────────────────
@@ -86,12 +110,34 @@ class RunTrackerMapController extends GetxController
   final RxBool tiltEnabled = false.obs;
   final RxDouble tiltSpeed = 1.0.obs; // smoothed multiplier, for the indicator
 
+  // Viewer's device-compass heading in degrees (0 = North), or null when no
+  // compass feed is active. Drives the blue-dot direction wedge. Left null for
+  // now — a compass source is wired in a later step; the wedge only renders when
+  // this is non-null, so the dot degrades cleanly to a plain marker meanwhile.
+  final RxnDouble deviceHeading = RxnDouble();
+
+  // ── Photo showcase (in-map zoom-from-pin) ──────────────────────────────────
+  // When armed (Camera toggle), playback pauses as the playhead crosses one of
+  // the selected runner's photo cues and the photo grows out of its pin toward
+  // centre and back, then playback resumes. Mirrors public-web's PhotoZoomOverlay.
+  final RxBool photoShowcaseArmed = false.obs;
+  final Rxn<PhotoShowcaseState> photoShowcase = Rxn<PhotoShowcaseState>();
+  final RxDouble showcaseZoom = 0.0.obs; // 0 = at pin, 1 = full at centre
+  Timer? _showcaseTicker;
+  DateTime? _showcaseStart;
+  bool _showcaseResumeAfter = false;
+  // Zoom envelope (ms), matches web: IN → HOLD → OUT.
+  static const int _showInMs = 450;
+  static const int _showHoldMs = 1500;
+  static const int _showOutMs = 650;
+
   // Camera follow (mirrors the web's follow toggle): while ON the camera
   // tracks the selected runner on every timeline/position update; OFF lets
   // the user pan freely without the map snapping back. Explicit actions
   // (tapping a runner, picking in the carousel) still recenter either way.
   final RxBool followRunner = true.obs;
   StreamSubscription<AccelerometerEvent>? _tiltSub;
+  StreamSubscription<CompassEvent>? _compassSub;
   Timer? _tiltTicker;
   double? _tiltNeutralDeg;
   final List<double> _tiltCalibSamples = [];
@@ -99,6 +145,11 @@ class RunTrackerMapController extends GetxController
   DateTime? _lastTiltTick;
   static const double _tiltDeadDeg = 8.0;
   static const double _tiltSpanDeg = 32.0;
+  // Widened paused band (matches web's NEUTRAL_BAND): any target speed within
+  // ±this of zero snaps to exactly 0, so the freeze point between slow-forward
+  // and reverse is a holdable band rather than a razor-thin angle. Pairs with
+  // the red "paused" speed bubble (tiltPaused).
+  static const double _tiltNeutralBand = 0.5;
 
   // Trail-type filtering: the kennel's config (bundled by GetPositions on the
   // full fetch), the set of lanes currently shown, and the lanes ever seen so
@@ -106,6 +157,18 @@ class RunTrackerMapController extends GetxController
   final RxnString trailTypesConfigJson = RxnString();
   final RxSet<int> selectedTrailValues = <int>{}.obs;
   final Set<int> _knownTrailValues = {};
+
+  // Official run window (epoch-ms) from the admin AST/AEN boundary markers,
+  // surfaced by GetPositions. Null on the unbounded side / when unset. Drives
+  // the admin trim editor's readout; normal viewers already receive a
+  // server-trimmed track so these are display-only here.
+  final RxnInt officialStartMs = RxnInt();
+  final RxnInt officialEndMs = RxnInt();
+
+  // When true, loadPositions asks GetPositions for the FULL (untrimmed) track
+  // so the admin trim editor can see out-of-window points and drag the
+  // boundaries back outward. Off for everyone else — they get the trimmed view.
+  bool adminEditMode = false;
 
   final latlng.Distance _distanceCalculator = const latlng.Distance();
 
@@ -512,8 +575,25 @@ class RunTrackerMapController extends GetxController
     _isVisible = true;
     _lastMarkerZoom = initialZoom;
     _startAutoUpdateTimer();
+    _startCompass();
     unawaited(loadPositions());
     unawaited(_loadPhotoCache());
+  }
+
+  /// Subscribes to the device compass so the blue-dot wedge points where the
+  /// viewer is facing. Heading is null on devices without a magnetometer, in
+  /// which case the wedge simply never appears. Idempotent.
+  void _startCompass() {
+    _compassSub ??= FlutterCompass.events?.listen((event) {
+      final h = event.heading;
+      if (h != null) deviceHeading.value = h;
+    });
+  }
+
+  void _stopCompass() {
+    unawaited(_compassSub?.cancel());
+    _compassSub = null;
+    deviceHeading.value = null; // hide the wedge when not actively watching
   }
 
   @override
@@ -521,11 +601,13 @@ class RunTrackerMapController extends GetxController
     WidgetsBinding.instance.removeObserver(this);
     _stopAutoUpdateTimer();
     unawaited(_tiltSub?.cancel());
+    unawaited(_compassSub?.cancel());
     _tiltTicker?.cancel();
+    _showcaseTicker?.cancel();
     _timelineWorker?.dispose();
     _selectionWorker?.dispose();
     unawaited(_mapEventsSub?.cancel());
-    runnerPickerController.dispose();
+    runnerCarouselController.dispose();
     _playbackController.dispose();
     _positionsApi.dispose();
     super.onClose();
@@ -615,6 +697,7 @@ class RunTrackerMapController extends GetxController
       final data = await _positionsApi.fetchPositions(
         eventId: event.eventId,
         latestClientTimestampMs: _afterTimestampMs ?? '0000000000000000000',
+        includeTrimmed: adminEditMode,
       );
       _afterTimestampMs = data.latestServerTimestampMs;
       // Trail-type config arrives on the full fetch only; cache it (incremental
@@ -622,6 +705,10 @@ class RunTrackerMapController extends GetxController
       if (data.trailTypesConfigJson != null) {
         trailTypesConfigJson.value = data.trailTypesConfigJson;
       }
+      // Official window is recomputed server-side on every response, so mirror
+      // it each load (null clears it when the boundary markers are removed).
+      officialStartMs.value = data.trimStartMs;
+      officialEndMs.value = data.trimEndMs;
       _startAutoUpdateTimer();
       await _hydrateLogos(data.users);
 
@@ -646,6 +733,7 @@ class RunTrackerMapController extends GetxController
       }).toList();
 
       userPositions.assignAll(cleanedUsers);
+      _assignRunnerColors(cleanedUsers);
       _refreshTrailFilter();
       _initializeTimelineBounds();
       _ensureSelection();
@@ -742,10 +830,12 @@ class RunTrackerMapController extends GetxController
     _isVisible = visible;
     if (visible) {
       _startAutoUpdateTimer();
+      _startCompass();
       // Immediately refresh when becoming visible
       unawaited(loadPositions());
     } else {
       _stopAutoUpdateTimer();
+      _stopCompass();
     }
   }
 
@@ -833,6 +923,166 @@ class RunTrackerMapController extends GetxController
     }
   }
 
+  /// Cycles the manual playback speed (0.5 → 1 → 2 → 4 → …). No-op while tilt is
+  /// enabled — tilt owns the rate then. Applies live so a change mid-playback
+  /// takes effect immediately.
+  void cycleSpeed() {
+    if (tiltEnabled.value) return;
+    final idx = _speedSteps.indexOf(playbackSpeed.value);
+    playbackSpeed.value = _speedSteps[(idx + 1) % _speedSteps.length];
+    if (isPlaying.value) _applyPlaybackDurationFromZoom();
+  }
+
+  /// True when tilt playback is effectively frozen (in the neutral band). Drives
+  /// the red "paused" state of the speed bubble, mirroring web.
+  bool get tiltPaused => tiltEnabled.value && tiltSpeed.value.abs() < 0.15;
+
+  /// Recenters the map on the viewer's own location (locate button). Flies in to
+  /// at least zoom 16 so the blue dot is comfortably framed; keeps the current
+  /// zoom if already closer. No-op without a known position.
+  void recenterOnUser() {
+    final lat = deviceInfo.deviceLat;
+    final lon = deviceInfo.deviceLon;
+    if (lat == null || lon == null) return;
+    final target = latlng.LatLng(lat, lon);
+    final z = mapController.camera.zoom < 16.0 ? 16.0 : mapController.camera.zoom;
+    mapController.move(target, z);
+  }
+
+  /// Whether to draw the GPS-accuracy halo — only when the fix is loose enough
+  /// to be worth signalling (matches web's 25 m threshold).
+  bool get showsAccuracyHalo {
+    final acc = deviceInfo.deviceAccuracy;
+    return appModel.hasLocationPermissions &&
+        deviceInfo.deviceLat != null &&
+        deviceInfo.deviceLon != null &&
+        acc != null &&
+        acc > 25.0;
+  }
+
+  /// Photo cues for the selected runner (timestamp + pin location + resolved
+  /// URL) — one per `PHO::<id>` point whose photo is approved/visible to this
+  /// viewer. Scoped to the selected runner only, mirroring web, so the showcase
+  /// never pops photos from other tracks.
+  List<PhotoCue> get _selectedRunnerCues {
+    final id = selectedRunnerId.value;
+    if (id == null) return const <PhotoCue>[];
+    final runner = userPositions.firstWhereOrNull((r) => r.id == id);
+    if (runner == null) return const <PhotoCue>[];
+    final prefix = '${HashRunPointTypes.photo.key}::'; // 'PHO::'
+    final cues = <PhotoCue>[];
+    for (final p in runner.positions) {
+      final t = p.type ?? '';
+      if (!t.startsWith(prefix)) continue;
+      final rawId = t.substring(prefix.length).split('~').first.trim();
+      final url = rawId.startsWith('http')
+          ? rawId
+          : _photoUrlCache[rawId.toLowerCase()];
+      if (url == null || url.isEmpty) continue;
+      cues.add(PhotoCue(
+        timestampMs: p.timestampMs,
+        point: latlng.LatLng(p.lat, p.lng),
+        url: url,
+      ));
+    }
+    return cues;
+  }
+
+  /// True when the selected runner has at least one showable photo — gates the
+  /// Camera (auto-showcase) toggle so it only appears when there's something to
+  /// show.
+  bool get selectedRunnerHasPhotos => _selectedRunnerCues.isNotEmpty;
+
+  void togglePhotoShowcase() {
+    photoShowcaseArmed.value = !photoShowcaseArmed.value;
+    if (!photoShowcaseArmed.value && photoShowcase.value != null) {
+      _endShowcase();
+    }
+  }
+
+  /// Manually dismiss the active showcase (tap-to-close) and resume playback.
+  void dismissShowcase() => _endShowcase();
+
+  /// Fires the showcase when the playhead crosses a photo cue (either
+  /// direction) during playback. Only while playing, so scrubbing onto a photo
+  /// doesn't trigger it (matches web, where a scrub cancels the showcase).
+  void _maybeTriggerShowcase(double prevMs, double curMs) {
+    if (!photoShowcaseArmed.value ||
+        !isPlaying.value ||
+        photoShowcase.value != null ||
+        prevMs == curMs) {
+      return;
+    }
+    for (final cue in _selectedRunnerCues) {
+      final t = cue.timestampMs.toDouble();
+      final crossed =
+          (prevMs < t && t <= curMs) || (curMs <= t && t < prevMs);
+      if (crossed) {
+        _startShowcase(cue);
+        return;
+      }
+    }
+  }
+
+  void _startShowcase(PhotoCue cue) {
+    _showcaseResumeAfter = isPlaying.value;
+    if (_playbackController.isAnimating) _playbackController.stop();
+    isPlaying.value = false; // freezes both normal and tilt playback
+    photoShowcase.value = PhotoShowcaseState(url: cue.url, point: cue.point);
+    showcaseZoom.value = 0.0;
+    _showcaseStart = DateTime.now();
+    _showcaseTicker?.cancel();
+    _showcaseTicker =
+        Timer.periodic(const Duration(milliseconds: 16), (_) => _showcaseTick());
+  }
+
+  void _showcaseTick() {
+    final start = _showcaseStart;
+    if (start == null) {
+      _endShowcase();
+      return;
+    }
+    final elapsed = DateTime.now().difference(start).inMilliseconds;
+    const total = _showInMs + _showHoldMs + _showOutMs;
+    if (elapsed >= total) {
+      _endShowcase();
+      return;
+    }
+    double z;
+    if (elapsed < _showInMs) {
+      z = Curves.easeOut.transform(elapsed / _showInMs);
+    } else if (elapsed < _showInMs + _showHoldMs) {
+      z = 1.0;
+    } else {
+      final o = (elapsed - _showInMs - _showHoldMs) / _showOutMs;
+      z = 1.0 - Curves.easeIn.transform(o.clamp(0.0, 1.0));
+    }
+    showcaseZoom.value = z.clamp(0.0, 1.0);
+  }
+
+  void _endShowcase() {
+    _showcaseTicker?.cancel();
+    _showcaseTicker = null;
+    _showcaseStart = null;
+    photoShowcase.value = null;
+    showcaseZoom.value = 0.0;
+    if (_showcaseResumeAfter && !_isAtTimelineEnd()) {
+      _showcaseResumeAfter = false;
+      isPlaying.value = true;
+      // Tilt playback resumes via its own ticker (which checks isPlaying);
+      // normal playback needs the AnimationController restarted.
+      if (!tiltEnabled.value) {
+        unawaited(
+          _playbackController.forward(
+            from: _playbackController.value.clamp(0.0, 1.0),
+          ),
+        );
+      }
+    } else {
+      _showcaseResumeAfter = false;
+    }
+  }
+
   // ── Tilt-to-scrub ──────────────────────────────────────────────────────────
 
   void toggleTilt() {
@@ -911,6 +1161,9 @@ class RunTrackerMapController extends GetxController
       target = 1.0 +
           math.max((delta + _tiltDeadDeg) / _tiltSpanDeg, -1.0) * 3.0; // → −×2
     }
+    // Widened paused band: snap a small speed to a clean freeze so it's easy to
+    // hold playback still (rather than the freeze being a single exact angle).
+    if (target.abs() <= _tiltNeutralBand) target = 0.0;
     // Smooth (EMA) so hand shake doesn't jitter the playback rate.
     _tiltEma = _tiltEma * 0.8 + target * 0.2;
     if ((tiltSpeed.value - _tiltEma).abs() > 0.1) {
@@ -930,8 +1183,9 @@ class RunTrackerMapController extends GetxController
     _lastTiltTick = now;
     if (dtMs <= 0) return;
 
+    // Base (speed-1) duration so tilt rate is unaffected by the speed button.
     final int durMs =
-        (_lastPlaybackDuration ?? _playbackController.duration)
+        (_lastBaseDuration ?? _playbackController.duration)
                 ?.inMilliseconds ??
             10000;
     final double dv = dtMs / durMs * _tiltEma;
@@ -968,23 +1222,22 @@ class RunTrackerMapController extends GetxController
     if (recenter) {
       _moveToRunner(userId);
     }
-    if (syncPicker && runnerPickerController.hasClients) {
-      final index = _runnerIndex(userId);
-      if (index != null) {
-        unawaited(
-          runnerPickerController.animateToItem(
-            index,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-          ),
-        );
-      }
+    if (syncPicker) {
+      syncRunnerPickerToSelection(animated: true, onlyIfMismatch: true);
     }
   }
 
-  Color _colorForUser(String id) {
-    final colors = Colors.primaries;
-    return colors[id.hashCode.abs() % colors.length];
+  Color _colorForUser(String id) => _colorById[id] ?? _trackColors.first;
+
+  /// Assigns each runner a stable palette colour by order of appearance in the
+  /// loaded set, keyed by id — mirrors public-web (`users.forEach((u,i) => …)`)
+  /// so a runner is the same colour on both platforms (both receive the same
+  /// server-ordered user list). Reassigned every load; filtering never touches it.
+  void _assignRunnerColors(List<UserTrack> users) {
+    _colorById.clear();
+    for (var i = 0; i < users.length; i++) {
+      _colorById[users[i].id] = _trackColors[i % _trackColors.length];
+    }
   }
 
   Widget _buildRunnerMarker(String logo, {required bool isHighlighted}) {
@@ -1380,8 +1633,10 @@ class RunTrackerMapController extends GetxController
       return;
     }
     final span = maxTimestampMs.value! - minTimestampMs.value!;
-    currentTimestampMs.value =
-        minTimestampMs.value! + (span * _playbackController.value);
+    final prev = currentTimestampMs.value ?? minTimestampMs.value!;
+    final next = minTimestampMs.value! + (span * _playbackController.value);
+    currentTimestampMs.value = next;
+    _maybeTriggerShowcase(prev, next);
   }
 
   Future<void> _hydrateLogos(List<UserTrack> users) async {
@@ -1467,6 +1722,10 @@ class RunTrackerMapController extends GetxController
     return null;
   }
 
+  /// Centres the runner carousel on the current selection. With an equal
+  /// half-viewport of leading/trailing padding, item `i` is centred at scroll
+  /// offset `i * runnerTileExtent`. If the list isn't laid out yet (no clients),
+  /// retries once on the next frame so the initial centring lands.
   void syncRunnerPickerToSelection({
     bool animated = false,
     bool onlyIfMismatch = false,
@@ -1475,22 +1734,57 @@ class RunTrackerMapController extends GetxController
     if (selectedId == null) return;
     final index = _runnerIndex(selectedId);
     if (index == null) return;
-    if (!runnerPickerController.hasClients) return;
 
-    if (onlyIfMismatch && runnerPickerController.selectedItem == index) {
+    if (!runnerCarouselController.hasClients) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (runnerCarouselController.hasClients) {
+          syncRunnerPickerToSelection(animated: false, onlyIfMismatch: true);
+        }
+      });
+      return;
+    }
+
+    final target = index * runnerTileExtent;
+    if (onlyIfMismatch &&
+        (runnerCarouselController.offset - target).abs() < 1.0) {
       return;
     }
 
     if (animated) {
       unawaited(
-        runnerPickerController.animateToItem(
-          index,
-          duration: const Duration(milliseconds: 200),
+        runnerCarouselController.animateTo(
+          target,
+          duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
         ),
       );
     } else {
-      runnerPickerController.jumpToItem(index);
+      runnerCarouselController.jumpTo(target);
+    }
+  }
+
+  /// Snaps the carousel to the nearest tile after a scroll gesture settles and
+  /// selects that runner. Called from the widget's ScrollEndNotification.
+  void onCarouselScrollEnd() {
+    if (!runnerCarouselController.hasClients) return;
+    final list = visibleRunners;
+    if (list.isEmpty) return;
+    final idx = (runnerCarouselController.offset / runnerTileExtent)
+        .round()
+        .clamp(0, list.length - 1);
+    final target = idx * runnerTileExtent;
+    if ((runnerCarouselController.offset - target).abs() > 0.5) {
+      unawaited(
+        runnerCarouselController.animateTo(
+          target,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+        ),
+      );
+    }
+    final id = list[idx].id;
+    if (selectedRunnerId.value != id) {
+      selectRunner(id, recenter: true, syncPicker: false);
     }
   }
 
@@ -1725,7 +2019,14 @@ class RunTrackerMapController extends GetxController
 
   void _applyPlaybackDurationFromZoom({double? zoomOverride}) {
     final zoom = zoomOverride ?? _currentZoomForInterpolation();
-    final newDuration = _durationForZoom(zoom);
+    // Base (speed-1) duration drives the tilt ticker; the manual speed button
+    // divides it for normal playback. Web applies the floor to the base and
+    // lets speed scale freely below it, so no post-scale floor here.
+    final base = _durationForZoom(zoom);
+    _lastBaseDuration = base;
+    final speed = playbackSpeed.value <= 0 ? 1.0 : playbackSpeed.value;
+    final scaledMs = math.max(1, (base.inMilliseconds / speed).round());
+    final newDuration = Duration(milliseconds: scaledMs);
     if (_lastPlaybackDuration == newDuration) return;
 
     final bool wasAnimating = _playbackController.isAnimating;
@@ -1842,4 +2143,29 @@ class _ParsedCheckpointType {
   final HashRunPointTypes? type;
   final String? slotIcon;
   final String? customLabel;
+}
+
+/// A selected-runner photo cue: the timeline moment, the pin location the photo
+/// grows out of, and its resolved image URL. Consumed by the photo showcase.
+class PhotoCue {
+  const PhotoCue({
+    required this.timestampMs,
+    required this.point,
+    required this.url,
+  });
+
+  final int timestampMs;
+  final latlng.LatLng point;
+  final String url;
+}
+
+/// The photo currently being featured by the in-map showcase (its URL and the
+/// map pin it grows from). The live 0→1 zoom progress is held separately in
+/// [RunTrackerMapController.showcaseZoom] so the overlay animates without
+/// rebuilding this object each frame.
+class PhotoShowcaseState {
+  const PhotoShowcaseState({required this.url, required this.point});
+
+  final String url;
+  final latlng.LatLng point;
 }

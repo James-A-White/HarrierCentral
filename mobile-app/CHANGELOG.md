@@ -1,5 +1,21 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.13.0+1201 (2026-07-15)
+
+### New Features
+- **PackTrack map refreshed to match the website**: the live-run map now shares the website's look and controls — a swipeable **runner carousel**, a tap-to-cycle **playback speed button** (0.5×–4×), a location dot with a **compass direction wedge**, a **"my location"** button, and a GPS-accuracy halo.
+- **Photos pop out on the map**: turn on the camera toggle and, as playback reaches one of your photos, it grows out of its pin to centre-screen and back.
+- **Official run start & end (admins)**: set the official start/end of a PackTrack recording so anything tracked before the start or after the end is ignored — for when someone starts early or forgets to stop. *(Requires the matching server update to take full effect.)*
+
+### Improvements
+- **Tilt playback — easier to pause**: holding the phone near neutral now reliably freezes playback across a comfortable range (wider hold-to-pause zone) with a red paused indicator.
+- **Playback speed re-tuned** to match the website (slower and more watchable when zoomed in).
+- **Consistent runner colours** between the app and the website.
+
+### Fixes
+- **Resuming a run keeps your distance & time**: if the app closed or stopped mid-run, tapping Start again now continues your tracked distance and elapsed time instead of restarting at zero, and stitches the resumed track back into one continuous line.
+- **Past runs no longer disappear** from the Runs list after opening the map and coming back.
+
 ## 2.12.4+1200 (2026-07-12)
 
 ### Fixes
