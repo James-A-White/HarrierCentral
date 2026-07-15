@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.13.1+1202 (2026-07-15)
+
+### New Features
+- **Full-screen map**: a full-screen button on the run map (both the live-tracking map and a run's Map tab) opens the PackTrack map edge-to-edge, with a close button to return.
+
+### Improvements
+- **Trim a run after it finishes**: the official start/end (trim) tools now live in the full-screen map, so you can trim a run any time from its Map tab — not just during the live tracking window. Set start / set end / clear are spread along the bottom in full-screen. (Admins only.)
+
 ## 2.13.0+1201 (2026-07-15)
 
 ### New Features

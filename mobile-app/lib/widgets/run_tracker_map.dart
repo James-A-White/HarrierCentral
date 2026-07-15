@@ -17,6 +17,7 @@ class RunTrackerMap extends StatelessWidget {
     this.markerClicked,
     this.mapMoved,
     this.overlayBottomPadding = -25.0,
+    this.controllerTag,
   });
 
   final EventModel event;
@@ -31,7 +32,14 @@ class RunTrackerMap extends StatelessWidget {
   final Function? mapMoved;
   final double overlayBottomPadding;
 
-  String get _controllerTag => event.eventId;
+  /// Optional override for the GetX controller tag. Defaults to the event id so
+  /// every map of a run shares one controller. The fullscreen map passes a
+  /// distinct tag to get its OWN controller — flutter_map can't bind one
+  /// MapController to two live maps at once (the embedded map stays mounted
+  /// underneath the fullscreen route).
+  final String? controllerTag;
+
+  String get _controllerTag => controllerTag ?? event.eventId;
 
   @override
   Widget build(BuildContext context) {

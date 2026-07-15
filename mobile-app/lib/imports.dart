@@ -283,6 +283,8 @@ export 'package:harrier_central/util/constants.dart';
 export 'package:harrier_central/util/enums.dart';
 export 'package:harrier_central/util/get_positions.dart';
 export 'package:harrier_central/util/delete_positions.dart';
+export 'package:harrier_central/widgets/packtrack_trim_overlay.dart';
+export 'package:harrier_central/widgets/packtrack_fullscreen_map.dart';
 export 'package:harrier_central/util/get_storage.dart';
 export 'package:harrier_central/util/globals.dart';
 export 'package:harrier_central/util/routes.dart';

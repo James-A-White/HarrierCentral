@@ -1662,6 +1662,24 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           await _launchMaps(widget.futureRun);
                         },
                       ),
+                      // Open the map full-screen.
+                      Positioned(
+                        right: 10.0,
+                        top: 10.0,
+                        child: Material(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          child: IconButton(
+                            tooltip: 'Full screen',
+                            icon: Icon(Icons.fullscreen, color: hc_blue),
+                            onPressed: () => Get.to<void>(
+                              () => PackTrackFullScreenMap(
+                                run: widget.futureRun,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       Positioned(
                         left: 10.0,
                         top: 10.0,
