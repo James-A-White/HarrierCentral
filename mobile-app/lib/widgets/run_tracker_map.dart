@@ -223,28 +223,36 @@ class RunTrackerMap extends StatelessWidget {
     }
     final pos = Offset.lerp(pin, center, z) ?? center;
     final double bigW = math.min(c.maxWidth * 0.84, c.maxHeight * 0.66);
-    final double w = 60.0 + (bigW - 60.0) * z;
+    // Square bounding region that grows with the zoom. The photo is fitted
+    // INSIDE it preserving aspect (no crop) and centred at [pos]; the rounded
+    // corners hug the actual photo, not the square region.
+    final double box = 60.0 + (bigW - 60.0) * z;
     return Stack(
       children: [
         Positioned(
-          left: pos.dx - w / 2,
-          top: pos.dy - w / 2,
-          width: w,
-          height: w,
-          child: GestureDetector(
-            onTap: controller.dismissShowcase,
-            child: Opacity(
-              opacity: (z * 2).clamp(0.0, 1.0),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black45, blurRadius: 12),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(show.url, fit: BoxFit.cover),
+          left: pos.dx - box / 2,
+          top: pos.dy - box / 2,
+          width: box,
+          height: box,
+          child: Opacity(
+            opacity: (z * 2).clamp(0.0, 1.0),
+            // Center gives loose constraints, so the Image sizes to its own
+            // aspect ratio within the box (Flutter preserves aspect on loose
+            // constraints) — full photo, no crop, corners hugging the image.
+            child: Center(
+              child: GestureDetector(
+                onTap: controller.dismissShowcase,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black45, blurRadius: 12),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(show.url, fit: BoxFit.contain),
+                  ),
                 ),
               ),
             ),
@@ -516,26 +524,33 @@ class RunTrackerMap extends StatelessWidget {
   Widget _buildSpeedBubble(RunTrackerMapController controller) {
     final bool tilt = controller.tiltEnabled.value;
     final bool paused = controller.tiltPaused;
+    final double shown =
+        tilt ? controller.tiltSpeed.value : controller.playbackSpeed.value;
+    final bool reverse = tilt && shown < 0;
     Widget child;
     Color bg;
     Color border;
     if (tilt && paused) {
-      bg = const Color(0xFFEF4444);
+      bg = const Color(0xFFEF4444); // red — paused
       border = Colors.white70;
       child = const Icon(Icons.pause, size: 15, color: Colors.white);
     } else {
-      final double shown =
-          tilt ? controller.tiltSpeed.value : controller.playbackSpeed.value;
       final bool active = tilt ? true : controller.playbackSpeed.value != 1.0;
-      bg = active ? const Color(0xFF3B82F6) : Colors.white.withValues(alpha: 0.12);
-      border = active ? Colors.white70 : Colors.white24;
-      final String prefix = (tilt && shown < 0) ? '⏪' : '';
+      // Distinct colours per direction: blue forward, orange reverse.
+      bg = reverse
+          ? const Color(0xFFF97316) // orange — reverse
+          : active
+          ? const Color(0xFF3B82F6) // blue — forward
+          : Colors.white.withValues(alpha: 0.12);
+      border = (active || reverse) ? Colors.white70 : Colors.white24;
       final double mag = shown.abs();
       final String num = tilt
           ? mag.toStringAsFixed(1)
           : (mag % 1 == 0 ? mag.toInt().toString() : mag.toStringAsFixed(1));
+      // No reverse glyph — the orange colour signals reverse, and the glyph
+      // crowded the text.
       child = Text(
-        '$prefix×$num',
+        '×$num',
         style: const TextStyle(
           color: Colors.white,
           fontSize: 11,
@@ -689,20 +704,12 @@ class RunTrackerMap extends StatelessWidget {
                     ),
                   ),
                   child: ClipOval(
-                    child: (logo != null && logo.isNotEmpty)
-                        ? Image.network(logo, fit: BoxFit.cover)
-                        : Container(
-                            color: color.withValues(alpha: 0.35),
-                            alignment: Alignment.center,
-                            child: Text(
-                              _initials(controller.userNames[runner.id]),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
+                    // Resolves http / bundle:// avatars and falls back to a
+                    // bundled default when the runner has no photo.
+                    child: Image(
+                      image: avatarImageProvider(logo),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 if (emoji.isNotEmpty)
@@ -724,18 +731,6 @@ class RunTrackerMap extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Up-to-two-letter initials for a runner with no profile photo.
-  String _initials(String? name) {
-    final n = (name ?? '').trim();
-    if (n.isEmpty) return '?';
-    final parts = n.split(RegExp(r'\s+'));
-    String head(String s) => s.isEmpty ? '' : s.substring(0, 1).toUpperCase();
-    if (parts.length == 1) {
-      return n.length >= 2 ? n.substring(0, 2).toUpperCase() : head(n);
-    }
-    return head(parts.first) + head(parts.last);
   }
 
   Widget _buildRunnerColorDot(Color color) {

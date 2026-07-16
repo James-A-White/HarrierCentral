@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.13.2+1203 (2026-07-16)
+
+### Fixes
+- **Run photos no longer cropped**: photos in the map showcase now show the full image (rounded corners kept), instead of being cropped to a square.
+- **Avatars for photo-less runners**: a runner with no uploaded photo now shows their bundled avatar on the map and in the runner carousel, instead of a blank pin (or being missing).
+
+### Improvements
+- **Tilt playback — easier to pause**: a wider "hold to pause" zone makes it easier to freeze playback.
+- **Speed indicator colours**: the playback speed shows blue for forward and orange for reverse (and red when paused).
+
 ## 2.13.1+1202 (2026-07-15)
 
 ### New Features

@@ -145,11 +145,12 @@ class RunTrackerMapController extends GetxController
   DateTime? _lastTiltTick;
   static const double _tiltDeadDeg = 8.0;
   static const double _tiltSpanDeg = 32.0;
-  // Widened paused band (matches web's NEUTRAL_BAND): any target speed within
-  // ±this of zero snaps to exactly 0, so the freeze point between slow-forward
-  // and reverse is a holdable band rather than a razor-thin angle. Pairs with
-  // the red "paused" speed bubble (tiltPaused).
-  static const double _tiltNeutralBand = 0.5;
+  // Widened paused band: any target speed within ±this of zero snaps to exactly
+  // 0, so the freeze point between slow-forward and reverse is a comfortably
+  // holdable band rather than a razor-thin angle. Pairs with the red "paused"
+  // speed bubble (tiltPaused). Widened from 0.5 → 0.8 (2026-07-16, James) for an
+  // easier hold; tune here if the pause range still feels too small/large.
+  static const double _tiltNeutralBand = 0.8;
 
   // Trail-type filtering: the kennel's config (bundled by GetPositions on the
   // full fetch), the set of lanes currently shown, and the lanes ever seen so
@@ -281,8 +282,9 @@ class RunTrackerMapController extends GetxController
     for (final user in visibleRunners) {
       final interpolated = _interpolatedPosition(user, cutoff);
       if (interpolated == null) continue;
+      // No skip on a missing photo — avatarImageProvider falls back to a bundled
+      // avatar, so photo-less runners still get a marker instead of vanishing.
       final logo = userLogos[user.id];
-      if (logo == null || logo.isEmpty) continue;
       final bool isHighlighted = hasSelection ? user.id == selectedId : false;
       final bool isDimmed = hasSelection && user.id != selectedId;
       final marker = Marker(
@@ -1240,7 +1242,7 @@ class RunTrackerMapController extends GetxController
     }
   }
 
-  Widget _buildRunnerMarker(String logo, {required bool isHighlighted}) {
+  Widget _buildRunnerMarker(String? logo, {required bool isHighlighted}) {
     final double imageSize = isHighlighted ? 43 : 43;
     //final borderRadius = BorderRadius.circular(12);
     final glowColor = hc_blue.withValues(alpha: 0.65);
@@ -1280,7 +1282,10 @@ class RunTrackerMapController extends GetxController
             ),
             child: ClipRRect(
               //borderRadius: borderRadius,
-              child: Image.network(logo, fit: BoxFit.cover),
+              child: Image(
+                image: avatarImageProvider(logo),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ),
