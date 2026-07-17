@@ -531,8 +531,22 @@ class RunTrackerMapController extends GetxController
     );
   }
 
-  String get formattedTimelineLabel =>
-      _formatTimestamp(currentTimestampMs.value);
+  String get formattedTimelineLabel => _formatElapsed();
+
+  /// Elapsed run time from the start of the track to the current playhead, as
+  /// H:MM:SS — hours are shown only when > 0 (e.g. `7:32`, `1:07:32`). Replaces
+  /// the absolute timestamp in the map control panel.
+  String _formatElapsed() {
+    final cur = currentTimestampMs.value;
+    final start = minTimestampMs.value;
+    if (cur == null || start == null) return '0:00';
+    final totalSec = ((cur - start).clamp(0, double.infinity) / 1000).floor();
+    final h = totalSec ~/ 3600;
+    final m = (totalSec % 3600) ~/ 60;
+    final s = totalSec % 60;
+    String two(int n) => n.toString().padLeft(2, '0');
+    return h > 0 ? '$h:${two(m)}:${two(s)}' : '$m:${two(s)}';
+  }
   String get formattedDistanceLabel => _formatDistanceLabel();
 
   @override

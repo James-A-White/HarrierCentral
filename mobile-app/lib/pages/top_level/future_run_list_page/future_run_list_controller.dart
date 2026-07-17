@@ -570,11 +570,18 @@ class FutureRunListPageController extends GetxController {
     debugPrint('[BOOT] refreshFromTable: forceRefresh=$forceRefresh, allRuns=${allRuns?.length ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
     if (forceRefresh || (allRuns == null) || (allRuns!.isEmpty)) {
       debugPrint('[BOOT] refreshFromTable: calling getRunDetailsAggregates: ${DateTime.now().millisecondsSinceEpoch}ms');
-      allRuns = await QueryRuns.getRunDetailsAggregates(
+      final fresh = await QueryRuns.getRunDetailsAggregates(
         true,
         runsTimeScope: runsTimeScope.value,
         runsToDisplay: runsToDisplay.value,
       );
+      // Don't blank a populated cached list over a transient/racy empty read
+      // (e.g. a re-read while the DB is mid-sync). A genuine empty only reaches
+      // here on the very first load (allRuns still null/empty) or after an
+      // explicit pull-to-refresh, which clears allRuns to null first.
+      if (!(fresh.isEmpty && (allRuns?.isNotEmpty ?? false))) {
+        allRuns = fresh;
+      }
       debugPrint('[BOOT] refreshFromTable: getRunDetailsAggregates done: ${DateTime.now().millisecondsSinceEpoch}ms — ${allRuns?.length ?? 0} runs');
       await _loadPastRuns();
       debugPrint('[BOOT] refreshFromTable: calling filterRuns: ${DateTime.now().millisecondsSinceEpoch}ms');
@@ -854,6 +861,13 @@ class FutureRunListPageController extends GetxController {
 
   void _applyDataUpdate(List<RunDetailsAggregate>? newAllRuns) {
     if (newAllRuns == null) return;
+
+    // A background reload (data-change event / background sync) that comes back
+    // empty while we already hold cached runs is a transient/racy DB read (the
+    // DB is mid-sync), NOT a genuine "no runs". Never blank a populated list over
+    // it — that was the cause of the occasional "No runs available" flash. A real
+    // empty state only comes from the first load or an explicit pull-to-refresh.
+    if (newAllRuns.isEmpty && (allRuns?.isNotEmpty ?? false)) return;
 
     final changedIds = <String>{};
     for (final run in newAllRuns) {

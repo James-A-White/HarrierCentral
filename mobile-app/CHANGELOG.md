@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.13.3+1204 (2026-07-17)
+
+### Fixes
+- **"No runs available" no longer flashes**: a background refresh that briefly returned nothing could blank your cached runs list; it now keeps your runs and only shows the empty message when you genuinely have none.
+
+### Improvements
+- **PackTrack map controls**: the timeline scrubber is now a full-width bar along the bottom, the buttons are spread out with more room, and the readout shows elapsed run time (h:mm:ss) instead of the absolute clock time.
+- **Runner avatars** on the map carousel are now rounded squares to match the pins.
+
 ## 2.13.2+1203 (2026-07-16)
 
 ### Fixes

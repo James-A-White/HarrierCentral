@@ -365,14 +365,15 @@ class RunTrackerMap extends StatelessWidget {
             ),
             child: Padding(
               padding: const EdgeInsets.only(
-                left: 12.0,
-                right: 12.0,
+                left: 8.0,
+                right: 8.0,
                 top: 8.0,
-                bottom: 2.0,
+                bottom: 0.0,
               ),
-              // Panel layout mirrors public-web top→bottom: runner carousel,
-              // trail-type chips, selected-runner name, timestamp, distance,
-              // transport row (play · scrubber · speed · tilt · follow).
+              // Panel layout top→bottom: runner carousel, trail-type chips,
+              // selected-runner name, elapsed time + distance, transport buttons
+              // (play · speed · camera · tilt · follow), then a full-width
+              // scrubber on its own row at the very bottom.
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -385,6 +386,7 @@ class RunTrackerMap extends StatelessWidget {
                   _buildSelectedRunnerName(controller),
                   _buildTimestampDistance(controller),
                   _buildTransportRow(controller),
+                  _buildFullWidthSlider(context, controller),
                 ],
               ),
             ),
@@ -447,25 +449,18 @@ class RunTrackerMap extends StatelessWidget {
   }
 
   /// Transport row: play · scrubber · speed bubble · tilt · follow (web order).
+  // Transport buttons row (no scrubber — that's a full-width row below). Spread
+  // evenly so the buttons have room to breathe.
   Widget _buildTransportRow(RunTrackerMapController controller) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _iconBtn(
           icon: controller.isPlaying.value ? Icons.pause : Icons.play_arrow,
           color: Colors.white,
           onPressed: controller.togglePlayback,
         ),
-        Expanded(
-          child: Slider(
-            value: controller.currentTimestampMs.value!,
-            min: controller.minTimestampMs.value!,
-            max: controller.maxTimestampMs.value!,
-            onChanged: controller.seekTo,
-          ),
-        ),
-        const SizedBox(width: 2),
         _buildSpeedBubble(controller),
-        const SizedBox(width: 2),
         // Auto-photo showcase toggle — only when the selected runner has photos.
         if (controller.selectedRunnerHasPhotos)
           _iconBtn(
@@ -497,6 +492,26 @@ class RunTrackerMap extends StatelessWidget {
           onPressed: controller.toggleFollow,
         ),
       ],
+    );
+  }
+
+  /// The scrubber on its own full-width row at the very bottom of the panel.
+  Widget _buildFullWidthSlider(
+    BuildContext context,
+    RunTrackerMapController controller,
+  ) {
+    return SliderTheme(
+      data: SliderTheme.of(context).copyWith(
+        trackHeight: 3,
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+      ),
+      child: Slider(
+        value: controller.currentTimestampMs.value!,
+        min: controller.minTimestampMs.value!,
+        max: controller.maxTimestampMs.value!,
+        onChanged: controller.seekTo,
+      ),
     );
   }
 
@@ -697,15 +712,18 @@ class RunTrackerMap extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                    // Square tile with slightly rounded corners (was a circle).
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: selected ? Colors.white : color,
                       width: selected ? 3 : 2,
                     ),
                   ),
-                  child: ClipOval(
-                    // Resolves http / bundle:// avatars and falls back to a
-                    // bundled default when the runner has no photo.
+                  child: ClipRRect(
+                    // Inner radius a touch smaller than the border so the photo
+                    // clips just inside the frame. Resolves http / bundle://
+                    // avatars and falls back to a bundled default.
+                    borderRadius: BorderRadius.circular(6),
                     child: Image(
                       image: avatarImageProvider(logo),
                       fit: BoxFit.cover,
