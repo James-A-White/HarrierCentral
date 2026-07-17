@@ -85,8 +85,10 @@ BEGIN
 
     -- ----------------------------------------------------------------
     -- Stage 2: Recompute HEM run-count columns using window functions.
-    --          Timezone join ensures future events (in local time) are
-    --          excluded from the running tally.
+    --          The start-time gate counts a run once it starts within 6h (so a
+    --          pre-start check-in tallies in real time) but still excludes runs
+    --          further in the future — guarding against an accidental check-in
+    --          to a distant run inflating counts.
     -- ----------------------------------------------------------------
     ;WITH counted AS (
         SELECT
@@ -121,7 +123,7 @@ BEGIN
           AND  evt.IsCountedRun   = 1
           AND  evt.IsVisible      = 1
           AND  evt.removed        = 0
-          AND  evt.EventStartDateTimeGmt < GETDATE()
+          AND  evt.EventStartDateTimeGmt < DATEADD(HOUR, 6, SYSUTCDATETIME()) -- count a run once it starts within 6h (covers pre-start check-in); still excludes far-future runs. UTC-safe vs the datetimeoffset column.
     )
     UPDATE hem
     SET    hem.TotalRuns              = c.totalRuns,
@@ -245,7 +247,7 @@ BEGIN
           AND  evt.IsCountedRun   = 1
           AND  evt.IsVisible      = 1
           AND  evt.removed        = 0
-          AND  evt.EventStartDateTimeGmt < GETDATE()
+          AND  evt.EventStartDateTimeGmt < DATEADD(HOUR, 6, SYSUTCDATETIME()) -- count a run once it starts within 6h (covers pre-start check-in); still excludes far-future runs. UTC-safe vs the datetimeoffset column.
     ),
     rollingAgg AS (
         SELECT

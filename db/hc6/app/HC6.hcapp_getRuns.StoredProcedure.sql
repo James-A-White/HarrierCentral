@@ -103,7 +103,7 @@ FROM HC.Event e
 INNER JOIN HC.HasherEventMap hem ON hem.EventId = e.id AND hem.UserId = @userId
 WHERE e.KennelId        = @kennelId
   AND COALESCE(hem.AttendenceState, 0) >= 20
-  AND e.EventStartDatetime < GETDATE()
+  AND e.EventStartDateTimeGmt < SYSUTCDATETIME() -- past runs: compare the reliable GMT instant to UTC now (EventStartDatetime has a spurious +00:00 on ~67% of rows)
   AND e.IsVisible      = 1
   AND e.IsCountedRun   = 1
 ORDER BY

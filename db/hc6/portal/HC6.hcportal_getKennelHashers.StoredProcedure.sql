@@ -108,7 +108,7 @@ BEGIN TRY
 		@lastEventDate = evt.EventStartDatetime
 	FROM HC.Event evt
 	WHERE evt.KennelId = @kennelId AND evt.IsCountedRun = 1
-	AND evt.EventStartDatetime < @now
+	AND evt.EventStartDateTimeGmt < SYSUTCDATETIME() -- reliable GMT instant vs UTC now (EventStartDatetime has a spurious +00:00 on ~67% of rows)
 	ORDER BY evt.EventStartDatetime DESC
 
 	SELECT TOP 1
@@ -118,7 +118,7 @@ BEGIN TRY
 	FROM HC.Event evt
 	WHERE evt.KennelId = @kennelId AND evt.IsCountedRun = 1
 	AND evt.id != @lastEventId
-	AND evt.EventStartDatetime < @now
+	AND evt.EventStartDateTimeGmt < SYSUTCDATETIME() -- reliable GMT instant vs UTC now (EventStartDatetime has a spurious +00:00 on ~67% of rows)
 	ORDER BY evt.EventStartDatetime DESC
 
 	SELECT TOP 1

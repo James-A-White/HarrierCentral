@@ -342,6 +342,15 @@ IF (@recalculateRunNumbers = 1)
 SELECT @attendenceState = hem.AttendenceState
 FROM HC.HasherEventMap hem WHERE hem.UserId = @hasherId AND hem.EventId = @eventId;
 
+-- Final per-event run/haring counts to return. The recompute now counts a
+-- check-in whose run starts within 6 hours (or has started), so this reflects
+-- today's run in real time rather than waiting for the overnight batch.
+DECLARE @totalRunsThisKennel   INT;
+DECLARE @totalHaringThisKennel INT;
+SELECT @totalRunsThisKennel   = hem.TotalRunsThisKennel,
+       @totalHaringThisKennel = hem.TotalHaringThisKennel
+FROM HC.HasherEventMap hem WHERE hem.id = @hemId;
+
 DECLARE @isMember    SMALLINT;
 DECLARE @eventPrice  SMALLMONEY;
 
@@ -385,11 +394,13 @@ END
 IF (@qrScanText IS NULL)
 BEGIN
     SELECT
-        1                AS adHocDataId,
-        @serverMessage   AS serverMessage,
-        @hemId           AS hasherEventMapId,
-        @hasherId        AS hasherId,
-        @attendenceState AS attendenceState;
+        1                      AS adHocDataId,
+        @serverMessage         AS serverMessage,
+        @hemId                 AS hasherEventMapId,
+        @hasherId              AS hasherId,
+        @attendenceState       AS attendenceState,
+        @totalRunsThisKennel   AS totalRunsThisKennel,
+        @totalHaringThisKennel AS totalHaringThisKennel;
 END
 ELSE
 BEGIN
@@ -404,6 +415,8 @@ BEGIN
         COALESCE(hem.EventEmailAlertPreference,   hkm.KennelEmailAlertPreference)   AS emailAlertPreference,
         COALESCE(hkm.CurrentHaringCount, -1)                            AS currentHaringCount,
         COALESCE(hkm.CurrentPackRunCount, -1)                           AS currentPackRunCount,
+        @totalRunsThisKennel                                            AS totalRunsThisKennel,
+        @totalHaringThisKennel                                          AS totalHaringThisKennel,
         COALESCE(hem.RsvpState, -1)                                     AS rsvpState,
         COALESCE(hem.IsHare, 0)                                         AS willHareState,
         COALESCE(evt.Hares, '')                                         AS hares,

@@ -116,7 +116,9 @@
         { "name": "serverMessage", "type": "NVARCHAR(500)", "nullable": false, "description": "Human-readable attendance confirmation. Varies by attendenceState (on trail, On Inn, not at run) and whether the hasher is the caller." },
         { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The HEM record id (HC.HasherEventMap.id) after the write." },
         { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The resolved hasher's id (HC.Hasher.id)." },
-        { "name": "attendenceState", "type": "SMALLINT", "nullable": true, "description": "Re-read attendance state after the update (HC.HasherEventMap.AttendenceState)." }
+        { "name": "attendenceState", "type": "SMALLINT", "nullable": true, "description": "Re-read attendance state after the update (HC.HasherEventMap.AttendenceState)." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": true, "description": "The hasher's per-event run count for this kennel INCLUDING this run once the recompute has counted it (runs starting within 6h count in real time). NULL until then, or when not a counted attendance." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": true, "description": "The hasher's per-event haring count for this kennel including this run when they hared it. Same real-time (6h window) mechanism as totalRunsThisKennel." }
       ]
     },
     {
@@ -133,7 +135,9 @@
         { "name": "notificationPreference", "type": "SMALLINT", "nullable": true, "description": "COALESCE(HasherEventMap.EventNotificationPreference, HasherKennelMap.KennelNotificationPreference). NULL if both are NULL." },
         { "name": "emailAlertPreference", "type": "SMALLINT", "nullable": true, "description": "COALESCE(HasherEventMap.EventEmailAlertPreference, HasherKennelMap.KennelEmailAlertPreference). NULL if both are NULL." },
         { "name": "currentHaringCount", "type": "INT", "nullable": false, "description": "HasherKennelMap.CurrentHaringCount. COALESCE to -1 if no HasherKennelMap row." },
-        { "name": "currentPackRunCount", "type": "INT", "nullable": false, "description": "HasherKennelMap.CurrentPackRunCount. COALESCE to -1 if no HasherKennelMap row." },
+        { "name": "currentPackRunCount", "type": "INT", "nullable": false, "description": "HasherKennelMap.CurrentPackRunCount. COALESCE to -1 if no HasherKennelMap row. NOTE: always zeroed by the recompute — not the display total; use totalRunsThisKennel instead." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": true, "description": "The scanned hasher's per-event run count for this kennel INCLUDING this run once counted (runs starting within 6h count in real time). Use this to show 'run #N' on scan." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": true, "description": "The scanned hasher's per-event haring count for this kennel including this run when they hared it." },
         { "name": "rsvpState", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.RsvpState. COALESCE to -1 if no HEM row exists for the hasher at this event." },
         { "name": "willHareState", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.IsHare. COALESCE to 0 if no HEM row." },
         { "name": "hares", "type": "NVARCHAR(2500)", "nullable": false, "description": "HC.Event.Hares — comma-separated string of hare display names as of the current write. COALESCE to '' if NULL." },
@@ -152,7 +156,7 @@
     "UPDATE HC.HasherEventMap SET AttendenceState (and optionally RsvpState=3, IsHare) WHERE id=@hemId — when @hemId is not null",
     "INSERT HC.HasherEventMap — when no existing HEM row is found for the hasher+event combination",
     "UPDATE HC.Event SET Hares, updatedAt — when @isHare IS NOT NULL, recomputes STRING_AGG of hare display names",
-    "EXEC HC.nonApi_updateRunCountsByUser @userId=@hasherId — when attendance crosses the 20 threshold (added or removed from run). Runs AFTER the transaction commit.",
+    "EXEC HC.nonApi_updateRunCountsByUser @userId=@hasherId — when attendance crosses the 20 threshold (added or removed from run). The recompute now counts a run once it starts within 6 hours (or has started), so a pre-start check-in updates the run/haring counts in real time instead of waiting for the overnight batch. Runs AFTER the transaction commit.",
     "INSERT HC.ErrorLog — on validation error, auth error, or unhandled exception",
     "EXEC HC6.hcapp_syncEventAdminData — when @returnUserRecords=0 (default)",
     "EXEC HC6.hcapp_syncUserData — when @returnUserRecords=1"

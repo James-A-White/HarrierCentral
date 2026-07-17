@@ -141,7 +141,7 @@ BEGIN TRY
 			INNER JOIN HC.Kennel ken ON ken.CityId = c.id
 			INNER JOIN HC.Event evt ON evt.KennelId = ken.id
 		WHERE c.CityName = @kennelUniqueShortName OR r.RegionName = @kennelUniqueShortName OR n.CountryName = @kennelUniqueShortName
-			AND evt.EventStartDatetime > DATEADD(DAY, -30, GETDATE())
+			AND evt.EventStartDateTimeGmt > DATEADD(DAY, -30, SYSUTCDATETIME()) -- reliable GMT instant vs UTC now (EventStartDatetime has a spurious +00:00 on ~67% of rows)
 		GROUP BY
 			CASE WHEN c.CityName = @kennelUniqueShortName THEN c.id ELSE NULL END,
 			CASE WHEN r.RegionName = @kennelUniqueShortName THEN r.id ELSE NULL END,

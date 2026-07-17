@@ -133,7 +133,7 @@ BEGIN
           AND  evt.IsCountedRun       = 1
           AND  evt.IsVisible          = 1
           AND  evt.removed            = 0
-          AND  evt.EventStartDateTimeGmt < GETDATE()
+          AND  evt.EventStartDateTimeGmt < DATEADD(HOUR, 6, SYSUTCDATETIME()) -- count a run once it starts within 6h (covers pre-start check-in); still excludes far-future runs. UTC-safe vs the datetimeoffset column.
     )
     UPDATE hem
     SET    hem.TotalRuns              = c.totalRuns,
@@ -257,7 +257,7 @@ BEGIN
           AND  evt.IsCountedRun       = 1
           AND  evt.IsVisible          = 1
           AND  evt.removed            = 0
-          AND  evt.EventStartDateTimeGmt < GETDATE()
+          AND  evt.EventStartDateTimeGmt < DATEADD(HOUR, 6, SYSUTCDATETIME()) -- count a run once it starts within 6h (covers pre-start check-in); still excludes far-future runs. UTC-safe vs the datetimeoffset column.
     ),
     rollingAgg AS (
         SELECT
