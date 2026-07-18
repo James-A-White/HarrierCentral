@@ -1319,10 +1319,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         builder: (BuildContext context) => ZoomableImagePage2(
           key: const Key('39392001'),
           pageTitle: dispName,
-          imageUrl: photo.startsWith('http') ? photo : null,
-          assetImage: photo.contains('bundle://')
-              ? 'images/avatars/${photo.replaceAll('bundle://', '')}.jpg'
-              : null,
+          imageUrl: blobUrlForPhoto(photo),
           appBarBackgroundColor: themeAppBarBackground,
           background: Backgrounds.defaultHcBackground(),
           margin: 20.0,
@@ -1334,30 +1331,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Stack _hasherPhoto(PackListAggregate e, bool isGrid) {
     return Stack(
       children: <Widget>[
-        (e.hem.hemKennelUserPhoto ?? e.hasher.photo!).startsWith('http')
-            ? CachedNetworkImage(
-                imageUrl: (e.hem.hemKennelUserPhoto ?? e.hasher.photo!),
-                fadeInDuration: const Duration(milliseconds: 0),
-                width: 300.0,
-                height: 300.0,
-                fit: BoxFit.fill,
-              )
-            : (e.hem.hemKennelUserPhoto ?? e.hasher.photo!).startsWith('bundle')
-            ? Image(
-                width: 300.0,
-                height: 300.0,
-                fit: BoxFit.fill,
-                image: AssetImage(
-                  ('images/avatars/${(e.hem.hemKennelUserPhoto ?? e.hasher.photo!).toLowerCase().replaceFirst('bundle://', '')}.jpg')
-                      .toLowerCase(),
-                ),
-              )
-            : const Image(
-                width: 300.0,
-                height: 300.0,
-                fit: BoxFit.fill,
-                image: AssetImage('images/avatars/avatar-2.jpg'),
-              ),
+        Image(
+          width: 300.0,
+          height: 300.0,
+          fit: BoxFit.fill,
+          image: avatarImageProvider(
+            e.hem.hemKennelUserPhoto ?? e.hasher.photo,
+          ),
+        ),
         if (isGrid) ...<Widget>[
           Positioned(right: 1.0, bottom: 1.0, child: _rsvpIcon(e)),
         ],

@@ -450,20 +450,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   Widget getProfilePhoto(String url) {
     return (url.isEmpty)
         ? Image.asset('images/icons/create_profile_photo.png')
-        : url.contains('bundle://')
-        ? Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              Image.asset(
-                ('images/avatars/${url.replaceAll('bundle://', '')}.jpg')
-                    .toLowerCase(),
-              ),
-            ],
-          )
-        : CachedNetworkImage(
-            imageUrl: url,
-            fadeInDuration: const Duration(milliseconds: 0),
-          );
+        : Image(image: avatarImageProvider(url));
   }
 
   Future<void> _handleRadioValueChange(

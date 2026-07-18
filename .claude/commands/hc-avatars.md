@@ -75,12 +75,22 @@ inconsistency — the `.png` specials aren't used as ordinary `photo` values.
 
 ---
 
-## Legacy: inline resolvers to migrate
+## Legacy: inline resolvers — MIGRATED (2026-07-18)
 
-The same http/bundle/default branch is duplicated inline in many places (each a
-latent `bundle://` trap if copied wrong). When you touch one, prefer switching it
-to `avatarImageProvider`. Known sites include:
-`util/utilities_null_safe.dart`, `widgets/kennel_member_list_item.dart`,
-`pages/run_admin/find_hasher_page.dart`, `pages/run_admin/down_downs_page.dart`,
+The old inline http/bundle/default branch (a latent `bundle://` trap if copied
+wrong) has been removed from every known hasher-avatar site. All now route
+through `avatarImageProvider` (rendering) / `blobUrlForPhoto` (zoom-page URL),
+so `bundle://` values are translated to their blob http URL instead of a bundled
+asset. Migrated: `util/utilities_null_safe.dart` (`getProfilePic`),
+`widgets/kennel_member_list_item.dart`, `pages/run_admin/find_hasher_page.dart`,
+`pages/run_admin/down_downs_page.dart`,
 `pages/run_admin/check_in_pack_page/check_in_pack_page.dart`,
-`pages/init/choose_profile_image.dart`. (Not yet refactored — do it opportunistically.)
+`pages/init/choose_profile_image.dart` (`getProfilePhoto`),
+`widgets/profile_photo.dart`, `widgets/run_tabs.dart` (`_hasherPhoto` +
+`_getHasherZoomablePhoto`).
+
+**Rule for new code:** never hand-roll the http/bundle/default branch again —
+always use `avatarImageProvider(photo)` for an `ImageProvider`, or
+`blobUrlForPhoto(photo)` when you need the raw http URL (e.g. `ZoomableImagePage2`).
+`kennel_logo.dart` is NOT an avatar resolver — kennel logos are a separate
+`.png` scheme and are intentionally untouched.

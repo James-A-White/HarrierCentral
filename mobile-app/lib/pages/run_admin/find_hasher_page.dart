@@ -319,73 +319,12 @@ class HasherListView extends StatelessWidget {
         child: Stack(
           children: <Widget>[
             if (hasherList[index].photo != null) ...<Widget>[
-              hasherList[index].photo!.startsWith('http')
-                  ? CachedNetworkImage(
-                      imageUrl: hasherList[index].photo!,
-                      placeholder: (BuildContext context, String url) =>
-                          const SizedBox(
-                            height: 70.0,
-                            width: 70.0,
-                            child: Center(
-                              child: SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: HcAppCircularProgressIndicator(
-                                  key: Key('1393262'),
-                                ),
-                              ),
-                            ),
-                          ),
-                      errorWidget:
-                          (BuildContext context, String url, dynamic error) {
-                            return Container(
-                              height: 70.0,
-                              width: 70.0,
-                              color: Colors.white,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Text(
-                                    'No Image',
-                                    style: ts_mediumRed.copyWith(
-                                      fontSize: 13,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  const Icon(Icons.error, color: Colors.grey),
-                                  Text(
-                                    'Available',
-                                    style: ts_mediumRed.copyWith(
-                                      fontSize: 13,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                      //fadeOutDuration:  Duration(seconds: 1),
-                      fadeInDuration: const Duration(milliseconds: 0),
-                      width: 70.0,
-                      height: 70.0,
-                      fit: BoxFit.fill,
-                    )
-                  : hasherList[index].photo!.startsWith('bundle')
-                  ? Image(
-                      width: 70.0,
-                      height: 70.0,
-                      fit: BoxFit.fill,
-                      image: AssetImage(
-                        ('images/avatars/${hasherList[index].photo!.toLowerCase().replaceFirst('bundle://', '')}.jpg')
-                            .toLowerCase(),
-                      ),
-                    )
-                  : const Image(
-                      width: 70.0,
-                      height: 70.0,
-                      fit: BoxFit.fill,
-                      image: AssetImage('images/avatars/avatar-2.jpg'),
-                    ),
+              Image(
+                width: 70.0,
+                height: 70.0,
+                fit: BoxFit.fill,
+                image: avatarImageProvider(hasherList[index].photo),
+              ),
             ],
 
             Positioned(

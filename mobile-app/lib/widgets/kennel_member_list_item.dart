@@ -91,13 +91,7 @@ class KennelMemberListItem extends StatelessWidget {
                             builder: (BuildContext context) => ZoomableImagePage2(
                               key: const Key('36601939'),
                               pageTitle: kennelMember.dispName,
-                              imageUrl: (kennelMember.photo!.startsWith('http'))
-                                  ? kennelMember.photo
-                                  : null,
-                              assetImage:
-                                  kennelMember.photo!.contains('bundle://')
-                                  ? 'images/avatars/${kennelMember.photo!.replaceAll('bundle://', '')}.jpg'
-                                  : null,
+                              imageUrl: blobUrlForPhoto(kennelMember.photo),
                               appBarBackgroundColor: themeAppBarBackground,
                               background: Backgrounds.defaultHcBackground(),
                               margin: 20.0,
@@ -105,46 +99,12 @@ class KennelMemberListItem extends StatelessWidget {
                           ),
                         );
                       },
-                      child: kennelMember.photo!.startsWith('http')
-                          ? CachedNetworkImage(
-                              imageUrl: kennelMember.photo!,
-                              //placeholder: HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
-                              //errorWidget: const  Icon(Icons.error),
-                              // placeholder: (BuildContext context,String url) => HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
-
-                              // TODO(James): Replace avatar icon with missing image icon
-                              errorWidget:
-                                  (
-                                    BuildContext context,
-                                    String url,
-                                    dynamic error,
-                                  ) => Image.asset(
-                                    'images/avatars/avatar-2.jpg',
-                                    height: 80,
-                                    width: 80,
-                                    fit: BoxFit.fill,
-                                  ),
-                              fadeInDuration: const Duration(milliseconds: 0),
-                              width: PROFILE_PIC_SIZE,
-                              height: PROFILE_PIC_SIZE,
-                              fit: BoxFit.fill,
-                            )
-                          : kennelMember.photo!.startsWith('bundle')
-                          ? Image(
-                              width: PROFILE_PIC_SIZE,
-                              height: PROFILE_PIC_SIZE,
-                              fit: BoxFit.fill,
-                              image: AssetImage(
-                                ('images/avatars/${kennelMember.photo!.toLowerCase().replaceFirst('bundle://', '')}.jpg')
-                                    .toLowerCase(),
-                              ),
-                            )
-                          : const Image(
-                              width: PROFILE_PIC_SIZE,
-                              height: PROFILE_PIC_SIZE,
-                              fit: BoxFit.fill,
-                              image: AssetImage('images/avatars/avatar-2.jpg'),
-                            ),
+                      child: Image(
+                        width: PROFILE_PIC_SIZE,
+                        height: PROFILE_PIC_SIZE,
+                        fit: BoxFit.fill,
+                        image: avatarImageProvider(kennelMember.photo),
+                      ),
                     ),
             ),
             Container(

@@ -593,10 +593,7 @@ class Utilities {
             builder: (BuildContext context) => ZoomableImagePage2(
               key: const Key('511203069'),
               pageTitle: pageTitle,
-              imageUrl: image.startsWith('http') ? image : null,
-              assetImage: image.contains('bundle://')
-                  ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg'
-                  : null,
+              imageUrl: blobUrlForPhoto(image),
               appBarBackgroundColor: themeAppBarBackground,
               background: Backgrounds.defaultHcBackground(),
               margin: 20.0,
@@ -604,44 +601,12 @@ class Utilities {
           ),
         );
       },
-      child: image.startsWith('http')
-          ? CachedNetworkImage(
-              imageUrl: image,
-              placeholder: (BuildContext context, String url) => SizedBox(
-                height: height,
-                width: width,
-                child: const Center(
-                  child: SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: HcAppCircularProgressIndicator(key: Key('1396562')),
-                  ),
-                ),
-              ),
-              errorWidget: (BuildContext context, String url, dynamic error) =>
-                  Icon(Icons.error, size: height, color: hc_red),
-              //fadeOutDuration:  Duration(seconds: 1),
-              fadeInDuration: const Duration(milliseconds: 0),
-              width: width,
-              height: height,
-              fit: BoxFit.fill,
-            )
-          : image.startsWith('bundle')
-          ? Image(
-              width: width,
-              height: height,
-              fit: BoxFit.fill,
-              image: AssetImage(
-                ('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg')
-                    .toLowerCase(),
-              ),
-            )
-          : Image(
-              width: width,
-              height: height,
-              fit: BoxFit.fill,
-              image: const AssetImage('images/avatars/avatar-2.jpg'),
-            ),
+      child: Image(
+        width: width,
+        height: height,
+        fit: BoxFit.fill,
+        image: avatarImageProvider(image),
+      ),
     );
   }
 

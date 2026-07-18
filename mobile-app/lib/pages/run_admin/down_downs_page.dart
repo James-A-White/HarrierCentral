@@ -346,11 +346,6 @@ class _DownDownTile extends StatelessWidget {
   final VoidCallback onEditTap;
   final VoidCallback? onShareTap;
 
-  ImageProvider _photoProvider(String photo) {
-    if (photo.startsWith('https://')) return NetworkImage(photo);
-    return AssetImage('images/avatars/${photo.replaceAll('bundle://', '')}.jpg');
-  }
-
   @override
   Widget build(BuildContext context) {
     final photo = dd.createdByPhoto;
@@ -368,7 +363,7 @@ class _DownDownTile extends StatelessWidget {
               height: 57,
               color: Colors.white24,
               child: (photo != null && photo.isNotEmpty)
-                  ? Image(image: _photoProvider(photo), fit: BoxFit.cover)
+                  ? Image(image: avatarImageProvider(photo), fit: BoxFit.cover)
                   : const Icon(Icons.person, color: Colors.white54, size: 32),
             ),
           ),

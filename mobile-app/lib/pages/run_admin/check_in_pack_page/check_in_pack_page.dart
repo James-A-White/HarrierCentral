@@ -817,12 +817,7 @@ class CheckInPackPage extends StatelessWidget {
                     color: Colors.grey.shade200,
                     image: DecorationImage(
                       fit: BoxFit.cover,
-                      image: hasher.photo.startsWith('https://')
-                          ? NetworkImage(hasher.photo)
-                          : AssetImage(
-                                  'images/avatars/${hasher.photo.replaceAll('bundle://', '')}.jpg',
-                                )
-                                as ImageProvider,
+                      image: avatarImageProvider(hasher.photo),
                     ),
                   ),
                 ),

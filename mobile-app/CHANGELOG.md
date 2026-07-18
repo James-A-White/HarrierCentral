@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.13.8+1209 (2026-07-18)
+
+### Improvements
+- **Consistent avatars everywhere**: the last screens still drawing the built-in
+  avatars from the app bundle (find-a-hasher, check-in pack, down-downs, member
+  lists, the pack list) now use the same web-served avatars as the rest of the
+  app — so avatars render consistently and keep working as the app moves off
+  bundled images.
+
 ## 2.13.7+1208 (2026-07-18)
 
 ### Improvements
