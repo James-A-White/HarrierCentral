@@ -189,9 +189,9 @@ class FutureRunsListPage extends StatelessWidget {
                         onPressed: () {
                           controller.searchController.text = '';
                           controller.searchRunsText.value = '';
-                          //setStateIfMounted(() {
+                          // filterRuns re-anchors to the past/future boundary
+                          // when the search clears (see filterRuns).
                           controller.filterRuns(true);
-                          //});
                         },
                       ),
                     ),
@@ -233,7 +233,7 @@ class FutureRunsListPage extends StatelessWidget {
                     const SizedBox(width: 6),
                     _filterChip(
                       state: controller.filterEvents,
-                      icon: MaterialCommunityIcons.star,
+                      icon: MaterialCommunityIcons.party_popper,
                     ),
                     const SizedBox(width: 6),
                     // Middle: description text; tap for filter help (self-
@@ -891,25 +891,36 @@ class FutureRunsListPage extends StatelessWidget {
   }
 
   Widget _showResetChatCountsButton() {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-      ),
-      onPressed: () async {
-        if (Get.isRegistered<NotificationService>()) {
-          final notificationController = Get.find<NotificationService>();
-          await notificationController.resetAllEventChatCounts();
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 0),
-        child: Icon(
-          Ionicons.checkmark_done_sharp,
-          color: Colors.white,
-          size: 30.0,
+    return Obx(() {
+      final bool busy = controller.chatResetInProgress.value;
+      return ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+          // Flash green while the mark-all-read is in flight so the tap has a
+          // clear, immediate acknowledgement (null keeps the theme default red).
+          backgroundColor: busy ? Colors.green.shade600 : null,
         ),
-      ),
-    );
+        // Disabled while busy — prevents a double-tap firing a second reset.
+        onPressed: busy ? null : controller.markAllChatsRead,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 0),
+          child: busy
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Icon(
+                  Ionicons.checkmark_done_sharp,
+                  color: Colors.white,
+                  size: 30.0,
+                ),
+        ),
+      );
+    });
   }
 
   /// Uniform pill shared by every filter button (chips + date filter) so they
@@ -1002,7 +1013,7 @@ class FutureRunsListPage extends StatelessWidget {
       'Filtering runs',
       'Tap the buttons to narrow the list — they stack, so you can combine them:\n\n'
           '• My — only your runs (upcoming ones you\'ve RSVP\'d to, plus past ones you attended).\n'
-          '• ★ Events — only special events.\n'
+          '• 🎉 Events — only special events.\n'
           '• Map — only runs within the area shown on the Explore map.\n\n'
           'The heading shows what\'s currently selected.',
       'OK',

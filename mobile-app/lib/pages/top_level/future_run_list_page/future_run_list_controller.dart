@@ -192,6 +192,26 @@ class FutureRunListPageController extends GetxController {
     });
   }
 
+  /// True while a "mark all chats read" round-trip is in flight. Drives the
+  /// reset button's spinner + colour flash so the tap is visibly acknowledged.
+  final RxBool chatResetInProgress = false.obs;
+
+  /// Marks every unseen chat as read (server reset + local badge clear). Guards
+  /// against re-entrant taps, and holds the busy state for a short minimum so
+  /// even a fast round-trip still registers as a deliberate press to the user.
+  Future<void> markAllChatsRead() async {
+    if (chatResetInProgress.value) return;
+    chatResetInProgress.value = true;
+    try {
+      if (Get.isRegistered<NotificationService>()) {
+        await Get.find<NotificationService>().resetAllEventChatCounts();
+      }
+    } finally {
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      chatResetInProgress.value = false;
+    }
+  }
+
   /// Whether the topmost visible row is in the attended-past section (above the
   /// divider). Drives the page title — "Past Runs" while scrolled into history,
   /// "Future Runs" otherwise. Maintained by [_updateViewingSection]; only
@@ -782,6 +802,14 @@ class FutureRunListPageController extends GetxController {
       pastRuns.value = past;
     } else if (pastRuns.isNotEmpty) {
       pastRuns.clear();
+    }
+
+    // When a search is cleared (via the X button or by backspacing the field
+    // empty), the list re-expands to the full set. Snap back to the past/future
+    // boundary so the user lands at "now" instead of being stranded deep in
+    // past runs at whatever scroll offset the filtered list left behind.
+    if (searchTextChanged && searchRunsText.value.trim().isEmpty) {
+      scrollToInitialAnchor();
     }
 
     debugPrint('[BOOT] filterRuns: update(runList) start: ${DateTime.now().millisecondsSinceEpoch}ms');

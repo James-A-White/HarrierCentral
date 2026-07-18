@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.13.4+1205 (2026-07-18)
+
+### Fixes
+- **Clearing a run search returns you to "now"**: hitting the search X (or deleting the text) used to leave you stranded deep in past runs; the list now jumps back to the boundary between past and upcoming runs.
+- **Chat badge clears when you read a chat**: the unread chat count on the top chat bubble (and the Unseen Chats list) now updates the instant you open a chat, instead of sometimes staying stuck on an old count.
+- **"Clear all chats" no longer errors**: marking every chat read could fail with a connection error when you had kennel-level chat threads; it now clears cleanly.
+
+### Improvements
+- **Mark-all-read feedback**: the "clear all chats" button now flashes and shows a spinner while it works, so the tap is clearly acknowledged.
+- **Events filter icon**: the Events filter chip now uses a party-popper 🎉 instead of a star, to better signal "special events."
+
 ## 2.13.3+1204 (2026-07-17)
 
 ### Fixes

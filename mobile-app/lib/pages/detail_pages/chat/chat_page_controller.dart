@@ -77,6 +77,16 @@ class ChatPageController extends GetxController {
 
     unawaited(_markEventChatRead());
 
+    // Opening the chat IS reading it — clear this thread's unread badge locally
+    // and immediately (top chat-bubble count + Unseen Chats list). This is
+    // race-free where a post-close server refetch is not: markEventChatRead is
+    // fired-and-forgotten above, so a refetch can beat its write and read back
+    // the stale count. The SP remains the durable server-side backstop.
+    if (Get.isRegistered<NotificationService>()) {
+      Get.find<NotificationService>()
+          .clearUnreadForThread(publicEventId, isKennelThread: isKennelThread);
+    }
+
     _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final incomingEventId = message.data['EventId'] as String?;
       BootLogger.logError('[ChatPage FCM] received', 'incomingEventId=$incomingEventId localEventId=$eventId data=${message.data}', null);

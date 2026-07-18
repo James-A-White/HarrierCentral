@@ -82,17 +82,55 @@ END
 IF (@publicEventId = '00000000-0000-0000-0000-000000000000') SET @publicEventId = NULL;
 
 -- ---------------------------------------------------------------
--- Mode 1: reset all badge counts
+-- Mode 1: reset all badge counts (event AND kennel threads)
 -- ---------------------------------------------------------------
 IF (@resetAllBadgeCounts != 0)
 BEGIN
+    -- Advance every EXISTING badge row to the current max sequence for its
+    -- thread. Event rows key on EventId; kennel-thread rows have EventId IS NULL
+    -- and key on KennelId, so the max must be resolved from the matching scope.
+    -- COALESCE(..., embc.LastSequenceCount) guards the NOT NULL column against
+    -- threads with no (remaining) messages — a bare subquery returns NULL there
+    -- and previously threw a constraint violation for kennel-thread rows.
     UPDATE embc SET
-        embc.LastSequenceCount = (
-            SELECT MAX(em.MessageSequenceCount)
-            FROM HC.EventMessage em WHERE em.EventId = embc.EventId
-        )
+        embc.LastSequenceCount = COALESCE(
+            CASE
+                WHEN embc.EventId IS NOT NULL THEN
+                    (SELECT MAX(em.MessageSequenceCount)
+                     FROM HC.EventMessage em
+                     WHERE em.EventId = embc.EventId AND em.Removed = 0)
+                ELSE
+                    (SELECT MAX(em.MessageSequenceCount)
+                     FROM HC.EventMessage em
+                     WHERE em.KennelId = embc.KennelId
+                       AND em.EventId IS NULL AND em.Removed = 0)
+            END,
+            embc.LastSequenceCount)
     FROM HC.EventMessageBadgeCounts embc
     WHERE embc.UserId = @userId;
+
+    -- Kennel threads surface as unread with NO badge row (Mode 3 LEFT JOINs
+    -- them in), so the UPDATE above can't clear them. Create a caught-up row for
+    -- every followed kennel thread that has unseen messages but no row yet, so
+    -- "clear all" actually sticks across the next server fetch.
+    INSERT HC.EventMessageBadgeCounts (UserId, KennelId, LastSequenceCount, LastReadAt)
+    SELECT @userId, t.KennelId, t.MaxSeq, GETUTCDATE()
+    FROM (
+        SELECT em.KennelId, MAX(em.MessageSequenceCount) AS MaxSeq
+        FROM HC.EventMessage em
+        WHERE em.KennelId IS NOT NULL AND em.EventId IS NULL AND em.Removed = 0
+        GROUP BY em.KennelId
+    ) AS t
+    -- EXISTS (not JOIN) so a duplicate HasherKennelMap row can't fan out into
+    -- duplicate badge inserts for the same kennel.
+    WHERE EXISTS (
+        SELECT 1 FROM HC.HasherKennelMap hkm
+        WHERE hkm.KennelId = t.KennelId AND hkm.UserId = @userId)
+      AND NOT EXISTS (
+        SELECT 1 FROM HC.EventMessageBadgeCounts embc
+        WHERE embc.UserId = @userId
+          AND embc.KennelId = t.KennelId
+          AND embc.EventId IS NULL);
 
     SELECT 0 AS BadgeCount, '00000000-0000-0000-0000-000000000000' AS PublicEventId;
     RETURN;

@@ -515,6 +515,52 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
   }
 
+  /// Optimistically clears the unread badge for a single chat thread the instant
+  /// the user opens it, without waiting for the next server badge fetch. Zeroes
+  /// the thread's entry in [unreadEventCounts] (which recomputes
+  /// [globalTotalBadgeCount] — the top chat-bubble badge) and drops its row from
+  /// [unreadChatRuns] (the Unseen Chats list), so both update immediately.
+  ///
+  /// [threadId] is the publicEventId for an event thread, or the publicKennelId
+  /// for a kennel thread (ChatPageController carries the kennel's public id in
+  /// its publicEventId field). Matching is UUID-normalised because the
+  /// server-sourced keys arrive uppercase while callers may pass a lowercased id.
+  ///
+  /// This is the local counterpart to the server-side markEventChatRead write —
+  /// it makes the UI correct instantly; the SP is the durable backstop.
+  void clearUnreadForThread(String threadId, {bool isKennelThread = false}) {
+    if (threadId.isEmpty) return;
+    final String id = threadId.asUuid;
+
+    var changed = false;
+
+    // Zero the per-thread count (case-insensitive key match), then recompute the
+    // global badge from the remaining unread threads.
+    for (final key in unreadEventCounts.keys) {
+      if (key.asUuid == id) {
+        if (unreadEventCounts[key]!.value != 0) {
+          unreadEventCounts[key]!.value = 0;
+          changed = true;
+        }
+        break;
+      }
+    }
+    if (changed) _recalculateGlobalBadgeCount();
+
+    // Drop the matching row from the Unseen Chats list.
+    final int before = unreadChatRuns.length;
+    unreadChatRuns.removeWhere(
+      (s) => isKennelThread
+          ? (s.isKennelThread && (s.publicKennelId ?? '').asUuid == id)
+          : (s.publicEventId.asUuid == id),
+    );
+    if (unreadChatRuns.length != before) changed = true;
+
+    if (changed && Get.isRegistered<FutureRunListPageController>()) {
+      Get.find<FutureRunListPageController>().refreshRunListUi();
+    }
+  }
+
   Future<int> _getAndResetBadgeCount({
     String? publicEventId,
     bool? resetBadgeCount,
