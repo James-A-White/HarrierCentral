@@ -1,5 +1,7 @@
 import 'package:harrier_central/imports.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:latlong2/latlong.dart' as latlng;
+import 'package:intl/intl.dart';
 
 class MapPhotoItem {
   const MapPhotoItem({
@@ -7,6 +9,9 @@ class MapPhotoItem {
     required this.caption,
     this.uploaderName = '',
     this.uploaderPhotoUrl = '',
+    this.capturedAt,
+    this.latitude,
+    this.longitude,
     this.photoId,
     this.originalBlobUrl,
     this.kennelId,
@@ -17,6 +22,14 @@ class MapPhotoItem {
   final String caption;
   final String uploaderName;
   final String uploaderPhotoUrl;
+
+  /// When the photo was taken, in UTC (rendered as local time). Null if unknown.
+  final DateTime? capturedAt;
+
+  /// Where the photo was taken. Both null when there was no location fix — the
+  /// "View on map" button is hidden in that case.
+  final double? latitude;
+  final double? longitude;
 
   // Edit support — populated only for own photos when the caller knows the user
   // can edit (Hash Flash / GM / VGM / RA role). Null for others' photos and
@@ -35,6 +48,9 @@ class MapPhotoItem {
         caption: caption,
         uploaderName: uploaderName,
         uploaderPhotoUrl: uploaderPhotoUrl,
+        capturedAt: capturedAt,
+        latitude: latitude,
+        longitude: longitude,
         photoId: photoId,
         originalBlobUrl: originalBlobUrl,
         kennelId: kennelId,
@@ -50,12 +66,18 @@ class MapPhotoPage extends StatefulWidget {
     required this.photos,
     required this.initialIndex,
     required this.background,
+    this.run,
   });
 
   final String pageTitle;
   final List<MapPhotoItem> photos;
   final int initialIndex;
   final BoxDecoration background;
+
+  /// The run these photos belong to. When provided, a "View on map" button in
+  /// the info footer opens the PackTrack map centered on where the photo was
+  /// taken. Null (e.g. guest gallery, or opened from the map itself) hides it.
+  final RunDetailsAggregate? run;
 
   @override
   State<MapPhotoPage> createState() => _MapPhotoPageState();
@@ -91,7 +113,24 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
   // Stop expanding this many px below the bottom of the screen once all text fits.
   static const double _expansionBuffer = 40.0;
 
+  // Height of the always-on info footer (photographer, n-of-m, time, map
+  // button), excluding the bottom safe-area inset. The caption panel reserves
+  // this much extra space at its bottom so long captions clear the footer.
+  static const double _footerHeight = 68.0;
+
   MapPhotoItem get _currentPhoto => _photos[_currentIndex];
+
+  // Title trimmed to just the run name: drop the "Trail #NNNN - " prefix, then
+  // cap at 40 chars with an ellipsis. The "n of m" count moved to the footer.
+  String get _displayTitle {
+    var name = widget.pageTitle.trim();
+    name = name.replaceFirst(
+      RegExp(r'^\s*Trail\s*#?\s*\d+\s*[-–—:]\s*', caseSensitive: false),
+      '',
+    );
+    if (name.length > 40) name = '${name.substring(0, 40).trimRight()}…';
+    return name;
+  }
 
   @override
   void initState() {
@@ -114,7 +153,8 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
       final initialHeight = (_initialLines * _lineHeight) +
           _captionTopPadding +
           mq.padding.bottom +
-          _captionBottomPadding;
+          _captionBottomPadding +
+          _footerHeight;
       _maxCaptionTop = (_screenHeight - initialHeight).clamp(0.0, _screenHeight);
       _captionTop = _maxCaptionTop;
     }
@@ -354,10 +394,14 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+        // Explicit back button so it's always present regardless of how the
+        // page was presented.
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         title: AutoSizeText(
-          _photos.length > 1
-              ? '${widget.pageTitle} (${_currentIndex + 1} of ${_photos.length})'
-              : widget.pageTitle,
+          _displayTitle,
           style: ts_appBarTitle,
           textAlign: TextAlign.center,
           minFontSize: 2.0,
@@ -388,69 +432,14 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
             ),
           ),
 
-          // Uploader chip — top-right, just below the AppBar.
-          // Hidden when the name is unknown (e.g. hasher not yet synced locally).
-          if (_currentPhoto.uploaderName.isNotEmpty)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + kToolbarHeight + 8,
-              right: 12,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.55),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: hc_red.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(8),
-                        image: _currentPhoto.uploaderPhotoUrl.isNotEmpty
-                            ? DecorationImage(
-                                image: CachedNetworkImageProvider(
-                                  _currentPhoto.uploaderPhotoUrl,
-                                ),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: _currentPhoto.uploaderPhotoUrl.isEmpty
-                          ? Center(
-                              child: Text(
-                                _currentPhoto.uploaderName[0].toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 7),
-                    Text(
-                      _currentPhoto.uploaderName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black54,
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          // Prev / next navigation arrows — vertically centered on each side,
+          // shown only in a multi-photo set and hidden at the ends. The
+          // surrounding Positioned.fill is transparent to touches; only the
+          // arrow button itself is tappable, so swipe/zoom still work.
+          if (_photos.length > 1) ...[
+            Positioned.fill(child: _navArrow(left: true)),
+            Positioned.fill(child: _navArrow(left: false)),
+          ],
 
           // Crop button — top-left, only for own editable photos.
           if (_currentPhoto.isEditable)
@@ -488,7 +477,9 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
               top: _captionTop,
               left: 0,
               right: 0,
-              bottom: 0,
+              // End above the info footer so caption text never scrolls under
+              // it (padding alone doesn't help at the top of the scroll).
+              bottom: bottomInset + _footerHeight,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onVerticalDragUpdate: _handleDragUpdate,
@@ -519,11 +510,13 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
                           // so that it composes cleanly with the expand gesture.
                           physics: const NeverScrollableScrollPhysics(),
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(
+                            padding: const EdgeInsets.fromLTRB(
                               24,
                               _captionTopPadding,
                               24,
-                              bottomInset + _captionBottomPadding,
+                              // Panel already ends above the footer; this is just
+                              // buffer for the scroll-indicator arrow.
+                              _captionBottomPadding,
                             ),
                             child: Text(
                               caption,
@@ -542,11 +535,10 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
                       ),
                     ),
 
-                    // Scroll indicator — down arrow at the bottom of the panel.
-                    // Visible while there is more caption content below the
-                    // current viewport.
+                    // Scroll indicator — down arrow at the bottom of the panel
+                    // (which now sits just above the info footer).
                     Positioned(
-                      bottom: bottomInset + 6,
+                      bottom: 6,
                       left: 0,
                       right: 0,
                       child: AnimatedOpacity(
@@ -565,6 +557,145 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
                 ),
               ),
             ),
+
+          // Info footer — always visible, drawn on top of everything. Carries
+          // the photographer, the "n of m photos" count, the local capture
+          // time, and (when possible) a button to the photo's map location.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildInfoFooter(context, bottomInset),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // A single side navigation arrow, centered vertically. Returns an empty box
+  // at the ends so there's nothing to tap past the first / last photo.
+  Widget _navArrow({required bool left}) {
+    final bool enabled =
+        left ? _currentIndex > 0 : _currentIndex < _photos.length - 1;
+    if (!enabled) return const SizedBox.shrink();
+    return Align(
+      alignment: left ? Alignment.centerLeft : Alignment.centerRight,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Material(
+          color: Colors.black.withValues(alpha: 0.4),
+          shape: const CircleBorder(),
+          child: IconButton(
+            icon: Icon(
+              left ? Icons.chevron_left : Icons.chevron_right,
+              color: Colors.white,
+              size: 32,
+            ),
+            onPressed: () =>
+                _navigateTo(left ? _currentIndex - 1 : _currentIndex + 1),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoFooter(BuildContext context, double bottomInset) {
+    final photo = _currentPhoto;
+    final bool showMap = widget.run != null &&
+        photo.latitude != null &&
+        photo.longitude != null;
+
+    final metaParts = <String>[
+      '${_currentIndex + 1} of ${_photos.length} photo${_photos.length == 1 ? '' : 's'}',
+      if (photo.capturedAt != null)
+        DateFormat('d MMM, h:mm a').format(photo.capturedAt!.toLocal()),
+    ];
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(14, 10, 12, bottomInset + 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.black.withValues(alpha: 0.0),
+            Colors.black.withValues(alpha: 0.6),
+            Colors.black.withValues(alpha: 0.75),
+          ],
+          stops: const [0.0, 0.4, 1.0],
+        ),
+      ),
+      child: Row(
+        children: [
+          // Photographer avatar (bundle:// safe via avatarImageProvider).
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.white24,
+              image: DecorationImage(
+                image: avatarImageProvider(photo.uploaderPhotoUrl),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Name + meta line.
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (photo.uploaderName.isNotEmpty)
+                  Text(
+                    photo.uploaderName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                    ),
+                  ),
+                Text(
+                  metaParts.join('  ·  '),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12.5,
+                    shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // View on map button.
+          if (showMap) ...[
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: () => Get.to<void>(
+                () => PackTrackFullScreenMap(
+                  run: widget.run!,
+                  focusPoint:
+                      latlng.LatLng(photo.latitude!, photo.longitude!),
+                ),
+              ),
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.black.withValues(alpha: 0.45),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              icon: const Icon(Icons.place, size: 18),
+              label: const Text('Map', style: TextStyle(fontSize: 13)),
+            ),
+          ],
         ],
       ),
     );

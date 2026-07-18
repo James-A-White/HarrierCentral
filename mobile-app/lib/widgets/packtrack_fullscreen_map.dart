@@ -10,9 +10,17 @@ import 'package:latlong2/latlong.dart' as latlng;
 /// The trade-off is a fresh view (re-fetch, playback at the live edge); trimming
 /// stays on the embedded map.
 class PackTrackFullScreenMap extends StatelessWidget {
-  const PackTrackFullScreenMap({super.key, required this.run});
+  const PackTrackFullScreenMap({
+    super.key,
+    required this.run,
+    this.focusPoint,
+  });
 
   final RunDetailsAggregate run;
+
+  /// When provided (e.g. opened from a run photo), the map opens centered and
+  /// zoomed on this coordinate instead of the run's default center.
+  final latlng.LatLng? focusPoint;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +42,13 @@ class PackTrackFullScreenMap extends StatelessWidget {
             run.kennel.kennelLatitude!,
             run.kennel.kennelLongitude!,
           );
-    final latlng.LatLng? center = eventLoc ?? kennelLoc;
+    // A photo focus point takes priority as the map center. When we only have a
+    // focus point (no kennel/event location), fall back to it for the map's
+    // required kennel-location arg so the map still renders.
+    final latlng.LatLng? center = focusPoint ?? eventLoc ?? kennelLoc;
+    final latlng.LatLng? kennelForMap = kennelLoc ?? focusPoint;
+    final bool canRender = center != null && kennelForMap != null;
+    final double initialZoom = focusPoint != null ? 17.0 : 14.0;
 
     // Own controller tag so this map doesn't fight the embedded map's MapController.
     final mapTag = '${run.event.eventId}-fullscreen';
@@ -54,16 +68,16 @@ class PackTrackFullScreenMap extends StatelessWidget {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          if (center != null && kennelLoc != null)
+          if (canRender)
             Positioned.fill(
               child: RunTrackerMap(
                 run.event,
                 eventLoc,
                 center,
-                kennelLoc,
+                kennelForMap,
                 1.0,
                 22.0,
-                14.0,
+                initialZoom,
                 true, // north-up by default in fullscreen
                 controllerTag: mapTag,
                 // Lift the playback panel above the trim bar for admins.
@@ -96,7 +110,7 @@ class PackTrackFullScreenMap extends StatelessWidget {
           ),
           // Admin trim bar, spread across the bottom (renders nothing for
           // non-admins). Sits below the lifted playback panel.
-          if (center != null && kennelLoc != null)
+          if (canRender)
             Positioned(
               left: 12,
               right: 12,

@@ -12,10 +12,15 @@ class RunPhotoGallery extends StatefulWidget {
     this.kennelId,
     this.kennelSlug,
     this.eventNumber,
+    this.run,
   });
 
   final Future<({bool success, List<RunPhotoModel> photos})> Function() loader;
   final String eventName;
+
+  /// The run these photos belong to. When provided, the full-screen viewer gets
+  /// a "View on map" button per photo. Null on the guest path (no aggregate).
+  final RunDetailsAggregate? run;
 
   // When provided, own photos get a crop button in the full-screen viewer.
   // Pass these only when the current user has an edit role (Hash Flash / GM /
@@ -213,21 +218,32 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
     int index,
   ) async {
     final canEdit = widget.kennelId != null && widget.kennelSlug != null;
-    final items = _photos
-        .map(
-          (p) => MapPhotoItem(
-            imageUrl: p.effectiveUrl,
-            caption: p.displayCaption,
-            uploaderName: p.uploaderDisplayName ?? '',
-            photoId: (canEdit && p.isOwnPhoto) ? p.photoId : null,
-            originalBlobUrl: (canEdit && p.isOwnPhoto) ? p.blobUrl : null,
-            kennelId: (canEdit && p.isOwnPhoto) ? widget.kennelId : null,
-            kennelSlug: (canEdit && p.isOwnPhoto) ? widget.kennelSlug : null,
-            eventNumber: (canEdit && p.isOwnPhoto) ? widget.eventNumber : null,
-          ),
-        )
-        .toList(growable: false);
 
+    // Resolve each distinct photographer's name + avatar from the local hashers
+    // table (same source the map path uses). Own photos fall back to the signed-
+    // in user's name. Cached per uploader so N photos = at most N distinct reads.
+    final photographers = await _resolvePhotographers();
+
+    final items = _photos.map((p) {
+      final uid = normalizeUuid(p.userId ?? '');
+      final info = photographers[uid];
+      return MapPhotoItem(
+        imageUrl: p.effectiveUrl,
+        caption: p.displayCaption,
+        uploaderName: info?.name ?? (p.uploaderDisplayName ?? ''),
+        uploaderPhotoUrl: info?.photo ?? '',
+        capturedAt: p.createdAt.year > 1 ? p.createdAt : null,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        photoId: (canEdit && p.isOwnPhoto) ? p.photoId : null,
+        originalBlobUrl: (canEdit && p.isOwnPhoto) ? p.blobUrl : null,
+        kennelId: (canEdit && p.isOwnPhoto) ? widget.kennelId : null,
+        kennelSlug: (canEdit && p.isOwnPhoto) ? widget.kennelSlug : null,
+        eventNumber: (canEdit && p.isOwnPhoto) ? widget.eventNumber : null,
+      );
+    }).toList(growable: false);
+
+    if (!context.mounted) return;
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
@@ -236,8 +252,43 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
           photos: items,
           initialIndex: index,
           background: Backgrounds.defaultHcBackground(),
+          run: widget.run,
         ),
       ),
     );
+  }
+
+  /// Resolves photographer name + avatar for every distinct uploader in the
+  /// current photo set, keyed by normalised userId.
+  Future<Map<String, ({String name, String photo})>>
+      _resolvePhotographers() async {
+    final result = <String, ({String name, String photo})>{};
+    final currentUserId = normalizeUuid(
+      getStringPref(StringPrefsEnum.userId) ?? '',
+    );
+    for (final p in _photos) {
+      final uid = normalizeUuid(p.userId ?? '');
+      if (uid.isEmpty || result.containsKey(uid)) continue;
+
+      // Name: others carry uploaderDisplayName from the SP; own photos use the
+      // signed-in user's stored display name.
+      var name = p.uploaderDisplayName ?? '';
+      if (name.isEmpty && uid == currentUserId) {
+        name = getStringPref(StringPrefsEnum.displayName) ?? '';
+      }
+
+      // Avatar: the raw colPhoto value (may be http or bundle://) — resolved for
+      // display via avatarImageProvider in the viewer.
+      var photo = '';
+      final rows = await QueryUsers.querySingleUser(uid);
+      if (rows.isNotEmpty) {
+        photo =
+            (rows.first[tableModel.hashersTableHelper.colPhoto] as String?) ??
+                '';
+      }
+
+      result[uid] = (name: name, photo: photo);
+    }
+    return result;
   }
 }

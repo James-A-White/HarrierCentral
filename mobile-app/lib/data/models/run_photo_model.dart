@@ -7,6 +7,9 @@ class RunPhotoModel {
     this.description,
     required this.createdAt,
     this.uploaderDisplayName,
+    this.userId,
+    this.latitude,
+    this.longitude,
     this.isOwnPhoto = false,
     this.status = 2,
     this.assetId,
@@ -21,6 +24,15 @@ class RunPhotoModel {
   final String? description;
   final DateTime createdAt;
   final String? uploaderDisplayName;
+
+  /// Uploader's user id (HC.Hasher.id). Used to resolve the photographer's
+  /// name + avatar from the local hashers table. Null on the public-web path.
+  final String? userId;
+
+  /// GPS coordinates where the photo was taken (HC.KennelPhotos Latitude/
+  /// Longitude). Null when the capture had no location fix.
+  final double? latitude;
+  final double? longitude;
 
   /// True for the authenticated user's own photos (from hcapp_getRunPhotos rowset 0).
   final bool isOwnPhoto;
@@ -46,6 +58,9 @@ class RunPhotoModel {
         description: json['Description'] as String?,
         createdAt: _parseDateTime(json['CreatedAt']) ?? DateTime(0),
         uploaderDisplayName: json['uploaderDisplayName'] as String?,
+        userId: json['UserId'] as String?,
+        latitude: _parseDouble(json['Latitude']),
+        longitude: _parseDouble(json['Longitude']),
         isOwnPhoto: false,
         status: 2,
       );
@@ -60,6 +75,9 @@ class RunPhotoModel {
         description: json['Description'] as String?,
         createdAt: _parseDateTime(json['CreatedAt']) ?? DateTime(0),
         uploaderDisplayName: null,
+        userId: json['UserId'] as String?,
+        latitude: _parseDouble(json['Latitude']),
+        longitude: _parseDouble(json['Longitude']),
         isOwnPhoto: true,
         status: (json['Status'] as num?)?.toInt() ?? 0,
         assetId: json['AssetId'] as String?,
@@ -75,13 +93,30 @@ class RunPhotoModel {
         description: json['Description'] as String?,
         createdAt: _parseDateTime(json['CreatedAt']) ?? DateTime(0),
         uploaderDisplayName: json['uploaderDisplayName'] as String?,
+        userId: json['UserId'] as String?,
+        latitude: _parseDouble(json['Latitude']),
+        longitude: _parseDouble(json['Longitude']),
         isOwnPhoto: false,
         status: (json['Status'] as num?)?.toInt() ?? 2,
       );
 
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
+  }
+
   static DateTime? _parseDateTime(dynamic value) {
     if (value == null) return null;
     if (value is DateTime) return value;
-    return DateTime.tryParse(value.toString());
+    final parsed = DateTime.tryParse(value.toString());
+    if (parsed == null) return null;
+    // KennelPhotos.CreatedAt is GETUTCDATE() (UTC) but the JSON string carries
+    // no 'Z'/offset, so DateTime.tryParse yields a LOCAL-kind value and a later
+    // .toLocal() would be a no-op. Re-tag as UTC so capture time renders in the
+    // viewer's local timezone correctly. Already-offset strings are left as-is.
+    if (parsed.isUtc) return parsed;
+    return DateTime.utc(parsed.year, parsed.month, parsed.day, parsed.hour,
+        parsed.minute, parsed.second, parsed.millisecond, parsed.microsecond);
   }
 }

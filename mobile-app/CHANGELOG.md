@@ -1,5 +1,11 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.13.5+1206 (2026-07-18)
+
+### Improvements
+- **Photo viewer redesign**: the full-screen run photo now shows a cleaner title (just the run name, trimmed) and a new info bar with the photographer's name + avatar, the "n of m photos" count, the local time the photo was taken, and — when the photo has a location — a **View on map** button that jumps to where it was taken. Any photo comment is shown as before.
+- **Photo viewer navigation**: added left/right arrows to move between photos (in addition to swiping), plus a clearer back button.
+
 ## 2.13.4+1205 (2026-07-18)
 
 ### Fixes

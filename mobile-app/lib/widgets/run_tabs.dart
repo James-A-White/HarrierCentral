@@ -1485,6 +1485,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       kennelId: isAdmin ? widget.futureRun.kennel.kennelId : null,
       kennelSlug: isAdmin ? widget.futureRun.kennel.kennelUniqueShortName : null,
       eventNumber: isAdmin ? widget.futureRun.event.absoluteEventNumber : null,
+      run: widget.futureRun,
     );
   }
 
