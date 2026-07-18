@@ -406,7 +406,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               StringPrefsEnum.profilePhotoUrl,
                             );
                             profilePhotoUrl ??=
-                                'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+                                bundledAvatarUrl(Random.secure().nextInt(49) + 1);
 
                             await Utilities.showAlert(
                               'Success!',

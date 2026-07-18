@@ -48,7 +48,10 @@ class PackTrackFullScreenMap extends StatelessWidget {
     final latlng.LatLng? center = focusPoint ?? eventLoc ?? kennelLoc;
     final latlng.LatLng? kennelForMap = kennelLoc ?? focusPoint;
     final bool canRender = center != null && kennelForMap != null;
-    final double initialZoom = focusPoint != null ? 17.0 : 14.0;
+    // A photo focus opens zoomed in almost fully (map max is 22) so the photo's
+    // marker — always at map centre — is easy to pick out even when several
+    // photos were taken close together.
+    final double initialZoom = focusPoint != null ? 20.0 : 14.0;
 
     // Own controller tag so this map doesn't fight the embedded map's MapController.
     final mapTag = '${run.event.eventId}-fullscreen';

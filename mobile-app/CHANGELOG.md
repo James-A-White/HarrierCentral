@@ -1,5 +1,11 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.13.7+1208 (2026-07-18)
+
+### Improvements
+- **Photo "View on map"** now opens zoomed right in on the photo's location, so it's easy to pick out even when several photos were taken close together.
+- **Avatars are now web-friendly**: the built-in avatars are served from the web, so they also show up on the public website (e.g. runner avatars on the live map). Avatars created by older app versions are translated automatically.
+
 ## 2.13.6+1207 (2026-07-18)
 
 ### Fixes

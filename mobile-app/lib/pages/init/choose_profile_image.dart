@@ -345,7 +345,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       case SelectedImageTypeEnum.none:
         break;
       case SelectedImageTypeEnum.avatar:
-        profileImageUrl = 'bundle://avatar-$_selectedAvatarIcon'.toLowerCase();
+        profileImageUrl = bundledAvatarUrl(_selectedAvatarIcon);
         break;
       case SelectedImageTypeEnum.fromCamera:
       case SelectedImageTypeEnum.fromGallery:

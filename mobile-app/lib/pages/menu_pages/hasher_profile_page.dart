@@ -84,7 +84,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               hasherPref_cameraRollSaveDisabled) ==
           0;
   String _photoPrefix = '';
-  String _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+  String _newPhoto = bundledAvatarUrl(Random.secure().nextInt(49) + 1);
   late HashersModel _hasher;
   //HasherKennelMapModel? _hkmData;
 
@@ -257,7 +257,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _checkDirty();
     });
 
-    _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+    _newPhoto = bundledAvatarUrl(Random.secure().nextInt(49) + 1);
 
     _externalMapProvider = getStringPref(StringPrefsEnum.mapPreference);
   }

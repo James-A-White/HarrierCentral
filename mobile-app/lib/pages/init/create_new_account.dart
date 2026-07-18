@@ -234,7 +234,7 @@ class CreateNewAccountPageContentState
                         final HashersService srv = HashersService();
 
                         final String profilePhotoUrl =
-                            'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+                            bundledAvatarUrl(Random.secure().nextInt(49) + 1);
 
                         final String responseBody = await srv.addEditUser(
                           targetUserId: GUID_EMPTY,
