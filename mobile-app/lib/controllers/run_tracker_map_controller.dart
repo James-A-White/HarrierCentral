@@ -22,7 +22,9 @@ class RunTrackerMapController extends GetxController
     required this.maxZoom,
     required this.initialZoom,
     required bool trueNorthLock,
+    bool autoFollowOnLoad = true,
   }) : _trueNorthLock = trueNorthLock.obs,
+       followRunner = autoFollowOnLoad.obs,
        _mapCenterPoint =
            (mapCenter.latitude == CLEAR_LATLONG &&
                mapCenter.longitude == CLEAR_LATLONG)
@@ -135,7 +137,9 @@ class RunTrackerMapController extends GetxController
   // tracks the selected runner on every timeline/position update; OFF lets
   // the user pan freely without the map snapping back. Explicit actions
   // (tapping a runner, picking in the carousel) still recenter either way.
-  final RxBool followRunner = true.obs;
+  // Starts OFF when opened focused on a coordinate (e.g. a run photo) so the
+  // load-time auto-recenter doesn't drag the camera to the run's end.
+  final RxBool followRunner;
   StreamSubscription<AccelerometerEvent>? _tiltSub;
   StreamSubscription<CompassEvent>? _compassSub;
   Timer? _tiltTicker;

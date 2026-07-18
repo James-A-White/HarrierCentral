@@ -82,6 +82,10 @@ class PackTrackFullScreenMap extends StatelessWidget {
                 controllerTag: mapTag,
                 // Lift the playback panel above the trim bar for admins.
                 overlayBottomPadding: isAdmin ? 96.0 : 50.0,
+                // When focused on a photo location, don't let the load-time
+                // auto-follow drag the camera to the run's end — stay on the
+                // photo's coordinate.
+                autoFollowOnLoad: focusPoint == null,
               ),
             )
           else

@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.13.6+1207 (2026-07-18)
+
+### Fixes
+- **Photo "View on map" now opens on the right spot**: it used to jump to the end of the run (the On-Inn point); it now centres on where the photo was actually taken.
+
+### Improvements
+- **Photo viewer tidy-up**: removed the edit (crop) button from the photo view — photo editing stays in the Hash Flash approval screen. The top-left back arrow returns you to the photo gallery.
+- **View on map button** is now red, matching the app's other buttons.
+
 ## 2.13.5+1206 (2026-07-18)
 
 ### Improvements

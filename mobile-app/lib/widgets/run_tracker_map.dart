@@ -18,6 +18,7 @@ class RunTrackerMap extends StatelessWidget {
     this.mapMoved,
     this.overlayBottomPadding = -25.0,
     this.controllerTag,
+    this.autoFollowOnLoad = true,
   });
 
   final EventModel event;
@@ -31,6 +32,12 @@ class RunTrackerMap extends StatelessWidget {
   final Function? markerClicked;
   final Function? mapMoved;
   final double overlayBottomPadding;
+
+  /// When false, the camera does NOT auto-follow the selected runner on load —
+  /// it stays on [mapCenter]/[zoom]. Used when opening focused on a specific
+  /// coordinate (e.g. the spot a run photo was taken) so the load-time
+  /// recenter doesn't drag the view to the run's end.
+  final bool autoFollowOnLoad;
 
   /// Optional override for the GetX controller tag. Defaults to the event id so
   /// every map of a run shares one controller. The fullscreen map passes a
@@ -60,6 +67,7 @@ class RunTrackerMap extends StatelessWidget {
               maxZoom: maxZoom,
               initialZoom: zoom,
               trueNorthLock: trueNorthLock,
+              autoFollowOnLoad: autoFollowOnLoad,
             ),
       builder: (controller) {
         controller.updateTrueNorthLock(trueNorthLock);

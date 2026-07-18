@@ -88,11 +88,8 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
   late final PageController _pageController;
   final ScrollController _scrollController = ScrollController();
 
-  // Mutable local copy — updated when an edit is saved so the gallery
-  // immediately reflects the new cropped image.
+  // Local working copy of the photo list.
   late List<MapPhotoItem> _photos;
-  bool _isEditing = false;
-  final KennelPhotoService _service = KennelPhotoService();
 
   double _captionTop = 0;
   double _maxCaptionTop = 0;
@@ -256,88 +253,6 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
     _maskOpacity = (x / (_lineHeight * 6) * 0.5).clamp(0.0, 0.5);
   }
 
-  Future<void> _editPhoto() async {
-    final photo = _currentPhoto;
-    if (!photo.isEditable || _isEditing) return;
-    setState(() => _isEditing = true);
-    try {
-      // Always start from the original unedited blob so re-edits don't stack.
-      final sourceUrl = photo.originalBlobUrl ?? photo.imageUrl;
-      final file = await _service.downloadToTempFile(sourceUrl);
-      if (file == null) {
-        Get.snackbar(
-          'Edit failed',
-          'Could not download the original photo. Please check your connection.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: hc_red,
-          colorText: Colors.white,
-        );
-        return;
-      }
-
-      final cropped = await ImageCropper().cropImage(
-        sourcePath: file.path,
-        compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 100,
-      );
-      if (cropped == null) return; // user cancelled — not an error
-
-      final eventNumber = photo.eventNumber ?? 0;
-      final kennelSlug = photo.kennelSlug!;
-      final runFolder =
-          eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
-
-      final editedUrl = await _service.uploadEditedPhoto(
-        croppedFile: File(cropped.path),
-        kennelId: photo.kennelId!,
-        kennelSlug: kennelSlug,
-        runFolder: runFolder,
-      );
-      if (editedUrl == null) {
-        Get.snackbar(
-          'Edit failed',
-          'Could not upload the edited photo. Please try again.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: hc_red,
-          colorText: Colors.white,
-        );
-        return;
-      }
-
-      final result = await _service.updateRunPhotoEditedBlob(
-        photoId: photo.photoId!,
-        kennelId: photo.kennelId!,
-        editedBlobUrl: editedUrl,
-      );
-      if (result.startsWith(ERROR_PREFIX)) {
-        Get.snackbar(
-          'Edit failed',
-          'The edited photo was uploaded but could not be saved. Please try again.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: hc_red,
-          colorText: Colors.white,
-        );
-        return;
-      }
-
-      // Update the local list — imageUrl shows the crop, originalBlobUrl stays.
-      setState(() {
-        _photos[_currentIndex] = photo.withImageUrl(editedUrl);
-      });
-    } catch (e, s) {
-      BootLogger.logError('[MapPhotoPage._editPhoto]', e, s);
-      Get.snackbar(
-        'Edit failed',
-        'An unexpected error occurred. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: hc_red,
-        colorText: Colors.white,
-      );
-    } finally {
-      if (mounted) setState(() => _isEditing = false);
-    }
-  }
-
   ImageProvider _imageProvider(String url) {
     return url.toLowerCase().endsWith('.avif')
         ? CachedNetworkAvifImageProvider(url)
@@ -441,31 +356,6 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
             Positioned.fill(child: _navArrow(left: false)),
           ],
 
-          // Crop button — top-left, only for own editable photos.
-          if (_currentPhoto.isEditable)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + kToolbarHeight + 8,
-              left: 12,
-              child: _isEditing
-                  ? const SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: CircularProgressIndicator(
-                          color: Colors.white70, strokeWidth: 2.5),
-                    )
-                  : GestureDetector(
-                      onTap: _editPhoto,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(Icons.crop,
-                            color: Colors.white70, size: 18),
-                      ),
-                    ),
-            ),
 
           // Caption overlay — a Positioned panel that starts at the bottom and
           // expands upward as the user drags vertically.
@@ -684,7 +574,7 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
                 ),
               ),
               style: TextButton.styleFrom(
-                backgroundColor: Colors.black.withValues(alpha: 0.45),
+                backgroundColor: hc_red,
                 foregroundColor: Colors.white,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
