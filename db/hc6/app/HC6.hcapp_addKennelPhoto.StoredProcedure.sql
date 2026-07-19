@@ -195,11 +195,18 @@ DECLARE @status TINYINT = CASE WHEN @effectiveSharingPref > 0 THEN 1 ELSE 0 END;
 BEGIN TRY
     BEGIN TRANSACTION;
 
+    -- Idempotent on the client-generated @photoId (the PK). A retry / double-
+    -- submit of the same photo must return success, not a PK violation — the
+    -- duplicate-key 500 seen in HC.ErrorLog (2026-07-11). INSERT ... SELECT ...
+    -- WHERE NOT EXISTS makes the check-and-insert atomic, and UPDLOCK+HOLDLOCK
+    -- on the @photoId key serializes a concurrent double-submit too; if the row
+    -- already exists this inserts nothing and we still return @photoId below.
     INSERT INTO [HC].[KennelPhotos]
         (id, EventId, KennelId, UserId, BlobUrl, AssetId, Latitude, Longitude, Status, Title, Description)
-    VALUES
-        (@photoId, @eventId, @kennelId, @userId, @blobUrl,
-         @assetId, @latitude, @longitude, @status, @title, @description);
+    SELECT @photoId, @eventId, @kennelId, @userId, @blobUrl,
+           @assetId, @latitude, @longitude, @status, @title, @description
+    WHERE NOT EXISTS (
+        SELECT 1 FROM HC.KennelPhotos WITH (UPDLOCK, HOLDLOCK) WHERE id = @photoId);
 
     COMMIT TRANSACTION;
 
