@@ -355,6 +355,37 @@ BEGIN CATCH
 END CATCH
 ```
 
+### TRY/CATCH is mandatory on EVERY SP — no exceptions
+
+This is non-negotiable and applies to **read SPs too**, not just writes. An SP whose body
+is not wrapped in TRY/CATCH turns any runtime error (timeout, deadlock, transient, bad
+data) into a **raw HTTP 500 with NO `HC.ErrorLog` record** — silent and undiagnosable. An
+audit on 2026-07-19 found 28 API-facing SPs missing it; they were all retrofitted. Do not
+add another.
+
+Rules for the wrapper:
+- **Placement:** put `BEGIN TRY` *after* the `ValidateAppAuth` / `ValidatePortalAuth` error
+  block and any pre-flight param/permission checks that do their own graceful `RETURN` —
+  those stay OUTSIDE the TRY. Put `END TRY`/`CATCH` at the very end of the proc. A `GO` can
+  never appear between `BEGIN TRY` and `END CATCH`.
+- **Write SP** (has a success envelope): CATCH rolls back and returns the standard error
+  envelope (`SELECT 0 AS Success, ERROR_MESSAGE() …`) — the template above.
+- **Read SP** (returns data rowsets, no success envelope): the CATCH must still LOG then
+  re-raise, so behaviour is unchanged for the client but the error is recorded:
+  ```sql
+  END TRY
+  BEGIN CATCH
+      IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+      INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+      VALUES (NEWID(), '<unknown>', 'Unhandled error in <procShortName>',
+              ERROR_MESSAGE(), @procName, @userId);   -- @userId → NULL if unauthenticated
+      THROW;
+  END CATCH
+  ```
+  Use the proc-name variable the SP actually declares (`@procName` / `@effectiveProcName` /
+  `@procName_self`, or `OBJECT_NAME(@@PROCID)` if none), and `@userId` or `NULL`.
+- **Every CATCH must log to `HC.ErrorLog`** so the failure is diagnosable server-side.
+
 ---
 
 ## Code Quality Rules
@@ -439,6 +470,11 @@ trigger first, run the ALTER, then re-enable it. Do not run this autonomously.
 - `FLOAT` for money
 - `DATALENGTH` for string checks
 - Type or length mismatches between SP parameters and base table columns
+- **SP body not wrapped in TRY/CATCH** — any runtime error becomes an unlogged raw 500
+  (see "TRY/CATCH is mandatory" above). Flag on sight for reads AND writes.
+- CATCH block that doesn't log to `HC.ErrorLog` (swallows the error with no server record)
+- Check-then-`INSERT` on a UNIQUE key without `WITH (UPDLOCK, HOLDLOCK)` on the existence
+  check (concurrent duplicate-key 500), or a non-idempotent insert on a client-supplied id
 
 ---
 
