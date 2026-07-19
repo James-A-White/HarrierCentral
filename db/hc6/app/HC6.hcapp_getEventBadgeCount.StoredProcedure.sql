@@ -81,6 +81,16 @@ END
 
 IF (@publicEventId = '00000000-0000-0000-0000-000000000000') SET @publicEventId = NULL;
 
+-- Wrap the body so any runtime error (timeout, deadlock, transient) is LOGGED to
+-- HC.ErrorLog before it reaches the client. This SP previously had no TRY/CATCH,
+-- so the HTTP 500s seen in the client log harvest left NO server-side record and
+-- were undiagnosable. The CATCH re-raises (THROW) rather than returning an error
+-- envelope on purpose: the caller (NotificationService background badge poll)
+-- passes no errorCallback, so an envelope would trigger sendHttpPost's automatic
+-- "Close" alert on a background poll. Re-raising preserves today's behaviour
+-- (silent retry, no dialog, badges untouched) while giving us the error text.
+BEGIN TRY
+
 -- ---------------------------------------------------------------
 -- Mode 1: reset all badge counts (event AND kennel threads)
 -- ---------------------------------------------------------------
@@ -244,3 +254,14 @@ INNER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = t.KennelId AND hkm.UserId = 
 LEFT JOIN HC.EventMessageBadgeCounts embc
     ON embc.KennelId = t.KennelId AND embc.UserId = @userId AND embc.EventId IS NULL
 WHERE t.MaxSeq - COALESCE(embc.LastSequenceCount, 0) > 0;
+
+END TRY
+BEGIN CATCH
+    -- Log the real failure so the next occurrence is diagnosable, then re-raise
+    -- to preserve the client's existing silent-retry behaviour (see note above).
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getEventBadgeCount',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH
