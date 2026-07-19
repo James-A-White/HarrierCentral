@@ -9,6 +9,17 @@ import 'package:harrier_central/imports.dart';
 
 AppModel get appModel => Get.find<AppModel>();
 DeviceInfo get deviceInfo => Get.find<DeviceInfo>();
+
+/// Null-safe accessor for [DeviceInfo]. The [deviceInfo] getter does an
+/// unguarded `Get.find`, which throws "DeviceInfo not found" if the service is
+/// absent — the classic case being a background GPS location callback that
+/// fires after the app was suspended: unlike [LocationService] (re-registered
+/// in `AppLifecycleController.onResumed`), `DeviceInfo` is NOT re-registered on
+/// resume because its `init()` needs screen metrics. Prefer this in background /
+/// async paths (e.g. the location stream callback) so a missing service is a
+/// skipped write, not an uncaught error storm.
+DeviceInfo? get deviceInfoOrNull =>
+    Get.isRegistered<DeviceInfo>() ? Get.find<DeviceInfo>() : null;
 TableModel get tableModel => Get.find<TableModel>();
 Database get database => Get.find<Database>();
 NetworkService get networkService => Get.find<NetworkService>();

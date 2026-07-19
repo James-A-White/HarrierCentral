@@ -554,11 +554,19 @@ class LocationService extends GetxService {
     _cachedLon = lon;
     await setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
 
-    // 3. Update the shared state in DeviceInfoService
-    deviceInfo.deviceLat = lat;
-    deviceInfo.deviceLon = lon;
-    deviceInfo.deviceAccuracy = accuracy;
-    deviceInfo.deviceAltitude = altitude;
+    // 3. Update the shared state in DeviceInfoService — but only if it's
+    // registered. A background location callback can fire after the app was
+    // suspended, when DeviceInfo has been torn down and not yet re-registered;
+    // the unguarded `deviceInfo` getter would throw on every such callback (a
+    // 340+×-per-user error storm in the harvest). Skip the cache write instead —
+    // the GPS point is still buffered/uploaded below.
+    final di = deviceInfoOrNull;
+    if (di != null) {
+      di.deviceLat = lat;
+      di.deviceLon = lon;
+      di.deviceAccuracy = accuracy;
+      di.deviceAltitude = altitude;
+    }
 
     // Auto-resume: if paused and device has moved far enough, resume tracking.
     // Falls through to the joinRunTracking block below so the resuming position
