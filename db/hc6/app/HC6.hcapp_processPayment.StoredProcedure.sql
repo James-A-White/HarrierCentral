@@ -247,8 +247,17 @@ BEGIN TRY
         END
         ELSE
         BEGIN
+            -- Serialize this check-then-insert against a concurrent payment or
+            -- check-in for the same (UserId, EventId). Without a lock, two
+            -- transactions both find no row and both INSERT, and the second
+            -- violates the UNIQUE index IX_HasherEventMap_EventId
+            -- (EventId, UserId, DisplayName) — the duplicate-key 500 seen in
+            -- HC.ErrorLog (2026-06-14). UPDLOCK+HOLDLOCK takes a key-range lock
+            -- so the racing transaction blocks, then finds this row instead of
+            -- inserting a duplicate. Held to COMMIT (inside the open transaction).
             SELECT @hasherEventMapId = hem.id
-            FROM HC.HasherEventMap hem WHERE hem.UserId = @userIdWhoPaid AND hem.EventId = @eventId;
+            FROM HC.HasherEventMap hem WITH (UPDLOCK, HOLDLOCK)
+            WHERE hem.UserId = @userIdWhoPaid AND hem.EventId = @eventId;
 
             IF (@hasherEventMapId IS NULL)
             BEGIN
