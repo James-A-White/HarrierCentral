@@ -769,6 +769,10 @@ class LeaderboardState extends State<Leaderboard>
                                                             null) &&
                                                         _showHomeKennel &&
                                                         (e.homeKennelId !=
+                                                            null) &&
+                                                        (_kennels?[e
+                                                                    .homeKennelId]?[
+                                                                "kennelShortName"] !=
                                                             null))
                                                       Text(
                                                         '  -  ${_kennels![e.homeKennelId]!["kennelShortName"]}',
@@ -787,7 +791,10 @@ class LeaderboardState extends State<Leaderboard>
                                                       ),
                                                     if ((widget.kennelId ==
                                                             null) &&
-                                                        _showKennels)
+                                                        _showKennels &&
+                                                        (_kennels?[e.kennelId]?[
+                                                                "kennelName"] !=
+                                                            null))
                                                       Text(
                                                         '  -  ${_kennels![e.kennelId]!["kennelName"]}',
                                                         style: TextStyle(
