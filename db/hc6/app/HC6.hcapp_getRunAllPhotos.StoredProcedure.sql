@@ -97,6 +97,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 SELECT
     kp.id                   AS photoId,
     kp.EventId,
@@ -117,3 +119,12 @@ INNER JOIN HC.Event  e ON e.id  = kp.EventId
 WHERE kp.KennelId = @kennelId
   AND kp.EventId  = @eventId
 ORDER BY kp.CreatedAt DESC;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getRunAllPhotos',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

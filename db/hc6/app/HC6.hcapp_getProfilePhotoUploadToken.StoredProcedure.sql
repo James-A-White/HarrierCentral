@@ -56,4 +56,15 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 SELECT 1 AS success, @userId AS userId;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getProfilePhotoUploadToken',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

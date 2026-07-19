@@ -66,6 +66,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000'
  OR @eventId  IS NULL OR @eventId  = '00000000-0000-0000-0000-000000000000')
 BEGIN
@@ -128,3 +130,12 @@ INNER JOIN HC.Hasher h ON h.id = ddh.HasherId
 INNER JOIN HC.DownDowns dd ON dd.id = ddh.DownDownId
 WHERE dd.EventId  = @eventId
   AND dd.KennelId = @kennelId;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getDownDowns',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

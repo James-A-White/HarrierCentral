@@ -65,6 +65,10 @@ BEGIN
     RETURN;
 END
 
+-- Wrap the body so any runtime error is LOGGED to HC.ErrorLog before it reaches
+-- the client, then re-raised (THROW) to preserve existing client behaviour.
+BEGIN TRY
+
 -- Only include users who ran at least once in the last 12 months
 ;WITH ActiveUsers AS (
     SELECT hkm.UserId
@@ -93,3 +97,12 @@ WHERE (@kennelId IS NULL OR hkm.KennelId = @kennelId)
   AND h.DisplayName NOT LIKE 'Placeholder user for%'
   AND h.HashName NOT LIKE N'👣 Anonymous%'
   AND k.ExcludeFromLeaderboard = 0;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getLeaderboard',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

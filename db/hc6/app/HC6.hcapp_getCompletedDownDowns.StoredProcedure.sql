@@ -66,6 +66,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000'
  OR @eventId  IS NULL OR @eventId  = '00000000-0000-0000-0000-000000000000')
 BEGIN
@@ -129,3 +131,12 @@ WHERE dd.EventId    = @eventId
   AND dd.IsDone     = 1
   AND dd.IsCancelled = 0
   AND @isMember     = 1;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getCompletedDownDowns',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

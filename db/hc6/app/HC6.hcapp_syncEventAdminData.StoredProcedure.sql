@@ -94,6 +94,10 @@ BEGIN
     RETURN;
 END
 
+-- Wrap the body so any runtime error is LOGGED to HC.ErrorLog before it reaches
+-- the client, then re-raised (THROW) to preserve existing client behaviour.
+BEGIN TRY
+
 IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1271; SET @errorType = 12; SET @errorId = NEWID();
@@ -397,3 +401,12 @@ BEGIN
     FROM HC.Receipt rec
     WHERE rec.EventId = @eventId AND rec.updatedAt > @ua;
 END
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in syncEventAdminData',
+            ERROR_MESSAGE(), @effectiveProcName, @userId);
+    THROW;
+END CATCH

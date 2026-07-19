@@ -40,6 +40,8 @@ DECLARE @errorCode  INT;
 DECLARE @errorType  INT;
 DECLARE @nullUserId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000000';
 
+BEGIN TRY
+
 -- Global shared token — same mechanism as hcapp_authorizeDevice
 IF HC.CHECK_ACCESS_TOKEN_V2(@nullUserId, @procName,
                             COALESCE(@accessToken, 'error'), NULL, 30) = 0
@@ -99,3 +101,12 @@ WHERE h.Removed             = 0
     OR c.CityGeolocation.STDistance(@searchPoint) <= 804672
   )
 ORDER BY h.PublicHasherId, hkm.HcTotalRunCount DESC;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in findHashersByHashName',
+            ERROR_MESSAGE(), @procName, NULL);
+    THROW;
+END CATCH

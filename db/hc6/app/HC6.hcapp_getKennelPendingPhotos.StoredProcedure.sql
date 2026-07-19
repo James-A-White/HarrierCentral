@@ -93,6 +93,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 SELECT
     kp.id                   AS photoId,
     kp.EventId,
@@ -116,3 +118,12 @@ WHERE kp.KennelId = @kennelId
   AND kp.Status   = 1
   AND (@eventId IS NULL OR kp.EventId = @eventId)
 ORDER BY kp.CreatedAt DESC;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getKennelPendingPhotos',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

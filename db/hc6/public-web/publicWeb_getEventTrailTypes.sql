@@ -33,8 +33,21 @@ BEGIN
     RETURN;
 END
 
+-- Wrap the body so any runtime error is LOGGED to HC.ErrorLog before it reaches
+-- the client, then re-raised (THROW) instead of vanishing as a raw HTTP 500.
+BEGIN TRY
+
 SELECT TOP 1
     k.TrailTypesConfigJson AS trailTypesConfigJson
 FROM HC.Event e
 INNER JOIN HC.Kennel k ON k.id = e.KennelId
 WHERE e.id = @eventId;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getEventTrailTypes',
+            ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), NULL);
+    THROW;
+END CATCH

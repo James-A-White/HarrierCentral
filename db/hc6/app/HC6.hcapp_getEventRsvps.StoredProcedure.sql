@@ -68,6 +68,10 @@ BEGIN
     RETURN;
 END
 
+-- Wrap the body so any runtime error is LOGGED to HC.ErrorLog before it reaches
+-- the client, then re-raised (THROW) to preserve existing client behaviour.
+BEGIN TRY
+
 IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1272; SET @errorType = 2; SET @errorId = NEWID();
@@ -162,3 +166,12 @@ BEGIN
     ORDER BY hem.updatedAt ASC, hem.id ASC
     OFFSET 0 ROWS FETCH NEXT @paging250 ROWS ONLY;
 END
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getEventRsvps',
+            ERROR_MESSAGE(), @procName_self, @userId);
+    THROW;
+END CATCH

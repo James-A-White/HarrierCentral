@@ -64,6 +64,10 @@ BEGIN
     RETURN;
 END
 
+-- Wrap the body so any runtime error is LOGGED to HC.ErrorLog before it reaches
+-- the client, then re-raised (THROW) to preserve existing client behaviour.
+BEGIN TRY
+
 IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1222; SET @errorType = 12; SET @errorId = NEWID();
@@ -108,3 +112,12 @@ WHERE e.KennelId        = @kennelId
   AND e.IsCountedRun   = 1
 ORDER BY
     CONVERT(DATETIME2, e.EventStartDatetime) DESC;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getRuns',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

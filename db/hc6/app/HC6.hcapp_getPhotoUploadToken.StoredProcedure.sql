@@ -91,8 +91,19 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 SELECT @userId AS userId, @kennelId AS kennelId,
     k.KennelUniqueShortName AS kennelSlug
 FROM HC.Kennel k
 WHERE k.id = @kennelId;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getPhotoUploadToken',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

@@ -80,6 +80,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 -- Rowset 1: own photos (all statuses — always fully returned, no watermark).
 -- Includes AssetId so the app can load the photo from device storage first
 -- and only fall back to BlobUrl if the asset is missing or stale.
@@ -132,3 +134,12 @@ WHERE kp.EventId  = @eventId
               SELECT 1 FROM HC.KennelAccessTier(@userId, kp.KennelId) t
               WHERE t.Tier >= 10)) )
   AND (@afterUpdatedAt IS NULL OR kp.UpdatedAt > @afterUpdatedAt);
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getRunPhotos',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

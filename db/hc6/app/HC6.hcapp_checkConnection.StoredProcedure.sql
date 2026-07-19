@@ -15,4 +15,17 @@ AS
 -- =====================================================================
 SET NOCOUNT ON;
 
+-- Wrap the body so any runtime error is LOGGED to HC.ErrorLog before it reaches
+-- the client, then re-raised (THROW) instead of vanishing as a raw HTTP 500.
+BEGIN TRY
+
 SELECT 'Connected' AS result;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in checkConnection',
+            ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), NULL);
+    THROW;
+END CATCH

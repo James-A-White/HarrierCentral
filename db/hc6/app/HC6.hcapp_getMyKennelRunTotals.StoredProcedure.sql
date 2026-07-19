@@ -67,6 +67,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 ;WITH cte AS (
     SELECT
         ROW_NUMBER() OVER (ORDER BY COUNT(CASE WHEN hem.AttendenceState >= 20 THEN 1 END) DESC) AS rowNum,
@@ -123,3 +125,12 @@ FROM #temp
 ORDER BY rowNum;
 
 DROP TABLE #temp;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getMyKennelRunTotals',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

@@ -65,6 +65,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000'
  OR @eventId  IS NULL OR @eventId  = '00000000-0000-0000-0000-000000000000')
 BEGIN
@@ -103,3 +105,12 @@ FROM HC.Event e
 WHERE e.id       = @eventId
   AND e.KennelId = @kennelId
   AND e.deleted  = 0;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getHashTrash',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

@@ -63,6 +63,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 -- ---------------------------------------------------------------
 -- Fetch invite code — conditions must all be met:
 --   1. Target user has not yet logged in (LastLoginDateTime IS NULL)
@@ -100,3 +102,12 @@ BEGIN
 END
 
 SELECT @inviteCode AS inviteCode;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getInviteCode',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

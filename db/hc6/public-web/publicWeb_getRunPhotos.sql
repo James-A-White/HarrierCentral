@@ -27,6 +27,10 @@ BEGIN
     RETURN;
 END
 
+-- Wrap the body so any runtime error is LOGGED to HC.ErrorLog before it reaches
+-- the client, then re-raised (THROW) instead of vanishing as a raw HTTP 500.
+BEGIN TRY
+
 -- Rowset 0: existence check (0 rows → event not found → shim returns 404)
 SELECT TOP 1 1 AS EventFound
 FROM HC.Event
@@ -50,3 +54,12 @@ INNER JOIN HC.Hasher  h ON h.id = kp.UserId
 WHERE kp.Status    >= 3  -- audience model: Public(3) and Cover(5) only
   AND kp.DeletedAt IS NULL
 ORDER BY kp.CreatedAt ASC;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getRunPhotos',
+            ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), NULL);
+    THROW;
+END CATCH

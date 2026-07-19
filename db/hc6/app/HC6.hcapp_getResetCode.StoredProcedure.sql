@@ -67,6 +67,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 DECLARE @resetCode NVARCHAR(250);
 
 SELECT TOP 1 @resetCode = h.ResetCode
@@ -89,3 +91,12 @@ BEGIN
 END
 
 SELECT @resetCode AS resetCode;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getResetCode',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

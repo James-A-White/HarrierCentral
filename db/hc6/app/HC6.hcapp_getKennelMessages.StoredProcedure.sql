@@ -43,6 +43,8 @@ BEGIN
     RETURN;
 END
 
+BEGIN TRY
+
 IF (@kennelId IS NULL)
 BEGIN
     SET @errorId = NEWID();
@@ -72,3 +74,12 @@ WHERE msg.KennelId = @kennelId
   AND h.Removed = 0
   AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount > @sinceSequenceCount)
 ORDER BY msg.createdAt DESC;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getKennelMessages',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH

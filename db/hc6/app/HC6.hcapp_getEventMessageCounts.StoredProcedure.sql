@@ -66,6 +66,10 @@ BEGIN
     RETURN;
 END
 
+-- Wrap the body so any runtime error is LOGGED to HC.ErrorLog before it reaches
+-- the client, then re-raised (THROW) to preserve existing client behaviour.
+BEGIN TRY
+
 DECLARE @publicHasherId UNIQUEIDENTIFIER;
 SELECT @publicHasherId = h.PublicHasherId FROM HC.Hasher h WHERE h.id = @userId;
 
@@ -79,3 +83,12 @@ INNER JOIN HC.EventMessageBadgeCounts embc
                            ON embc.EventId = em.EventId AND embc.UserId = h.id
 WHERE h.PublicHasherId = @publicHasherId
 GROUP BY em.EventId, em.PublicEventId, embc.LastSequenceCount;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in getEventMessageCounts',
+            ERROR_MESSAGE(), @procName, @userId);
+    THROW;
+END CATCH
