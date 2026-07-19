@@ -74,6 +74,20 @@ class FutureRunListPageController extends GetxController {
   /// driven by the My/Events/Map chips.
   bool get isChatsMode => runsToDisplay.value == RunsToDisplay.unreadChats;
 
+  /// True when ANY user-applied filter narrows the runs list (search text, the
+  /// My / Events / Map chips, or a date-range filter). Used to decide whether an
+  /// empty list is a genuine "nothing matches your filters" (show the message)
+  /// or just mid-load (show the spinner). With NO filter active there is always
+  /// at least the perpetual far-future run, so an empty list can only be a
+  /// transient during load — never a real empty state.
+  bool get hasActiveRunFilter =>
+      searchRunsText.value.trim().isNotEmpty ||
+      filterMy.value ||
+      filterEvents.value ||
+      filterMap.value ||
+      runsTimeScope.value == RunsTimeScope.range ||
+      multiYearDateFilter.value;
+
   /// True when the combined past+future list (with the "My past runs" divider)
   /// is shown — i.e. normal chip mode in future scope. A date range or chats
   /// mode disables it and shows a single flat list instead.

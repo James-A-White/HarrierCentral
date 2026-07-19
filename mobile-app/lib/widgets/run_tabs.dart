@@ -2122,7 +2122,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     return const SizedBox();
                                   }
                                   return Obx(() {
-                                    final count = notificationService
+                                    // Re-check inside the Obx: this closure
+                                    // re-runs on later rebuilds, when the
+                                    // service may no longer be registered.
+                                    final ns = notificationServiceOrNull;
+                                    if (ns == null) return const SizedBox();
+                                    final count = ns
                                             .unreadEventCounts[widget
                                                 .futureRun
                                                 .event

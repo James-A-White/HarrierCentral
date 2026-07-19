@@ -39,17 +39,38 @@ class LiveRunShell extends StatelessWidget {
       eventName: run.event.eventName,
     );
 
+    // Charges (Down Downs) is admin-only — mirror hcapp_getDownDowns so a
+    // non-admin opening the tab doesn't fire a request the server rejects. The
+    // tab stays (fixed-index layout); only its content is gated.
+    // See /hc-authorizations.
+    final bool canViewCharges = canAccessFeature(
+      KennelFeature.manageDownDowns,
+      appAccessFlags: run.extensions.appAccessFlags,
+      mismanagementRoles: run.extensions.mismanagementRoles,
+    );
+
     final pages = <Widget>[
       LiveRunGeneralPage(run: run),
       LiveRunChatPage(run: run),
       LiveRunMapPage(run: run),
-      LiveRunChargesPage(
-        kennelId: run.kennel.kennelId,
-        eventId: run.event.eventId,
-        eventName: run.event.eventName,
-        kennelSlug: run.kennel.kennelUniqueShortName,
-        eventNumber: run.event.absoluteEventNumber ?? 0,
-      ),
+      canViewCharges
+          ? LiveRunChargesPage(
+              kennelId: run.kennel.kennelId,
+              eventId: run.event.eventId,
+              eventName: run.event.eventName,
+              kennelSlug: run.kennel.kennelUniqueShortName,
+              eventNumber: run.event.absoluteEventNumber ?? 0,
+            )
+          : const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: Text(
+                  'Charges are only available to the GM, VGMs, RAs, and '
+                  'Beermeister for this kennel.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
       LiveRunSongbookPage(run: run),
     ];
 

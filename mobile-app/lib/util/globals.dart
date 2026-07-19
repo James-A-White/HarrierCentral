@@ -14,6 +14,18 @@ Database get database => Get.find<Database>();
 NetworkService get networkService => Get.find<NetworkService>();
 NotificationService get notificationService => Get.find<NotificationService>();
 
+/// Null-safe accessor for [NotificationService]. It is registered
+/// conditionally (only once Firebase is initialised — see the
+/// `Get.putAsync<NotificationService>` sites), so `Get.find` throws
+/// "NotificationService not found" if read before registration or after a
+/// deregister. Prefer this inside reactive `Obx` closures: an outer
+/// `if (Get.isRegistered<NotificationService>())` only guards the first build,
+/// whereas the Obx re-runs later and would otherwise call the throwing getter.
+NotificationService? get notificationServiceOrNull =>
+    Get.isRegistered<NotificationService>()
+    ? Get.find<NotificationService>()
+    : null;
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 /// Shorthand for the current user's ID from preferences.

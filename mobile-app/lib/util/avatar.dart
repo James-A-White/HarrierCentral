@@ -38,7 +38,15 @@ String? blobUrlForPhoto(String? photo) {
   if (p.toLowerCase().startsWith('bundle://')) {
     return '$kAvatarBaseUrl/${p.toLowerCase().replaceFirst('bundle://', '')}.jpg';
   }
-  return photo;
+  // Guard: only ever hand back an http(s) URL. Callers pass this result
+  // straight into CachedNetworkImage / NetworkImage, and any non-http scheme
+  // (a stray `bundle://` variant, a malformed value) throws
+  // "Unsupported scheme '…'" inside the image loader — an uncaught async error
+  // seen in on-device logs (bundle://avatar-null, 2026-06-28). Returning null
+  // makes callers fall back to their placeholder/default instead of crashing.
+  final lower = p.toLowerCase();
+  if (lower.startsWith('http://') || lower.startsWith('https://')) return photo;
+  return null;
 }
 
 /// Resolves a hasher `photo` value (HC.Hasher.Photo / `colPhoto`) to an
@@ -53,8 +61,16 @@ String? blobUrlForPhoto(String? photo) {
 /// Use this everywhere a hasher avatar is shown so bundled avatars and the
 /// no-photo case render a real image instead of a blank/broken one.
 ImageProvider avatarImageProvider(String? photo) {
+  final raw = (photo ?? '').trim().toLowerCase();
+  // The `avatar-null` sentinel (and empty/null) means "no photo" — use the
+  // local default asset rather than fetching a guaranteed-missing network image.
+  if (raw.isEmpty || raw.contains('avatar-null')) {
+    return const AssetImage(kDefaultAvatarAsset);
+  }
+  // blobUrlForPhoto guarantees an http(s) URL or null, so a non-http scheme
+  // (e.g. bundle://) can never reach CachedNetworkImageProvider here.
   final p = (blobUrlForPhoto(photo) ?? '').trim();
-  if (p.startsWith('http')) {
+  if (p.toLowerCase().startsWith('http')) {
     return CachedNetworkImageProvider(p);
   }
   return const AssetImage(kDefaultAvatarAsset);

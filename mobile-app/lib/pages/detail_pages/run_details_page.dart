@@ -58,12 +58,17 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           },
         ),
         actions: <Widget>[
-          // Show the admin gear to any kennel admin — by app-access FLAG or by
-          // mismanagement ROLE (a flag-less GM/VGM/RA is still an admin) — OR to
-          // a designated hare of this run (run-scoped admin screen for their run).
-          (_futureRun.extensions.appAccessFlags == 0 &&
-                  _futureRun.extensions.mismanagementRoles == 0 &&
-                  _futureRun.extensions.isHare != 1)
+          // Show the admin gear only to users the server will actually let into
+          // run admin (hcapp_syncEventAdminData) — the GM/VGM/RA/HashFlash/
+          // HashCash/HashBank roles or the ManageRuns/ManageHashCash flags — OR a
+          // designated hare of this run (run-scoped admin for their own run).
+          // Mirrors the SP gate exactly; see /hc-authorizations.
+          (!canAccessFeature(
+            KennelFeature.enterRunAdmin,
+            appAccessFlags: _futureRun.extensions.appAccessFlags,
+            mismanagementRoles: _futureRun.extensions.mismanagementRoles,
+            isHareOfEvent: _futureRun.extensions.isHare == 1,
+          ))
               ? Container()
               : IconButton(
                   icon: const Icon(FontAwesome.gear, color: Colors.white),

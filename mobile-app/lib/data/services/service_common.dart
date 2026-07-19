@@ -137,11 +137,13 @@ class ServiceCommon {
         );
       }
 
-      BootLogger.logError(
-        '[ERROR][HTTP]',
-        'Retry $attempt failed: ${response.statusCode} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
-        null,
-      );
+      if (!_isConnectionProbe(requestBody)) {
+        BootLogger.logError(
+          '[ERROR][HTTP]',
+          'Retry $attempt failed: ${response.statusCode} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
+          null,
+        );
+      }
 
       if (attempt == 3) {
         _showSnackbarSafely(
@@ -178,7 +180,9 @@ class ServiceCommon {
             onTimeout: () => Response('', 0),
           )
           .catchError((dynamic error) {
-            BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}', null);
+            if (!_isConnectionProbe(requestBody)) {
+              BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}', null);
+            }
             return Future<Response>.value(Response('', 500));
           });
     }
@@ -191,10 +195,20 @@ class ServiceCommon {
         )
         .timeout(_requestTimeout, onTimeout: () => Response('', 0))
         .catchError((dynamic error) {
-          BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}', null);
+          if (!_isConnectionProbe(requestBody)) {
+            BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}', null);
+          }
           return Future<Response>.value(Response('', 500));
         });
   }
+
+  /// True when [requestBody] is a `checkConnection` probe. The probe is fired
+  /// while offline / during connectivity flaps, so its failure (500 from the
+  /// gateway, or a network SocketException) is the EXPECTED signal — not an
+  /// error worth harvesting. Skip error-logging for it to keep the on-device
+  /// log free of checkConnection 500/network-error noise.
+  static bool _isConnectionProbe(String requestBody) =>
+      requestBody.contains('"queryType":"checkConnection"');
 
   static bool _isRetryableStatus(int statusCode) {
     // 0 = our request-timed-out sentinel — don't retry, fail fast.

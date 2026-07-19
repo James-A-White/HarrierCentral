@@ -1,5 +1,25 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.14.1+1211 (2026-07-19)
+
+### Fixes
+- **Check-In Pack crash**: fixed a `RangeError` crash that could occur when a search
+  filtered the pack list down (a row rebuilt against the old, longer list).
+- **Avatars**: hardened photo loading so a legacy `bundle://` value can never fail to
+  render — bundled/no-photo avatars now always resolve to a real image.
+- **Notifications**: fixed a rare crash reading the run-notification badge when the
+  notification service wasn't registered yet.
+
+### Improvements
+- **Admin gating**: kennel admin, run admin, photo review, and the live-run **Charges**
+  tab now only appear/act for users with the matching permission — so you no longer tap
+  in and hit a "not authorised" rejection.
+- **Quieter diagnostics**: offline connection-check failures no longer clutter the
+  on-device log.
+- **PackTrack diagnostics** (enabled testers only): added lifecycle breadcrumbs plus a
+  ~60s memory-footprint (RSS) heartbeat to live run tracking, so tracking-related crashes
+  — including out-of-memory kills — leave a diagnosable trail.
+
 ## 2.14.0+1210 (2026-07-19)
 
 ### New Features

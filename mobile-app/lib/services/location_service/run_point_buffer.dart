@@ -102,13 +102,23 @@ class RunPointBuffer {
             (resp.statusCode >= 500 && resp.statusCode < 600)) {
           // fall through to retry
         } else {
+          BootLogger.logBreadcrumb(
+            'PackTrack: upload batch DROPPED '
+            '(non-retryable ${resp.statusCode}, ${batch.length} pts)',
+          );
           return false;
         }
       } catch (_) {
         // network error -> retry
       }
       attempt++;
-      if (attempt >= maxAttempts) return false;
+      if (attempt >= maxAttempts) {
+        BootLogger.logBreadcrumb(
+          'PackTrack: upload batch ABANDONED after $maxAttempts attempts '
+          '(${batch.length} pts)',
+        );
+        return false;
+      }
       final backoffMs = 200 * (1 << (attempt - 1));
       await Future.delayed(Duration(milliseconds: backoffMs));
     }

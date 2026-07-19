@@ -53,6 +53,9 @@ class LocationService extends GetxService {
   RunPointBuffer? _runBuffer;
   DateTime _lastFlushTime = DateTime.now();
 
+  // Throttle for the memory-usage breadcrumb emitted while tracking (~60s).
+  DateTime? _lastMemLogTime;
+
   // Filtered distance for the current tracking session.
   // Updated on every GPS point using the same TrackPointFilter as the map view.
   final RxDouble filteredSessionDistanceMeters = 0.0.obs;
@@ -133,7 +136,15 @@ class LocationService extends GetxService {
           updateDeviceLocation,
           onError: (error) {
             if (kDebugMode) debugPrint('LocationStream Error: $error');
+            BootLogger.logBreadcrumb(
+              'PackTrack: location stream error while TRACKING: $error',
+            );
           },
+        );
+        BootLogger.logBreadcrumb(
+          'PackTrack: run tracking STARTED '
+          '(distanceFilter=${_trackingDistanceFilter()}m, '
+          'accuracy=${_trackingAccuracy()}) ${BootLogger.memInfo()}',
         );
         if (kDebugMode) debugPrint('LocationService: Started run tracking.');
 
@@ -154,7 +165,13 @@ class LocationService extends GetxService {
           updateDeviceLocation,
           onError: (error) {
             if (kDebugMode) debugPrint('LocationStream Error: $error');
+            BootLogger.logBreadcrumb(
+              'PackTrack: location stream error while PAUSED: $error',
+            );
           },
+        );
+        BootLogger.logBreadcrumb(
+          'PackTrack: run tracking AUTO-PAUSED (monitoring for resume)',
         );
         if (kDebugMode) debugPrint('LocationService: Auto-paused. Monitoring for resume.');
 
@@ -175,8 +192,12 @@ class LocationService extends GetxService {
           updateDeviceLocation,
           onError: (error) {
             if (kDebugMode) debugPrint('LocationStream Error: $error');
+            BootLogger.logBreadcrumb(
+              'PackTrack: location stream error while STOPPED/idle: $error',
+            );
           },
         );
+        BootLogger.logBreadcrumb('PackTrack: run tracking STOPPED (idle stream)');
         if (kDebugMode) debugPrint('LocationService: Stopped run tracking.');
       }
     });
@@ -557,6 +578,18 @@ class LocationService extends GetxService {
     }
 
     if (joinRunTracking.value) {
+      // Throttled memory heartbeat (~every 60s while tracking) so the harvest
+      // shows the app's RSS trend across a run — a steady climb toward the
+      // device limit is the signature of an out-of-memory (jetsam) kill.
+      final nowMem = DateTime.now();
+      if (_lastMemLogTime == null ||
+          nowMem.difference(_lastMemLogTime!).inSeconds >= 60) {
+        _lastMemLogTime = nowMem;
+        BootLogger.logBreadcrumb(
+          'PackTrack: tracking heartbeat ${BootLogger.memInfo()}',
+        );
+      }
+
       if ((_runBuffer != null) && (_runBuffer!.eventId != eventId)) {
         // Reset buffer if eventId/userId changed
         await _runBuffer?.flush();

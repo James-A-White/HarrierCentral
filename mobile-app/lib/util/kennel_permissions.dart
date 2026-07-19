@@ -22,6 +22,13 @@ enum KennelFeature {
   manageDownDowns(0x0000001E, authCanManageAwards, false),
   manageMembers(0x00000046, authCanManageMembers, false),
   viewInviteCodes(0x00000046, authCanManageMembers, false),
+  // Admin-screen entry gates — mirror the sync SP auth exactly.
+  // hcapp_syncKennelAdminData: mm 0x2E (GM|VGM|RA|HashFlash) · flag ManageMembers.
+  enterKennelAdmin(0x0000002E, authCanManageMembers, false),
+  // hcapp_syncEventAdminData: mm 0x0004042E (GM|VGM|RA|HashFlash|HashCash|HashBank)
+  // · flag ManageRuns|ManageHashCash. Hare-scoped: a run's hare may load its
+  // own event admin data (SP checks HasherEventMap.IsHare for that event).
+  enterRunAdmin(0x0004042E, authCanManageRuns | authCanManageHashCash, true),
   // super-admin only
   assignAppAccessFlags(0x00000000, 0, false),
   // GM|VGM + super-admin

@@ -182,16 +182,31 @@ class ZoomableImagePage2 extends StatelessWidget {
                     final KennelListAggregate? kennel =
                         await QueryKennels.getSingleKennel(kennelId!);
 
-                    if (kennel != null) {
-                      await Navigator.of(
-                        navigatorKey.currentContext!,
-                      ).push<dynamic>(
-                        MaterialPageRoute<dynamic>(
-                          builder: (BuildContext context) =>
-                              KennelAdminMainPage(kennelAggregateItem: kennel),
-                        ),
+                    if (kennel == null) return;
+
+                    // Gate entry to kennel admin (hcapp_syncKennelAdminData) —
+                    // mirror the SP auth so a non-admin doesn't fire a rejected
+                    // request. See /hc-authorizations.
+                    if (!canAccessFeature(
+                      KennelFeature.enterKennelAdmin,
+                      appAccessFlags: kennel.hkm?.appAccessFlags ?? 0,
+                      mismanagementRoles: kennel.hkm?.mismanagementRoles ?? 0,
+                    )) {
+                      showHcSnackbar(
+                        'You don\'t have admin access for this kennel.',
+                        isError: true,
                       );
+                      return;
                     }
+
+                    await Navigator.of(
+                      navigatorKey.currentContext!,
+                    ).push<dynamic>(
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) =>
+                            KennelAdminMainPage(kennelAggregateItem: kennel),
+                      ),
+                    );
                   },
                 ),
               ),

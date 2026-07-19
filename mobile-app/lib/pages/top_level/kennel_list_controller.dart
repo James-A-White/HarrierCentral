@@ -474,6 +474,22 @@ class KennelsListPageController extends GetxController {
 
   Future<void> navigateToKennelAdmin(BuildContext context, int index) async {
     final KennelListAggregate kennel = filteredList[index];
+
+    // Gate entry to kennel admin (hcapp_syncKennelAdminData). Mirrors the SP
+    // auth exactly so we don't fire a request the server will reject. UI gate is
+    // UX only — the SP is the real gate. See /hc-authorizations.
+    if (!canAccessFeature(
+      KennelFeature.enterKennelAdmin,
+      appAccessFlags: kennel.hkm?.appAccessFlags ?? 0,
+      mismanagementRoles: kennel.hkm?.mismanagementRoles ?? 0,
+    )) {
+      showHcSnackbar(
+        'You don\'t have admin access for this kennel.',
+        isError: true,
+      );
+      return;
+    }
+
     tableModel.globalKennelMainPageList!.clear();
 
     await Navigator.of(context).push<dynamic>(

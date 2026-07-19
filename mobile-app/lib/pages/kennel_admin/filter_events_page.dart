@@ -700,6 +700,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                   child: FilterEventListItem(
                     event: event,
                     kennelShortName: widget.kennel.kennel.kennelShortName,
+                    mismanagementRoles:
+                        widget.kennel.hkm?.mismanagementRoles ?? 0,
                     updateEvent: (dynamic retVal) async {
                       final EnumEventFilterType ft =
                           retVal as EnumEventFilterType;

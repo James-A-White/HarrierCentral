@@ -759,6 +759,18 @@ class CheckInPackPage extends StatelessWidget {
     int index,
     CheckInPackController controller,
   ) {
+    // Guard against a stale index. Each row is wrapped in an Obx (see the
+    // `Obx(() => _listItem(...))` above) that subscribes to `filteredList`.
+    // When a search shrinks the list, `filteredList.assignAll(...)` notifies
+    // those Obx listeners synchronously — with their originally-captured
+    // `index` — before the GetBuilder rebuild recomputes `itemCount`. A
+    // surviving tail row then re-runs `_listItem` with an out-of-range index.
+    // Render nothing for that one frame; the imminent GetBuilder rebuild
+    // replaces the list with the correct count. (Fixes the RangeError at
+    // filteredList[index] surfaced in on-device logs.)
+    if (index < 0 || index >= controller.filteredList.length) {
+      return const SizedBox.shrink();
+    }
     final hasher = controller.filteredList[index];
 
     double multselectMargin = controller.showMultiSelect.value ? 40.0 : 0.0;

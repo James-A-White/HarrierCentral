@@ -390,6 +390,20 @@ class RunAndKennelMapController extends GetxController {
       isHomeKennel: isHomeKennel,
     );
 
+    // Gate entry to kennel admin (hcapp_syncKennelAdminData) — mirror the SP
+    // auth so a non-admin marker tap doesn't fire a rejected request.
+    if (!canAccessFeature(
+      KennelFeature.enterKennelAdmin,
+      appAccessFlags: hkmItem?.appAccessFlags ?? 0,
+      mismanagementRoles: hkmItem?.mismanagementRoles ?? 0,
+    )) {
+      showHcSnackbar(
+        'You don\'t have admin access for this kennel.',
+        isError: true,
+      );
+      return;
+    }
+
     if (navigatorKey.currentContext == null) return;
     await Navigator.of(navigatorKey.currentContext!).push<dynamic>(
       MaterialPageRoute<dynamic>(

@@ -20,10 +20,11 @@ class RunListItemController extends GetxController {
       hares = (futureRun.event.hares ?? '').obs,
       locationOneLineDesc = (futureRun.event.locationOneLineDesc ?? '').obs,
       liveRunState = LiveRunService.ensure() {
-    if (AppAccess(
-      futureRun.extensions.appAccessFlags,
+    if (canAccessFeature(
+      KennelFeature.reviewPhotos,
+      appAccessFlags: futureRun.extensions.appAccessFlags,
       mismanagementRoles: futureRun.extensions.mismanagementRoles,
-    ).isPhotoAdmin) {
+    )) {
       unawaited(KennelPhotoService()
           .loadPendingPhotoSummary(futureRun.kennel.kennelId));
     }
@@ -337,10 +338,14 @@ class RunListItem extends StatelessWidget {
                       ),
                 if (Get.isRegistered<NotificationService>())
                   Obx(() {
-                    if ((!notificationService.unreadEventCounts.containsKey(
+                    // Re-check inside the Obx: this closure re-runs on later
+                    // rebuilds, when the service may no longer be registered.
+                    final ns = notificationServiceOrNull;
+                    if (ns == null) return const SizedBox();
+                    if ((!ns.unreadEventCounts.containsKey(
                           futureRun.event.publicEventId,
                         )) ||
-                        (notificationService
+                        (ns
                                 .unreadEventCounts[futureRun
                                     .event
                                     .publicEventId]
@@ -355,7 +360,7 @@ class RunListItem extends StatelessWidget {
                           width: 30,
                           height: 13,
                           child: AutoSizeText(
-                            notificationService
+                            ns
                                     .unreadEventCounts[futureRun
                                         .event
                                         .publicEventId]

@@ -596,6 +596,9 @@ class RunTrackerMapController extends GetxController
     _lastMarkerZoom = initialZoom;
     _startAutoUpdateTimer();
     _startCompass();
+    BootLogger.logBreadcrumb(
+      'PackTrack map OPENED (eventId=${event.eventId})',
+    );
     unawaited(loadPositions());
     unawaited(_loadPhotoCache());
   }
@@ -618,6 +621,7 @@ class RunTrackerMapController extends GetxController
 
   @override
   void onClose() {
+    BootLogger.logBreadcrumb('PackTrack map CLOSED');
     WidgetsBinding.instance.removeObserver(this);
     _stopAutoUpdateTimer();
     unawaited(_tiltSub?.cancel());
@@ -635,6 +639,10 @@ class RunTrackerMapController extends GetxController
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Breadcrumb: if the app is killed while backgrounded during live tracking
+    // (iOS OOM / background-location watchdog), this transition is the last
+    // thing captured and points straight at the background path.
+    BootLogger.logBreadcrumb('PackTrack map: app lifecycle -> $state');
     switch (state) {
       case AppLifecycleState.resumed:
         setVisible(true);

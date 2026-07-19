@@ -5,24 +5,38 @@ import 'package:harrier_central/firebase_options.dart';
 // the app is in the background and location services
 // is not set to Always Allow.
 class AppLifecycleController extends SuperController<void> {
+  /// Breadcrumb the app-level lifecycle transition, but ONLY while a live run is
+  /// being tracked. A kill that happens here (backgrounded during tracking) is
+  /// the prime suspect for a PackTrack native crash — iOS background-location
+  /// watchdog or OOM — which leaves no Dart stack. Staying silent when not
+  /// tracking keeps ordinary backgrounding out of the capped harvest log.
+  void _trackingLifecycleBreadcrumb(String phase) {
+    if (Get.isRegistered<LocationService>() &&
+        Get.find<LocationService>().joinRunTracking.value) {
+      BootLogger.logBreadcrumb(
+        'App lifecycle -> $phase (run tracking ACTIVE) ${BootLogger.memInfo()}',
+      );
+    }
+  }
+
   @override
   void onPaused() {
-    //print('AppLifecycleController: onPaused called');
+    _trackingLifecycleBreadcrumb('paused');
   }
 
   @override
   void onDetached() {
-    // print('AppLifecycleController: onDetached called');
+    _trackingLifecycleBreadcrumb('detached');
   }
 
   @override
   void onInactive() {
-    //print('AppLifecycleController: onInactive called');
+    _trackingLifecycleBreadcrumb('inactive');
   }
 
   @override
   void onResumed() {
-    //print('AppLifecycleController: onResumed called');
+    _trackingLifecycleBreadcrumb('resumed');
     // Re-register LocationService if it was deleted while the app was paused.
     if (!Get.isRegistered<LocationService>()) {
       Get.put(LocationService());
@@ -34,7 +48,9 @@ class AppLifecycleController extends SuperController<void> {
   }
 
   @override
-  void onHidden() {}
+  void onHidden() {
+    _trackingLifecycleBreadcrumb('hidden');
+  }
 }
 
 Future<void> main() async {

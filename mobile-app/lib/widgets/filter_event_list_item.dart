@@ -7,17 +7,38 @@ class FilterEventListItem extends StatelessWidget {
     required this.event,
     required this.kennelShortName,
     required this.updateEvent,
+    this.mismanagementRoles = 0,
   });
 
   final LiteEventModel event;
   final String kennelShortName;
   final Function updateEvent;
 
+  /// The current user's mismanagement roles for this kennel — combined with the
+  /// per-event [LiteEventModel.appAccessFlags] to gate run-admin entry. A pure
+  /// hare cannot reach this list (it lives inside kennel admin), so the hare
+  /// leg is not needed here.
+  final int mismanagementRoles;
+
   @override
   Widget build(BuildContext context) {
     final double iconSize = 45 * deviceInfo.deviceWidthScaleFactor;
     return GestureDetector(
       onTap: () async {
+        // Gate run-admin entry (hcapp_syncEventAdminData) to mirror the SP auth
+        // exactly, so a member-manager-only kennel admin can't fire a rejected
+        // request by tapping a run. See /hc-authorizations.
+        if (!canAccessFeature(
+          KennelFeature.enterRunAdmin,
+          appAccessFlags: event.appAccessFlags,
+          mismanagementRoles: mismanagementRoles,
+        )) {
+          showHcSnackbar(
+            'You don\'t have admin access for this run.',
+            isError: true,
+          );
+          return;
+        }
         await Navigator.push<void>(
           context,
           MaterialPageRoute<void>(

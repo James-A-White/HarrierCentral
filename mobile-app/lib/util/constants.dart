@@ -314,6 +314,10 @@ class AppAccess {
 
   /// True when the user holds Hash Flash, GM, VGM, or RA for this kennel —
   /// the roles that grant access to pending photo review (hcapp_getKennelPendingPhotos).
+  ///
+  /// NOTE: role-only leg, retained for existing callers. Prefer the canonical
+  /// [canAccessFeature]([KennelFeature.reviewPhotos]), which also honours the
+  /// ManagePhotos override flag and SuperAdmin, matching the server.
   bool get isPhotoAdmin {
     return mismanagementRoles &
             (mmRoleFlagHashFlash | mmRoleFlagGm | mmRoleFlagVgm | mmRoleFlagRa) !=

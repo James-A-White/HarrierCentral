@@ -428,6 +428,15 @@ class FutureRunsListPage extends StatelessWidget {
       noRunsAvaiable = true;
     }
 
+    // The "No runs available" message is only ever legitimate when a filter is
+    // narrowing the list (or in chats mode). With no filter active there is
+    // always at least the perpetual far-future run, so an empty list here is a
+    // mid-load transient (filterRuns hasn't produced results yet) — show the
+    // loading spinner instead of flashing the empty message (the boot flicker).
+    final bool showLoadingNotEmpty = noRunsAvaiable &&
+        !listController.hasActiveRunFilter &&
+        !listController.isChatsMode;
+
     // Fixed (non-floating) search header above an index-anchored list. The list
     // uses a ScrollablePositionedList so it can open on the "Past Runs" divider
     // with the user's attended past runs scrollable above it; that widget drives
@@ -466,7 +475,13 @@ class FutureRunsListPage extends StatelessWidget {
                 // leaving everything below as empty background.
                 fit: StackFit.expand,
                 children: [
-                  noRunsAvaiable
+                  showLoadingNotEmpty
+                      ? const Center(
+                          child: HcAppCircularProgressIndicator(
+                            key: Key('runs-filter-loading'),
+                          ),
+                        )
+                      : noRunsAvaiable
                       ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
