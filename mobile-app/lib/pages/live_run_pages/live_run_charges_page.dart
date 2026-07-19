@@ -26,6 +26,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
   final _service = RunContentService();
 
   bool _isLoading = true;
+  bool _canManageCharges = false;
   List<DownDownModel> _charges = [];
 
   @override
@@ -36,6 +37,14 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
 
   Future<void> _load() async {
     setState(() => _isLoading = true);
+    // Gate the add/edit affordances to those who can manage down downs (the
+    // server also enforces this; getDownDowns returns nothing to non-managers).
+    final kennelAgg = await QueryKennels.getSingleKennel(widget.kennelId);
+    _canManageCharges = canAccessFeature(
+      KennelFeature.manageDownDowns,
+      appAccessFlags: kennelAgg?.hkm?.appAccessFlags ?? 0,
+      mismanagementRoles: kennelAgg?.hkm?.mismanagementRoles ?? 0,
+    );
     try {
       final result = await _service.getDownDowns(
         kennelId: widget.kennelId,
@@ -116,6 +125,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
     return Stack(
       children: [
         content,
+        if (_canManageCharges)
         Positioned(
           right: 16,
           bottom: 16,

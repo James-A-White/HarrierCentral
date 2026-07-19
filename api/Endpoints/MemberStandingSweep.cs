@@ -6,11 +6,15 @@ using System.Data;
 namespace HcWebApi
 {
     /// <summary>
-    /// Daily sweep for the automated MEMBER bit (0x0001) of
-    /// HC.HasherKennelMap.KennelStanding. All logic lives in
-    /// HC6.nonApi_sweepMemberStanding — this function is only the clock.
-    /// The API shim is the consolidation point for scheduled automation
-    /// (KennelStanding design of record, 2026-07-06).
+    /// Daily scheduled automation (the API shim is the consolidation point —
+    /// KennelStanding design of record, 2026-07-06). Runs, in order:
+    ///   1. HC6.nonApi_sweepMemberStanding — the automated MEMBER bit (0x0001)
+    ///      of HC.HasherKennelMap.KennelStanding.
+    ///   2. HC6.nonApi_updateRunCountsForAllUsers — a full recompute of the
+    ///      stamped run-count summaries (HcTotalRunCount etc.) so any count that
+    ///      went stale outside the per-change triggers (migrations, direct edits,
+    ///      missed triggers) self-heals nightly.
+    /// All logic lives in the SPs — this function is only the clock.
     /// </summary>
     public class MemberStandingSweep
     {
@@ -44,10 +48,20 @@ namespace HcWebApi
                 _logger.LogInformation(
                     "MemberStandingSweep completed — rowsChanged={RowsChanged}",
                     result ?? 0);
+
+                // Full nightly recompute of run-count summaries so any stale
+                // HcTotalRunCount (etc.) self-heals. No @updatedSince = all users.
+                using SqlCommand runCountsCmd = new("HC6.nonApi_updateRunCountsForAllUsers", conn)
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    CommandTimeout = 600,
+                };
+                await runCountsCmd.ExecuteNonQueryAsync();
+                _logger.LogInformation("Run-count recompute (all users) completed");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "MemberStandingSweep failed");
+                _logger.LogError(ex, "MemberStandingSweep / run-count recompute failed");
             }
         }
     }

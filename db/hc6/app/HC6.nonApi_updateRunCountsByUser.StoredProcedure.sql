@@ -146,8 +146,12 @@ BEGIN
            );
 
     -- ----------------------------------------------------------------
-    -- Stage 3: Clear counts on HEM rows where the user is no longer
-    --          attending (e.g. was checked in then removed).
+    -- Stage 3: Clear counts on HEM rows that no longer QUALIFY as a
+    --          counted run — not just att<20. A row can be att>=20 yet
+    --          non-qualifying (event hidden/uncounted/removed, virgin/visitor,
+    --          or a future run checked into early). Its stored count columns
+    --          must be cleared or Stage 4's MAX() picks up the stale value and
+    --          over-counts. The predicate mirrors Stage 2's `counted` filter.
     -- ----------------------------------------------------------------
     UPDATE hem
     SET    hem.TotalRuns              = NULL,
@@ -158,8 +162,17 @@ BEGIN
            hem.YtdHaringThisKennel    = NULL,
            hem.updatedAt              = SYSDATETIMEOFFSET()
     FROM   HC.HasherEventMap hem
-    WHERE  hem.userId         = @userId
-      AND  hem.AttendenceState < 20
+    LEFT   JOIN HC.Event evt ON evt.id = hem.EventId
+    WHERE  hem.userId = @userId
+      AND  (
+               hem.AttendenceState < 20
+            OR ISNULL(hem.VirginVisitorType, 0) <> 0
+            OR evt.id IS NULL
+            OR evt.IsCountedRun <> 1
+            OR evt.IsVisible <> 1
+            OR evt.removed <> 0
+            OR evt.EventStartDateTimeGmt >= DATEADD(HOUR, 6, SYSUTCDATETIME())
+           )
       AND  (
                hem.TotalRuns              IS NOT NULL OR
                hem.TotalHaring            IS NOT NULL OR

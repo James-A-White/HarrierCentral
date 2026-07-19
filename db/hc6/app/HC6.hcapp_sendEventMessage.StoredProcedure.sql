@@ -149,6 +149,26 @@ DECLARE @isWithinWindow SMALLINT =
     CASE WHEN ABS(DATEDIFF(MINUTE, GETDATE(), @eventStartDateTimeUtc)) <= (@timeLimitHours * 60) THEN 1 ELSE 0 END;
 
 -- ---------------------------------------------------------------
+-- Authorization: the sender must belong to this kennel (follows it) or be an
+-- attendee/RSVP of this event. Previously any authenticated user could post to
+-- any event chat (see /hc-authorizations). Mirrors sendKennelMessage's
+-- membership gate, widened to include event attendees.
+-- ---------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap WHERE UserId = @userId AND KennelId = @kennelId AND removed = 0)
+   AND NOT EXISTS (SELECT 1 FROM HC.HasherEventMap WHERE UserId = @userId AND EventId = @eventId)
+BEGIN
+    SET @errorCode = 1263; SET @errorType = 3; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Not authorised to post',
+            'Sender is not a member or attendee of this event', @procName, @userId);
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'You must be a member of this kennel or attending this run to post a message.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
+-- ---------------------------------------------------------------
 -- Write path: INSERT + badge MERGE wrapped in a transaction so
 -- both succeed or both roll back atomically.
 -- ---------------------------------------------------------------

@@ -44,6 +44,12 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
     eventPrice =
         eventPrice * (1.0 - (widget.areWeAtRunData.discountPercent / 100.0));
 
+    // When the user has enough Hash Credit to cover the run we drop the
+    // "check in without paying" (freeload) option entirely: the two bottom
+    // buttons become "Pay with credit" / "Don't check in". With no (or not
+    // enough) credit the dialog is unchanged.
+    final bool hasCredit = eventPrice <= widget.areWeAtRunData.kennelCredit;
+
     return AlertDialog(
       //title: Text(widget.title),
       contentPadding: const EdgeInsets.fromLTRB(14, 20, 14, 10),
@@ -85,26 +91,13 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                 children: <Widget>[
                   if (eventPrice <=
                       widget.areWeAtRunData.kennelCredit) ...<Widget>[
+                    // The pay action now lives in the bottom "Pay with credit"
+                    // button; keep the amount visible here so the cost is still
+                    // shown.
                     Text(
+                      'This run is ${IveCoreUtilities.getFormattedMoney(eventPrice, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)}. '
                       'You have ${IveCoreUtilities.getFormattedMoney(widget.areWeAtRunData.kennelCredit, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} of Hash Credit remaining.',
-                    ),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        shape: button_shape,
-                        backgroundColor: Colors.green.shade700,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text(
-                          'Pay ${IveCoreUtilities.getFormattedMoney(eventPrice, widget.areWeAtRunData.digitsAfterDecimal, widget.areWeAtRunData.currencySymbol)} from Hash Credit',
-                          style: ts_button,
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.of(
-                          context,
-                        ).pop(enumCheckInOption_YesAndPayByCredit);
-                      },
+                      textAlign: TextAlign.center,
                     ),
                   ],
                   if ((widget.areWeAtRunData.allowSelfPayment &
@@ -194,12 +187,6 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
               ),
             ),
           ],
-          if (eventPrice <= widget.areWeAtRunData.kennelCredit) ...<Widget>[
-            const Padding(
-              padding: EdgeInsets.only(top: 10.0),
-              child: Text('Would you like to check in without paying?'),
-            ),
-          ],
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Row(
@@ -210,7 +197,12 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                     shape: button_shape,
                     backgroundColor: hc_red,
                   ),
-                  child: Text(widget.cancelButtonTitle),
+                  // With credit, cancelling means "don't check in" (they either
+                  // pay with credit or nothing). Without credit, keep the
+                  // caller-supplied label.
+                  child: Text(
+                    hasCredit ? "Don't check in" : widget.cancelButtonTitle,
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop(enumCheckInOption_Cancel);
                   },
@@ -222,10 +214,18 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Text(widget.okButtonTitle),
+                    // With credit this pays from credit; without credit it keeps
+                    // the original "check in without paying" behaviour.
+                    child: Text(
+                      hasCredit ? 'Pay with credit' : widget.okButtonTitle,
+                    ),
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop(enumCheckInOption_Yes);
+                    Navigator.of(context).pop(
+                      hasCredit
+                          ? enumCheckInOption_YesAndPayByCredit
+                          : enumCheckInOption_Yes,
+                    );
                   },
                 ),
               ],

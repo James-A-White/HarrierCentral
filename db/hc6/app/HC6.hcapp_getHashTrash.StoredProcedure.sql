@@ -80,13 +80,10 @@ BEGIN
     RETURN;
 END
 
-DECLARE @mmRoleFlags INT = 0;
-SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
-FROM HC.HasherKennelMap
-WHERE UserId = @userId AND KennelId = @kennelId;
-
--- Mismanagement can see drafts; everyone else only sees published
-DECLARE @canSeeDraft SMALLINT = CASE WHEN (@mmRoleFlags & 0x0000102E) <> 0 THEN 1 ELSE 0 END;
+-- Draft visibility: feature "View Hash Trash drafts" (see /hc-authorizations).
+-- Those who can save can see drafts; everyone else only sees published content.
+DECLARE @canSeeDraft SMALLINT;
+EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00121806, 0x00000080, @canSeeDraft OUTPUT;
 
 SELECT
     e.HashTrashHeadline AS headline,

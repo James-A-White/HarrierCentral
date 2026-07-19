@@ -1,3 +1,7 @@
+1.0.30+28
+    • Nightly MemberStandingSweep timer now also runs a full run-count recompute
+      (HC6.nonApi_updateRunCountsForAllUsers) so stamped run counts self-heal.
+
 1.0.29+27
     • PackTrack admin trim: GetPositions now filters positions to the official start/end from AST/AEN boundary markers (5-minute per-event window cache; includeTrimmed bypass for the admin editor)
     • New DeletePositions endpoint (X-Api-Key, scoped to eventId+userId) — removes specific track points: On-Inn terminator strip on resume, and clearing/moving trim boundaries

@@ -1,5 +1,28 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.14.0+1210 (2026-07-19)
+
+### New Features
+- **Hares get their own run-admin screen**: a designated hare can open Run Admin for
+  the run they're haring to edit run details, submit receipts, check people in, print
+  QR codes, and take payment — even without other admin roles.
+
+### Improvements
+- **Permissions overhaul**: admin functions (Hash Cash, run editing, members, photos,
+  Down Downs, Hash Trash, attendance) are now consistently gated by BOTH your
+  mismanagement role and your app-access permission, matching the server — so granting
+  a permission reliably enables its buttons. Added a dedicated Photos permission.
+- **Consistent card corners** across the run and kennel lists.
+- Check-in dialog now offers clearer **"Pay with credit" / "Don't check in"** choices
+  when you have Hash Credit.
+- Run Admin: **Edit run details** moved to the far left; buttons centered.
+- The Down Downs history is simply hidden for non-members (no more error pop-up).
+
+### Fixes
+- No more **"No runs available"** flash on a slow cold start.
+- Kennel run cards now show your correct **RSVP status**.
+- The error dialog button now says **"Close"** (it never quit the app).
+
 ## 2.13.8+1209 (2026-07-18)
 
 ### Improvements

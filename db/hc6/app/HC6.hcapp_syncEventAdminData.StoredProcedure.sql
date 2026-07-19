@@ -104,23 +104,26 @@ BEGIN
     RETURN;
 END
 
--- Admin guard (M14): when called directly (not delegated), verify caller has admin rights for event's kennel.
+-- Admin guard: when called directly (not delegated), verify caller has admin rights for event's kennel.
 -- Delegated calls from write SPs skip this check — the write SP already verified auth.
--- AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
 DECLARE @kennelId UNIQUEIDENTIFIER;
 SELECT @kennelId = e.KennelId FROM HC.Event e WHERE e.id = @eventId;
 
 IF (@procName IS NULL)
 BEGIN
-    DECLARE @syncEvtMmRoles    INT = 0;
-    DECLARE @syncEvtAccessFlags INT = 0;
-    SELECT
-        @syncEvtMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
-        @syncEvtAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
-    FROM HC.HasherKennelMap hkm
-    WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId;
-
-    IF (@syncEvtMmRoles & 0x2E) = 0 AND (@syncEvtAccessFlags & 0x40000081) = 0
+    -- Authorization: event-admin data read (attendees/payments/receipts). Broad —
+    -- serves run admin (attendance) AND hash cash; original roles kept, with
+    -- HashCash|HashBank added so role-based hash-cash people can load run admin
+    -- data, plus ManageRuns|ManageHashCash flags as overrides. (see /hc-authorizations)
+    DECLARE @syncEvtAllowed SMALLINT;
+    EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0004042E, 0x0000000C, @syncEvtAllowed OUTPUT;
+    -- Run-scoped: a designated hare of THIS event may load its admin data so
+    -- they can run their own run (edit details, receipts, check-in, take payment).
+    IF (@syncEvtAllowed = 0 AND EXISTS (
+            SELECT 1 FROM HC.HasherEventMap
+            WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))
+        SET @syncEvtAllowed = 1;
+    IF (@syncEvtAllowed = 0)
     BEGIN
         SET @errorCode = 1371; SET @errorType = 13; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

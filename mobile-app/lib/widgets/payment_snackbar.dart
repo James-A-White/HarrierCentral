@@ -36,6 +36,17 @@ class PaymentSnackBar extends SnackBar {
 
   @override
   Widget get content {
+    // Mirror the server gate (role OR flag), not flag-only. See /hc-authorizations.
+    final bool canAttend = canAccessFeature(
+      KennelFeature.manageAttendance,
+      appAccessFlags: eventAggregate.extensions.appAccessFlags,
+      mismanagementRoles: eventAggregate.extensions.mismanagementRoles,
+    );
+    final bool canTakePayment = canAccessFeature(
+      KennelFeature.takePayment,
+      appAccessFlags: eventAggregate.extensions.appAccessFlags,
+      mismanagementRoles: eventAggregate.extensions.mismanagementRoles,
+    );
     return TextScaleFactorClamper(
       textScaleFactor: 1.50,
       child: Column(
@@ -47,7 +58,7 @@ class PaymentSnackBar extends SnackBar {
             minFontSize: 12.0,
             style: ts_titleCondensedVeryLarge,
           ),
-          (!eventAggregate.extensions.appAccess.canManageRuns ||
+          (!canAttend ||
                   multiSelectEnabled)
               ? Container()
               : Row(
@@ -220,14 +231,14 @@ class PaymentSnackBar extends SnackBar {
                     ),
                   ],
                 ),
-          (!eventAggregate.extensions.appAccess.canManageRuns ||
+          (!canAttend ||
                   multiSelectEnabled)
               ? Container()
               : Padding(
                   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
                   child: Container(color: Colors.white, height: 3.0),
                 ),
-          !eventAggregate.extensions.appAccess.canManageRuns
+          !canAttend
               ? Container()
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,13 +377,13 @@ class PaymentSnackBar extends SnackBar {
                     ),
                   ],
                 ),
-          !eventAggregate.extensions.appAccess.canManageRuns
+          !canAttend
               ? Container()
               : Padding(
                   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
                   child: Container(color: Colors.white, height: 3.0),
                 ),
-          !eventAggregate.extensions.appAccess.canManageHashCash
+          !canTakePayment
               ? Container()
               : Column(
                   children: <Widget>[

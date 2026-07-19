@@ -127,17 +127,15 @@ BEGIN TRY
         DECLARE @kennelId UNIQUEIDENTIFIER;
         SELECT @kennelId = evt.KennelId FROM HC.Event evt WHERE evt.id = @eventId;
 
-        -- Admin guard (H13): caller must hold attendance-management or admin rights for this kennel.
-        -- MismanagementRoles 0x2E = Hash Flash | GM | VGM | RA; AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
-        DECLARE @bulkMmRoles INT = 0;
-        DECLARE @bulkAccessFlags INT = 0;
-        SELECT
-            @bulkMmRoles    = ISNULL(hkm.MismanagementRoles, 0),
-            @bulkAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
-        FROM HC.HasherKennelMap hkm
-        WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId;
-
-        IF (@bulkMmRoles & 0x2E) = 0 AND (@bulkAccessFlags & 0x40000081) = 0
+        -- Authorization: feature "Manage attendance" (see /hc-authorizations).
+        -- Run-scoped: a hare for THIS event may set attendance for it.
+        DECLARE @bulkAttAllowed SMALLINT;
+        EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0008014E, 0x00000004, @bulkAttAllowed OUTPUT;
+        IF (@bulkAttAllowed = 0 AND EXISTS (
+                SELECT 1 FROM HC.HasherEventMap
+                WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))
+            SET @bulkAttAllowed = 1;
+        IF (@bulkAttAllowed = 0)
         BEGIN
             SET @errorCode = 1325; SET @errorType = 13; SET @errorId = NEWID();
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

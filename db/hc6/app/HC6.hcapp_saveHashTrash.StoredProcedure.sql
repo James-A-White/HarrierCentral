@@ -89,12 +89,11 @@ BEGIN
 END
 
 -- Auth: Hash Flash (0x20) | WebMeister (0x1000) | GM (0x02) = 0x1022
-DECLARE @mmRoleFlags INT = 0;
-SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
-FROM HC.HasherKennelMap
-WHERE UserId = @userId AND KennelId = @kennelId;
+-- Authorization: feature "Write / save Hash Trash" (see /hc-authorizations).
+DECLARE @htAllowed SMALLINT;
+EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00121806, 0x00000080, @htAllowed OUTPUT;
 
-IF (@mmRoleFlags & 0x00001022 = 0)
+IF (@htAllowed = 0)
 BEGIN
     SET @errorCode = 1334; SET @errorType = 3; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

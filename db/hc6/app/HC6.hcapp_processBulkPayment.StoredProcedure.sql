@@ -122,17 +122,11 @@ BEGIN TRY
         DECLARE @kennelId    UNIQUEIDENTIFIER;
         SELECT @kennelId = evt.KennelId FROM HC.Event evt WHERE evt.id = @eventId;
 
-        -- Admin guard (H13): caller must hold hash-cash management or admin rights for this kennel.
-        -- MismanagementRoles 0x08 = RA (hash cash); AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
-        DECLARE @bulkPayMmRoles    INT = 0;
-        DECLARE @bulkPayAccessFlags INT = 0;
-        SELECT
-            @bulkPayMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
-            @bulkPayAccessFlags  = ISNULL(hkm.AppAccessFlags, 0)
-        FROM HC.HasherKennelMap hkm
-        WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId;
+        -- Authorization: feature "Bulk payment" (see /hc-authorizations).
+        DECLARE @bulkPayAllowed SMALLINT;
+        EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0004040E, 0x00000008, @bulkPayAllowed OUTPUT;
 
-        IF (@bulkPayMmRoles & 0x08) = 0 AND (@bulkPayAccessFlags & 0x40000081) = 0
+        IF (@bulkPayAllowed = 0)
         BEGIN
             SET @errorCode = 1341; SET @errorType = 13; SET @errorId = NEWID();
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

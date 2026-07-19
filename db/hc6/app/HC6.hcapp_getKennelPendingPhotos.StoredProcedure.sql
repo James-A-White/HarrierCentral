@@ -75,13 +75,11 @@ BEGIN
 END
 
 -- Verify caller is Hash Flash for this kennel (0x00000020)
-DECLARE @mmRoleFlags INT = 0;
-SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
-FROM HC.HasherKennelMap
-WHERE UserId = @userId AND KennelId = @kennelId;
+-- Authorization: feature "Review / approve photos" (see /hc-authorizations).
+DECLARE @photoAllowed SMALLINT;
+EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000002E, 0x00000100, @photoAllowed OUTPUT;
 
--- Hash Flash (0x20) OR GM (0x02) OR VGM (0x04) OR RA (0x08) = 0x2E
-IF (@mmRoleFlags & 0x0000002E = 0)
+IF (@photoAllowed = 0)
 BEGIN
     SET @errorCode = 1334; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

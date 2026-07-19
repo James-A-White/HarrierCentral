@@ -204,6 +204,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   // ---------------------------------------------------------------------------
   Widget _buildAdminFunctions(BuildContext context) {
     final agg = widget.kennelAggregateItem;
+    // Gate buttons via the server-mirroring check (role OR flag). See
+    // /hc-authorizations.
+    bool can(KennelFeature f) => canAccessFeature(
+      f,
+      appAccessFlags: agg.hkm?.appAccessFlags ?? 0,
+      mismanagementRoles: agg.hkm?.mismanagementRoles ?? 0,
+    );
     return Column(
       children: <Widget>[
         Text(
@@ -211,7 +218,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           style: ts_headingLarge,
           textAlign: TextAlign.center,
         ),
-        if (agg.hkm!.appAccess.canManageRuns)
+        if (can(KennelFeature.createEditRuns))
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
@@ -253,7 +260,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               ),
             ],
           ),
-        if (agg.hkm?.appAccess.canManageRuns ?? false)
+        if (can(KennelFeature.createEditRuns))
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
@@ -302,7 +309,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            if (agg.hkm?.appAccess.canManageRuns ?? false)
+            if (can(KennelFeature.createEditRuns))
               Container(
                 margin: const EdgeInsets.only(top: 20, bottom: 15),
                 width: 110,
@@ -374,7 +381,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   ),
                 ),
               ),
-            if (agg.hkm?.appAccess.canManageMembers ?? false)
+            if (can(KennelFeature.manageMembers))
               Padding(
                 padding: const EdgeInsets.only(top: 15, bottom: 15),
                 child: SizedBox(

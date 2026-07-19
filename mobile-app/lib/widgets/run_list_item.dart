@@ -258,6 +258,12 @@ class RunListItem extends StatelessWidget {
       child: Card(
         elevation: 4.0,
         margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
+        // Clip content to the card's rounded corners. Without this the opaque
+        // fill (white for future runs) paints over the corners and squares them
+        // off, while the translucent past-run tint let them show — the visual
+        // inconsistency James spotted. Clipping gives every card the same slight
+        // rounding.
+        clipBehavior: Clip.antiAlias,
         child: Obx(() {
           final isFlashing = Get.isRegistered<FutureRunListPageController>()
               ? Get.find<FutureRunListPageController>()

@@ -164,41 +164,47 @@ BEGIN TRY
     BEGIN TRANSACTION;
 
         -- ---------------------------------------------------------------
+        -- Authorization: feature "Take payment" (see /hc-authorizations).
+        -- ALL money paths (record types 2-8, cancel type 1, confirm type 100)
+        -- require hash-cash rights for the kennel. Previously only type 100 was
+        -- gated, leaving single-payment record/cancel open. Run-scoped: a hare
+        -- of THIS event may also take payment for it (check-in flow, @eventId set;
+        -- does not extend to confirm-only calls where @eventId is null).
+        -- ---------------------------------------------------------------
+        DECLARE @payKennelId UNIQUEIDENTIFIER;
+        IF (@eventId IS NOT NULL)
+            SELECT @payKennelId = KennelId FROM HC.Event WHERE id = @eventId;
+        IF (@payKennelId IS NULL AND @hasherEventMapId IS NOT NULL)
+            SELECT @payKennelId = e.KennelId
+            FROM HC.HasherEventMap hem INNER JOIN HC.Event e ON e.id = hem.EventId
+            WHERE hem.id = @hasherEventMapId;
+
+        DECLARE @payAllowed SMALLINT;
+        EXEC HC6.CheckKennelPermission @userId, @payKennelId, 0x0004040E, 0x00000008, @payAllowed OUTPUT;
+        IF (@payAllowed = 0 AND @eventId IS NOT NULL AND EXISTS (
+                SELECT 1 FROM HC.HasherEventMap
+                WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))
+            SET @payAllowed = 1;
+        IF (@payAllowed = 0)
+        BEGIN
+            SET @errorCode = 1340; SET @errorType = 13; SET @errorId = NEWID();
+            INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+            VALUES (@errorId, '<unknown>', 'Not authorised to take payment',
+                    'Caller does not hold required role for kennel', @procName, @userId);
+            ROLLBACK TRANSACTION;
+            SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+            SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                   'Not authorised' AS errorTitle,
+                   'You are not authorised to take payments for this event.' AS errorUserMessage,
+                   @procName AS errorProc;
+            RETURN;
+        END
+
+        -- ---------------------------------------------------------------
         -- paymentType = 100: confirm bank transfer only
         -- ---------------------------------------------------------------
         IF (@paymentType = 100)
         BEGIN
-            -- Admin guard (M16): only hash-cash managers or admins may confirm bank transfers.
-            -- Resolve the kennel from the HEM row, then check caller rights.
-            DECLARE @confirmKennelId    UNIQUEIDENTIFIER;
-            SELECT @confirmKennelId = e.KennelId
-            FROM HC.HasherEventMap hem
-            INNER JOIN HC.Event e ON e.id = hem.EventId
-            WHERE hem.id = @hasherEventMapId;
-
-            DECLARE @confirmMmRoles    INT = 0;
-            DECLARE @confirmAccessFlags INT = 0;
-            SELECT
-                @confirmMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
-                @confirmAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
-            FROM HC.HasherKennelMap hkm
-            WHERE hkm.UserId = @userId AND hkm.KennelId = @confirmKennelId;
-
-            IF (@confirmMmRoles & 0x08) = 0 AND (@confirmAccessFlags & 0x40000081) = 0
-            BEGIN
-                SET @errorCode = 1340; SET @errorType = 13; SET @errorId = NEWID();
-                INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-                VALUES (@errorId, '<unknown>', 'Not authorised to confirm bank transfer',
-                        'Caller does not hold required role for kennel', @procName, @userId);
-                ROLLBACK TRANSACTION;
-                SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
-                SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
-                       'Not authorised' AS errorTitle,
-                       'You are not authorised to confirm bank transfers for this event.' AS errorUserMessage,
-                       @procName AS errorProc;
-                RETURN;
-            END
-
             UPDATE HC.Payment SET
                 ConfirmedDate      = GETDATE(),
                 ConfirmedBy_UserId = @userId,

@@ -142,11 +142,19 @@ class KennelAdminController extends GetxController {
   // ---------------------------------------------------------------------------
   Future<void> refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || allRuns.isEmpty) {
-      final bool isAdmin =
-          kennelAggregateItem.hkm?.appAccess.isAdmin ?? false;
+      // Always query the current user's own status from the COMMON domain.
+      // These run cards show the CURRENT user's RSVP checkbox, and RSVPs are
+      // written to common_hasherEventMap (AppDomainType.user). The kennelAdmin
+      // context joins kennel_hasherEventMap, which never receives the user's own
+      // RSVP writes, so an admin's own RSVP always rendered as an empty box.
+      // Events come from common_events regardless of context (the admin
+      // auto-follow + force-replicate above ensures this kennel's runs are
+      // present), and the current user's hkm flags (admin/following/isMember)
+      // are in common too — so the user context is correct and complete for both
+      // admins and members.
       final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
         EnumRunQueryType.kennelDetailPage,
-        isAdmin ? EnumRunQueryContext.kennelAdmin : EnumRunQueryContext.user,
+        EnumRunQueryContext.user,
         kennelId: kennelAggregateItem.kennel.kennelId,
         runsTimeScope: RunsTimeScope.future,
         runsToDisplay: RunsToDisplay.allRuns,

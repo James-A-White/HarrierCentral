@@ -348,7 +348,10 @@ class ServiceCommon {
             (await Utilities.showAlert(
               errorResult.errorTitle ?? '',
               (errorResult.errorUserMessage ?? '').replaceAll('~', '\r\n'),
-              'Quit',
+              // "Close" not "Quit" — this dialog only dismisses the error, the
+              // app keeps running. (The genuine app-quitting dialog in
+              // app_boot_service, which calls exit(0), still says "Quit".)
+              'Close',
             )) ??
             false;
 

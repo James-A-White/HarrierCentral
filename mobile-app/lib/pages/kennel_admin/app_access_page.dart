@@ -103,6 +103,13 @@ class AppAccessPageState extends State<AppAccessPage> {
                         );
                       },
                     ),
+                    getOption(
+                      'Manage Photos',
+                      appAccess.getAppAccess(authCanManagePhotos),
+                      (bool value) {
+                        appAccess.setAppAccess(authCanManagePhotos, value);
+                      },
+                    ),
 
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: hc_red),

@@ -123,17 +123,10 @@ BEGIN TRY
             RETURN;
         END
 
-        -- Caller must hold event-admin or broader admin rights for this kennel.
-        -- MismanagementRoles 0x2E = Hash Flash | GM | VGM | RA; AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
-        DECLARE @copyMmRoles     INT = 0;
-        DECLARE @copyAccessFlags INT = 0;
-        SELECT
-            @copyMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
-            @copyAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
-        FROM HC.HasherKennelMap hkm
-        WHERE hkm.UserId = @userId AND hkm.KennelId = @fromKennelId;
-
-        IF (@copyMmRoles & 0x2E) = 0 AND (@copyAccessFlags & 0x40000081) = 0
+        -- Authorization: feature "Copy RSVPs" (see /hc-authorizations).
+        DECLARE @copyAllowed SMALLINT;
+        EXEC HC6.CheckKennelPermission @userId, @fromKennelId, 0x00080146, 0x00000004, @copyAllowed OUTPUT;
+        IF (@copyAllowed = 0)
         BEGIN
             SET @errorCode = 1321; SET @errorType = 13; SET @errorId = NEWID();
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

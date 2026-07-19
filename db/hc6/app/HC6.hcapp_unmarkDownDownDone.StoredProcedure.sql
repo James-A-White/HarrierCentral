@@ -80,12 +80,11 @@ BEGIN
 END
 
 -- Auth: GM (0x02) | RA (0x08) = 0x000A
-DECLARE @mmRoleFlags INT = 0;
-SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
-FROM HC.HasherKennelMap
-WHERE UserId = @userId AND KennelId = @kennelId;
+-- Authorization: feature "Manage Down Downs" (see /hc-authorizations).
+DECLARE @ddAllowed SMALLINT;
+EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000001E, 0x00000020, @ddAllowed OUTPUT;
 
-IF (@mmRoleFlags & 0x0000000A = 0)
+IF (@ddAllowed = 0)
 BEGIN
     SET @errorCode = 1337; SET @errorType = 3; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

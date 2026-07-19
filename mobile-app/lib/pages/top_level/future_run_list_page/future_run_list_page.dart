@@ -19,7 +19,19 @@ class FutureRunsListPage extends StatelessWidget {
         child: GetBuilder<FutureRunListPageController>(
           id: 'runList',
           builder: (listController) {
-            if (listController.allRuns == null) {
+            // A perpetual far-future run means a LOADED runs set is never empty,
+            // so an empty (or null) `allRuns` means the data isn't loaded yet —
+            // e.g. the initial cache read, or a transient empty read while the
+            // background full sync repopulates on a cold boot. Show the spinner in
+            // that case, never the empty state: "No runs available" is only ever
+            // legitimate once runs ARE loaded but a filter/search excludes them
+            // all (allRuns non-empty, displayRuns empty), which _buildListView
+            // handles below. Chats mode is server-driven and doesn't use
+            // `allRuns`, so it manages its own "You're up to date" empty state.
+            final bool runsLoaded =
+                listController.allRuns != null &&
+                listController.allRuns!.isNotEmpty;
+            if (!listController.isChatsMode && !runsLoaded) {
               return HcAppCircularProgressIndicator(key: UniqueKey());
             }
             return Stack(

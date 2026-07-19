@@ -139,6 +139,8 @@ echo ""
 echo "── Step 5: App helper SP (must precede all app SPs) ─────────"
 run_file "HC6.ValidateAppAuth" \
     "$APP_DIR/HC6.ValidateAppAuth.StoredProcedure.sql"
+run_file "HC6.CheckKennelPermission" \
+    "$APP_DIR/HC6.CheckKennelPermission.StoredProcedure.sql"
 
 echo ""
 echo "── Step 6: Internal helper SPs ──────────────────────────────"

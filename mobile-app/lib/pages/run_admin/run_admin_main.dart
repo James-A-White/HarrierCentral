@@ -74,9 +74,14 @@ class RunDetailQueryExtensions {
 }
 
 class RunAdminPage extends StatelessWidget {
-  const RunAdminPage({super.key, required this.eventId});
+  const RunAdminPage({super.key, required this.eventId, this.isHare = false});
 
   final String eventId;
+
+  /// True when the current user is a designated hare of THIS run. A hare with no
+  /// admin flags still sees this screen, showing only the run-scoped functions
+  /// (edit run, receipts, check-in, print QR, take payment) for their own run.
+  final bool isHare;
 
   @override
   Widget build(BuildContext context) {
@@ -152,6 +157,7 @@ class RunAdminPage extends StatelessWidget {
                               aggregate,
                               btnSize,
                               spacing,
+                              isHare,
                             ),
                           ),
                         );
@@ -193,16 +199,23 @@ class RunAdminPage extends StatelessWidget {
     RunAdminAggregate aggregate,
     double btnSize,
     double spacing,
+    bool isHare,
   ) {
-    final mm = aggregate.extensions.mismanagement;
-    final isHashFlash = mm.getMismanagementState(mmRoleFlagHashFlash);
-    final isGm = mm.getMismanagementState(mmRoleFlagGm);
-    final isVgm = mm.getMismanagementState(mmRoleFlagVgm);
-    final isRa = mm.getMismanagementState(mmRoleFlagRa);
-    final isWebMeister = mm.getMismanagementState(mmRoleFlagWebMeister);
+    // Permission gating mirrors the server (HC6.CheckKennelPermission): a button
+    // shows when the user's mismanagement ROLE or app-access FLAG grants the
+    // feature (or they're super-admin). See /hc-authorizations.
+    final int aaFlags = aggregate.extensions.appAccessFlags;
+    final int mmFlags = aggregate.extensions.mismanagementRoles;
+    bool can(KennelFeature f) => canAccessFeature(
+      f,
+      appAccessFlags: aaFlags,
+      mismanagementRoles: mmFlags,
+      isHareOfEvent: isHare,
+    );
 
     // ── On the Day ──────────────────────────────────────────────────
     final dayButtons = <Widget>[
+      if (can(KennelFeature.manageAttendance)) ...<Widget>[
       _buildButton(
         label: 'Manual\r\ncheck in',
         iconAsset: 'images/icons/check_in_pack_icon.png',
@@ -241,9 +254,10 @@ class RunAdminPage extends StatelessWidget {
           );
         },
       ),
+      ],
     ];
 
-    if (aggregate.extensions.appAccess.canManageHashCash) {
+    if (can(KennelFeature.viewPaymentReport)) {
       dayButtons.add(
         _buildButton(
           label: 'Hash\r\ncash',
@@ -262,8 +276,7 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    if (aggregate.extensions.appAccess.canManageRuns &&
-        aggregate.extensions.appAccess.canManageAwards) {
+    if (can(KennelFeature.awardList)) {
       dayButtons.add(
         _buildButton(
           label: 'Award\r\nlist',
@@ -282,7 +295,7 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    if (isGm || isRa) {
+    if (can(KennelFeature.manageDownDowns)) {
       dayButtons.add(
         _buildButton(
           label: 'Down\r\nDowns',
@@ -311,7 +324,27 @@ class RunAdminPage extends StatelessWidget {
     // ── Before the Off ──────────────────────────────────────────────
     final planButtons = <Widget>[];
 
-    if (aggregate.extensions.appAccess.canManageHashCash) {
+    // Edit run details goes first so it sits on the far left of the row.
+    if (can(KennelFeature.createEditRuns)) {
+      planButtons.add(
+        _buildButton(
+          label: 'Edit run\r\ndetails',
+          iconAsset: 'images/icons/edit_run_icon.png',
+          size: btnSize,
+          onPressed: () async {
+            await Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) =>
+                    EditRunDetailsPage(false, aggregate),
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    if (can(KennelFeature.manageReceipts)) {
       planButtons.add(
         _buildButton(
           label: 'Manage\r\nreceipts',
@@ -330,23 +363,7 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    if (aggregate.extensions.appAccess.canManageRuns) {
-      planButtons.add(
-        _buildButton(
-          label: 'Edit run\r\ndetails',
-          iconAsset: 'images/icons/edit_run_icon.png',
-          size: btnSize,
-          onPressed: () async {
-            await Navigator.push<dynamic>(
-              context,
-              MaterialPageRoute<dynamic>(
-                builder: (BuildContext context) =>
-                    EditRunDetailsPage(false, aggregate),
-              ),
-            );
-          },
-        ),
-      );
+    if (can(KennelFeature.printQrCodes)) {
       planButtons.add(
         _buildButton(
           label: 'Print QR\r\ncodes',
@@ -377,7 +394,7 @@ class RunAdminPage extends StatelessWidget {
     // ── The Write-Up ────────────────────────────────────────────────
     final writeUpButtons = <Widget>[];
 
-    if (isHashFlash || isGm || isVgm || isRa) {
+    if (can(KennelFeature.reviewPhotos)) {
       writeUpButtons.add(
         _buildButton(
           label: 'Review\r\nPhotos',
@@ -405,7 +422,7 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    if (isHashFlash || isWebMeister || isGm) {
+    if (can(KennelFeature.writeHashTrash)) {
       writeUpButtons.add(
         _buildButton(
           label: 'Hash\r\nTrash',
@@ -447,11 +464,20 @@ class RunAdminPage extends StatelessWidget {
           padding: const EdgeInsets.only(top: 20, bottom: 2),
           child: Text(title, style: ts_heading),
         ),
-        Wrap(
-          spacing: spacing,
-          runSpacing: 0,
-          alignment: WrapAlignment.center,
-          children: buttons,
+        // Center wrapping so a section that fits in one row (e.g. two buttons)
+        // is centered rather than left-aligned. A Wrap only takes the full width
+        // once its children wrap to multiple rows; for a single row it shrinks to
+        // its content width, so WrapAlignment.center alone can't centre it —
+        // hence the surrounding Center to pull it into the middle. Multi-row
+        // sections are already full width, so Center is a no-op there and
+        // WrapAlignment.center still centres the final partial row.
+        Center(
+          child: Wrap(
+            spacing: spacing,
+            runSpacing: 0,
+            alignment: WrapAlignment.center,
+            children: buttons,
+          ),
         ),
       ],
     );

@@ -67,6 +67,9 @@ class KennelListItemState extends State<KennelListItem> {
       elevation: 4.0,
       margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
       color: Colors.white,
+      // Clip content to the rounded corners so edge-to-edge child content
+      // doesn't square them off — consistent slight rounding with the run cards.
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.max,

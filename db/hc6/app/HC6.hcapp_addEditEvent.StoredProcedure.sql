@@ -220,6 +220,31 @@ IF (@hares             LIKE '%' + NCHAR(8232) + '%') SET @hares             = RE
 -- Malformed Facebook event IDs containing 'break' are silently cleared
 IF (@eventFacebookId LIKE '%break%') SET @eventFacebookId = '';
 
+-- ---------------------------------------------------------------
+-- Authorization: feature "Create / edit runs" (see /hc-authorizations).
+-- Previously ungated — any authenticated user could create/edit any kennel's
+-- runs. Run-scoped: a designated hare for an EXISTING event may edit that run.
+-- ---------------------------------------------------------------
+DECLARE @evtAllowed SMALLINT;
+EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00080346, 0x00000004, @evtAllowed OUTPUT;
+IF (@evtAllowed = 0 AND @eventId IS NOT NULL AND EXISTS (
+        SELECT 1 FROM HC.HasherEventMap
+        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))
+    SET @evtAllowed = 1;
+IF (@evtAllowed = 0)
+BEGIN
+    SET @errorCode = 1321; SET @errorType = 13; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Not authorised to manage runs',
+            'Caller does not hold required role for kennel', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'You are not authorised to add or edit runs for this kennel.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 -- Guard against cross-kennel writes: if @eventId is non-null and the event
 -- exists in the DB but belongs to a different kennel, reject explicitly.
 -- Without this, the UPDATE mode detection would fall through to INSERT,

@@ -113,20 +113,20 @@ BEGIN
     RETURN;
 END
 
--- Admin guard (H13): resolve event's kennel and verify caller has hash-cash or run-management rights.
--- MismanagementRoles 0x2E = Hash Flash | GM | VGM | RA; AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
+-- Authorization: feature "Manage receipts" (see /hc-authorizations). Run-scoped:
+-- a designated hare for THIS event may also submit receipts for it.
 DECLARE @receiptKennelId UNIQUEIDENTIFIER;
 SELECT @receiptKennelId = KennelId FROM HC.Event WHERE id = @eventId;
 
-DECLARE @receiptMmRoles    INT = 0;
-DECLARE @receiptAccessFlags INT = 0;
-SELECT
-    @receiptMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
-    @receiptAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
-FROM HC.HasherKennelMap hkm
-WHERE hkm.UserId = @userId AND hkm.KennelId = @receiptKennelId;
+DECLARE @receiptAllowed SMALLINT;
+EXEC HC6.CheckKennelPermission @userId, @receiptKennelId, 0x0004841E, 0x00000008, @receiptAllowed OUTPUT;
 
-IF (@receiptMmRoles & 0x2E) = 0 AND (@receiptAccessFlags & 0x40000081) = 0
+IF (@receiptAllowed = 0 AND EXISTS (
+        SELECT 1 FROM HC.HasherEventMap
+        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))
+    SET @receiptAllowed = 1;
+
+IF (@receiptAllowed = 0)
 BEGIN
     SET @errorCode = 1343; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

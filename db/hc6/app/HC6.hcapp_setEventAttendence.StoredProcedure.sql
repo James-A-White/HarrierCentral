@@ -227,15 +227,15 @@ BEGIN
     DECLARE @setAttKennelId UNIQUEIDENTIFIER;
     SELECT @setAttKennelId = KennelId FROM HC.Event WHERE id = @eventId;
 
-    DECLARE @setAttMmRoles    INT = 0;
-    DECLARE @setAttAccessFlags INT = 0;
-    SELECT
-        @setAttMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
-        @setAttAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
-    FROM HC.HasherKennelMap hkm
-    WHERE hkm.UserId = @userId AND hkm.KennelId = @setAttKennelId;
-
-    IF (@setAttMmRoles & 0x2E) = 0 AND (@setAttAccessFlags & 0x40000081) = 0
+    -- Authorization: feature "Manage attendance" (see /hc-authorizations).
+    -- Run-scoped: a hare for THIS event may set attendance for it.
+    DECLARE @setAttAllowed SMALLINT;
+    EXEC HC6.CheckKennelPermission @userId, @setAttKennelId, 0x0008014E, 0x00000004, @setAttAllowed OUTPUT;
+    IF (@setAttAllowed = 0 AND EXISTS (
+            SELECT 1 FROM HC.HasherEventMap
+            WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))
+        SET @setAttAllowed = 1;
+    IF (@setAttAllowed = 0)
     BEGIN
         SET @errorCode = 1324; SET @errorType = 13; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

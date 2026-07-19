@@ -237,8 +237,12 @@ const int authCanManageMembers = 0x00000010;
 const int authCanManageAwards = 0x00000020;
 const int authCanManageSongs = 0x00000040;
 const int authCanManagePublicWebContent = 0x00000080;
+const int authCanManagePhotos = 0x00000100;
 const int authIsSuperAdmin = 0x40000000;
-const int authAllFlags = 0x000000ff;
+// All assignable functional flags (everything except SuperAdmin). Widen this
+// whenever a new functional flag bit is added, or the new flag will be stripped
+// when app access is saved (app_access_page.dart masks with authAllFlags).
+const int authAllFlags = 0x000001ff;
 
 const int selfPaymentNone = 0x00000000;
 const int selfPaymentAutoPayAfterBankTransfer = 0x00000001;
@@ -292,6 +296,20 @@ class AppAccess {
   bool get canManageAwards {
     return (appAccessFlags ?? 0) & (authCanManageAwards | authIsSuperAdmin) !=
         0;
+  }
+
+  bool get canManageSongs {
+    return (appAccessFlags ?? 0) & (authCanManageSongs | authIsSuperAdmin) != 0;
+  }
+
+  bool get canManagePublicWebContent {
+    return (appAccessFlags ?? 0) &
+            (authCanManagePublicWebContent | authIsSuperAdmin) !=
+        0;
+  }
+
+  bool get canManagePhotos {
+    return (appAccessFlags ?? 0) & (authCanManagePhotos | authIsSuperAdmin) != 0;
   }
 
   /// True when the user holds Hash Flash, GM, VGM, or RA for this kennel —

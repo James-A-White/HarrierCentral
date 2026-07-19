@@ -155,9 +155,12 @@ BEGIN
            );
 
     -- ----------------------------------------------------------------
-    -- Stage 3: Clear counts on non-attending HEM rows for affected users
-    --          only. Scoped to #affected to avoid a full-table scan and
-    --          unnecessary UpdatedAt stamps on unrelated users.
+    -- Stage 3: Clear counts on HEM rows that no longer QUALIFY as a counted
+    --          run (not just att<20): att>=20 rows whose event became
+    --          hidden/uncounted/removed, virgin/visitor rows, or future runs
+    --          checked into early. Otherwise their stale stored count columns
+    --          get picked up by Stage 4's MAX() and over-count. Predicate
+    --          mirrors Stage 2's `counted` filter. Scoped to #affected.
     -- ----------------------------------------------------------------
     UPDATE hem
     SET    hem.TotalRuns              = NULL,
@@ -169,7 +172,16 @@ BEGIN
            hem.updatedAt              = SYSDATETIMEOFFSET()
     FROM   HC.HasherEventMap hem
     JOIN   #affected af ON af.UserId = hem.UserId
-    WHERE  hem.AttendenceState < 20
+    LEFT   JOIN HC.Event evt ON evt.id = hem.EventId
+    WHERE  (
+               hem.AttendenceState < 20
+            OR ISNULL(hem.VirginVisitorType, 0) <> 0
+            OR evt.id IS NULL
+            OR evt.IsCountedRun <> 1
+            OR evt.IsVisible <> 1
+            OR evt.removed <> 0
+            OR evt.EventStartDateTimeGmt >= DATEADD(HOUR, 6, SYSUTCDATETIME())
+           )
       AND  (
                hem.TotalRuns              IS NOT NULL OR
                hem.TotalHaring            IS NOT NULL OR

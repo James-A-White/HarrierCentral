@@ -58,14 +58,22 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           },
         ),
         actions: <Widget>[
-          _futureRun.extensions.appAccessFlags == 0
+          // Show the admin gear to any kennel admin — by app-access FLAG or by
+          // mismanagement ROLE (a flag-less GM/VGM/RA is still an admin) — OR to
+          // a designated hare of this run (run-scoped admin screen for their run).
+          (_futureRun.extensions.appAccessFlags == 0 &&
+                  _futureRun.extensions.mismanagementRoles == 0 &&
+                  _futureRun.extensions.isHare != 1)
               ? Container()
               : IconButton(
                   icon: const Icon(FontAwesome.gear, color: Colors.white),
                   onPressed: () async {
                     final String eventId = _futureRun.event.eventId;
                     await Get.to(
-                      () => RunAdminPage(eventId: eventId),
+                      () => RunAdminPage(
+                        eventId: eventId,
+                        isHare: _futureRun.extensions.isHare == 1,
+                      ),
                       binding: BindingsBuilder(() {
                         Get.put(
                           RunAdminController(eventId: eventId),

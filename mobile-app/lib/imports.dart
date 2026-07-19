@@ -284,6 +284,7 @@ export 'package:harrier_central/util/enums.dart';
 export 'package:harrier_central/util/get_positions.dart';
 export 'package:harrier_central/util/delete_positions.dart';
 export 'package:harrier_central/util/avatar.dart';
+export 'package:harrier_central/util/kennel_permissions.dart';
 export 'package:harrier_central/widgets/packtrack_trim_overlay.dart';
 export 'package:harrier_central/widgets/packtrack_fullscreen_map.dart';
 export 'package:harrier_central/util/get_storage.dart';

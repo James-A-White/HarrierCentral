@@ -9,10 +9,12 @@ AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_getCompletedDownDowns
 -- Description: Returns all completed (IsDone=true, IsCancelled=false)
---   DownDown charges for a run. Visible to any member of the kennel.
+--   DownDown charges for a run. Visible to any member of the kennel; a
+--   non-member gets EMPTY rowsets (no history), not an error — viewing a run for
+--   a kennel you don't belong to is normal, not an error condition.
 --   Two rowsets:
---     Rowset 0 — one row per completed DownDown
---     Rowset 1 — one row per DownDownHasher for those charges
+--     Rowset 0 — one row per completed DownDown (empty for non-members)
+--     Rowset 1 — one row per DownDownHasher for those charges (empty for non-members)
 --   Intended for the run detail page history view (non-admin users).
 -- Parameters:
 --   @deviceId    - Registered device UUID
@@ -79,25 +81,19 @@ BEGIN
     RETURN;
 END
 
--- Auth: any kennel member (non-removed HKM row exists)
-IF NOT EXISTS (
-    SELECT 1 FROM HC.HasherKennelMap
-    WHERE UserId   = @userId
-      AND KennelId = @kennelId
-      AND removed  = 0
-)
-BEGIN
-    SET @errorCode = 1337; SET @errorType = 3; SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised',
-            'Caller is not a member of this kennel', @procName, @userId);
-    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
-    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
-           'Not authorised' AS errorTitle,
-           'Only kennel members can view Down Down history.' AS errorUserMessage,
-           @procName AS errorProc;
-    RETURN;
-END
+-- Membership: Down Down history is a members-only extra, but viewing a run for
+-- a kennel you don't belong to is NORMAL (e.g. browsing another kennel's runs),
+-- not an error. So resolve membership to a flag and return NO history (empty
+-- rowsets) to non-members below — never an auth error. This keeps the app's
+-- global SP-error dialog reserved for genuine failures (bad token, DB error,
+-- missing params).
+DECLARE @isMember SMALLINT =
+    CASE WHEN EXISTS (
+        SELECT 1 FROM HC.HasherKennelMap
+        WHERE UserId   = @userId
+          AND KennelId = @kennelId
+          AND removed  = 0
+    ) THEN 1 ELSE 0 END;
 
 -- Rowset 0: Completed DownDown charges
 SELECT
@@ -117,6 +113,7 @@ WHERE dd.EventId    = @eventId
   AND dd.KennelId   = @kennelId
   AND dd.IsDone     = 1
   AND dd.IsCancelled = 0
+  AND @isMember     = 1
 ORDER BY dd.CreatedAt ASC;
 
 -- Rowset 1: Charged hashers for the returned DownDowns
@@ -130,4 +127,5 @@ INNER JOIN HC.DownDowns dd ON dd.id = ddh.DownDownId
 WHERE dd.EventId    = @eventId
   AND dd.KennelId   = @kennelId
   AND dd.IsDone     = 1
-  AND dd.IsCancelled = 0;
+  AND dd.IsCancelled = 0
+  AND @isMember     = 1;

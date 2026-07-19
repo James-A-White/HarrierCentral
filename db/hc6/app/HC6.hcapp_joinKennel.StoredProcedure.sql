@@ -129,6 +129,59 @@ END
 -- isHomeKennel = 1 implies following
 IF (@isHomeKennel = 1) SET @isFollowing = 1;
 
+-- ---------------------------------------------------------------------
+-- AUTHORIZATION (see /hc-authorizations). Self-service — a hasher managing
+-- their OWN follow / home-kennel / notification state — needs no role. But the
+-- privileged writes below are gated on the caller's permission in THIS kennel,
+-- closing the priv-escalation hole where any user could grant themselves
+-- SuperAdmin / any role via @appAccessFlags / @mismanagementRoles.
+--   * @appAccessFlags / kennel standing -> Assign app-access flags (super-admin only)
+--   * @mismanagementRoles               -> Assign mismanagement roles (GM|VGM + super-admin)
+--   * membership duration / payment (@monthsToAddToMembership / @paymentAmount),
+--     OR editing ANOTHER user (@targetUserId != caller) -> Manage members
+-- A user CANNOT control their own membership — only a kennel admin with Manage
+-- Members can (James, 2026-07-19). Self-service is limited to follow / home
+-- kennel / notification preferences. The -1 "keep" sentinel is already
+-- normalised to NULL above, so a non-NULL value means the caller is SETTING that
+-- field.
+-- ---------------------------------------------------------------------
+DECLARE @permOk SMALLINT;
+DECLARE @authDenied SMALLINT = 0;
+
+IF (@appAccessFlags IS NOT NULL OR @kennelStandingSet IS NOT NULL OR @kennelStandingClear IS NOT NULL)
+BEGIN
+    EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00000000, 0x00000000, @permOk OUTPUT;
+    IF (@permOk = 0) SET @authDenied = 1;
+END
+
+IF (@authDenied = 0 AND @mismanagementRoles IS NOT NULL)
+BEGIN
+    EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00000006, 0x00000000, @permOk OUTPUT;
+    IF (@permOk = 0) SET @authDenied = 1;
+END
+
+IF (@authDenied = 0 AND (@targetUserId != @userId
+                         OR @monthsToAddToMembership IS NOT NULL
+                         OR @paymentAmount IS NOT NULL))
+BEGIN
+    EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00000046, 0x00000010, @permOk OUTPUT;
+    IF (@permOk = 0) SET @authDenied = 1;
+END
+
+IF (@authDenied = 1)
+BEGIN
+    SET @errorCode = 1337; SET @errorType = 3; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Not authorised',
+            'Caller lacks permission for this kennel-membership change', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'You are not authorised to make this change for this kennel.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 BEGIN TRY
     BEGIN TRANSACTION;
 

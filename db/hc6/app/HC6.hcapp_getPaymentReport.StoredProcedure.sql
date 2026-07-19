@@ -70,20 +70,14 @@ BEGIN
     RETURN;
 END
 
--- Admin guard (M12): caller must have hash-cash management or admin rights for this event's kennel.
--- MismanagementRoles 0x08 = RA (hash cash); AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
+-- Authorization: feature "View payment report" (see /hc-authorizations).
 DECLARE @rptKennelId     UNIQUEIDENTIFIER;
 SELECT @rptKennelId = KennelId FROM HC.Event WHERE id = @eventId;
 
-DECLARE @rptMmRoles    INT = 0;
-DECLARE @rptAccessFlags INT = 0;
-SELECT
-    @rptMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
-    @rptAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
-FROM HC.HasherKennelMap hkm
-WHERE hkm.UserId = @userId AND hkm.KennelId = @rptKennelId;
+DECLARE @rptAllowed SMALLINT;
+EXEC HC6.CheckKennelPermission @userId, @rptKennelId, 0x0004040E, 0x00000008, @rptAllowed OUTPUT;
 
-IF (@rptMmRoles & 0x08) = 0 AND (@rptAccessFlags & 0x40000081) = 0
+IF (@rptAllowed = 0)
 BEGIN
     SET @errorCode = 1342; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

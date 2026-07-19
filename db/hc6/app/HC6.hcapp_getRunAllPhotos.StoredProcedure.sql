@@ -79,12 +79,11 @@ END
 
 -- Verify caller holds an approval role for this kennel:
 -- Hash Flash (0x0020) | GM (0x0002) | VGM (0x0004) | RA (0x0008) | WebMeister (0x1000) = 0x102E
-DECLARE @mmRoleFlags INT = 0;
-SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
-FROM HC.HasherKennelMap
-WHERE UserId = @userId AND KennelId = @kennelId;
+-- Authorization: feature "Batch / view all photos" (see /hc-authorizations).
+DECLARE @photoAllowed SMALLINT;
+EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000102E, 0x00000100, @photoAllowed OUTPUT;
 
-IF (@mmRoleFlags & 0x0000102E = 0)
+IF (@photoAllowed = 0)
 BEGIN
     SET @errorCode = 1334; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
