@@ -85,11 +85,12 @@ SuperAdmin** (roles).
   device/token **identity only — it is NOT authorization.** Any SP that reads or writes
   kennel-scoped, money, membership, or role data MUST have an explicit role/flag check
   after ValidateAppAuth, or it is wide open.
-- **App UI (UX only):** `AppAccess` getters (`appAccess.canManageHashCash`,
-  `.canManageRuns`, `.isAdmin`, `.getAppAccess(flag)`) and mismanagement checks
-  (`getMismanagementState(mmRoleFlag*)`, `isGm`/`isRa`/…). These decide whether a button
-  shows. They must mirror the SP gate for the same feature, or the button appears and the
-  SP rejects it (the tester's "Hash Cash button doesn't work" bug).
+- **App UI (UX only):** prefer `canAccessFeature(KennelFeature.x, …)` (the canonical
+  mirror — see below). The older ad-hoc getters (`appAccess.canManageHashCash`,
+  `.getAppAccess(flag)`, `getMismanagementState(mmRoleFlag*)`, `isGm`/`isRa`/…) still exist
+  and are fine for a raw single-bit check, but new feature gates go through `KennelFeature`.
+  Whatever you use must mirror the SP gate for the same feature, or the button appears and
+  the SP rejects it (the tester's "Hash Cash button doesn't work" bug).
 
 ---
 
@@ -113,19 +114,40 @@ SuperAdmin** (roles).
 
 ---
 
-## The fix pattern (target state — prefer this for new/edited SPs)
+## The canonical authorizer (USE THIS — both halves now exist)
 
-Stop hand-rolling masks. The intended systemic fix is ONE authorizer used everywhere:
+Stop hand-rolling masks. There is ONE authorizer, mirrored on both sides — always route a
+new/edited gate through it instead of writing an inline `IF (… & 0x…)`:
 
 - **SP:** `HC6.CheckKennelPermission(@userId, @kennelId, @requiredMmMask, @requiredFlagMask, @allowed OUTPUT)`
-  — one place that also folds in SuperAdmin/IsAdmin. Every SP passes the feature's masks
-  from a single documented constants block instead of an inline `IF (… & 0x…)`.
-- **App:** a mirrored `KennelPermission.can(feature)` helper driven by the **same**
-  feature→mask table, so UI and server cannot diverge.
+  — folds in SuperAdmin. Each SP passes the feature's two masks.
+- **App:** `canAccessFeature(KennelFeature.x, appAccessFlags:, mismanagementRoles:, isHareOfEvent:)`
+  in `lib/util/kennel_permissions.dart` — the **same** feature→mask table, so UI and server
+  cannot diverge. `KennelFeature` carries `(mmMask, flagMask, hareScoped)`; add a new enum
+  entry (masks copied verbatim from the SP) rather than a bespoke `AppAccess` getter.
 
-Until that helper exists, when you touch a gate: apply the model above, use the correct
-column for each mask, avoid `0x40000081` (use `0x40000001`), and match the feature's
-existing mask rather than inventing one.
+**Adding a feature = two lines that must match:** the `CheckKennelPermission @…, 0xMM, 0xFLAG`
+call in the SP, and the `KennelFeature.x(0xMM, flagConst, hareScoped)` entry in the app.
+Copy the masks across verbatim; if they drift, the button shows and the SP rejects it.
+
+### `hareScoped` features
+Some SPs add a run-scoped leg: a run's designated **hare** may act on **their own** event
+even without a role/flag (the SP checks `HasherEventMap.IsHare` for that event). Mirror it
+with `hareScoped: true` + pass `isHareOfEvent:` in the app. Examples: `createEditRuns`,
+`manageAttendance`, `enterRunAdmin`.
+
+### Gate the ENTRY, not just the button
+A gated *button* still lets a user reach the action by another path (a card tap, a map
+marker, a nav tab). When you gate a feature, gate **every navigation site that fires its
+SP** — so the request never leaves the device. Pattern: snackbar-and-return on deny, or
+swap the screen content for a locked placeholder (fixed-index tab layouts). The current
+admin-entry gates are recorded in memory `project_admin_entry_gating`. Two admin-entry
+features exist for the sync SPs:
+- `enterKennelAdmin(0x2E, ManageMembers, false)` ↔ `hcapp_syncKennelAdminData`
+- `enterRunAdmin(0x0004042E, ManageRuns|ManageHashCash, true)` ↔ `hcapp_syncEventAdminData`
+
+When you touch a gate: use the correct column for each mask, avoid `0x40000081`
+(use `0x40000001`), and reuse the feature's existing mask rather than inventing one.
 
 ---
 

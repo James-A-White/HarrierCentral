@@ -14,7 +14,8 @@ AS
 --                createdByDisplayName, createdAt)
 --     Rowset 1 — one row per DownDownHasher (downDownId, hasherId,
 --                displayName) so the app can group by downDownId
---   Auth: GM (0x02) or RA (0x08).
+--   Auth: mm 0x1E (GM|VGM|RA|Beermeister) or the Manage Awards flag
+--         (feature "Manage Down Downs"); SuperAdmin always allowed.
 -- Parameters:
 --   @deviceId    - Registered device UUID
 --   @accessToken - Token validated against DeviceSecret
@@ -80,8 +81,8 @@ BEGIN
     RETURN;
 END
 
--- Auth: GM (0x02) | RA (0x08) = 0x000A
--- Authorization: feature "Manage Down Downs" (see /hc-authorizations).
+-- Auth: mm 0x1E = GM(0x02)|VGM(0x04)|RA(0x08)|Beermeister(0x10);
+--       flag Manage Awards (0x20). Feature "Manage Down Downs" (see /hc-authorizations).
 DECLARE @ddAllowed SMALLINT;
 EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000001E, 0x00000020, @ddAllowed OUTPUT;
 
@@ -90,11 +91,11 @@ BEGIN
     SET @errorCode = 1336; SET @errorType = 3; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Not authorised',
-            'Caller lacks GM or RA role', @procName, @userId);
+            'Caller lacks a Down Downs role (GM/VGM/RA/Beermeister) or the Manage Awards flag', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Not authorised' AS errorTitle,
-           'Only the GM and RAs can view DownDowns.' AS errorUserMessage,
+           'Only the GM, VGMs, RAs, and Beermeister can view Down Downs.' AS errorUserMessage,
            @procName AS errorProc;
     RETURN;
 END
