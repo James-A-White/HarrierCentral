@@ -104,6 +104,14 @@ BEGIN
     RETURN;
 END
 
+-- Wrap the body so any runtime error (timeout, deadlock, transient) is LOGGED to
+-- HC.ErrorLog before it reaches the client. This SP had no TRY/CATCH, so the HTTP
+-- 500s seen in the client log harvest left no server-side record. The CATCH
+-- re-raises (THROW) rather than returning an error envelope: the sync client
+-- already treats a failure as "fall through to offline mode", so re-raising
+-- preserves that behaviour while recording the actual error for diagnosis.
+BEGIN TRY
+
 -- ---------------------------------------------------------------
 -- Paging limits (0 = unlimited for write-SP delegation)
 -- ---------------------------------------------------------------
@@ -603,3 +611,14 @@ BEGIN
     OFFSET 0 ROWS FETCH NEXT @paging250 ROWS ONLY
     OPTION (RECOMPILE);
 END
+
+END TRY
+BEGIN CATCH
+    -- Log the real failure so the next occurrence is diagnosable, then re-raise
+    -- to preserve the client's existing offline-fallback behaviour.
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in syncUserData',
+            ERROR_MESSAGE(), @effectiveProcName, @userId);
+    THROW;
+END CATCH
