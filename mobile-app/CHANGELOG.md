@@ -9,6 +9,10 @@
   render — bundled/no-photo avatars now always resolve to a real image.
 - **Notifications**: fixed a rare crash reading the run-notification badge when the
   notification service wasn't registered yet.
+- **Live-run tracking**: fixed a background error storm where GPS location updates could
+  fail after the app had been suspended during a run.
+- **Leaderboard crash**: fixed a crash that could occur when a hasher's home kennel wasn't
+  in the leaderboard's kennel list.
 
 ### Improvements
 - **Admin gating**: kennel admin, run admin, photo review, and the live-run **Charges**
