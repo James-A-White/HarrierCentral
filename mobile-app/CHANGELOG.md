@@ -19,6 +19,9 @@
 - **PackTrack diagnostics** (enabled testers only): added lifecycle breadcrumbs plus a
   ~60s memory-footprint (RSS) heartbeat to live run tracking, so tracking-related crashes
   — including out-of-memory kills — leave a diagnosable trail.
+- **Crash/OOM reporting** (iOS, enabled testers only): subscribed to Apple MetricKit and
+  wired its crash, hang, and app-exit (memory-pressure / OOM) diagnostics into the server
+  harvest — capturing terminations that Xcode Organizer does not surface.
 
 ## 2.14.0+1210 (2026-07-19)
 

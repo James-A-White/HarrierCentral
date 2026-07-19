@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/metrickit_service.dart';
 
 /// Owns all app startup logic — previously embedded in AppEntryPageState._handleStartup.
 ///
@@ -20,6 +21,9 @@ class AppBootService {
     // pref clear — the server call itself is fire-and-forget), then seed the
     // new session log and start persisting errors to the pref.
     await _sendPreviousSessionErrors();
+    // Ship any MetricKit crash / hang / OOM diagnostics captured natively on the
+    // previous run (iOS only, harvest-gated). Fire-and-forget like the log send.
+    unawaited(MetricKitService.drainAndUpload());
     _startErrorPersistence();
 
     final String? userId = await _resolveUserId();
