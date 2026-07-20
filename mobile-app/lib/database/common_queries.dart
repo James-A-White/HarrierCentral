@@ -150,32 +150,53 @@ class CommonQueries {
       debugPrint('[BOOT] CommonQueries.isAtRunStart: SQL returned ${queryResults.length} row(s): ${DateTime.now().millisecondsSinceEpoch}ms');
 
       if (queryResults.isNotEmpty) {
-        int escape = 0;
-
         bool hasValidPosition = false;
 
-        // Poll up to 30 seconds for a fresh GPS position (10 × 3s).
-        // EventId is set when the user taps a notification — in that case
-        // skip location check and allow check-in regardless of position.
-        debugPrint('[BOOT] CommonQueries.isAtRunStart: entering GPS position wait loop (max 10 × 3s), eventId=${eventId ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
-        while ((escape < 10) && !hasValidPosition && (eventId == null)) {
+        // A device position is only needed for the passive (eventId == null)
+        // path. A notification tap (eventId != null) checks in regardless of
+        // location, so skip all GPS work in that case.
+        if (eventId == null) {
           final DateTime? lastLocationUpdate = getDatePref(
             DatePrefsEnum.lastLocationUpdate,
           );
-          final String lastUpdateStr = lastLocationUpdate == null
-              ? 'null'
-              : '${DateTime.now().difference(lastLocationUpdate).inSeconds}s ago';
-          debugPrint('[BOOT] CommonQueries.isAtRunStart: GPS loop escape=$escape, lastLocationUpdate=$lastUpdateStr: ${DateTime.now().millisecondsSinceEpoch}ms');
+
+          // Fast path: a recent cached fix is good enough.
           if ((lastLocationUpdate != null) &&
               (DateTime.now().difference(lastLocationUpdate).inMinutes.abs() <
-                  15)) {
+                  15) &&
+              (deviceInfo.deviceLat != null) &&
+              (deviceInfo.deviceLon != null)) {
             hasValidPosition = true;
-            continue;
+            debugPrint('[BOOT] CommonQueries.isAtRunStart: using fresh cached position: ${DateTime.now().millisecondsSinceEpoch}ms');
+          } else {
+            // Stale / missing cached fix. The idle location stream uses a 250m
+            // distance filter, so a user standing still AT the run start can
+            // have a fix older than 15 min even though they are physically
+            // here. Passively waiting for the stream would silently skip them,
+            // so force a one-shot GPS read instead. Bounded by a timeout so the
+            // check can never hang.
+            debugPrint('[BOOT] CommonQueries.isAtRunStart: cached position stale/missing, forcing getCurrentPosition: ${DateTime.now().millisecondsSinceEpoch}ms');
+            try {
+              final Position pos = await Geolocator.getCurrentPosition(
+                locationSettings: const LocationSettings(
+                  accuracy: LocationAccuracy.medium,
+                ),
+              ).timeout(const Duration(seconds: 20));
+              deviceInfo.deviceLat = pos.latitude.toDouble();
+              deviceInfo.deviceLon = pos.longitude.toDouble();
+              await setDatePref(
+                DatePrefsEnum.lastLocationUpdate,
+                DateTime.now(),
+              );
+              hasValidPosition = true;
+              debugPrint('[BOOT] CommonQueries.isAtRunStart: getCurrentPosition succeeded: ${DateTime.now().millisecondsSinceEpoch}ms');
+            } catch (e) {
+              debugPrint('[BOOT] CommonQueries.isAtRunStart: getCurrentPosition failed/timed out: $e: ${DateTime.now().millisecondsSinceEpoch}ms');
+              hasValidPosition = false;
+            }
           }
-          escape++;
-          await Future<dynamic>.delayed(const Duration(seconds: 3));
         }
-        debugPrint('[BOOT] CommonQueries.isAtRunStart: GPS loop done, hasValidPosition=$hasValidPosition, escape=$escape: ${DateTime.now().millisecondsSinceEpoch}ms');
+        debugPrint('[BOOT] CommonQueries.isAtRunStart: position acquisition done, hasValidPosition=$hasValidPosition: ${DateTime.now().millisecondsSinceEpoch}ms');
 
         for (int i = 0; i < queryResults.length; i++) {
           double? dist;
@@ -188,7 +209,7 @@ class CommonQueries {
           if (hasValidPosition &&
               (eventId == null) &&
               (queryResults[i]['lat'] != null) &&
-              (deviceInfo.deviceLon != null) &&
+              (deviceInfo.deviceLat != null) &&
               (deviceInfo.deviceLon != null)) {
             dist = Geolocator.distanceBetween(
               deviceInfo.deviceLat!.toDouble(),

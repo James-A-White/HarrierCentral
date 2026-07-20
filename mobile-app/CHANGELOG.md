@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.14.2+1212 (2026-07-20)
+
+### Fixes
+- **Run start check-in prompt**: the "you're at the run start — check in?" prompt now
+  reliably appears on arrival. It was being missed when the app was opened from the
+  background (only cold-start and screen-unlock triggered it), and when standing still at
+  the start with a stale GPS fix. The check now also runs on app resume and forces a fresh
+  location read instead of passively waiting for the idle location stream.
+- **Check-in "No" is no longer permanent**: declining the prompt once no longer suppresses
+  it forever for that run — a later successful check-in clears the block.
+
 ## 2.14.1+1211 (2026-07-19)
 
 ### Fixes

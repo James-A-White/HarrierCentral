@@ -448,13 +448,22 @@ class MainNavigationController extends GetxController
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed &&
-        currentPage.value == 0 &&
-        Get.isRegistered<FutureRunListPageController>()) {
-      unawaited(
-        Get.find<FutureRunListPageController>()
-            .triggerBackgroundSync(ignoreDebounce: true),
-      );
+    if (state == AppLifecycleState.resumed) {
+      // Re-run the "are we at a run start?" check when the app returns to the
+      // foreground. Boot and screen-unlock were the only triggers, so simply
+      // reopening the app from the background — the most common way a user
+      // brings it up while standing at the start line — never fired it.
+      if (appModel.hasLocationPermissions) {
+        unawaited(_checkAreWeAtRunStart());
+      }
+
+      if (currentPage.value == 0 &&
+          Get.isRegistered<FutureRunListPageController>()) {
+        unawaited(
+          Get.find<FutureRunListPageController>()
+              .triggerBackgroundSync(ignoreDebounce: true),
+        );
+      }
     }
   }
 

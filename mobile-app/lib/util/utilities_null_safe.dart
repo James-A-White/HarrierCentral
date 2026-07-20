@@ -965,32 +965,60 @@ class Utilities {
     return offsetFromGmtToLocal;
   }
 
+  // Guards the passive check against overlapping runs. Boot, resume and
+  // screen-unlock can all fire near-simultaneously; without this, each would
+  // launch its own GPS read + query (and potentially stack a second dialog).
+  static bool _isAtRunStartRunning = false;
+
   static Future<void> isAtRunStart({String? eventId}) async {
     debugPrint('[BOOT] Utilities.isAtRunStart: start, eventId=${eventId ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
     //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
 
-    var lastRunStartCheck = getDatePref(DatePrefsEnum.lastRunStartCheck);
-    if (lastRunStartCheck == null) {
-      await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime(2000));
-      lastRunStartCheck = DateTime(2000);
+    // A notification tap passes an explicit eventId — deliberate user intent
+    // that must never be throttled or dropped by the concurrency guard. The
+    // throttle and guard apply only to the passive (eventId == null) path that
+    // fires on boot, resume and screen-unlock.
+    final bool passive = eventId == null;
+
+    if (passive) {
+      if (_isAtRunStartRunning) {
+        debugPrint('[BOOT] Utilities.isAtRunStart: already running, skipping: ${DateTime.now().millisecondsSinceEpoch}ms');
+        return;
+      }
+
+      var lastRunStartCheck = getDatePref(DatePrefsEnum.lastRunStartCheck);
+      if (lastRunStartCheck == null) {
+        await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime(2000));
+        lastRunStartCheck = DateTime(2000);
+      }
+
+      final minutesSinceLastCheck =
+          DateTime.now().difference(lastRunStartCheck).inMinutes;
+      if (minutesSinceLastCheck < 2) {
+        debugPrint('[BOOT] Utilities.isAtRunStart: throttled (${minutesSinceLastCheck}min since last check): ${DateTime.now().millisecondsSinceEpoch}ms');
+        return;
+      }
+      debugPrint('[BOOT] Utilities.isAtRunStart: throttle passed (${minutesSinceLastCheck}min), querying: ${DateTime.now().millisecondsSinceEpoch}ms');
+
+      _isAtRunStartRunning = true;
     }
 
-    final minutesSinceLastCheck = DateTime.now().difference(lastRunStartCheck).inMinutes;
-    if (minutesSinceLastCheck < 2) {
-      debugPrint('[BOOT] Utilities.isAtRunStart: throttled (${minutesSinceLastCheck}min since last check): ${DateTime.now().millisecondsSinceEpoch}ms');
-      return;
-    }
-    debugPrint('[BOOT] Utilities.isAtRunStart: throttle passed (${minutesSinceLastCheck}min), querying: ${DateTime.now().millisecondsSinceEpoch}ms');
+    try {
+      final List<AreWeAtRunModel> resultList = await CommonQueries.isAtRunStart(
+        eventId: eventId,
+      );
 
-    await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime.now());
+      // Stamp the throttle only AFTER the (GPS-bound, up to ~20s) query has
+      // actually run. Stamping up-front burned the 2-minute window on attempts
+      // that failed because GPS was still warming up, locking out the next
+      // trigger before it had a chance to succeed.
+      if (passive) {
+        await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime.now());
+      }
+      debugPrint('[BOOT] Utilities.isAtRunStart: query returned ${resultList.length} candidate run(s): ${DateTime.now().millisecondsSinceEpoch}ms');
+      final String userId = currentUserId;
 
-    final List<AreWeAtRunModel> resultList = await CommonQueries.isAtRunStart(
-      eventId: eventId,
-    );
-    debugPrint('[BOOT] Utilities.isAtRunStart: query returned ${resultList.length} candidate run(s): ${DateTime.now().millisecondsSinceEpoch}ms');
-    final String userId = currentUserId;
-
-    if (resultList.length == 1) {
+      if (resultList.length == 1) {
       final AreWeAtRunModel result = resultList[0];
 
       final String blockAutoCheckinForThisEventId =
@@ -1083,6 +1111,17 @@ class Utilities {
             AppDomainType.user,
           );
         }
+
+        // The user picked a "Yes" option (checked in). Clear any prior
+        // "don't ask again" block for this event — a one-time "No" should not
+        // suppress the prompt for this event permanently. ("No"/Cancel still
+        // sets the block above, as intended.)
+        if (retVal != null && retVal != enumCheckInOption_Cancel) {
+          await setStringPref(
+            StringPrefsEnum.blockAutoCheckinForThisEventId,
+            '',
+          );
+        }
       }
     } else if (resultList.length > 1) {
       // look through the list of runs and determine if this hasher is
@@ -1140,6 +1179,11 @@ class Utilities {
             }
           }
         }
+      }
+    }
+    } finally {
+      if (passive) {
+        _isAtRunStartRunning = false;
       }
     }
   }
