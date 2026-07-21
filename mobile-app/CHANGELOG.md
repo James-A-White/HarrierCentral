@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.14.3+1213 (2026-07-21)
+
+### Fixes
+- **Check-in pack list crash (RangeError)**: fixed a `RangeError` that fired repeatedly
+  while filtering the pack on the Check In screen — the hasher list's cached item count
+  went stale as the live-filtered list shrank, so rows were built against out-of-range
+  indices. The list is now rebuilt reactively (wrapped in `Obx`) so its count always
+  matches the filtered list, with a defensive bounds guard as backup. Surfaced by the new
+  PackTrack device diagnostics from a live run.
+
 ## 2.14.2+1212 (2026-07-20)
 
 ### Fixes

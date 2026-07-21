@@ -234,387 +234,416 @@ class CheckInPackPage extends StatelessWidget {
                           id: 'hasherList',
                           tag: controllerTag,
                           builder: (AppScaffoldController) {
-                            return ListView.separated(
-                              separatorBuilder:
-                                  (BuildContext context, int index) =>
-                                      const Divider(
-                                        height: 1.0,
-                                        color: Colors.black45,
-                                      ),
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              scrollDirection: Axis.vertical,
-                              controller:
-                                  AppScaffoldController.scrollController,
-                              itemCount:
-                                  (AppScaffoldController.filteredList.length) +
-                                  2,
-                              itemBuilder: (BuildContext context, int index) {
-                                if (index ==
+                            // Obx makes the whole list rebuild whenever the
+                            // reactive filteredList mutates (e.g. live search
+                            // filtering), keeping itemCount and itemBuilder in
+                            // sync. Without it the GetBuilder cached a stale
+                            // itemCount and itemBuilder was called with an
+                            // out-of-range index → RangeError spam.
+                            return Obx(
+                              () => ListView.separated(
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        const Divider(
+                                          height: 1.0,
+                                          color: Colors.black45,
+                                        ),
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                scrollDirection: Axis.vertical,
+                                controller:
+                                    AppScaffoldController.scrollController,
+                                itemCount:
                                     (AppScaffoldController
                                         .filteredList
-                                        .length)) {
-                                  return Obx(() {
-                                    if (AppScaffoldController
-                                        .forceShowAllHashers
-                                        .value) {
-                                      return _getAddHasherBlock(
-                                        AppScaffoldController,
-                                        context,
-                                      );
-                                    } else {
-                                      return _getSearchAllHashersBlock(
-                                        AppScaffoldController,
-                                        context,
-                                      );
-                                    }
-                                  });
-                                } else if (index ==
-                                    (AppScaffoldController
-                                            .filteredList
-                                            .length) +
-                                        1) {
-                                  return const SizedBox(height: 120);
-                                } else {
-                                  double amountOwed =
-                                      AppScaffoldController
-                                              .filteredList[index]
-                                              .isMember !=
-                                          1
-                                      ? eventAggregate.extensions.nonMemberPrice
-                                      : eventAggregate.extensions.memberPrice;
-
-                                  amountOwed =
-                                      AppScaffoldController
-                                              .filteredList[index]
-                                              .isMember !=
-                                          1
-                                      ? eventAggregate.extensions.nonMemberPrice
-                                      : eventAggregate.extensions.memberPrice;
-                                  amountOwed -= AppScaffoldController
-                                      .filteredList[index]
-                                      .discountAmount;
-                                  amountOwed -=
-                                      amountOwed *
+                                        .length) +
+                                    2,
+                                itemBuilder: (BuildContext context, int index) {
+                                  if (index ==
                                       (AppScaffoldController
-                                              .filteredList[index]
-                                              .discountPercent /
-                                          100.0);
-
-                                  final String amountOwedStr =
-                                      IveCoreUtilities.getFormattedMoney(
-                                        amountOwed,
-                                        eventAggregate.extensions.digAfterDec,
-                                        eventAggregate.extensions.curSym,
-                                      );
-
-                                  CheckInPackModel packMember =
-                                      AppScaffoldController.filteredList[index];
-
-                                  return Slidable(
-                                    key: Key(index.toString()),
-                                    // controller: slidableController,
-
-                                    // The start action pane is the one at the left or the top side.
-                                    startActionPane: ActionPane(
-                                      motion: const BehindMotion(),
-                                      // A pane can dismiss the Slidable.
-                                      dismissible: DismissiblePane(
-                                        closeOnCancel: true,
-                                        dismissThreshold: 0.65,
-                                        dismissalDuration: const Duration(
-                                          milliseconds: 800,
-                                        ),
-                                        resizeDuration: const Duration(
-                                          milliseconds: 800,
-                                        ),
-                                        confirmDismiss: () async {
-                                          if (packMember.isPaid != 1) {
-                                            unawaited(
-                                              AppScaffoldController.payForEvent(
-                                                context,
-
-                                                paymentBankTransfer.value,
-                                                index,
-                                                -1,
-                                              ),
-                                            );
-                                          }
-                                          return false;
-                                        },
-                                        onDismissed: () {},
-                                      ),
-                                      dragDismissible: true,
-                                      children: [
-                                        CustomSlidableAction(
-                                          // An action can be bigger than the others.
-                                          flex: 2,
-                                          onPressed: _emptyFunction,
-                                          backgroundColor:
-                                              (packMember.isPaid == 1
-                                              ? Colors.grey
-                                              : hc_blue),
-
-                                          foregroundColor: Colors.white,
-                                          child: packMember.isPaid == 1
-                                              ? Container(
-                                                  color: Colors.grey,
-                                                  width: deviceInfo.deviceWidth,
-                                                  child: Column(
-                                                    children: <Widget>[
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                              top: 5.0,
-                                                            ),
-                                                        child: Icon(
-                                                          FontAwesome
-                                                              .check_circle,
-                                                          size: 30.0,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 5.0,
-                                                            ),
-                                                        child: Text(
-                                                          'Already\r\npaid',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: ts_snackbar,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )
-                                              : Container(
-                                                  color: hc_blue,
-                                                  width: deviceInfo.deviceWidth,
-                                                  child: Column(
-                                                    children: <Widget>[
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 8.0,
-                                                            ),
-                                                        child: Image.asset(
-                                                          'images/icons/payment_type_4.png',
-                                                          height: 27.0,
-                                                          width: 27.0,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 10.0,
-                                                            ),
-                                                        child: Text(
-                                                          '${(eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: ts_titleMedium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    // The end action pane is the one at the right or the bottom side.
-                                    endActionPane: ActionPane(
-                                      motion: const BehindMotion(),
-                                      // A pane can dismiss the Slidable.
-                                      dismissible: DismissiblePane(
-                                        closeOnCancel: true,
-                                        dismissThreshold: 0.65,
-                                        dismissalDuration: const Duration(
-                                          milliseconds: 800,
-                                        ),
-                                        resizeDuration: const Duration(
-                                          milliseconds: 800,
-                                        ),
-                                        confirmDismiss: () async {
-                                          if (packMember.isPaid != 1) {
-                                            unawaited(
-                                              AppScaffoldController.payForEvent(
-                                                context,
-
-                                                paymentCash.value,
-                                                index,
-                                                -1,
-                                              ),
-                                            );
-                                          } else {
-                                            unawaited(
-                                              AppScaffoldController.updateAttendenceState(
-                                                packMember,
-                                                -1,
-                                                attendenceOnIn.value,
-                                                -1,
-                                              ),
-                                            );
-                                          }
-                                          return false;
-                                        },
-                                        onDismissed: () {},
-                                      ),
-                                      dragDismissible: true,
-                                      children: [
-                                        CustomSlidableAction(
-                                          // An action can be bigger than the others.
-                                          flex: 2,
-                                          onPressed: _emptyFunction,
-                                          backgroundColor:
-                                              (packMember.isPaid == 1
-                                                  ? packMember.attendenceState >=
-                                                            attendenceOnIn.value
-                                                        ? Colors.grey
-                                                        : Colors.amber[800]
-                                                  : Colors.green) ??
-                                              Colors.white,
-
-                                          foregroundColor: Colors.white,
-                                          child: packMember.isPaid == 1
-                                              ? packMember.attendenceState >=
-                                                        attendenceOnIn.value
-                                                    ? Container(
-                                                        width: deviceInfo
-                                                            .deviceWidth,
-                                                        color: Colors.grey,
-                                                        child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .end,
-                                                          children: <Widget>[
-                                                            const Padding(
-                                                              padding:
-                                                                  EdgeInsets.only(
-                                                                    top: 5.0,
-                                                                  ),
-                                                              child: Icon(
-                                                                FontAwesome
-                                                                    .check_circle,
-                                                                size: 30.0,
-                                                                color: Colors
-                                                                    .white,
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets.only(
-                                                                    top: 5.0,
-                                                                  ),
-                                                              child: Text(
-                                                                'Already\r\nOn-In',
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style:
-                                                                    ts_snackbar,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      )
-                                                    : Container(
-                                                        color:
-                                                            Colors.amber[800],
-                                                        width: deviceInfo
-                                                            .deviceWidth,
-                                                        child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .end,
-                                                          children: <Widget>[
-                                                            const Padding(
-                                                              padding:
-                                                                  EdgeInsets.only(
-                                                                    top: 2.0,
-                                                                  ),
-                                                              child: Icon(
-                                                                Ionicons
-                                                                    .ios_beer,
-                                                                size: 30.0,
-                                                                color: Colors
-                                                                    .white,
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets.only(
-                                                                    top: 5.0,
-                                                                  ),
-                                                              child: Text(
-                                                                'Record as\r\nOn-In',
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style:
-                                                                    ts_snackbar,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      )
-                                              : Container(
-                                                  width: deviceInfo.deviceWidth,
-                                                  color: Colors.green,
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: <Widget>[
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              bottom: 5.0,
-                                                              top: 8.0,
-                                                            ),
-                                                        child: Image.asset(
-                                                          'images/icons/payment_type_3.png',
-                                                          height: 25.0,
-                                                          width: 25.0,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              bottom: 5.0,
-                                                            ),
-                                                        child: Text(
-                                                          '${(eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: ts_snackbar,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    child: Container(
-                                      color: Colors.white,
-                                      child: Obx(
-                                        () => _listItem(
-                                          context,
-                                          index,
+                                          .filteredList
+                                          .length)) {
+                                    return Obx(() {
+                                      if (AppScaffoldController
+                                          .forceShowAllHashers
+                                          .value) {
+                                        return _getAddHasherBlock(
                                           AppScaffoldController,
+                                          context,
+                                        );
+                                      } else {
+                                        return _getSearchAllHashersBlock(
+                                          AppScaffoldController,
+                                          context,
+                                        );
+                                      }
+                                    });
+                                  } else if (index ==
+                                      (AppScaffoldController
+                                              .filteredList
+                                              .length) +
+                                          1) {
+                                    return const SizedBox(height: 120);
+                                  } else if (index >=
+                                      AppScaffoldController
+                                          .filteredList
+                                          .length) {
+                                    // Defence-in-depth: if the list shrinks in
+                                    // the same frame the sliver lazily builds a
+                                    // now-stale index, skip it instead of
+                                    // indexing out of range.
+                                    return const SizedBox.shrink();
+                                  } else {
+                                    double amountOwed =
+                                        AppScaffoldController
+                                                .filteredList[index]
+                                                .isMember !=
+                                            1
+                                        ? eventAggregate
+                                              .extensions
+                                              .nonMemberPrice
+                                        : eventAggregate.extensions.memberPrice;
+
+                                    amountOwed =
+                                        AppScaffoldController
+                                                .filteredList[index]
+                                                .isMember !=
+                                            1
+                                        ? eventAggregate
+                                              .extensions
+                                              .nonMemberPrice
+                                        : eventAggregate.extensions.memberPrice;
+                                    amountOwed -= AppScaffoldController
+                                        .filteredList[index]
+                                        .discountAmount;
+                                    amountOwed -=
+                                        amountOwed *
+                                        (AppScaffoldController
+                                                .filteredList[index]
+                                                .discountPercent /
+                                            100.0);
+
+                                    final String amountOwedStr =
+                                        IveCoreUtilities.getFormattedMoney(
+                                          amountOwed,
+                                          eventAggregate.extensions.digAfterDec,
+                                          eventAggregate.extensions.curSym,
+                                        );
+
+                                    CheckInPackModel packMember =
+                                        AppScaffoldController
+                                            .filteredList[index];
+
+                                    return Slidable(
+                                      key: Key(index.toString()),
+                                      // controller: slidableController,
+
+                                      // The start action pane is the one at the left or the top side.
+                                      startActionPane: ActionPane(
+                                        motion: const BehindMotion(),
+                                        // A pane can dismiss the Slidable.
+                                        dismissible: DismissiblePane(
+                                          closeOnCancel: true,
+                                          dismissThreshold: 0.65,
+                                          dismissalDuration: const Duration(
+                                            milliseconds: 800,
+                                          ),
+                                          resizeDuration: const Duration(
+                                            milliseconds: 800,
+                                          ),
+                                          confirmDismiss: () async {
+                                            if (packMember.isPaid != 1) {
+                                              unawaited(
+                                                AppScaffoldController.payForEvent(
+                                                  context,
+
+                                                  paymentBankTransfer.value,
+                                                  index,
+                                                  -1,
+                                                ),
+                                              );
+                                            }
+                                            return false;
+                                          },
+                                          onDismissed: () {},
+                                        ),
+                                        dragDismissible: true,
+                                        children: [
+                                          CustomSlidableAction(
+                                            // An action can be bigger than the others.
+                                            flex: 2,
+                                            onPressed: _emptyFunction,
+                                            backgroundColor:
+                                                (packMember.isPaid == 1
+                                                ? Colors.grey
+                                                : hc_blue),
+
+                                            foregroundColor: Colors.white,
+                                            child: packMember.isPaid == 1
+                                                ? Container(
+                                                    color: Colors.grey,
+                                                    width:
+                                                        deviceInfo.deviceWidth,
+                                                    child: Column(
+                                                      children: <Widget>[
+                                                        const Padding(
+                                                          padding:
+                                                              EdgeInsets.only(
+                                                                top: 5.0,
+                                                              ),
+                                                          child: Icon(
+                                                            FontAwesome
+                                                                .check_circle,
+                                                            size: 30.0,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                top: 5.0,
+                                                              ),
+                                                          child: Text(
+                                                            'Already\r\npaid',
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: ts_snackbar,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  )
+                                                : Container(
+                                                    color: hc_blue,
+                                                    width:
+                                                        deviceInfo.deviceWidth,
+                                                    child: Column(
+                                                      children: <Widget>[
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                top: 8.0,
+                                                              ),
+                                                          child: Image.asset(
+                                                            'images/icons/payment_type_4.png',
+                                                            height: 27.0,
+                                                            width: 27.0,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                top: 10.0,
+                                                              ),
+                                                          child: Text(
+                                                            '${(eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style:
+                                                                ts_titleMedium,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      // The end action pane is the one at the right or the bottom side.
+                                      endActionPane: ActionPane(
+                                        motion: const BehindMotion(),
+                                        // A pane can dismiss the Slidable.
+                                        dismissible: DismissiblePane(
+                                          closeOnCancel: true,
+                                          dismissThreshold: 0.65,
+                                          dismissalDuration: const Duration(
+                                            milliseconds: 800,
+                                          ),
+                                          resizeDuration: const Duration(
+                                            milliseconds: 800,
+                                          ),
+                                          confirmDismiss: () async {
+                                            if (packMember.isPaid != 1) {
+                                              unawaited(
+                                                AppScaffoldController.payForEvent(
+                                                  context,
+
+                                                  paymentCash.value,
+                                                  index,
+                                                  -1,
+                                                ),
+                                              );
+                                            } else {
+                                              unawaited(
+                                                AppScaffoldController.updateAttendenceState(
+                                                  packMember,
+                                                  -1,
+                                                  attendenceOnIn.value,
+                                                  -1,
+                                                ),
+                                              );
+                                            }
+                                            return false;
+                                          },
+                                          onDismissed: () {},
+                                        ),
+                                        dragDismissible: true,
+                                        children: [
+                                          CustomSlidableAction(
+                                            // An action can be bigger than the others.
+                                            flex: 2,
+                                            onPressed: _emptyFunction,
+                                            backgroundColor:
+                                                (packMember.isPaid == 1
+                                                    ? packMember.attendenceState >=
+                                                              attendenceOnIn
+                                                                  .value
+                                                          ? Colors.grey
+                                                          : Colors.amber[800]
+                                                    : Colors.green) ??
+                                                Colors.white,
+
+                                            foregroundColor: Colors.white,
+                                            child: packMember.isPaid == 1
+                                                ? packMember.attendenceState >=
+                                                          attendenceOnIn.value
+                                                      ? Container(
+                                                          width: deviceInfo
+                                                              .deviceWidth,
+                                                          color: Colors.grey,
+                                                          child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .end,
+                                                            children: <Widget>[
+                                                              const Padding(
+                                                                padding:
+                                                                    EdgeInsets.only(
+                                                                      top: 5.0,
+                                                                    ),
+                                                                child: Icon(
+                                                                  FontAwesome
+                                                                      .check_circle,
+                                                                  size: 30.0,
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                              ),
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets.only(
+                                                                      top: 5.0,
+                                                                    ),
+                                                                child: Text(
+                                                                  'Already\r\nOn-In',
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style:
+                                                                      ts_snackbar,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        )
+                                                      : Container(
+                                                          color:
+                                                              Colors.amber[800],
+                                                          width: deviceInfo
+                                                              .deviceWidth,
+                                                          child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .end,
+                                                            children: <Widget>[
+                                                              const Padding(
+                                                                padding:
+                                                                    EdgeInsets.only(
+                                                                      top: 2.0,
+                                                                    ),
+                                                                child: Icon(
+                                                                  Ionicons
+                                                                      .ios_beer,
+                                                                  size: 30.0,
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                              ),
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets.only(
+                                                                      top: 5.0,
+                                                                    ),
+                                                                child: Text(
+                                                                  'Record as\r\nOn-In',
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style:
+                                                                      ts_snackbar,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        )
+                                                : Container(
+                                                    width:
+                                                        deviceInfo.deviceWidth,
+                                                    color: Colors.green,
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: <Widget>[
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                bottom: 5.0,
+                                                                top: 8.0,
+                                                              ),
+                                                          child: Image.asset(
+                                                            'images/icons/payment_type_3.png',
+                                                            height: 25.0,
+                                                            width: 25.0,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                bottom: 5.0,
+                                                              ),
+                                                          child: Text(
+                                                            '${(eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: ts_snackbar,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      child: Container(
+                                        color: Colors.white,
+                                        child: Obx(
+                                          () => _listItem(
+                                            context,
+                                            index,
+                                            AppScaffoldController,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                }
-                              },
+                                    );
+                                  }
+                                },
+                              ),
                             );
                           },
                         ),
