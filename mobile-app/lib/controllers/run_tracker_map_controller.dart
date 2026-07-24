@@ -352,6 +352,8 @@ class RunTrackerMapController extends GetxController
       final bool hasAttachedLabel =
           (parsedType.customLabel?.isNotEmpty ?? false) &&
           (parsedType.slotIcon != null ||
+              parsedType.glyphId != null ||
+              parsedType.text != null ||
               parsedType.type == HashRunPointTypes.customLabel ||
               parsedType.type == HashRunPointTypes.caution);
 
@@ -1330,22 +1332,42 @@ class RunTrackerMapController extends GetxController
     // checkpoints — never draw them.
     if (typeKey == 'TRL') return null;
 
-    var customLabel = parts.length > 1
-        ? parts.sublist(1).join('::').trim()
-        : null;
-
-    // Strip the retired mark-multiplication diagnostic suffix ('~<tapId>')
-    // still present on marks stored while the instrumentation was live —
-    // without this every such mark renders an integer label badge.
-    if (customLabel != null) {
-      customLabel = customLabel.replaceFirst(RegExp(r'~\d+$'), '').trim();
+    // New grammar: `GLY::id` / `TXT::text` with order-independent ::L= / ::A=
+    // attributes (unknown attrs ignored). See docs/trail_markers/SPEC.md §3.
+    if (typeKey == 'GLY' || typeKey == 'TXT') {
+      final primary = parts.length > 1 ? parts[1] : '';
+      String? attrLabel;
+      String? action;
+      for (final seg in parts.skip(2)) {
+        final s = seg.trim();
+        if (s.startsWith('L=')) {
+          attrLabel = s.substring(2);
+        } else if (s.startsWith('A=')) {
+          action = s.substring(2);
+        }
+      }
+      final label = _cleanMarkLabel(attrLabel);
+      if (typeKey == 'GLY') {
+        if (primary.isEmpty) return null;
+        return _ParsedCheckpointType(
+          glyphId: primary,
+          customLabel: label,
+          action: action,
+        );
+      }
+      if (primary.trim().isEmpty) return null;
+      return _ParsedCheckpointType(
+        text: primary,
+        customLabel: label,
+        action: action,
+      );
     }
 
-    final label = (customLabel != null && customLabel.isNotEmpty)
-        ? customLabel
-        : null;
+    final label = _cleanMarkLabel(
+      parts.length > 1 ? parts.sublist(1).join('::').trim() : null,
+    );
 
-    // New-style slot icon (e.g. 'I-100.png') — use asset filename directly.
+    // Legacy slot icon (e.g. 'I-100.png') — use asset filename directly.
     if (typeKey.startsWith('I-')) {
       return _ParsedCheckpointType(slotIcon: typeKey, customLabel: label);
     }
@@ -1360,6 +1382,15 @@ class RunTrackerMapController extends GetxController
     }
   }
 
+  /// Normalises a raw mark label: strips the retired mark-multiplication
+  /// diagnostic suffix (`~tapId`) still present on marks stored while the
+  /// instrumentation was live, and maps empty → null.
+  String? _cleanMarkLabel(String? raw) {
+    if (raw == null) return null;
+    final cleaned = raw.replaceFirst(RegExp(r'~\d+$'), '').trim();
+    return cleaned.isEmpty ? null : cleaned;
+  }
+
   Widget _buildCheckpointMarker(_ParsedCheckpointType parsed) {
     final type = parsed.type;
     final customLabel = parsed.customLabel;
@@ -1370,11 +1401,20 @@ class RunTrackerMapController extends GetxController
     }
 
     final bool showLabel = customLabel != null && customLabel.isNotEmpty;
-    final bool isCaution = type == HashRunPointTypes.caution;
+    final bool isCaution =
+        type == HashRunPointTypes.caution || parsed.glyphId == 'caution';
 
-    final icon = parsed.slotIcon != null
-        ? _buildSlotCheckpointIcon(parsed.slotIcon!)
-        : _buildCheckpointIcon(type!);
+    final Widget icon;
+    if (parsed.glyphId != null || parsed.text != null) {
+      icon = _buildTileCheckpointIcon(
+        glyphId: parsed.glyphId,
+        text: parsed.text,
+      );
+    } else if (parsed.slotIcon != null) {
+      icon = _buildSlotCheckpointIcon(parsed.slotIcon!);
+    } else {
+      icon = _buildCheckpointIcon(type!);
+    }
 
     if (!showLabel) return icon;
 
@@ -1446,6 +1486,67 @@ class RunTrackerMapController extends GetxController
       fit: BoxFit.contain,
       errorBuilder: (_, _, _) =>
           Icon(Icons.place, color: customRed, size: size * 0.8),
+    );
+  }
+
+  /// Renders a new-model mark (glyph or text) as the standard square tile —
+  /// the same look as the control grid and public web. Tracks carry no invert
+  /// flag, so map marks always use the standard yellow/dark palette.
+  Widget _buildTileCheckpointIcon({String? glyphId, String? text}) {
+    const Color yellow = Color(0xFFFCFF04);
+    const Color ink = Color(0xFF2D0000);
+    final double size = 72.0 * _markerScale();
+
+    Widget content;
+    if (text != null) {
+      final lines = text.trim().split(' ').where((l) => l.isNotEmpty).toList();
+      content = FittedBox(
+        fit: BoxFit.contain,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final line in lines)
+              Text(
+                line,
+                style: const TextStyle(
+                  color: ink,
+                  fontWeight: FontWeight.w800,
+                  height: 1.0,
+                ),
+              ),
+          ],
+        ),
+      );
+    } else {
+      final glyph = glyphById(glyphId);
+      content = glyph == null
+          ? const Icon(Icons.help_outline, color: ink)
+          : Image.asset(
+              glyph.assetPath,
+              fit: BoxFit.contain,
+              color: glyph.fixed ? null : ink,
+              colorBlendMode: glyph.fixed ? null : BlendMode.srcIn,
+              errorBuilder: (_, _, _) =>
+                  const Icon(Icons.place, color: customRed),
+            );
+    }
+
+    return Container(
+      width: size,
+      height: size,
+      padding: EdgeInsets.all(size * 0.14),
+      decoration: BoxDecoration(
+        color: yellow,
+        borderRadius: BorderRadius.circular(size * 0.22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: content,
     );
   }
 
@@ -2043,9 +2144,13 @@ class RunTrackerMapController extends GetxController
     return normalized < 0 ? normalized + 360.0 : normalized;
   }
 
+  /// True if [rawType] is a track terminator — the mark that ends the drawn
+  /// polyline. New marks declare this via the `A=endRun` action; legacy marks
+  /// are the On-Inn enum key. Named `_isOnInn` for historical call sites.
   bool _isOnInn(String? rawType) {
     final parsed = _parseCheckpointType(rawType);
-    return parsed?.type == HashRunPointTypes.onInn;
+    if (parsed == null) return false;
+    return parsed.action == 'endRun' || parsed.type == HashRunPointTypes.onInn;
   }
 
   void _applyPlaybackDurationFromZoom({double? zoomOverride}) {
@@ -2168,12 +2273,23 @@ class _InterpolatedPoint {
 typedef _MarkEntry = ({TrackPoint point, String type, _ParsedCheckpointType parsed});
 
 class _ParsedCheckpointType {
-  const _ParsedCheckpointType({this.type, this.slotIcon, this.customLabel})
-      : assert(type != null || slotIcon != null);
+  const _ParsedCheckpointType({
+    this.type,
+    this.slotIcon,
+    this.glyphId,
+    this.text,
+    this.customLabel,
+    this.action,
+  }) : assert(
+          type != null || slotIcon != null || glyphId != null || text != null,
+        );
 
-  final HashRunPointTypes? type;
-  final String? slotIcon;
-  final String? customLabel;
+  final HashRunPointTypes? type; // legacy enum key
+  final String? slotIcon; // legacy I-NNN.png filename
+  final String? glyphId; // new GLY:: glyph id
+  final String? text; // new TXT:: text (may contain spaces = newlines)
+  final String? customLabel; // L= label (or legacy positional label)
+  final String? action; // A= action, e.g. 'endRun'
 }
 
 /// A selected-runner photo cue: the timeline moment, the pin location the photo

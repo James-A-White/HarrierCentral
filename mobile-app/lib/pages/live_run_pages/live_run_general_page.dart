@@ -4,6 +4,82 @@ import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
 import 'package:intl/intl.dart';
 
+// Trail-mark control tiles. A marker is a glyph or a short text on a yellow
+// rounded square (no border), per docs/trail_markers/SPEC.md §4. Glyphs are
+// bare monochrome silhouettes tinted to the ink colour (fixed-colour glyphs —
+// e.g. Caution — render as-is); text stacks on spaces.
+const Color _slotTileYellow = Color(0xFFFCFF04);
+const Color _slotTileInk = Color(0xFF2D0000);
+const Color _slotTileInvertBg = Color(0xFF2D0000);
+const Color _slotTileInvertInk = Color(0xFFFFFDF0);
+const double _slotTileSize = 54;
+
+/// A single square trail-mark tile. Shared by the control grid and the tap
+/// flash. Renders the same way the map and public-web will.
+Widget trailSlotTile(TrailSlot slot, {required double size}) {
+  final glyph = slot.glyph;
+  final fixed = glyph?.fixed ?? false;
+  final invert = slot.invert && !fixed; // fixed glyphs ignore invert
+  final bg = invert ? _slotTileInvertBg : _slotTileYellow;
+  final ink = invert ? _slotTileInvertInk : _slotTileInk;
+
+  return Container(
+    width: size,
+    height: size,
+    padding: EdgeInsets.all(size * 0.13),
+    decoration: BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(size * 0.2),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.25),
+          blurRadius: 4,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: _slotTileContent(slot, glyph, fixed, ink),
+  );
+}
+
+Widget _slotTileContent(
+  TrailSlot slot,
+  TrailGlyph? glyph,
+  bool fixed,
+  Color ink,
+) {
+  if (slot.kind == 'text') {
+    final t = (slot.text ?? '').trim();
+    if (t.isEmpty) return const SizedBox.shrink();
+    final lines = t.split(' ').where((l) => l.isNotEmpty).toList();
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final line in lines)
+            Text(
+              line,
+              style: TextStyle(
+                color: ink,
+                fontWeight: FontWeight.w800,
+                height: 1.0,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+  if (glyph == null) return Icon(Icons.help_outline, color: ink);
+  return Image.asset(
+    glyph.assetPath,
+    fit: BoxFit.contain,
+    color: fixed ? null : ink, // mono → tint to ink; fixed → full colour
+    colorBlendMode: fixed ? null : BlendMode.srcIn,
+    errorBuilder: (_, _, _) => const Icon(Icons.place, color: customRed),
+  );
+}
+
 class LiveRunGeneralController extends GetxController {
   LiveRunGeneralController({required this.run}) {
     LiveRunService.ensure();
@@ -212,7 +288,11 @@ class LiveRunGeneralController extends GetxController {
   /// which throws on non-enum keys (e.g. new-style `I-NNN.png` slot icons).
   bool _isTerminatorType(String? type) {
     if (type == null || type.isEmpty) return false;
-    return type.split('::').first.trim() == HashRunPointTypes.onInn.key;
+    final parts = type.split('::');
+    // New marks declare termination via the endRun action…
+    if (parts.any((p) => p.trim() == 'A=endRun')) return true;
+    // …legacy marks are the On-Inn enum key.
+    return parts.first.trim() == HashRunPointTypes.onInn.key;
   }
 
   /// Sets the runner's declared trail lane. If tracking is already underway,
@@ -679,7 +759,7 @@ class LiveRunGeneralPage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             'Your trail',
@@ -689,6 +769,7 @@ class LiveRunGeneralPage extends StatelessWidget {
           Obx(() {
             final selected = controller.selectedTrailValue.value;
             return Wrap(
+              alignment: WrapAlignment.center,
               spacing: 8,
               runSpacing: 8,
               children: [
@@ -745,13 +826,13 @@ class LiveRunGeneralPage extends StatelessWidget {
       final slice = slots.skip(i).take(perRow).toList(growable: false);
       rows.add(
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 0),
+          padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               for (var j = 0; j < slice.length; j++) ...[
                 _buildSlotButton(context, slice[j]),
-                if (j != slice.length - 1) const SizedBox(width: 10),
+                if (j != slice.length - 1) const SizedBox(width: 8),
               ],
             ],
           ),
@@ -786,47 +867,45 @@ class LiveRunGeneralPage extends StatelessWidget {
 
   Widget _buildSlotButton(BuildContext context, TrailSlot slot) {
     return InkWell(
-      onTap: () async {
-        String? label;
-
-        if (slot.parsedAction == TrailSlotAction.addText) {
-          final popup = GetPointLabelPopup(
-            title: 'Add Note',
-            hintText: slot.name,
-            confirmButtonText: 'Save',
-            iconData: Icons.label_outline,
-          );
-
-          final dialogResult = await showDialog<Map<String, String>>(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) => popup,
-          );
-
-          final trimmed = dialogResult?['label']?.trim() ?? '';
-          if (trimmed.isEmpty) return;
-          label = trimmed;
-        }
-
-        if (!context.mounted) return;
-        unawaited(_showSlotFlash(context, slot, label));
-
-        await controller.markSlot(slot, label: label);
-
-        if (slot.parsedAction == TrailSlotAction.endRun) {
-          controller.stopTracking();
-        }
-      },
-      borderRadius: BorderRadius.circular(40),
-      child: Image.asset(
-        slot.assetPath,
-        height: 50,
-        width: 50,
-        fit: BoxFit.contain,
-        errorBuilder: (_, _, _) =>
-            const Icon(Icons.place, color: customRed, size: 32),
-      ),
+      onTap: () => unawaited(_handleSlotTap(context, slot)),
+      borderRadius: BorderRadius.circular(_slotTileSize * 0.2),
+      child: trailSlotTile(slot, size: _slotTileSize),
     );
+  }
+
+  /// Handles a trail-mark tap: prompts for a label if the slot needs one,
+  /// flashes the confirmation, records the mark, and ends the run if the slot
+  /// is the terminator (On Inn).
+  Future<void> _handleSlotTap(BuildContext context, TrailSlot slot) async {
+    String? label;
+
+    if (slot.parsedAction == TrailSlotAction.addText) {
+      final popup = GetPointLabelPopup(
+        title: 'Add Note',
+        hintText: slot.name,
+        confirmButtonText: 'Save',
+        iconData: Icons.label_outline,
+      );
+
+      final dialogResult = await showDialog<Map<String, String>>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) => popup,
+      );
+
+      final trimmed = dialogResult?['label']?.trim() ?? '';
+      if (trimmed.isEmpty) return;
+      label = trimmed;
+    }
+
+    if (!context.mounted) return;
+    unawaited(_showSlotFlash(context, slot, label));
+
+    await controller.markSlot(slot, label: label);
+
+    if (slot.parsedAction == TrailSlotAction.endRun) {
+      controller.stopTracking();
+    }
   }
 
   Widget _buildChatSection() {
@@ -923,17 +1002,7 @@ class _SlotFlashDialogState extends State<_SlotFlashDialog>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      widget.slot.assetPath,
-                      width: 160,
-                      height: 160,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const Icon(
-                        Icons.place,
-                        color: customRed,
-                        size: 120,
-                      ),
-                    ),
+                    trailSlotTile(widget.slot, size: 160),
                     const SizedBox(height: 16),
                     Text(
                       widget.slot.name,

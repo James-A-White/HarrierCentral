@@ -2,49 +2,176 @@ import 'package:harrier_central/imports.dart';
 
 enum TrailSlotAction { addText, endRun }
 
+// ---------------------------------------------------------------------------
+// Canonical glyph library — mirrors docs/trail_markers/glyph_registry.json.
+// The registry (not the filename) is authoritative for colorMode.
+// ---------------------------------------------------------------------------
+
+class TrailGlyph {
+  const TrailGlyph(this.id, this.file, this.defaultName, {this.fixed = false});
+
+  final String id;
+  final String file;
+  final String defaultName;
+  final bool fixed; // full-colour, never tinted/inverted (e.g. caution)
+
+  String get assetPath => 'images/trail_glyphs/$file';
+}
+
+const kTrailGlyphs = <TrailGlyph>[
+  TrailGlyph('check', 'check.mono.png', 'Check'),
+  TrailGlyph('whichyway', 'whichyway.mono.png', 'Whichy Way'),
+  TrailGlyph('fishhook', 'fishhook.mono.png', 'Fish Hook'),
+  TrailGlyph('regroup', 'regroup.mono.png', 'Regroup'),
+  TrailGlyph('hashview', 'hashview.mono.png', 'Hash View'),
+  TrailGlyph('label', 'label.mono.png', 'Label'),
+  TrailGlyph('drinkstop', 'drinkstop.mono.png', 'Drink Stop'),
+  TrailGlyph('oninn', 'oninn.mono.png', 'On Inn'),
+  TrailGlyph('caution', 'caution.fixed.png', 'Caution', fixed: true),
+];
+
+TrailGlyph? glyphById(String? id) {
+  if (id == null) return null;
+  for (final g in kTrailGlyphs) {
+    if (g.id == id) return g;
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// TrailSlot — a kennel's configured mark. A slot is a glyph OR a short text.
+// ---------------------------------------------------------------------------
+
 class TrailSlot {
   const TrailSlot({
     required this.slot,
-    required this.icon,
+    required this.kind,
+    this.glyphId,
+    this.text,
+    this.invert = false,
     required this.name,
     this.action,
   });
 
   final int slot;
-  final String icon;
+  final String kind; // 'glyph' | 'text'
+  final String? glyphId; // when kind == 'glyph'
+  final String? text; // when kind == 'text' — up to 7 non-space chars; ' ' = newline
+  final bool invert; // placeholder: light-on-dark (text + mono glyphs only)
   final String name;
 
   /// Raw action string from JSON. Use [parsedAction] for typed access.
   final String? action;
 
   TrailSlotAction? get parsedAction => switch (action) {
-    'addText' => TrailSlotAction.addText,
-    'endRun' => TrailSlotAction.endRun,
-    _ => null,
-  };
+        'addText' => TrailSlotAction.addText,
+        'endRun' => TrailSlotAction.endRun,
+        _ => null,
+      };
 
-  String get assetPath => 'images/live_run_trail_markers/$icon';
+  /// The glyph for this slot, or null for a text slot / unknown id.
+  TrailGlyph? get glyph => kind == 'glyph' ? glyphById(glyphId) : null;
 
-  factory TrailSlot.fromJson(Map<String, dynamic> json) => TrailSlot(
-    slot: json['slot'] as int,
-    icon: json['icon'] as String,
-    name: json['name'] as String,
-    action: json['action'] as String?,
-  );
+  /// The self-describing track `type` string for a placed mark of this slot.
+  /// See docs/trail_markers/SPEC.md §3:
+  /// `GLY::glyphId` | `TXT::text` optionally followed by `::L=label` `::A=action`.
+  String trackType({String? label}) {
+    final buffer = StringBuffer(
+      kind == 'text' ? 'TXT::${text ?? ''}' : 'GLY::${glyphId ?? ''}',
+    );
+    final trimmed = label?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) buffer.write('::L=$trimmed');
+    if (action != null && action!.isNotEmpty) buffer.write('::A=$action');
+    return buffer.toString();
+  }
+
+  factory TrailSlot.fromJson(Map<String, dynamic> json) {
+    // New schema: explicit `kind`.
+    if (json['kind'] != null) {
+      return TrailSlot(
+        slot: json['slot'] as int,
+        kind: json['kind'] as String,
+        glyphId: json['glyphId'] as String?,
+        text: json['text'] as String?,
+        invert: json['invert'] == true,
+        name: (json['name'] as String?) ?? '',
+        action: json['action'] as String?,
+      );
+    }
+    // Legacy schema: map the old `icon` filename → glyph/text.
+    final legacy = _legacyIconToMarker(json['icon'] as String?);
+    return TrailSlot(
+      slot: json['slot'] as int,
+      kind: legacy.kind,
+      glyphId: legacy.glyphId,
+      text: legacy.text,
+      name: (json['name'] as String?) ?? '',
+      action: json['action'] as String?,
+    );
+  }
+
+  /// Maps a legacy `I-NNN.png` / named-symbol filename to the new marker model.
+  /// Letter-based symbols become text; pictorial ones map to a glyph id.
+  static ({String kind, String? glyphId, String? text}) _legacyIconToMarker(
+    String? icon,
+  ) {
+    ({String kind, String? glyphId, String? text}) glyph(String id) =>
+        (kind: 'glyph', glyphId: id, text: null);
+    ({String kind, String? glyphId, String? text}) txt(String t) =>
+        (kind: 'text', glyphId: null, text: t);
+    const empty = (kind: 'glyph', glyphId: null, text: null);
+
+    if (icon == null || icon.isEmpty) return empty;
+    final f = icon.toLowerCase();
+
+    const named = {
+      'check.png': 'g:check', 'caution.png': 'g:caution',
+      'drinkstop.png': 'g:drinkstop', 'fishhook.png': 'g:fishhook',
+      'hashview.png': 'g:hashview', 'label.png': 'g:label',
+      'oninn.png': 'g:oninn', 'regroup.png': 'g:regroup',
+      'whichyway.png': 'g:whichyway',
+      'checkback.png': 't:CB', 'falsetrail.png': 't:FT', 'shortcut.png': 't:SC',
+    };
+    String? code = named[f];
+    if (code == null && f.startsWith('i-')) {
+      final n = int.tryParse(f.substring(2, f.indexOf('.'))) ?? -1;
+      code = switch (n) {
+        >= 1 && <= 4 => 'g:check',
+        >= 50 && <= 58 => 't:FT',
+        >= 100 && <= 102 => 't:SC',
+        >= 150 && <= 151 => 't:CB',
+        200 => 'g:whichyway',
+        250 => 'g:fishhook',
+        >= 300 && <= 301 => 'g:regroup',
+        >= 350 && <= 351 => 'g:hashview',
+        400 => 'g:label',
+        450 => 'g:drinkstop',
+        451 => 't:BS',
+        452 => 't:DS',
+        500 => 'g:oninn',
+        >= 501 && <= 504 => 't:ON IN',
+        550 => 'g:caution',
+        _ => null,
+      };
+    }
+    if (code == null) return empty;
+    final parts = code.split(':');
+    return parts[0] == 'g' ? glyph(parts[1]) : txt(parts[1]);
+  }
 
   static const List<TrailSlot> defaults = [
-    TrailSlot(slot: 1,  icon: 'I-001.png', name: 'Check'),
-    TrailSlot(slot: 2,  icon: 'I-050.png', name: 'False Trail'),
-    TrailSlot(slot: 3,  icon: 'I-100.png', name: 'Short Cut'),
-    TrailSlot(slot: 4,  icon: 'I-150.png', name: 'Checkback'),
-    TrailSlot(slot: 5,  icon: 'I-200.png', name: 'Whichy Way'),
-    TrailSlot(slot: 6,  icon: 'I-250.png', name: 'Fish Hook'),
-    TrailSlot(slot: 7,  icon: 'I-300.png', name: 'Regroup'),
-    TrailSlot(slot: 8,  icon: 'I-350.png', name: 'Hash View'),
-    TrailSlot(slot: 9,  icon: 'I-400.png', name: 'Label',       action: 'addText'),
-    TrailSlot(slot: 10, icon: 'I-450.png', name: 'Drink Stop'),
-    TrailSlot(slot: 11, icon: 'I-500.png', name: 'On Inn',      action: 'endRun'),
-    TrailSlot(slot: 12, icon: 'I-550.png', name: 'Caution',     action: 'addText'),
+    TrailSlot(slot: 1,  kind: 'glyph', glyphId: 'check',     name: 'Check'),
+    TrailSlot(slot: 2,  kind: 'text',  text: 'FT',           name: 'False Trail'),
+    TrailSlot(slot: 3,  kind: 'text',  text: 'SC',           name: 'Short Cut'),
+    TrailSlot(slot: 4,  kind: 'text',  text: 'CB',           name: 'Checkback'),
+    TrailSlot(slot: 5,  kind: 'glyph', glyphId: 'whichyway', name: 'Whichy Way'),
+    TrailSlot(slot: 6,  kind: 'glyph', glyphId: 'fishhook',  name: 'Fish Hook'),
+    TrailSlot(slot: 7,  kind: 'glyph', glyphId: 'regroup',   name: 'Regroup'),
+    TrailSlot(slot: 8,  kind: 'glyph', glyphId: 'hashview',  name: 'Hash View'),
+    TrailSlot(slot: 9,  kind: 'glyph', glyphId: 'label',     name: 'Label',      action: 'addText'),
+    TrailSlot(slot: 10, kind: 'glyph', glyphId: 'drinkstop', name: 'Drink Stop'),
+    TrailSlot(slot: 11, kind: 'glyph', glyphId: 'oninn',     name: 'On Inn',     action: 'endRun'),
+    TrailSlot(slot: 12, kind: 'glyph', glyphId: 'caution',   name: 'Caution',    action: 'addText'),
   ];
 }
 

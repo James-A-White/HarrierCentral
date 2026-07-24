@@ -181,6 +181,7 @@ flutter:
     - images/logos/
     - images/live_run_map_markers/
     - images/live_run_trail_markers/
+    - images/trail_glyphs/
     - images/map_pins/baby_blue/
     - images/map_pins/blue/
     - images/map_pins/green/

@@ -413,11 +413,11 @@ class LocationService extends GetxService {
     final position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
     );
+    // Self-describing track type: GLY::<id> / TXT::<text> [::L=label] [::A=action].
     await updateDeviceLocation(
       position,
       forceFlush: true,
-      slotIcon: slot.icon,
-      label: label,
+      rawType: slot.trackType(label: label),
     );
   }
 
@@ -534,7 +534,6 @@ class LocationService extends GetxService {
     Position position, {
     bool forceFlush = false,
     HashRunPointTypes? pointType,
-    String? slotIcon,
     String? rawType,
     String? label,
   }) async {
@@ -624,11 +623,6 @@ class LocationService extends GetxService {
         pointStr = rawType;
       } else if (pointType != null) {
         pointStr = pointType.key;
-        if (label != null) {
-          pointStr += '::$label';
-        }
-      } else if (slotIcon != null) {
-        pointStr = slotIcon;
         if (label != null) {
           pointStr += '::$label';
         }
