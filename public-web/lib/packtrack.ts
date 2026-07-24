@@ -20,16 +20,30 @@ export interface PackTrackPayload {
 }
 
 // ── Trail marks ────────────────────────────────────────────────────────────────
-// A track point's `type` field is one of:
+// A track point's `type` field is one of (see docs/trail_markers/SPEC.md §3):
 //   • null/empty          → a continuous GPS point (drawn as the polyline)
-//   • a slot icon filename → e.g. "I-100.png" (new dynamic icon collection); the
-//                            type IS the icon filename. Optional "::label" suffix.
-//   • a HashRunPointTypes  → legacy key e.g. "CHK", "CAU::watch the road". Resolved
-//     key                    to a PNG via LEGACY_ICON below.
+//   • "GLY::<glyphId>"    → a glyph mark; optional "::L=label" "::A=action" attrs
+//   • "TXT::<text>"       → a text mark (text may contain spaces = newlines)
+//   • a slot icon filename → legacy "I-100.png"; the type IS the icon filename
+//   • a HashRunPointTypes  → legacy key e.g. "CHK", "CAU::watch the road"
 //   • "PHO::<blobId>"      → a run-photo marker (member-only; skipped on public web)
 // Mirrors run_tracker_map_controller._parseCheckpointType in the mobile app.
 
 const ICON_BASE = "/images/live_run_map_markers";
+const GLYPH_BASE = "/images/trail_glyphs";
+
+// Canonical glyph library — mirrors docs/trail_markers/glyph_registry.json.
+const GLYPHS: Record<string, { file: string; fixed: boolean }> = {
+  check: { file: "check.mono.png", fixed: false },
+  whichyway: { file: "whichyway.mono.png", fixed: false },
+  fishhook: { file: "fishhook.mono.png", fixed: false },
+  regroup: { file: "regroup.mono.png", fixed: false },
+  hashview: { file: "hashview.mono.png", fixed: false },
+  label: { file: "label.mono.png", fixed: false },
+  drinkstop: { file: "drinkstop.mono.png", fixed: false },
+  oninn: { file: "oninn.mono.png", fixed: false },
+  caution: { file: "caution.fixed.png", fixed: true },
+};
 
 // Legacy HashRunPointTypes key → PNG icon filename (lib/util/enums.dart).
 const LEGACY_ICON: Record<string, string> = {
@@ -50,13 +64,41 @@ const LEGACY_ICON: Record<string, string> = {
 };
 
 export interface ParsedMark {
-  /** Absolute URL of the icon PNG, or null when the mark has no flat icon (photos). */
+  /** Legacy flat-icon PNG URL (circular badge), or null. */
   iconUrl: string | null;
-  /** Optional display label (LAB / CAU / slot "addText" marks). */
+  /** New glyph asset URL, or null. */
+  glyphUrl: string | null;
+  /** Whether the glyph is fixed-colour (rendered as-is, never tinted). */
+  glyphFixed: boolean;
+  /** New text mark (may contain spaces = newlines), or null. */
+  text: string | null;
+  /** Optional display label (L= / LAB / CAU / slot "addText" marks). */
   label: string | null;
+  /** Placement action (A=), e.g. "endRun". */
+  action: string | null;
+  /** Ends the drawn track (endRun action, or legacy On Inn). */
   isOnInn: boolean;
   isCaution: boolean;
   isPhoto: boolean;
+}
+
+const EMPTY_MARK: ParsedMark = {
+  iconUrl: null,
+  glyphUrl: null,
+  glyphFixed: false,
+  text: null,
+  label: null,
+  action: null,
+  isOnInn: false,
+  isCaution: false,
+  isPhoto: false,
+};
+
+// Strip the retired mark-multiplication diagnostic suffix ("~<tapId>") still
+// present on marks stored Jun–Jul 2026, and map empty → null.
+function cleanLabel(raw: string): string | null {
+  const cleaned = raw.replace(/~\d+$/, "").trim();
+  return cleaned.length > 0 ? cleaned : null;
 }
 
 /** Resolve a track point's `type` to a renderable mark, or null for GPS points. */
@@ -66,39 +108,65 @@ export function parseMark(rawType: string | null | undefined): ParsedMark | null
 
   const parts = value.split("::");
   const key = parts[0].trim();
-  // Strip the retired mark-multiplication diagnostic suffix ("~<tapId>") still
-  // present on marks stored Jun–Jul 2026 — without this every such mark renders
-  // an integer label badge. (Photo blob-ids never match ~<digits>$.)
-  const labelRaw = (parts.length > 1 ? parts.slice(1).join("::").trim() : "")
-    .replace(/~\d+$/, "")
-    .trim();
-  const label = labelRaw.length > 0 ? labelRaw : null;
 
   // Trail-type declaration — metadata, not a drawable mark.
   if (key === "TRL") return null;
 
-  // New-style slot icon — the key is the icon filename itself.
+  // New grammar: GLY::<id> / TXT::<text> with order-independent ::L= / ::A=
+  // attributes (unknown attrs ignored).
+  if (key === "GLY" || key === "TXT") {
+    const primary = parts.length > 1 ? parts[1] : "";
+    let label: string | null = null;
+    let action: string | null = null;
+    for (const seg of parts.slice(2)) {
+      const s = seg.trim();
+      if (s.startsWith("L=")) label = cleanLabel(s.slice(2));
+      else if (s.startsWith("A=")) action = s.slice(2);
+    }
+    const terminates = action === "endRun";
+    if (key === "GLY") {
+      const g = GLYPHS[primary];
+      if (!g) return null; // unknown glyph id — nothing to draw
+      return {
+        ...EMPTY_MARK,
+        glyphUrl: `${GLYPH_BASE}/${g.file}`,
+        glyphFixed: g.fixed,
+        label,
+        action,
+        isOnInn: terminates,
+        isCaution: primary === "caution",
+      };
+    }
+    if (!primary.trim()) return null;
+    return { ...EMPTY_MARK, text: primary, label, action, isOnInn: terminates };
+  }
+
+  const label = cleanLabel(
+    parts.length > 1 ? parts.slice(1).join("::").trim() : "",
+  );
+
+  // Legacy slot icon — the key is the icon filename itself.
   if (key.startsWith("I-")) {
-    return { iconUrl: `${ICON_BASE}/${key}`, label, isOnInn: false, isCaution: false, isPhoto: false };
+    return { ...EMPTY_MARK, iconUrl: `${ICON_BASE}/${key}`, label };
   }
 
   if (key === "PHO") {
     // Photo markers require blob resolution + approval — not shown on public web.
-    return { iconUrl: null, label, isOnInn: false, isCaution: false, isPhoto: true };
+    return { ...EMPTY_MARK, label, isPhoto: true };
   }
 
   const icon = LEGACY_ICON[key];
   if (!icon) return null;
   return {
+    ...EMPTY_MARK,
     iconUrl: `${ICON_BASE}/${icon}`,
     label,
     isOnInn: key === "OIN",
     isCaution: key === "CAU",
-    isPhoto: false,
   };
 }
 
-/** True when this point ends the drawn track (On Inn). */
+/** True when this point ends the drawn track (endRun action or legacy On Inn). */
 export function isOnInn(rawType: string | null | undefined): boolean {
   return parseMark(rawType)?.isOnInn ?? false;
 }
