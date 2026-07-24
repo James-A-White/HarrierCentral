@@ -127,6 +127,7 @@ flutter:
     - images/map_pins/pink/
     - images/progress_indicators/forms/
     - images/trail_symbols/
+    - images/trail_glyphs/
 
   fonts:
     - family: AvenirNextHeavy
