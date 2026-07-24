@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "description": "Canonical trail-marker glyph library. Each app (mobile, portal, public-web) mirrors this list in code and bundles the PNGs from docs/trail_markers/glyphs/. The registry is the authoritative source of each glyph's colorMode — renderers must NOT infer it from the filename (the filename suffix is only a human hint).",
+  "tile": {
+    "shape": "rounded-rect",
+    "border": "none",
+    "cornerRadiusPct": 0.20,
+    "glyphPaddingPct": 0.07,
+    "normal": { "bg": "#FCFF04", "ink": "#2D0000" },
+    "invert": { "bg": "#2D0000", "ink": "#FFFDF0" }
+  },
+  "glyphs": [
+    { "id": "check",     "file": "check.mono.png",     "colorMode": "mono",  "defaultName": "Check" },
+    { "id": "whichyway", "file": "whichyway.mono.png", "colorMode": "mono",  "defaultName": "Whichy Way" },
+    { "id": "fishhook",  "file": "fishhook.mono.png",  "colorMode": "mono",  "defaultName": "Fish Hook" },
+    { "id": "regroup",   "file": "regroup.mono.png",   "colorMode": "mono",  "defaultName": "Regroup" },
+    { "id": "hashview",  "file": "hashview.mono.png",  "colorMode": "mono",  "defaultName": "Hash View" },
+    { "id": "label",     "file": "label.mono.png",     "colorMode": "mono",  "defaultName": "Label" },
+    { "id": "drinkstop", "file": "drinkstop.mono.png", "colorMode": "mono",  "defaultName": "Drink Stop" },
+    { "id": "oninn",     "file": "oninn.mono.png",     "colorMode": "mono",  "defaultName": "On Inn" },
+    { "id": "caution",   "file": "caution.fixed.png",  "colorMode": "fixed", "defaultName": "Caution" }
+  ]
+}
