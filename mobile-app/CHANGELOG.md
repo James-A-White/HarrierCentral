@@ -1,5 +1,20 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.6+1220 (2026-07-25)
+
+### Fixes
+- **PackTrack HTTP reliability**: the GPS uploader and track reader now open a
+  fresh connection per request instead of reusing a keep-alive socket. Fixes the
+  "Bad file descriptor" errors after the app returns from the background during a
+  run, and prevents GPS batches being abandoned (dropped track points).
+- **RSVP**: tapping an RSVP when the network call fails no longer throws — the
+  chip restores its previous state and shows "Couldn't save RSVP — please try again."
+
+### Improvements
+- **PackTrack playback**: photo zoom is now rock-controlled — tilt with the run to
+  zoom in, against it to zoom out; the neutral zone freezes it. The speed chip turns
+  **orange** when tracking backward (red = paused, blue = forward).
+
 ## 2.15.5+1219 (2026-07-25)
 
 ### Fixes
