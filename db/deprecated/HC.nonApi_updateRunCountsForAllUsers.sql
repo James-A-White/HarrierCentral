@@ -8,12 +8,14 @@ AS
 -- OBSOLETE (guarded 2026-07-25): run-count maintenance is now owned by the
 -- HC6 run-count SPs. This legacy HC5 updater used the EventStartDatetime
 -- columns and fought the HC6 version, churning ~100k HasherEventMap rows.
--- It now logs the call and RETURNs so any unknown caller does no harm.
--- Original body preserved below (unreachable) for reference.
+-- It now DELEGATES to the HC6 equivalent (so any live caller still gets the
+-- correct HC6-computed counts) and logs the call so the remaining legacy
+-- callers can be found and retired. Original body preserved below (unreachable).
 -- =====================================================================
     SET NOCOUNT ON;
     INSERT INTO LOG.GeneralLog (LogSource, Message)
-    VALUES ('OBSOLETE SP', 'Obsolete SP called: HC.nonApi_updateRunCountsForAllUsers (ignored; HC6 owns run counts)');
+    VALUES ('OBSOLETE SP', 'Obsolete SP called (delegated to HC6): HC.nonApi_updateRunCountsForAllUsers');
+    EXEC HC6.nonApi_updateRunCountsForAllUsers @updatedSince = @updatedSince;
     RETURN;
 
 BEGIN
