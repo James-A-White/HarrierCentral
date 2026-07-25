@@ -126,7 +126,11 @@ class RunTrackerMapController extends GetxController
   final Rxn<PhotoShowcaseState> photoShowcase = Rxn<PhotoShowcaseState>();
   final RxDouble showcaseZoom = 0.0.obs; // 0 = at pin, 1 = full at centre
   Timer? _showcaseTicker;
-  DateTime? _showcaseStart;
+  // Progress through the show curve in "virtual ms", advanced each tick by
+  // dt × effective speed (tilt magnitude, or playback speed when tilt is off).
+  // Freezes when the effective speed is 0 (tilt held at the stop-point).
+  double _showcaseVirtualMs = 0.0;
+  DateTime? _lastShowcaseTick;
   bool _showcaseResumeAfter = false;
   // Zoom envelope (ms), matches web: IN → HOLD → OUT.
   static const int _showInMs = 450;
@@ -1054,37 +1058,71 @@ class RunTrackerMapController extends GetxController
     }
   }
 
+  /// The rate that drives the photo zoom. In tilt mode it follows the tilt
+  /// speed (0 in the neutral/stop band → the zoom freezes; tilt away → faster;
+  /// tilt toward you → reverses). With tilt off it follows the chosen playback
+  /// speed. Signed so reverse rewinds the zoom back toward the pin.
+  double get _showcaseSpeed {
+    if (tiltEnabled.value) {
+      final s = tiltSpeed.value;
+      return s.abs() < 0.15 ? 0.0 : s; // clean freeze in the neutral band
+    }
+    return playbackSpeed.value;
+  }
+
   void _startShowcase(PhotoCue cue) {
     _showcaseResumeAfter = isPlaying.value;
     if (_playbackController.isAnimating) _playbackController.stop();
     isPlaying.value = false; // freezes both normal and tilt playback
     photoShowcase.value = PhotoShowcaseState(url: cue.url, point: cue.point);
     showcaseZoom.value = 0.0;
-    _showcaseStart = DateTime.now();
+    _showcaseVirtualMs = 0.0;
+    _lastShowcaseTick = null;
     _showcaseTicker?.cancel();
     _showcaseTicker =
         Timer.periodic(const Duration(milliseconds: 16), (_) => _showcaseTick());
   }
 
   void _showcaseTick() {
-    final start = _showcaseStart;
-    if (start == null) {
+    if (photoShowcase.value == null) {
       _endShowcase();
       return;
     }
-    final elapsed = DateTime.now().difference(start).inMilliseconds;
+    final now = DateTime.now();
+    final last = _lastShowcaseTick;
+    _lastShowcaseTick = now;
+    if (last == null) return; // first tick just seeds the clock
+
+    final int dtMs = now.difference(last).inMilliseconds;
+    if (dtMs <= 0) return;
+
+    // Advance (or rewind) the show curve by the effective speed. When the speed
+    // is 0 — tilt held at the stop-point — the zoom stays locked where it is.
+    final double speed = _showcaseSpeed;
+    _showcaseVirtualMs += dtMs * speed;
+
     const total = _showInMs + _showHoldMs + _showOutMs;
-    if (elapsed >= total) {
+    if (_showcaseVirtualMs >= total) {
       _endShowcase();
       return;
     }
+    if (_showcaseVirtualMs <= 0.0) {
+      // Rewound past the pin (reverse tilt) — dismiss so playback resumes.
+      if (speed < 0) {
+        _endShowcase();
+        return;
+      }
+      _showcaseVirtualMs = 0.0;
+    }
+
+    final double e = _showcaseVirtualMs;
     double z;
-    if (elapsed < _showInMs) {
-      z = Curves.easeOut.transform(elapsed / _showInMs);
-    } else if (elapsed < _showInMs + _showHoldMs) {
+    if (e < _showInMs) {
+      z = Curves.easeOut.transform(e / _showInMs);
+    } else if (e < _showInMs + _showHoldMs) {
       z = 1.0;
     } else {
-      final o = (elapsed - _showInMs - _showHoldMs) / _showOutMs;
+      final o = (e - _showInMs - _showHoldMs) / _showOutMs;
       z = 1.0 - Curves.easeIn.transform(o.clamp(0.0, 1.0));
     }
     showcaseZoom.value = z.clamp(0.0, 1.0);
@@ -1093,7 +1131,8 @@ class RunTrackerMapController extends GetxController
   void _endShowcase() {
     _showcaseTicker?.cancel();
     _showcaseTicker = null;
-    _showcaseStart = null;
+    _showcaseVirtualMs = 0.0;
+    _lastShowcaseTick = null;
     photoShowcase.value = null;
     showcaseZoom.value = 0.0;
     if (_showcaseResumeAfter && !_isAtTimelineEnd()) {
