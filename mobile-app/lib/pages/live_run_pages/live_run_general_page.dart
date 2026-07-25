@@ -872,11 +872,20 @@ class LiveRunGeneralPage extends StatelessWidget {
   }
 
   Widget _buildSlotButton(BuildContext context, TrailSlot slot) {
-    return InkWell(
-      onTap: () => unawaited(_handleSlotTap(context, slot)),
-      borderRadius: BorderRadius.circular(_slotTileSize * 0.2),
-      child: trailSlotTile(slot, size: _slotTileSize),
-    );
+    return Obx(() {
+      // Marks attach a GPS point to the live track, so they're only usable
+      // during an active (or paused) run. Keep the buttons visible always, but
+      // dim + disable them until tracking starts.
+      final active = controller.isTracking.value || controller.isPaused.value;
+      return Opacity(
+        opacity: active ? 1.0 : 0.4,
+        child: InkWell(
+          onTap: active ? () => unawaited(_handleSlotTap(context, slot)) : null,
+          borderRadius: BorderRadius.circular(_slotTileSize * 0.2),
+          child: trailSlotTile(slot, size: _slotTileSize),
+        ),
+      );
+    });
   }
 
   /// Handles a trail-mark tap: prompts for a label if the slot needs one,
