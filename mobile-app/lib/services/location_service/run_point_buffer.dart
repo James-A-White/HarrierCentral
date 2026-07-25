@@ -10,7 +10,7 @@ class RunPointBuffer {
     required this.eventId,
     required this.userId,
     http.Client? httpClient,
-  }) : _http = httpClient ?? http.Client();
+  }) : _injectedClient = httpClient;
 
   static const Duration _flushInterval = Duration(seconds: 30);
   static const Duration _sendTimeout = Duration(seconds: 15);
@@ -18,7 +18,14 @@ class RunPointBuffer {
   final String apiUrl;
   final String eventId;
   final String userId;
-  final http.Client _http;
+
+  // No persistent client. This buffer flushes GPS batches every 30s *while the
+  // app is backgrounded* during a run — precisely when iOS tears down sockets.
+  // A pooled keep-alive connection would go stale ("Bad file descriptor"),
+  // burn all 5 retries, and ABANDON the batch, silently dropping track points.
+  // One-shot `http.post` opens a fresh socket per flush, so a resume can never
+  // hand us a dead connection. An injected client is honoured for tests only.
+  final http.Client? _injectedClient;
 
   final ListQueue<UserEventLocation> _q = ListQueue();
   bool _uploading = false;
@@ -63,11 +70,12 @@ class RunPointBuffer {
     }
   }
 
-  /// Release the underlying HTTP client. Call this before discarding the buffer.
+  /// Stop the flush timer and release an injected test client, if any. The
+  /// production one-shot path has no client to close.
   void dispose() {
     _flushTimer?.cancel();
     _flushTimer = null;
-    _http.close();
+    _injectedClient?.close();
   }
 
   Future<bool> _sendBatch(List<UserEventLocation> batch) async {
@@ -84,12 +92,12 @@ class RunPointBuffer {
     var attempt = 0;
     while (true) {
       try {
-        final resp = await _http
-            .post(
-              Uri.parse(apiUrl),
-              headers: <String, String>{'content-type': 'application/json'},
-              body: body,
-            )
+        final client = _injectedClient;
+        final uri = Uri.parse(apiUrl);
+        const headers = <String, String>{'content-type': 'application/json'};
+        final resp = await (client != null
+                ? client.post(uri, headers: headers, body: body)
+                : http.post(uri, headers: headers, body: body))
             .timeout(_sendTimeout);
         if (resp.statusCode >= 200 && resp.statusCode < 300) {
           if (kDebugMode) {

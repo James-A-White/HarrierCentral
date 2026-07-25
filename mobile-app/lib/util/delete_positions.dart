@@ -12,14 +12,19 @@ import 'package:http/http.dart' as http;
 /// touch another runner's track.
 class DeletePositionsApi {
   DeletePositionsApi({http.Client? httpClient, Uri? baseUri})
-    : _client = httpClient ?? http.Client(),
+    : _injectedClient = httpClient,
       _baseUri = baseUri ?? Uri.parse(DELETE_POSITIONS_URL);
 
-  final http.Client _client;
+  // No persistent client — see GetPositionsApi: keep-alive sockets go stale
+  // across an iOS background/resume, so we POST one-shot via `http.post`. An
+  // injected client is honoured for tests only.
+  final http.Client? _injectedClient;
   final Uri _baseUri;
 
+  /// Closes an injected test client if one was supplied. No-op on the
+  /// production one-shot path.
   void dispose() {
-    _client.close();
+    _injectedClient?.close();
   }
 
   /// Deletes the points at [timestampsMs] (epoch-ms, matched against each
@@ -40,16 +45,15 @@ class DeletePositionsApi {
       'timestamps': timestampsMs.map(pad19).toList(),
     });
 
-    final response = await _client
-        .post(
-          _baseUri,
-          headers: {
-            HttpHeaders.acceptHeader: 'application/json',
-            HttpHeaders.contentTypeHeader: 'application/json',
-            'X-Api-Key': GET_POSITIONS_API_KEY,
-          },
-          body: requestBody,
-        )
+    final client = _injectedClient;
+    final headers = {
+      HttpHeaders.acceptHeader: 'application/json',
+      HttpHeaders.contentTypeHeader: 'application/json',
+      'X-Api-Key': GET_POSITIONS_API_KEY,
+    };
+    final response = await (client != null
+            ? client.post(_baseUri, headers: headers, body: requestBody)
+            : http.post(_baseUri, headers: headers, body: requestBody))
         .timeout(timeout);
 
     if (response.statusCode != 200) {

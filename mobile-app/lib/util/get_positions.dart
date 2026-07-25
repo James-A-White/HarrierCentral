@@ -4,15 +4,33 @@ import 'package:http/http.dart' as http;
 
 class GetPositionsApi {
   GetPositionsApi({http.Client? httpClient, Uri? baseUri})
-    : _client = httpClient ?? http.Client(),
+    : _injectedClient = httpClient,
       _baseUri = baseUri ?? Uri.parse(GET_POSITIONS_URL);
 
-  final http.Client _client;
+  // No persistent client: a keep-alive pool's socket goes stale across an iOS
+  // background/resume (the OS closes the fd → "Bad file descriptor" on the next
+  // reuse). We POST one-shot via `http.post` — a fresh socket per request,
+  // matching ServiceCommon. An injected client is honoured for tests only.
+  final http.Client? _injectedClient;
   final Uri _baseUri;
 
-  /// Release the underlying HTTP client.
+  /// Closes an injected test client if one was supplied. No-op on the
+  /// production one-shot path (each `http.post` closes its own client).
   void dispose() {
-    _client.close();
+    _injectedClient?.close();
+  }
+
+  Future<http.Response> _post(
+    Uri uri, {
+    required Map<String, String> headers,
+    required String body,
+    required Duration timeout,
+  }) {
+    final client = _injectedClient;
+    final request = client != null
+        ? client.post(uri, headers: headers, body: body)
+        : http.post(uri, headers: headers, body: body);
+    return request.timeout(timeout);
   }
 
   Future<UserPositionsPayload> fetchPositions({
@@ -47,18 +65,17 @@ class GetPositionsApi {
 
     final requestBody = json.encode(body);
 
-    final response = await _client
-        .post(
-          uri,
-          headers: {
-            HttpHeaders.acceptEncodingHeader: 'gzip',
-            HttpHeaders.acceptHeader: 'application/json',
-            HttpHeaders.contentTypeHeader: 'application/json',
-            'X-Api-Key': GET_POSITIONS_API_KEY,
-          },
-          body: requestBody,
-        )
-        .timeout(timeout);
+    final response = await _post(
+      uri,
+      headers: {
+        HttpHeaders.acceptEncodingHeader: 'gzip',
+        HttpHeaders.acceptHeader: 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+        'X-Api-Key': GET_POSITIONS_API_KEY,
+      },
+      body: requestBody,
+      timeout: timeout,
+    );
 
     if (response.statusCode != 200) {
       throw HttpException(
