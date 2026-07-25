@@ -768,14 +768,20 @@ class LiveRunGeneralPage extends StatelessWidget {
           const SizedBox(height: 6),
           Obx(() {
             final selected = controller.selectedTrailValue.value;
-            return Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final t in types)
-                  _trailTypeChip(t, isSelected: t.value == selected),
-              ],
+            // Full-width so WrapAlignment.center centres each row on the SCREEN,
+            // not just within the block. Without this the picker shrink-wraps to
+            // the widest row and the start-aligned parent Column pins it left.
+            return SizedBox(
+              width: double.infinity,
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final t in types)
+                    _trailTypeChip(t, isSelected: t.value == selected),
+                ],
+              ),
             );
           }),
         ],
