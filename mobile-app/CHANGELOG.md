@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.0+1214 (2026-07-25)
+
+### New Features
+- **Trail marks — glyph or text**: trail markers are now either a glyph (from a fixed
+  library) or a short text of up to 7 characters (a space starts a new line), replacing
+  the fixed circular badges. Marks render as square tiles on the control grid and on the
+  live map. A mark's presentation now rides self-describing on the GPS track, so the map
+  and public-web spectator draw it without the kennel config.
+
+### Improvements
+- **"Your trail" buttons** are now horizontally centred.
+- Monochrome glyphs support light/dark inversion (groundwork; not yet switched on); the
+  Caution glyph stays full-colour red.
+
 ## 2.14.3+1213 (2026-07-21)
 
 ### Fixes

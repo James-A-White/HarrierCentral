@@ -2,6 +2,13 @@
 
 ---
 
+## 2.0.44+679 — 2026-07-25
+
+### New Features
+- **Trail symbols editor**: each mark can now be a glyph (from a fixed library) or a short text of up to 7 characters (a space starts a new line), with a live preview. Letter marks (FT, SC, CB, …) are now free text rather than baked-in images. The invert toggle (placeholder) is greyed out for fixed-colour glyphs such as Caution.
+
+---
+
 ## 2.0.43+678 — 2026-07-06
 
 ### Improvements

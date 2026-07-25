@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.15 — 2026-07-25
+
+- PackTrack spectator renders the new glyph/text trail marks as square tiles (monochrome glyphs tinted, Caution full-colour, text stacked on spaces); legacy circular marks are unchanged
+
 ## 0.21.14 — 2026-07-12
 
 - PackTrack tilt: widened the neutral (paused) zone so there's latitude to hold the phone at the stop-point without drifting in/out; the speed bubble now turns red with a pause icon while in that neutral zone
