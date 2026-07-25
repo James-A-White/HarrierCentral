@@ -22,6 +22,17 @@ class PackTrackFullScreenMap extends StatelessWidget {
   /// zoomed on this coordinate instead of the run's default center.
   final latlng.LatLng? focusPoint;
 
+  /// Public PackTrack (live-tracking) webpage URL for this run — shareable so
+  /// spectators can follow along in a browser. Mirrors the run URL used for the
+  /// QR codes, with the `/packtrack` sub-page appended.
+  String get _packTrackUrl {
+    if (run.event.isCountedRun != 0) {
+      return '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}'
+          '/${run.event.eventNumber}/packtrack';
+    }
+    return '$BASE_HASHRUNS_DOT_ORG_URL#/RID?publicEventId=${run.event.publicEventId}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final coords = Utilities.getLatLongFromString(<String>[
@@ -112,6 +123,31 @@ class PackTrackFullScreenMap extends StatelessWidget {
                 tooltip: 'Close',
                 icon: const Icon(Icons.close, color: Colors.white),
                 onPressed: () => Navigator.of(context).maybePop(),
+              ),
+            ),
+          ),
+          // Copy the public PackTrack link for this run so spectators can watch
+          // in a browser.
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 12,
+            child: Material(
+              color: Colors.black.withValues(alpha: 0.55),
+              shape: const CircleBorder(),
+              child: IconButton(
+                tooltip: 'Copy live-tracking link',
+                icon: const Icon(Icons.link, color: Colors.white),
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: _packTrackUrl));
+                  Get.snackbar(
+                    'Link copied',
+                    'The live PackTrack link for this run is on your clipboard.',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: hc_blue,
+                    colorText: Colors.white,
+                    duration: const Duration(seconds: 3),
+                  );
+                },
               ),
             ),
           ),
