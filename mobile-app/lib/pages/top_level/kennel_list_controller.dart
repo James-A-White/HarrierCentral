@@ -150,12 +150,9 @@ class KennelsListPageController extends GetxController {
       result = QueryKennels.doFilter(searchText.value, globalList);
     }
 
-    // Hide defunct (-1) and inactive-hidden (4) kennels from the Kennel screen.
-    // Run history is unaffected — these kennels still sync and appear in history.
-    result.removeWhere(
-      (a) => a.kennel.kennelStatus == -1 || a.kennel.kennelStatus == 4,
-    );
-
+    // Defunct (-1) and Inactive-Hidden (4) kennels are excluded at the query
+    // layer (QueryKennels.queryKennels, topKennelPage). Run history is
+    // unaffected — these kennels still sync and appear in history.
     _sortList(result);
     filteredList.value = result;
   }

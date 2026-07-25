@@ -335,11 +335,19 @@ class QueryKennels {
             
           ''';
 
+    // Hide Defunct (-1) and Inactive-Hidden (4) kennels from browse lists.
+    // Single-kennel lookups are intentionally NOT filtered so run history and
+    // direct navigation still resolve a defunct/hidden kennel.
+    final String whereClauseForBrowseList =
+        '''
+            AND k.${tableModel.kennelsTableHelper.colKennelStatus} NOT IN (-1, 4)
+          ''';
+
     String query = queryBase;
     if (queryType == EnumKennelQueryType.singleKennel) {
       query = query + whereClauseForSingleKenenel;
     } else if (queryType == EnumKennelQueryType.topKennelPage) {
-      // no where clause required
+      query = query + whereClauseForBrowseList;
     } else {
       assert(false);
     }

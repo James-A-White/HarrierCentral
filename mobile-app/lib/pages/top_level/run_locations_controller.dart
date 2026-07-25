@@ -594,6 +594,11 @@ class RunAndKennelMapController extends GetxController {
     if (kennel != null && kennel!.kennelId.isNotEmpty) {
       query =
           '''$query WHERE k.${tableModel.kennelsTableHelper.colKennelId} = "${kennel!.kennelId}"''';
+    } else {
+      // Hide Defunct (-1) and Inactive-Hidden (4) kennels from the map pins,
+      // matching the Kennel-list browse filter (QueryKennels.queryKennels).
+      query =
+          '''$query WHERE k.${tableModel.kennelsTableHelper.colKennelStatus} NOT IN (-1, 4)''';
     }
 
     _allKennels = await database.rawQuery(query);
