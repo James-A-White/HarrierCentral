@@ -57,6 +57,9 @@ AS
 --   On error (rowset 1): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-05-10
+-- Modified: 2026-07-25 — added UPDLOCK/HOLDLOCK serialization on the HEM row
+--   before the check-then-cancel-then-insert, preventing a concurrent
+--   double-tap from inserting two non-cancelled payments for the same HEM.
 -- HC5 Source: HC5.hcapp_processPayment
 -- Breaking Changes:
 --   TRY/CATCH and transaction added (HC5 had neither).
@@ -280,6 +283,20 @@ BEGIN TRY
         DECLARE @debitAmount        MONEY;
         DECLARE @payer_userIdGuid   UNIQUEIDENTIFIER;
         DECLARE @paymentExists      INT;
+
+        -- Serialize concurrent payment operations for this HEM. Two racing calls
+        -- (a double-tap / client retry) could otherwise BOTH read
+        -- @paymentExists = 0, both skip the "cancel existing" step below, and
+        -- both INSERT — leaving two non-cancelled payment rows for the same HEM
+        -- (the duplicate found 2026-07-25: two identical type-3 rows created the
+        -- same second). An UPDLOCK/HOLDLOCK on the HEM row makes the second call
+        -- block here until the first commits; it then sees the inserted payment
+        -- and cancels it before inserting its own, so exactly one stays live.
+        -- Same pattern used for the HEM create race above. Held to COMMIT.
+        DECLARE @serialiseHemId UNIQUEIDENTIFIER;
+        SELECT @serialiseHemId = hem.id
+        FROM HC.HasherEventMap hem WITH (UPDLOCK, HOLDLOCK)
+        WHERE hem.id = @hasherEventMapId;
 
         SELECT @paymentExists = COUNT(*)
         FROM HC.Payment p
