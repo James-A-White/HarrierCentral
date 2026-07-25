@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.2+1216 (2026-07-25)
+
+### Improvements
+- "Your trail" buttons now centre on the screen.
+- Trail-mark buttons are shown but disabled (dimmed) until a run is being tracked.
+- PackTrack photo playback: the photo zoom now follows the phone tilt (or the
+  playback speed when tilt is off) — tilt to the stop-point to lock the zoom.
+
+### Fixes
+- Reworded the disabled tracking button to "Tracking available at …".
+
 ## 2.15.1+1215 (2026-07-25)
 
 ### Fixes
