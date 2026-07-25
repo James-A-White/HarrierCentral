@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.3+1217 (2026-07-25)
+
+### New Features
+- **Share PackTrack link**: the full-screen PackTrack map has a new button
+  (top-right) that copies the run's public live-tracking link to your clipboard.
+
+### Improvements
+- Photos saved to your camera roll now keep their location (GPS) and capture date.
+
 ## 2.15.2+1216 (2026-07-25)
 
 ### Improvements
