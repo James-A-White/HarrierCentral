@@ -1312,6 +1312,9 @@ class RunListItem extends StatelessWidget {
   }
 
   Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
+    // Remember the current RSVP so we can roll back if the call fails — the
+    // line below optimistically flips to the -1 "loading" sentinel.
+    final int previousRsvpState = rliController.rsvpState.value;
     rliController.rsvpState.value = -1;
 
     final String userId = currentUserId;
@@ -1326,6 +1329,16 @@ class RunListItem extends StatelessWidget {
         );
 
     if (kDebugMode) debugPrint('[_setRsvpState/rli] adHocData length: ${adHocData.length}, contents: $adHocData');
+
+    // A failed/transient call (e.g. socket torn down while backgrounded during
+    // run tracking) returns an empty list. Restore the previous RSVP, tell the
+    // user, and bail rather than indexing into [0] and throwing a RangeError.
+    if (adHocData.isEmpty) {
+      rliController.rsvpState.value = previousRsvpState;
+      showHcSnackbar("Couldn't save RSVP — please try again.", isError: true);
+      return;
+    }
+
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
     final String hares = adHocData[0]['hares'] ?? '';
