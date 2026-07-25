@@ -1,3 +1,6 @@
+0.21.15
+    • PackTrack: new glyph/text trail marks render as square tiles (monochrome glyphs tinted, Caution full-colour, text stacked); legacy marks unchanged
+
 0.21.14
     • PackTrack tilt: wider neutral/paused zone at the stop-point; speed bubble turns red with a pause icon while paused
 
