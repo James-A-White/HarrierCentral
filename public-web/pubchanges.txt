@@ -1,3 +1,6 @@
+0.21.17
+    • PackTrack spectator harmonised with the app: photo zoom is rock-controlled via tilt (zoom one way then the other depending on the rock), and the speed chip turns orange when tracking backward
+
 0.21.16
     • PackTrack photo showcase now sweeps in from the right / out to the left (mirrored on reverse) — matches the app, makes the navigation direction obvious
 
