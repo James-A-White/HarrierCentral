@@ -59,7 +59,15 @@ class KennelPhotoService {
     String? assetId;
     final int prefs = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
     if ((prefs & hasherPref_cameraRollSaveDisabled) == 0) {
-      assetId = await _saveToDeviceLibrary(imageFile);
+      // image_picker (and ImageCropper on the Edit path) strip the original
+      // EXIF, including GPS. Re-attach the location we already have so the
+      // camera-roll copy keeps its lat/long.
+      final pos = Get.find<LocationService>().lastKnownPosition.value;
+      assetId = await _saveToDeviceLibrary(
+        imageFile,
+        latitude: pos?.latitude,
+        longitude: pos?.longitude,
+      );
     }
 
     // 5. Compress the image for blob upload (quality 70, capped at 1920px).
@@ -244,15 +252,35 @@ class KennelPhotoService {
 
   /// Saves [imageFile] to the device photo library and returns the asset ID.
   /// Returns null if permission is denied or the save fails.
-  Future<String?> _saveToDeviceLibrary(File imageFile) async {
+  ///
+  /// [latitude]/[longitude] are written into the saved asset's location
+  /// metadata (photo_manager sets the GPS EXIF / PHAsset location). image_picker
+  /// and ImageCropper strip the camera's original EXIF, so without this the
+  /// camera-roll copy would have no location.
+  Future<String?> _saveToDeviceLibrary(
+    File imageFile, {
+    double? latitude,
+    double? longitude,
+  }) async {
     try {
       final permission = await PhotoManager.requestPermissionExtend();
       if (!permission.isAuth) return null;
       final bytes = await imageFile.readAsBytes();
+
+      // Only attach coordinates when we have a real fix — skip null and the
+      // 0,0 "no fix" sentinel so we never stamp a bogus location. saveImage
+      // requires latitude and longitude together or not at all.
+      final bool hasCoords = latitude != null &&
+          longitude != null &&
+          !(latitude == 0.0 && longitude == 0.0);
+
       final entity = await PhotoManager.editor.saveImage(
         bytes,
         filename: 'hc_${DateTime.now().millisecondsSinceEpoch}.jpg',
         desc: '',
+        latitude: hasCoords ? latitude : null,
+        longitude: hasCoords ? longitude : null,
+        creationDate: DateTime.now(),
       );
       return entity.id;
     } catch (e, s) {
