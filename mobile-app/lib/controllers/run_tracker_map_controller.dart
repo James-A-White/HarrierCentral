@@ -125,6 +125,11 @@ class RunTrackerMapController extends GetxController
   final RxBool photoShowcaseArmed = false.obs;
   final Rxn<PhotoShowcaseState> photoShowcase = Rxn<PhotoShowcaseState>();
   final RxDouble showcaseZoom = 0.0.obs; // 0 = at pin, 1 = full at centre
+  // Horizontal navigation cue, -1 (left) … 0 (centre) … +1 (right). Forward
+  // playback enters the photo from the right and exits to the left; reverse
+  // mirrors it — so the sweep direction makes navigation direction obvious.
+  final RxDouble showcasePan = 0.0.obs;
+  double _showcaseDir = 1.0; // +1 forward, -1 reverse — captured at show start
   Timer? _showcaseTicker;
   // Progress through the show curve in "virtual ms", advanced each tick by
   // dt × effective speed (tilt magnitude, or playback speed when tilt is off).
@@ -1072,10 +1077,15 @@ class RunTrackerMapController extends GetxController
 
   void _startShowcase(PhotoCue cue) {
     _showcaseResumeAfter = isPlaying.value;
+    // Direction the run was being navigated when the photo triggered: forward
+    // (+1) enters from the right and exits left; reverse (−1, only possible
+    // under tilt) mirrors it.
+    _showcaseDir = (tiltEnabled.value && tiltSpeed.value < 0) ? -1.0 : 1.0;
     if (_playbackController.isAnimating) _playbackController.stop();
     isPlaying.value = false; // freezes both normal and tilt playback
     photoShowcase.value = PhotoShowcaseState(url: cue.url, point: cue.point);
     showcaseZoom.value = 0.0;
+    showcasePan.value = _showcaseDir; // start on the leading side
     _showcaseVirtualMs = 0.0;
     _lastShowcaseTick = null;
     _showcaseTicker?.cancel();
@@ -1126,6 +1136,21 @@ class RunTrackerMapController extends GetxController
       z = 1.0 - Curves.easeIn.transform(o.clamp(0.0, 1.0));
     }
     showcaseZoom.value = z.clamp(0.0, 1.0);
+
+    // Horizontal navigation cue: enter from the leading side (right when
+    // forward), pass through centre at peak zoom, exit the trailing side (left).
+    // Tied to the show phase, so a mid-show tilt-reverse (e rewinding) reverses
+    // the sweep too — the direction always reflects how you're navigating.
+    double pan;
+    if (e < _showInMs) {
+      pan = _showcaseDir * (1.0 - (e / _showInMs)); // leading side → centre
+    } else if (e < _showInMs + _showHoldMs) {
+      pan = 0.0; // hold at centre
+    } else {
+      final o = ((e - _showInMs - _showHoldMs) / _showOutMs).clamp(0.0, 1.0);
+      pan = -_showcaseDir * o; // centre → trailing side
+    }
+    showcasePan.value = pan;
   }
 
   void _endShowcase() {
@@ -1135,6 +1160,7 @@ class RunTrackerMapController extends GetxController
     _lastShowcaseTick = null;
     photoShowcase.value = null;
     showcaseZoom.value = 0.0;
+    showcasePan.value = 0.0;
     if (_showcaseResumeAfter && !_isAtTimelineEnd()) {
       _showcaseResumeAfter = false;
       isPlaying.value = true;

@@ -222,14 +222,14 @@ class RunTrackerMap extends StatelessWidget {
     final show = controller.photoShowcase.value;
     if (show == null) return const SizedBox.shrink();
     final z = controller.showcaseZoom.value;
+    final panX = controller.showcasePan.value; // -1 (left) … 0 … +1 (right)
     final center = Offset(c.maxWidth / 2, c.maxHeight / 2);
-    Offset pin;
-    try {
-      pin = controller.mapController.camera.latLngToScreenOffset(show.point);
-    } catch (_) {
-      pin = center;
-    }
-    final pos = Offset.lerp(pin, center, z) ?? center;
+    // Horizontal navigation sweep: the photo enters from the leading side and
+    // exits the trailing side (see RunTrackerMapController.showcasePan),
+    // vertically centred — so the direction of travel shows which way playback
+    // is navigating.
+    final double panMag = c.maxWidth * 0.42;
+    final pos = Offset(center.dx + panX * panMag, center.dy);
     final double bigW = math.min(c.maxWidth * 0.84, c.maxHeight * 0.66);
     // Square bounding region that grows with the zoom. The photo is fitted
     // INSIDE it preserving aspect (no crop) and centred at [pos]; the rounded
