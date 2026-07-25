@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.16 — 2026-07-25
+
+- PackTrack photo showcase now sweeps the photo in from the right and out to the left (mirrored on a reverse crossing), matching the app, so the navigation direction is obvious
+
 ## 0.21.15 — 2026-07-25
 
 - PackTrack spectator renders the new glyph/text trail marks as square tiles (monochrome glyphs tinted, Caution full-colour, text stacked on spaces); legacy circular marks are unchanged

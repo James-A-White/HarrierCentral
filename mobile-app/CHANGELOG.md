@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.4+1218 (2026-07-25)
+
+### Improvements
+- PackTrack photo playback: photos now sweep in from the right and out to the
+  left (mirrored when navigating in reverse) so the direction you're moving
+  through the run is obvious.
+
+### Fixes
+- Songs screen: the search keyboard now dismisses — drag the song list, or tap
+  a song to view it.
+
 ## 2.15.3+1217 (2026-07-25)
 
 ### New Features
