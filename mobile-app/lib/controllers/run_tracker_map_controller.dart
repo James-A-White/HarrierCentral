@@ -1064,9 +1064,10 @@ class RunTrackerMapController extends GetxController
   }
 
   /// The rate that drives the photo zoom. In tilt mode it follows the tilt
-  /// speed (0 in the neutral/stop band → the zoom freezes; tilt away → faster).
-  /// With tilt off it follows the chosen playback speed. Only its MAGNITUDE
-  /// drives the zoom — navigation direction is conveyed by [showcasePan].
+  /// speed (0 in the neutral/stop band → freeze); it is SIGNED, and
+  /// [_showcaseTick] applies it relative to the entry direction so rocking the
+  /// phone scrubs the zoom in and out. With tilt off it follows the chosen
+  /// (always-forward) playback speed.
   double get _showcaseSpeed {
     if (tiltEnabled.value) {
       final s = tiltSpeed.value;
@@ -1106,16 +1107,22 @@ class RunTrackerMapController extends GetxController
     final int dtMs = now.difference(last).inMilliseconds;
     if (dtMs <= 0) return;
 
-    // Advance by the MAGNITUDE so the photo always plays its full in→out zoom,
-    // whether the run is being navigated forward OR backward — the direction is
-    // shown by the pan sweep (below), not by rewinding the zoom. Freezes when
-    // the speed is 0 (tilt held at the stop-point).
+    // Progress is driven by the speed RELATIVE to the entry direction
+    // (_showcaseDir): rock WITH the run to zoom the photo in, rock AGAINST it to
+    // zoom back out, hold at the neutral tilt to freeze. This works identically
+    // whether the photo was crossed going forward or backward, because a reverse
+    // entry has dir = −1, so a continued reverse tilt (negative speed) still
+    // advances the zoom.
     final double speed = _showcaseSpeed;
-    _showcaseVirtualMs += dtMs * speed.abs();
+    _showcaseVirtualMs += dtMs * speed * _showcaseDir;
 
     const total = _showInMs + _showHoldMs + _showOutMs;
     if (_showcaseVirtualMs >= total) {
-      _endShowcase();
+      _endShowcase(); // played fully through — resume playback
+      return;
+    }
+    if (_showcaseVirtualMs <= 0.0) {
+      _endShowcase(); // rocked back to the entry — dismiss and resume
       return;
     }
 

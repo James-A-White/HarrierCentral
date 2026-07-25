@@ -838,7 +838,6 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   const [photoPan, setPhotoPan] = useState(0);
   const photoPanRef = useRef(0);
   const photoDirRef = useRef(1);                           // +1 forward, -1 reverse
-  const photoPhaseRef = useRef<"in" | "out">("in");        // tilt-mode zoom phase
   const showElapsedRef = useRef(0);                        // timed-mode clock (ms)
   const photoCuesRef = useRef<{ frac: number; entry: PhotoMarkEntry }[]>([]);
 
@@ -986,53 +985,28 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
         if (activePhotoRef.current) {
           // A photo is on screen — advance its zoom instead of the playhead. Both
           // paths auto-complete (zoom in fully → out → resume playback).
-          if (tiltHandlerRef.current) {
-            // Tilt: the zoom DIRECTION is automatic (in until full, then out);
-            // the tilt-driven playback-speed magnitude sets the RATE. At the
-            // resting ×1 it auto-cycles; tilt away ⇒ faster; tilting toward the
-            // zero-motion point slows it to a freeze (image holds at its current
-            // zoom); pushing past into reverse speeds it again, so navigating
-            // backward behaves identically.
-            const PHOTO_ZOOM_MS = 950;   // in/out traverse time at ×1
-            const dz = (Math.abs(speedRef.current) * elapsed) / PHOTO_ZOOM_MS;
-            let z = photoZoomRef.current;
-            const dir = photoDirRef.current;
-            if (photoPhaseRef.current === "in") {
-              z = Math.min(1, z + dz);
-              if (z >= 1) photoPhaseRef.current = "out";
-              photoZoomRef.current = z;
-              setPhotoZoom(z);
-              // In: leading side → centre.
-              photoPanRef.current = dir * (1 - z);
-              setPhotoPan(dir * (1 - z));
-            } else {
-              z -= dz;
-              if (z <= 0) endPhotoShow();
-              else {
-                photoZoomRef.current = z;
-                setPhotoZoom(z);
-                // Out: centre → trailing side.
-                photoPanRef.current = -dir * (1 - z);
-                setPhotoPan(-dir * (1 - z));
-              }
-            }
+          // Unified with the app: advance a virtual clock through IN → HOLD →
+          // OUT by the effective speed RELATIVE to the entry direction
+          // (photoDirRef). Tilt is SIGNED, so rocking the phone scrubs the zoom
+          // in and out and holding at the neutral tilt (speed 0) freezes it; a
+          // photo crossed while navigating backward has dir = −1, so a continued
+          // reverse tilt still advances it. Button playback is always forward.
+          const eff = tiltHandlerRef.current
+            ? speedRef.current                       // signed; 0 in the neutral band = freeze
+            : (Math.abs(buttonSpeedRef.current) || 1); // no tilt ⇒ always forward
+          showElapsedRef.current += elapsed * eff * photoDirRef.current;
+          const IN = 450, HOLD = 1500, OUT = 650, TOTAL = IN + HOLD + OUT;
+          const t = showElapsedRef.current;
+          if (t >= TOTAL || t <= 0) {
+            endPhotoShow(); // played through, or rocked back to the entry
           } else {
-            // No tilt: timed auto in → hold → out (~2.6 s at ×1), scaled by the
-            // playback speed so fast playback isn't held up.
-            const rate = Math.abs(buttonSpeedRef.current) || 1;
-            showElapsedRef.current += elapsed * rate;
-            const IN = 450, HOLD = 1500, OUT = 650;
-            const t = showElapsedRef.current;
             const dir = photoDirRef.current;
             let z: number, pan: number;
             if (t < IN) { z = t / IN; pan = dir * (1 - t / IN); }
             else if (t < IN + HOLD) { z = 1; pan = 0; }
-            else if (t < IN + HOLD + OUT) { z = 1 - (t - IN - HOLD) / OUT; pan = -dir * ((t - IN - HOLD) / OUT); }
-            else { endPhotoShow(); z = 0; pan = 0; }
-            if (activePhotoRef.current) {
-              photoZoomRef.current = z; setPhotoZoom(z);
-              photoPanRef.current = pan; setPhotoPan(pan);
-            }
+            else { const o = (t - IN - HOLD) / OUT; z = 1 - o; pan = -dir * o; }
+            photoZoomRef.current = z; setPhotoZoom(z);
+            photoPanRef.current = pan; setPhotoPan(pan);
           }
         } else {
           const duration = durationFor(zoomRef.current, trailMetersRef.current);
@@ -1074,7 +1048,6 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     setActivePhoto(entry);
     photoZoomRef.current = 0;
     setPhotoZoom(0);
-    photoPhaseRef.current = "in";
     showElapsedRef.current = 0;
     photoDirRef.current = dir;        // forward (+1) enters from the right
     photoPanRef.current = dir;        // start on the leading side
@@ -1158,6 +1131,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   // inside the widened neutral band, the speed settles to ~0 — surface that as a
   // red "paused" state so it's obvious playback (and the photo zoom) is frozen.
   const tiltPaused = tiltOn && Math.abs(speed) < 0.15;
+  const reverse = tiltOn && speed < 0; // tracking backward (chip → orange)
 
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   useEffect(() => {
@@ -1524,18 +1498,20 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
               onClick={cycleSpeed}
               disabled={tiltOn}
               title={tiltPaused ? "Paused — in the neutral tilt zone"
+                : reverse ? "Tracking backward"
                 : tiltOn ? "Speed is tilt-controlled" : "Playback speed"}
               className="shrink-0 flex items-center justify-center h-8 min-w-11 px-1.5 rounded-full border transition-colors text-white text-[11px] font-bold tabular-nums"
               style={{
-                backgroundColor: tiltPaused ? "#ef4444" : speed !== 1 ? "#3b82f6" : "rgba(255,255,255,0.12)",
-                borderColor: tiltPaused ? "#ef4444" : speed !== 1 ? "#3b82f6" : "rgba(255,255,255,0.2)",
+                // Red = paused, orange = tracking backward, blue = forward.
+                backgroundColor: tiltPaused ? "#ef4444" : reverse ? "#f97316" : (tiltOn || speed !== 1) ? "#3b82f6" : "rgba(255,255,255,0.12)",
+                borderColor: tiltPaused ? "#ef4444" : reverse ? "#f97316" : (tiltOn || speed !== 1) ? "#3b82f6" : "rgba(255,255,255,0.2)",
                 opacity: tiltOn ? 0.9 : 1,
               }}
             >
               {tiltPaused ? (
                 <Pause className="h-3.5 w-3.5 text-white" />
               ) : (
-                <>{speed < 0 ? "⏪ " : ""}×{Math.abs(speed) < 1
+                <>×{Math.abs(speed) < 1
                   ? Math.abs(speed).toFixed(1)
                   : (Math.round(Math.abs(speed) * 10) / 10)
                       .toString()
