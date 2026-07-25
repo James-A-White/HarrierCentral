@@ -1064,9 +1064,9 @@ class RunTrackerMapController extends GetxController
   }
 
   /// The rate that drives the photo zoom. In tilt mode it follows the tilt
-  /// speed (0 in the neutral/stop band → the zoom freezes; tilt away → faster;
-  /// tilt toward you → reverses). With tilt off it follows the chosen playback
-  /// speed. Signed so reverse rewinds the zoom back toward the pin.
+  /// speed (0 in the neutral/stop band → the zoom freezes; tilt away → faster).
+  /// With tilt off it follows the chosen playback speed. Only its MAGNITUDE
+  /// drives the zoom — navigation direction is conveyed by [showcasePan].
   double get _showcaseSpeed {
     if (tiltEnabled.value) {
       final s = tiltSpeed.value;
@@ -1106,23 +1106,17 @@ class RunTrackerMapController extends GetxController
     final int dtMs = now.difference(last).inMilliseconds;
     if (dtMs <= 0) return;
 
-    // Advance (or rewind) the show curve by the effective speed. When the speed
-    // is 0 — tilt held at the stop-point — the zoom stays locked where it is.
+    // Advance by the MAGNITUDE so the photo always plays its full in→out zoom,
+    // whether the run is being navigated forward OR backward — the direction is
+    // shown by the pan sweep (below), not by rewinding the zoom. Freezes when
+    // the speed is 0 (tilt held at the stop-point).
     final double speed = _showcaseSpeed;
-    _showcaseVirtualMs += dtMs * speed;
+    _showcaseVirtualMs += dtMs * speed.abs();
 
     const total = _showInMs + _showHoldMs + _showOutMs;
     if (_showcaseVirtualMs >= total) {
       _endShowcase();
       return;
-    }
-    if (_showcaseVirtualMs <= 0.0) {
-      // Rewound past the pin (reverse tilt) — dismiss so playback resumes.
-      if (speed < 0) {
-        _endShowcase();
-        return;
-      }
-      _showcaseVirtualMs = 0.0;
     }
 
     final double e = _showcaseVirtualMs;
@@ -1139,8 +1133,8 @@ class RunTrackerMapController extends GetxController
 
     // Horizontal navigation cue: enter from the leading side (right when
     // forward), pass through centre at peak zoom, exit the trailing side (left).
-    // Tied to the show phase, so a mid-show tilt-reverse (e rewinding) reverses
-    // the sweep too — the direction always reflects how you're navigating.
+    // Direction is fixed at trigger time (_showcaseDir), so a photo crossed
+    // while navigating backward sweeps the opposite way.
     double pan;
     if (e < _showInMs) {
       pan = _showcaseDir * (1.0 - (e / _showInMs)); // leading side → centre
