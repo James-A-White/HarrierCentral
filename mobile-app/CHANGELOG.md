@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.1+1215 (2026-07-25)
+
+### Fixes
+- **Defunct kennels hidden**: kennels marked Defunct or Inactive-Hidden no longer
+  appear in the Kennel list or on the run/kennel map. They still sync and remain in
+  your run history and reachable directly.
+
 ## 2.15.0+1214 (2026-07-25)
 
 ### New Features
