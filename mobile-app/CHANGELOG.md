@@ -1,5 +1,11 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.5+1219 (2026-07-25)
+
+### Fixes
+- PackTrack photo playback: photos now show again when navigating **backward**
+  through a run (they sweep in the mirrored direction). Regression from 2.15.4.
+
 ## 2.15.4+1218 (2026-07-25)
 
 ### Improvements
