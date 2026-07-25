@@ -353,6 +353,10 @@ class _SongsPageState extends State<SongsPage> {
                   () => ListView.builder(
                     padding: const EdgeInsets.only(top: 8),
                     controller: c.listScrollController,
+                    // Drag the list to dismiss the search keyboard (there is no
+                    // other affordance on this screen otherwise).
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     itemCount: c.filteredSongs.length + 1,
                     itemBuilder: (BuildContext context, int index) {
                       if (index == c.filteredSongs.length) {

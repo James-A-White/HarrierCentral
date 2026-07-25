@@ -247,6 +247,8 @@ class SongsPageController extends GetxController
 
   void selectSong(SongsModel song) {
     if (_isDisposed) return;
+    // Tapping a song to view it also drops the search keyboard.
+    searchFocusNode.unfocus();
     unawaited(audioPlayer?.stop());
     unawaited(audioPlayer?.dispose());
     audioPlayer = null;
