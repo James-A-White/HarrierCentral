@@ -495,7 +495,7 @@ class LiveRunGeneralPage extends StatelessWidget {
             label: Text(
               canStart
                   ? 'Start Run Tracking'
-                  : 'Tracking opens at ${controller.trackingOpensAt}',
+                  : 'Tracking available at ${controller.trackingOpensAt}',
               style: ts_button.copyWith(fontSize: canStart ? 18 : 15),
             ),
             style: ElevatedButton.styleFrom(
