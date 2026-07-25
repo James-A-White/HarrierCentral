@@ -396,10 +396,11 @@ function FollowController({
 // stays glued to the marker even if the map moves. Portalled into the map
 // container so it sits above the tiles/markers but below the outside controls.
 function PhotoZoomOverlay({
-  entry, z, onDismiss,
+  entry, z, pan, onDismiss,
 }: {
   entry: PhotoMarkEntry | null;
   z: number;
+  pan: number;
   onDismiss: () => void;
 }) {
   const map = useMap();
@@ -413,12 +414,14 @@ function PhotoZoomOverlay({
 
   if (!entry) return null;
 
-  const start = map.latLngToContainerPoint([entry.point.lat, entry.point.lng]);
   const sz = map.getSize();
   const cx = sz.x / 2;
   const cy = sz.y * 0.44;             // a touch above centre so the caption fits
-  const x = start.x + (cx - start.x) * z;
-  const y = start.y + (cy - start.y) * z;
+  // Horizontal navigation sweep: enter from the leading side, pass through the
+  // centre at peak zoom, exit the trailing side. Vertically fixed at cy so the
+  // left/right direction of travel is unambiguous.
+  const x = cx + pan * (sz.x * 0.42);
+  const y = cy;
 
   const START_PX = 56;                // matches the photo pin thumbnail size
   const endW = Math.min(sz.x * 0.84, sz.y * 0.66);
@@ -829,6 +832,12 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   const activePhotoRef = useRef<PhotoMarkEntry | null>(null);
   const [photoZoom, setPhotoZoom] = useState(0);          // 0 = at pin, 1 = full
   const photoZoomRef = useRef(0);
+  // Horizontal navigation cue, -1 (left) … 0 … +1 (right). Forward playback
+  // sweeps the photo IN from the right and OUT to the left; reverse mirrors it,
+  // so the direction of travel makes navigation direction obvious.
+  const [photoPan, setPhotoPan] = useState(0);
+  const photoPanRef = useRef(0);
+  const photoDirRef = useRef(1);                           // +1 forward, -1 reverse
   const photoPhaseRef = useRef<"in" | "out">("in");        // tilt-mode zoom phase
   const showElapsedRef = useRef(0);                        // timed-mode clock (ms)
   const photoCuesRef = useRef<{ frac: number; entry: PhotoMarkEntry }[]>([]);
@@ -987,15 +996,25 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
             const PHOTO_ZOOM_MS = 950;   // in/out traverse time at ×1
             const dz = (Math.abs(speedRef.current) * elapsed) / PHOTO_ZOOM_MS;
             let z = photoZoomRef.current;
+            const dir = photoDirRef.current;
             if (photoPhaseRef.current === "in") {
               z = Math.min(1, z + dz);
               if (z >= 1) photoPhaseRef.current = "out";
               photoZoomRef.current = z;
               setPhotoZoom(z);
+              // In: leading side → centre.
+              photoPanRef.current = dir * (1 - z);
+              setPhotoPan(dir * (1 - z));
             } else {
               z -= dz;
               if (z <= 0) endPhotoShow();
-              else { photoZoomRef.current = z; setPhotoZoom(z); }
+              else {
+                photoZoomRef.current = z;
+                setPhotoZoom(z);
+                // Out: centre → trailing side.
+                photoPanRef.current = -dir * (1 - z);
+                setPhotoPan(-dir * (1 - z));
+              }
             }
           } else {
             // No tilt: timed auto in → hold → out (~2.6 s at ×1), scaled by the
@@ -1004,12 +1023,16 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
             showElapsedRef.current += elapsed * rate;
             const IN = 450, HOLD = 1500, OUT = 650;
             const t = showElapsedRef.current;
-            let z: number;
-            if (t < IN) z = t / IN;
-            else if (t < IN + HOLD) z = 1;
-            else if (t < IN + HOLD + OUT) z = 1 - (t - IN - HOLD) / OUT;
-            else { endPhotoShow(); z = 0; }
-            if (activePhotoRef.current) { photoZoomRef.current = z; setPhotoZoom(z); }
+            const dir = photoDirRef.current;
+            let z: number, pan: number;
+            if (t < IN) { z = t / IN; pan = dir * (1 - t / IN); }
+            else if (t < IN + HOLD) { z = 1; pan = 0; }
+            else if (t < IN + HOLD + OUT) { z = 1 - (t - IN - HOLD) / OUT; pan = -dir * ((t - IN - HOLD) / OUT); }
+            else { endPhotoShow(); z = 0; pan = 0; }
+            if (activePhotoRef.current) {
+              photoZoomRef.current = z; setPhotoZoom(z);
+              photoPanRef.current = pan; setPhotoPan(pan);
+            }
           }
         } else {
           const duration = durationFor(zoomRef.current, trailMetersRef.current);
@@ -1025,7 +1048,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
             const cue = next > from
               ? cues.find(c => c.frac > from && c.frac <= next)
               : [...cues].reverse().find(c => c.frac < from && c.frac >= next);
-            if (cue) beginPhotoShow(cue.entry, cue.frac);
+            if (cue) beginPhotoShow(cue.entry, cue.frac, next > from ? 1 : -1);
           }
           // Stop at the end only for forward button playback — while tilt is
           // active, hold at either bound so tilting back resumes from there.
@@ -1044,7 +1067,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     return () => { if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current); };
   }, [playing]);
 
-  function beginPhotoShow(entry: PhotoMarkEntry, frac: number) {
+  function beginPhotoShow(entry: PhotoMarkEntry, frac: number, dir: number) {
     progressRef.current = frac;      // snap the playhead onto the photo's pin
     setProgress(frac);
     activePhotoRef.current = entry;
@@ -1053,6 +1076,9 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     setPhotoZoom(0);
     photoPhaseRef.current = "in";
     showElapsedRef.current = 0;
+    photoDirRef.current = dir;        // forward (+1) enters from the right
+    photoPanRef.current = dir;        // start on the leading side
+    setPhotoPan(dir);
   }
 
   function endPhotoShow() {
@@ -1062,6 +1088,8 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     photoZoomRef.current = 0;
     setPhotoZoom(0);
     showElapsedRef.current = 0;
+    photoPanRef.current = 0;
+    setPhotoPan(0);
   }
 
   function handleScrub(e: React.ChangeEvent<HTMLInputElement>) {
@@ -1298,7 +1326,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
             ))}
 
             {/* Auto-photo showcase — grows out of the pin, driven by rAF/tilt */}
-            <PhotoZoomOverlay entry={activePhoto} z={photoZoom} onDismiss={endPhotoShow} />
+            <PhotoZoomOverlay entry={activePhoto} z={photoZoom} pan={photoPan} onDismiss={endPhotoShow} />
 
             {/* Current position of each runner */}
             {runnerTracks.map(r => r.last ? (
