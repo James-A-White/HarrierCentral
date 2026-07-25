@@ -41,6 +41,9 @@ AS
 --   On error (rowset 1): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-05-10
+-- Modified: 2026-07-25 — added explicit UPDLOCK/HOLDLOCK serialization on the
+--   involved HEM rows before the cancel-then-insert, matching hcapp_processPayment,
+--   so concurrent bulk/single calls can't leave two live payments per hasher.
 -- HC5 Source: HC5.hcapp_processBulkPayment
 -- Breaking Changes:
 --   @userIdsWhoPaid widened VARCHAR(8000) → NVARCHAR(MAX).
@@ -140,6 +143,28 @@ BEGIN TRY
                    @procName AS errorProc;
             RETURN;
         END
+
+        -- ---------------------------------------------------------------
+        -- Serialize concurrent payment operations for these HEMs (guard).
+        -- Like the single-payment SP, take an UPDLOCK/HOLDLOCK on the involved
+        -- existing HEM rows so a racing bulk-or-single call for any overlapping
+        -- hasher blocks here until this transaction commits; it then sees the
+        -- payments this one inserted and cancels them before inserting its own,
+        -- so exactly one stays live per hasher. The att-state UPDATE below also
+        -- X-locks these rows, but this makes the serialization explicit and
+        -- robust to future refactors. New HEMs are guarded by the UNIQUE index
+        -- on HasherEventMap. Assigned to a variable so it returns no rowset.
+        -- ---------------------------------------------------------------
+        DECLARE @serialiseLockCount INT;
+        ;WITH ParsedGuids AS (
+            SELECT TRY_CAST(value AS UNIQUEIDENTIFIER) AS UserId
+            FROM STRING_SPLIT(@userIdsWhoPaid, ',')
+            WHERE TRY_CAST(value AS UNIQUEIDENTIFIER) IS NOT NULL
+        )
+        SELECT @serialiseLockCount = COUNT(*)
+        FROM HC.HasherEventMap hem WITH (UPDLOCK, HOLDLOCK)
+        INNER JOIN ParsedGuids pg ON pg.UserId = hem.UserId
+        WHERE hem.EventId = @eventId;
 
         -- ---------------------------------------------------------------
         -- Upsert HEM rows: update existing, insert missing
