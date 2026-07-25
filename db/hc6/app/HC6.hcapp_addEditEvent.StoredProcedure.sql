@@ -436,6 +436,13 @@ BEGIN TRY
 
         EXEC HC6.nonApi_updateRunNumbers @eventId = @eventId;
 
+        -- Refresh run counts for this event's attendees now that event numbers
+        -- may have shifted (renumber only touches HC.Event, so a watermark
+        -- recompute would miss them). Edge case: a renumber cascade that shifts
+        -- LATER events' numbers leaves those events' attendees briefly stale —
+        -- the nightly HC6 full recompute cleans that up.
+        EXEC HC6.nonApi_updateRunCountsForEventUsers @eventId = @eventId;
+
     COMMIT TRANSACTION;
 
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;

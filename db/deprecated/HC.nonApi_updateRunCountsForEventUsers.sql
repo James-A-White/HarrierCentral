@@ -8,32 +8,15 @@ AS
 -- OBSOLETE (guarded 2026-07-25): run-count maintenance is now owned by the
 -- HC6 run-count SPs. This legacy HC5 updater used the EventStartDatetime
 -- columns and fought the HC6 version, churning ~100k HasherEventMap rows.
--- It now DELEGATES to the HC6 per-user SP for each of the event's users (there
--- is no HC6 ForEventUsers equivalent), so any live caller still gets correct
--- HC6-computed counts, and logs the call so the legacy callers can be found and
--- retired. Original body preserved below (unreachable).
+-- It now DELEGATES to HC6.nonApi_updateRunCountsForEventUsers so any live
+-- caller still gets correct HC6-computed counts, and logs the call so the
+-- legacy callers can be found and retired. Original body preserved below
+-- (unreachable).
 -- =====================================================================
     SET NOCOUNT ON;
     INSERT INTO LOG.GeneralLog (LogSource, Message)
-    VALUES ('OBSOLETE SP', 'Obsolete SP called (delegated to HC6 per-user): HC.nonApi_updateRunCountsForEventUsers');
-
-    -- Faithful translation of the original @eventId scope: recompute each of the
-    -- event's non-anonymous users via the HC6 per-user SP.
-    DECLARE @euUserId UNIQUEIDENTIFIER;
-    DECLARE euCursor CURSOR LOCAL FAST_FORWARD FOR
-        SELECT DISTINCT hem.UserId
-        FROM   HC.HasherEventMap hem
-        JOIN   HC.Hasher h ON h.id = hem.UserId
-        WHERE  hem.EventId = @eventId AND h.isAnonymous = 0;
-    OPEN euCursor;
-    FETCH NEXT FROM euCursor INTO @euUserId;
-    WHILE @@FETCH_STATUS = 0
-    BEGIN
-        EXEC HC6.nonApi_updateRunCountsByUser @userId = @euUserId;
-        FETCH NEXT FROM euCursor INTO @euUserId;
-    END
-    CLOSE euCursor;
-    DEALLOCATE euCursor;
+    VALUES ('OBSOLETE SP', 'Obsolete SP called (delegated to HC6): HC.nonApi_updateRunCountsForEventUsers');
+    EXEC HC6.nonApi_updateRunCountsForEventUsers @eventId = @eventId;
     RETURN;
 
 BEGIN
