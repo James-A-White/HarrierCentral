@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.9+1223 (2026-07-26)
+
+### Improvements
+- **Live run map (battery)**: re-applied the compass-heading optimization — the
+  map no longer rebuilds on every compass update (sub-2° rotations are ignored,
+  and a heading change now redraws only the viewer dot's wedge). First of the
+  reverted 2.15.7 map performance changes being re-introduced one at a time.
+
 ## 2.15.8+1222 (2026-07-26)
 
 ### Fixes

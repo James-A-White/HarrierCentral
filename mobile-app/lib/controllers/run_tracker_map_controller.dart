@@ -614,13 +614,27 @@ class RunTrackerMapController extends GetxController
     unawaited(_loadPhotoCache());
   }
 
+  // The compass fires many times a second. A sub-degree wedge rotation isn't
+  // visible, so ignore heading changes below this — it collapses the write rate
+  // to only meaningful movements. Paired with the isolated Obx around the viewer
+  // dot (see _viewerDot), so even these writes never rebuild the map.
+  static const double _headingUpdateThresholdDeg = 2.0;
+
   /// Subscribes to the device compass so the blue-dot wedge points where the
   /// viewer is facing. Heading is null on devices without a magnetometer, in
   /// which case the wedge simply never appears. Idempotent.
   void _startCompass() {
     _compassSub ??= FlutterCompass.events?.listen((event) {
       final h = event.heading;
-      if (h != null) deviceHeading.value = h;
+      if (h == null) return;
+      final prev = deviceHeading.value;
+      if (prev != null) {
+        // Smallest angle between the two headings, accounting for the 0/360 wrap.
+        var diff = (h - prev).abs();
+        if (diff > 180.0) diff = 360.0 - diff;
+        if (diff < _headingUpdateThresholdDeg) return; // sub-visible — skip
+      }
+      deviceHeading.value = h;
     });
   }
 
