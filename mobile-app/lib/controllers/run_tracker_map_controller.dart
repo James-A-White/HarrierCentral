@@ -1138,17 +1138,18 @@ class RunTrackerMapController extends GetxController
     }
   }
 
-  /// Warms the ImageCache with the selected runner's showcase photos so the
-  /// zoom animation (and scrub display) shows the image immediately instead of
-  /// fetching it mid-sweep. Best-effort — matches the showcase widget's provider
-  /// (Image.network(url) → NetworkImage(url), full-size) so it hits the same
-  /// cache entry. Needs a live context.
+  /// Warms the (disk-backed) cache with the selected runner's showcase photos so
+  /// the zoom animation (and scrub display) shows the image immediately instead
+  /// of fetching it mid-sweep. Uses CachedNetworkImageProvider to match the
+  /// showcase widget's provider and populate the shared disk+memory cache — so
+  /// even if the memory decode is evicted, the disk copy loads fast. Best-effort.
   void _precacheShowcasePhotos() {
     final BuildContext? ctx = Get.context ?? navigatorKey.currentContext;
     if (ctx == null) return;
     for (final cue in _selectedRunnerCues) {
       unawaited(
-        precacheImage(NetworkImage(cue.url), ctx).catchError((Object _) {}),
+        precacheImage(CachedNetworkImageProvider(cue.url), ctx)
+            .catchError((Object _) {}),
       );
     }
   }

@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.13+1227 (2026-07-26)
+
+### Improvements
+- **PackTrack photos**: the showcase photo now uses the app's shared disk-backed
+  image cache (CachedNetworkImage) and is preloaded on arming, so it shows from
+  the start of the zoom sweep instead of loading mid-animation.
+
 ## 2.15.12+1226 (2026-07-26)
 
 ### Improvements

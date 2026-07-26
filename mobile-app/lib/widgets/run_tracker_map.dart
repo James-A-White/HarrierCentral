@@ -272,7 +272,16 @@ class RunTrackerMap extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(show.url, fit: BoxFit.contain),
+                    // CachedNetworkImage (disk + memory cache) so the photo, once
+                    // fetched (by the arm-time precache or a prior view), shows
+                    // instantly and survives memory-cache eviction. fadeIn off —
+                    // the showcase controls its own opacity via the zoom ramp.
+                    child: CachedNetworkImage(
+                      imageUrl: show.url,
+                      fit: BoxFit.contain,
+                      fadeInDuration: Duration.zero,
+                      fadeOutDuration: Duration.zero,
+                    ),
                   ),
                 ),
               ),
