@@ -442,6 +442,9 @@ class RunListItem extends StatelessWidget {
                   tag: 'EventImage-${futureRun.event.eventId}',
                   child: CachedNetworkImage(
                     imageUrl: futureRun.event.eventImage!,
+                    // Decode the banner at ~display width, not source full-res
+                    // (repeated for every row of the main run list).
+                    memCacheWidth: 900,
                     // errorWidget:
                     //     (BuildContext context, String url, Exception error) =>
                     //         const  Icon(Icons.error),

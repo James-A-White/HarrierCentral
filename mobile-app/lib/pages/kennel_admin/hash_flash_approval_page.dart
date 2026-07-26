@@ -1308,6 +1308,8 @@ class _GridThumb extends StatelessWidget {
           CachedNetworkImage(
             imageUrl: photo.effectiveUrl,
             fit: BoxFit.cover,
+            // 3-column thumbnail grid — decode small, not full-res.
+            memCacheWidth: 500,
             placeholder: (_, _) => Container(color: Colors.black26),
             errorWidget: (_, _, _) => Container(
               color: Colors.black26,

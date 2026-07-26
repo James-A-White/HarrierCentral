@@ -328,6 +328,8 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                         _chargePhotoUrl!,
                         width: 44,
                         height: 44,
+                        cacheWidth: 132,
+                        cacheHeight: 132,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => const SizedBox.shrink(),
                       ),

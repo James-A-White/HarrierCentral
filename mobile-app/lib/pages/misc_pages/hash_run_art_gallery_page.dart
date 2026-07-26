@@ -84,6 +84,8 @@ class HashRunArtGalleryPage extends StatelessWidget {
                       },
                       child: Image.network(
                         item[tableModel.eventsTableHelper.colEventImage],
+                        // Cap decode resolution — gallery art can be large.
+                        cacheWidth: 900,
                         errorBuilder:
                             (
                               BuildContext context,

@@ -458,7 +458,7 @@ class _GuestRunCard extends StatelessWidget {
             ),
             Container(height: 1.0, color: Colors.grey[300]),
             if (run.eventImage != null && run.eventImage!.isNotEmpty) ...<Widget>[
-              CachedNetworkImage(imageUrl: run.eventImage!),
+              CachedNetworkImage(imageUrl: run.eventImage!, memCacheWidth: 900),
               Container(height: 1.0, color: Colors.grey[300]),
             ],
             Padding(

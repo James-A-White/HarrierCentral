@@ -17,17 +17,22 @@ class HcAppCircularProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SpinKitCircle(
-      size: size ?? 75.0,
-      itemBuilder: (_, int index) {
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            color: index.isEven
-                ? (color1 ?? themeAppBarBackground)
-                : (color2 ?? Colors.grey.shade400),
-          ),
-        );
-      },
+    // RepaintBoundary isolates the spinner's ~60fps repaint from its
+    // surroundings, so a loading gate (or several spinners in a list) doesn't
+    // repaint the enclosing layer every frame.
+    return RepaintBoundary(
+      child: SpinKitCircle(
+        size: size ?? 75.0,
+        itemBuilder: (_, int index) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: index.isEven
+                  ? (color1 ?? themeAppBarBackground)
+                  : (color2 ?? Colors.grey.shade400),
+            ),
+          );
+        },
+      ),
     );
   }
 }

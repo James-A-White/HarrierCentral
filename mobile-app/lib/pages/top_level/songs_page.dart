@@ -211,6 +211,10 @@ class _SongsPageState extends State<SongsPage> {
                         song.imageUrl!,
                         width: 36,
                         height: 36,
+                        // Decode at ~thumbnail resolution, not the source's full
+                        // size (repeated down a long song list).
+                        cacheWidth: 108,
+                        cacheHeight: 108,
                         fit: BoxFit.cover,
                         errorBuilder:
                             (BuildContext context, Object e, StackTrace? st) =>

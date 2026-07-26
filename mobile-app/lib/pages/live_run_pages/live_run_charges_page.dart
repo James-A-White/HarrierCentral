@@ -223,6 +223,8 @@ class _ChargeTile extends StatelessWidget {
                         dd.chargePhotoUrl!,
                         height: 120,
                         width: double.infinity,
+                        // Decode to the strip height, not the photo's full res.
+                        cacheHeight: 360,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => const SizedBox.shrink(),
                       ),

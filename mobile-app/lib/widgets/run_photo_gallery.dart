@@ -166,6 +166,8 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
               CachedNetworkImage(
                 imageUrl: photo.effectiveUrl,
                 fit: BoxFit.cover,
+                // Grid cell is ~1/3 screen — decode a thumbnail, not full-res.
+                memCacheWidth: 500,
                 placeholder: (context, url) => Container(
                   color: Colors.white10,
                   child: const Center(
