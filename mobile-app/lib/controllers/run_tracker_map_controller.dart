@@ -202,6 +202,20 @@ class RunTrackerMapController extends GetxController
   // Reused across loadPositions() calls to avoid creating a new http.Client each time.
   final GetPositionsApi _positionsApi = GetPositionsApi();
 
+  // Bumped whenever the photo caches below change (photos loaded/refreshed), so
+  // the memoised marker lists know to rebuild and pick up newly-resolved photos.
+  int _photoCacheVersion = 0;
+
+  // Memoised checkpoint/photo marker lists. The getters rebuild these only when
+  // the marker set would actually differ (see _markerCacheKey), returning the
+  // SAME list instance across the many per-frame reads during playback — so we
+  // don't reconstruct every marker widget (photo markers are heavy) 60x/second
+  // while nothing has changed.
+  List<Marker> _cachedCheckpointMarkers = const [];
+  String? _cachedCheckpointMarkersKey;
+  List<Marker> _cachedPhotoMarkers = const [];
+  String? _cachedPhotoMarkersKey;
+
   // photoId (lowercase UUID) → blob URL, populated from hcapp_getRunPhotos.
   // Refreshed on every live-run auto-update tick so newly-taken photos appear.
   final Map<String, String> _photoUrlCache = {};
@@ -326,8 +340,58 @@ class RunTrackerMapController extends GetxController
 
   Color runnerColor(String userId) => _colorForUser(userId);
 
-  List<Marker> get checkpointMarkers => _buildCheckpointMarkers(photosOnly: false);
-  List<Marker> get photoCheckpointMarkers => _buildCheckpointMarkers(photosOnly: true);
+  List<Marker> get checkpointMarkers {
+    final key = _markerCacheKey(photosOnly: false);
+    if (key == _cachedCheckpointMarkersKey) return _cachedCheckpointMarkers;
+    _cachedCheckpointMarkersKey = key;
+    _cachedCheckpointMarkers = _buildCheckpointMarkers(photosOnly: false);
+    return _cachedCheckpointMarkers;
+  }
+
+  List<Marker> get photoCheckpointMarkers {
+    final key = _markerCacheKey(photosOnly: true);
+    if (key == _cachedPhotoMarkersKey) return _cachedPhotoMarkers;
+    _cachedPhotoMarkersKey = key;
+    _cachedPhotoMarkers = _buildCheckpointMarkers(photosOnly: true);
+    return _cachedPhotoMarkers;
+  }
+
+  /// A signature that changes only when the built marker set would differ. Used
+  /// to memoise [checkpointMarkers] / [photoCheckpointMarkers] so per-frame reads
+  /// during playback return a cached list instead of rebuilding every marker
+  /// widget. Captures: how many marks are revealed at the current playhead
+  /// ([_visibleMarkCount]), the marker scale (zoom), the trail filter, the
+  /// selected runner, the data size, and the photo-cache version.
+  String _markerCacheKey({required bool photosOnly}) {
+    final double? cutoff = timelineAvailable ? currentTimestampMs.value : null;
+    final String scale =
+        (photosOnly ? _photoMarkerScale() : _markerScale()).toStringAsFixed(3);
+    return '${_visibleMarkCount(photosOnly: photosOnly, cutoff: cutoff)}'
+        '|$scale'
+        '|${selectedTrailValues.join(",")}'
+        '|${selectedRunnerId.value ?? ""}'
+        '|${userPositions.length}'
+        '|$_photoCacheVersion';
+  }
+
+  /// Counts the marks of the requested kind (photos vs checkpoints) that are
+  /// revealed at [cutoff], from lane-visible runners. Cheap relative to building
+  /// the marker widgets — the flood of plain GPS points is skipped on the empty
+  /// type check; only actual marks are parsed.
+  int _visibleMarkCount({required bool photosOnly, required double? cutoff}) {
+    int n = 0;
+    for (final user in visibleRunners) {
+      for (final p in user.positions) {
+        if ((p.type ?? '').isEmpty) continue;
+        if (cutoff != null && p.timestampMs.toDouble() > cutoff) continue;
+        final parsed = _parseCheckpointType(p.type);
+        if (parsed == null) continue;
+        final bool isPhoto = parsed.type == HashRunPointTypes.photo;
+        if (photosOnly == isPhoto) n++;
+      }
+    }
+    return n;
+  }
 
   List<Marker> _buildCheckpointMarkers({required bool photosOnly}) {
     if (userPositions.isEmpty) return const [];
@@ -730,7 +794,10 @@ class RunTrackerMapController extends GetxController
           }
         }
       }
-      if (updated) update();
+      if (updated) {
+        _photoCacheVersion++; // invalidate the memoised marker lists
+        update();
+      }
     } catch (e, s) {
       debugPrint('_loadPhotoCache error: $e');
       BootLogger.logError('[RunTrackerMapController._loadPhotoCache] eventId=${event.eventId}', e, s);

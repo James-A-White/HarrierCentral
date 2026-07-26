@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.10+1224 (2026-07-26)
+
+### Improvements
+- **Live run map (battery)**: re-applied the marker-list memoization — checkpoint
+  and photo markers are rebuilt only when the visible set actually changes, not
+  on every playback frame — plus isolated the tilt speed indicator into its own
+  reactive scope. Step 2 of 3 of the reverted 2.15.7 map performance work; the
+  cluster-caching change is still held back.
+
 ## 2.15.9+1223 (2026-07-26)
 
 ### Improvements

@@ -550,6 +550,10 @@ class RunTrackerMap extends StatelessWidget {
   /// shows the live tilt multiplier (blue) and turns red with a pause glyph in
   /// the neutral/paused band. Mirrors web's speed bubble.
   Widget _buildSpeedBubble(RunTrackerMapController controller) {
+    // Own Obx: tiltSpeed updates at accelerometer rate. Reading it here (not in
+    // the map's top-level Obx via the timeline panel) means a tilt change
+    // rebuilds only this bubble, never FlutterMap / the cluster layer.
+    return Obx(() {
     final bool tilt = controller.tiltEnabled.value;
     final bool paused = controller.tiltPaused;
     final double shown =
@@ -600,6 +604,7 @@ class RunTrackerMap extends StatelessWidget {
         child: child,
       ),
     );
+    });
   }
 
   /// Trail-type filter chips, inside the control panel (web layout). Horizontal
