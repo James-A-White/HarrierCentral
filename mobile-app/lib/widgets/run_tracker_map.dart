@@ -200,9 +200,19 @@ class RunTrackerMap extends StatelessWidget {
                 ),
               // In-map photo showcase — grows a photo out of its pin to centre
               // and back as the playhead crosses it (topmost overlay).
+              //
+              // Wrapped in its OWN Obx so the ~60fps zoom/pan ticks rebuild only
+              // this overlay, NOT the enclosing map. The outer Obx builds
+              // FlutterMap + every marker/polyline/cluster layer; if the showcase
+              // Rx values were read there, each tick would re-run marker
+              // clustering and rebuild the whole map, flooding the pipeline and
+              // making playback jumpy. The overlay reads no map state, so scoping
+              // it here is safe.
               Positioned.fill(
-                child: LayoutBuilder(
-                  builder: (ctx, cons) => _buildPhotoShowcase(controller, cons),
+                child: Obx(
+                  () => LayoutBuilder(
+                    builder: (ctx, cons) => _buildPhotoShowcase(controller, cons),
+                  ),
                 ),
               ),
             ],

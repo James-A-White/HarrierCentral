@@ -130,12 +130,15 @@ class RunTrackerMapController extends GetxController
   // mirrors it — so the sweep direction makes navigation direction obvious.
   final RxDouble showcasePan = 0.0.obs;
   double _showcaseDir = 1.0; // +1 forward, -1 reverse — captured at show start
-  Timer? _showcaseTicker;
-  // Progress through the show curve in "virtual ms", advanced each tick by
+  // The showcase animation is driven off vsync frame callbacks (one update per
+  // rendered frame), not a wall-clock Timer — this coalesces redraws to the
+  // frame rate and avoids timer-vs-refresh phase-beating (a source of stutter).
+  int? _showcaseFrameCallbackId;
+  // Progress through the show curve in "virtual ms", advanced each frame by
   // dt × effective speed (tilt magnitude, or playback speed when tilt is off).
   // Freezes when the effective speed is 0 (tilt held at the stop-point).
   double _showcaseVirtualMs = 0.0;
-  DateTime? _lastShowcaseTick;
+  Duration? _lastShowcaseStamp; // previous frame timestamp (vsync clock)
   bool _showcaseResumeAfter = false;
   // Zoom envelope (ms), matches web: IN → HOLD → OUT.
   static const int _showInMs = 450;
@@ -638,7 +641,7 @@ class RunTrackerMapController extends GetxController
     unawaited(_tiltSub?.cancel());
     unawaited(_compassSub?.cancel());
     _tiltTicker?.cancel();
-    _showcaseTicker?.cancel();
+    _cancelShowcaseFrame();
     _timelineWorker?.dispose();
     _selectionWorker?.dispose();
     unawaited(_mapEventsSub?.cancel());
@@ -1065,7 +1068,7 @@ class RunTrackerMapController extends GetxController
 
   /// The rate that drives the photo zoom. In tilt mode it follows the tilt
   /// speed (0 in the neutral/stop band → freeze); it is SIGNED, and
-  /// [_showcaseTick] applies it relative to the entry direction so rocking the
+  /// [_showcaseFrame] applies it relative to the entry direction so rocking the
   /// phone scrubs the zoom in and out. With tilt off it follows the chosen
   /// (always-forward) playback speed.
   double get _showcaseSpeed {
@@ -1088,24 +1091,52 @@ class RunTrackerMapController extends GetxController
     showcaseZoom.value = 0.0;
     showcasePan.value = _showcaseDir; // start on the leading side
     _showcaseVirtualMs = 0.0;
-    _lastShowcaseTick = null;
-    _showcaseTicker?.cancel();
-    _showcaseTicker =
-        Timer.periodic(const Duration(milliseconds: 16), (_) => _showcaseTick());
+    _lastShowcaseStamp = null;
+    _scheduleShowcaseFrame();
   }
 
-  void _showcaseTick() {
+  void _scheduleShowcaseFrame({bool rescheduling = false}) {
+    _showcaseFrameCallbackId = WidgetsBinding.instance
+        .scheduleFrameCallback(_showcaseFrame, rescheduling: rescheduling);
+  }
+
+  void _cancelShowcaseFrame() {
+    final int? id = _showcaseFrameCallbackId;
+    if (id != null) {
+      WidgetsBinding.instance.cancelFrameCallbackWithId(id);
+      _showcaseFrameCallbackId = null;
+    }
+  }
+
+  // Below this the zoom/pan has moved too little to be worth a redraw. On a
+  // [0..1] envelope that grows the photo ~200px, 0.004 is well under one pixel —
+  // it just suppresses the flurry of sub-visible writes during slow scrubbing.
+  static const double _showcaseCommitEpsilon = 0.004;
+
+  /// Vsync frame callback that advances the showcase. Runs at most once per
+  /// rendered frame; reschedules itself until the show ends.
+  void _showcaseFrame(Duration stamp) {
+    _showcaseFrameCallbackId = null;
     if (photoShowcase.value == null) {
       _endShowcase();
       return;
     }
-    final now = DateTime.now();
-    final last = _lastShowcaseTick;
-    _lastShowcaseTick = now;
-    if (last == null) return; // first tick just seeds the clock
 
-    final int dtMs = now.difference(last).inMilliseconds;
-    if (dtMs <= 0) return;
+    final Duration? last = _lastShowcaseStamp;
+    _lastShowcaseStamp = stamp;
+    if (last == null) {
+      _scheduleShowcaseFrame(rescheduling: true); // first frame just seeds the clock
+      return;
+    }
+
+    final double rawDtMs = (stamp - last).inMicroseconds / 1000.0;
+    if (rawDtMs <= 0) {
+      _scheduleShowcaseFrame(rescheduling: true);
+      return;
+    }
+    // Cap the step: a dropped frame / GC hitch (or a resume after backgrounding)
+    // should ease forward, not teleport the zoom to the end.
+    final double dtMs = rawDtMs > 100.0 ? 100.0 : rawDtMs;
 
     // Progress is driven by the speed RELATIVE to the entry direction
     // (_showcaseDir): rock WITH the run to zoom the photo in, rock AGAINST it to
@@ -1136,7 +1167,6 @@ class RunTrackerMapController extends GetxController
       final o = (e - _showInMs - _showHoldMs) / _showOutMs;
       z = 1.0 - Curves.easeIn.transform(o.clamp(0.0, 1.0));
     }
-    showcaseZoom.value = z.clamp(0.0, 1.0);
 
     // Horizontal navigation cue: enter from the leading side (right when
     // forward), pass through centre at peak zoom, exit the trailing side (left).
@@ -1151,14 +1181,30 @@ class RunTrackerMapController extends GetxController
       final o = ((e - _showInMs - _showHoldMs) / _showOutMs).clamp(0.0, 1.0);
       pan = -_showcaseDir * o; // centre → trailing side
     }
-    showcasePan.value = pan;
+
+    _commitShowcaseValues(z.clamp(0.0, 1.0), pan);
+    _scheduleShowcaseFrame(rescheduling: true);
+  }
+
+  /// Writes zoom/pan only when they've moved a visible amount since the last
+  /// committed value (or hit a phase endpoint), so tiny sub-pixel steps don't
+  /// each trigger an overlay rebuild. GetX already suppresses identical writes;
+  /// this also suppresses near-identical ones.
+  void _commitShowcaseValues(double z, double pan) {
+    final bool zAtEnd = z == 0.0 || z == 1.0;
+    if (zAtEnd || (z - showcaseZoom.value).abs() >= _showcaseCommitEpsilon) {
+      showcaseZoom.value = z;
+    }
+    final bool panAtEnd = pan == 0.0;
+    if (panAtEnd || (pan - showcasePan.value).abs() >= _showcaseCommitEpsilon) {
+      showcasePan.value = pan;
+    }
   }
 
   void _endShowcase() {
-    _showcaseTicker?.cancel();
-    _showcaseTicker = null;
+    _cancelShowcaseFrame();
     _showcaseVirtualMs = 0.0;
-    _lastShowcaseTick = null;
+    _lastShowcaseStamp = null;
     photoShowcase.value = null;
     showcaseZoom.value = 0.0;
     showcasePan.value = 0.0;
