@@ -111,7 +111,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
                       separatorBuilder: (context, i) => Divider(height: 2, thickness: 1.5, color: Colors.lightBlueAccent.withValues(alpha: 0.7)),
                       itemBuilder: (context, index) {
                         final dd = _charges[index];
-                        final names = dd.hashers.map((h) => h.displayName).join(', ');
+                        final names = dd.allChargedNames.join(', ');
                         return _ChargeTile(
                           dd: dd,
                           hasherNames: names,

@@ -116,7 +116,9 @@ class _DownDownsPageState extends State<DownDownsPage> {
         createdAt: dd.createdAt,
         songChoice: dd.songChoice,
         songId: dd.songId,
+        chargePhotoUrl: dd.chargePhotoUrl,
         hashers: dd.hashers,
+        externalNames: dd.externalNames,
       );
 
   Future<void> _markDone(DownDownModel dd) async {
@@ -313,7 +315,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
                     ),
                     itemBuilder: (context, index) {
                       final dd = _downDowns[index];
-                      final names = dd.hashers.map((h) => h.displayName).join(', ');
+                      final names = dd.allChargedNames.join(', ');
                       return _DownDownTile(
                         dd: dd,
                         hasherNames: names,

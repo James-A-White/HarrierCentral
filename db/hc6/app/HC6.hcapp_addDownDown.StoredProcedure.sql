@@ -8,24 +8,29 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addDownDown]
     @chargeText      NVARCHAR(MAX),
     @songChoice      NVARCHAR(500) = NULL,
     @songId          UNIQUEIDENTIFIER = NULL,
-    @chargePhotoUrl  NVARCHAR(MAX) = NULL
+    @chargePhotoUrl  NVARCHAR(MAX) = NULL,
+    @externalNames   NVARCHAR(MAX) = NULL
 
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_addDownDown
--- Description: Records a DownDown charge for one or more hashers.
+-- Description: Records a DownDown charge against one or more people.
 --   Any run attendee (AttendenceState >= 20 on the event) may submit.
---   @hasherIds is a pipe-delimited list of UUID strings.
---   Creates one HC.DownDowns row and one HC.DownDownHashers row per
---   hasher. Returns the new DownDown ID on success.
+--   A charge may target registered hashers, people not in the app, or a
+--   mix of both. @hasherIds is a pipe-delimited list of UUID strings;
+--   @externalNames is a JSON array of names for people not in the app,
+--   e.g. ["Dizzy Lizzy","Two-Buck Chuck"]. At least one of the two is
+--   required. Creates one HC.DownDowns row (holding the external names)
+--   and one HC.DownDownHashers row per hasher. Returns the new ID.
 -- Parameters:
 --   @deviceId       - Registered device UUID
 --   @accessToken    - Token validated against DeviceSecret
 --   @kennelId       - Kennel that owns the event
 --   @eventId        - Event the charge belongs to
---   @hasherIds      - Pipe-delimited hasher UUIDs to charge
+--   @hasherIds      - Pipe-delimited hasher UUIDs to charge (may be empty)
 --   @chargeText     - Description of the charge
 --   @chargePhotoUrl - Optional blob URL of an attached charge photo
+--   @externalNames  - Optional JSON array of names for people not in the app
 -- Returns:
 --   On success (rowset 0): { downDownId }
 --   On error  (rowset 0): { success=0, errorCode, errorType }
@@ -71,15 +76,28 @@ BEGIN
     RETURN;
 END
 
+-- Count valid targets: registered hashers (valid UUIDs) and external names.
+DECLARE @hasherCount INT = (
+    SELECT COUNT(*) FROM STRING_SPLIT(ISNULL(@hasherIds, ''), '|')
+    WHERE TRY_CAST(LTRIM(RTRIM(value)) AS UNIQUEIDENTIFIER) IS NOT NULL
+);
+DECLARE @externalCount INT = 0;
+IF (@externalNames IS NOT NULL AND ISJSON(@externalNames) = 1)
+    SET @externalCount = (
+        SELECT COUNT(*) FROM OPENJSON(@externalNames)
+        WHERE LEN(LTRIM(RTRIM([value]))) > 0
+    );
+
+-- A charge needs a description and at least one target (hasher or external name).
 IF (@kennelId  IS NULL OR @kennelId  = '00000000-0000-0000-0000-000000000000'
  OR @eventId   IS NULL OR @eventId   = '00000000-0000-0000-0000-000000000000'
- OR LEN(LTRIM(RTRIM(ISNULL(@hasherIds,  '')))) = 0
+ OR (@hasherCount = 0 AND @externalCount = 0)
  OR LEN(LTRIM(RTRIM(ISNULL(@chargeText, '')))) = 0)
 BEGIN
     SET @errorCode = 1234; SET @errorType = 2; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Missing parameter',
-            '@kennelId, @eventId, @hasherIds and @chargeText are all required', @procName, @userId);
+            '@kennelId, @eventId, @chargeText and at least one target (hasher or external name) are required', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing parameter' AS errorTitle,
@@ -113,9 +131,13 @@ BEGIN TRY
 
     DECLARE @newId UNIQUEIDENTIFIER = NEWID();
 
-    INSERT INTO HC.DownDowns (id, EventId, KennelId, ChargeText, SongChoice, SongId, IsDone, CreatedByUserId, ChargePhotoUrl)
+    -- Only persist external names when there is at least one; store NULL otherwise.
+    DECLARE @externalNamesToStore NVARCHAR(MAX) =
+        CASE WHEN @externalCount > 0 THEN @externalNames ELSE NULL END;
+
+    INSERT INTO HC.DownDowns (id, EventId, KennelId, ChargeText, SongChoice, SongId, IsDone, CreatedByUserId, ChargePhotoUrl, ExternalNames)
     VALUES (@newId, @eventId, @kennelId, @chargeText, NULLIF(LTRIM(RTRIM(@songChoice)), ''), @songId, 0, @userId,
-            NULLIF(LTRIM(RTRIM(@chargePhotoUrl)), ''));
+            NULLIF(LTRIM(RTRIM(@chargePhotoUrl)), ''), @externalNamesToStore);
 
     INSERT INTO HC.DownDownHashers (DownDownId, HasherId)
     SELECT @newId, TRY_CAST(LTRIM(RTRIM(value)) AS UNIQUEIDENTIFIER)

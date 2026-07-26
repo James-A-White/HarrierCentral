@@ -8,6 +8,10 @@ CREATE TABLE [HC].[DownDowns] (
     [IsDone]          BIT              NOT NULL DEFAULT 0,
     [IsCancelled]     BIT              NOT NULL DEFAULT 0,
     [ChargePhotoUrl]  NVARCHAR(MAX)    NULL,
+    -- JSON array of names for people charged who are NOT registered HC users,
+    -- e.g. ["Dizzy Lizzy","Two-Buck Chuck"]. NULL when the charge has none.
+    -- In-app hashers are still recorded in HC.DownDownHashers; a charge may mix both.
+    [ExternalNames]   NVARCHAR(MAX)    NULL,
     [CreatedByUserId] UNIQUEIDENTIFIER NOT NULL,
     [CreatedAt]       DATETIME2        NOT NULL DEFAULT GETUTCDATE(),
     [UpdatedAt]       DATETIME2        NOT NULL DEFAULT GETUTCDATE(),

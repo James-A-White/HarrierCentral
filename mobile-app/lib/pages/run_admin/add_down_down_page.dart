@@ -38,6 +38,10 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
   final _service = RunContentService();
   final _chargeController = TextEditingController();
   final _songController = TextEditingController();
+  final _externalNameController = TextEditingController();
+
+  /// Names of people being charged who are NOT registered HC users.
+  final List<String> _externalNames = [];
 
   String? _linkedSongId;
   bool _suppressNextSongSearch = false;
@@ -59,7 +63,22 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
   void dispose() {
     _chargeController.dispose();
     _songController.dispose();
+    _externalNameController.dispose();
     super.dispose();
+  }
+
+  /// Adds the typed (or supplied) name to the external-people list, ignoring
+  /// blanks and case-insensitive duplicates, then clears the input.
+  void _addExternalName([String? value]) {
+    final name = (value ?? _externalNameController.text).trim();
+    _externalNameController.clear();
+    if (name.isEmpty) return;
+    final exists = _externalNames.any((n) => n.toLowerCase() == name.toLowerCase());
+    if (!exists) {
+      setState(() => _externalNames.add(name));
+    } else {
+      setState(() {}); // reflect the cleared input
+    }
   }
 
   Future<void> _searchSongs(String query) async {
@@ -183,9 +202,14 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
   }
 
   Future<void> _submit() async {
-    if (_selected.isEmpty) {
+    // Fold in any name typed but not yet added via the + button.
+    if (_externalNameController.text.trim().isNotEmpty) {
+      _addExternalName();
+    }
+
+    if (_selected.isEmpty && _externalNames.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select at least one hasher')),
+        const SnackBar(content: Text('Add at least one person — a hasher or a name')),
       );
       return;
     }
@@ -203,6 +227,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
         eventId: widget.eventId,
         hasherIds: _selected.map((a) => a.hasherId).toList(),
         chargeText: _chargeController.text.trim(),
+        externalNames: _externalNames,
         songChoice: _songController.text.trim().isEmpty ? null : _songController.text.trim(),
         songId: _linkedSongId,
         chargePhotoUrl: _chargePhotoUrl,
@@ -400,13 +425,67 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                       ],
                     ),
                   ),
+                  // People not in the app — free-text names added as chips.
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'People not in the app',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: _externalNameController,
+                          textInputAction: TextInputAction.done,
+                          textCapitalization: TextCapitalization.words,
+                          onSubmitted: _addExternalName,
+                          decoration: InputDecoration(
+                            hintText: 'Add a name, then tap +',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.white,
+                            isDense: true,
+                            prefixIcon: const Icon(Icons.person_add_alt_1),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.add),
+                              tooltip: 'Add name',
+                              onPressed: () => _addExternalName(),
+                            ),
+                          ),
+                        ),
+                        if (_externalNames.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: _externalNames
+                                .map((name) => Chip(
+                                      label: Text(name),
+                                      backgroundColor: Colors.yellow.shade700,
+                                      labelStyle: const TextStyle(
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      deleteIconColor: Colors.black54,
+                                      onDeleted: () => setState(() => _externalNames.remove(name)),
+                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
+                                    ))
+                                .toList(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: Row(
                       children: [
                         Text(
-                          'Select hashers ($selectedCount selected)',
+                          'People in the app ($selectedCount selected)',
                           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ],

@@ -2870,7 +2870,7 @@ class _DownDownHistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final names = dd.hashers.map((h) => h.displayName).join(', ');
+    final names = dd.allChargedNames.join(', ');
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: Column(

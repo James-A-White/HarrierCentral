@@ -68,6 +68,7 @@ class RunContentService {
     required String eventId,
     required List<String> hasherIds,
     required String chargeText,
+    List<String> externalNames = const [],
     String? songChoice,
     String? songId,
     String? chargePhotoUrl,
@@ -88,8 +89,10 @@ class RunContentService {
         'eventId': eventId,
         'hasherIds': hasherIds.join('|'),
         'chargeText': chargeText,
+        // JSON array of names for people not in the app; omitted when there are none.
+        if (externalNames.isNotEmpty) 'externalNames': jsonEncode(externalNames),
         if (songChoice != null && songChoice.isNotEmpty) 'songChoice': songChoice,
-        if (songId != null) 'songId': songId,
+        'songId': ?songId,
         if (chargePhotoUrl?.isNotEmpty == true) 'chargePhotoUrl': chargePhotoUrl,
       }),
     );

@@ -106,6 +106,7 @@ SELECT
     dd.SongChoice      AS songChoice,
     LOWER(CAST(dd.SongId AS NVARCHAR(40))) AS songId,
     dd.ChargePhotoUrl  AS chargePhotoUrl,
+    dd.ExternalNames   AS externalNames,
     h.DisplayName      AS createdByDisplayName,
     h.Photo            AS createdByPhoto,
     dd.CreatedAt       AS createdAt
