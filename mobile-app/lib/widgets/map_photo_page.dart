@@ -135,9 +135,19 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
     _photos = List.of(widget.photos);
     _currentIndex = widget.initialIndex.clamp(0, _photos.length - 1);
     _pageController = PageController(initialPage: _currentIndex);
-    // Rebuild on scroll so the _showArrow getter re-evaluates.
-    _scrollController.addListener(() => setState(() {}));
+    // Rebuild only when the scroll arrow's visibility actually flips — not on
+    // every scroll frame (which re-rendered the whole page + its image pager).
+    _scrollController.addListener(_onCaptionScroll);
     _checkOverflowAfterFrame();
+  }
+
+  bool _lastShowArrow = false;
+
+  void _onCaptionScroll() {
+    final bool show = _showArrow;
+    if (show != _lastShowArrow) {
+      setState(() => _lastShowArrow = show);
+    }
   }
 
   @override

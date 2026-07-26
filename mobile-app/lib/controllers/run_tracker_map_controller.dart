@@ -205,6 +205,25 @@ class RunTrackerMapController extends GetxController
   // Reused across loadPositions() calls to avoid creating a new http.Client each time.
   final GetPositionsApi _positionsApi = GetPositionsApi();
 
+  // Bumped whenever the photo caches below change (photos loaded/refreshed), so
+  // the memoised marker lists know to rebuild and pick up newly-resolved photos.
+  int _photoCacheVersion = 0;
+
+  // Memoised checkpoint/photo marker lists. The getters rebuild these only when
+  // the marker set would actually differ (see _markerCacheKey), returning the
+  // SAME list instance across the many per-frame reads during playback — so we
+  // don't reconstruct every marker widget, and (with _PhotoClusterLayer) don't
+  // re-cluster, 60x/second while nothing has changed.
+  List<Marker> _cachedCheckpointMarkers = const [];
+  String? _cachedCheckpointMarkersKey;
+  List<Marker> _cachedPhotoMarkers = const [];
+  String? _cachedPhotoMarkersKey;
+  // The photo-cluster layer widget, cached as a stable instance while its
+  // marker set is unchanged so FlutterMap skips re-clustering on frame-only
+  // rebuilds (see photoClusterLayer).
+  Widget? _cachedPhotoClusterLayer;
+  List<Marker>? _cachedPhotoClusterMarkers;
+
   // photoId (lowercase UUID) → blob URL, populated from hcapp_getRunPhotos.
   // Refreshed on every live-run auto-update tick so newly-taken photos appear.
   final Map<String, String> _photoUrlCache = {};
@@ -329,8 +348,107 @@ class RunTrackerMapController extends GetxController
 
   Color runnerColor(String userId) => _colorForUser(userId);
 
-  List<Marker> get checkpointMarkers => _buildCheckpointMarkers(photosOnly: false);
-  List<Marker> get photoCheckpointMarkers => _buildCheckpointMarkers(photosOnly: true);
+  List<Marker> get checkpointMarkers {
+    final key = _markerCacheKey(photosOnly: false);
+    if (key == _cachedCheckpointMarkersKey) return _cachedCheckpointMarkers;
+    _cachedCheckpointMarkersKey = key;
+    _cachedCheckpointMarkers = _buildCheckpointMarkers(photosOnly: false);
+    return _cachedCheckpointMarkers;
+  }
+
+  List<Marker> get photoCheckpointMarkers {
+    final key = _markerCacheKey(photosOnly: true);
+    if (key == _cachedPhotoMarkersKey) return _cachedPhotoMarkers;
+    _cachedPhotoMarkersKey = key;
+    _cachedPhotoMarkers = _buildCheckpointMarkers(photosOnly: true);
+    return _cachedPhotoMarkers;
+  }
+
+  /// The photo-checkpoint marker-cluster layer, cached as a stable widget
+  /// instance while the photo marker set is unchanged. FlutterMap is rebuilt
+  /// every frame during playback (runners move); handing it the identical layer
+  /// widget lets it skip re-running the clustering algorithm when nothing about
+  /// the photos changed. A camera move still re-clusters — the layer depends on
+  /// MapCamera and rebuilds itself when the map pans/zooms.
+  Widget get photoClusterLayer {
+    final List<Marker> markers = photoCheckpointMarkers;
+    if (_cachedPhotoClusterLayer != null &&
+        identical(markers, _cachedPhotoClusterMarkers)) {
+      return _cachedPhotoClusterLayer!;
+    }
+    _cachedPhotoClusterMarkers = markers;
+    _cachedPhotoClusterLayer = MarkerClusterLayerWidget(
+      options: MarkerClusterLayerOptions(
+        maxClusterRadius: 40,
+        size: const Size(52, 52),
+        spiderfyCircleRadius: 90,
+        markers: markers,
+        builder: (context, clustered) => _photoClusterBadge(clustered.length),
+      ),
+    );
+    return _cachedPhotoClusterLayer!;
+  }
+
+  Widget _photoClusterBadge(int count) => Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: Colors.black87,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.photo_camera, color: Colors.white, size: 18),
+            Text(
+              '$count',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+
+  /// A signature that changes only when the built marker set would differ. Used
+  /// to memoise [checkpointMarkers] / [photoCheckpointMarkers] so per-frame reads
+  /// during playback return a cached list instead of rebuilding every marker
+  /// widget. Captures: how many marks are revealed at the current playhead
+  /// ([_visibleMarkCount]), the marker scale (zoom), the trail filter, the
+  /// selected runner, the data size, and the photo-cache version.
+  String _markerCacheKey({required bool photosOnly}) {
+    final double? cutoff = timelineAvailable ? currentTimestampMs.value : null;
+    final String scale =
+        (photosOnly ? _photoMarkerScale() : _markerScale()).toStringAsFixed(3);
+    return '${_visibleMarkCount(photosOnly: photosOnly, cutoff: cutoff)}'
+        '|$scale'
+        '|${selectedTrailValues.join(",")}'
+        '|${selectedRunnerId.value ?? ""}'
+        '|${userPositions.length}'
+        '|$_photoCacheVersion';
+  }
+
+  /// Counts the marks of the requested kind (photos vs checkpoints) that are
+  /// revealed at [cutoff], from lane-visible runners. Cheap relative to building
+  /// the marker widgets — the flood of plain GPS points is skipped on the empty
+  /// type check; only actual marks are parsed.
+  int _visibleMarkCount({required bool photosOnly, required double? cutoff}) {
+    int n = 0;
+    for (final user in visibleRunners) {
+      for (final p in user.positions) {
+        if ((p.type ?? '').isEmpty) continue;
+        if (cutoff != null && p.timestampMs.toDouble() > cutoff) continue;
+        final parsed = _parseCheckpointType(p.type);
+        if (parsed == null) continue;
+        final bool isPhoto = parsed.type == HashRunPointTypes.photo;
+        if (photosOnly == isPhoto) n++;
+      }
+    }
+    return n;
+  }
 
   List<Marker> _buildCheckpointMarkers({required bool photosOnly}) {
     if (userPositions.isEmpty) return const [];
@@ -733,7 +851,10 @@ class RunTrackerMapController extends GetxController
           }
         }
       }
-      if (updated) update();
+      if (updated) {
+        _photoCacheVersion++; // invalidate the memoised marker lists
+        update();
+      }
     } catch (e, s) {
       debugPrint('_loadPhotoCache error: $e');
       BootLogger.logError('[RunTrackerMapController._loadPhotoCache] eventId=${event.eventId}', e, s);
