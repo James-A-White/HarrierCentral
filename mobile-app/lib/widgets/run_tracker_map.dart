@@ -200,9 +200,22 @@ class RunTrackerMap extends StatelessWidget {
                 ),
               // In-map photo showcase — grows a photo out of its pin to centre
               // and back as the playhead crosses it (topmost overlay).
+              //
+              // Wrapped in its OWN Obx so the ~60fps zoom/pan ticks repaint only
+              // this overlay, not the whole map. Read inside the big top-level
+              // Obx, the showcase couldn't repaint reliably (the map is busy) —
+              // the photo mostly didn't render. The overlay reads no map state.
               Positioned.fill(
+                // Obx must be INSIDE LayoutBuilder: _buildPhotoShowcase reads the
+                // showcase observables, and those reads have to happen in the
+                // Obx's own build scope. Obx(() => LayoutBuilder(...)) reads
+                // nothing in the Obx itself (the reads are deferred to layout),
+                // which throws GetX's "improper use of Obx" — a full-screen grey
+                // ErrorWidget in release — and never observes showcaseZoom.
                 child: LayoutBuilder(
-                  builder: (ctx, cons) => _buildPhotoShowcase(controller, cons),
+                  builder: (ctx, cons) => Obx(
+                    () => _buildPhotoShowcase(controller, cons),
+                  ),
                 ),
               ),
             ],

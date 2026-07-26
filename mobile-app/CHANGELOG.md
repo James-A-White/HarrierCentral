@@ -1,5 +1,21 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.11+1225 (2026-07-26)
+
+### Fixes
+- **Live run map**: fixed the grey overlay that could cover the whole map — it was
+  a GetX reactive-scope error in the photo-showcase overlay that rendered as a
+  full-screen error box in release builds. PackTrack photo playback now animates
+  correctly again.
+
+### New Features
+- **PackTrack**: photos now also display while you manually scrub the timeline —
+  drag onto a photo to see it, drag away to dismiss.
+
+### Improvements
+- **PackTrack photo zoom** now runs on a vsync frame-callback driver for smoother
+  playback animation.
+
 ## 2.15.10+1224 (2026-07-26)
 
 ### Improvements
