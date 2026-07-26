@@ -1,5 +1,29 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.7+1221 (2026-07-26)
+
+### New Features
+- **Charges**: record a charge against people who aren't in Harrier Central —
+  add any number of external names and mix them with in-app hashers on one charge.
+
+### Fixes
+- **PackTrack playback**: photos now show when navigating **backward** through a
+  run, and the photo zoom is smooth instead of jumpy.
+
+### Improvements (performance & battery)
+- **Live run map**: no longer rebuilds on every compass/heading update (an
+  always-on battery drain), and photo markers/clustering don't rebuild every
+  frame during playback.
+- **Location tracking**: lower per-GPS-point overhead during a run (throttled
+  disk writes and distance recomputation).
+- **Down Downs**: stops polling the network while the app is backgrounded.
+- **Search**: Guest Discovery and Songs searches are debounced and cached, so
+  typing stays smooth over large lists.
+- **Images**: list/grid thumbnails decode at display size instead of full
+  resolution (lower memory), and loading spinners are repaint-isolated.
+- **Run list & pack grid**: fewer rebuilds on the run list; the pack-members grid
+  now loads lazily for big runs.
+
 ## 2.15.6+1220 (2026-07-25)
 
 ### Fixes
