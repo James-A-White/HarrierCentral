@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.12+1226 (2026-07-26)
+
+### Improvements
+- **PackTrack photos**: arming the camera now preloads the selected runner's
+  photos, so during playback they appear from the start of the zoom sweep
+  instead of popping in at full size mid-animation.
+
 ## 2.15.11+1225 (2026-07-26)
 
 ### Fixes

@@ -656,6 +656,8 @@ class RunTrackerMapController extends GetxController
     _selectionWorker = ever<String?>(selectedRunnerId, (_) {
       _updateCameraForSelection();
       syncRunnerPickerToSelection(onlyIfMismatch: true, animated: false);
+      // Keep the new runner's showcase photos warm if the camera is armed.
+      if (photoShowcaseArmed.value) _precacheShowcasePhotos();
     });
     _mapEventsSub = mapController.mapEventStream.listen((event) {
       final zoom = event.camera.zoom;
@@ -1127,8 +1129,27 @@ class RunTrackerMapController extends GetxController
 
   void togglePhotoShowcase() {
     photoShowcaseArmed.value = !photoShowcaseArmed.value;
-    if (!photoShowcaseArmed.value && photoShowcase.value != null) {
+    if (photoShowcaseArmed.value) {
+      // Warm the images now so they're decoded before the zoom sweep starts,
+      // instead of loading mid-animation and popping in at full size.
+      _precacheShowcasePhotos();
+    } else if (photoShowcase.value != null) {
       _endShowcase();
+    }
+  }
+
+  /// Warms the ImageCache with the selected runner's showcase photos so the
+  /// zoom animation (and scrub display) shows the image immediately instead of
+  /// fetching it mid-sweep. Best-effort — matches the showcase widget's provider
+  /// (Image.network(url) → NetworkImage(url), full-size) so it hits the same
+  /// cache entry. Needs a live context.
+  void _precacheShowcasePhotos() {
+    final BuildContext? ctx = Get.context ?? navigatorKey.currentContext;
+    if (ctx == null) return;
+    for (final cue in _selectedRunnerCues) {
+      unawaited(
+        precacheImage(NetworkImage(cue.url), ctx).catchError((Object _) {}),
+      );
     }
   }
 
