@@ -46,6 +46,13 @@ class SongsPageController extends GetxController
 
   bool _isDisposed = false;
 
+  // Debounce so typing doesn't scan the whole song corpus (incl. full lyrics) on
+  // every keystroke; the filter runs ~250ms after typing stops.
+  Timer? _searchDebounce;
+  // Per-song lowercased search haystack (name + tuneOf + tags + lyrics), computed
+  // once and cached. Weak-keyed, so entries drop when songs reload.
+  final Expando<String> _songHaystack = Expando<String>();
+
   // Worker for the SongSessionNotifier ever() subscription. Stored so it is
   // properly disposed when the controller closes, preventing leaked listeners.
   Worker? _songWorker;
@@ -188,6 +195,7 @@ class SongsPageController extends GetxController
   @override
   void onClose() {
     _isDisposed = true;
+    _searchDebounce?.cancel();
     _songWorker?.dispose();
     searchController.dispose();
     searchFocusNode.dispose();
@@ -236,13 +244,25 @@ class SongsPageController extends GetxController
       if (!activeBawdyFilters.contains(s.bawdyRating.clamp(0, 3))) {
         return false;
       }
-      // Text search
+      // Text search — against the cached lowercased haystack.
       if (query.isEmpty) return true;
-      return s.songName.toLowerCase().contains(query) ||
-          (s.tuneOf?.toLowerCase().contains(query) ?? false) ||
-          (s.tags?.toLowerCase().contains(query) ?? false) ||
-          s.lyrics.toLowerCase().contains(query);
+      return _haystack(s).contains(query);
     }).toList();
+  }
+
+  /// Lowercased searchable text for a song (name, tune-of, tags, lyrics),
+  /// computed once and cached so keystrokes don't re-lowercase full lyric bodies.
+  String _haystack(SongsModel s) {
+    final cached = _songHaystack[s];
+    if (cached != null) return cached;
+    final h = <String>[
+      s.songName,
+      s.tuneOf ?? '',
+      s.tags ?? '',
+      s.lyrics,
+    ].join('\n').toLowerCase();
+    _songHaystack[s] = h;
+    return h;
   }
 
   void selectSong(SongsModel song) {
@@ -295,12 +315,16 @@ class SongsPageController extends GetxController
   }
 
   void clearSearch() {
+    _searchDebounce?.cancel();
     searchController.text = '';
     filterResults();
   }
 
   void onSearchChanged(String text) {
-    filterResults();
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 250), () {
+      if (!_isDisposed) filterResults();
+    });
   }
 
   String formatDuration(Duration d) {

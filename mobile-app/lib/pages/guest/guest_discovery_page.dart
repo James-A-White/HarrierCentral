@@ -266,7 +266,7 @@ class _RunList extends StatelessWidget {
       }
 
       final bool hasSaved = controller.savedSearches.isNotEmpty;
-      final bool hasLiveQuery = controller.searchQuery.value.trim().isNotEmpty;
+      final bool hasLiveQuery = controller.appliedQuery.trim().isNotEmpty;
 
       // ── Split view (saved home filters, no active search bar query) ───────
       if (hasSaved && !hasLiveQuery) {
@@ -327,7 +327,7 @@ class _RunList extends StatelessWidget {
           isFuture ? controller.filteredUpcoming : controller.filteredPast;
 
       if (runs.isEmpty) {
-        final bool hasQuery = controller.searchQuery.value.trim().isNotEmpty;
+        final bool hasQuery = controller.appliedQuery.trim().isNotEmpty;
         return _EmptyState(
           message: hasQuery
               ? 'No runs match your search.'

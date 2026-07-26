@@ -9,12 +9,24 @@ class GuestDiscoveryController extends GetxController {
   final RxBool hasErrorUpcoming = false.obs;
   final RxBool hasErrorPast = false.obs;
   final RxBool _pastTabLoaded = false.obs;
+  // searchQuery = the live text field value (updates per keystroke).
+  // _appliedQuery = the debounced value the heavy list filter actually uses, so
+  // typing doesn't re-filter up to 500 runs on every keystroke.
   final RxString searchQuery = ''.obs;
+  final RxString _appliedQuery = ''.obs;
+  Worker? _searchDebounce;
+  // Per-run cache of normalised (diacritics-stripped, lowercased) fields, so the
+  // filter doesn't re-normalise 6 fields per run on every keystroke. Expando is
+  // weak-keyed: entries vanish when a run is replaced on reload — no manual clear.
+  final Expando<List<String>> _fieldCache = Expando<List<String>>();
   final RxList<String> savedSearches = <String>[].obs;
 
   static const int maxSavedSearches = 5;
 
   bool get pastTabLoaded => _pastTabLoaded.value;
+
+  /// The debounced query the list is currently filtered by (reactive).
+  String get appliedQuery => _appliedQuery.value;
 
   List<GuestRunModel> get filteredUpcoming => _filter(_allUpcomingRuns);
   List<GuestRunModel> get filteredPast => _filter(_allPastRuns);
@@ -55,10 +67,28 @@ class GuestDiscoveryController extends GetxController {
       _splitBySaved(_allPastRuns);
 
   List<GuestRunModel> _filter(List<GuestRunModel> runs) {
-    final String q =
-        removeDiacritics(searchQuery.value.trim().toLowerCase());
+    final String q = removeDiacritics(_appliedQuery.value.trim().toLowerCase());
     if (q.isEmpty) return runs;
     return runs.where((GuestRunModel r) => _matches(r, q)).toList();
+  }
+
+  /// Normalised searchable fields for a run, computed once and cached.
+  List<String> _fields(GuestRunModel r) {
+    final cached = _fieldCache[r];
+    if (cached != null) return cached;
+    final fields = <String?>[
+      r.kennelName,
+      r.kennelShortName,
+      r.eventName,
+      r.locationCity,
+      r.locationCountry,
+      r.kennelContinent,
+    ]
+        .where((String? s) => s != null && s.isNotEmpty)
+        .map((String? s) => removeDiacritics(s!.toLowerCase()))
+        .toList();
+    _fieldCache[r] = fields;
+    return fields;
   }
 
   ({List<GuestRunModel> pinned, List<GuestRunModel> rest}) _splitBySaved(
@@ -78,22 +108,27 @@ class GuestDiscoveryController extends GetxController {
     return (pinned: pinned, rest: rest);
   }
 
-  bool _matches(GuestRunModel r, String q) {
-    bool hit(String? s) =>
-        s != null && removeDiacritics(s.toLowerCase()).contains(q);
-    return hit(r.kennelName) ||
-        hit(r.kennelShortName) ||
-        hit(r.eventName) ||
-        hit(r.locationCity) ||
-        hit(r.locationCountry) ||
-        hit(r.kennelContinent);
-  }
+  bool _matches(GuestRunModel r, String q) =>
+      _fields(r).any((String f) => f.contains(q));
 
   @override
   void onInit() {
     super.onInit();
+    // Debounce the live query into _appliedQuery so the list re-filters ~250ms
+    // after typing stops, not on every keystroke.
+    _searchDebounce = debounce<String>(
+      searchQuery,
+      (String q) => _appliedQuery.value = q,
+      time: const Duration(milliseconds: 250),
+    );
     _loadSavedSearches();
     loadUpcoming();
+  }
+
+  @override
+  void onClose() {
+    _searchDebounce?.dispose();
+    super.onClose();
   }
 
   void _loadSavedSearches() {
