@@ -265,21 +265,13 @@ class RunListItem extends StatelessWidget {
         // inconsistency James spotted. Clipping gives every card the same slight
         // rounding.
         clipBehavior: Clip.antiAlias,
-        child: Obx(() {
-          final isFlashing = Get.isRegistered<FutureRunListPageController>()
-              ? Get.find<FutureRunListPageController>()
-                  .flashingRunIds
-                  .contains(normalizeUuid(futureRun.event.eventId))
-              : false;
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            color: isFlashing
-                ? themeButtonColors.withValues(alpha: 0.35)
-                : isPastRun
-                    // 20% accent tint over the white card — past-section marker.
-                    ? themeButtonColors.withValues(alpha: 0.2)
-                    : Colors.white,
-            child: Column(
+        child: Builder(builder: (context) {
+          // Build the heavy card body ONCE per build(); the flash Obx below
+          // reuses it as an identical child, so a "new runs" flash only
+          // recolours the container instead of rebuilding every visible card.
+          // (Reading flashingRunIds.contains() subscribes to the whole shared
+          // collection, so a flash notifies every card at once.)
+          final Widget cardBody = Column(
               crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Row(
@@ -630,8 +622,24 @@ class RunListItem extends StatelessWidget {
 
             Obx(() => _getPaymentIconnsWidget()),
           ],
-        ),
-          );
+        );
+          return Obx(() {
+            final isFlashing = Get.isRegistered<FutureRunListPageController>()
+                ? Get.find<FutureRunListPageController>()
+                    .flashingRunIds
+                    .contains(normalizeUuid(futureRun.event.eventId))
+                : false;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              color: isFlashing
+                  ? themeButtonColors.withValues(alpha: 0.35)
+                  : isPastRun
+                      // 20% accent tint over the white card — past-section marker.
+                      ? themeButtonColors.withValues(alpha: 0.2)
+                      : Colors.white,
+              child: cardBody,
+            );
+          });
         }),
       ),
     );
