@@ -130,15 +130,12 @@ class RunTrackerMapController extends GetxController
   // mirrors it — so the sweep direction makes navigation direction obvious.
   final RxDouble showcasePan = 0.0.obs;
   double _showcaseDir = 1.0; // +1 forward, -1 reverse — captured at show start
-  // The showcase animation is driven off vsync frame callbacks (one update per
-  // rendered frame), not a wall-clock Timer — this coalesces redraws to the
-  // frame rate and avoids timer-vs-refresh phase-beating (a source of stutter).
-  int? _showcaseFrameCallbackId;
-  // Progress through the show curve in "virtual ms", advanced each frame by
+  Timer? _showcaseTicker;
+  // Progress through the show curve in "virtual ms", advanced each tick by
   // dt × effective speed (tilt magnitude, or playback speed when tilt is off).
   // Freezes when the effective speed is 0 (tilt held at the stop-point).
   double _showcaseVirtualMs = 0.0;
-  Duration? _lastShowcaseStamp; // previous frame timestamp (vsync clock)
+  DateTime? _lastShowcaseTick;
   bool _showcaseResumeAfter = false;
   // Zoom envelope (ms), matches web: IN → HOLD → OUT.
   static const int _showInMs = 450;
@@ -204,25 +201,6 @@ class RunTrackerMapController extends GetxController
 
   // Reused across loadPositions() calls to avoid creating a new http.Client each time.
   final GetPositionsApi _positionsApi = GetPositionsApi();
-
-  // Bumped whenever the photo caches below change (photos loaded/refreshed), so
-  // the memoised marker lists know to rebuild and pick up newly-resolved photos.
-  int _photoCacheVersion = 0;
-
-  // Memoised checkpoint/photo marker lists. The getters rebuild these only when
-  // the marker set would actually differ (see _markerCacheKey), returning the
-  // SAME list instance across the many per-frame reads during playback — so we
-  // don't reconstruct every marker widget, and (with _PhotoClusterLayer) don't
-  // re-cluster, 60x/second while nothing has changed.
-  List<Marker> _cachedCheckpointMarkers = const [];
-  String? _cachedCheckpointMarkersKey;
-  List<Marker> _cachedPhotoMarkers = const [];
-  String? _cachedPhotoMarkersKey;
-  // The photo-cluster layer widget, cached as a stable instance while its
-  // marker set is unchanged so FlutterMap skips re-clustering on frame-only
-  // rebuilds (see photoClusterLayer).
-  Widget? _cachedPhotoClusterLayer;
-  List<Marker>? _cachedPhotoClusterMarkers;
 
   // photoId (lowercase UUID) → blob URL, populated from hcapp_getRunPhotos.
   // Refreshed on every live-run auto-update tick so newly-taken photos appear.
@@ -348,107 +326,8 @@ class RunTrackerMapController extends GetxController
 
   Color runnerColor(String userId) => _colorForUser(userId);
 
-  List<Marker> get checkpointMarkers {
-    final key = _markerCacheKey(photosOnly: false);
-    if (key == _cachedCheckpointMarkersKey) return _cachedCheckpointMarkers;
-    _cachedCheckpointMarkersKey = key;
-    _cachedCheckpointMarkers = _buildCheckpointMarkers(photosOnly: false);
-    return _cachedCheckpointMarkers;
-  }
-
-  List<Marker> get photoCheckpointMarkers {
-    final key = _markerCacheKey(photosOnly: true);
-    if (key == _cachedPhotoMarkersKey) return _cachedPhotoMarkers;
-    _cachedPhotoMarkersKey = key;
-    _cachedPhotoMarkers = _buildCheckpointMarkers(photosOnly: true);
-    return _cachedPhotoMarkers;
-  }
-
-  /// The photo-checkpoint marker-cluster layer, cached as a stable widget
-  /// instance while the photo marker set is unchanged. FlutterMap is rebuilt
-  /// every frame during playback (runners move); handing it the identical layer
-  /// widget lets it skip re-running the clustering algorithm when nothing about
-  /// the photos changed. A camera move still re-clusters — the layer depends on
-  /// MapCamera and rebuilds itself when the map pans/zooms.
-  Widget get photoClusterLayer {
-    final List<Marker> markers = photoCheckpointMarkers;
-    if (_cachedPhotoClusterLayer != null &&
-        identical(markers, _cachedPhotoClusterMarkers)) {
-      return _cachedPhotoClusterLayer!;
-    }
-    _cachedPhotoClusterMarkers = markers;
-    _cachedPhotoClusterLayer = MarkerClusterLayerWidget(
-      options: MarkerClusterLayerOptions(
-        maxClusterRadius: 40,
-        size: const Size(52, 52),
-        spiderfyCircleRadius: 90,
-        markers: markers,
-        builder: (context, clustered) => _photoClusterBadge(clustered.length),
-      ),
-    );
-    return _cachedPhotoClusterLayer!;
-  }
-
-  Widget _photoClusterBadge(int count) => Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color: Colors.black87,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.photo_camera, color: Colors.white, size: 18),
-            Text(
-              '$count',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      );
-
-  /// A signature that changes only when the built marker set would differ. Used
-  /// to memoise [checkpointMarkers] / [photoCheckpointMarkers] so per-frame reads
-  /// during playback return a cached list instead of rebuilding every marker
-  /// widget. Captures: how many marks are revealed at the current playhead
-  /// ([_visibleMarkCount]), the marker scale (zoom), the trail filter, the
-  /// selected runner, the data size, and the photo-cache version.
-  String _markerCacheKey({required bool photosOnly}) {
-    final double? cutoff = timelineAvailable ? currentTimestampMs.value : null;
-    final String scale =
-        (photosOnly ? _photoMarkerScale() : _markerScale()).toStringAsFixed(3);
-    return '${_visibleMarkCount(photosOnly: photosOnly, cutoff: cutoff)}'
-        '|$scale'
-        '|${selectedTrailValues.join(",")}'
-        '|${selectedRunnerId.value ?? ""}'
-        '|${userPositions.length}'
-        '|$_photoCacheVersion';
-  }
-
-  /// Counts the marks of the requested kind (photos vs checkpoints) that are
-  /// revealed at [cutoff], from lane-visible runners. Cheap relative to building
-  /// the marker widgets — the flood of plain GPS points is skipped on the empty
-  /// type check; only actual marks are parsed.
-  int _visibleMarkCount({required bool photosOnly, required double? cutoff}) {
-    int n = 0;
-    for (final user in visibleRunners) {
-      for (final p in user.positions) {
-        if ((p.type ?? '').isEmpty) continue;
-        if (cutoff != null && p.timestampMs.toDouble() > cutoff) continue;
-        final parsed = _parseCheckpointType(p.type);
-        if (parsed == null) continue;
-        final bool isPhoto = parsed.type == HashRunPointTypes.photo;
-        if (photosOnly == isPhoto) n++;
-      }
-    }
-    return n;
-  }
+  List<Marker> get checkpointMarkers => _buildCheckpointMarkers(photosOnly: false);
+  List<Marker> get photoCheckpointMarkers => _buildCheckpointMarkers(photosOnly: true);
 
   List<Marker> _buildCheckpointMarkers({required bool photosOnly}) {
     if (userPositions.isEmpty) return const [];
@@ -710,6 +589,7 @@ class RunTrackerMapController extends GetxController
     });
     _mapEventsSub = mapController.mapEventStream.listen((event) {
       final zoom = event.camera.zoom;
+      debugPrint('Map zoom update: $zoom');
       final wasReady = _mapReady;
       _mapReady = true;
       if (zoom != _lastMarkerZoom) {
@@ -734,27 +614,13 @@ class RunTrackerMapController extends GetxController
     unawaited(_loadPhotoCache());
   }
 
-  // The compass fires many times a second. A sub-degree wedge rotation isn't
-  // visible, so ignore heading changes below this — it collapses the write rate
-  // to only meaningful movements. Paired with the isolated Obx around the viewer
-  // dot (see _viewerDot), so even these writes never rebuild the map.
-  static const double _headingUpdateThresholdDeg = 2.0;
-
   /// Subscribes to the device compass so the blue-dot wedge points where the
   /// viewer is facing. Heading is null on devices without a magnetometer, in
   /// which case the wedge simply never appears. Idempotent.
   void _startCompass() {
     _compassSub ??= FlutterCompass.events?.listen((event) {
       final h = event.heading;
-      if (h == null) return;
-      final prev = deviceHeading.value;
-      if (prev != null) {
-        // Smallest angle between the two headings, accounting for the 0/360 wrap.
-        var diff = (h - prev).abs();
-        if (diff > 180.0) diff = 360.0 - diff;
-        if (diff < _headingUpdateThresholdDeg) return; // sub-visible — skip
-      }
-      deviceHeading.value = h;
+      if (h != null) deviceHeading.value = h;
     });
   }
 
@@ -772,7 +638,7 @@ class RunTrackerMapController extends GetxController
     unawaited(_tiltSub?.cancel());
     unawaited(_compassSub?.cancel());
     _tiltTicker?.cancel();
-    _cancelShowcaseFrame();
+    _showcaseTicker?.cancel();
     _timelineWorker?.dispose();
     _selectionWorker?.dispose();
     unawaited(_mapEventsSub?.cancel());
@@ -850,10 +716,7 @@ class RunTrackerMapController extends GetxController
           }
         }
       }
-      if (updated) {
-        _photoCacheVersion++; // invalidate the memoised marker lists
-        update();
-      }
+      if (updated) update();
     } catch (e, s) {
       debugPrint('_loadPhotoCache error: $e');
       BootLogger.logError('[RunTrackerMapController._loadPhotoCache] eventId=${event.eventId}', e, s);
@@ -1202,7 +1065,7 @@ class RunTrackerMapController extends GetxController
 
   /// The rate that drives the photo zoom. In tilt mode it follows the tilt
   /// speed (0 in the neutral/stop band → freeze); it is SIGNED, and
-  /// [_showcaseFrame] applies it relative to the entry direction so rocking the
+  /// [_showcaseTick] applies it relative to the entry direction so rocking the
   /// phone scrubs the zoom in and out. With tilt off it follows the chosen
   /// (always-forward) playback speed.
   double get _showcaseSpeed {
@@ -1225,52 +1088,24 @@ class RunTrackerMapController extends GetxController
     showcaseZoom.value = 0.0;
     showcasePan.value = _showcaseDir; // start on the leading side
     _showcaseVirtualMs = 0.0;
-    _lastShowcaseStamp = null;
-    _scheduleShowcaseFrame();
+    _lastShowcaseTick = null;
+    _showcaseTicker?.cancel();
+    _showcaseTicker =
+        Timer.periodic(const Duration(milliseconds: 16), (_) => _showcaseTick());
   }
 
-  void _scheduleShowcaseFrame({bool rescheduling = false}) {
-    _showcaseFrameCallbackId = WidgetsBinding.instance
-        .scheduleFrameCallback(_showcaseFrame, rescheduling: rescheduling);
-  }
-
-  void _cancelShowcaseFrame() {
-    final int? id = _showcaseFrameCallbackId;
-    if (id != null) {
-      WidgetsBinding.instance.cancelFrameCallbackWithId(id);
-      _showcaseFrameCallbackId = null;
-    }
-  }
-
-  // Below this the zoom/pan has moved too little to be worth a redraw. On a
-  // [0..1] envelope that grows the photo ~200px, 0.004 is well under one pixel —
-  // it just suppresses the flurry of sub-visible writes during slow scrubbing.
-  static const double _showcaseCommitEpsilon = 0.004;
-
-  /// Vsync frame callback that advances the showcase. Runs at most once per
-  /// rendered frame; reschedules itself until the show ends.
-  void _showcaseFrame(Duration stamp) {
-    _showcaseFrameCallbackId = null;
+  void _showcaseTick() {
     if (photoShowcase.value == null) {
       _endShowcase();
       return;
     }
+    final now = DateTime.now();
+    final last = _lastShowcaseTick;
+    _lastShowcaseTick = now;
+    if (last == null) return; // first tick just seeds the clock
 
-    final Duration? last = _lastShowcaseStamp;
-    _lastShowcaseStamp = stamp;
-    if (last == null) {
-      _scheduleShowcaseFrame(rescheduling: true); // first frame just seeds the clock
-      return;
-    }
-
-    final double rawDtMs = (stamp - last).inMicroseconds / 1000.0;
-    if (rawDtMs <= 0) {
-      _scheduleShowcaseFrame(rescheduling: true);
-      return;
-    }
-    // Cap the step: a dropped frame / GC hitch (or a resume after backgrounding)
-    // should ease forward, not teleport the zoom to the end.
-    final double dtMs = rawDtMs > 100.0 ? 100.0 : rawDtMs;
+    final int dtMs = now.difference(last).inMilliseconds;
+    if (dtMs <= 0) return;
 
     // Progress is driven by the speed RELATIVE to the entry direction
     // (_showcaseDir): rock WITH the run to zoom the photo in, rock AGAINST it to
@@ -1301,6 +1136,7 @@ class RunTrackerMapController extends GetxController
       final o = (e - _showInMs - _showHoldMs) / _showOutMs;
       z = 1.0 - Curves.easeIn.transform(o.clamp(0.0, 1.0));
     }
+    showcaseZoom.value = z.clamp(0.0, 1.0);
 
     // Horizontal navigation cue: enter from the leading side (right when
     // forward), pass through centre at peak zoom, exit the trailing side (left).
@@ -1315,30 +1151,14 @@ class RunTrackerMapController extends GetxController
       final o = ((e - _showInMs - _showHoldMs) / _showOutMs).clamp(0.0, 1.0);
       pan = -_showcaseDir * o; // centre → trailing side
     }
-
-    _commitShowcaseValues(z.clamp(0.0, 1.0), pan);
-    _scheduleShowcaseFrame(rescheduling: true);
-  }
-
-  /// Writes zoom/pan only when they've moved a visible amount since the last
-  /// committed value (or hit a phase endpoint), so tiny sub-pixel steps don't
-  /// each trigger an overlay rebuild. GetX already suppresses identical writes;
-  /// this also suppresses near-identical ones.
-  void _commitShowcaseValues(double z, double pan) {
-    final bool zAtEnd = z == 0.0 || z == 1.0;
-    if (zAtEnd || (z - showcaseZoom.value).abs() >= _showcaseCommitEpsilon) {
-      showcaseZoom.value = z;
-    }
-    final bool panAtEnd = pan == 0.0;
-    if (panAtEnd || (pan - showcasePan.value).abs() >= _showcaseCommitEpsilon) {
-      showcasePan.value = pan;
-    }
+    showcasePan.value = pan;
   }
 
   void _endShowcase() {
-    _cancelShowcaseFrame();
+    _showcaseTicker?.cancel();
+    _showcaseTicker = null;
     _showcaseVirtualMs = 0.0;
-    _lastShowcaseStamp = null;
+    _lastShowcaseTick = null;
     photoShowcase.value = null;
     showcaseZoom.value = 0.0;
     showcasePan.value = 0.0;

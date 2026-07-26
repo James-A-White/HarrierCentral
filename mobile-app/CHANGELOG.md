@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.8+1222 (2026-07-26)
+
+### Fixes
+- **Live run map**: fixed a grey overlay that dimmed the whole map and made it
+  hard to use. Reverted the 2.15.7 map performance changes to restore the known-
+  good map; they will be re-applied after on-device testing.
+
 ## 2.15.7+1221 (2026-07-26)
 
 ### New Features

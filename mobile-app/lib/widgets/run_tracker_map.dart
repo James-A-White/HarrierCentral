@@ -153,9 +153,37 @@ class RunTrackerMap extends StatelessWidget {
                       ...controller.checkpointMarkers,
                     ],
                   ),
-                  // Cached stable instance while the photo set is unchanged, so
-                  // per-frame map rebuilds during playback don't re-cluster.
-                  controller.photoClusterLayer,
+                  MarkerClusterLayerWidget(
+                    options: MarkerClusterLayerOptions(
+                      maxClusterRadius: 40,
+                      size: const Size(52, 52),
+                      spiderfyCircleRadius: 90,
+                      markers: controller.photoCheckpointMarkers,
+                      builder: (context, markers) => Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.photo_camera, color: Colors.white, size: 18),
+                            Text(
+                              '${markers.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   MarkerLayer(markers: controller.runnerMarkers),
                 ],
               ),
@@ -172,19 +200,9 @@ class RunTrackerMap extends StatelessWidget {
                 ),
               // In-map photo showcase — grows a photo out of its pin to centre
               // and back as the playhead crosses it (topmost overlay).
-              //
-              // Wrapped in its OWN Obx so the ~60fps zoom/pan ticks rebuild only
-              // this overlay, NOT the enclosing map. The outer Obx builds
-              // FlutterMap + every marker/polyline/cluster layer; if the showcase
-              // Rx values were read there, each tick would re-run marker
-              // clustering and rebuild the whole map, flooding the pipeline and
-              // making playback jumpy. The overlay reads no map state, so scoping
-              // it here is safe.
               Positioned.fill(
-                child: Obx(
-                  () => LayoutBuilder(
-                    builder: (ctx, cons) => _buildPhotoShowcase(controller, cons),
-                  ),
+                child: LayoutBuilder(
+                  builder: (ctx, cons) => _buildPhotoShowcase(controller, cons),
                 ),
               ),
             ],
@@ -257,44 +275,39 @@ class RunTrackerMap extends StatelessWidget {
   /// so it degrades cleanly until the compass source is wired in).
   Widget _viewerDot(RunTrackerMapController controller) {
     const blue = Color(0xFF2A7FFF);
-    // Own Obx: the compass updates deviceHeading many times a second. Reading it
-    // here (not in the map's top-level Obx) means a heading change rebuilds only
-    // this dot's wedge — never FlutterMap or the marker-cluster layer.
-    return Obx(() {
-      final heading = controller.deviceHeading.value;
-      return Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          if (heading != null)
-            Transform.rotate(
-              angle: heading * math.pi / 180.0,
-              child: SizedBox(
-                width: 44,
-                height: 44,
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Icon(
-                    Icons.navigation,
-                    size: 16,
-                    color: blue.withValues(alpha: 0.9),
-                  ),
+    final heading = controller.deviceHeading.value;
+    return Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
+      children: [
+        if (heading != null)
+          Transform.rotate(
+            angle: heading * math.pi / 180.0,
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Icon(
+                  Icons.navigation,
+                  size: 16,
+                  color: blue.withValues(alpha: 0.9),
                 ),
               ),
             ),
-          Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              color: blue,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 2)],
-            ),
           ),
-        ],
-      );
-    });
+        Container(
+          width: 18,
+          height: 18,
+          decoration: BoxDecoration(
+            color: blue,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 3),
+            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 2)],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _locateButton(RunTrackerMapController controller) {
@@ -532,10 +545,6 @@ class RunTrackerMap extends StatelessWidget {
   /// shows the live tilt multiplier (blue) and turns red with a pause glyph in
   /// the neutral/paused band. Mirrors web's speed bubble.
   Widget _buildSpeedBubble(RunTrackerMapController controller) {
-    // Own Obx: tiltSpeed updates at accelerometer rate. Reading it here (not in
-    // the map's top-level Obx via the timeline panel) means a tilt change
-    // rebuilds only this bubble, never FlutterMap / the cluster layer.
-    return Obx(() {
     final bool tilt = controller.tiltEnabled.value;
     final bool paused = controller.tiltPaused;
     final double shown =
@@ -586,7 +595,6 @@ class RunTrackerMap extends StatelessWidget {
         child: child,
       ),
     );
-    });
   }
 
   /// Trail-type filter chips, inside the control panel (web layout). Horizontal
