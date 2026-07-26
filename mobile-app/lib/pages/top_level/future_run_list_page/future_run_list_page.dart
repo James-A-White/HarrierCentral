@@ -32,7 +32,7 @@ class FutureRunsListPage extends StatelessWidget {
                 listController.allRuns != null &&
                 listController.allRuns!.isNotEmpty;
             if (!listController.isChatsMode && !runsLoaded) {
-              return HcAppCircularProgressIndicator(key: UniqueKey());
+              return const HcAppCircularProgressIndicator();
             }
             return Stack(
               children: [

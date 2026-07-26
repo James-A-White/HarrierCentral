@@ -33,6 +33,11 @@ class _DownDownsPageState extends State<DownDownsPage> {
     super.initState();
     unawaited(_load());
     _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      // Don't hit the network while the app is backgrounded/inactive. The timer
+      // keeps ticking cheaply and resumes polling within 15s once foregrounded.
+      if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+        return;
+      }
       unawaited(_silentRefresh());
     });
   }

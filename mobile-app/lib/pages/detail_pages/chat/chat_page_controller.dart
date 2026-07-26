@@ -89,8 +89,10 @@ class ChatPageController extends GetxController {
 
     _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final incomingEventId = message.data['EventId'] as String?;
-      BootLogger.logError('[ChatPage FCM] received', 'incomingEventId=$incomingEventId localEventId=$eventId data=${message.data}', null);
+      // Only act on (and log) pushes for THIS chat — every other foreground push
+      // used to hit an error-level log with a full data interpolation.
       if (incomingEventId != null && eventId.asUuid == incomingEventId.asUuid) {
+        BootLogger.logBreadcrumb('[ChatPage FCM] delta for $incomingEventId');
         _upgradeOwnMessagesToDelivered();
         unawaited(_fetchDelta());
       }

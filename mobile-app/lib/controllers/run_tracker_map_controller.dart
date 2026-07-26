@@ -710,7 +710,6 @@ class RunTrackerMapController extends GetxController
     });
     _mapEventsSub = mapController.mapEventStream.listen((event) {
       final zoom = event.camera.zoom;
-      debugPrint('Map zoom update: $zoom');
       final wasReady = _mapReady;
       _mapReady = true;
       if (zoom != _lastMarkerZoom) {

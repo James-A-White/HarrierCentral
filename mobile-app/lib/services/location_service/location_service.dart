@@ -55,6 +55,14 @@ class LocationService extends GetxService {
 
   // Throttle for the memory-usage breadcrumb emitted while tracking (~60s).
   DateTime? _lastMemLogTime;
+  // Throttle for the on-disk lastLocationUpdate pref (~60s). The only reader
+  // (CommonQueries.isAtRunStart) treats a fix as fresh within 15 min, so we
+  // don't need to write GetStorage on every single position event.
+  DateTime? _lastLocationPrefTime;
+  // Throttle for the O(n) session-distance recompute (~10s). Filtering the whole
+  // growing track on every point is O(n²) over a run; the distance readout does
+  // not need per-point precision.
+  DateTime? _lastSessionDistanceTime;
 
   // Filtered distance for the current tracking session.
   // Updated on every GPS point using the same TrackPointFilter as the map view.
@@ -551,7 +559,14 @@ class LocationService extends GetxService {
     // GPS coordinates to plain unencrypted GetStorage is unnecessary.
     _cachedLat = lat;
     _cachedLon = lon;
-    await setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
+    // Persist the fix time at most ~once a minute (see _lastLocationPrefTime),
+    // instead of a disk write on every position event.
+    final nowPref = DateTime.now();
+    if (_lastLocationPrefTime == null ||
+        nowPref.difference(_lastLocationPrefTime!).inSeconds >= 60) {
+      _lastLocationPrefTime = nowPref;
+      await setDatePref(DatePrefsEnum.lastLocationUpdate, nowPref);
+    }
 
     // 3. Update the shared state in DeviceInfoService — but only if it's
     // registered. A background location callback can fire after the app was
@@ -655,9 +670,17 @@ class LocationService extends GetxService {
         alt: double.parse(altitude.toStringAsFixed(2)),
         timestampMs: tsMs,
       ));
-      final filtered = _sessionFilter.filterAndInterpolate(_sessionTrack);
-      filteredSessionDistanceMeters.value =
-          TrackPointFilter.cumulativeDistanceMeters(filtered);
+      // Recompute the filtered distance at most ~every 10s (or on a forced flush
+      // — mark/stop), not on every point, to avoid an O(n²) refilter over the run.
+      final nowDist = DateTime.now();
+      if (forceFlush ||
+          _lastSessionDistanceTime == null ||
+          nowDist.difference(_lastSessionDistanceTime!).inSeconds >= 10) {
+        _lastSessionDistanceTime = nowDist;
+        final filtered = _sessionFilter.filterAndInterpolate(_sessionTrack);
+        filteredSessionDistanceMeters.value =
+            TrackPointFilter.cumulativeDistanceMeters(filtered);
+      }
     }
 
     if (kDebugMode) {

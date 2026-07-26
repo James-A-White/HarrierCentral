@@ -85,11 +85,11 @@ class KennelMemberListState extends State<KennelMembersList>
       end: const RelativeRect.fromLTRB(0, 204, 0, 0),
     ).animate(_animationController);
 
+    // Consumed by RotationTransition (line ~776), which animates itself each
+    // frame — no per-frame setState needed. (_filterPanelAnimation and
+    // _hasherListAnimation likewise drive Slide/PositionedTransition.)
     _buttonAnimation =
-        Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController)
-          ..addListener(() {
-            setStateIfMounted(() {});
-          });
+        Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController);
   }
 
   Future<void> _initLoad() async {

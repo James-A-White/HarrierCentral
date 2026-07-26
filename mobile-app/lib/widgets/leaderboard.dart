@@ -141,6 +141,7 @@ class LeaderboardState extends State<Leaderboard>
 
   @override
   void dispose() {
+    _timespanTabController.dispose();
     _leaderScrollController.dispose();
     super.dispose();
   }

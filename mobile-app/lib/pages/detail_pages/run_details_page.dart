@@ -116,7 +116,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.sizeOf(context).height,
         child: _isUpdating
-            ? Center(child: HcAppCircularProgressIndicator(key: UniqueKey()))
+            ? const Center(child: HcAppCircularProgressIndicator())
             : RunTabs(
                 futureRun: _futureRun,
                 openToTab: widget.openToTab,

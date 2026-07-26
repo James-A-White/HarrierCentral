@@ -252,7 +252,7 @@ class _RunList extends StatelessWidget {
           : controller.isLoadingPast.value;
 
       if (loading) {
-        return Center(child: HcAppCircularProgressIndicator(key: UniqueKey()));
+        return const Center(child: HcAppCircularProgressIndicator());
       }
 
       final bool error = isFuture

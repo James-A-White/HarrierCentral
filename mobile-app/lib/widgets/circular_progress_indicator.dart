@@ -8,8 +8,8 @@ class HcAppCircularProgressIndicator extends StatelessWidget {
     this.color1,
     this.color2,
     this.size,
-    required Key key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final Color? color1;
   final Color? color2;
