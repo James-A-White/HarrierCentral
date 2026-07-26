@@ -1251,51 +1251,96 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                 );
                                               },
                                             )
-                                          : SingleChildScrollView(
-                                              controller: _scrollController,
-                                              child: Column(
-                                                children: <Widget>[
-                                                  StaggeredGrid.count(
-                                                    mainAxisSpacing: 8.0,
-                                                    crossAxisSpacing: 8.0,
-                                                    crossAxisCount: 4,
-                                                    axisDirection:
-                                                        AxisDirection.down,
-                                                    children: snapshot.data!.map((
-                                                      PackListAggregate e,
-                                                    ) {
-                                                      return StaggeredGridTile.count(
-                                                        crossAxisCellCount:
-                                                            (e.hem.isHare != 0)
-                                                            ? 2
-                                                            : 1,
-                                                        mainAxisCellCount:
-                                                            (e.hem.isHare != 0)
-                                                            ? 2
-                                                            : 1,
-                                                        child: GestureDetector(
-                                                          onTap: () async {
-                                                            if (e
-                                                                    .hasher
-                                                                    .photo !=
-                                                                null) {
-                                                              await _getHasherZoomablePhoto(
-                                                                e.hasher.photo!,
-                                                                e.displayName,
-                                                              );
-                                                            }
-                                                          },
-                                                          child: _hasherPhoto(
-                                                            e,
-                                                            true,
+                                          : Builder(
+                                              builder: (BuildContext context) {
+                                                // Hares (few) render eagerly as
+                                                // 2x2 tiles up top; the large
+                                                // member list is a LAZY SliverGrid
+                                                // below so a big pack no longer
+                                                // builds every tile at once.
+                                                final List<PackListAggregate>
+                                                    hares = snapshot.data!
+                                                        .where(
+                                                          (PackListAggregate e) =>
+                                                              e.hem.isHare != 0,
+                                                        )
+                                                        .toList();
+                                                final List<PackListAggregate>
+                                                    members = snapshot.data!
+                                                        .where(
+                                                          (PackListAggregate e) =>
+                                                              e.hem.isHare == 0,
+                                                        )
+                                                        .toList();
+                                                return CustomScrollView(
+                                                  controller: _scrollController,
+                                                  slivers: <Widget>[
+                                                    if (hares.isNotEmpty)
+                                                      SliverToBoxAdapter(
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                            bottom: 8.0,
+                                                          ),
+                                                          child:
+                                                              StaggeredGrid.count(
+                                                            mainAxisSpacing: 8.0,
+                                                            crossAxisSpacing: 8.0,
+                                                            crossAxisCount: 4,
+                                                            axisDirection:
+                                                                AxisDirection
+                                                                    .down,
+                                                            children: hares
+                                                                .map(
+                                                                  (
+                                                                    PackListAggregate
+                                                                        e,
+                                                                  ) =>
+                                                                      StaggeredGridTile
+                                                                          .count(
+                                                                    crossAxisCellCount:
+                                                                        2,
+                                                                    mainAxisCellCount:
+                                                                        2,
+                                                                    child:
+                                                                        _packTile(
+                                                                      e,
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                                .toList(),
                                                           ),
                                                         ),
-                                                      );
-                                                    }).toList(),
-                                                  ),
-                                                  const SizedBox(height: 100.0),
-                                                ],
-                                              ),
+                                                      ),
+                                                    SliverGrid(
+                                                      gridDelegate:
+                                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                                        crossAxisCount: 4,
+                                                        mainAxisSpacing: 8.0,
+                                                        crossAxisSpacing: 8.0,
+                                                      ),
+                                                      delegate:
+                                                          SliverChildBuilderDelegate(
+                                                        (
+                                                          BuildContext context,
+                                                          int index,
+                                                        ) =>
+                                                            _packTile(
+                                                          members[index],
+                                                        ),
+                                                        childCount:
+                                                            members.length,
+                                                      ),
+                                                    ),
+                                                    const SliverToBoxAdapter(
+                                                      child: SizedBox(
+                                                        height: 100.0,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
                                             ),
                                     ),
                                   ),
@@ -1310,6 +1355,19 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           }
         },
       );
+  }
+
+  /// A single pack-grid tile (photo + tap-to-zoom). Shared by the eager hare
+  /// header and the lazy member grid.
+  Widget _packTile(PackListAggregate e) {
+    return GestureDetector(
+      onTap: () async {
+        if (e.hasher.photo != null) {
+          await _getHasherZoomablePhoto(e.hasher.photo!, e.displayName);
+        }
+      },
+      child: _hasherPhoto(e, true),
+    );
   }
 
   Future<void> _getHasherZoomablePhoto(String photo, String dispName) async {
