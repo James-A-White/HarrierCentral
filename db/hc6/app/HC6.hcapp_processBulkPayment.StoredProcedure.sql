@@ -127,7 +127,10 @@ BEGIN TRY
 
         -- Authorization: feature "Bulk payment" (see /hc-authorizations).
         DECLARE @bulkPayAllowed SMALLINT;
-        EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'bulkPayment', @allowed = @bulkPayAllowed OUTPUT;
+        DECLARE @bulkPayIsHare SMALLINT = CASE WHEN EXISTS (
+                SELECT 1 FROM HC.HasherEventMap
+                WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+        EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'bulkPayment', @isHareOfEvent = @bulkPayIsHare, @allowed = @bulkPayAllowed OUTPUT;
 
         IF (@bulkPayAllowed = 0)
         BEGIN

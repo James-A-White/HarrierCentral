@@ -79,7 +79,10 @@ DECLARE @rptKennelId     UNIQUEIDENTIFIER;
 SELECT @rptKennelId = KennelId FROM HC.Event WHERE id = @eventId;
 
 DECLARE @rptAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @rptKennelId, @functionKey = 'viewPaymentReport', @allowed = @rptAllowed OUTPUT;
+DECLARE @rptIsHare SMALLINT = CASE WHEN EXISTS (
+        SELECT 1 FROM HC.HasherEventMap
+        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @rptKennelId, @functionKey = 'viewPaymentReport', @isHareOfEvent = @rptIsHare, @allowed = @rptAllowed OUTPUT;
 
 IF (@rptAllowed = 0)
 BEGIN
