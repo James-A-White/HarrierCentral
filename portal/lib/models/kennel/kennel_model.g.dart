@@ -36,6 +36,7 @@ _KennelModel _$KennelModelFromJson(Map<String, dynamic> json) => _KennelModel(
   defaultRunDayOfWeek: (json['defaultRunDayOfWeek'] as num?)?.toInt() ?? 1,
   allowSelfPayment: (json['allowSelfPayment'] as num).toInt(),
   allowNegativeCredit: (json['allowNegativeCredit'] as num).toInt(),
+  allowCredit: (json['allowCredit'] as num?)?.toInt() ?? 1,
   cityId: const UuidConverter().fromJson(json['cityId'] as String),
   provinceStateId: const UuidConverter().fromJson(
     json['provinceStateId'] as String,
@@ -155,6 +156,7 @@ Map<String, dynamic> _$KennelModelToJson(
   'defaultRunDayOfWeek': instance.defaultRunDayOfWeek,
   'allowSelfPayment': instance.allowSelfPayment,
   'allowNegativeCredit': instance.allowNegativeCredit,
+  'allowCredit': instance.allowCredit,
   'cityId': const UuidConverter().toJson(instance.cityId),
   'provinceStateId': const UuidConverter().toJson(instance.provinceStateId),
   'countryId': const UuidConverter().toJson(instance.countryId),

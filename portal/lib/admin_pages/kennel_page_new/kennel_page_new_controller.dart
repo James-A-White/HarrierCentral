@@ -195,6 +195,9 @@ class KennelPageFormController extends TabUiController
   /// Default event price for non-members.
   final RxDouble defaultEventPriceForNonMembers = 0.0.obs;
 
+  /// Allow credit payments for this kennel at all (master toggle).
+  final RxBool allowCredit = true.obs;
+
   /// Allow negative credit balance for hashers.
   final RxBool allowNegativeCredit = false.obs;
 
@@ -402,6 +405,7 @@ class KennelPageFormController extends TabUiController
         originalData.defaultEventPriceForMembers;
     defaultEventPriceForNonMembers.value =
         originalData.defaultEventPriceForNonMembers;
+    allowCredit.value = originalData.allowCredit > 0;
     allowNegativeCredit.value = originalData.allowNegativeCredit > 0;
     allowSelfPayment.value = originalData.allowSelfPayment > 0;
   }

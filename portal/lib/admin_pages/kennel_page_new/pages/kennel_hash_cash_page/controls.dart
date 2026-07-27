@@ -25,6 +25,7 @@ extension KennelHashCashControlsExtension on KennelPageFormController {
     _registerNonMemberPriceControl(tabKey, tabIndex);
 
     // Payment settings
+    _registerAllowCreditControl(tabKey, tabIndex);
     _registerAllowNegativeCreditControl(tabKey, tabIndex);
     _registerAllowSelfPaymentControl(tabKey, tabIndex);
   }
@@ -126,6 +127,41 @@ extension KennelHashCashControlsExtension on KennelPageFormController {
   // ---------------------------------------------------------------------------
 
   /// Registers the allow negative credit control (switch).
+  void _registerAllowCreditControl(String tabKey, int tabIndex) {
+    final fieldKey = '${tabKey}_allowCredit';
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.checkbox,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Allow Credit Payments',
+        FontAwesome5Solid.credit_card,
+        'When enabled, hashers can pay using hash credit and the Credit '
+            'option appears on the payment screen.\n\n'
+            'Turn this off if your kennel does not use a credit system — the '
+            'credit payment option will be hidden.',
+      ),
+      editedFieldValue: (originalData.allowCredit > 0).toString(),
+      originalFieldValue: (originalData.allowCredit > 0).toString(),
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Allow credit payments',
+      includeOverrideButton: false,
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        final boolValue = value == 'true';
+        allowCredit.value = boolValue;
+        editedData.value = editedData.value.copyWith(
+          allowCredit: boolValue ? 1 : 0,
+        );
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+      onUndo: () {
+        allowCredit.value = originalData.allowCredit > 0;
+      },
+    );
+  }
+
   void _registerAllowNegativeCreditControl(String tabKey, int tabIndex) {
     final fieldKey = '${tabKey}_allowNegativeCredit';
 

@@ -69,9 +69,14 @@ class KennelHashCashTabContent extends StatelessWidget {
   Widget _buildPaymentSettingsSection(bool isMobileScreen) {
     return RowColumn(
       isRow: !isMobileScreen,
-      rowFlexValues: const [1, 1],
-      rowLeftPaddingValues: const [0.0, 10.0],
+      rowFlexValues: const [1, 1, 1],
+      rowLeftPaddingValues: const [0.0, 10.0, 10.0],
       children: [
+        _buildSwitchTile(
+          controlKey: '${KennelTabType.hashCash.key}_allowCredit',
+          value: controller.allowCredit,
+          label: 'Allow credit payments',
+        ),
         _buildSwitchTile(
           controlKey: '${KennelTabType.hashCash.key}_allowNegativeCredit',
           value: controller.allowNegativeCredit,
