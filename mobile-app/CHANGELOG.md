@@ -1,5 +1,26 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.14+1228 (2026-07-27)
+
+### New Features
+- **Kennels can disable credit**: a kennel can now turn its credit system off
+  (Portal → Hash Cash → "Allow credit payments"). When off, the Credit option no
+  longer appears on the payment screen for that kennel. On by default — no change
+  for kennels that use credit.
+
+### Fixes
+- **Account setup**: entering an invite code (or creating an account) now shows a
+  clear error if device authorization fails, instead of silently doing nothing.
+- **Payment report**: opening a hasher with no payment record now shows a proper
+  message and a Close button, and no longer risks marking them "not paid".
+
+### Improvements
+- **PackTrack**: a Label (custom-text) mark is always available to hares, even if a
+  kennel's trail-mark set leaves it out.
+- **Faster & fresher**: after the background start-up sync, all tabs (History,
+  Kennels, Songs, Map) now refresh with the latest data — previously only the Runs
+  tab did, so the others could show stale data until revisited.
+
 ## 2.15.13+1227 (2026-07-26)
 
 ### Improvements

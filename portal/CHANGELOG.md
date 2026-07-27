@@ -2,6 +2,15 @@
 
 ---
 
+## 2.0.45+680 — 2026-07-27
+
+### New Features
+- **Hash Cash settings**: new "Allow credit payments" toggle. Turn it off for a
+  kennel that doesn't use a credit system and the Credit option is hidden on the
+  app's payment screen. On by default.
+
+---
+
 ## 2.0.44+679 — 2026-07-25
 
 ### New Features
