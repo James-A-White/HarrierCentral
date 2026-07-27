@@ -58,7 +58,9 @@ class HcAdminToolsPage extends StatelessWidget {
                   title: 'Permissions',
                   subtitle: 'Set which roles and flags grant each function',
                   icon: MaterialCommunityIcons.shield_key,
-                  onTap: () => Get.to<PermissionsPage>(PermissionsPage.new),
+                  onTap: () => Get.to<PermissionsPage>(
+                    () => PermissionsPage(allKennels: allKennels),
+                  ),
                 ),
             ],
           ),

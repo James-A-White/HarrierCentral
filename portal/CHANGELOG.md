@@ -2,6 +2,16 @@
 
 ---
 
+## 2.0.47+682 — 2026-07-27
+
+### New Features
+- **Permissions editor — per-kennel overrides**: a Scope picker adds "Global
+  default" plus each kennel. In a kennel scope, each function is tri-state —
+  grant, revoke, or inherit the global default — letting a single kennel deviate
+  without affecting anyone else.
+
+---
+
 ## 2.0.46+681 — 2026-07-27
 
 ### New Features

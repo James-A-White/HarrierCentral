@@ -61,19 +61,26 @@ class PermissionGrantor {
   final int sortOrder;
 }
 
-/// The full matrix payload: catalogs + the set of current global grants,
-/// keyed as "grantorId:functionId".
+/// The full matrix payload: catalogs, the set of current global grants (keyed as
+/// "grantorId:functionId"), and — when a kennel scope was requested — that
+/// kennel's override rows (same key → Allowed: 1 grant / -1 revoke).
 class PermissionMatrixData {
   const PermissionMatrixData({
     required this.functions,
     required this.grantors,
     required this.grants,
+    this.kennelOverrides = const <String, int>{},
   });
 
   final List<PermissionFunction> functions;
   final List<PermissionGrantor> grantors;
   final Set<String> grants;
+  final Map<String, int> kennelOverrides;
 
   bool isGranted(int grantorId, int functionId) =>
       grants.contains('$grantorId:$functionId');
+
+  /// Kennel override for a cell: 1 (grant), -1 (revoke), or null (inherit global).
+  int? overrideFor(int grantorId, int functionId) =>
+      kennelOverrides['$grantorId:$functionId'];
 }

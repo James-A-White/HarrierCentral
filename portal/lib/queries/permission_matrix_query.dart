@@ -16,12 +16,16 @@ String _token(String procName) =>
 // ---------------------------------------------------------------------------
 
 /// Loads the function catalog, grantor catalog and current global grants.
+/// When [publicKennelId] is supplied, also loads that kennel's overrides.
 /// Returns null on any error / not authorised.
-Future<PermissionMatrixData?> queryPermissionMatrix() async {
+Future<PermissionMatrixData?> queryPermissionMatrix({
+  String? publicKennelId,
+}) async {
   final body = <String, String?>{
     'queryType': 'getPermissionMatrix',
     'deviceId': _deviceId(),
     'accessToken': _token('hcportal_getPermissionMatrix'),
+    if (publicKennelId != null) 'publicKennelId': publicKennelId,
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
@@ -48,11 +52,19 @@ Future<PermissionMatrixData?> queryPermissionMatrix() async {
         '${((g as Map<String, dynamic>)['GrantorId'] as num).toInt()}:'
             '${(g['FunctionId'] as num).toInt()}',
     };
+    final kennelOverrides = <String, int>{
+      if (decoded.length > 4)
+        for (final dynamic o in decoded[4] as List<dynamic>)
+          '${((o as Map<String, dynamic>)['GrantorId'] as num).toInt()}:'
+                  '${(o['FunctionId'] as num).toInt()}':
+              (o['Allowed'] as num).toInt(),
+    };
 
     return PermissionMatrixData(
       functions: functions,
       grantors: grantors,
       grants: grants,
+      kennelOverrides: kennelOverrides,
     );
   } on Exception catch (e) {
     if (kDebugMode) debugPrint('queryPermissionMatrix parse error: $e');
@@ -64,18 +76,28 @@ Future<PermissionMatrixData?> queryPermissionMatrix() async {
 // Save the global grants for one grantor
 // ---------------------------------------------------------------------------
 
-/// Replaces the given grantor's global grants with [functionKeys].
+/// Saves a grantor's grants. Global scope: pass [functionKeys] (granted set).
+/// Kennel scope: pass [publicKennelId] + [grantedKeys] (+1) and [revokedKeys] (-1);
+/// functions in neither list inherit the global default.
 /// Returns true on success.
 Future<bool> savePermissionMatrix({
   required String grantorKey,
-  required List<String> functionKeys,
+  List<String> functionKeys = const [],
+  String? publicKennelId,
+  List<String> grantedKeys = const [],
+  List<String> revokedKeys = const [],
 }) async {
   final body = <String, String?>{
     'queryType': 'savePermissionMatrix',
     'deviceId': _deviceId(),
     'accessToken': _token('hcportal_savePermissionMatrix'),
     'grantorKey': grantorKey,
-    'functionKeys': functionKeys.join('|'),
+    if (publicKennelId == null) 'functionKeys': functionKeys.join('|'),
+    if (publicKennelId != null) ...<String, String?>{
+      'publicKennelId': publicKennelId,
+      'grantedKeys': grantedKeys.join('|'),
+      'revokedKeys': revokedKeys.join('|'),
+    },
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
