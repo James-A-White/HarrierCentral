@@ -2,7 +2,8 @@ CREATE OR ALTER PROCEDURE [HC6].[CheckKennelPermission]
     @userId       UNIQUEIDENTIFIER,
     @kennelId     UNIQUEIDENTIFIER,
     @functionKey  NVARCHAR(80),          -- HC.PermissionFunction.FunctionKey
-    @allowed      SMALLINT OUTPUT        -- 1 = allowed, 0 = denied
+    @allowed      SMALLINT OUTPUT,       -- 1 = allowed, 0 = denied
+    @isHareOfEvent SMALLINT = 0          -- 1 when the caller is the designated hare of the event
 AS
 -- =====================================================================
 -- Procedure: HC6.CheckKennelPermission
@@ -49,7 +50,8 @@ SET @allowed = CASE WHEN EXISTS (
     FROM HC.PermissionFunction f
     JOIN HC.PermissionRole g
       ON ( (g.GrantorType = 'mmRole'  AND (@mm    & g.Bit) <> 0)
-        OR (g.GrantorType = 'appFlag' AND (@flags & g.Bit) <> 0) )
+        OR (g.GrantorType = 'appFlag' AND (@flags & g.Bit) <> 0)
+        OR (g.GrantorType = 'hare'    AND @isHareOfEvent = 1) )
     LEFT JOIN HC.RolePermission kr
            ON kr.FunctionId = f.id AND kr.GrantorId = g.id AND kr.KennelId = @kennelId
     LEFT JOIN HC.RolePermission gr

@@ -41,12 +41,12 @@ BEGIN TRY
                     f.FunctionKey AS [key],
                     SUM(CASE WHEN g.GrantorType = 'mmRole'  THEN g.Bit ELSE 0 END) AS mmMask,
                     SUM(CASE WHEN g.GrantorType = 'appFlag' THEN g.Bit ELSE 0 END) AS flagMask,
-                    f.HareScoped AS hareScoped
+                    MAX(CASE WHEN g.GrantorType = 'hare' THEN 1 ELSE 0 END) AS hareScoped
                 FROM HC.PermissionFunction f
                 LEFT JOIN HC.RolePermission rp
                        ON rp.FunctionId = f.id AND rp.KennelId IS NULL AND rp.Allowed = 1
                 LEFT JOIN HC.PermissionRole g ON g.id = rp.GrantorId
-                GROUP BY f.id, f.FunctionKey, f.HareScoped, f.SortOrder
+                GROUP BY f.id, f.FunctionKey, f.SortOrder
                 ORDER BY f.SortOrder
                 FOR JSON PATH
             ) AS functions
@@ -76,7 +76,7 @@ BEGIN TRY
                     f.FunctionKey AS [key],
                     SUM(CASE WHEN g.GrantorType = 'mmRole'  AND e.eff = 1 THEN g.Bit ELSE 0 END) AS mmMask,
                     SUM(CASE WHEN g.GrantorType = 'appFlag' AND e.eff = 1 THEN g.Bit ELSE 0 END) AS flagMask,
-                    f.HareScoped AS hareScoped
+                    MAX(CASE WHEN g.GrantorType = 'hare' AND e.eff = 1 THEN 1 ELSE 0 END) AS hareScoped
                 FROM (SELECT DISTINCT FunctionId FROM HC.RolePermission WHERE KennelId = kn.id) kf
                 JOIN HC.PermissionFunction f ON f.id = kf.FunctionId
                 CROSS JOIN HC.PermissionRole g
@@ -89,7 +89,7 @@ BEGIN TRY
                          WHEN kr.Allowed = -1 THEN 0
                          WHEN kr.Allowed = 0  THEN COALESCE(gr.Allowed, 0)
                          ELSE COALESCE(gr.Allowed, 0) END) e
-                GROUP BY f.id, f.FunctionKey, f.HareScoped, f.SortOrder
+                GROUP BY f.id, f.FunctionKey, f.SortOrder
                 ORDER BY f.SortOrder
                 FOR JSON PATH
             ) AS functions

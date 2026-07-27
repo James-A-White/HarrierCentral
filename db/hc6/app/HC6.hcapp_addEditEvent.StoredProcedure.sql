@@ -226,11 +226,10 @@ IF (@eventFacebookId LIKE '%break%') SET @eventFacebookId = '';
 -- runs. Run-scoped: a designated hare for an EXISTING event may edit that run.
 -- ---------------------------------------------------------------
 DECLARE @evtAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'createEditRuns', @allowed = @evtAllowed OUTPUT;
-IF (@evtAllowed = 0 AND @eventId IS NOT NULL AND EXISTS (
+DECLARE @evtIsHare SMALLINT = CASE WHEN @eventId IS NOT NULL AND EXISTS (
         SELECT 1 FROM HC.HasherEventMap
-        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))
-    SET @evtAllowed = 1;
+        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'createEditRuns', @isHareOfEvent = @evtIsHare, @allowed = @evtAllowed OUTPUT;
 IF (@evtAllowed = 0)
 BEGIN
     SET @errorCode = 1321; SET @errorType = 13; SET @errorId = NEWID();

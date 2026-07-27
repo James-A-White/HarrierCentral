@@ -183,11 +183,10 @@ BEGIN TRY
             WHERE hem.id = @hasherEventMapId;
 
         DECLARE @payAllowed SMALLINT;
-        EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @payKennelId, @functionKey = 'takePayment', @allowed = @payAllowed OUTPUT;
-        IF (@payAllowed = 0 AND @eventId IS NOT NULL AND EXISTS (
+        DECLARE @payIsHare SMALLINT = CASE WHEN @eventId IS NOT NULL AND EXISTS (
                 SELECT 1 FROM HC.HasherEventMap
-                WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))
-            SET @payAllowed = 1;
+                WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+        EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @payKennelId, @functionKey = 'takePayment', @isHareOfEvent = @payIsHare, @allowed = @payAllowed OUTPUT;
         IF (@payAllowed = 0)
         BEGIN
             SET @errorCode = 1340; SET @errorType = 13; SET @errorId = NEWID();
