@@ -59,6 +59,17 @@ class KennelPlatformAdminTabContent extends StatelessWidget {
             'Run history is always visible regardless of kennel status.',
             style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
           ),
+          if ((box.get(HIVE_PLATFORM_ADMIN_CAN_MANAGE_PERMISSIONS) as bool?) ??
+              false) ...[
+            const SizedBox(height: 32),
+            const Divider(),
+            const SizedBox(height: 8),
+            HelperWidgets().categoryLabelWidget('Permission Overrides'),
+            const SizedBox(height: 12),
+            KennelPermissionsSection(
+              publicKennelId: controller.editedData.value.kennelPublicId.uuid,
+            ),
+          ],
         ],
       ),
     );

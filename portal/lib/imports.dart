@@ -51,6 +51,7 @@ export 'package:hcportal/models/permission_matrix_models.dart';
 export 'package:hcportal/queries/permission_matrix_query.dart';
 export 'package:hcportal/admin_pages/permissions/permissions_controller.dart';
 export 'package:hcportal/admin_pages/permissions/permissions_page.dart';
+export 'package:hcportal/admin_pages/permissions/kennel_permissions_section.dart';
 export 'package:hcportal/admin_pages/promotions/promotion_page.dart';
 export 'package:hcportal/admin_pages/run_list_page_ui.dart';
 export 'package:hcportal/admin_pages/usage_data_page/usage_data_page_controller.dart';

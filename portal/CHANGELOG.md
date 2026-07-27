@@ -2,6 +2,17 @@
 
 ---
 
+## 2.0.48+683 — 2026-07-27
+
+### Improvements
+- **Permissions UI reorganised**: the platform Permissions tool is now purely
+  **global defaults** (the kennel scope picker is removed). Per-kennel **overrides**
+  now live in each kennel's editor — the platform-admin (status) tab has a new
+  "Permission Overrides" section with the same grantor + tri-state controls, in
+  context next to the kennel's Active/Inactive/Defunct setting.
+
+---
+
 ## 2.0.47+682 — 2026-07-27
 
 ### New Features

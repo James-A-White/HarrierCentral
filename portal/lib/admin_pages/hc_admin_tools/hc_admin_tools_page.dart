@@ -56,11 +56,9 @@ class HcAdminToolsPage extends StatelessWidget {
               if (canManagePermissions)
                 _ToolCard(
                   title: 'Permissions',
-                  subtitle: 'Set which roles and flags grant each function',
+                  subtitle: 'Global defaults — per-kennel overrides live in each kennel',
                   icon: MaterialCommunityIcons.shield_key,
-                  onTap: () => Get.to<PermissionsPage>(
-                    () => PermissionsPage(allKennels: allKennels),
-                  ),
+                  onTap: () => Get.to<PermissionsPage>(PermissionsPage.new),
                 ),
             ],
           ),
