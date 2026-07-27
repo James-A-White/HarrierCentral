@@ -6,7 +6,7 @@ import 'package:hcportal/imports.dart';
 /// disabled (you can't do things in an area you can't enter).
 const Map<String, String> kSectionGate = <String, String>{
   'Runs, Events, and Hash Cash': 'enterRunAdmin',
-  'Members': 'enterKennelAdmin',
+  'Kennel Tools': 'enterKennelAdmin',
 };
 
 /// Controller for a single kennel's permission overrides (tagged by

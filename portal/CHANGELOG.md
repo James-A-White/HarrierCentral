@@ -2,6 +2,16 @@
 
 ---
 
+## 2.0.55+690 — 2026-07-27
+
+### Improvements
+- **More permission regrouping**: Award list + Manage Down Downs moved under
+  "Runs, Events, and Hash Cash" (gated by View Run Admin Tools). "Members"
+  renamed to "Kennel Tools", now including Manage kennel settings (gated by View
+  Kennel Admin Tools).
+
+---
+
 ## 2.0.54+689 — 2026-07-27
 
 ### Improvements
