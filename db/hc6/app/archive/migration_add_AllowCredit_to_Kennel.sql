@@ -14,33 +14,34 @@
 -- MUST be disabled before ALTER and re-enabled after, so the add-column does
 -- not re-stamp every row and force a full re-replication to all clients.
 --
+-- Each statement is its own batch (GO) so the ALTER commits before the final
+-- verification SELECT references the new column.
+--
 -- ⚠️  RUN MANUALLY, ONCE. Do NOT add to the deploy script. After running,
 --     move this file to db/hc6/app/archive/.
 -- =====================================================================
-SET XACT_ABORT ON;
-BEGIN TRANSACTION;
 
 -- 1. Silence the UpdatedAt trigger for the duration of the schema change.
 DISABLE TRIGGER [HC].[trgUpdateModifiedOnDateForKennels] ON [HC].[Kennel];
+GO
 
 -- 2. Add the column, defaulting every existing row to 1 (credit allowed).
 IF NOT EXISTS (
     SELECT 1 FROM sys.columns
     WHERE object_id = OBJECT_ID('HC.Kennel') AND name = 'AllowCredit'
 )
-BEGIN
     ALTER TABLE [HC].[Kennel]
         ADD [AllowCredit] SMALLINT NOT NULL
         CONSTRAINT [DF_Kennel_AllowCredit] DEFAULT ((1));
-END
+GO
 
 -- 3. Re-enable the trigger.
 ENABLE TRIGGER [HC].[trgUpdateModifiedOnDateForKennels] ON [HC].[Kennel];
-
-COMMIT TRANSACTION;
+GO
 
 -- Sanity check.
 SELECT COUNT(*) AS totalKennels,
        SUM(CASE WHEN AllowCredit = 1 THEN 1 ELSE 0 END) AS creditAllowed,
        SUM(CASE WHEN AllowCredit = 0 THEN 1 ELSE 0 END) AS creditDisabled
 FROM [HC].[Kennel];
+GO
