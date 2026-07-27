@@ -56,7 +56,7 @@ class PermissionsPage extends StatelessWidget {
         }
         return Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
+            constraints: const BoxConstraints(maxWidth: 920),
             child: Column(
               children: [
                 Padding(
@@ -102,16 +102,46 @@ class _GlobalChecklist extends StatelessWidget {
   final PermissionsController controller;
   final PermissionMatrixData data;
 
+  // Uniform row height so subtitle / no-subtitle rows keep an even rhythm and
+  // the two columns stay aligned.
+  static const double _rowHeight = 52;
+
   @override
   Widget build(BuildContext context) {
     final functions = [...data.functions]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-    final rows = <Widget>[];
+    final blocks = <Widget>[];
     String? currentArea;
+    final pending = <PermissionFunction>[];
+
+    void flushSection() {
+      if (pending.isEmpty) return;
+      final items = [for (final f in pending) _item(f)];
+      pending.clear();
+      final grid = <Widget>[];
+      for (var i = 0; i < items.length; i += 2) {
+        grid.add(Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: items[i]),
+            const SizedBox(width: 24),
+            Expanded(
+                child: i + 1 < items.length ? items[i + 1] : const SizedBox()),
+          ],
+        ));
+      }
+      blocks.add(Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start, children: grid),
+      ));
+    }
+
     for (final f in functions) {
       if (f.featureArea != currentArea) {
+        flushSection();
         currentArea = f.featureArea;
-        rows.add(Padding(
+        blocks.add(Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
           child: Text(f.featureArea.toUpperCase(),
               style: const TextStyle(
@@ -121,33 +151,59 @@ class _GlobalChecklist extends StatelessWidget {
                   color: Color(0xFF6B7280))),
         ));
       }
-      final gateKey = kSectionGate[f.featureArea];
-      final isGate = gateKey != null && f.functionKey == gateKey;
-      rows.add(Obx(() {
-        final row = CheckboxListTile(
-          dense: true,
-          controlAffinity: ListTileControlAffinity.leading,
-          value: controller.checks[f.id] ?? false,
-          onChanged: (v) => controller.toggle(f.id, v ?? false),
-          title: Text(f.displayName),
-          subtitle: f.hareScoped
-              ? const Text('Also granted to a run’s hare',
-                  style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)))
-              : null,
-        );
-        // Section gate: if the "View … Admin Tools" gate is not granted, dim +
-        // disable the rest of the section.
-        if (gateKey != null && !isGate) {
-          final gate =
-              data.functions.firstWhereOrNull((x) => x.functionKey == gateKey);
-          if (gate != null && controller.checks[gate.id] != true) {
-            return Opacity(opacity: 0.4, child: IgnorePointer(child: row));
-          }
-        }
-        return row;
-      }));
+      pending.add(f);
     }
+    flushSection();
+
     return ListView(
-        padding: const EdgeInsets.only(bottom: 24), children: rows);
+        padding: const EdgeInsets.only(bottom: 24), children: blocks);
+  }
+
+  Widget _item(PermissionFunction f) {
+    final gateKey = kSectionGate[f.featureArea];
+    final isGate = gateKey != null && f.functionKey == gateKey;
+    return Obx(() {
+      final row = SizedBox(
+        height: _rowHeight,
+        child: InkWell(
+          onTap: () =>
+              controller.toggle(f.id, !(controller.checks[f.id] ?? false)),
+          child: Row(
+            children: [
+              Checkbox(
+                value: controller.checks[f.id] ?? false,
+                onChanged: (v) => controller.toggle(f.id, v ?? false),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(f.displayName,
+                        style: const TextStyle(fontSize: 15, height: 1.1)),
+                    if (f.hareScoped)
+                      const Text('Also granted to a run’s hare',
+                          style: TextStyle(
+                              fontSize: 11.5,
+                              height: 1.05,
+                              color: Color(0xFF9CA3AF))),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      // Section gate: if the "View … Admin Tools" gate is not granted, dim +
+      // disable the rest of the section.
+      if (gateKey != null && !isGate) {
+        final gate =
+            data.functions.firstWhereOrNull((x) => x.functionKey == gateKey);
+        if (gate != null && controller.checks[gate.id] != true) {
+          return Opacity(opacity: 0.4, child: IgnorePointer(child: row));
+        }
+      }
+      return row;
+    });
   }
 }

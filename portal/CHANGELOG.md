@@ -2,6 +2,16 @@
 
 ---
 
+## 2.0.56+691 — 2026-07-27
+
+### Improvements
+- **Two-column permissions editors**: both the global defaults page and the
+  per-kennel override section now lay each section out in two columns and use a
+  fixed row height, so subtitle vs. no-subtitle rows keep an even vertical
+  rhythm. Global page widened to make room for the columns.
+
+---
+
 ## 2.0.55+690 — 2026-07-27
 
 ### Improvements

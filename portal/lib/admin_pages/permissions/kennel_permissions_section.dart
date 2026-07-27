@@ -195,12 +195,32 @@ class KennelPermissionsSection extends StatelessWidget {
       KennelPermissionsController controller, PermissionMatrixData data) {
     final functions = [...data.functions]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-    final rows = <Widget>[];
+    final blocks = <Widget>[];
     String? currentArea;
+    final pending = <PermissionFunction>[];
+
+    void flushSection() {
+      if (pending.isEmpty) return;
+      final items = [for (final f in pending) _functionItem(controller, data, f)];
+      pending.clear();
+      for (var i = 0; i < items.length; i += 2) {
+        blocks.add(Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: items[i]),
+            const SizedBox(width: 24),
+            Expanded(
+                child: i + 1 < items.length ? items[i + 1] : const SizedBox()),
+          ],
+        ));
+      }
+    }
+
     for (final f in functions) {
       if (f.featureArea != currentArea) {
+        flushSection();
         currentArea = f.featureArea;
-        rows.add(Padding(
+        blocks.add(Padding(
           padding: const EdgeInsets.fromLTRB(0, 12, 0, 4),
           child: Text(f.featureArea.toUpperCase(),
               style: const TextStyle(
@@ -210,28 +230,42 @@ class KennelPermissionsSection extends StatelessWidget {
                   color: Color(0xFF6B7280))),
         ));
       }
-      final gateKey = kSectionGate[f.featureArea];
-      final isGate = gateKey != null && f.functionKey == gateKey;
-      rows.add(Obx(() {
-        final v = controller.checks[f.id];
-        final inheritedGranted = controller.globalGranted(f.id);
-        final stateText = v == 1
-            ? 'Grant (override)'
-            : v == -1
-                ? 'Revoke (override)'
-                : 'Inherit — inherits: ${inheritedGranted ? 'granted' : 'denied'}';
-        final row = InkWell(
+      pending.add(f);
+    }
+    flushSection();
+    return blocks;
+  }
+
+  // Uniform row height so the two columns stay aligned row-for-row.
+  static const double _rowHeight = 58;
+
+  Widget _functionItem(KennelPermissionsController controller,
+      PermissionMatrixData data, PermissionFunction f) {
+    final gateKey = kSectionGate[f.featureArea];
+    final isGate = gateKey != null && f.functionKey == gateKey;
+    return Obx(() {
+      final v = controller.checks[f.id];
+      final inheritedGranted = controller.globalGranted(f.id);
+      final stateText = v == 1
+          ? 'Grant (override)'
+          : v == -1
+              ? 'Revoke (override)'
+              : 'Inherit — inherits: ${inheritedGranted ? 'granted' : 'denied'}';
+      final row = SizedBox(
+        height: _rowHeight,
+        child: InkWell(
           // Cycle: inherit (null) → grant (1) → revoke (-1) → inherit.
           onTap: () =>
               controller.setValue(f.id, v == null ? 1 : (v == 1 ? -1 : null)),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               children: [
                 _triStateChip(v, inheritedGranted),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(f.displayName,
@@ -247,25 +281,24 @@ class KennelPermissionsSection extends StatelessWidget {
               ],
             ),
           ),
-        );
-        // Section gate: if this section's "View … Admin Tools" resolves to
-        // denied (revoke, or inherit-denied), dim + disable the rest of it.
-        if (gateKey != null && !isGate) {
-          final gate =
-              data.functions.firstWhereOrNull((x) => x.functionKey == gateKey);
-          if (gate != null) {
-            final gv = controller.checks[gate.id];
-            final gateOpen =
-                gv == 1 || (gv == null && controller.globalGranted(gate.id));
-            if (!gateOpen) {
-              return Opacity(opacity: 0.4, child: IgnorePointer(child: row));
-            }
+        ),
+      );
+      // Section gate: if this section's "View … Admin Tools" resolves to
+      // denied (revoke, or inherit-denied), dim + disable the rest of it.
+      if (gateKey != null && !isGate) {
+        final gate =
+            data.functions.firstWhereOrNull((x) => x.functionKey == gateKey);
+        if (gate != null) {
+          final gv = controller.checks[gate.id];
+          final gateOpen =
+              gv == 1 || (gv == null && controller.globalGranted(gate.id));
+          if (!gateOpen) {
+            return Opacity(opacity: 0.4, child: IgnorePointer(child: row));
           }
         }
-        return row;
-      }));
-    }
-    return rows;
+      }
+      return row;
+    });
   }
 
   /// Tri-state indicator: grant = green + bold white check, revoke = deep-red +
