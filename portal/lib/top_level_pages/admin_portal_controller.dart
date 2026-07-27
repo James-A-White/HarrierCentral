@@ -496,6 +496,8 @@ class AdminPortalController extends GetxController {
             (row['CanManageNewsflash'] as int? ?? 0) != 0);
         await box.put(HIVE_PLATFORM_ADMIN_CAN_EDIT_KENNEL,
             (row['CanEditKennel'] as int? ?? 0) != 0);
+        await box.put(HIVE_PLATFORM_ADMIN_CAN_MANAGE_PERMISSIONS,
+            (row['CanManagePermissions'] as int? ?? 0) != 0);
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[getHcAdminPrivileges] exception: $e');

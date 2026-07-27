@@ -1,0 +1,41 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getPermissionMatrix",
+  "version": "1.0.0",
+  "description": "Loads the data-driven permission matrix (Permissions V2) for the super-admin editor: the function catalog, the grantor catalog (mismanagement roles + app-access flags; SuperAdmin bypass excluded), and the current GLOBAL grants. Auth via ValidatePortalAuth; caller must hold SuperAdmin (0x40000000) in some kennel.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Auth: device ID used to resolve the hasher and validate the token." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Auth: short-lived portal token validated via ValidatePortalAuth." }
+  ],
+  "rowsets": [
+    { "index": 0, "name": "Envelope", "description": "{ Success, ErrorMessage }. Success=0 on auth failure or when caller is not a super admin.", "columns": [
+      { "name": "Success", "type": "INT", "nullable": false, "description": "1 = ok, 0 = error" },
+      { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Error text when Success=0" }
+    ]},
+    { "index": 1, "name": "Functions", "description": "Function catalog (matrix columns). Present only when Success=1.", "columns": [
+      { "name": "id", "type": "INT", "nullable": false, "description": "PermissionFunction.id" },
+      { "name": "FunctionKey", "type": "NVARCHAR(80)", "nullable": false, "description": "Stable function key" },
+      { "name": "DisplayName", "type": "NVARCHAR(120)", "nullable": false, "description": "Human label" },
+      { "name": "FeatureArea", "type": "NVARCHAR(60)", "nullable": false, "description": "Grouping heading" },
+      { "name": "HareScoped", "type": "SMALLINT", "nullable": false, "description": "1 if a run's hare also gets it" },
+      { "name": "SortOrder", "type": "INT", "nullable": false, "description": "Display order" }
+    ]},
+    { "index": 2, "name": "Grantors", "description": "Grantor catalog (matrix rows: mismanagement roles + app-access flags). Present only when Success=1.", "columns": [
+      { "name": "id", "type": "INT", "nullable": false, "description": "PermissionRole.id" },
+      { "name": "GrantorKey", "type": "NVARCHAR(80)", "nullable": false, "description": "Stable grantor key" },
+      { "name": "DisplayName", "type": "NVARCHAR(120)", "nullable": false, "description": "Human label" },
+      { "name": "GrantorType", "type": "NVARCHAR(20)", "nullable": false, "description": "mmRole | appFlag" },
+      { "name": "SortOrder", "type": "INT", "nullable": false, "description": "Display order" }
+    ]},
+    { "index": 3, "name": "GlobalGrants", "description": "Current global grants (KennelId NULL, granted). Present only when Success=1.", "columns": [
+      { "name": "GrantorId", "type": "INT", "nullable": false, "description": "PermissionRole.id" },
+      { "name": "FunctionId", "type": "INT", "nullable": false, "description": "PermissionFunction.id" }
+    ]}
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never change the rowset order (0=envelope, 1=functions, 2=grantors, 3=grants)"
+  ]
+}

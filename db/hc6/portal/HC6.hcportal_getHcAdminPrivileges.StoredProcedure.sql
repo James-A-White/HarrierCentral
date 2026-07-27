@@ -44,7 +44,8 @@ END
 SELECT
     COALESCE(pa.CanViewMonitor,    0) AS CanViewMonitor,
     COALESCE(pa.CanManageNewsflash, 0) AS CanManageNewsflash,
-    COALESCE(pa.CanEditKennel,     0) AS CanEditKennel
+    COALESCE(pa.CanEditKennel,     0) AS CanEditKennel,
+    COALESCE(pa.CanManagePermissions, 0) AS CanManagePermissions
 FROM (SELECT 1 AS Dummy) AS base
 LEFT OUTER JOIN HC.PlatformAdmin pa
     ON pa.UserId = @hasherId AND pa.removed = 0;

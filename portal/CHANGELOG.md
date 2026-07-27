@@ -2,6 +2,16 @@
 
 ---
 
+## 2.0.46+681 — 2026-07-27
+
+### New Features
+- **Permissions editor** (super-admin, HC Admin Tools → Permissions): pick a
+  mismanagement role or app-access flag and toggle which functions it grants,
+  grouped by feature area. Saving recompiles the permission matrix and delivers
+  it live to the apps — the front end of the data-driven permissions system.
+
+---
+
 ## 2.0.45+680 — 2026-07-27
 
 ### New Features

@@ -1,0 +1,27 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_savePermissionMatrix",
+  "version": "1.0.0",
+  "description": "Saves the GLOBAL grants for one grantor (Permissions V2 editor): replaces the grantor's global RolePermission rows with the supplied granted function keys, then recompiles the JSON projections (nonApi_compilePermissionMatrix) in the same transaction. Auth via ValidatePortalAuth; caller must hold HC.PlatformAdmin.CanManagePermissions.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Auth: device ID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Auth: portal token." },
+    { "name": "grantorKey", "type": "NVARCHAR(80)", "nullable": true, "mapsToColumn": "PermissionRole.GrantorKey", "description": "The grantor (role/flag) being edited." },
+    { "name": "functionKeys", "type": "NVARCHAR(MAX)", "nullable": true, "mapsToColumn": null, "description": "'|'-delimited PermissionFunction.FunctionKey list = the checked functions. Empty = grantor grants nothing." }
+  ],
+  "rowsets": [
+    { "index": 0, "name": "Envelope", "description": "{ Success, ErrorMessage }.", "columns": [
+      { "name": "Success", "type": "INT", "nullable": false, "description": "1 = saved, 0 = error/not authorised" },
+      { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Error text when Success=0" }
+    ]}
+  ],
+  "sideEffects": [
+    "Replaces the grantor's global grant rows (KennelId NULL) in HC.RolePermission",
+    "Recompiles HC.ServerStatus.PermissionMatrixJson + per-kennel HC.Kennel.PermissionOverrideJson and bumps the watermark"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "functionKeys delimiter is '|' (never comma)",
+    "Never change the Success/ErrorMessage envelope shape"
+  ]
+}

@@ -6,11 +6,13 @@ class HcAdminToolsPage extends StatelessWidget {
     this.allKennels = const [],
     this.canViewMonitor = false,
     this.canManageNewsflash = false,
+    this.canManagePermissions = false,
   });
 
   final List<HasherKennelsModel> allKennels;
   final bool canViewMonitor;
   final bool canManageNewsflash;
+  final bool canManagePermissions;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +42,7 @@ class HcAdminToolsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
               ],
-              if (canManageNewsflash)
+              if (canManageNewsflash) ...[
                 _ToolCard(
                   title: 'Newsflash',
                   subtitle: 'Create and manage portal newsflashes',
@@ -48,6 +50,15 @@ class HcAdminToolsPage extends StatelessWidget {
                   onTap: () => Get.to<NewsflashManagementPage>(
                     () => NewsflashManagementPage(allKennels: allKennels),
                   ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (canManagePermissions)
+                _ToolCard(
+                  title: 'Permissions',
+                  subtitle: 'Set which roles and flags grant each function',
+                  icon: MaterialCommunityIcons.shield_key,
+                  onTap: () => Get.to<PermissionsPage>(PermissionsPage.new),
                 ),
             ],
           ),
