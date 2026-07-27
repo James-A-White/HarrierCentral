@@ -481,6 +481,7 @@ class KennelsListPageController extends GetxController {
       KennelFeature.enterKennelAdmin,
       appAccessFlags: kennel.hkm?.appAccessFlags ?? 0,
       mismanagementRoles: kennel.hkm?.mismanagementRoles ?? 0,
+      kennelOverrideJson: kennel.kennel.permissionOverrideJson,
     )) {
       showHcSnackbar(
         'You don\'t have admin access for this kennel.',

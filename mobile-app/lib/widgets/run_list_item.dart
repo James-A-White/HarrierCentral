@@ -24,6 +24,7 @@ class RunListItemController extends GetxController {
       KennelFeature.reviewPhotos,
       appAccessFlags: futureRun.extensions.appAccessFlags,
       mismanagementRoles: futureRun.extensions.mismanagementRoles,
+      kennelOverrideJson: futureRun.kennel.permissionOverrideJson,
     )) {
       unawaited(KennelPhotoService()
           .loadPendingPhotoSummary(futureRun.kennel.kennelId));

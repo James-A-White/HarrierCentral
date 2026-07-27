@@ -68,6 +68,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
             appAccessFlags: _futureRun.extensions.appAccessFlags,
             mismanagementRoles: _futureRun.extensions.mismanagementRoles,
             isHareOfEvent: _futureRun.extensions.isHare == 1,
+            kennelOverrideJson: _futureRun.kennel.permissionOverrideJson,
           ))
               ? Container()
               : IconButton(

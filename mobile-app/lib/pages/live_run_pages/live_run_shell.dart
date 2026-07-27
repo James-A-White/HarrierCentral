@@ -47,6 +47,7 @@ class LiveRunShell extends StatelessWidget {
       KennelFeature.manageDownDowns,
       appAccessFlags: run.extensions.appAccessFlags,
       mismanagementRoles: run.extensions.mismanagementRoles,
+      kennelOverrideJson: run.kennel.permissionOverrideJson,
     );
 
     final pages = <Widget>[

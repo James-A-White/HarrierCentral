@@ -400,6 +400,15 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 525 — Per-kennel permission override JSON (Permissions V2)
+    MigrationsModel(
+      dbVersion: 525,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colPermissionOverrideJson} TEXT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
   ];
 
   static Future<void> createTables(

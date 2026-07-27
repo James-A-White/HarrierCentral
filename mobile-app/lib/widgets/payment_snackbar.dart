@@ -41,11 +41,13 @@ class PaymentSnackBar extends SnackBar {
       KennelFeature.manageAttendance,
       appAccessFlags: eventAggregate.extensions.appAccessFlags,
       mismanagementRoles: eventAggregate.extensions.mismanagementRoles,
+      kennelOverrideJson: eventAggregate.kennel.permissionOverrideJson,
     );
     final bool canTakePayment = canAccessFeature(
       KennelFeature.takePayment,
       appAccessFlags: eventAggregate.extensions.appAccessFlags,
       mismanagementRoles: eventAggregate.extensions.mismanagementRoles,
+      kennelOverrideJson: eventAggregate.kennel.permissionOverrideJson,
     );
     return TextScaleFactorClamper(
       textScaleFactor: 1.50,

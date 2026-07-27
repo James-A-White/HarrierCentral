@@ -211,6 +211,7 @@ class RunAdminPage extends StatelessWidget {
       appAccessFlags: aaFlags,
       mismanagementRoles: mmFlags,
       isHareOfEvent: isHare,
+      kennelOverrideJson: aggregate.kennel.permissionOverrideJson,
     );
 
     // ── On the Day ──────────────────────────────────────────────────

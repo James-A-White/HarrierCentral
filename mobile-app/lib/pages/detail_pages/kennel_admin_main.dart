@@ -210,6 +210,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
       f,
       appAccessFlags: agg.hkm?.appAccessFlags ?? 0,
       mismanagementRoles: agg.hkm?.mismanagementRoles ?? 0,
+      kennelOverrideJson: agg.kennel.permissionOverrideJson,
     );
     return Column(
       children: <Widget>[

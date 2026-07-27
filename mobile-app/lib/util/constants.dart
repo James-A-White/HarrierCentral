@@ -179,7 +179,7 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 524;
+const int DB_VERSION = 525;
 
 const double CLEAR_LATLONG = -2.0;
 
@@ -221,9 +221,10 @@ const int hasherPref_150 = 6 * 4;
 const int hasherPref_250 = 7 * 4;
 const int hasherPref_500 = 8 * 4;
 
-const int mmAuthIsGm = 0x40000000; // TODO(James): Needs implementation
-const int mmAuthCanGrantPermissions =
-    0x20000000; // TODO(James): Needs implementation
+// (Removed orphaned mmAuthIsGm / mmAuthCanGrantPermissions — the data-driven
+// permission matrix (Permissions V2) now governs role→function grants, so these
+// unused, bit-colliding constants are gone. "Assign roles / flags" are matrix
+// functions gated via CheckKennelPermission.)
 
 // ======================================
 // APP AUTHORIZATIONS

@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.16+1230 (2026-07-27)
+
+### Improvements
+- **Per-kennel permissions**: the app now honours per-kennel permission overrides
+  (set in the portal) — a kennel can grant or revoke specific admin functions for
+  its roles without affecting other kennels. Completes the data-driven permissions
+  system; no change for kennels on the defaults.
+
 ## 2.15.15+1229 (2026-07-27)
 
 ### Improvements

@@ -402,6 +402,7 @@ class RunAndKennelMapController extends GetxController {
       KennelFeature.enterKennelAdmin,
       appAccessFlags: hkmItem?.appAccessFlags ?? 0,
       mismanagementRoles: hkmItem?.mismanagementRoles ?? 0,
+      kennelOverrideJson: kennelItem.permissionOverrideJson,
     )) {
       showHcSnackbar(
         'You don\'t have admin access for this kennel.',

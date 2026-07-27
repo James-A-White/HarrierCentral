@@ -44,6 +44,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
       KennelFeature.manageDownDowns,
       appAccessFlags: kennelAgg?.hkm?.appAccessFlags ?? 0,
       mismanagementRoles: kennelAgg?.hkm?.mismanagementRoles ?? 0,
+      kennelOverrideJson: kennelAgg?.kennel.permissionOverrideJson,
     );
     try {
       final result = await _service.getDownDowns(
