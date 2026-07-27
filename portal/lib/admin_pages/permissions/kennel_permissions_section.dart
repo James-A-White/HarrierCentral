@@ -1,6 +1,14 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 
+/// The "View … Admin Tools" entry-gate function for each section. When that gate
+/// resolves to denied for the selected grantor, the rest of the section is
+/// disabled (you can't do things in an area you can't enter).
+const Map<String, String> kSectionGate = <String, String>{
+  'Runs & Events': 'enterRunAdmin',
+  'Members': 'enterKennelAdmin',
+};
+
 /// Controller for a single kennel's permission overrides (tagged by
 /// publicKennelId). Edits accumulate across grantors and are flushed by the
 /// kennel editor's general Save (see KennelPageFormController.save); this
@@ -202,6 +210,8 @@ class KennelPermissionsSection extends StatelessWidget {
                   color: Color(0xFF6B7280))),
         ));
       }
+      final gateKey = kSectionGate[f.featureArea];
+      final isGate = gateKey != null && f.functionKey == gateKey;
       rows.add(Obx(() {
         final v = controller.checks[f.id];
         final inheritedGranted = controller.globalGranted(f.id);
@@ -210,7 +220,7 @@ class KennelPermissionsSection extends StatelessWidget {
             : v == -1
                 ? 'Revoke (override)'
                 : 'Inherit — inherits: ${inheritedGranted ? 'granted' : 'denied'}';
-        return InkWell(
+        final row = InkWell(
           // Cycle: inherit (null) → grant (1) → revoke (-1) → inherit.
           onTap: () =>
               controller.setValue(f.id, v == null ? 1 : (v == 1 ? -1 : null)),
@@ -238,6 +248,21 @@ class KennelPermissionsSection extends StatelessWidget {
             ),
           ),
         );
+        // Section gate: if this section's "View … Admin Tools" resolves to
+        // denied (revoke, or inherit-denied), dim + disable the rest of it.
+        if (gateKey != null && !isGate) {
+          final gate =
+              data.functions.firstWhereOrNull((x) => x.functionKey == gateKey);
+          if (gate != null) {
+            final gv = controller.checks[gate.id];
+            final gateOpen =
+                gv == 1 || (gv == null && controller.globalGranted(gate.id));
+            if (!gateOpen) {
+              return Opacity(opacity: 0.4, child: IgnorePointer(child: row));
+            }
+          }
+        }
+        return row;
       }));
     }
     return rows;

@@ -2,6 +2,16 @@
 
 ---
 
+## 2.0.53+688 — 2026-07-27
+
+### Improvements
+- **Admin-tools gating in the Permissions editor**: "View Kennel/Run Admin Tools"
+  now sit at the top of their sections and gate them — when the gate is denied
+  (revoke or inherit-denied), the rest of that section is dimmed and disabled
+  (you can't do things in an area you can't enter).
+
+---
+
 ## 2.0.52+687 — 2026-07-27
 
 ### New Features / Improvements

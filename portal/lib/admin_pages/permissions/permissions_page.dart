@@ -121,18 +121,31 @@ class _GlobalChecklist extends StatelessWidget {
                   color: Color(0xFF6B7280))),
         ));
       }
-      rows.add(Obx(() => CheckboxListTile(
-            dense: true,
-            controlAffinity: ListTileControlAffinity.leading,
-            value: controller.checks[f.id] ?? false,
-            onChanged: (v) => controller.toggle(f.id, v ?? false),
-            title: Text(f.displayName),
-            subtitle: f.hareScoped
-                ? const Text('Also granted to a run’s hare',
-                    style:
-                        TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)))
-                : null,
-          )));
+      final gateKey = kSectionGate[f.featureArea];
+      final isGate = gateKey != null && f.functionKey == gateKey;
+      rows.add(Obx(() {
+        final row = CheckboxListTile(
+          dense: true,
+          controlAffinity: ListTileControlAffinity.leading,
+          value: controller.checks[f.id] ?? false,
+          onChanged: (v) => controller.toggle(f.id, v ?? false),
+          title: Text(f.displayName),
+          subtitle: f.hareScoped
+              ? const Text('Also granted to a run’s hare',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)))
+              : null,
+        );
+        // Section gate: if the "View … Admin Tools" gate is not granted, dim +
+        // disable the rest of the section.
+        if (gateKey != null && !isGate) {
+          final gate =
+              data.functions.firstWhereOrNull((x) => x.functionKey == gateKey);
+          if (gate != null && controller.checks[gate.id] != true) {
+            return Opacity(opacity: 0.4, child: IgnorePointer(child: row));
+          }
+        }
+        return row;
+      }));
     }
     return ListView(
         padding: const EdgeInsets.only(bottom: 24), children: rows);
