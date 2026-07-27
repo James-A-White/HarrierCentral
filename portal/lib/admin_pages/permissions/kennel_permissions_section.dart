@@ -5,7 +5,7 @@ import 'package:hcportal/imports.dart';
 /// resolves to denied for the selected grantor, the rest of the section is
 /// disabled (you can't do things in an area you can't enter).
 const Map<String, String> kSectionGate = <String, String>{
-  'Runs & Events': 'enterRunAdmin',
+  'Runs, Events, and Hash Cash': 'enterRunAdmin',
   'Members': 'enterKennelAdmin',
 };
 

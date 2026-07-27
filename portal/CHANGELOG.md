@@ -2,6 +2,16 @@
 
 ---
 
+## 2.0.54+689 — 2026-07-27
+
+### Improvements
+- **Hash Cash tools merged under Run Admin**: the four Hash Cash functions are
+  only reachable via the run admin screen, so they now live in the
+  "Runs, Events, and Hash Cash" group and are gated by View Run Admin Tools —
+  deny that and they dim/disable with the rest.
+
+---
+
 ## 2.0.53+688 — 2026-07-27
 
 ### Improvements
