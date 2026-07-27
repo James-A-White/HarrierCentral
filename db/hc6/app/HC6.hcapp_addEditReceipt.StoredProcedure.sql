@@ -119,12 +119,10 @@ DECLARE @receiptKennelId UNIQUEIDENTIFIER;
 SELECT @receiptKennelId = KennelId FROM HC.Event WHERE id = @eventId;
 
 DECLARE @receiptAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @receiptKennelId, @functionKey = 'manageReceipts', @allowed = @receiptAllowed OUTPUT;
-
-IF (@receiptAllowed = 0 AND EXISTS (
+DECLARE @receiptIsHare SMALLINT = CASE WHEN EXISTS (
         SELECT 1 FROM HC.HasherEventMap
-        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))
-    SET @receiptAllowed = 1;
+        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @receiptKennelId, @functionKey = 'manageReceipts', @isHareOfEvent = @receiptIsHare, @allowed = @receiptAllowed OUTPUT;
 
 IF (@receiptAllowed = 0)
 BEGIN
