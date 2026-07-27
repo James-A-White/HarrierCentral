@@ -156,6 +156,7 @@ BEGIN TRY
 		, k.[KennelPaymentNonMemberSurcharge3] as kennelPaymentNonMemberSurcharge3
 		, k.[AllowSelfPayment] as allowSelfPayment
 		, k.[AllowNegativeCredit] as allowNegativeCredit
+		, k.[AllowCredit] as allowCredit
 		, k.[CityId] as cityId
 		, k.[ProvinceStateId] as provinceStateId
 		, k.[CountryId] as countryId

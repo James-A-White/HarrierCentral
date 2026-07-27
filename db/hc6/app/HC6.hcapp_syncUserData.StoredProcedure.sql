@@ -297,6 +297,7 @@ BEGIN
         k.KennelEventsUrl                                                   AS kennelEventsUrl,
         k.KennelStatus                                                      AS kennelStatus,
         k.AllowNegativeCredit                                               AS allowNegativeCredit,
+        k.AllowCredit                                                       AS allowCredit,
         k.AllowSelfPayment                                                  AS allowSelfPayment,
         k.MembershipDurationInMonths                                        AS membershipDurationInMonths,
         k.DistancePreference                                                AS distancePreference,

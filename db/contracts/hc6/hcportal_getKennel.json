@@ -115,6 +115,7 @@
         { "name": "kennelPaymentNonMemberSurcharge3", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.KennelPaymentNonMemberSurcharge3 — payment slot 3: non-member surcharge" },
         { "name": "allowSelfPayment", "type": "SMALLINT", "nullable": false, "description": "Kennel.AllowSelfPayment — flag to allow hashers to record their own payments" },
         { "name": "allowNegativeCredit", "type": "SMALLINT", "nullable": false, "description": "Kennel.AllowNegativeCredit — flag to allow negative credit balances" },
+        { "name": "allowCredit", "type": "SMALLINT", "nullable": false, "description": "Kennel.AllowCredit — master flag: whether credit payments are allowed for this kennel (1=on, default 1)" },
         { "name": "cityId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.CityId — foreign key to HC.City" },
         { "name": "provinceStateId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.ProvinceStateId — foreign key to HC.Region" },
         { "name": "countryId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.CountryId — foreign key to HC.Country" },

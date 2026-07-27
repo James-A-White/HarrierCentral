@@ -260,6 +260,7 @@
         { "name": "kennelEventsUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelEventsUrl." },
         { "name": "kennelStatus", "type": "SMALLINT", "nullable": true, "description": "Kennel.KennelStatus." },
         { "name": "allowNegativeCredit", "type": "SMALLINT", "nullable": true, "description": "Kennel.AllowNegativeCredit." },
+        { "name": "allowCredit", "type": "SMALLINT", "nullable": false, "description": "Kennel.AllowCredit — master flag: whether credit payments are allowed for this kennel (1=on, default 1)." },
         { "name": "allowSelfPayment", "type": "SMALLINT", "nullable": true, "description": "Kennel.AllowSelfPayment." },
         { "name": "membershipDurationInMonths", "type": "INT", "nullable": true, "description": "Kennel.MembershipDurationInMonths." },
         { "name": "distancePreference", "type": "SMALLINT", "nullable": true, "description": "Kennel.DistancePreference." },

@@ -397,6 +397,13 @@
       "description": "Whether negative credit balances are allowed. NULL = no change."
     },
     {
+      "name": "allowCredit",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.AllowCredit",
+      "description": "Master flag: whether credit payments are allowed for this kennel (1=on, default 1). NULL = no change."
+    },
+    {
       "name": "cityId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
