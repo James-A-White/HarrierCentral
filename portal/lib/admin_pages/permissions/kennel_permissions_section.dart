@@ -204,24 +204,37 @@ class KennelPermissionsSection extends StatelessWidget {
       }
       rows.add(Obx(() {
         final v = controller.checks[f.id];
-        final inherited = controller.globalGranted(f.id)
-            ? 'inherits: granted'
-            : 'inherits: denied';
+        final inheritedGranted = controller.globalGranted(f.id);
         final stateText = v == 1
             ? 'Grant (override)'
             : v == -1
                 ? 'Revoke (override)'
-                : 'Inherit — $inherited';
-        return ListTile(
-          dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-          leading: _triStateChip(v),
+                : 'Inherit — inherits: ${inheritedGranted ? 'granted' : 'denied'}';
+        return InkWell(
           // Cycle: inherit (null) → grant (1) → revoke (-1) → inherit.
           onTap: () =>
               controller.setValue(f.id, v == null ? 1 : (v == 1 ? -1 : null)),
-          title: Text(f.displayName),
-          subtitle: Text(stateText,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+            child: Row(
+              children: [
+                _triStateChip(v, inheritedGranted),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(f.displayName, style: const TextStyle(fontSize: 17)),
+                      const SizedBox(height: 2),
+                      Text(stateText,
+                          style: const TextStyle(
+                              fontSize: 13, color: Color(0xFF9CA3AF))),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       }));
     }
@@ -229,8 +242,9 @@ class KennelPermissionsSection extends StatelessWidget {
   }
 
   /// Tri-state indicator: grant = green + bold white check, revoke = deep-red +
-  /// white ✕, inherit = mid/dark-grey + pure-white dot.
-  Widget _triStateChip(int? state) {
+  /// white ✕, inherit = mid/dark-grey with a dot coloured by what it inherits
+  /// (green = inherits granted, red = inherits denied).
+  Widget _triStateChip(int? state, bool inheritedGranted) {
     Color bg;
     Widget child;
     if (state == 1) {
@@ -244,8 +258,12 @@ class KennelPermissionsSection extends StatelessWidget {
       child = Container(
         width: 8,
         height: 8,
-        decoration:
-            const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+        decoration: BoxDecoration(
+          color: inheritedGranted
+              ? const Color(0xFF22C55E) // green — inherits granted
+              : const Color(0xFFEF4444), // red — inherits denied
+          shape: BoxShape.circle,
+        ),
       );
     }
     return Container(

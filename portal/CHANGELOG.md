@@ -2,6 +2,15 @@
 
 ---
 
+## 2.0.51+686 — 2026-07-27
+
+### Improvements
+- **Permission override readability**: the inherit dot is now green when it
+  inherits "granted" and red when "denied"; both text lines are a little larger
+  and tighter together.
+
+---
+
 ## 2.0.50+685 — 2026-07-27
 
 ### Improvements
