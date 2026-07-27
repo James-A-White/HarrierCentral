@@ -55,6 +55,8 @@ class KennelsListPageController extends GetxController {
   void _onDataChange(DataChangeEvent event) {
     if (event.type == DataChangeType.kennelFollowStatusChanged) {
       _filterResults();
+    } else if (event.type == DataChangeType.fullSyncCompleted) {
+      unawaited(refreshFromTable(true));
     }
   }
 

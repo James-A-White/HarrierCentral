@@ -29,6 +29,11 @@ class SyncUserDataService {
 
   static const int FORCE = FORCE_ALL_REPLICATION_TIMESTAMP - 1;
 
+  /// True while the boot-time full user-data sync ([syncAllUserDataFromBackend])
+  /// is running. The lighter runs-tab background sync yields to it so the two
+  /// don't write the shared events/HEM/payments tables concurrently.
+  bool isFullSyncInProgress = false;
+
   int _hashersLastUpdated = FORCE;
   int _citiesLastUpdated = FORCE;
   int _regionsLastUpdated = FORCE;

@@ -354,6 +354,17 @@ class MainNavigationController extends GetxController
       await Get.find<FutureRunListPageController>().reloadAndFlash();
       debugPrint('[BOOT] MainNavController: runs list reloaded (with flash) after background sync: ${DateTime.now().millisecondsSinceEpoch}ms');
     }
+
+    // The runs tab was refreshed explicitly above (with the flash animation).
+    // The other four tabs (Kennels, Map, Songs, History) did their one-time load
+    // at boot against the *old* cached rows, so signal them to re-read now that
+    // fresh data has landed in the common tables.
+    if (Get.isRegistered<DataChangeService>()) {
+      Get.find<DataChangeService>().notify(
+        const DataChangeEvent(type: DataChangeType.fullSyncCompleted),
+      );
+      debugPrint('[BOOT] MainNavController: fullSyncCompleted broadcast to remaining tabs: ${DateTime.now().millisecondsSinceEpoch}ms');
+    }
   }
 
   String _trimToMinorVersionString(String version) {

@@ -57,6 +57,9 @@ class SongsPageController extends GetxController
   // properly disposed when the controller closes, preventing leaked listeners.
   Worker? _songWorker;
 
+  // Reloads the songbook when a full boot sync lands fresh song data.
+  StreamSubscription<DataChangeEvent>? _dataChangeSub;
+
   /// Fraction of screen height occupied by the lyrics panel when collapsed.
   static const double collapsedLyricsFraction = 0.33;
 
@@ -80,6 +83,14 @@ class SongsPageController extends GetxController
     );
 
     unawaited(loadSongs());
+
+    if (Get.isRegistered<DataChangeService>()) {
+      _dataChangeSub = Get.find<DataChangeService>().stream.listen((event) {
+        if (event.type == DataChangeType.fullSyncCompleted) {
+          unawaited(loadSongs());
+        }
+      });
+    }
 
     if (eventId != null) {
       // Register the ever() worker synchronously so no push is missed while
@@ -195,6 +206,7 @@ class SongsPageController extends GetxController
   @override
   void onClose() {
     _isDisposed = true;
+    unawaited(_dataChangeSub?.cancel());
     _searchDebounce?.cancel();
     _songWorker?.dispose();
     searchController.dispose();

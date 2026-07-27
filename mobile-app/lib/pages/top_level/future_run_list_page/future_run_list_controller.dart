@@ -855,6 +855,10 @@ class FutureRunListPageController extends GetxController {
   /// then shows the pill or card flashes as appropriate.
   Future<void> triggerBackgroundSync({bool ignoreDebounce = false}) async {
     if (_isSyncInProgress) return;
+    // The boot-time full sync already covers events/HEM/payments; yield to it so
+    // the two don't write the same tables concurrently. The fullSyncCompleted
+    // event will repaint the runs list when that sync finishes.
+    if (tableModel.syncUserDataService.isFullSyncInProgress) return;
     if (!ignoreDebounce && _lastSyncCompleted != null) {
       if (DateTime.now().difference(_lastSyncCompleted!).inSeconds < 60) return;
     }

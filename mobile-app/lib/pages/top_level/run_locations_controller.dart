@@ -128,6 +128,12 @@ class RunAndKennelMapController extends GetxController {
         if (event.type == DataChangeType.runUpdated ||
             event.type == DataChangeType.runCreated) {
           unawaited(_loadEvents());
+        } else if (event.type == DataChangeType.fullSyncCompleted) {
+          unawaited(() async {
+            await _loadEvents();
+            await _loadKennels();
+            _bumpMarkers();
+          }());
         }
       });
     }

@@ -106,6 +106,7 @@ Future<void> syncAllUserDataFromBackend({
 }) async {
   final Client client = Client();
 
+  tableModel.syncUserDataService.isFullSyncInProgress = true;
   try {
     await tableModel.syncUserDataService.updateFromBackend(
       EnumDataTables.cities.flag |
@@ -204,6 +205,7 @@ Future<void> syncAllUserDataFromBackend({
       debugPrint(stack.toString());
     }
   } finally {
+    tableModel.syncUserDataService.isFullSyncInProgress = false;
     client.close();
   }
 

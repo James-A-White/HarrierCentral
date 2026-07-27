@@ -56,6 +56,7 @@ class HistoryListPageState extends State<HistoryListPage>
   late TabController _tabController;
   int _totalHaring = 0;
   int _totalRuns = 0;
+  StreamSubscription<DataChangeEvent>? _dataChangeSub;
 
   @override
   void initState() {
@@ -64,6 +65,24 @@ class HistoryListPageState extends State<HistoryListPage>
     _tabController.addListener(_handleTabSelection);
 
     unawaited(setupInitialValues());
+
+    // The History tab does its one-time load at boot against cached data. When
+    // the returning-user background sync lands fresh data, re-read the stats.
+    if (Get.isRegistered<DataChangeService>()) {
+      _dataChangeSub = Get.find<DataChangeService>().stream.listen((event) {
+        if (event.type == DataChangeType.fullSyncCompleted && mounted) {
+          unawaited(setupInitialValues());
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    unawaited(_dataChangeSub?.cancel());
+    _tabController.removeListener(_handleTabSelection);
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> setupInitialValues() async {
