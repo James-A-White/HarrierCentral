@@ -2,6 +2,14 @@
 
 ---
 
+## 2.0.49+684 — 2026-07-27
+
+### Improvements
+- **Permission override controls**: clearer tri-state indicators — grant is a
+  green check, revoke is a red ✕, inherit is a light-blue circle.
+
+---
+
 ## 2.0.48+683 — 2026-07-27
 
 ### Improvements

@@ -207,12 +207,12 @@ class KennelPermissionsSection extends StatelessWidget {
             : v == -1
                 ? 'Revoke (override)'
                 : 'Inherit — $inherited';
-        return CheckboxListTile(
+        return ListTile(
           dense: true,
-          tristate: true,
-          controlAffinity: ListTileControlAffinity.leading,
-          value: v == 1 ? true : (v == -1 ? false : null),
-          onChanged: (_) =>
+          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+          leading: _triStateChip(v),
+          // Cycle: inherit (null) → grant (1) → revoke (-1) → inherit.
+          onTap: () =>
               controller.setValue(f.id, v == null ? 1 : (v == 1 ? -1 : null)),
           title: Text(f.displayName),
           subtitle: Text(stateText,
@@ -221,5 +221,33 @@ class KennelPermissionsSection extends StatelessWidget {
       }));
     }
     return rows;
+  }
+
+  /// Tri-state indicator: grant = green + white check, revoke = red X,
+  /// inherit = light-blue + small circle.
+  Widget _triStateChip(int? state) {
+    Color bg;
+    Widget child;
+    if (state == 1) {
+      bg = const Color(0xFF16A34A); // green
+      child = const Icon(Icons.check, size: 18, color: Colors.white);
+    } else if (state == -1) {
+      bg = const Color(0xFFFEE2E2); // light red
+      child = const Icon(Icons.close, size: 18, color: Color(0xFFDC2626)); // red X
+    } else {
+      bg = const Color(0xFFDBEAFE); // light blue
+      child = Container(
+        width: 7,
+        height: 7,
+        decoration:
+            const BoxDecoration(color: Color(0xFF3B82F6), shape: BoxShape.circle),
+      );
+    }
+    return Container(
+      width: 26,
+      height: 26,
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
+      child: Center(child: child),
+    );
   }
 }
