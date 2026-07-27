@@ -86,7 +86,7 @@ END
 -- Auth: mm 0x1E = GM(0x02)|VGM(0x04)|RA(0x08)|Beermeister(0x10);
 --       flag Manage Awards (0x20). Feature "Manage Down Downs" (see /hc-authorizations).
 DECLARE @ddAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000001E, 0x00000020, @ddAllowed OUTPUT;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'manageDownDowns', @allowed = @ddAllowed OUTPUT;
 
 IF (@ddAllowed = 0)
 BEGIN

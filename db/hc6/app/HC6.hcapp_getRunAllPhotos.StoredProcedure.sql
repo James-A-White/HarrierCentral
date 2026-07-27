@@ -81,7 +81,7 @@ END
 -- Hash Flash (0x0020) | GM (0x0002) | VGM (0x0004) | RA (0x0008) | WebMeister (0x1000) = 0x102E
 -- Authorization: feature "Batch / view all photos" (see /hc-authorizations).
 DECLARE @photoAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000102E, 0x00000100, @photoAllowed OUTPUT;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'batchPhotos', @allowed = @photoAllowed OUTPUT;
 
 IF (@photoAllowed = 0)
 BEGIN

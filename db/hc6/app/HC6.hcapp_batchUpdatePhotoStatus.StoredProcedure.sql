@@ -69,7 +69,7 @@ END
 -- Auth: caller must hold Hash Flash / GM / VGM / RA / WebMeister for this kennel
 -- Authorization: feature "Batch / view all photos" (see /hc-authorizations).
 DECLARE @photoAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000102E, 0x00000100, @photoAllowed OUTPUT;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'batchPhotos', @allowed = @photoAllowed OUTPUT;
 
 IF (@photoAllowed = 0)
 BEGIN

@@ -121,7 +121,7 @@ END
 -- Verify caller holds an approval role for this kennel
 -- Authorization: feature "Edit photo status / caption" (see /hc-authorizations).
 DECLARE @photoAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId, @photoKennelId, 0x0000002E, 0x00000100, @photoAllowed OUTPUT;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @photoKennelId, @functionKey = 'editPhoto', @allowed = @photoAllowed OUTPUT;
 
 IF (@photoAllowed = 0)
 BEGIN

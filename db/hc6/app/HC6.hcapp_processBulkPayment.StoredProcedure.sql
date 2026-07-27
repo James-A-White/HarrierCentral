@@ -127,7 +127,7 @@ BEGIN TRY
 
         -- Authorization: feature "Bulk payment" (see /hc-authorizations).
         DECLARE @bulkPayAllowed SMALLINT;
-        EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0004040E, 0x00000008, @bulkPayAllowed OUTPUT;
+        EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'bulkPayment', @allowed = @bulkPayAllowed OUTPUT;
 
         IF (@bulkPayAllowed = 0)
         BEGIN

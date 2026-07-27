@@ -183,7 +183,7 @@ BEGIN TRY
             WHERE hem.id = @hasherEventMapId;
 
         DECLARE @payAllowed SMALLINT;
-        EXEC HC6.CheckKennelPermission @userId, @payKennelId, 0x0004040E, 0x00000008, @payAllowed OUTPUT;
+        EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @payKennelId, @functionKey = 'takePayment', @allowed = @payAllowed OUTPUT;
         IF (@payAllowed = 0 AND @eventId IS NOT NULL AND EXISTS (
                 SELECT 1 FROM HC.HasherEventMap
                 WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))

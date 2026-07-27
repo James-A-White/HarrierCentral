@@ -77,7 +77,7 @@ END
 -- Verify caller is Hash Flash for this kennel (0x00000020)
 -- Authorization: feature "Review / approve photos" (see /hc-authorizations).
 DECLARE @photoAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000002E, 0x00000100, @photoAllowed OUTPUT;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'reviewPhotos', @allowed = @photoAllowed OUTPUT;
 
 IF (@photoAllowed = 0)
 BEGIN

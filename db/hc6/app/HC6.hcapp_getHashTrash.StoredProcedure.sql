@@ -85,7 +85,7 @@ END
 -- Draft visibility: feature "View Hash Trash drafts" (see /hc-authorizations).
 -- Those who can save can see drafts; everyone else only sees published content.
 DECLARE @canSeeDraft SMALLINT;
-EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00121806, 0x00000080, @canSeeDraft OUTPUT;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'viewHashTrashDrafts', @allowed = @canSeeDraft OUTPUT;
 
 SELECT
     e.HashTrashHeadline AS headline,

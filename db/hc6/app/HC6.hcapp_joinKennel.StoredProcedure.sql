@@ -150,13 +150,13 @@ DECLARE @authDenied SMALLINT = 0;
 
 IF (@appAccessFlags IS NOT NULL OR @kennelStandingSet IS NOT NULL OR @kennelStandingClear IS NOT NULL)
 BEGIN
-    EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00000000, 0x00000000, @permOk OUTPUT;
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'assignAppAccessFlags', @allowed = @permOk OUTPUT;
     IF (@permOk = 0) SET @authDenied = 1;
 END
 
 IF (@authDenied = 0 AND @mismanagementRoles IS NOT NULL)
 BEGIN
-    EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00000006, 0x00000000, @permOk OUTPUT;
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'assignMismanagementRoles', @allowed = @permOk OUTPUT;
     IF (@permOk = 0) SET @authDenied = 1;
 END
 
@@ -164,7 +164,7 @@ IF (@authDenied = 0 AND (@targetUserId != @userId
                          OR @monthsToAddToMembership IS NOT NULL
                          OR @paymentAmount IS NOT NULL))
 BEGIN
-    EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00000046, 0x00000010, @permOk OUTPUT;
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'manageMembers', @allowed = @permOk OUTPUT;
     IF (@permOk = 0) SET @authDenied = 1;
 END
 

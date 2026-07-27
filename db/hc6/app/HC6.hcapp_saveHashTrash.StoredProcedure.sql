@@ -91,7 +91,7 @@ END
 -- Auth: Hash Flash (0x20) | WebMeister (0x1000) | GM (0x02) = 0x1022
 -- Authorization: feature "Write / save Hash Trash" (see /hc-authorizations).
 DECLARE @htAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x00121806, 0x00000080, @htAllowed OUTPUT;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'writeHashTrash', @allowed = @htAllowed OUTPUT;
 
 IF (@htAllowed = 0)
 BEGIN

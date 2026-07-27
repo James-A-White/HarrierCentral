@@ -79,7 +79,7 @@ DECLARE @rptKennelId     UNIQUEIDENTIFIER;
 SELECT @rptKennelId = KennelId FROM HC.Event WHERE id = @eventId;
 
 DECLARE @rptAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId, @rptKennelId, 0x0004040E, 0x00000008, @rptAllowed OUTPUT;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @rptKennelId, @functionKey = 'viewPaymentReport', @allowed = @rptAllowed OUTPUT;
 
 IF (@rptAllowed = 0)
 BEGIN

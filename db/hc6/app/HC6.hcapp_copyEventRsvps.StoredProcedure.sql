@@ -125,7 +125,7 @@ BEGIN TRY
 
         -- Authorization: feature "Copy RSVPs" (see /hc-authorizations).
         DECLARE @copyAllowed SMALLINT;
-        EXEC HC6.CheckKennelPermission @userId, @fromKennelId, 0x00080146, 0x00000004, @copyAllowed OUTPUT;
+        EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @fromKennelId, @functionKey = 'copyRsvps', @allowed = @copyAllowed OUTPUT;
         IF (@copyAllowed = 0)
         BEGIN
             SET @errorCode = 1321; SET @errorType = 13; SET @errorId = NEWID();

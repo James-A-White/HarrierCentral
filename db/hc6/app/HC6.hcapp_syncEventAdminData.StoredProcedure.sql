@@ -120,7 +120,7 @@ BEGIN
     -- HashCash|HashBank added so role-based hash-cash people can load run admin
     -- data, plus ManageRuns|ManageHashCash flags as overrides. (see /hc-authorizations)
     DECLARE @syncEvtAllowed SMALLINT;
-    EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0004042E, 0x0000000C, @syncEvtAllowed OUTPUT;
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'enterRunAdmin', @allowed = @syncEvtAllowed OUTPUT;
     -- Run-scoped: a designated hare of THIS event may load its admin data so
     -- they can run their own run (edit details, receipts, check-in, take payment).
     IF (@syncEvtAllowed = 0 AND EXISTS (

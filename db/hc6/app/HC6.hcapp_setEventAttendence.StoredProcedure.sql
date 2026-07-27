@@ -230,7 +230,7 @@ BEGIN
     -- Authorization: feature "Manage attendance" (see /hc-authorizations).
     -- Run-scoped: a hare for THIS event may set attendance for it.
     DECLARE @setAttAllowed SMALLINT;
-    EXEC HC6.CheckKennelPermission @userId, @setAttKennelId, 0x0008014E, 0x00000004, @setAttAllowed OUTPUT;
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @setAttKennelId, @functionKey = 'manageAttendance', @allowed = @setAttAllowed OUTPUT;
     IF (@setAttAllowed = 0 AND EXISTS (
             SELECT 1 FROM HC.HasherEventMap
             WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1))

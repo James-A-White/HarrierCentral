@@ -84,7 +84,7 @@ END
 -- Auth: Hash Flash / GM / VGM / RA for this kennel
 -- Authorization: feature "Edit photo status / caption" (see /hc-authorizations).
 DECLARE @photoAllowed SMALLINT;
-EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000002E, 0x00000100, @photoAllowed OUTPUT;
+EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'editPhoto', @allowed = @photoAllowed OUTPUT;
 
 IF (@photoAllowed = 0)
 BEGIN

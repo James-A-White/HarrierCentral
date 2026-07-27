@@ -111,7 +111,7 @@ BEGIN
     -- Authorization: kennel-admin data read (roster/members). Original roles kept;
     -- ManageMembers added as the per-hasher override flag. (see /hc-authorizations)
     DECLARE @syncKennelAllowed SMALLINT;
-    EXEC HC6.CheckKennelPermission @userId, @kennelId, 0x0000002E, 0x00000010, @syncKennelAllowed OUTPUT;
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'enterKennelAdmin', @allowed = @syncKennelAllowed OUTPUT;
     IF (@syncKennelAllowed = 0)
     BEGIN
         SET @errorCode = 1372; SET @errorType = 13; SET @errorId = NEWID();
