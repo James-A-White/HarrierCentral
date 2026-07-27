@@ -126,6 +126,15 @@ class ApproveLoginService {
       );
     }
 
+    // Permissions V2: send our last-seen matrix watermark so the server returns
+    // the compiled global matrix only when it has changed.
+    final String? permWatermark = getStringPref(
+      StringPrefsEnum.permissionMatrixWatermark,
+    );
+    if (permWatermark != null && permWatermark.isNotEmpty) {
+      body['clientPermissionsWatermark'] = permWatermark;
+    }
+
     final Future<Response> futureResponse = post(
       Uri.parse(BASE_AF_API_URL),
       headers: <String, String>{'content-type': 'application/json'},

@@ -110,4 +110,11 @@ Future<void> initServices() async {
   if (Get.isRegistered<MainNavigationController>()) {
     await Get.delete<MainNavigationController>(force: true);
   }
+
+  // Permissions V2: load the last-known permission matrix from storage so the
+  // gate uses it from boot. approveLogin only re-sends the matrix when it
+  // changes, so without this a restart would drop back to the enum floor.
+  PermissionMatrix.setGlobalJson(
+    getStringPref(StringPrefsEnum.permissionMatrixJson),
+  );
 }

@@ -15,7 +15,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_approveLogin]
     @ipInfo               NVARCHAR(4000)= NULL,
     @splashSequenceViewed DATETIMEOFFSET= NULL,
     @splashSequenceRootName NVARCHAR(100) = NULL,
-    @locale               NVARCHAR(50)  = ''
+    @locale               NVARCHAR(50)  = '',
+    @clientPermissionsWatermark DATETIMEOFFSET(7) = NULL
 
 AS
 -- =====================================================================
@@ -298,7 +299,14 @@ BEGIN TRY
         @betaFeaturesEnabled    AS betaFeaturesEnabled,
         @hasherPreferences      AS hasherPreferences,
         LOWER(CAST(@activeSongId      AS NVARCHAR(40))) AS activeSongId,
-        LOWER(CAST(@activeSongEventId AS NVARCHAR(40))) AS activeSongEventId
+        LOWER(CAST(@activeSongEventId AS NVARCHAR(40))) AS activeSongEventId,
+        CASE WHEN @clientPermissionsWatermark IS NULL
+                  OR svr.PermissionMatrixUpdatedAt > @clientPermissionsWatermark
+             THEN svr.PermissionMatrixJson ELSE NULL END AS permissionMatrixJson,
+        CASE WHEN @clientPermissionsWatermark IS NULL
+                  OR svr.PermissionMatrixUpdatedAt > @clientPermissionsWatermark
+             THEN CONVERT(NVARCHAR(40), svr.PermissionMatrixUpdatedAt, 127)
+             ELSE NULL END AS permissionMatrixUpdatedAt
     FROM HC.ServerStatus svr
     ORDER BY svr.CreatedDate DESC;
 

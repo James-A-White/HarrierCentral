@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.15+1229 (2026-07-27)
+
+### Improvements
+- **Permissions groundwork**: kennel-admin permissions are now delivered from the
+  server as a configurable matrix instead of being hardcoded in the app. No change
+  to what anyone can do today — this is the foundation for admin-managed permissions.
+
 ## 2.15.14+1228 (2026-07-27)
 
 ### New Features

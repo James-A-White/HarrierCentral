@@ -606,6 +606,19 @@ class AppBootService {
       );
     }
 
+    // Permissions V2: the server sends the compiled global matrix + its watermark
+    // only when newer than the watermark we sent. Persist + apply when present;
+    // otherwise keep the matrix we already have (loaded at boot in initServices).
+    final String? permMatrixJson = row['permissionMatrixJson'] as String?;
+    if (permMatrixJson != null && permMatrixJson.isNotEmpty) {
+      await setStringPref(StringPrefsEnum.permissionMatrixJson, permMatrixJson);
+      await setStringPref(
+        StringPrefsEnum.permissionMatrixWatermark,
+        (row['permissionMatrixUpdatedAt'] as String?) ?? '',
+      );
+      PermissionMatrix.setGlobalJson(permMatrixJson);
+    }
+
     return ApproveLoginModel.fromJson(row);
   }
 

@@ -40,6 +40,8 @@ enum StringPrefsEnum {
   leaderboardJson,
   mapPreference,
   paymentTerminalAccountKey,
+  permissionMatrixJson,
+  permissionMatrixWatermark,
   profilePhotoUrl,
   publicHasherId,
   qrCode,
