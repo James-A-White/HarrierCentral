@@ -992,8 +992,7 @@ SELECT
 
             final PaymentPopup pp = PaymentPopup(
               amount: amountOwed,
-              creditAllowed:
-                  1, // TODO(James): fix this in the DB so that Kennnels can disable credit
+              creditAllowed: widget.eventAggregate.kennel.allowCredit,
               creditRemaining: item.extensions.creditAvailable,
               currencySymbol: widget.eventAggregate.extensions.curSym,
               hemId: item.extensions.pkHemId,

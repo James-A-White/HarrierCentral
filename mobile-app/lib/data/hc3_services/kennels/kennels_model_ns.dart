@@ -19,6 +19,7 @@ abstract class KennelsModel with _$KennelsModel implements BaseModel {
     required String kennelLogo,
     required int kennelPinColor,
     required int disseminateAllowWebLinks,
+    @Default(1) int allowCredit,
     String? kennelCoverPhoto,
     String? kennelWebsiteUrl,
     String? defaultEventCurrencyType,

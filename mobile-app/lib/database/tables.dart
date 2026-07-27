@@ -391,6 +391,15 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 524 — Per-kennel "allow credit payments" setting (default on)
+    MigrationsModel(
+      dbVersion: 524,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colAllowCredit} INT DEFAULT 1 NOT NULL;
+      ''',
+      appliedAtInt: 0,
+    ),
+
   ];
 
   static Future<void> createTables(

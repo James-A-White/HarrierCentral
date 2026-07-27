@@ -157,7 +157,7 @@ class CheckInScannerController extends GetxController {
       } else {
         final PaymentPopup pp = PaymentPopup(
           amount: amountOwed,
-          creditAllowed: 1,
+          creditAllowed: eventAggregate.kennel.allowCredit,
           creditRemaining: 0,
           currencySymbol: eventAggregate.extensions.curSym,
           hemId: adHocData[0]['hasherEventMapId'] as String,
