@@ -2,6 +2,17 @@
 
 ---
 
+## 2.0.50+685 — 2026-07-27
+
+### Improvements
+- **Kennel permission overrides — one Save**: the section's own Save button is
+  gone; override edits now mark the kennel form dirty and save with the general
+  Save button (and are discarded by Undo). Edits accumulate across roles.
+- Tri-state indicators refined: green + bold white check (grant), deep-red +
+  white ✕ (revoke), dark-grey + white dot (inherit).
+
+---
+
 ## 2.0.49+684 — 2026-07-27
 
 ### Improvements

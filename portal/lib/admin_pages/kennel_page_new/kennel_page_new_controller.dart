@@ -515,9 +515,25 @@ class KennelPageFormController extends TabUiController
 
   @override
   void checkIfFormIsDirty() {
-    isFormDirty.value = (originalData != editedData.value);
+    isFormDirty.value =
+        (originalData != editedData.value) || _hasPendingPermissionOverrides();
     formKey.currentState?.validate();
     checkUiControlValidationStates();
+  }
+
+  /// True when the kennel's permission-override section has unsaved edits.
+  bool _hasPendingPermissionOverrides() {
+    final tag = editedData.value.kennelPublicId.uuid;
+    return Get.isRegistered<KennelPermissionsController>(tag: tag) &&
+        Get.find<KennelPermissionsController>(tag: tag).hasPending;
+  }
+
+  /// Persist pending permission overrides as part of the general save.
+  Future<void> _flushPermissionOverrides() async {
+    final tag = editedData.value.kennelPublicId.uuid;
+    if (!Get.isRegistered<KennelPermissionsController>(tag: tag)) return;
+    final c = Get.find<KennelPermissionsController>(tag: tag);
+    if (c.hasPending) await c.savePending();
   }
 
   @override
@@ -534,6 +550,10 @@ class KennelPageFormController extends TabUiController
     update(['kennelFormPageBuilder']);
 
     populateTextControllers();
+    final overrideTag = editedData.value.kennelPublicId.uuid;
+    if (Get.isRegistered<KennelPermissionsController>(tag: overrideTag)) {
+      Get.find<KennelPermissionsController>(tag: overrideTag).discardPending();
+    }
     checkIfFormIsDirty();
   }
 
@@ -613,6 +633,7 @@ class KennelPageFormController extends TabUiController
         ? 'SP 6 [editKennel] called — FAILED'
         : 'SP 6 [editKennel] called — success');
 
+    await _flushPermissionOverrides();
     await _handleSaveResponse(apiResult, showDialog);
   }
 

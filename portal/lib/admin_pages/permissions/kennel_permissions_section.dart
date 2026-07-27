@@ -2,20 +2,26 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 
 /// Controller for a single kennel's permission overrides (tagged by
-/// publicKennelId so each kennel editor gets its own instance).
+/// publicKennelId). Edits accumulate across grantors and are flushed by the
+/// kennel editor's general Save (see KennelPageFormController.save); this
+/// controller has no Save button of its own.
 class KennelPermissionsController extends GetxController {
   KennelPermissionsController(this.publicKennelId);
 
   final String publicKennelId;
 
   final RxBool isLoading = true.obs;
-  final RxBool isSaving = false.obs;
-  final RxBool dirty = false.obs;
   final Rxn<PermissionMatrixData> matrix = Rxn<PermissionMatrixData>();
   final RxnInt selectedGrantorId = RxnInt();
 
-  /// functionId → override: 1 grant, -1 revoke, null inherit global.
+  /// Working state for the selected grantor: functionId → 1 grant / -1 revoke /
+  /// null inherit.
   final RxMap<int, int?> checks = <int, int?>{}.obs;
+
+  /// Accumulated pending edits across grantors: grantorId → {functionId → value}.
+  final Map<int, Map<int, int?>> _edits = <int, Map<int, int?>>{};
+
+  bool get hasPending => _edits.isNotEmpty;
 
   @override
   void onInit() {
@@ -27,6 +33,7 @@ class KennelPermissionsController extends GetxController {
     isLoading.value = true;
     final data = await queryPermissionMatrix(publicKennelId: publicKennelId);
     matrix.value = data;
+    _edits.clear();
     if (data != null && data.grantors.isNotEmpty) {
       selectGrantor(selectedGrantorId.value ?? data.grantors.first.id);
     }
@@ -37,12 +44,13 @@ class KennelPermissionsController extends GetxController {
     final data = matrix.value;
     if (data == null) return;
     selectedGrantorId.value = grantorId;
+    final edited = _edits[grantorId];
     checks.clear();
     for (final f in data.functions) {
-      checks[f.id] = data.overrideFor(grantorId, f.id); // 1 / -1 / null
+      checks[f.id] =
+          edited != null ? edited[f.id] : data.overrideFor(grantorId, f.id);
     }
     checks.refresh();
-    dirty.value = false;
   }
 
   bool globalGranted(int functionId) {
@@ -54,53 +62,64 @@ class KennelPermissionsController extends GetxController {
 
   void setValue(int functionId, int? value) {
     checks[functionId] = value;
-    dirty.value = true;
+    final g = selectedGrantorId.value;
+    if (g == null) return;
+    _edits[g] = Map<int, int?>.from(checks);
+    // Enable the kennel editor's general Save.
+    if (Get.isRegistered<KennelPageFormController>()) {
+      Get.find<KennelPageFormController>().checkIfFormIsDirty();
+    }
   }
 
-  Future<void> save() async {
+  /// Discard pending edits (used by the editor's Undo). Synchronous.
+  void discardPending() {
+    _edits.clear();
+    final g = selectedGrantorId.value;
+    if (g != null) selectGrantor(g);
+  }
+
+  /// Persist all pending grantor overrides. Called by the general Save.
+  Future<bool> savePending() async {
     final data = matrix.value;
-    final grantorId = selectedGrantorId.value;
-    if (data == null || grantorId == null) return;
-    final grantor = data.grantors.firstWhereOrNull((g) => g.id == grantorId);
-    if (grantor == null) return;
-
-    isSaving.value = true;
-    final granted = data.functions
-        .where((f) => checks[f.id] == 1)
-        .map((f) => f.functionKey)
-        .toList();
-    final revoked = data.functions
-        .where((f) => checks[f.id] == -1)
-        .map((f) => f.functionKey)
-        .toList();
-    final ok = await savePermissionMatrix(
-      grantorKey: grantor.grantorKey,
-      publicKennelId: publicKennelId,
-      grantedKeys: granted,
-      revokedKeys: revoked,
-    );
-    isSaving.value = false;
-
-    if (ok) {
-      await load();
-      Get.snackbar('Saved', '${grantor.displayName} override updated.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF16A34A),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3));
-    } else {
-      if (kDebugMode) debugPrint('KennelPermissions save failed');
-      Get.snackbar('Error', 'Failed to save override. Please try again.',
+    if (data == null) return true;
+    var allOk = true;
+    for (final entry in _edits.entries) {
+      final grantor =
+          data.grantors.firstWhereOrNull((g) => g.id == entry.key);
+      if (grantor == null) continue;
+      final vals = entry.value;
+      final granted = data.functions
+          .where((f) => vals[f.id] == 1)
+          .map((f) => f.functionKey)
+          .toList();
+      final revoked = data.functions
+          .where((f) => vals[f.id] == -1)
+          .map((f) => f.functionKey)
+          .toList();
+      final ok = await savePermissionMatrix(
+        grantorKey: grantor.grantorKey,
+        publicKennelId: publicKennelId,
+        grantedKeys: granted,
+        revokedKeys: revoked,
+      );
+      if (!ok) allOk = false;
+    }
+    _edits.clear();
+    await load();
+    if (!allOk) {
+      if (kDebugMode) debugPrint('KennelPermissions: some overrides failed');
+      Get.snackbar('Error', 'Some permission overrides failed to save.',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: const Color(0xFFDC2626),
           colorText: Colors.white,
           duration: const Duration(seconds: 4));
     }
+    return allOk;
   }
 }
 
 /// Per-kennel permission override editor, embedded in the kennel editor's
-/// platform-admin tab. Only meaningful for super-admins with CanManagePermissions.
+/// platform-admin tab. Saving is driven by the editor's general Save button.
 class KennelPermissionsSection extends StatelessWidget {
   const KennelPermissionsSection({required this.publicKennelId, super.key});
 
@@ -131,7 +150,8 @@ class KennelPermissionsSection extends StatelessWidget {
         children: [
           const Text(
             'Override the global defaults for this kennel only. Tick = grant, '
-            'dash = inherit global, cross = revoke.',
+            'dash = inherit global, cross = revoke. Changes save with the '
+            'general Save button.',
             style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 12),
@@ -158,22 +178,6 @@ class KennelPermissionsSection extends StatelessWidget {
           const SizedBox(height: 8),
           ..._functionRows(controller, data),
           const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Obx(() => ElevatedButton.icon(
-                  icon: controller.isSaving.value
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.save),
-                  label: const Text('Save override'),
-                  onPressed:
-                      (controller.dirty.value && !controller.isSaving.value)
-                          ? controller.save
-                          : null,
-                )),
-          ),
         ],
       );
     });
@@ -200,8 +204,9 @@ class KennelPermissionsSection extends StatelessWidget {
       }
       rows.add(Obx(() {
         final v = controller.checks[f.id];
-        final inherited =
-            controller.globalGranted(f.id) ? 'inherits: granted' : 'inherits: denied';
+        final inherited = controller.globalGranted(f.id)
+            ? 'inherits: granted'
+            : 'inherits: denied';
         final stateText = v == 1
             ? 'Grant (override)'
             : v == -1
@@ -223,24 +228,24 @@ class KennelPermissionsSection extends StatelessWidget {
     return rows;
   }
 
-  /// Tri-state indicator: grant = green + white check, revoke = red X,
-  /// inherit = light-blue + small circle.
+  /// Tri-state indicator: grant = green + bold white check, revoke = deep-red +
+  /// white ✕, inherit = mid/dark-grey + pure-white dot.
   Widget _triStateChip(int? state) {
     Color bg;
     Widget child;
     if (state == 1) {
       bg = const Color(0xFF16A34A); // green
-      child = const Icon(Icons.check, size: 18, color: Colors.white);
+      child = const Icon(Icons.check_rounded, size: 20, color: Colors.white);
     } else if (state == -1) {
-      bg = const Color(0xFFFEE2E2); // light red
-      child = const Icon(Icons.close, size: 18, color: Color(0xFFDC2626)); // red X
+      bg = const Color(0xFFB91C1C); // deep red
+      child = const Icon(Icons.close_rounded, size: 20, color: Colors.white);
     } else {
-      bg = const Color(0xFFDBEAFE); // light blue
+      bg = const Color(0xFF4B5563); // mid/dark grey
       child = Container(
-        width: 7,
-        height: 7,
+        width: 8,
+        height: 8,
         decoration:
-            const BoxDecoration(color: Color(0xFF3B82F6), shape: BoxShape.circle),
+            const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
       );
     }
     return Container(
