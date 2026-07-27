@@ -1043,7 +1043,7 @@ SELECT
             }
           } else {
             final String action =
-                await _displayPaymentDetails(item, context) ?? 'cancel';
+                await _displayPaymentDetails(item, context) ?? 'close';
 
             if (action == 'cancel') {
               setStateIfMounted(() {
@@ -1083,8 +1083,19 @@ SELECT
         if (item.payment == null) {
           return AlertDialog(
             title: Text('Payment Detail', style: ts_alertDialogTitle),
-            content:
-                Container(), // TODO: Put something here to indicate no payment record exists
+            content: Text(
+              'No payment record exists for this hasher.',
+              style: ts_titleMediumBlack,
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: text_button_style,
+                child: Text('Close', style: ts_button),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('close');
+                },
+              ),
+            ],
           );
         } else {
           String paymentTypeStr = '';
