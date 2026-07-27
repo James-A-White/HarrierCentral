@@ -298,6 +298,7 @@ BEGIN
         k.KennelStatus                                                      AS kennelStatus,
         k.AllowNegativeCredit                                               AS allowNegativeCredit,
         k.AllowCredit                                                       AS allowCredit,
+        k.PermissionOverrideJson                                            AS permissionOverrideJson,
         k.AllowSelfPayment                                                  AS allowSelfPayment,
         k.MembershipDurationInMonths                                        AS membershipDurationInMonths,
         k.DistancePreference                                                AS distancePreference,

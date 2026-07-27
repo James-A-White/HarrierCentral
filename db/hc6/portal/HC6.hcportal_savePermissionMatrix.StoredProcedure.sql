@@ -2,7 +2,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_savePermissionMatrix]
     @deviceId     UNIQUEIDENTIFIER = NULL,
     @accessToken  NVARCHAR(1000)   = NULL,
     @grantorKey   NVARCHAR(80)     = NULL,
-    @functionKeys NVARCHAR(MAX)    = NULL   -- '|'-delimited granted function keys for this grantor
+    @functionKeys NVARCHAR(MAX)    = NULL,   -- GLOBAL scope: '|'-delimited granted function keys
+    @publicKennelId UNIQUEIDENTIFIER = NULL, -- when set: edit that kennel's override instead of global
+    @grantedKeys  NVARCHAR(MAX)    = NULL,    -- KENNEL scope: '|'-delimited force-grant (+1) keys
+    @revokedKeys  NVARCHAR(MAX)    = NULL     -- KENNEL scope: '|'-delimited force-revoke (-1) keys
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_savePermissionMatrix
@@ -60,20 +63,48 @@ BEGIN
     RETURN;
 END
 
+DECLARE @kennelScopeId UNIQUEIDENTIFIER = NULL;
+IF @publicKennelId IS NOT NULL
+    SELECT @kennelScopeId = id FROM HC.Kennel WHERE PublicKennelId = @publicKennelId;
+IF @publicKennelId IS NOT NULL AND @kennelScopeId IS NULL
+BEGIN
+    SELECT 0 AS Success, 'Unknown kennel' AS ErrorMessage;
+    RETURN;
+END
+
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    -- Replace this grantor's GLOBAL grants (KennelId NULL) with the supplied set.
-    DELETE HC.RolePermission WHERE KennelId IS NULL AND GrantorId = @grantorId;
+    IF @kennelScopeId IS NULL
+    BEGIN
+        -- GLOBAL: replace this grantor's global grants with the supplied set.
+        DELETE HC.RolePermission WHERE KennelId IS NULL AND GrantorId = @grantorId;
+        INSERT HC.RolePermission (GrantorId, FunctionId, KennelId, Allowed)
+        SELECT @grantorId, f.id, NULL, 1
+        FROM STRING_SPLIT(COALESCE(@functionKeys, ''), '|') s
+        JOIN HC.PermissionFunction f ON f.FunctionKey = s.value
+        WHERE LEN(s.value) > 0;
+    END
+    ELSE
+    BEGIN
+        -- KENNEL override (tri-state): replace this grantor's kennel rows.
+        -- Functions in neither list inherit the global default (no row).
+        DELETE HC.RolePermission WHERE KennelId = @kennelScopeId AND GrantorId = @grantorId;
+        INSERT HC.RolePermission (GrantorId, FunctionId, KennelId, Allowed)
+        SELECT @grantorId, f.id, @kennelScopeId, 1
+        FROM STRING_SPLIT(COALESCE(@grantedKeys, ''), '|') s
+        JOIN HC.PermissionFunction f ON f.FunctionKey = s.value
+        WHERE LEN(s.value) > 0;
+        INSERT HC.RolePermission (GrantorId, FunctionId, KennelId, Allowed)
+        SELECT @grantorId, f.id, @kennelScopeId, -1
+        FROM STRING_SPLIT(COALESCE(@revokedKeys, ''), '|') s
+        JOIN HC.PermissionFunction f ON f.FunctionKey = s.value
+        WHERE LEN(s.value) > 0;
+    END
 
-    INSERT HC.RolePermission (GrantorId, FunctionId, KennelId, Allowed)
-    SELECT @grantorId, f.id, NULL, 1
-    FROM STRING_SPLIT(COALESCE(@functionKeys, ''), '|') s
-    JOIN HC.PermissionFunction f ON f.FunctionKey = s.value
-    WHERE LEN(s.value) > 0;
-
-    -- Recompile projections (global JSON + any affected kennel overrides) + bump watermark.
-    EXEC HC6.nonApi_compilePermissionMatrix;
+    -- Recompile projections (@kennelScopeId NULL = global + all overridden kennels;
+    -- a value = global + that kennel) + bump watermark.
+    EXEC HC6.nonApi_compilePermissionMatrix @kennelId = @kennelScopeId;
 
     COMMIT TRANSACTION;
     SELECT 1 AS Success, NULL AS ErrorMessage;

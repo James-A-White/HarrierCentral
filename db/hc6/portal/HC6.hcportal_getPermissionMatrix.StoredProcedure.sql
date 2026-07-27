@@ -1,6 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_getPermissionMatrix]
     @deviceId    UNIQUEIDENTIFIER = NULL,
-    @accessToken NVARCHAR(1000)   = NULL
+    @accessToken NVARCHAR(1000)   = NULL,
+    @publicKennelId UNIQUEIDENTIFIER = NULL   -- when set, also return that kennel's overrides
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_getPermissionMatrix
@@ -48,6 +49,10 @@ BEGIN
     RETURN;
 END
 
+DECLARE @kennelScopeId UNIQUEIDENTIFIER = NULL;
+IF @publicKennelId IS NOT NULL
+    SELECT @kennelScopeId = id FROM HC.Kennel WHERE PublicKennelId = @publicKennelId;
+
 BEGIN TRY
     SELECT 1 AS Success, NULL AS ErrorMessage;
 
@@ -66,6 +71,11 @@ BEGIN TRY
     SELECT GrantorId, FunctionId
     FROM HC.RolePermission
     WHERE KennelId IS NULL AND Allowed = 1;
+
+    -- rowset 4: per-kennel override rows for the selected kennel (empty if global).
+    SELECT GrantorId, FunctionId, Allowed
+    FROM HC.RolePermission
+    WHERE KennelId = @kennelScopeId;
 END TRY
 BEGIN CATCH
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)

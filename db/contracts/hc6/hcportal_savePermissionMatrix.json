@@ -7,7 +7,10 @@
     { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Auth: device ID." },
     { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Auth: portal token." },
     { "name": "grantorKey", "type": "NVARCHAR(80)", "nullable": true, "mapsToColumn": "PermissionRole.GrantorKey", "description": "The grantor (role/flag) being edited." },
-    { "name": "functionKeys", "type": "NVARCHAR(MAX)", "nullable": true, "mapsToColumn": null, "description": "'|'-delimited PermissionFunction.FunctionKey list = the checked functions. Empty = grantor grants nothing." }
+    { "name": "functionKeys", "type": "NVARCHAR(MAX)", "nullable": true, "mapsToColumn": null, "description": "GLOBAL scope: '|'-delimited granted FunctionKey list. Empty = grantor grants nothing." },
+    { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Kennel.PublicKennelId", "description": "When set, edits that kennel's override (tri-state) instead of the global default." },
+    { "name": "grantedKeys", "type": "NVARCHAR(MAX)", "nullable": true, "mapsToColumn": null, "description": "KENNEL scope: '|'-delimited force-grant (+1) FunctionKey list." },
+    { "name": "revokedKeys", "type": "NVARCHAR(MAX)", "nullable": true, "mapsToColumn": null, "description": "KENNEL scope: '|'-delimited force-revoke (-1) FunctionKey list. Functions in neither list inherit global." }
   ],
   "rowsets": [
     { "index": 0, "name": "Envelope", "description": "{ Success, ErrorMessage }.", "columns": [

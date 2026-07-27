@@ -5,7 +5,8 @@
   "description": "Loads the data-driven permission matrix (Permissions V2) for the super-admin editor: the function catalog, the grantor catalog (mismanagement roles + app-access flags; SuperAdmin bypass excluded), and the current GLOBAL grants. Auth via ValidatePortalAuth; caller must hold SuperAdmin (0x40000000) in some kennel.",
   "parameters": [
     { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Auth: device ID used to resolve the hasher and validate the token." },
-    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Auth: short-lived portal token validated via ValidatePortalAuth." }
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Auth: short-lived portal token validated via ValidatePortalAuth." },
+    { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Kennel.PublicKennelId", "description": "When set, rowset 4 returns that kennel's override rows (else empty)." }
   ],
   "rowsets": [
     { "index": 0, "name": "Envelope", "description": "{ Success, ErrorMessage }. Success=0 on auth failure or when caller is not a super admin.", "columns": [
@@ -30,6 +31,11 @@
     { "index": 3, "name": "GlobalGrants", "description": "Current global grants (KennelId NULL, granted). Present only when Success=1.", "columns": [
       { "name": "GrantorId", "type": "INT", "nullable": false, "description": "PermissionRole.id" },
       { "name": "FunctionId", "type": "INT", "nullable": false, "description": "PermissionFunction.id" }
+    ]},
+    { "index": 4, "name": "KennelOverrides", "description": "The selected kennel's override rows (empty if publicKennelId not supplied). Present only when Success=1.", "columns": [
+      { "name": "GrantorId", "type": "INT", "nullable": false, "description": "PermissionRole.id" },
+      { "name": "FunctionId", "type": "INT", "nullable": false, "description": "PermissionFunction.id" },
+      { "name": "Allowed", "type": "SMALLINT", "nullable": false, "description": "1 = grant, -1 = revoke" }
     ]}
   ],
   "sideEffects": [],
