@@ -52,11 +52,14 @@ class PermissionGrantor {
   final int id;
   final String grantorKey;
   final String displayName;
-  final String grantorType; // 'mmRole' | 'appFlag'
+  final String grantorType; // 'mmRole' | 'appFlag' | 'hare'
 
   /// Human grouping for the dropdown.
-  String get typeLabel =>
-      grantorType == 'appFlag' ? 'App-access flag' : 'Mismanagement role';
+  String get typeLabel => switch (grantorType) {
+        'appFlag' => 'App-access flag',
+        'hare' => 'Run hare',
+        _ => 'Mismanagement role',
+      };
 
   final int sortOrder;
 }

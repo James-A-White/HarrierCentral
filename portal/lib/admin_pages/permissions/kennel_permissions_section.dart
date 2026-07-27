@@ -224,11 +224,13 @@ class KennelPermissionsSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(f.displayName, style: const TextStyle(fontSize: 17)),
-                      const SizedBox(height: 2),
+                      Text(f.displayName,
+                          style: const TextStyle(fontSize: 19, height: 1.1)),
                       Text(stateText,
                           style: const TextStyle(
-                              fontSize: 13, color: Color(0xFF9CA3AF))),
+                              fontSize: 15,
+                              height: 1.05,
+                              color: Color(0xFF9CA3AF))),
                     ],
                   ),
                 ),

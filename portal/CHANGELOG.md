@@ -2,6 +2,19 @@
 
 ---
 
+## 2.0.52+687 — 2026-07-27
+
+### New Features / Improvements
+- **Editable Hare role**: "Hare (this run)" is now a selectable role in the
+  Permissions editor — set exactly what a run's designated hare can see/do (per
+  kennel too). Seeded from the existing hare abilities, so nothing changes until
+  you edit it.
+- Renamed **Enter Kennel/Run Admin** to **View Kennel/Run Admin Tools**.
+- Larger, tighter permission-override text; the inherit dot shows green/red for
+  the value it inherits.
+
+---
+
 ## 2.0.51+686 — 2026-07-27
 
 ### Improvements
