@@ -345,7 +345,21 @@ class CreateNewAccountPageContentState
                                 )!;
                                 final AuthorizeDeviceService srv =
                                     AuthorizeDeviceService();
-                                await srv.authorizeDevice(userId: userId);
+                                final Map<String, String> authResult =
+                                    await srv.authorizeDevice(userId: userId);
+
+                                if (authResult['result'] == 'failed') {
+                                  setStateIfMounted(() {
+                                    isLoading = false;
+                                  });
+                                  await Utilities.showAlert(
+                                    'Setup failed',
+                                    authResult['message'] ??
+                                        'We could not set up your device. Please try again.',
+                                    'OK',
+                                  );
+                                  return;
+                                }
 
                                 if (!mounted) return;
                                 await Navigator.pushReplacement<

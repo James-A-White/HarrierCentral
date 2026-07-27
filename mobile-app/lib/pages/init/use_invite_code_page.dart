@@ -433,7 +433,12 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               ),
                             );
                           } else {
-                            // TODO(James): Do something here if the auth device fails
+                            await Utilities.showAlert(
+                              'Setup failed',
+                              result['message'] ??
+                                  'We could not set up your device. Please check your invite code and try again.',
+                              'OK',
+                            );
                           }
                         }
                       },
