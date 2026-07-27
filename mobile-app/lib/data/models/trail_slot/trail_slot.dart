@@ -181,11 +181,43 @@ extension KennelsModelTrailSlots on KennelsModel {
     if (json == null || json.isEmpty) return TrailSlot.defaults;
     try {
       final list = jsonDecode(json) as List<dynamic>;
-      return list
+      final slots = list
           .map((e) => TrailSlot.fromJson(e as Map<String, dynamic>))
           .toList();
+      return _ensureLabelSlot(slots);
     } catch (_) {
       return TrailSlot.defaults;
     }
+  }
+
+  /// Guarantee a functional (text-capable) Label mark is always available.
+  ///
+  /// The custom-text entry popup only opens for a slot with
+  /// `action: addText`; a kennel whose `trailSymbolsConfigJson` omits the
+  /// Label slot would otherwise leave hares with no way to drop a labelled
+  /// mark. If no such slot is present we append the canonical Label from
+  /// [TrailSlot.defaults], re-numbered to sit after the configured marks.
+  List<TrailSlot> _ensureLabelSlot(List<TrailSlot> slots) {
+    final hasLabel = slots.any(
+      (s) => s.glyphId == 'label' && s.parsedAction == TrailSlotAction.addText,
+    );
+    if (hasLabel) return slots;
+
+    final label = TrailSlot.defaults.firstWhere((s) => s.glyphId == 'label');
+    final nextSlot = slots.isEmpty
+        ? 1
+        : slots.map((s) => s.slot).reduce((a, b) => a > b ? a : b) + 1;
+    return <TrailSlot>[
+      ...slots,
+      TrailSlot(
+        slot: nextSlot,
+        kind: label.kind,
+        glyphId: label.glyphId,
+        text: label.text,
+        invert: label.invert,
+        name: label.name,
+        action: label.action,
+      ),
+    ];
   }
 }
