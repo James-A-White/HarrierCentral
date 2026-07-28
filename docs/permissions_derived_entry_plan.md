@@ -19,9 +19,25 @@
   Verified on real data: 14,737 user-kennel pairs, 84 mismatches vs the old gates,
   **0 unexplained** (all held by one of the 11 accepted delta grantors); hare leg
   confirmed (plain member: not-hare→0, as-hare→1).
-- **NEXT: Phase 4** (awaiting go-ahead) — compile SP emits areas+surfaces, drops
-  `enter*` from JSON, and the explicit `enter*` rows/grants are deleted. Ships as one
-  coordinated release with Phase 5 (app) + Phase 6 (portal).
+- **Phase 4a DONE (2026-07-28, additive half).** `nonApi_compilePermissionMatrix`
+  now emits `areaKey`+`surfaces` per function; `hcportal_getPermissionMatrix` returns
+  `AreaKey`/`Surfaces`. Both DEPLOYED (additive — current clients ignore the new
+  fields) and recompiled. The `enter*` rows are still present.
+- **Phase 6 DONE (2026-07-28), committed (not shipped).** Portal editor: drops the
+  `enter*` rows client-side (`data.capabilities`), removes `kSectionGate` + the
+  section-dimming, adds a live "Can enter" derived preview (per grantor, per surface)
+  + app/portal surface tags. New `entry_preview.dart`; model gains `areaKey`/
+  `surfaces` + entry helpers.
+- **Phase 5 DONE (2026-07-28), committed (not shipped).** App: `KennelFeature` gains
+  `areaKey` (`PermissionArea.*`), `enter*` enum gates removed, new `canEnterArea()`
+  mirrors `CheckAreaEntry`; 5 entry call-sites converted. Photos gets its OWN doorway
+  — camera icon on the run details AppBar via `canEnterArea('photos')` (James: run
+  details AppBar, shown to anyone with photo access).
+- **REMAINING for the coordinated cutover (Phase 4b):** in ONE release —
+  (1) `nonApi_compilePermissionMatrix` stops carrying `enter*` + `DELETE` the two
+  `enter*` `PermissionFunction` rows and their `RolePermission` grants + recompile;
+  (2) build/bump + ship portal (web) and app (TestFlight) together. Then Phase 7:
+  `editWebsite`/`designWebsite` portal-only capabilities.
 
 ---
 
