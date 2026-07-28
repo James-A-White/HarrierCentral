@@ -6,8 +6,14 @@
 - **Kennel detail viewable by everyone**: opening a kennel from the Kennels list,
   the map, or a photo no longer errors ("You don't have admin access") for
   non-admins. Regular users now see the kennel's logo, description, map and upcoming
-  runs; the admin-functions section is shown only to admins (unchanged). Fixes a
-  navigation gate that wrongly blocked the whole page instead of just admin tools.
+  runs; the admin-functions section is shown only to admins. Fixes a navigation gate
+  that wrongly blocked the whole page instead of just admin tools.
+- **Kennel admin tools use derived permissions**: the kennel detail admin section
+  (add/edit runs, print QR, manage members, …) and its data sync now appear based on
+  the kennel-admin capabilities a user actually holds, instead of the legacy "admin"
+  flag (which grants nothing under the new permissions system). Role-based kennel
+  admins now correctly see these tools. Add/edit runs is treated as a kennel-admin
+  function (moved out of run admin).
 
 ## 2.15.17+1231 (2026-07-28)
 

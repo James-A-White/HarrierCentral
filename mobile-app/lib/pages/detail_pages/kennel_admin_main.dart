@@ -92,8 +92,21 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                             innerColor: Colors.white,
                           ),
                         ),
-                        if (widget.kennelAggregateItem.hkm?.appAccess.isAdmin ??
-                            false)
+                        // Kennel admin section (add/edit runs, members, etc.) —
+                        // shown by DERIVED entry, i.e. anyone who holds a
+                        // kennel-tools capability, not the raw isAdmin flag (which
+                        // grants nothing here under Permissions V2). Each button
+                        // still self-gates via can(KennelFeature.…).
+                        if (canEnterArea(
+                          PermissionArea.kennelTools,
+                          appAccessFlags:
+                              widget.kennelAggregateItem.hkm?.appAccessFlags ?? 0,
+                          mismanagementRoles: widget
+                                  .kennelAggregateItem.hkm?.mismanagementRoles ??
+                              0,
+                          kennelOverrideJson: widget
+                              .kennelAggregateItem.kennel.permissionOverrideJson,
+                        ))
                           _buildAdminFunctions(context),
                         _buildDescriptionSection(),
                         _buildMapAndInfoSection(context),

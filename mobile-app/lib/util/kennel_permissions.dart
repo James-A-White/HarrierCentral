@@ -30,7 +30,9 @@ enum KennelFeature {
   takePayment(0x0004040E, authCanManageHashCash, true, PermissionArea.runAdmin),
   bulkPayment(0x0004040E, authCanManageHashCash, false, PermissionArea.runAdmin),
   manageReceipts(0x0004841E, authCanManageHashCash, true, PermissionArea.runAdmin),
-  createEditRuns(0x00080346, authCanManageRuns, true, PermissionArea.runAdmin),
+  // Adding/editing runs is a KENNEL-admin function (managing the kennel's
+  // calendar), not per-run admin. Lives in the kennelTools area.
+  createEditRuns(0x00080346, authCanManageRuns, true, PermissionArea.kennelTools),
   printQrCodes(0x00080306, authCanManageRuns, true, PermissionArea.runAdmin),
   manageAttendance(0x0008014E, authCanManageRuns, true, PermissionArea.runAdmin),
   copyRsvps(0x00080146, authCanManageRuns, false, PermissionArea.runAdmin),

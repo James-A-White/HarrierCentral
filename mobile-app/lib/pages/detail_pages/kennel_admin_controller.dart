@@ -67,9 +67,17 @@ class KennelAdminController extends GetxController {
   }
 
   Future<void> _syncAndLoad() async {
-    final bool isAdmin =
-        kennelAggregateItem.hkm?.appAccess.isAdmin ?? false;
-    if (isAdmin) {
+    // DERIVED kennel-admin entry — mirrors the server (hcapp_syncKennelAdminData
+    // gates on CheckAreaEntry('kennelTools')). The raw isAdmin flag grants nothing
+    // under Permissions V2, so gating on it both blocked role-based kennel admins
+    // and triggered rejected syncs for run-only admins.
+    final bool canKennelAdmin = canEnterArea(
+      PermissionArea.kennelTools,
+      appAccessFlags: kennelAggregateItem.hkm?.appAccessFlags ?? 0,
+      mismanagementRoles: kennelAggregateItem.hkm?.mismanagementRoles ?? 0,
+      kennelOverrideJson: kennelAggregateItem.kennel.permissionOverrideJson,
+    );
+    if (canKennelAdmin) {
       await _ensureFollowingForAdmin();
       await tableModel.syncKennelAdminService.updateFromBackend(
         EnumDataTables.kennels.flag |
