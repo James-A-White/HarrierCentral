@@ -477,8 +477,8 @@ class KennelsListPageController extends GetxController {
     // Gate entry to kennel admin (hcapp_syncKennelAdminData). Mirrors the SP
     // auth exactly so we don't fire a request the server will reject. UI gate is
     // UX only — the SP is the real gate. See /hc-authorizations.
-    if (!canAccessFeature(
-      KennelFeature.enterKennelAdmin,
+    if (!canEnterArea(
+      PermissionArea.kennelTools,
       appAccessFlags: kennel.hkm?.appAccessFlags ?? 0,
       mismanagementRoles: kennel.hkm?.mismanagementRoles ?? 0,
       kennelOverrideJson: kennel.kennel.permissionOverrideJson,

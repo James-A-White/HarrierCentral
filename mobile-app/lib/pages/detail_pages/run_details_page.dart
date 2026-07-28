@@ -58,13 +58,42 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           },
         ),
         actions: <Widget>[
+          // Photos doorway — its own entry (derived), so a photo-only role
+          // (e.g. Hash Flash) reaches per-run photo review without needing run
+          // admin. Shown to anyone who can act in the photos area.
+          (!canEnterArea(
+            PermissionArea.photos,
+            appAccessFlags: _futureRun.extensions.appAccessFlags,
+            mismanagementRoles: _futureRun.extensions.mismanagementRoles,
+            kennelOverrideJson: _futureRun.kennel.permissionOverrideJson,
+          ))
+              ? const SizedBox.shrink()
+              : IconButton(
+                  icon: const Icon(Icons.photo_library, color: Colors.white),
+                  tooltip: 'Review Photos',
+                  onPressed: () async {
+                    if (Utilities.isConnected(showDialog: true)) {
+                      await Get.to<void>(
+                        () => PhotoReviewPage(
+                          kennelId: _futureRun.kennel.kennelId,
+                          eventId: _futureRun.event.eventId.asUuid,
+                          eventName: _futureRun.event.eventName,
+                          eventNumber: _futureRun.event.absoluteEventNumber,
+                          kennelSlug: _futureRun.kennel.kennelUniqueShortName,
+                          kennelLogoUrl: _futureRun.kennel.kennelLogo,
+                          kennelShortName: _futureRun.kennel.kennelShortName,
+                        ),
+                      );
+                    }
+                  },
+                ),
           // Show the admin gear only to users the server will actually let into
           // run admin (hcapp_syncEventAdminData) — the GM/VGM/RA/HashFlash/
           // HashCash/HashBank roles or the ManageRuns/ManageHashCash flags — OR a
           // designated hare of this run (run-scoped admin for their own run).
           // Mirrors the SP gate exactly; see /hc-authorizations.
-          (!canAccessFeature(
-            KennelFeature.enterRunAdmin,
+          (!canEnterArea(
+            PermissionArea.runAdmin,
             appAccessFlags: _futureRun.extensions.appAccessFlags,
             mismanagementRoles: _futureRun.extensions.mismanagementRoles,
             isHareOfEvent: _futureRun.extensions.isHare == 1,

@@ -28,8 +28,8 @@ class FilterEventListItem extends StatelessWidget {
         // Gate run-admin entry (hcapp_syncEventAdminData) to mirror the SP auth
         // exactly, so a member-manager-only kennel admin can't fire a rejected
         // request by tapping a run. See /hc-authorizations.
-        if (!canAccessFeature(
-          KennelFeature.enterRunAdmin,
+        if (!canEnterArea(
+          PermissionArea.runAdmin,
           appAccessFlags: event.appAccessFlags,
           mismanagementRoles: mismanagementRoles,
         )) {

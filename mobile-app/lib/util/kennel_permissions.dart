@@ -15,36 +15,43 @@ import 'package:harrier_central/util/constants.dart';
 ///
 /// `hareScoped` features are additionally granted to the designated hare of the
 /// specific run (the SP checks HasherEventMap.IsHare for that event).
-enum KennelFeature {
-  viewPaymentReport(0x0004040E, authCanManageHashCash, false),
-  takePayment(0x0004040E, authCanManageHashCash, true),
-  bulkPayment(0x0004040E, authCanManageHashCash, false),
-  manageReceipts(0x0004841E, authCanManageHashCash, true),
-  createEditRuns(0x00080346, authCanManageRuns, true),
-  printQrCodes(0x00080306, authCanManageRuns, true),
-  manageAttendance(0x0008014E, authCanManageRuns, true),
-  copyRsvps(0x00080146, authCanManageRuns, false),
-  packTrackTrim(0x00000106, authCanManageRuns, false),
-  awardList(0x0000001E, authCanManageAwards, false),
-  manageDownDowns(0x0000001E, authCanManageAwards, false),
-  manageMembers(0x00000046, authCanManageMembers, false),
-  viewInviteCodes(0x00000046, authCanManageMembers, false),
-  // Admin-screen entry gates — mirror the sync SP auth exactly.
-  enterKennelAdmin(0x0000002E, authCanManageMembers, false),
-  enterRunAdmin(0x0004042E, authCanManageRuns | authCanManageHashCash, true),
-  // super-admin only
-  assignAppAccessFlags(0x00000000, 0, false),
-  // GM|VGM + super-admin
-  assignMismanagementRoles(0x00000006, 0, false),
-  reviewPhotos(0x0000002E, authCanManagePhotos, false),
-  editPhoto(0x0000002E, authCanManagePhotos, false),
-  batchPhotos(0x0000102E, authCanManagePhotos, false),
-  writeHashTrash(0x00121806, authCanManagePublicWebContent, false),
-  viewHashTrashDrafts(0x00121806, authCanManagePublicWebContent, false),
-  manageKennelSettings(0x00000006, authCanManageKennel, false),
-  manageSongs(0x00000086, authCanManageSongs, false);
+/// Stable area slugs (HC.PermissionFunction.AreaKey). A UI "doorway" for an area
+/// is DERIVED — shown iff the user holds >=1 capability in it (see [canEnterArea]).
+class PermissionArea {
+  static const String runAdmin = 'runAdmin';
+  static const String kennelTools = 'kennelTools';
+  static const String photos = 'photos';
+  static const String web = 'web';
+  static const String songs = 'songs';
+}
 
-  const KennelFeature(this.mmMask, this.flagMask, this.hareScoped);
+enum KennelFeature {
+  viewPaymentReport(0x0004040E, authCanManageHashCash, false, PermissionArea.runAdmin),
+  takePayment(0x0004040E, authCanManageHashCash, true, PermissionArea.runAdmin),
+  bulkPayment(0x0004040E, authCanManageHashCash, false, PermissionArea.runAdmin),
+  manageReceipts(0x0004841E, authCanManageHashCash, true, PermissionArea.runAdmin),
+  createEditRuns(0x00080346, authCanManageRuns, true, PermissionArea.runAdmin),
+  printQrCodes(0x00080306, authCanManageRuns, true, PermissionArea.runAdmin),
+  manageAttendance(0x0008014E, authCanManageRuns, true, PermissionArea.runAdmin),
+  copyRsvps(0x00080146, authCanManageRuns, false, PermissionArea.runAdmin),
+  packTrackTrim(0x00000106, authCanManageRuns, false, PermissionArea.runAdmin),
+  awardList(0x0000001E, authCanManageAwards, false, PermissionArea.runAdmin),
+  manageDownDowns(0x0000001E, authCanManageAwards, false, PermissionArea.runAdmin),
+  manageMembers(0x00000046, authCanManageMembers, false, PermissionArea.kennelTools),
+  viewInviteCodes(0x00000046, authCanManageMembers, false, PermissionArea.kennelTools),
+  // super-admin only
+  assignAppAccessFlags(0x00000000, 0, false, PermissionArea.kennelTools),
+  // GM|VGM + super-admin
+  assignMismanagementRoles(0x00000006, 0, false, PermissionArea.kennelTools),
+  reviewPhotos(0x0000002E, authCanManagePhotos, false, PermissionArea.photos),
+  editPhoto(0x0000002E, authCanManagePhotos, false, PermissionArea.photos),
+  batchPhotos(0x0000102E, authCanManagePhotos, false, PermissionArea.photos),
+  writeHashTrash(0x00121806, authCanManagePublicWebContent, false, PermissionArea.web),
+  viewHashTrashDrafts(0x00121806, authCanManagePublicWebContent, false, PermissionArea.web),
+  manageKennelSettings(0x00000006, authCanManageKennel, false, PermissionArea.kennelTools),
+  manageSongs(0x00000086, authCanManageSongs, false, PermissionArea.songs);
+
+  const KennelFeature(this.mmMask, this.flagMask, this.hareScoped, this.areaKey);
 
   /// Fallback MismanagementRoles bits whose holders get this feature by default.
   final int mmMask;
@@ -54,6 +61,9 @@ enum KennelFeature {
 
   /// True when a run's designated hare also gets this feature for that run.
   final bool hareScoped;
+
+  /// Which derived-entry area this capability belongs to ([PermissionArea]).
+  final String areaKey;
 }
 
 /// Resolved permission for one feature: which role/flag bits grant it, and
@@ -159,5 +169,32 @@ bool canAccessFeature(
   if ((mismanagementRoles & perm.mmMask) != 0) return true;
   if ((appAccessFlags & perm.flagMask) != 0) return true;
   if (perm.hareScoped && isHareOfEvent) return true;
+  return false;
+}
+
+/// DERIVED entry — mirrors `HC6.CheckAreaEntry`. A UI doorway for [areaKey]
+/// (the Run Admin gear, the Kennel Tools entry, the Photos entry) is shown iff
+/// the user can do at least one thing in that area. Never gate a doorway on a
+/// standalone "enter…" permission — compute it from the capabilities.
+bool canEnterArea(
+  String areaKey, {
+  required int appAccessFlags,
+  required int mismanagementRoles,
+  bool isHareOfEvent = false,
+  String? kennelOverrideJson,
+}) {
+  if ((appAccessFlags & authIsSuperAdmin) != 0) return true;
+  for (final feature in KennelFeature.values) {
+    if (feature.areaKey != areaKey) continue;
+    if (canAccessFeature(
+      feature,
+      appAccessFlags: appAccessFlags,
+      mismanagementRoles: mismanagementRoles,
+      isHareOfEvent: isHareOfEvent,
+      kennelOverrideJson: kennelOverrideJson,
+    )) {
+      return true;
+    }
+  }
   return false;
 }

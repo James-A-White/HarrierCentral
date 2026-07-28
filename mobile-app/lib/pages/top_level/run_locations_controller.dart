@@ -398,8 +398,8 @@ class RunAndKennelMapController extends GetxController {
 
     // Gate entry to kennel admin (hcapp_syncKennelAdminData) — mirror the SP
     // auth so a non-admin marker tap doesn't fire a rejected request.
-    if (!canAccessFeature(
-      KennelFeature.enterKennelAdmin,
+    if (!canEnterArea(
+      PermissionArea.kennelTools,
       appAccessFlags: hkmItem?.appAccessFlags ?? 0,
       mismanagementRoles: hkmItem?.mismanagementRoles ?? 0,
       kennelOverrideJson: kennelItem.permissionOverrideJson,
