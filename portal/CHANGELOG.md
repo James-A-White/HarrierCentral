@@ -2,6 +2,18 @@
 
 ---
 
+## 2.0.57+692 — 2026-07-28
+
+### Improvements
+- **Derived-entry permissions**: the permissions editor drops the "View … Admin
+  Tools" gate rows and shows a live "Can enter" preview per role, derived from the
+  capabilities held, with app/portal surface tags on each capability.
+- **Website permissions**: "Edit Website" and "Design Website" are now separate,
+  portal-only permissions that gate those buttons independently (previously a single
+  web-content flag), tunable per role and per kennel in the permissions editor.
+
+---
+
 ## 2.0.56+691 — 2026-07-27
 
 ### Improvements

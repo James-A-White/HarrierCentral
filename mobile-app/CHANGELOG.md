@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.17+1231 (2026-07-28)
+
+### Improvements
+- **Derived admin access**: the Run Admin gear and Kennel Tools entry now appear
+  based on the actual permissions a user holds — no separate "enter" gate. Roles
+  with real capabilities always get in; empty doorways disappear. Run hares still
+  get their own run's admin.
+- **Photos entry**: photo review now has its own doorway (a camera icon on the run
+  details screen), so photographers (Hash Flash) reach it without run-admin access.
+
 ## 2.15.16+1230 (2026-07-27)
 
 ### Improvements
