@@ -101,7 +101,7 @@ WITH (
     action  TINYINT      '$.action'
 ) j
 WHERE TRY_CAST(j.photoId AS UNIQUEIDENTIFIER) IS NOT NULL
-  AND j.action BETWEEN 1 AND 7;
+  AND j.action BETWEEN 1 AND 6;   -- 7 (unfeature) retired: Featured is now a rung
 
 DECLARE @submitted INT = (SELECT COUNT(*) FROM #Updates);
 
@@ -133,27 +133,22 @@ BEGIN TRY
     INNER JOIN #Updates u ON u.photoId = kp.id AND u.action = 1
     WHERE kp.KennelId = @kennelId;
 
-    -- 2. Audience changes (actions 2,3,4,6): clear DeletedAt, set new Status
-    --    (audience model: 0=Private, 2=Members, 3=Public, 5=Cover)
+    -- 2. Audience ladder (actions 2,3,4,5,6): clear DeletedAt, set new Status.
+    --    ONE tag per photo: 0=Private, 2=Members, 3=Public, 4=Featured, 5=Cover.
+    --    Featured is a ladder rung now, NOT an orthogonal flag (matches the portal
+    --    SP). Un-feature = pick a lower rung; action 7 (unfeature) is retired.
     UPDATE kp
     SET kp.Status    = CASE u.action
                            WHEN 2 THEN 0
                            WHEN 3 THEN 2
                            WHEN 4 THEN 3
+                           WHEN 5 THEN 4
                            WHEN 6 THEN 5
                        END,
         kp.DeletedAt = NULL,
         kp.UpdatedAt = GETUTCDATE()
     FROM HC.KennelPhotos kp
-    INNER JOIN #Updates u ON u.photoId = kp.id AND u.action IN (2, 3, 4, 6)
-    WHERE kp.KennelId = @kennelId;
-
-    -- 2b. Featured toggles (5=feature, 7=unfeature) — orthogonal to audience
-    UPDATE kp
-    SET kp.Featured  = CASE u.action WHEN 5 THEN 1 ELSE 0 END,
-        kp.UpdatedAt = GETUTCDATE()
-    FROM HC.KennelPhotos kp
-    INNER JOIN #Updates u ON u.photoId = kp.id AND u.action IN (5, 7)
+    INNER JOIN #Updates u ON u.photoId = kp.id AND u.action IN (2, 3, 4, 5, 6)
     WHERE kp.KennelId = @kennelId;
 
     -- 2c. Cover uniqueness: demote previous covers of affected events to Public

@@ -137,13 +137,15 @@ BEGIN
     RETURN;
 END
 
--- Map action → new status (audience model: 0=Private,1=Pending,2=Members,
--- 3=Public,5=Cover). Actions 5/7 toggle the ORTHOGONAL Featured flag and do
--- not change status (old action 5 'home gallery' ≈ new Featured — compatible).
+-- Map action → new status. Single-tag ladder: 0=Private, 1=Pending, 2=Members,
+-- 3=Public, 4=Featured, 5=Cover. Action 5 (Feature) is now a ladder rung (Status=4),
+-- not an orthogonal flag; action 7 (unfeature) is retired.
+-- (NOTE: this single-update SP is currently unused; the app writes via the batch SP.)
 DECLARE @newStatus TINYINT = CASE @action
     WHEN 2 THEN 0
     WHEN 3 THEN 2
     WHEN 4 THEN 3
+    WHEN 5 THEN 4
     WHEN 6 THEN 5
     ELSE 0
 END;
@@ -161,17 +163,9 @@ BEGIN TRY
             UpdatedAt = GETUTCDATE()
         WHERE id = @photoId;
     END
-    ELSE IF (@action IN (5, 7))
-    BEGIN
-        -- Featured toggle only — audience status untouched
-        UPDATE HC.KennelPhotos
-        SET Featured  = CASE WHEN @action = 5 THEN 1 ELSE 0 END,
-            UpdatedAt = GETUTCDATE()
-        WHERE id = @photoId;
-    END
     ELSE
     BEGIN
-        -- Audience action: set new status, clear DeletedAt
+        -- Audience action (2,3,4,5,6): set new status rung, clear DeletedAt
         UPDATE HC.KennelPhotos
         SET Status    = @newStatus,
             DeletedAt = NULL,

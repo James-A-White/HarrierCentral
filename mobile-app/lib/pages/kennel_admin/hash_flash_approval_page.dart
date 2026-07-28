@@ -1001,7 +1001,7 @@ class _RunHeader extends StatelessWidget {
                           count: c.runGallery,
                           color: Colors.green.shade700),
                       _CountChip(
-                          label: 'Home',
+                          label: 'Featured',
                           count: c.homeGallery,
                           color: Colors.teal.shade600),
                       _CountChip(
@@ -1225,8 +1225,8 @@ class _PhotoBody extends StatelessWidget {
       return (label: 'Members', color: Colors.blue.shade700);
     case 3:
       return (label: 'Public', color: Colors.green.shade700);
-    case 4: // legacy home-gallery rows read as Public
-      return (label: 'Public', color: Colors.green.shade700);
+    case 4:
+      return (label: 'Featured', color: Colors.teal.shade600);
     case 5:
       return (label: 'Cover', color: Colors.amber.shade800);
     default:
@@ -1740,7 +1740,7 @@ class _ActionPanel extends StatelessWidget {
                   0 => photoActionKeepPrivate,
                   2 => photoActionMembers,
                   3 => photoActionPublic,
-                  4 => photoActionPublic, // legacy home-gallery rows read as Public
+                  4 => photoActionFeature,
                   5 => photoActionMakeEventCover,
                   _ => null,
                 });
@@ -1830,16 +1830,11 @@ class _ActionPanel extends StatelessWidget {
                     icon: Icons.home_outlined,
                     label: 'Featured',
                     color: Colors.teal.shade600,
-                    // Orthogonal flag: highlighted when the photo is featured
-                    // (or a feature decision is queued); tap toggles.
-                    isSelected: selected == photoActionFeature ||
-                        (photo.featured == 1 &&
-                            selected != photoActionUnfeature),
-                    onTap: () => act(
-                      (photo.featured == 1 || selected == photoActionFeature)
-                          ? photoActionUnfeature
-                          : photoActionFeature,
-                    ),
+                    // Ladder rung (Status=4) — mutually exclusive with the other
+                    // audience levels; one tag at a time. To un-feature, pick a
+                    // lower rung.
+                    isSelected: selected == photoActionFeature,
+                    onTap: () => act(photoActionFeature),
                   ),
                 ),
                 const SizedBox(width: 8),

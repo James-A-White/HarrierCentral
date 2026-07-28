@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.19+1233 (2026-07-28)
+
+### Fixes
+- **Photo tags are a single ladder**: a photo now holds only one tag at a time —
+  Private → Members → Public → Featured → Cover — where each level implies the
+  visibility of the ones below it. "Featured" is a rung on that ladder, not a
+  separate flag, so a photo can no longer be tagged e.g. "Members" and "Featured" at
+  once (the review buttons are now mutually exclusive). Existing photos were migrated;
+  any with conflicting tags kept their more-restrictive audience.
+
 ## 2.15.18+1232 (2026-07-28)
 
 ### Fixes
