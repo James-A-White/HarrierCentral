@@ -33,6 +33,13 @@
   mirrors `CheckAreaEntry`; 5 entry call-sites converted. Photos gets its OWN doorway
   — camera icon on the run details AppBar via `canEnterArea('photos')` (James: run
   details AppBar, shown to anyone with photo access).
+- **Phase 7 DONE (2026-07-28), committed.** First portal-only capabilities —
+  `editWebsite`/`designWebsite` (`Surfaces=2`, area `web`), granted to
+  flagManageWebContent + flagAdmin + webMeister. `hcportal_getLandingPageData`
+  computes per-kennel `canEditWebsite`/`canDesignWebsite` via the matrix (verified 0
+  mismatches / 14,737 pairs); run-list Edit/Design Website buttons gate on them
+  independently. Seed + SP deployed (additive); JSON carries them at `surfaces:2`,
+  invisible to the app. Portal build ships in the cutover.
 - **REMAINING for the coordinated cutover (Phase 4b):** in ONE release —
   (1) `nonApi_compilePermissionMatrix` stops carrying `enter*` + `DELETE` the two
   `enter*` `PermissionFunction` rows and their `RolePermission` grants + recompile;
