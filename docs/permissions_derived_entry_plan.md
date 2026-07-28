@@ -13,7 +13,15 @@
   capability in that area). **James: accept all 11 as-is** (no grants). **Photos
   has its OWN entry point** → Hash Flash/RA reach photos via the photos doorway;
   Phase 5 must wire `canEnterArea('photos', app)`.
-- **NEXT: Phase 3** (awaiting go-ahead) — sync SPs gate on `CheckAreaEntry`.
+- **Phase 3 DONE (2026-07-28).** `hcapp_syncEventAdminData` now gates on
+  `CheckAreaEntry('runAdmin', app, @isHareOfEvent)`; `hcapp_syncKennelAdminData` on
+  `CheckAreaEntry('kennelTools', app)`. Explicit `enter*` rows still present (no gap).
+  Verified on real data: 14,737 user-kennel pairs, 84 mismatches vs the old gates,
+  **0 unexplained** (all held by one of the 11 accepted delta grantors); hare leg
+  confirmed (plain member: not-hare→0, as-hare→1).
+- **NEXT: Phase 4** (awaiting go-ahead) — compile SP emits areas+surfaces, drops
+  `enter*` from JSON, and the explicit `enter*` rows/grants are deleted. Ships as one
+  coordinated release with Phase 5 (app) + Phase 6 (portal).
 
 ---
 

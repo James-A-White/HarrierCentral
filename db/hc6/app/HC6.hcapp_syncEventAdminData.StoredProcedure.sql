@@ -115,17 +115,19 @@ SELECT @kennelId = e.KennelId FROM HC.Event e WHERE e.id = @eventId;
 
 IF (@procName IS NULL)
 BEGIN
-    -- Authorization: event-admin data read (attendees/payments/receipts). Broad —
-    -- serves run admin (attendance) AND hash cash; original roles kept, with
-    -- HashCash|HashBank added so role-based hash-cash people can load run admin
-    -- data, plus ManageRuns|ManageHashCash flags as overrides. (see /hc-authorizations)
+    -- Authorization: event-admin data read (attendees/payments/receipts). DERIVED
+    -- entry — the caller may load run-admin data iff they hold at least one run-admin
+    -- capability (createEditRuns / manageAttendance / takePayment / manageReceipts /
+    -- awardList / manageDownDowns / …) on the APP surface for this kennel. This
+    -- replaces the explicit 'enterRunAdmin' gate. (see /hc-authorizations and
+    -- docs/permissions_derived_entry_plan.md)
     DECLARE @syncEvtAllowed SMALLINT;
     -- Run-scoped: a designated hare of THIS event may load its admin data (when
-    -- the hare grantor grants the function).
+    -- the hare grantor grants a run-admin capability).
     DECLARE @syncEvtIsHare SMALLINT = CASE WHEN EXISTS (
             SELECT 1 FROM HC.HasherEventMap
             WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
-    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'enterRunAdmin', @isHareOfEvent = @syncEvtIsHare, @allowed = @syncEvtAllowed OUTPUT;
+    EXEC HC6.CheckAreaEntry @userId = @userId, @kennelId = @kennelId, @areaKey = 'runAdmin', @surface = 1, @isHareOfEvent = @syncEvtIsHare, @allowed = @syncEvtAllowed OUTPUT;
     IF (@syncEvtAllowed = 0)
     BEGIN
         SET @errorCode = 1371; SET @errorType = 13; SET @errorId = NEWID();

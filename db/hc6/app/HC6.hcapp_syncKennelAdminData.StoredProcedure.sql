@@ -108,10 +108,14 @@ END
 -- Delegated calls from write SPs skip this check — the write SP already verified auth.
 IF (@procName IS NULL)
 BEGIN
-    -- Authorization: kennel-admin data read (roster/members). Original roles kept;
-    -- ManageMembers added as the per-hasher override flag. (see /hc-authorizations)
+    -- Authorization: kennel-admin data read (roster/members). DERIVED entry — the
+    -- caller may load kennel-admin data iff they hold at least one kennel-tools
+    -- capability (manageMembers / viewInviteCodes / assignAppAccessFlags /
+    -- assignMismanagementRoles / manageKennelSettings) on the APP surface for this
+    -- kennel. Replaces the explicit 'enterKennelAdmin' gate. (see /hc-authorizations
+    -- and docs/permissions_derived_entry_plan.md)
     DECLARE @syncKennelAllowed SMALLINT;
-    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'enterKennelAdmin', @allowed = @syncKennelAllowed OUTPUT;
+    EXEC HC6.CheckAreaEntry @userId = @userId, @kennelId = @kennelId, @areaKey = 'kennelTools', @surface = 1, @allowed = @syncKennelAllowed OUTPUT;
     IF (@syncKennelAllowed = 0)
     BEGIN
         SET @errorCode = 1372; SET @errorType = 13; SET @errorId = NEWID();
