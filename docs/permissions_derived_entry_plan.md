@@ -1,6 +1,10 @@
 # Permissions — Derived Entry + Surface Scope (plan)
 
 ## Status / decisions log
+- **✅ CUTOVER COMPLETE (2026-07-28).** Phase 4b ran (deleted enterRunAdmin/
+  enterKennelAdmin + 15 grants, recompiled — JSON clean, 24 functions, GM still
+  enters both areas). Portal **2.0.57+692 live** (CI). App **2.15.17+1231 uploaded
+  to TestFlight**. The whole derived-entry + surface-scope refactor is shipped.
 - **Phase 1 DONE (2026-07-28).** `Surfaces` (SMALLINT, default 3) + `AreaKey`
   (NOT NULL) added to `HC.PermissionFunction`; 24 rows backfilled
   (runAdmin/kennelTools/photos/web/songs), `IX_PermissionFunction_Area` created.
