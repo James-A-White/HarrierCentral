@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.18+1232 (2026-07-28)
+
+### Fixes
+- **Kennel detail viewable by everyone**: opening a kennel from the Kennels list,
+  the map, or a photo no longer errors ("You don't have admin access") for
+  non-admins. Regular users now see the kennel's logo, description, map and upcoming
+  runs; the admin-functions section is shown only to admins (unchanged). Fixes a
+  navigation gate that wrongly blocked the whole page instead of just admin tools.
+
 ## 2.15.17+1231 (2026-07-28)
 
 ### Improvements

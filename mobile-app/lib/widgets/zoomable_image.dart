@@ -184,22 +184,9 @@ class ZoomableImagePage2 extends StatelessWidget {
 
                     if (kennel == null) return;
 
-                    // Gate entry to kennel admin (hcapp_syncKennelAdminData) —
-                    // mirror the SP auth so a non-admin doesn't fire a rejected
-                    // request. See /hc-authorizations.
-                    if (!canEnterArea(
-                      PermissionArea.kennelTools,
-                      appAccessFlags: kennel.hkm?.appAccessFlags ?? 0,
-                      mismanagementRoles: kennel.hkm?.mismanagementRoles ?? 0,
-                      kennelOverrideJson: kennel.kennel.permissionOverrideJson,
-                    )) {
-                      showHcSnackbar(
-                        'You don\'t have admin access for this kennel.',
-                        isError: true,
-                      );
-                      return;
-                    }
-
+                    // Anyone may open a kennel's detail page — it shows info and
+                    // upcoming runs to everyone; the admin-functions section and
+                    // its data sync are gated internally (KennelAdminController).
                     await Navigator.of(
                       navigatorKey.currentContext!,
                     ).push<dynamic>(

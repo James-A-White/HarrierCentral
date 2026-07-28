@@ -396,21 +396,9 @@ class RunAndKennelMapController extends GetxController {
       isHomeKennel: isHomeKennel,
     );
 
-    // Gate entry to kennel admin (hcapp_syncKennelAdminData) — mirror the SP
-    // auth so a non-admin marker tap doesn't fire a rejected request.
-    if (!canEnterArea(
-      PermissionArea.kennelTools,
-      appAccessFlags: hkmItem?.appAccessFlags ?? 0,
-      mismanagementRoles: hkmItem?.mismanagementRoles ?? 0,
-      kennelOverrideJson: kennelItem.permissionOverrideJson,
-    )) {
-      showHcSnackbar(
-        'You don\'t have admin access for this kennel.',
-        isError: true,
-      );
-      return;
-    }
-
+    // Anyone may open a kennel's detail page — it shows logo, description, map
+    // and upcoming runs to everyone; the admin-functions section and its data
+    // sync are gated internally (KennelAdminController._syncAndLoad on isAdmin).
     if (navigatorKey.currentContext == null) return;
     await Navigator.of(navigatorKey.currentContext!).push<dynamic>(
       MaterialPageRoute<dynamic>(
