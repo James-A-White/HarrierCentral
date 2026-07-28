@@ -49,6 +49,7 @@ export 'package:hcportal/queries/location_query.dart';
 export 'package:hcportal/queries/newsflash_query.dart';
 export 'package:hcportal/models/permission_matrix_models.dart';
 export 'package:hcportal/queries/permission_matrix_query.dart';
+export 'package:hcportal/admin_pages/permissions/entry_preview.dart';
 export 'package:hcportal/admin_pages/permissions/permissions_controller.dart';
 export 'package:hcportal/admin_pages/permissions/permissions_page.dart';
 export 'package:hcportal/admin_pages/permissions/kennel_permissions_section.dart';

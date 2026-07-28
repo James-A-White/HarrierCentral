@@ -39,6 +39,8 @@ BEGIN TRY
             (
                 SELECT
                     f.FunctionKey AS [key],
+                    f.AreaKey     AS areaKey,     -- stable area slug; client derives entry by area
+                    f.Surfaces    AS surfaces,    -- bitmask: app=1, portal=2, both=3
                     SUM(CASE WHEN g.GrantorType = 'mmRole'  THEN g.Bit ELSE 0 END) AS mmMask,
                     SUM(CASE WHEN g.GrantorType = 'appFlag' THEN g.Bit ELSE 0 END) AS flagMask,
                     MAX(CASE WHEN g.GrantorType = 'hare' THEN 1 ELSE 0 END) AS hareScoped
@@ -46,7 +48,7 @@ BEGIN TRY
                 LEFT JOIN HC.RolePermission rp
                        ON rp.FunctionId = f.id AND rp.KennelId IS NULL AND rp.Allowed = 1
                 LEFT JOIN HC.PermissionRole g ON g.id = rp.GrantorId
-                GROUP BY f.id, f.FunctionKey, f.SortOrder
+                GROUP BY f.id, f.FunctionKey, f.SortOrder, f.AreaKey, f.Surfaces
                 ORDER BY f.SortOrder
                 FOR JSON PATH
             ) AS functions

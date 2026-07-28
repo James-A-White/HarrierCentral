@@ -1,14 +1,6 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 
-/// The "View … Admin Tools" entry-gate function for each section. When that gate
-/// resolves to denied for the selected grantor, the rest of the section is
-/// disabled (you can't do things in an area you can't enter).
-const Map<String, String> kSectionGate = <String, String>{
-  'Runs, Events, and Hash Cash': 'enterRunAdmin',
-  'Kennel Tools': 'enterKennelAdmin',
-};
-
 /// Controller for a single kennel's permission overrides (tagged by
 /// publicKennelId). Edits accumulate across grantors and are flushed by the
 /// kennel editor's general Save (see KennelPageFormController.save); this
@@ -183,7 +175,20 @@ class KennelPermissionsSection extends StatelessWidget {
                   if (v != null) controller.selectGrantor(v);
                 },
               )),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          // Live derived-entry preview for this kennel (effective = override or global).
+          Obx(() {
+            controller.checks.length;
+            controller.selectedGrantorId.value;
+            return buildEntryPreview([
+              for (final area in data.areas)
+                AreaEntry(
+                    area.label,
+                    _entersLive(controller, data, area.key, kSurfaceApp),
+                    _entersLive(controller, data, area.key, kSurfacePortal)),
+            ]);
+          }),
+          const SizedBox(height: 12),
           ..._functionRows(controller, data),
           const SizedBox(height: 12),
         ],
@@ -191,9 +196,23 @@ class KennelPermissionsSection extends StatelessWidget {
     });
   }
 
+  /// Derived entry for this kennel: any capability in the area/surface whose
+  /// effective value (override wins, else global) is granted.
+  bool _entersLive(KennelPermissionsController controller,
+          PermissionMatrixData data, String areaKey, int surface) =>
+      data.capabilities.any((f) {
+        if (f.areaKey != areaKey || !f.onSurface(surface)) return false;
+        final v = controller.checks[f.id];
+        return v == 1
+            ? true
+            : v == -1
+                ? false
+                : controller.globalGranted(f.id);
+      });
+
   List<Widget> _functionRows(
       KennelPermissionsController controller, PermissionMatrixData data) {
-    final functions = [...data.functions]
+    final functions = [...data.capabilities]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     final blocks = <Widget>[];
     String? currentArea;
@@ -217,9 +236,9 @@ class KennelPermissionsSection extends StatelessWidget {
     }
 
     for (final f in functions) {
-      if (f.featureArea != currentArea) {
+      if (f.areaKey != currentArea) {
         flushSection();
-        currentArea = f.featureArea;
+        currentArea = f.areaKey;
         blocks.add(Padding(
           padding: const EdgeInsets.fromLTRB(0, 12, 0, 4),
           child: Text(f.featureArea.toUpperCase(),
@@ -241,8 +260,6 @@ class KennelPermissionsSection extends StatelessWidget {
 
   Widget _functionItem(KennelPermissionsController controller,
       PermissionMatrixData data, PermissionFunction f) {
-    final gateKey = kSectionGate[f.featureArea];
-    final isGate = gateKey != null && f.functionKey == gateKey;
     return Obx(() {
       final v = controller.checks[f.id];
       final inheritedGranted = controller.globalGranted(f.id);
@@ -251,7 +268,7 @@ class KennelPermissionsSection extends StatelessWidget {
           : v == -1
               ? 'Revoke (override)'
               : 'Inherit — inherits: ${inheritedGranted ? 'granted' : 'denied'}';
-      final row = SizedBox(
+      return SizedBox(
         height: _rowHeight,
         child: InkWell(
           // Cycle: inherit (null) → grant (1) → revoke (-1) → inherit.
@@ -275,6 +292,7 @@ class KennelPermissionsSection extends StatelessWidget {
                               fontSize: 15,
                               height: 1.05,
                               color: Color(0xFF9CA3AF))),
+                      ?surfaceTag(f.surfaces),
                     ],
                   ),
                 ),
@@ -283,21 +301,6 @@ class KennelPermissionsSection extends StatelessWidget {
           ),
         ),
       );
-      // Section gate: if this section's "View … Admin Tools" resolves to
-      // denied (revoke, or inherit-denied), dim + disable the rest of it.
-      if (gateKey != null && !isGate) {
-        final gate =
-            data.functions.firstWhereOrNull((x) => x.functionKey == gateKey);
-        if (gate != null) {
-          final gv = controller.checks[gate.id];
-          final gateOpen =
-              gv == 1 || (gv == null && controller.globalGranted(gate.id));
-          if (!gateOpen) {
-            return Opacity(opacity: 0.4, child: IgnorePointer(child: row));
-          }
-        }
-      }
-      return row;
     });
   }
 

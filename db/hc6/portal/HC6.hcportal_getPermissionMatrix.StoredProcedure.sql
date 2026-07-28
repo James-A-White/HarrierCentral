@@ -56,8 +56,11 @@ IF @publicKennelId IS NOT NULL
 BEGIN TRY
     SELECT 1 AS Success, NULL AS ErrorMessage;
 
-    -- rowset 1: functions (matrix columns, grouped by FeatureArea)
-    SELECT id, FunctionKey, DisplayName, FeatureArea, HareScoped, SortOrder
+    -- rowset 1: functions (matrix columns, grouped by area). AreaKey is the stable
+    -- slug the editor groups + derives entry by; Surfaces is the app/portal bitmask.
+    -- The legacy enterRunAdmin/enterKennelAdmin gate rows are still returned (the
+    -- current portal build uses them); the derived-entry editor filters them out.
+    SELECT id, FunctionKey, DisplayName, FeatureArea, AreaKey, Surfaces, HareScoped, SortOrder
     FROM HC.PermissionFunction
     ORDER BY SortOrder;
 

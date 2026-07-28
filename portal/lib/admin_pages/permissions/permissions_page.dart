@@ -108,9 +108,23 @@ class _GlobalChecklist extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final functions = [...data.functions]
+    final caps = [...data.capabilities]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     final blocks = <Widget>[];
+
+    // Live derived-entry preview (recomputes as capabilities are ticked).
+    blocks.add(Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Obx(() {
+        controller.checks.length; // subscribe to the working set
+        return buildEntryPreview([
+          for (final area in data.areas)
+            AreaEntry(area.label, _entersLive(area.key, kSurfaceApp),
+                _entersLive(area.key, kSurfacePortal)),
+        ]);
+      }),
+    ));
+
     String? currentArea;
     final pending = <PermissionFunction>[];
 
@@ -137,10 +151,10 @@ class _GlobalChecklist extends StatelessWidget {
       ));
     }
 
-    for (final f in functions) {
-      if (f.featureArea != currentArea) {
+    for (final f in caps) {
+      if (f.areaKey != currentArea) {
         flushSection();
-        currentArea = f.featureArea;
+        currentArea = f.areaKey;
         blocks.add(Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
           child: Text(f.featureArea.toUpperCase(),
@@ -159,51 +173,43 @@ class _GlobalChecklist extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 24), children: blocks);
   }
 
+  bool _entersLive(String areaKey, int surface) => data.capabilities.any((f) =>
+      f.areaKey == areaKey &&
+      f.onSurface(surface) &&
+      (controller.checks[f.id] ?? false));
+
   Widget _item(PermissionFunction f) {
-    final gateKey = kSectionGate[f.featureArea];
-    final isGate = gateKey != null && f.functionKey == gateKey;
-    return Obx(() {
-      final row = SizedBox(
-        height: _rowHeight,
-        child: InkWell(
-          onTap: () =>
-              controller.toggle(f.id, !(controller.checks[f.id] ?? false)),
-          child: Row(
-            children: [
-              Checkbox(
-                value: controller.checks[f.id] ?? false,
-                onChanged: (v) => controller.toggle(f.id, v ?? false),
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(f.displayName,
-                        style: const TextStyle(fontSize: 15, height: 1.1)),
-                    if (f.hareScoped)
-                      const Text('Also granted to a run’s hare',
-                          style: TextStyle(
-                              fontSize: 11.5,
-                              height: 1.05,
-                              color: Color(0xFF9CA3AF))),
-                  ],
+    return Obx(() => SizedBox(
+          height: _rowHeight,
+          child: InkWell(
+            onTap: () =>
+                controller.toggle(f.id, !(controller.checks[f.id] ?? false)),
+            child: Row(
+              children: [
+                Checkbox(
+                  value: controller.checks[f.id] ?? false,
+                  onChanged: (v) => controller.toggle(f.id, v ?? false),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(f.displayName,
+                          style: const TextStyle(fontSize: 15, height: 1.1)),
+                      if (f.hareScoped)
+                        const Text('Also granted to a run’s hare',
+                            style: TextStyle(
+                                fontSize: 11.5,
+                                height: 1.05,
+                                color: Color(0xFF9CA3AF))),
+                      ?surfaceTag(f.surfaces),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-      // Section gate: if the "View … Admin Tools" gate is not granted, dim +
-      // disable the rest of the section.
-      if (gateKey != null && !isGate) {
-        final gate =
-            data.functions.firstWhereOrNull((x) => x.functionKey == gateKey);
-        if (gate != null && controller.checks[gate.id] != true) {
-          return Opacity(opacity: 0.4, child: IgnorePointer(child: row));
-        }
-      }
-      return row;
-    });
+        ));
   }
 }
