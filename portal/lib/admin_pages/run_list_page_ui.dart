@@ -631,7 +631,7 @@ class RunListPage extends StatelessWidget {
               }
             },
           ),
-        if (k.canManagePublicWebContent || k.isAdmin) ...[
+        if (k.canEditWebsite == 1)
           (
             label: 'Edit Website',
             icon: Icons.language_outlined,
@@ -652,13 +652,13 @@ class RunListPage extends StatelessWidget {
               }
             },
           ),
+        if (k.canDesignWebsite == 1)
           (
             label: 'Design Website',
             icon: Icons.brush_outlined,
             isPrimary: false,
             onTap: () => _openWebsiteDesigner(k.kennelUniqueShortName),
           ),
-        ],
         if (k.canManageRuns)
           (
             label: '+ Add Run',
@@ -923,8 +923,7 @@ class RunListPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
           ],
-          if (formController.kennel.canManagePublicWebContent ||
-              formController.kennel.isAdmin) ...[
+          if (formController.kennel.canEditWebsite == 1) ...[
             _appBarBtn(
               'Edit Website',
               onPressed: () async {
@@ -947,13 +946,14 @@ class RunListPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
+          ],
+          if (formController.kennel.canDesignWebsite == 1)
             _appBarBtn(
               'Design Website',
               onPressed: () => _openWebsiteDesigner(
                 formController.kennel.kennelUniqueShortName,
               ),
             ),
-          ],
         ],
       ),
     );

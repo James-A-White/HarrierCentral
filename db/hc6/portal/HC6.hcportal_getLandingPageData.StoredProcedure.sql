@@ -114,6 +114,37 @@ BEGIN TRY
     , case when hkm.MembershipExpirationDate > getdate() then 1 else 0 end as isMember
     , case when h.HomeKennelId = k.id then 1 else 0 end as isHomeKennel
     , hkm.AppAccessFlags as appAccessFlags
+    -- Portal-only derived permissions (Permissions V2, surface=portal): may the
+    -- current user edit / design THIS kennel's website? Granted via mmRole OR
+    -- appFlag, honouring the per-kennel tri-state override, with SuperAdmin
+    -- bypass. Mirrors HC6.CheckKennelPermission's effective-grant logic. Gates the
+    -- Edit/Design Website buttons on the run list page.
+    , CASE WHEN (hkm.AppAccessFlags & 0x40000000) <> 0 THEN 1
+           WHEN EXISTS (
+               SELECT 1 FROM HC.PermissionFunction f
+               JOIN HC.PermissionRole g
+                 ON ((g.GrantorType = 'mmRole'  AND (hkm.MismanagementRoles & g.Bit) <> 0)
+                  OR (g.GrantorType = 'appFlag' AND (hkm.AppAccessFlags     & g.Bit) <> 0))
+               LEFT JOIN HC.RolePermission kr ON kr.FunctionId = f.id AND kr.GrantorId = g.id AND kr.KennelId = k.id
+               LEFT JOIN HC.RolePermission gr ON gr.FunctionId = f.id AND gr.GrantorId = g.id AND gr.KennelId IS NULL
+               WHERE f.FunctionKey = 'editWebsite'
+                 AND CASE WHEN kr.Allowed = 1 THEN 1 WHEN kr.Allowed = -1 THEN 0
+                          WHEN kr.Allowed = 0 THEN COALESCE(gr.Allowed, 0)
+                          ELSE COALESCE(gr.Allowed, 0) END = 1
+           ) THEN 1 ELSE 0 END as canEditWebsite
+    , CASE WHEN (hkm.AppAccessFlags & 0x40000000) <> 0 THEN 1
+           WHEN EXISTS (
+               SELECT 1 FROM HC.PermissionFunction f
+               JOIN HC.PermissionRole g
+                 ON ((g.GrantorType = 'mmRole'  AND (hkm.MismanagementRoles & g.Bit) <> 0)
+                  OR (g.GrantorType = 'appFlag' AND (hkm.AppAccessFlags     & g.Bit) <> 0))
+               LEFT JOIN HC.RolePermission kr ON kr.FunctionId = f.id AND kr.GrantorId = g.id AND kr.KennelId = k.id
+               LEFT JOIN HC.RolePermission gr ON gr.FunctionId = f.id AND gr.GrantorId = g.id AND gr.KennelId IS NULL
+               WHERE f.FunctionKey = 'designWebsite'
+                 AND CASE WHEN kr.Allowed = 1 THEN 1 WHEN kr.Allowed = -1 THEN 0
+                          WHEN kr.Allowed = 0 THEN COALESCE(gr.Allowed, 0)
+                          ELSE COALESCE(gr.Allowed, 0) END = 1
+           ) THEN 1 ELSE 0 END as canDesignWebsite
     FROM
     HC.Hasher h
     INNER JOIN HC.HasherKennelMap hkm on hkm.UserId = h.id

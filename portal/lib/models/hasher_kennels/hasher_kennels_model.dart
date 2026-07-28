@@ -25,6 +25,10 @@ abstract class HasherKennelsModel with _$HasherKennelsModel {
     required int isMember,
     required int isHomeKennel,
     required int appAccessFlags,
+    // Portal-only derived permissions (Permissions V2) for the current user in
+    // this kennel, computed server-side in hcportal_getLandingPageData. 1 = allowed.
+    @Default(0) int canEditWebsite,
+    @Default(0) int canDesignWebsite,
     required int defaultTags1,
     required int defaultTags2,
     required int defaultTags3,
