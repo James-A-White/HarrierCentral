@@ -409,6 +409,15 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 526 — Event cover photo URL (from a Cover-tagged run photo)
+    MigrationsModel(
+      dbVersion: 526,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.events.commonTableName} ADD COLUMN ${tableModel.eventsTableHelper.colEventCoverPhotoUrl} TEXT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
   ];
 
   static Future<void> createTables(

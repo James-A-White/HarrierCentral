@@ -30,6 +30,7 @@ abstract class EventModel with _$EventModel implements BaseModel {
     int? absoluteEventNumber,
     int? canEditRunAttendence,
     String? eventImage,
+    String? eventCoverPhotoUrl,
     String? eventDescription,
     String? eventUrl,
     String? locationOneLineDesc,

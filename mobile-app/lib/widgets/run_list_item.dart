@@ -202,6 +202,16 @@ class RunListItem extends StatelessWidget {
   final bool isPastRun;
   final RunListItemController rliController;
 
+  /// Thumbnail for the list row: the run's own image, or — for a PAST run with no
+  /// image — its cover photo (a photo from the run itself). Null → no thumbnail.
+  String? get _listImageUrl {
+    final img = futureRun.event.eventImage;
+    if (img != null && img.isNotEmpty) return img;
+    final cover = futureRun.event.eventCoverPhotoUrl;
+    if (isPastRun && cover != null && cover.isNotEmpty) return cover;
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     // if (futureRun.extensions.rsvpState != rliController.rsvpState.value) {
@@ -413,8 +423,7 @@ class RunListItem extends StatelessWidget {
               color: Colors.grey[300],
             ),
             _buildLiveRunModeButton(context),
-            if ((futureRun.event.eventImage != null) &&
-                (futureRun.event.eventImage!.isNotEmpty)) ...<Widget>[
+            if (_listImageUrl != null) ...<Widget>[
               GestureDetector(
                 onLongPress: () async {
                   await Navigator.push<void>(
@@ -423,7 +432,7 @@ class RunListItem extends StatelessWidget {
                       builder: (BuildContext context) => ZoomableImagePage2(
                         key: const Key('51120331'),
                         pageTitle: futureRun.event.eventName,
-                        imageUrl: futureRun.event.eventImage,
+                        imageUrl: _listImageUrl,
                         appBarBackgroundColor: themeAppBarBackground,
                         background: Backgrounds.defaultHcBackground(),
                         margin: 20.0,
@@ -434,7 +443,7 @@ class RunListItem extends StatelessWidget {
                 child: Hero(
                   tag: 'EventImage-${futureRun.event.eventId}',
                   child: CachedNetworkImage(
-                    imageUrl: futureRun.event.eventImage!,
+                    imageUrl: _listImageUrl!,
                     // Decode the banner at ~display width, not source full-res
                     // (repeated for every row of the main run list).
                     memCacheWidth: 900,

@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.20+1234 (2026-07-29)
+
+### New Features
+- **Cover photo for past runs**: a past run with no pre-run image now shows its
+  cover photo (a photo from the run itself) as the thumbnail in the runs list. On the
+  run details page, when both exist they're shown together — cover photo on top, then
+  the event image, then the rest of the content.
+- **Featured photos on the run page**: a run's Featured photos now appear as a strip
+  on the run's Details tab, in addition to the Photos tab.
+
 ## 2.15.19+1233 (2026-07-28)
 
 ### Fixes

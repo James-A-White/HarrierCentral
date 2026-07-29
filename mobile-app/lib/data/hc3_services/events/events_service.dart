@@ -47,6 +47,9 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
   final String colAbsoluteEventNumber = 'absoluteEventNumber';
   final String colCanEditRunAttendence = 'canEditRunAttendence';
   final String colEventImage = 'eventImage';
+  // Cover photo URL (absolute) from a Cover-tagged run photo; propagated to
+  // HC.Event.EventCoverPhotoUrl. Always a full https URL — no base-URL prefixing.
+  final String colEventCoverPhotoUrl = 'eventCoverPhotoUrl';
   final String colEventDescription = 'eventDescription';
   final String colEventUrl = 'eventUrl';
   final String colLocationOneLineDesc = 'locationOneLineDesc';
@@ -108,6 +111,7 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
             $colAbsoluteEventNumber NUM,
             $colCanEditRunAttendence NUM,
             $colEventImage TEXT,
+            $colEventCoverPhotoUrl TEXT,
             $colEventDescription TEXT,
             $colEventUrl TEXT,
             $colLocationOneLineDesc TEXT,

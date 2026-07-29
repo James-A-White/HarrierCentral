@@ -89,65 +89,84 @@ class RunDetails extends StatelessWidget {
     tag: event.eventId,
   );
 
+  bool get _hasEventImage =>
+      (event.eventImage ?? '').isNotEmpty && event.eventImage!.startsWith('http');
+
+  /// Cover photo (from a Cover-tagged run photo), propagated to
+  /// HC.Event.EventCoverPhotoUrl. Always absolute.
+  bool get _hasCover =>
+      (event.eventCoverPhotoUrl ?? '').isNotEmpty &&
+      event.eventCoverPhotoUrl!.startsWith('http');
+
+  /// A tappable, zoomable image with a drop shadow — used for both the run's
+  /// cover photo and its event image.
+  Widget _zoomableImage(
+      BuildContext context, String url, String heroTag, String pageTitle) {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: GestureDetector(
+        onTap: () async {
+          await Navigator.push<void>(
+            context,
+            MaterialPageRoute<void>(
+              builder: (BuildContext context) => ZoomableImagePage2(
+                key: Key('zoom-$heroTag'),
+                pageTitle: pageTitle,
+                imageUrl: url,
+                appBarBackgroundColor: themeAppBarBackground,
+                background: Backgrounds.defaultHcBackground(),
+              ),
+            ),
+          );
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(128),
+                spreadRadius: 2,
+                blurRadius: 8,
+                offset: const Offset(4, 4),
+              ),
+            ],
+          ),
+          child: Hero(
+            tag: heroTag,
+            child: CachedNetworkImage(imageUrl: url),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
-          ((event.eventImage ?? '').isNotEmpty &&
-                  event.eventImage!.startsWith('http'))
-              ? Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: GestureDetector(
-                    onTap: () async {
-                      await Navigator.push<void>(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (BuildContext context) => ZoomableImagePage2(
-                            key: const Key('50201112'),
-                            pageTitle: 'Zoomable Event Image',
-                            imageUrl: event.eventImage,
-                            appBarBackgroundColor: themeAppBarBackground,
-                            background: Backgrounds.defaultHcBackground(),
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(128), // shadow color
-                            spreadRadius: 2, // how much the shadow spreads
-                            blurRadius: 8, // softening the shadow
-                            offset: Offset(4, 4), // direction of the shadow
-                          ),
-                        ],
-                      ),
-                      child: Hero(
-                        tag: 'EventImage-${event.eventId}',
-                        child: CachedNetworkImage(
-                          imageUrl: event.eventImage!,
-                          // errorWidget:
-                          //     (BuildContext context, String url, Exception error) =>
-                          //         const  Icon(Icons.error),
-                        ),
-                      ),
-                      //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
-                    ),
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Hero(
-                    tag: 'KennelLogo-${event.eventId}',
-                    child: KennelLogo(
-                      kennelLogoUrl: kennel.kennelLogo,
-                      kennelShortName: kennel.kennelShortName,
-                      logoHeight: 200,
-                    ),
-                  ),
+          // Photo block: the run's cover photo on top (a Cover-tagged run photo,
+          // past runs), then the event image; kennel-logo fallback only when
+          // neither exists. Followed by a strip of the run's Featured photos.
+          if (_hasCover)
+            _zoomableImage(context, event.eventCoverPhotoUrl!,
+                'CoverImage-${event.eventId}', 'Cover photo'),
+          if (_hasEventImage)
+            _zoomableImage(context, event.eventImage!,
+                'EventImage-${event.eventId}', 'Zoomable Event Image'),
+          if (!_hasCover && !_hasEventImage)
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Hero(
+                tag: 'KennelLogo-${event.eventId}',
+                child: KennelLogo(
+                  kennelLogoUrl: kennel.kennelLogo,
+                  kennelShortName: kennel.kennelShortName,
+                  logoHeight: 200,
                 ),
+              ),
+            ),
+          _FeaturedPhotoStrip(
+              eventId: event.eventId, eventName: event.eventName),
           const Padding(
             padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
             child: FancyDivider(
@@ -1081,6 +1100,92 @@ class RunDetails extends StatelessWidget {
     return AdaptiveTextSelectionToolbar.buttonItems(
       anchors: editableTextState.contextMenuAnchors,
       buttonItems: buttonItems,
+    );
+  }
+}
+
+/// A horizontal strip of the run's FEATURED photos (Status == 4), shown on the
+/// Details tab in addition to the Photos tab. Loads once; renders nothing while
+/// loading or when the run has no featured photos.
+class _FeaturedPhotoStrip extends StatefulWidget {
+  const _FeaturedPhotoStrip({required this.eventId, required this.eventName});
+
+  final String eventId;
+  final String eventName;
+
+  @override
+  State<_FeaturedPhotoStrip> createState() => _FeaturedPhotoStripState();
+}
+
+class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
+  List<RunPhotoModel> _featured = const <RunPhotoModel>[];
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    final result =
+        await KennelPhotoService().getRunPhotosForGallery(eventId: widget.eventId);
+    if (!mounted) return;
+    setState(() {
+      _featured =
+          result.photos.where((RunPhotoModel p) => p.status == 4).toList();
+      _loaded = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded || _featured.isEmpty) return const SizedBox.shrink();
+    return Column(
+      children: <Widget>[
+        const SizedBox(height: 28),
+        Text('Featured photos', style: ts_headingLarge),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 150,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: _featured.length,
+            separatorBuilder: (BuildContext _, int _) =>
+                const SizedBox(width: 12),
+            itemBuilder: (BuildContext context, int i) {
+              final RunPhotoModel p = _featured[i];
+              return GestureDetector(
+                onTap: () async {
+                  await Navigator.push<void>(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) => ZoomableImagePage2(
+                        key: Key('featured-${widget.eventId}-$i'),
+                        pageTitle: widget.eventName,
+                        imageUrl: p.effectiveUrl,
+                        appBarBackgroundColor: themeAppBarBackground,
+                        background: Backgrounds.defaultHcBackground(),
+                      ),
+                    ),
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: CachedNetworkImage(
+                    imageUrl: p.effectiveUrl,
+                    width: 190,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 400,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
