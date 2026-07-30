@@ -28,6 +28,13 @@
 --     HC5.fn_GetRunCountsRolling logic (timezone-aware, index hints).
 --   - Asymmetric COALESCE sentinels (-999/999) replaced with
 --     ISNULL(x, -1) pattern (cleaner; safe for non-negative counts).
+-- 2026-07-30 Fix: Stage 2/5 change-guards made symmetric with the values
+--   actually written. The haring guards compared the RAW window value
+--   against the stored CASE-adjusted value (non-hare rows store 0), so
+--   every non-hare row fired on every recompute — re-stamping ~92k
+--   HasherEventMap rows nightly (03:10 sweep) and a user's full history
+--   on every RSVP/check-in. TotalHaring added to the guard (was absent,
+--   so genuine TotalHaring staleness never self-healed).
 -- =====================================================================
 CREATE OR ALTER PROCEDURE [HC6].[nonApi_updateRunCountsByUser]
     @userId UNIQUEIDENTIFIER
@@ -139,10 +146,11 @@ BEGIN
       AND  hem.AttendenceState >= 20
       AND  (
                ISNULL(hem.TotalRuns,              -1) != ISNULL(c.totalRuns,              -1) OR
+               ISNULL(hem.TotalHaring,            -1) != ISNULL(CASE WHEN c.isHare = 1 THEN c.totalHaring           ELSE 0 END, -1) OR
                ISNULL(hem.TotalRunsThisKennel,    -1) != ISNULL(c.totalRunsThisKennel,    -1) OR
-               ISNULL(hem.TotalHaringThisKennel,  -1) != ISNULL(c.totalHaringThisKennel,  -1) OR
+               ISNULL(hem.TotalHaringThisKennel,  -1) != ISNULL(CASE WHEN c.isHare = 1 THEN c.totalHaringThisKennel ELSE 0 END, -1) OR
                ISNULL(hem.YtdTotalRunsThisKennel, -1) != ISNULL(c.ytdTotalRunsThisKennel, -1) OR
-               ISNULL(hem.YtdHaringThisKennel,    -1) != ISNULL(c.ytdHaringThisKennel,    -1)
+               ISNULL(hem.YtdHaringThisKennel,    -1) != ISNULL(CASE WHEN c.isHare = 1 THEN c.ytdHaringThisKennel   ELSE 0 END, -1)
            );
 
     -- ----------------------------------------------------------------
@@ -280,8 +288,8 @@ BEGIN
                         AND ra.KennelId = hkm.KennelId
     WHERE  hkm.UserId = @userId
       AND  (
-               ISNULL(hkm.RollingYearTotalRunCount, -1) != ISNULL(ra.rollingYearTotal,  -1) OR
-               ISNULL(hkm.RollingYearHaringCount,   -1) != ISNULL(ra.rollingYearHaring, -1)
+               ISNULL(hkm.RollingYearTotalRunCount, -1) != ISNULL(ra.rollingYearTotal,  0) OR
+               ISNULL(hkm.RollingYearHaringCount,   -1) != ISNULL(ra.rollingYearHaring, 0)
            );
 
 END
