@@ -1,5 +1,21 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.21+1235 (2026-07-30)
+
+### Improvements
+- **Photo review buttons are now identical on both screens**: the single-photo and
+  grid views share one set of action buttons, so the labels, colours, icons and
+  order match everywhere. **Cover Photo** is now available on the grid too (it
+  needs exactly one photo selected — a run has only one cover).
+- **Filter photos by tag**: the count chips in the run header (Private, Members,
+  Public, Featured, Cover, Deleted) are now tappable and filter the photos below
+  to just that tag. Tap again — or tap either tab — to clear.
+
+### Fixes
+- **Featured photo showed the wrong badge**: a Featured photo displayed a "Public"
+  badge in the single-photo view while the buttons correctly showed Featured.
+- **Select all / Clear** looked like a single button — they're now visibly separate.
+
 ## 2.15.20+1234 (2026-07-29)
 
 ### New Features

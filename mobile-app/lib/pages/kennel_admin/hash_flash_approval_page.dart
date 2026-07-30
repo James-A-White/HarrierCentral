@@ -214,6 +214,11 @@ class PhotoReviewController extends GetxController {
   final RxBool gridMode = false.obs;
   final RxSet<String> selectedIds = <String>{}.obs;
 
+  // ── Status filter ──────────────────────────────────────────────────────────
+  // Set by tapping a header count chip. Holds the [PhotoActionSpec.action] of
+  // the rung being shown, or null for "everything in the active tab".
+  final Rx<int?> statusFilter = Rx<int?>(null);
+
   // Pending writes: photoId → queued action
   final Map<String, _QueuedAction> _queue = {};
 
@@ -230,10 +235,22 @@ class PhotoReviewController extends GetxController {
       (allPhotos.where((p) => !p.isPending).toList()
         ..sort((a, b) => a.createdAt.compareTo(b.createdAt)));
 
-  List<KennelPendingPhoto> get visiblePhotos =>
-      activeTab.value == PhotoReviewTab.pending
-          ? pendingPhotos
-          : reviewedPhotos;
+  List<KennelPendingPhoto> get visiblePhotos {
+    final base = activeTab.value == PhotoReviewTab.pending
+        ? pendingPhotos
+        : reviewedPhotos;
+    final action = statusFilter.value;
+    if (action == null) return base;
+    return base.where((p) => _matchesFilter(p, action)).toList();
+  }
+
+  /// Deleted is a DeletedAt stamp rather than a Status rung, so it filters on
+  /// [KennelPendingPhoto.isDeleted]; every other chip filters on the Status the
+  /// action writes.
+  bool _matchesFilter(KennelPendingPhoto photo, int action) =>
+      action == photoActionDelete
+          ? photo.isDeleted
+          : !photo.isDeleted && photo.status == photoActionSpec(action)?.status;
 
   PhotoStatusCounts get counts => PhotoStatusCounts.from(allPhotos);
 
@@ -261,11 +278,35 @@ class PhotoReviewController extends GetxController {
   }
 
   void switchTab(PhotoReviewTab tab) {
-    if (activeTab.value == tab) return;
+    // A status filter belongs to the tab it was set from — carrying it across
+    // would land the reviewer on an empty list (a Pending photo has no rung).
+    if (activeTab.value == tab && statusFilter.value == null) return;
     activeTab.value = tab;
+    statusFilter.value = null;
+    _resetPosition();
+  }
+
+  /// Tap a header count chip → show only that rung; tap it again to clear.
+  void toggleStatusFilter(int action) {
+    final next = statusFilter.value == action ? null : action;
+    statusFilter.value = next;
+    // Only reviewed photos carry a rung, so a filter implies the Reviewed tab.
+    if (next != null) activeTab.value = PhotoReviewTab.reviewed;
+    _resetPosition();
+  }
+
+  void clearStatusFilter() {
+    if (statusFilter.value == null) return;
+    statusFilter.value = null;
+    _resetPosition();
+  }
+
+  /// Back to the first photo of whatever is now visible. Multi-selection is
+  /// dropped: [bulkAction] works off [selectedIds] directly, so a selection
+  /// surviving a filter change could silently action photos the reviewer can
+  /// no longer see.
+  void _resetPosition() {
     currentIndex.value = 0;
-    // Multi-selection is per-tab — clear it so a bulk action can't target
-    // now-hidden photos from the other tab.
     clearSelection();
     if (pageController.hasClients) {
       pageController.jumpToPage(0);
@@ -923,7 +964,7 @@ class PhotoReviewPage extends StatelessWidget {
             children: [
               _RunHeader(page: this),
               _TabPills(controller: controller),
-              Expanded(child: _PhotoBody(page: this, context: context)),
+              Expanded(child: _PhotoBody(page: this)),
             ],
           );
         }),
@@ -948,6 +989,16 @@ class _RunHeader extends StatelessWidget {
 
     return Obx(() {
       final c = page.controller.counts;
+      final activeFilter = page.controller.statusFilter.value;
+      // Counts keyed by the Status each chip represents, so the chip row can be
+      // generated straight from the ladder in [photoActionSpecs].
+      final countsByStatus = <int, int>{
+        0: c.private,
+        2: c.shared,
+        3: c.runGallery,
+        4: c.homeGallery,
+        5: c.eventCover,
+      };
       return Container(
         color: Colors.black54,
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -979,40 +1030,49 @@ class _RunHeader extends StatelessWidget {
                     style: ts_bodySmall.copyWith(color: Colors.white60),
                   ),
                   const SizedBox(height: 6),
+                  // One chip per ladder rung, in the same order and colours as
+                  // the action buttons (see [photoActionSpecs]). Tapping a chip
+                  // filters the photos below to that rung; tapping it again
+                  // clears the filter. Chips with no photos aren't tappable.
                   Wrap(
                     spacing: 5,
                     runSpacing: 4,
                     children: [
                       if (c.pending > 0)
                         _CountChip(
-                            label: 'Pending',
-                            count: c.pending,
-                            color: Colors.orange.shade700),
-                      _CountChip(
-                          label: 'Private',
-                          count: c.private,
-                          color: Colors.grey.shade600),
-                      _CountChip(
-                          label: 'Members',
-                          count: c.shared,
-                          color: Colors.green.shade600),
-                      _CountChip(
-                          label: 'Public',
-                          count: c.runGallery,
-                          color: Colors.green.shade700),
-                      _CountChip(
-                          label: 'Featured',
-                          count: c.homeGallery,
-                          color: Colors.teal.shade600),
-                      _CountChip(
-                          label: 'Cover',
-                          count: c.eventCover,
-                          color: Colors.teal.shade800),
+                          label: 'Pending',
+                          count: c.pending,
+                          color: photoPendingColor,
+                          // Pending is a whole tab, not a rung filter.
+                          onTap: () => page.controller
+                              .switchTab(PhotoReviewTab.pending),
+                          isDimmed: activeFilter != null,
+                        ),
+                      for (final spec in photoActionSpecs)
+                        if (spec.status != null)
+                          _CountChip(
+                            label: spec.tagLabel,
+                            count: countsByStatus[spec.status] ?? 0,
+                            color: spec.color,
+                            onTap: (countsByStatus[spec.status] ?? 0) > 0
+                                ? () => page.controller
+                                    .toggleStatusFilter(spec.action)
+                                : null,
+                            isActive: activeFilter == spec.action,
+                            isDimmed: activeFilter != null &&
+                                activeFilter != spec.action,
+                          ),
                       if (c.deleted > 0)
                         _CountChip(
-                            label: 'Deleted',
-                            count: c.deleted,
-                            color: hc_red),
+                          label: photoActionSpec(photoActionDelete)!.tagLabel,
+                          count: c.deleted,
+                          color: hc_red,
+                          onTap: () => page.controller
+                              .toggleStatusFilter(photoActionDelete),
+                          isActive: activeFilter == photoActionDelete,
+                          isDimmed: activeFilter != null &&
+                              activeFilter != photoActionDelete,
+                        ),
                     ],
                   ),
                 ],
@@ -1026,19 +1086,39 @@ class _RunHeader extends StatelessWidget {
 }
 
 class _CountChip extends StatelessWidget {
-  const _CountChip(
-      {required this.label, required this.count, required this.color});
+  const _CountChip({
+    required this.label,
+    required this.count,
+    required this.color,
+    this.onTap,
+    this.isActive = false,
+    this.isDimmed = false,
+  });
   final String label;
   final int count;
   final Color color;
 
+  /// Null makes the chip a plain badge with no tap target.
+  final VoidCallback? onTap;
+
+  /// This chip's filter is the one currently applied.
+  final bool isActive;
+
+  /// Some other chip's filter is applied.
+  final bool isDimmed;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
       decoration: BoxDecoration(
-        color: color,
+        color: isDimmed ? color.withValues(alpha: 0.4) : color,
         borderRadius: BorderRadius.circular(20),
+        // Always drawn so activating a chip doesn't reflow the Wrap.
+        border: Border.all(
+          color: isActive ? Colors.white : Colors.transparent,
+          width: 1.5,
+        ),
       ),
       child: Text(
         '$count $label',
@@ -1047,6 +1127,12 @@ class _CountChip extends StatelessWidget {
             fontSize: 10,
             fontWeight: FontWeight.w600),
       ),
+    );
+    if (onTap == null) return chip;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: chip,
     );
   }
 }
@@ -1148,9 +1234,8 @@ class _PillButton extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _PhotoBody extends StatelessWidget {
-  const _PhotoBody({required this.page, required this.context});
+  const _PhotoBody({required this.page});
   final PhotoReviewPage page;
-  final BuildContext context;
 
   @override
   Widget build(BuildContext context) {
@@ -1159,6 +1244,10 @@ class _PhotoBody extends StatelessWidget {
       final tab = page.controller.activeTab.value;
 
       if (photos.isEmpty) {
+        // A filter emptying the list is a different situation from a genuinely
+        // empty tab — say so, and give the reviewer a way back.
+        final filterSpec =
+            photoActionSpec(page.controller.statusFilter.value);
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -1166,28 +1255,46 @@ class _PhotoBody extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  tab == PhotoReviewTab.pending
-                      ? Icons.check_circle_outline
-                      : Icons.photo_library_outlined,
+                  filterSpec != null
+                      ? Icons.filter_alt_off_outlined
+                      : tab == PhotoReviewTab.pending
+                          ? Icons.check_circle_outline
+                          : Icons.photo_library_outlined,
                   color: Colors.white54,
                   size: 64,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  tab == PhotoReviewTab.pending
-                      ? 'All photos reviewed for this run.'
-                      : 'No reviewed photos yet.',
+                  filterSpec != null
+                      ? 'No ${filterSpec.tagLabel} photos left.'
+                      : tab == PhotoReviewTab.pending
+                          ? 'All photos reviewed for this run.'
+                          : 'No reviewed photos yet.',
                   style: ts_bodyYellow,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  tab == PhotoReviewTab.pending
-                      ? 'Switch to Reviewed to see previously actioned photos.'
-                      : 'Photos you action will appear here.',
+                  filterSpec != null
+                      ? 'The ${filterSpec.tagLabel} filter is on.'
+                      : tab == PhotoReviewTab.pending
+                          ? 'Switch to Reviewed to see previously actioned photos.'
+                          : 'Photos you action will appear here.',
                   style: ts_bodySmall.copyWith(color: Colors.white70),
                   textAlign: TextAlign.center,
                 ),
+                if (filterSpec != null) ...[
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: page.controller.clearStatusFilter,
+                    icon: const Icon(Icons.clear, size: 18),
+                    label: Text('Show all photos', style: ts_button),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: hc_red,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -1202,7 +1309,7 @@ class _PhotoBody extends StatelessWidget {
         children: [
           _PhotoCounter(controller: page.controller),
           Expanded(child: _PhotoPageView(controller: page.controller)),
-          _ActionPanel(controller: page.controller, context: context),
+          _ActionPanel(controller: page.controller),
         ],
       );
     });
@@ -1214,24 +1321,16 @@ class _PhotoBody extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 /// Short status tag + colour for a photo, shown as a corner chip in the grid.
+/// Labels and colours come from [photoActionSpecs] so the grid tag, the
+/// carousel badge and the action buttons can never disagree.
 ({String label, Color color}) _photoStatusTag(KennelPendingPhoto photo) {
+  // Deleted stays grey rather than the Delete button's red — in the grid it
+  // reads as "hidden", not as a call to action.
   if (photo.isDeleted) return (label: 'Deleted', color: Colors.grey.shade700);
-  switch (photo.status) {
-    case 1:
-      return (label: 'Pending', color: Colors.orange.shade800);
-    case 0:
-      return (label: 'Private', color: Colors.blueGrey.shade600);
-    case 2:
-      return (label: 'Members', color: Colors.blue.shade700);
-    case 3:
-      return (label: 'Public', color: Colors.green.shade700);
-    case 4:
-      return (label: 'Featured', color: Colors.teal.shade600);
-    case 5:
-      return (label: 'Cover', color: Colors.amber.shade800);
-    default:
-      return (label: '', color: Colors.black54);
-  }
+  if (photo.status == 1) return (label: 'Pending', color: photoPendingColor);
+  final spec = photoActionSpec(photoActionForStatus(photo.status));
+  if (spec == null) return (label: '', color: Colors.black54);
+  return (label: spec.tagLabel, color: spec.color);
 }
 
 class _PhotoGrid extends StatelessWidget {
@@ -1380,6 +1479,9 @@ class _BulkActionBar extends StatelessWidget {
                   onPressed: controller.selectAllVisible,
                   child: Text('Select all', style: ts_button),
                 ),
+                // Both buttons carry the themed red background, so without a
+                // gap they read as one pill.
+                const SizedBox(width: 10),
                 TextButton(
                   onPressed: controller.clearSelection,
                   child: Text(
@@ -1390,45 +1492,19 @@ class _BulkActionBar extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: [
-                _bulkBtn(Icons.delete_outline, 'Delete', hc_red,
-                    photoActionDelete),
-                _bulkBtn(Icons.lock_outline, 'Private', Colors.blueGrey.shade600,
-                    photoActionKeepPrivate),
-                _bulkBtn(Icons.people_outline, 'Members', Colors.blue.shade700,
-                    photoActionMembers),
-                _bulkBtn(Icons.public, 'Public',
-                    Colors.green.shade700, photoActionPublic),
-                _bulkBtn(Icons.home_outlined, 'Featured', Colors.teal.shade700,                    photoActionFeature),
-              ],
+            PhotoActionButtonBar(
+              onAction: (action) => unawaited(controller.bulkAction(action)),
+              // Nothing selected → whole bar greys out. Cover Photo also needs
+              // exactly one photo: the SP demotes any previous cover, so a
+              // multi-selection would leave an arbitrary winner.
+              isEnabled: (spec) => spec.singleTargetOnly
+                  ? count == 1
+                  : count > 0,
             ),
           ],
         ),
       );
     });
-  }
-
-  Widget _bulkBtn(IconData icon, String label, Color color, int action) {
-    final bool enabled = controller.selectedIds.isNotEmpty;
-    final Color fg = enabled ? Colors.white : Colors.grey.shade700;
-    return ElevatedButton.icon(
-      onPressed: enabled ? () => controller.bulkAction(action) : null,
-      icon: Icon(icon, size: 18, color: fg),
-      label: Text(label, style: ts_button.copyWith(color: fg)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        // Keep the buttons visible (light grey, dark grey text) when nothing
-        // is selected instead of fading to invisible-with-white-text.
-        disabledBackgroundColor: Colors.grey.shade300,
-        disabledForegroundColor: Colors.grey.shade700,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      ),
-    );
   }
 }
 
@@ -1644,19 +1720,13 @@ class _PhotoPageView extends StatelessWidget {
             // Queued decision takes priority over committed status.
             Obx(() {
               final queued = controller.decisionFor(photo.photoId);
+              // Status 1 = pending → no producing action, so no badge yet.
               final committed = photo.isDeleted
                   ? photoActionDelete
-                  : switch (photo.status) {
-                      0 => photoActionKeepPrivate,
-                      2 => photoActionMembers,
-                      3 => photoActionPublic,
-                      4 => photoActionPublic, // legacy home-gallery rows read as Public
-                      5 => photoActionMakeEventCover,
-                      _ => null, // status 1 = pending, no badge until actioned
-                    };
-              final effective = queued ?? committed;
-              if (effective == null) return const SizedBox.shrink();
-              final color = _badgeColor(effective);
+                  : photoActionForStatus(photo.status);
+              final spec = photoActionSpec(queued ?? committed);
+              if (spec == null) return const SizedBox.shrink();
+              final color = spec.color;
               return Positioned(
                 top: 10,
                 right: 10,
@@ -1674,7 +1744,7 @@ class _PhotoPageView extends StatelessWidget {
                       Icon(Icons.check_circle, color: color, size: 13),
                       const SizedBox(width: 5),
                       Text(
-                        _actionLabel(effective),
+                        spec.tagLabel,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
@@ -1691,26 +1761,6 @@ class _PhotoPageView extends StatelessWidget {
       },
     );
   }
-
-  String _actionLabel(int action) => switch (action) {
-        photoActionKeepPrivate => 'Keep Private',
-        photoActionDelete => 'Deleted',
-        photoActionMembers => 'Members',
-        photoActionPublic => 'Public',
-        photoActionFeature => 'Featured',
-        photoActionMakeEventCover => 'Event Cover Photo',
-        _ => 'Actioned',
-      };
-
-  Color _badgeColor(int action) => switch (action) {
-        photoActionKeepPrivate    => Colors.grey.shade600,
-        photoActionDelete         => hc_red,
-        photoActionMembers          => Colors.green.shade600,
-        photoActionPublic   => Colors.green.shade700,
-        photoActionFeature => Colors.teal.shade600,
-        photoActionMakeEventCover => Colors.teal.shade800,
-        _ => Colors.white38,
-      };
 }
 
 // ---------------------------------------------------------------------------
@@ -1718,10 +1768,8 @@ class _PhotoPageView extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _ActionPanel extends StatelessWidget {
-  const _ActionPanel(
-      {required this.controller, required this.context});
+  const _ActionPanel({required this.controller});
   final PhotoReviewController controller;
-  final BuildContext context;
 
   @override
   Widget build(BuildContext context) {
@@ -1732,124 +1780,25 @@ class _ActionPanel extends StatelessWidget {
           controller.currentIndex.value.clamp(0, photos.length - 1);
       final photo = photos[idx];
 
-      // Queued decision takes priority; fall back to committed status.
+      // Queued decision takes priority; fall back to committed status. Every
+      // action is a rung of one ladder — mutually exclusive, one tag at a
+      // time. To un-feature, pick a lower rung.
       final int? selected = controller.decisionFor(photo.photoId) ??
           (photo.isDeleted
               ? photoActionDelete
-              : switch (photo.status) {
-                  0 => photoActionKeepPrivate,
-                  2 => photoActionMembers,
-                  3 => photoActionPublic,
-                  4 => photoActionFeature,
-                  5 => photoActionMakeEventCover,
-                  _ => null,
-                });
-
-      void act(int action) => controller.actionPhoto(
-            photoId: photo.photoId,
-            action: action,
-            context: context,
-          );
+              : photoActionForStatus(photo.status));
 
       return Container(
         color: Colors.black54,
         padding: const EdgeInsets.fromLTRB(10, 8, 10, 14),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.lock_outline,
-                    label: 'Keep Private',
-                    color: Colors.grey.shade600,
-                    isSelected: selected == photoActionKeepPrivate,
-                    onTap: () => act(photoActionKeepPrivate),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.delete_outline,
-                    label: 'Delete',
-                    color: hc_red,
-                    isSelected: selected == photoActionDelete,
-                    onTap: () => act(photoActionDelete),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 7),
-              child: Row(
-                children: [
-                  const Expanded(
-                      child: Divider(color: Colors.white24, height: 1)),
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('Audience…',
-                        style: ts_bodySmall.copyWith(
-                            color: Colors.white54,
-                            fontStyle: FontStyle.italic)),
-                  ),
-                  const Expanded(
-                      child: Divider(color: Colors.white24, height: 1)),
-                ],
-              ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.people_outline,
-                    label: 'Members',
-                    color: Colors.blue.shade700,
-                    isSelected: selected == photoActionMembers,
-                    onTap: () => act(photoActionMembers),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.public,
-                    label: 'Public',
-                    color: Colors.green.shade700,
-                    isSelected: selected == photoActionPublic,
-                    onTap: () => act(photoActionPublic),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.home_outlined,
-                    label: 'Featured',
-                    color: Colors.teal.shade600,
-                    // Ladder rung (Status=4) — mutually exclusive with the other
-                    // audience levels; one tag at a time. To un-feature, pick a
-                    // lower rung.
-                    isSelected: selected == photoActionFeature,
-                    onTap: () => act(photoActionFeature),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.star_outline,
-                    label: 'Event Cover Photo',
-                    color: Colors.teal.shade800,
-                    isSelected: selected == photoActionMakeEventCover,
-                    onTap: () => act(photoActionMakeEventCover),
-                  ),
-                ),
-              ],
-            ),
-          ],
+        child: PhotoActionButtonBar(
+          selectedAction: selected,
+          dimUnselected: true,
+          onAction: (action) => unawaited(controller.actionPhoto(
+            photoId: photo.photoId,
+            action: action,
+            context: context,
+          )),
         ),
       );
     });
@@ -2008,69 +1957,6 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
           ),
           const SizedBox(height: 4),
         ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Action button widget
-// ---------------------------------------------------------------------------
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding:
-            const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? color : color.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(10),
-          border: isSelected
-              ? Border.all(color: Colors.white, width: 2)
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isSelected ? Icons.check_circle : icon,
-              size: 16,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                label,
-                style: ts_bodySmall.copyWith(
-                  color: Colors.white,
-                  fontWeight: isSelected
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

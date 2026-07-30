@@ -327,6 +327,7 @@ export 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 export 'package:harrier_central/widgets/payment_icons.dart';
 export 'package:harrier_central/widgets/payment_report_list_item.dart';
 export 'package:harrier_central/widgets/payment_snackbar.dart';
+export 'package:harrier_central/widgets/photo_action_buttons.dart';
 export 'package:harrier_central/widgets/pill_arrow_buttons.dart';
 export 'package:harrier_central/widgets/profile_photo.dart';
 export 'package:harrier_central/widgets/qr_group.dart';
