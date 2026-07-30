@@ -38,12 +38,20 @@ schema changes, so there is no database state to unwind.
 - [ ] **Single-photo bar parity** — same labels, colours, icons and order as the
   grid; current status highlighted, others dimmed.
 
+---
+
+## PackTrack
+
 - [ ] **PackTrack: Label mark must be a permanent core mark** (James, 2026-07-11).
   The Label mark (`I-400.png`, addText action) is currently part of the kennel's
   configurable symbol set — a kennel that omits it leaves its hares with NO way
   to drop a labelled mark on trail (hit live on a run). Make Label (and likely
   Caution/warning too, per the "only symbols that should have labels" rule)
   always available regardless of the kennel's chosen trail-symbol config.
+
+---
+
+## Background boot sync
 
 - [ ] **Background boot sync — wire the other tabs** (deferred 2026-06-20). Cold
   boot now renders the runs page immediately for returning users and runs the
