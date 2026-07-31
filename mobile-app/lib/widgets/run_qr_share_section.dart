@@ -18,6 +18,20 @@ class RunQrShareSection extends StatelessWidget {
   final String kennelUrlForQr;
   final String? kennelWebsiteUrl;
 
+  /// Store links are server-driven: HC.ServerStatus → hcapp_approveLogin →
+  /// stored into prefs on every boot (app_boot_service). The constants are
+  /// only the fallback for a fresh install that hasn't completed a login
+  /// round-trip yet (or an empty server value).
+  static String _prefOr(StringPrefsEnum pref, String fallback) {
+    final String value = (getStringPref(pref) ?? '').trim();
+    return value.isNotEmpty ? value : fallback;
+  }
+
+  String get _iosStoreUrl =>
+      _prefOr(StringPrefsEnum.iosDownloadLink, APP_STORE_IOS_URL);
+  String get _androidStoreUrl =>
+      _prefOr(StringPrefsEnum.androidDownloadLink, APP_STORE_ANDROID_URL);
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -93,7 +107,7 @@ class RunQrShareSection extends StatelessWidget {
               context: context,
               title: 'Harrier Central iOS App',
               description: 'Harrier Central on the App Store',
-              url: APP_STORE_IOS_URL,
+              url: _iosStoreUrl,
               helpTitle: 'Harrier Central for iPhone',
               helpText:
                   'Download Harrier Central for iPhone from the App Store.\r\n\r\nShare this link - or let friends scan the QR code - to get them hashing with the app!',
@@ -102,7 +116,7 @@ class RunQrShareSection extends StatelessWidget {
               context: context,
               title: 'Harrier Central Android App',
               description: 'Harrier Central on Google Play',
-              url: APP_STORE_ANDROID_URL,
+              url: _androidStoreUrl,
               helpTitle: 'Harrier Central for Android',
               helpText:
                   'Download Harrier Central for Android from Google Play.\r\n\r\nShare this link - or let friends scan the QR code - to get them hashing with the app!',

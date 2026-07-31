@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.28+1242 (2026-07-31)
+
+### Improvements
+- **App store links on the Kennel Links page are now server-driven**: sourced
+  from HC.ServerStatus via the login response (already stored to prefs on
+  every boot); the hardcoded URLs remain only as first-boot fallbacks. Also
+  corrected the server's Android link, which still pointed at the beta
+  testing track instead of the production Play Store listing.
+
 ## 2.15.27+1241 (2026-07-31)
 
 ### Improvements
