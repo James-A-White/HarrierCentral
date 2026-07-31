@@ -46,6 +46,26 @@ class SupportPageState extends State<SupportPage> {
   final String _supportCode = getStringPref(StringPrefsEnum.supportCode) ?? '';
 
   bool isLoading = false;
+  bool _isReloading = false;
+  bool _bootLogCopied = false;
+
+  Future<void> _reloadData() async {
+    if (mounted) setState(() => _isReloading = true);
+    await AppBootService.resetAndReboot(keepResetCode: true);
+    // Reached only if the reset was aborted (e.g. offline) — clear the spinner.
+    if (mounted) setState(() => _isReloading = false);
+  }
+
+  Future<void> _copyBootLogToClipboard() async {
+    final text =
+        getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? 'No error log.';
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) return;
+    setState(() => _bootLogCopied = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _bootLogCopied = false);
+    });
+  }
 
   Widget _buildCircularProgressIndicator() {
     return Center(
@@ -66,6 +86,9 @@ class SupportPageState extends State<SupportPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isReloading) {
+      return SizedBox.shrink();
+    }
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
@@ -178,6 +201,158 @@ class SupportPageState extends State<SupportPage> {
                               style: ts_titleVeryLarge,
                               textAlign: TextAlign.center,
                             ),
+                            // ---------------- Reload Data (from My Profile,
+                            // 2026-07-31)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  const FancyDivider(
+                                    key: Key('support_reload_divider'),
+                                    innerColor: Colors.white,
+                                    topMargin: 30.0,
+                                    bottomMargin: 20.0,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'Reload Data',
+                                      style: ts_headingLarge,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'To maximize performance and support the ability to operate when not on a network, Harrier Central stores data relevant to your Hash experience on your phone.\r\n\r\nOn rare occasionions, this data may become out of sync with the master data stored in our central servers. To reload your Hash data, press the "Reload Data" button below. This will clear the existing data, restart Harrier Central, and reload the data from our servers.',
+                                      style: ts_body,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 15,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        StyleForConnected(
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.only(
+                                                top: 8,
+                                                bottom: 8,
+                                                left: 20,
+                                                right: 20,
+                                              ),
+                                            ),
+                                            onPressed: () async {
+                                              await Utilities.showAlert(
+                                                'Reload Data',
+                                                'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
+                                                'Reload data',
+                                                showCancelButton: true,
+                                                cancelButtonText: 'Cancel',
+                                              ).then((bool? result) async {
+                                                if (result ?? false) {
+                                                  await _reloadData();
+                                                }
+                                              });
+                                            },
+                                            child: Text(
+                                              'Reload Data',
+                                              style: ts_button,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // ---------------- Diagnostic Logs (from My
+                            // Profile, 2026-07-31; harvest-cohort gated as
+                            // before)
+                            if (getBoolPref(
+                                  BoolPrefsEnum.debugHarvestEnabled,
+                                ) ==
+                                true)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: <Widget>[
+                                    const FancyDivider(
+                                      key: Key('support_diaglog_divider'),
+                                      innerColor: Colors.white,
+                                      topMargin: 30.0,
+                                      bottomMargin: 20.0,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'Diagnostic Logs',
+                                        style: ts_headingLarge,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'Copy the app\'s startup log to the clipboard for diagnostic purposes.',
+                                        style: ts_body,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 15.0,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: <Widget>[
+                                          ElevatedButton.icon(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: _bootLogCopied
+                                                  ? Colors.green.shade700
+                                                  : hc_blue,
+                                              foregroundColor: Colors.white,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 8.0,
+                                                    horizontal: 15.0,
+                                                  ),
+                                            ),
+                                            onPressed:
+                                                _copyBootLogToClipboard,
+                                            icon: Icon(
+                                              _bootLogCopied
+                                                  ? Icons.check
+                                                  : Icons.copy,
+                                              size: 16,
+                                            ),
+                                            label: Text(
+                                              _bootLogCopied
+                                                  ? 'Copied!'
+                                                  : 'Copy log to clipboard',
+                                              style: ts_button,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             // const FancyDivider(
                             //   key: Key('6624334671'),
                             //   innerColor: Colors.white,

@@ -100,22 +100,6 @@ class DrawerMenuState extends State<DrawerMenu> {
               width: MediaQuery.sizeOf(context).width,
               child: Column(
                 children: <Widget>[
-                  // ListTile(
-                  //   leading: const Icon(Icons.settings, color: textColor),
-                  //   title: Text('Settings', style: style),
-                  //   onTap: () async {
-                  //     Navigator.pop(context);
-                  //     Navigator.push<dynamic>(
-                  //       context,
-                  //       MaterialPageRoute<dynamic>(
-                  //         settings: const RouteSettings(),
-                  //         builder: (BuildContext context) {
-                  //           return const SettingsPage();
-                  //         },
-                  //       ),
-                  //     );
-                  //   },
-                  // ),
                   ListTile(
                     leading: const Icon(FontAwesome.trophy, color: textColor),
                     title: Text('Global Leaders', style: _style),
@@ -176,20 +160,13 @@ class DrawerMenuState extends State<DrawerMenu> {
                               pageType: EnumMyProfilePageType.myProfile,
                               hasherId: _userId,
                               uiElementsToDisplay:
-                                  HasherProfilePage.flagUiElement_distancePref |
                                   HasherProfilePage
                                       .flagUiElement_autoDisplayRunsDistance |
-                                  HasherProfilePage
-                                      .flagUiElement_logOutAndRefreshButton |
                                   HasherProfilePage
                                       .flagUiElement_refresh3rdPartyLogin |
                                   HasherProfilePage.flagUiElement_logOutButton |
                                   HasherProfilePage
-                                      .flagUiElement_gdprDeleteAccount |
-                                  (getBoolPref(BoolPrefsEnum.debugHarvestEnabled) == true
-                                      ? HasherProfilePage
-                                            .flagUiElement_copyBootLog
-                                      : 0),
+                                      .flagUiElement_gdprDeleteAccount,
                             );
                           },
                         ),
@@ -198,6 +175,22 @@ class DrawerMenuState extends State<DrawerMenu> {
                       //   await futureRunsListPageKey.currentState!
                       //       .forceRefreshFromTableExternal();
                       // }
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.settings, color: textColor),
+                    title: Text('Settings', style: _style),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          settings: const RouteSettings(),
+                          builder: (BuildContext context) {
+                            return const SettingsPage();
+                          },
+                        ),
+                      );
                     },
                   ),
                   // ListTile(

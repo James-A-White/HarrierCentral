@@ -1,5 +1,17 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.26+1240 (2026-07-31)
+
+### Improvements
+- **New Settings page** (drawer menu, below My Profile): Distance Preference,
+  Camera Behaviour and GPS Tracking Quality moved out of My Profile. Distance
+  and camera changes now save immediately (with a progress spinner) instead of
+  waiting for Save Changes.
+- **Support page** gains Reload Data and Diagnostic Logs (moved from My
+  Profile; Diagnostic Logs still only appears for the log-harvest cohort).
+- My Profile keeps everything else: profile details, name preference, photo,
+  auto-show-runs distance, third-party login, log out, and delete account.
+
 ## 2.15.25+1239 (2026-07-31)
 
 ### Fixes

@@ -30,18 +30,18 @@ class HasherProfilePage extends StatefulWidget {
   final String kennelShortName;
   final String hashNameFromSearch;
 
+  // 0x04 (distancePref), 0x10 (logOutAndRefresh/Reload Data) and 0x0800
+  // (copyBootLog) were retired 2026-07-31: distance/camera/GPS settings moved
+  // to the Settings page; Reload Data and Diagnostic Logs moved to Support.
   static const int flagUiElement_followKennel = 0x00000001;
   static const int flagUiElement_previousRunCount = 0x00000002;
-  static const int flagUiElement_distancePref = 0x00000004;
   static const int flagUiElement_autoDisplayRunsDistance = 0x00000008;
-  static const int flagUiElement_logOutAndRefreshButton = 0x00000010;
   static const int flagUiElement_refresh3rdPartyLogin = 0x00000020;
   static const int flagUiElement_gdprDeleteAccount = 0x00000040;
   static const int flagUiElement_getInviteCodeButton = 0x00000080;
   //static const int flagUiElement_logOutOfFacebook = 0x00000100;
   static const int flagUiElement_logOutButton = 0x00000200;
   static const int flagUiElement_getUserRunHistory = 0x00000400;
-  static const int flagUiElement_copyBootLog = 0x00000800;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -63,9 +63,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool? _historicalCountIsEstimate;
   bool? _historicalCountIsEstimateWidget;
 
-  bool _isReloading = false;
-  bool _bootLogCopied = false;
-
   String? _email = getStringPref(StringPrefsEnum.email);
   int _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
 
@@ -79,10 +76,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool _isDirty = false;
   bool _addAsKennelFollower = false;
   bool _userRunHistoryLoading = false;
-  bool _savePhotosToCameraRoll =
-      ((getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
-              hasherPref_cameraRollSaveDisabled) ==
-          0;
   String _photoPrefix = '';
   String _newPhoto = bundledAvatarUrl(Random.secure().nextInt(49) + 1);
   late HashersModel _hasher;
@@ -192,12 +185,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         // fill in the e-mail for the user of the app.
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
           _emailController.text = _email ?? '';
+          // Refresh the stored bitfield — the Settings page may have changed
+          // the distance-units / camera bits since this page was constructed.
+          _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
           _distancePreference =
               _hasherPreferences & hasherPref_distanceMeasuredIn;
           _autoRunPreference =
               _hasherPreferences & hasherPref_distanceForAutoDisplay;
-          _savePhotosToCameraRoll =
-              (_hasherPreferences & hasherPref_cameraRollSaveDisabled) == 0;
         }
       }
 
@@ -336,16 +330,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       isDirty = true;
     }
 
-    // Only compare the bits this form controls. Other bits in the stored pref
-    // (photo sharing, debug harvest, etc.) are managed elsewhere and must not
+    // Only compare the bits this form controls (the auto-display radius).
+    // Distance units + camera roll live on the Settings page now; photo
+    // sharing, debug harvest, etc. are managed elsewhere. None of those may
     // trigger dirty state here.
-    const int formPrefMask = hasherPref_distanceMeasuredIn |
-        hasherPref_distanceForAutoDisplay |
-        hasherPref_cameraRollSaveDisabled;
-    if ((_hasherPreferences & formPrefMask) !=
-        (_distancePreference +
-            _autoRunPreference +
-            (_savePhotosToCameraRoll ? 0 : hasherPref_cameraRollSaveDisabled))) {
+    if ((_hasherPreferences & hasherPref_distanceForAutoDisplay) !=
+        _autoRunPreference) {
       isDirty = true;
     }
 
@@ -400,18 +390,23 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         historicalTotalRunCount: _previousRunCountController.text,
         historicalHaringCount: _previousHaringCountController.text,
         historicalCountIsEstimate: _historicalCountIsEstimateWidget,
-        preferences: _distancePreference +
-            _autoRunPreference +
-            (_savePhotosToCameraRoll ? 0 : hasherPref_cameraRollSaveDisabled),
+        // Replace only the auto-display bits; distance units + camera roll are
+        // owned by the Settings page, and everything else (photo sharing,
+        // debug harvest, ...) must ride through untouched — the SP overwrites
+        // the whole Preferences column when @preferences is supplied.
+        preferences: widget.pageType == EnumMyProfilePageType.myProfile
+            ? (_hasherPreferences & ~hasherPref_distanceForAutoDisplay) |
+                  _autoRunPreference
+            : _autoRunPreference,
         followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0,
         nameDisplayPreference: _nameDisplayPreference,
       );
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          final int savedPrefs = _distancePreference +
-              _autoRunPreference +
-              (_savePhotosToCameraRoll ? 0 : hasherPref_cameraRollSaveDisabled);
+          final int savedPrefs =
+              (_hasherPreferences & ~hasherPref_distanceForAutoDisplay) |
+              _autoRunPreference;
           await setStringPref(StringPrefsEnum.email, _emailController.text);
           await setIntPref(IntPrefsEnum.hasherPreferences, savedPrefs);
           _hasherPreferences = savedPrefs;
@@ -617,10 +612,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   AppBar? appBar;
 
   int _nameDisplayPreference = 1;
+  // Read-only here: distance units are edited on the Settings page; the value
+  // is kept for the "...runs within N miles/kilometers" labels below.
   int _distancePreference = 0;
   int _autoRunPreference = 2;
-  bool _isDistanceUpdating = false;
-  int _trackingQuality = getIntPref(IntPrefsEnum.trackingQuality) ?? 2;
 
   void _handleRadioValueChange0(int? value) {
     setStateIfMounted(() {
@@ -629,104 +624,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     });
   }
 
-  void _handleRadioValueChange1(int? value) {
-    setStateIfMounted(() {
-      _distancePreference = value ?? 0;
-      _checkDirty();
-    });
-    if (widget.pageType == EnumMyProfilePageType.myProfile) {
-      _saveDistancePreference();
-    }
-  }
-
-  Future<void> _saveDistancePreference() async {
-    setStateIfMounted(() {
-      _isDistanceUpdating = true;
-    });
-    final HashersService srv = HashersService();
-    final int newPrefs = _distancePreference +
-        _autoRunPreference +
-        (_savePhotosToCameraRoll ? 0 : hasherPref_cameraRollSaveDisabled);
-    final String responseBody = await srv.addEditUser(
-      targetUserId: _hasher.hasherId,
-      firstName: _hasher.firstName ?? '',
-      lastName: _hasher.lastName ?? '',
-      email: _emailController.text,
-      hashName: _hasher.hashName ?? '',
-      photo: _hasher.photo ?? '',
-      eventId: GUID_EMPTY,
-      kennelId: GUID_EMPTY,
-      historicalTotalRunCount: '-1',
-      historicalHaringCount: '-1',
-      historicalCountIsEstimate: _historicalCountIsEstimate ?? false,
-      preferences: newPrefs,
-      nameDisplayPreference: -1,
-    );
-    if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await setIntPref(IntPrefsEnum.hasherPreferences, newPrefs);
-      _hasherPreferences = newPrefs;
-    }
-    if (mounted) {
-      setStateIfMounted(() {
-        _isDistanceUpdating = false;
-        _checkDirty();
-      });
-    }
-  }
-
   void _handleRadioValueChange2(int? value) {
     setStateIfMounted(() {
       _autoRunPreference = value ?? 0;
       _checkDirty();
     });
-  }
-
-  Widget _buildTrackingQualityOption(int value, String label, String sub, int boltCount) {
-    final isSelected = _trackingQuality == value;
-    return GestureDetector(
-      onTap: () async {
-        setStateIfMounted(() => _trackingQuality = value);
-        await setIntPref(IntPrefsEnum.trackingQuality, value);
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? themeBackgroundColor.withValues(alpha: 0.12) : Colors.transparent,
-          border: Border.all(
-            color: isSelected ? themeBackgroundColor : Colors.grey.shade400,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? themeBackgroundColor : Colors.grey,
-              size: 22,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  Text(sub, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                ],
-              ),
-            ),
-            Row(
-              children: List.generate(3, (i) => Icon(
-                Icons.bolt,
-                size: 18,
-                color: i < boltCount ? Colors.amber.shade700 : Colors.grey.shade300,
-              )),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -742,9 +644,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isReloading) {
-      return SizedBox.shrink();
-    }
     return Stack(
       children: <Widget>[
         SizedBox(
@@ -996,126 +895,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                             const SizedBox(height: 15),
                                             (widget.uiElementsToDisplay &
                                                         HasherProfilePage
-                                                            .flagUiElement_distancePref ==
-                                                    0)
-                                                ? Container()
-                                                : Column(
-                                                    children: <Widget>[
-                                                      const FancyDivider(
-                                                        key: Key('422030201'),
-                                                        innerColor:
-                                                            Colors.white,
-                                                        topMargin: 30.0,
-                                                        bottomMargin: 20.0,
-                                                      ),
-                                                      AbsorbPointer(
-                                                        absorbing:
-                                                            _isDistanceUpdating,
-                                                        child: Container(
-                                                          decoration: BoxDecoration(
-                                                            color: Colors
-                                                                .yellow[100],
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  5.0,
-                                                                ),
-                                                          ),
-                                                          child: RadioGroup(
-                                                            groupValue:
-                                                                _distancePreference,
-                                                            onChanged:
-                                                                _handleRadioValueChange1,
-                                                            child: Column(
-                                                              children: <Widget>[
-                                                                const SizedBox(
-                                                                  height: 10,
-                                                                  width: 10,
-                                                                ),
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  children: <Widget>[
-                                                                    Text(
-                                                                      'Distance Preference',
-                                                                      style:
-                                                                          ts_headingBlack,
-                                                                    ),
-                                                                    if (_isDistanceUpdating) ...<
-                                                                      Widget
-                                                                    >[
-                                                                      const SizedBox(
-                                                                        width:
-                                                                            8,
-                                                                      ),
-                                                                      const SizedBox(
-                                                                        width:
-                                                                            16,
-                                                                        height:
-                                                                            16,
-                                                                        child: CircularProgressIndicator(
-                                                                          strokeWidth:
-                                                                              2,
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ],
-                                                                ),
-                                                                const SizedBox(
-                                                                  height: 10,
-                                                                  width: 10,
-                                                                ),
-                                                                Row(
-                                                                  children: <Widget>[
-                                                                    Radio<int>(
-                                                                      value: 0,
-                                                                    ),
-                                                                    const Text(
-                                                                      'Auto',
-                                                                      style: TextStyle(
-                                                                        fontSize:
-                                                                            16.0,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                Row(
-                                                                  children: <Widget>[
-                                                                    Radio<int>(
-                                                                      value: 2,
-                                                                    ),
-                                                                    const Text(
-                                                                      'Kilometers',
-                                                                      style: TextStyle(
-                                                                        fontSize:
-                                                                            16.0,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                Row(
-                                                                  children: <Widget>[
-                                                                    Radio<int>(
-                                                                      value: 3,
-                                                                    ),
-                                                                    const Text(
-                                                                      'Miles',
-                                                                      style: TextStyle(
-                                                                        fontSize:
-                                                                            16.0,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                            (widget.uiElementsToDisplay &
-                                                        HasherProfilePage
                                                             .flagUiElement_autoDisplayRunsDistance ==
                                                     0)
                                                 ? Container()
@@ -1365,106 +1144,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ),
                                       ),
                                     ),
-                                    if (widget.pageType ==
-                                        EnumMyProfilePageType.myProfile) ...[
-                                      const FancyDivider(
-                                        key: Key('camera_roll_divider'),
-                                        innerColor: Colors.white,
-                                        topMargin: 20.0,
-                                        bottomMargin: 10.0,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          'Camera Behavior',
-                                          style: ts_headingLarge,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 8.0,
-                                          right: 8.0,
-                                          bottom: 12.0,
-                                        ),
-                                        child: Text(
-                                          'Harrier Central saves your trail photos to our backend server where they are available to be shared. You can also save these photos directly to your phone with the setting below.',
-                                          style: ts_body,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 20.0,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: <Widget>[
-                                            Transform.scale(
-                                              scale: 1.4,
-                                              child: Switch(
-                                                value: _savePhotosToCameraRoll,
-                                                onChanged: (bool value) {
-                                                  setState(
-                                                    () => _savePhotosToCameraRoll = value,
-                                                  );
-                                                  _checkDirty();
-                                                },
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            const Text(
-                                              'Save photos to phone',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontFamily: 'AvenirNextRegular',
-                                                fontSize: 20.0,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const FancyDivider(
-                                        key: Key('tracking_quality_divider'),
-                                        innerColor: Colors.white,
-                                        topMargin: 10.0,
-                                        bottomMargin: 10.0,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            const Icon(Icons.power, color: Colors.white, size: 20),
-                                            const SizedBox(width: 6),
-                                            Text('GPS Tracking Quality', style: ts_headingLarge, textAlign: TextAlign.center),
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                                        child: Text(
-                                          'Higher accuracy gives a more detailed trail track but drains battery faster.',
-                                          style: ts_body,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(bottom: 20.0),
-                                        decoration: BoxDecoration(
-                                          color: Colors.yellow[100],
-                                          borderRadius: BorderRadius.circular(5.0),
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            _buildTrackingQualityOption(2, 'Best', 'Finest GPS detail — highest battery use', 3),
-                                            _buildTrackingQualityOption(1, 'Balanced', 'Good accuracy — moderate battery use', 2),
-                                            _buildTrackingQualityOption(0, 'Power Saver', 'Coarser track — lowest battery use', 1),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
                                     (widget.uiElementsToDisplay &
                                                 HasherProfilePage
                                                     .flagUiElement_followKennel ==
@@ -1905,83 +1584,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                     ],
                                     if (widget.uiElementsToDisplay &
                                             HasherProfilePage
-                                                .flagUiElement_logOutAndRefreshButton !=
-                                        0) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('8552133039'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Reload Data',
-                                              style: ts_headingLarge,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'To maximize performance and support the ability to operate when not on a network, Harrier Central stores data relevant to your Hash experience on your phone.\r\n\r\nOn rare occasionions, this data may become out of sync with the master data stored in our central servers. To reload your Hash data, press the "Reload Data" button below. This will clear the existing data, restart Harrier Central, and reload the data from our servers.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 15,
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                StyleForConnected(
-                                                  child: ElevatedButton(
-                                                    style: ElevatedButton.styleFrom(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                            top: 8,
-                                                            bottom: 8,
-                                                            left: 20,
-                                                            right: 20,
-                                                          ),
-                                                    ),
-                                                    onPressed: () async {
-                                                      await Utilities.showAlert(
-                                                        'Reload Data',
-                                                        'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
-                                                        'Reload data',
-                                                        showCancelButton: true,
-                                                        cancelButtonText:
-                                                            'Cancel',
-                                                      ).then((
-                                                        bool? result,
-                                                      ) async {
-                                                        if (result ?? false) {
-                                                          await _reloadData();
-                                                        }
-                                                      });
-                                                    },
-                                                    child: Text(
-                                                      'Reload Data',
-                                                      style: ts_button,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                    if (widget.uiElementsToDisplay &
-                                            HasherProfilePage
                                                 .flagUiElement_logOutButton !=
                                         0) ...<Widget>[
                                       Column(
@@ -2285,76 +1887,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ],
                                       ),
                                     ],
-                                    if (widget.uiElementsToDisplay &
-                                            HasherProfilePage
-                                                .flagUiElement_copyBootLog !=
-                                        0) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('912344022'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Diagnostic Logs',
-                                              style: ts_headingLarge,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Copy the app\'s startup log to the clipboard for diagnostic purposes.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 15.0,
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                ElevatedButton.icon(
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: _bootLogCopied
-                                                        ? Colors.green.shade700
-                                                        : hc_blue,
-                                                    foregroundColor: Colors.white,
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          vertical: 8.0,
-                                                          horizontal: 15.0,
-                                                        ),
-                                                  ),
-                                                  onPressed: _copyBootLogToClipboard,
-                                                  icon: Icon(
-                                                    _bootLogCopied
-                                                        ? Icons.check
-                                                        : Icons.copy,
-                                                    size: 16,
-                                                  ),
-                                                  label: Text(
-                                                    _bootLogCopied
-                                                        ? 'Copied!'
-                                                        : 'Copy log to clipboard',
-                                                    style: ts_button,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
                                   ],
                                 ),
                               ),
@@ -2414,23 +1946,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   //   // GetIt.I.registerSingleton<DeviceInfo>(DeviceInfo());
   //   // Register other dependencies here
   // }
-
-  Future<void> _copyBootLogToClipboard() async {
-    final text = getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? 'No error log.';
-    await Clipboard.setData(ClipboardData(text: text));
-    if (!mounted) return;
-    setState(() => _bootLogCopied = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _bootLogCopied = false);
-    });
-  }
-
-  Future<void> _reloadData() async {
-    if (mounted) setState(() => _isReloading = true);
-    await AppBootService.resetAndReboot(keepResetCode: true);
-    // Reached only if the reset was aborted (e.g. offline) — clear the spinner.
-    if (mounted) setState(() => _isReloading = false);
-  }
 
   Future<void> _enableLocationServices() async {
     bool success = false;
