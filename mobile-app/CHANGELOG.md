@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.27+1241 (2026-07-31)
+
+### Improvements
+- **Kennel Links page: four global links added at the bottom** — Global Hash
+  List (hashruns.org), Harrier Central (harriercentral.com), and the iOS App
+  Store / Google Play download links for the app, each with the usual QR code
+  and copy/share/open buttons. Appears everywhere the links section is shown.
+
 ## 2.15.26+1240 (2026-07-31)
 
 ### Improvements

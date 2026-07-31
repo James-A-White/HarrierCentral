@@ -72,6 +72,11 @@ const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
 const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 
 const String BASE_HASHRUNS_DOT_ORG_URL = 'https://www.hashruns.org/';
+const String HARRIER_CENTRAL_WEBSITE_URL = 'https://www.harriercentral.com';
+const String APP_STORE_IOS_URL =
+    'https://apps.apple.com/app/harrier-central/id1445513595';
+const String APP_STORE_ANDROID_URL =
+    'https://play.google.com/store/apps/details?id=com.harriercentral.app';
 
 // const String BASE_URL = 'harrier.azurewebsites.net';
 // const String BASE_API_URL = 'https://$BASE_URL/api/';

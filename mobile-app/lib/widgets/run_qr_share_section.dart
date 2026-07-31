@@ -70,6 +70,43 @@ class RunQrShareSection extends StatelessWidget {
                     "This link takes you to the ${kennel.kennelName} website - your go-to place for everything about Hashing with ${kennel.kennelShortName}!",
               ),
             ],
+            // Global links — always shown at the very bottom (2026-07-31).
+            QrGroup(
+              context: context,
+              title: 'Global Hash List',
+              description: 'the global hash list',
+              url: BASE_HASHRUNS_DOT_ORG_URL,
+              helpTitle: 'Global Hash List',
+              helpText:
+                  'www.hashruns.org lists upcoming hash runs from kennels all over the world.\r\n\r\nUse it to find a hash wherever your travels take you!',
+            ),
+            QrGroup(
+              context: context,
+              title: 'Harrier Central',
+              description: 'the Harrier Central website',
+              url: HARRIER_CENTRAL_WEBSITE_URL,
+              helpTitle: 'Harrier Central',
+              helpText:
+                  'www.harriercentral.com is the home of Harrier Central - the platform behind this app, where kennels can learn what it does and how to get started.',
+            ),
+            QrGroup(
+              context: context,
+              title: 'Harrier Central iOS App',
+              description: 'Harrier Central on the App Store',
+              url: APP_STORE_IOS_URL,
+              helpTitle: 'Harrier Central for iPhone',
+              helpText:
+                  'Download Harrier Central for iPhone from the App Store.\r\n\r\nShare this link - or let friends scan the QR code - to get them hashing with the app!',
+            ),
+            QrGroup(
+              context: context,
+              title: 'Harrier Central Android App',
+              description: 'Harrier Central on Google Play',
+              url: APP_STORE_ANDROID_URL,
+              helpTitle: 'Harrier Central for Android',
+              helpText:
+                  'Download Harrier Central for Android from Google Play.\r\n\r\nShare this link - or let friends scan the QR code - to get them hashing with the app!',
+            ),
           ],
         ),
         const SizedBox(height: 40),
