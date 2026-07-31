@@ -1,0 +1,64 @@
+-- =====================================================================
+-- Run-once: DROP TRIGGER [HC].[trgUpdateHemDates] (on HC.Event)
+-- Date: 2026-07-31
+--
+-- Why: legacy cache-invalidation poke from the pre-HC6 sync era. On any
+-- Event UPDATE whose SET list contained a watched column (SET-list
+-- membership, NOT value change — UPDATE() semantics), it stamped
+-- updatedAt on EVERY HasherEventMap row of the event, forcing clients
+-- to re-download unchanged attendance rows. Fired on every event save
+-- (addEditEvent SETs watched columns unconditionally via COALESCE), and
+-- amplified renumber ripples (one AbsoluteEventNumber fix → all
+-- subsequent events' attendees stamped).
+--
+-- App-side audit 2026-07-31 confirmed nothing consumes the stamp:
+--   * sync watermarks are strictly per-table (MAX(updatedAt) per local
+--     table) — no cross-table coupling;
+--   * UI refresh (DataChangeService) is action-driven, not row-arrival-
+--     driven; event changes reach clients via the events table's own
+--     trigger (trgUpdateModifiedOnDateForEvent — kept);
+--   * the app's addEditEvent call requests no HEM delta in its response;
+--   * run-admin event domain wipes + full-syncs on entry;
+--   * attendance/count changes are stamped by their actual writers
+--     (setEventAttendence/RSVP/payment SPs + the value-guarded run-count
+--     recomputes; hcportal_deleteEvent stamps HEM itself with removed=1).
+--
+-- Archive to db/hc6/app/archive/ once executed.
+--
+-- Rollback: recreate from the original definition preserved below.
+-- =====================================================================
+IF EXISTS (SELECT 1 FROM sys.triggers
+           WHERE name = 'trgUpdateHemDates' AND parent_id = OBJECT_ID('HC.Event'))
+    DROP TRIGGER [HC].[trgUpdateHemDates];
+GO
+
+-- ---------------------------------------------------------------------
+-- Original definition (as deployed until 2026-07-31), for rollback:
+-- ---------------------------------------------------------------------
+-- CREATE TRIGGER [HC].[trgUpdateHemDates]
+--     ON  [HC].[Event]
+--     AFTER UPDATE
+-- AS
+-- BEGIN
+--     SET NOCOUNT ON;
+--
+--     IF (    UPDATE(IsCountedRun)
+--         OR UPDATE(AbsoluteEventNumber)
+--         OR UPDATE(EventNumber)
+--         OR UPDATE(EventName)
+--         OR UPDATE(FbEventName)
+--         OR UPDATE(IsVisible)
+--         OR UPDATE(UseFbRunDetails)
+--         OR UPDATE(EventStartDatetime)
+--         OR UPDATE(FbEventStartDatetime)
+--         OR UPDATE(CanEditRunAttendence)
+--         ) --AND NOT UPDATE(updatedAt)
+--     BEGIN
+--         -- if any of the above are updated, we need to update the HEM tables
+--         -- on the mobile devices to remain in sync.
+--         UPDATE h
+--         SET h.updatedAt = getdate()
+--         FROM HC.HasherEventMap h
+--         INNER JOIN INSERTED ins ON h.EventId = ins.id
+--     END
+-- END
