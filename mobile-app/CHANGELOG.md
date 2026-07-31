@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.25+1239 (2026-07-31)
+
+### Fixes
+- **Following a kennel for the first time now shows the green check
+  immediately**: the follow was recorded correctly, but the list row only
+  updated its in-memory copy of your kennel membership — which doesn't exist
+  yet on a first-ever follow — so the checkbox stayed clear until an app
+  restart. The row now re-reads the freshly-synced membership from the local
+  database. Same fix applied to the notification and email preference toggles.
+
 ## 2.15.24+1238 (2026-07-31)
 
 ### Improvements

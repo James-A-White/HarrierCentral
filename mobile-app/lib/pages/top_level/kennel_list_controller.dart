@@ -240,6 +240,27 @@ class KennelsListPageController extends GetxController {
     }
   }
 
+  /// Re-read this kennel's HKM row from the local common DB. The follow /
+  /// preference service calls apply the server's sync rowsets to the local DB
+  /// before they return, so the row is fresh by the time they resolve. This
+  /// matters because on a FIRST-EVER follow there is no prior HKM row —
+  /// `item.hkm` is null, so `item.hkm?.copyWith(...)` silently produces null
+  /// and the row renders as unfollowed until the next full rebuild (restart).
+  Future<HasherKennelMapModel?> _reloadHkm(KennelListAggregate item) async {
+    final helper = tableModel.hasherKennelMapTableHelper;
+    try {
+      final List<Map<String, dynamic>> rows = await database.rawQuery('''
+        SELECT * FROM ${helper.getTableName(AppDomainType.user)}
+        WHERE ${helper.colKennelId} = '${item.kennel.kennelId}' COLLATE NOCASE
+          AND ${helper.colUserId} = '$currentUserId' COLLATE NOCASE
+      ''');
+      if (rows.isNotEmpty) return helper.fromMap(rows.first);
+    } catch (e, s) {
+      BootLogger.logError('[KennelListController._reloadHkm]', e, s);
+    }
+    return item.hkm;
+  }
+
   Future<void> updateFollowStatus(
     int index,
     int followValue,
@@ -291,11 +312,15 @@ class KennelsListPageController extends GetxController {
     final int newEmail = queryResults[0]['kennelEmailAlertPreference'] as int;
     final int newIsHomeKennel = queryResults[0]['isHomeKennel'] as int;
 
+    // Base on the just-written local DB row — item.hkm is null on a
+    // first-ever follow, which used to leave the checkbox clear (see _reloadHkm).
+    final HasherKennelMapModel? baseHkm = await _reloadHkm(item);
+
     final newAggregate = KennelListAggregate(
       kennel: item.kennel,
       extensions: item.extensions,
       isHomeKennel: newIsHomeKennel == 1,
-      hkm: item.hkm?.copyWith(
+      hkm: baseHkm?.copyWith(
         following: newFollowing,
         kennelNotificationPreference: newNotif,
         kennelEmailAlertPreference: newEmail,
@@ -383,11 +408,12 @@ class KennelsListPageController extends GetxController {
     item.extensions.notificationsRequested = -1;
     if (results.isNotEmpty) {
       final int newPref = results[0]['notificationPreference'] as int;
+      final HasherKennelMapModel? baseHkm = await _reloadHkm(item);
       final newAggregate = KennelListAggregate(
         kennel: item.kennel,
         extensions: item.extensions,
         isHomeKennel: item.isHomeKennel,
-        hkm: item.hkm?.copyWith(kennelNotificationPreference: newPref),
+        hkm: baseHkm?.copyWith(kennelNotificationPreference: newPref),
       );
       filteredList[index] = newAggregate;
       final globalList = tableModel.globalKennelMainPageList;
@@ -422,11 +448,12 @@ class KennelsListPageController extends GetxController {
     item.extensions.emailAlertRequested = -1;
     if (results.isNotEmpty) {
       final int newPref = results[0]['emailAlertPreference'] as int;
+      final HasherKennelMapModel? baseHkm = await _reloadHkm(item);
       final newAggregate = KennelListAggregate(
         kennel: item.kennel,
         extensions: item.extensions,
         isHomeKennel: item.isHomeKennel,
-        hkm: item.hkm?.copyWith(kennelEmailAlertPreference: newPref),
+        hkm: baseHkm?.copyWith(kennelEmailAlertPreference: newPref),
       );
       filteredList[index] = newAggregate;
       final globalList = tableModel.globalKennelMainPageList;
