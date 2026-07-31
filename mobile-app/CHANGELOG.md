@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.23+1237 (2026-07-31)
+
+### Improvements
+- **Removed the screenshot help system**: the (i) button in the app bar and the
+  flip-to-screenshots tutorial view are gone. The screenshots had drifted out of
+  date as the UI evolved, making them more misleading than helpful. (Also drops
+  the tutorial images and the `card_swiper` dependency.)
+
 ## 2.15.22+1236 (2026-07-31)
 
 ### Improvements

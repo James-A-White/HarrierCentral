@@ -32,7 +32,6 @@ export 'dart:typed_data';
 // -----------------------------------------------------------------------------
 export 'package:auto_size_text/auto_size_text.dart';
 export 'package:cached_network_image/cached_network_image.dart';
-export 'package:card_swiper/card_swiper.dart';
 export 'package:device_info_plus/device_info_plus.dart';
 export 'package:diacritic/diacritic.dart';
 export 'package:firebase_core/firebase_core.dart';
@@ -82,7 +81,6 @@ export 'package:uuid/uuid.dart';
 export 'package:ive_flutter_core/util/core_utilities.dart';
 export 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
 export 'package:ive_flutter_core/widgets/fancy_divider.dart';
-export 'package:ive_flutter_core/widgets/flippable_box.dart';
 export 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 export 'package:ive_flutter_core/widgets/qr_popup.dart';
 export 'package:ive_flutter_core/widgets/zoomable_image_page.dart';

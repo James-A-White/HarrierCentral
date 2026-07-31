@@ -1,7 +1,7 @@
 import 'package:harrier_central/imports.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 
-enum MainPageContent { initial, loading, splashSequence, appContent, help }
+enum MainPageContent { initial, loading, splashSequence, appContent }
 
 class MainNavigationController extends GetxController
     with WidgetsBindingObserver {
@@ -16,58 +16,9 @@ class MainNavigationController extends GetxController
     'Songs',
   ];
 
-  final List<List<String>> tutorials = <List<String>>[
-    _tutorialUpcomingRuns,
-    _tutorialKennelsView,
-    _tutorialRunLocations,
-    _tutorialRunCounts,
-    _tutorialSongs,
-  ];
-
-  // ignore: prefer_final_fields
-  static List<String> _tutorialSongs = <String>[];
-
-  // ignore: prefer_final_fields
-  static List<String> _tutorialRunLocations = <String>[
-    'images/tutorial/run_locations_help_1.jpg',
-    'images/tutorial/run_locations_help_2.jpg',
-    'images/tutorial/run_locations_help_3.jpg',
-    'images/tutorial/run_locations_help_4.jpg',
-  ];
-
-  // ignore: prefer_final_fields
-  static List<String> _tutorialUpcomingRuns = <String>[
-    'images/tutorial/upcoming_runs_page_1.jpg',
-    'images/tutorial/upcoming_runs_page_2.jpg',
-    'images/tutorial/upcoming_runs_page_3.jpg',
-    'images/tutorial/upcoming_runs_page_4.jpg',
-    'images/tutorial/upcoming_runs_page_5.jpg',
-    'images/tutorial/upcoming_runs_page_6.jpg',
-    'images/tutorial/upcoming_runs_page_7.jpg',
-  ];
-
-  // ignore: prefer_final_fields
-  static List<String> _tutorialRunCounts = <String>[
-    'images/tutorial/run_counts_tutorial_1.jpg',
-    'images/tutorial/run_counts_tutorial_2.jpg',
-    'images/tutorial/run_counts_tutorial_3.jpg',
-  ];
-
-  // ignore: prefer_final_fields
-  static List<String> _tutorialKennelsView = <String>[
-    'images/tutorial/kennels_tutorial_1.jpg',
-    'images/tutorial/kennels_tutorial_2.jpg',
-    'images/tutorial/kennels_tutorial_3.jpg',
-    'images/tutorial/kennels_tutorial_4.jpg',
-    'images/tutorial/kennels_tutorial_5.jpg',
-    'images/tutorial/kennels_tutorial_6.jpg',
-    'images/tutorial/kennels_tutorial_7.jpg',
-  ];
-
   // Reactive state
   final appBarText = tabTitles[0].obs;
   final initializationMessage = ''.obs;
-  final isFlipped = false.obs;
   final mainScreenReady = false.obs;
   final mainScreenContent = MainPageContent.initial.obs;
   final showPromoTools = false.obs;
@@ -439,10 +390,6 @@ class MainNavigationController extends GetxController
     initializationMessage.value = message;
   }
 
-  void toggleFlip() {
-    isFlipped.value = !isFlipped.value;
-  }
-
   Future<void> onTabChanged(int index) async {
     currentPage.value = index;
     appBarText.value = tabTitles[index];
@@ -450,10 +397,6 @@ class MainNavigationController extends GetxController
       final ctrl = Get.find<FutureRunListPageController>();
       await ctrl.refreshFromTable(true); // instant local refresh
       unawaited(ctrl.triggerBackgroundSync()); // background API sync (1-min debounce)
-    }
-    // Delay setState for map FAB
-    if (!isFlipped.value && index == 2) {
-      Future.delayed(const Duration(milliseconds: 250), () {});
     }
   }
 
@@ -491,18 +434,6 @@ class MainNavigationController extends GetxController
   //     default:
   //       return futureRunsListPage;
   //   }
-  // }
-
-  // Widget? get currentFab {
-  //   if (!isFlipped.value) {
-  //     if (currentPage.value == 2) {
-  //       return runAndKennelMapPageKey.currentState?.getMapFab();
-  //     }
-  //     if (currentPage.value == 1) {
-  //       return kennelLocationsPageKey.currentState?.getKennelFab();
-  //     }
-  //   }
-  //   return null;
   // }
 
   Future<bool> _checkLocationPermissions() async {

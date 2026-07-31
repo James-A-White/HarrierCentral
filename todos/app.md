@@ -4,6 +4,20 @@ Items flagged during development that need follow-up.
 
 ---
 
+## Help system
+
+- [ ] **Find a better way to provide in-app help** (if anyone ever uses it).
+  Removed 2026-07-31 (2.15.23+1237): the app-bar (i) button, the FlippableBox
+  flip-to-screenshots tutorial (Swiper over `images/tutorial/*.jpg`), the 22
+  screenshot assets, and the `card_swiper` dependency — the screenshots drifted
+  out of date as the UI evolved. If help returns, prefer something that can't
+  rot: link out to per-topic pages on hashruns.org (maintained once, on the
+  web), or short contextual text tooltips instead of full-screen screenshots.
+  Note: the QR check-in page kept its own (i) — that one is a maintained text
+  dialog, not a screenshot.
+
+---
+
 ## Device test — 2.15.21+1235 photo review (shipped blind 2026-07-30)
 
 Released to TestFlight with `flutter analyze` only — no simulator or device run.
