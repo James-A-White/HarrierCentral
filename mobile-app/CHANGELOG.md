@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.24+1238 (2026-07-31)
+
+### Improvements
+- **A run now counts as "current" for 6 hours after its start, everywhere**: the
+  runs list split was 3 hours, the map's internal flags used a buggy +4-hour
+  comparison (which also misclassified runs starting within the next 4 hours as
+  past), and map pins flipped to past styling at the exact start instant. All
+  three now share one rule: current/future until 6 hours after start.
+
 ## 2.15.23+1237 (2026-07-31)
 
 ### Improvements

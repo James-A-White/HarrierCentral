@@ -666,8 +666,8 @@ class QueryRuns {
           julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) as eventJulianLocal,
           julianday('now') as nowJulian,
           julianday('now','$offsetFromGmtToLocal') as nowJulianLocal,
-          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-3 hours') then 1 else 0 end as showAsFutureEvent,
-          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-3 hours') then 1 else 0 end as showAsPastEvent,
+          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-6 hours') then 1 else 0 end as showAsFutureEvent,
+          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-6 hours') then 1 else 0 end as showAsPastEvent,
           $searchRunsField
           FROM ${EnumDataTables.events.commonTableName} evt
           INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.kennelId = evt.kennelId

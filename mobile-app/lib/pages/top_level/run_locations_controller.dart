@@ -475,8 +475,12 @@ class RunAndKennelMapController extends GetxController {
                   longitude: lon,
                   evtLat: lat,
                   evtLon: lon,
-                  showAsFutureEvent: diff >= const Duration(hours: 4) ? 1 : 0,
-                  showAsPastEvent: diff <= const Duration(hours: 4) ? 1 : 0,
+                  // Current/future until 6h after start (diff = startGmt − now);
+                  // mirrors the SQL flags in QueryRuns (julianday 'now','-6 hours').
+                  // The old form compared against +4h, which also misclassified
+                  // runs starting within the next 4 hours as past.
+                  showAsFutureEvent: diff >= const Duration(hours: -6) ? 1 : 0,
+                  showAsPastEvent: diff < const Duration(hours: -6) ? 1 : 0,
                   isMapAndDistanceValid: results[i]['isMapAndDistanceValid'],
                   rsvpState: results[i]['rsvpState'],
                   attendenceState: results[i]['attendenceState'],
@@ -540,7 +544,10 @@ class RunAndKennelMapController extends GetxController {
         alignment: Alignment.topCenter,
         point: ll,
         child: Opacity(
-          opacity: dt.isBefore(DateTime.now()) ? 0.66 : 1.0,
+          opacity:
+              dt.isBefore(DateTime.now().subtract(const Duration(hours: 6)))
+              ? 0.66
+              : 1.0,
           child: _buildRunMarkerWidget(
             run.event.eventId,
             dt,
@@ -770,7 +777,10 @@ class RunAndKennelMapController extends GetxController {
     if (isCountedRun == 0) isEvent = 'activity';
     if ((eventScope ?? 0) > 1) isEvent = 'event';
 
-    if (eventStartDatetimeGmt.isAfter(DateTime.now())) {
+    // A run keeps its "current/future" pin until 6 hours after its start.
+    if (eventStartDatetimeGmt.isAfter(
+      DateTime.now().subtract(const Duration(hours: 6)),
+    )) {
       if (((attendenceState ?? 0) >= attendenceAtHash.value) ||
           ((rsvpState ?? 0) >= rsvpYes.value)) {
         if (isHare != 0) {
