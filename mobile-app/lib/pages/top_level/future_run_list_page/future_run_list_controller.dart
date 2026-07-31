@@ -94,6 +94,15 @@ class FutureRunListPageController extends GetxController {
   bool get showsInlinePast =>
       !isChatsMode && runsTimeScope.value == RunsTimeScope.future;
 
+  /// Banner text under the search bar. When the inline past section is shown
+  /// the list is split around the divider, so the count is split the same way
+  /// (future = filteredRuns, past = pastRuns). Flat-list modes (chats, Past
+  /// scope, date range) keep the single combined count — those lists aren't
+  /// necessarily future runs, so labelling them as such would be wrong.
+  String get resultCountLabel => showsInlinePast
+      ? 'Showing ${resultCount.value} future runs, ${pastRuns.length} past runs'
+      : 'Showing ${resultCount.value} runs';
+
   // "My" = runs the user is actually part of: RSVP'd Yes (going), or attended.
   // NOTE: "attended" means attendenceState >= attendenceAtHash (20). Lower
   // values are NOT attendance — attendenceNo (10) means the opposite — so a

@@ -221,7 +221,7 @@ class FutureRunsListPage extends StatelessWidget {
                 alignment: Alignment.center,
 
                 child: Text(
-                  'Showing ${controller.resultCount.value} runs',
+                  controller.resultCountLabel,
                   style: ts_titleSmallCondensedBlack,
                 ),
               );

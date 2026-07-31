@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.22+1236 (2026-07-31)
+
+### Improvements
+- **Runs list count banner splits future and past**: the banner under the search
+  bar now reads "Showing X future runs, Y past runs", matching the inline past
+  section above the divider. Flat-list modes (chats, Past scope, date-range
+  filter) keep the single combined count, since those lists aren't future runs.
+
 ## 2.15.21+1235 (2026-07-30)
 
 ### Improvements
