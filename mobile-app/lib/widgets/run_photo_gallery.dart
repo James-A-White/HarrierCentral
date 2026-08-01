@@ -194,6 +194,8 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
       runStartWall: startWall,
       runEndWall: endWall,
       runUtcOffset: runOffset,
+      runStartLat: run.extensions.evtLat ?? run.event.hcLatitude,
+      runStartLng: run.extensions.evtLon ?? run.event.hcLongitude,
     );
 
     if (!mounted) return;
@@ -209,7 +211,7 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
     }
     if (result.rejected > 0) {
       parts.add(
-        '${result.rejected} skipped — no location or not taken during the run',
+        '${result.rejected} skipped — no location, or not taken at this run',
       );
     }
     if (result.failed > 0) {

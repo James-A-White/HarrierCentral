@@ -1,5 +1,6 @@
 import 'package:exif/exif.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 import 'package:photo_manager/photo_manager.dart';
 
 // Photo review action codes — match hcapp_updatePhotoStatus @action parameter.
@@ -13,6 +14,13 @@ const int photoActionFeature =
 const int photoActionMakeEventCover =
     6; // public + run cover photo (status 5, one per run)
 const int photoActionUnfeature = 7; // clear Featured flag
+
+/// How far from the run's start a photo may have been taken and still count as
+/// part of the run. Generous on purpose — hashes wander, and a point-to-point
+/// or a coach trip can cover real ground — but tight enough to exclude a photo
+/// from an entirely different day out that happens to fall inside the run's
+/// hours.
+const double _maxPhotoDistanceMiles = 30.0;
 
 class KennelPhotoService {
   /// Orchestrates the full capture → upload → record flow.
@@ -497,6 +505,13 @@ class KennelPhotoService {
     required DateTime runStartWall,
     required DateTime runEndWall,
     required Duration runUtcOffset,
+    // The run's start location. When known, photos taken further than
+    // [_maxPhotoDistanceMiles] from it are rejected: a photo whose EXIF time
+    // happens to land in the window but was taken in another county belongs to
+    // someone's day off, not this run. Null when the run has no coordinates,
+    // in which case the distance check is skipped rather than guessed at.
+    double? runStartLat,
+    double? runStartLng,
   }) async {
     // Phone clocks drift against GPS time; a little slack at each end beats
     // rejecting a legitimate photo taken moments before the off.
@@ -523,6 +538,17 @@ class KennelPhotoService {
       if (meta.takenAt.isBefore(from) || meta.takenAt.isAfter(to)) {
         rejected++;
         continue;
+      }
+      if (runStartLat != null && runStartLng != null) {
+        final away = const latlng.Distance().as(
+          latlng.LengthUnit.Meter,
+          latlng.LatLng(runStartLat, runStartLng),
+          latlng.LatLng(meta.lat, meta.lng),
+        );
+        if (away > _maxPhotoDistanceMiles * MILES_TO_METERS) {
+          rejected++;
+          continue;
+        }
       }
       final ok = await uploadExistingPhoto(
         imageFile: file,

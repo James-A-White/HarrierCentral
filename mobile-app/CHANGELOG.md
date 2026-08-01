@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.51+1265 (2026-08-01)
+
+### Improvements
+- **Photo import also checks where the photo was taken.** Anything more than
+  30 miles from the run's start is skipped, so a picture from home that
+  happens to fall in the run's hours doesn't end up in the Hash Flash's queue
+  or on the run map.
+
 ## 2.15.50+1264 (2026-08-01)
 
 ### Fixes
