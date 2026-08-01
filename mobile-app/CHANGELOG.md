@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.32+1246 (2026-08-01)
+
+### New Features
+- **"Which way is the trail?" compass**: after sending an "I'm Lost" message,
+  a dialog now shows an arrow pointing at the nearest point of the pack's live
+  GPS tracks, with the straight-line distance. The arrow turns as you turn
+  (device compass) and refreshes every 20 seconds. If nobody else is tracking,
+  it points back along your own earlier track instead — "backtrack to where
+  you left it". It is a bearing, not a route: no path, no turn-by-turn.
+- **Flashlight button** on Live Run Tools — toggles the phone's torch for
+  night trails, and always switches off when you leave the screen.
+- **Share My Run button** — opens the phone's normal share sheet with a link
+  to this run's public page, where friends can follow your dot live.
+
 ## 2.15.31+1245 (2026-08-01)
 
 ### New Features

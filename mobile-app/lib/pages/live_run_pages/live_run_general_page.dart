@@ -1,8 +1,11 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/live_run_pages/lost_compass_dialog.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:torch_light/torch_light.dart';
 
 // Trail-mark control tiles. A marker is a glyph or a short text on a yellow
 // rounded square (no border), per docs/trail_markers/SPEC.md §4. Glyphs are
@@ -89,6 +92,7 @@ class LiveRunGeneralController extends GetxController {
   final LocationService _locationService = Get.find<LocationService>();
 
   final RxBool isTracking = false.obs;
+  final RxBool torchOn = false.obs;
   final RxDouble distanceKm = 0.0.obs;
   final Rx<Duration> elapsed = const Duration().obs;
   final Rx<Position?> lastPosition = Rx<Position?>(null);
@@ -132,8 +136,14 @@ class LiveRunGeneralController extends GetxController {
       });
     }
 
-    _trackingWorker = ever<bool>(_locationService.joinRunTracking, _handleTrackingToggle);
-    _positionWorker = ever<Position?>(_locationService.lastKnownPosition, _handlePosition);
+    _trackingWorker = ever<bool>(
+      _locationService.joinRunTracking,
+      _handleTrackingToggle,
+    );
+    _positionWorker = ever<Position?>(
+      _locationService.lastKnownPosition,
+      _handlePosition,
+    );
 
     if (isTracking.value) {
       _trackingStartedAt ??= DateTime.now();
@@ -156,20 +166,67 @@ class LiveRunGeneralController extends GetxController {
     _trackingWorker?.dispose();
     _positionWorker?.dispose();
     _stopElapsedTicker();
+    // Never leave the torch burning after the page goes away.
+    if (torchOn.value) unawaited(TorchLight.disableTorch());
     super.onClose();
+  }
+
+  /// Toggles the phone's torch. Reports failure rather than silently doing
+  /// nothing (no flash unit, or the camera is held by another app).
+  Future<void> toggleTorch() async {
+    try {
+      if (torchOn.value) {
+        await TorchLight.disableTorch();
+        torchOn.value = false;
+      } else {
+        await TorchLight.enableTorch();
+        torchOn.value = true;
+      }
+    } catch (_) {
+      torchOn.value = false;
+      Get.snackbar(
+        'Torch unavailable',
+        'This device would not turn its light on — another app may be using '
+            'the camera.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: hc_red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Opens the OS share sheet with this run's public page — where anyone can
+  /// watch the live PackTrack map without the app.
+  Future<void> shareRun() async {
+    final String url = run.event.isCountedRun != 0
+        ? '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}/${run.event.eventNumber}'
+        : '$BASE_HASHRUNS_DOT_ORG_URL#/RID?publicEventId=${run.event.publicEventId}';
+    final String name = run.event.eventName.isEmpty
+        ? '${run.kennel.kennelShortName} run'
+        : run.event.eventName;
+    await SharePlus.instance.share(
+      ShareParams(
+        text:
+            "I'm running $name with ${run.kennel.kennelShortName} — "
+            'follow me live: $url',
+        subject: 'Follow my hash live',
+      ),
+    );
   }
 
   bool _checkCanStart() {
     return DateTime.now().toUtc().isAfter(
-      run.event.eventStartDatetimeGmt.toUtc().subtract(const Duration(minutes: 5)),
+      run.event.eventStartDatetimeGmt.toUtc().subtract(
+        const Duration(minutes: 5),
+      ),
     );
   }
 
   // Local-time label shown on the disabled start button.
   String get trackingOpensAt {
-    final opensAt = run.event.eventStartDatetimeGmt
-        .toLocal()
-        .subtract(const Duration(minutes: 5));
+    final opensAt = run.event.eventStartDatetimeGmt.toLocal().subtract(
+      const Duration(minutes: 5),
+    );
     return DateFormat('h:mm a').format(opensAt);
   }
 
@@ -216,7 +273,10 @@ class LiveRunGeneralController extends GetxController {
   Future<void> _resumeExistingTrackIfAny() async {
     final userId = _locationService.userId;
     final eventId = _locationService.eventId;
-    if (userId == null || userId.isEmpty || eventId == null || eventId.isEmpty) {
+    if (userId == null ||
+        userId.isEmpty ||
+        eventId == null ||
+        eventId.isEmpty) {
       return;
     }
 
@@ -493,28 +553,34 @@ class LiveRunGeneralPage extends StatelessWidget {
                   horizontal: 16,
                   vertical: 12,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTopButtons(context),
-                    _buildTrailTypePicker(context),
-                    const SizedBox(height: 12),
-                    _buildStatsRow(),
-                    const SizedBox(height: 12),
-                    // _buildActionsRow(context),
-                    // const SizedBox(height: 12),
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildMarkerGrid(context),
-                          _buildActionButtons(context),
-                        ],
+                // Scrollable so the tool stack degrades gracefully on short
+                // screens instead of throwing a RenderFlex overflow.
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTopButtons(context),
+                      _buildTrailTypePicker(context),
+                      const SizedBox(height: 12),
+                      _buildStatsRow(),
+                      const SizedBox(height: 12),
+                      // _buildActionsRow(context),
+                      // const SizedBox(height: 12),
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildMarkerGrid(context),
+                            _buildActionButtons(context),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildAssistRow(context),
-                  ],
+                      const SizedBox(height: 8),
+                      _buildAssistRow(context),
+                      const SizedBox(height: 8),
+                      _buildUtilityRow(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1018,6 +1084,59 @@ class LiveRunGeneralPage extends StatelessWidget {
     );
   }
 
+  /// Torch + share-my-run. Utility tools, not trail actions — always enabled,
+  /// including before tracking starts.
+  Widget _buildUtilityRow() {
+    final buttonShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    );
+    return SizedBox(
+      height: 52,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Obx(() {
+              final on = controller.torchOn.value;
+              return ElevatedButton.icon(
+                icon: Icon(
+                  on ? Icons.flashlight_on : Icons.flashlight_off,
+                  size: 22,
+                ),
+                label: Text(
+                  on ? 'Light On' : 'Flashlight',
+                  style: ts_button.copyWith(fontSize: 16),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: on ? Colors.amber.shade600 : Colors.blueGrey,
+                  foregroundColor: on ? Colors.black87 : Colors.white,
+                  shape: buttonShape,
+                ),
+                onPressed: () => unawaited(controller.toggleTorch()),
+              );
+            }),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.ios_share, size: 22),
+              label: Text(
+                'Share My Run',
+                style: ts_button.copyWith(fontSize: 15),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: hc_blue,
+                foregroundColor: Colors.white,
+                shape: buttonShape,
+              ),
+              onPressed: () => unawaited(controller.shareRun()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _confirmAndSendAssist(
     BuildContext context, {
     required bool urgent,
@@ -1070,6 +1189,13 @@ class LiveRunGeneralPage extends StatelessWidget {
       backgroundColor: ok ? hc_blue : hc_red,
       colorText: Colors.white,
     );
+
+    // "I'm Lost" also answers the immediate question: which way is the trail?
+    // Shown regardless of whether the chat send succeeded — the bearing is
+    // local-plus-tracking-service and is the more urgent of the two.
+    if (!urgent && context.mounted) {
+      await showLostCompassDialog(context, run.event.eventId);
+    }
   }
 }
 
@@ -1143,7 +1269,10 @@ class _SlotFlashDialogState extends State<_SlotFlashDialog>
             child: Material(
               color: Colors.transparent,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 40),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 36,
+                  horizontal: 40,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(28),
