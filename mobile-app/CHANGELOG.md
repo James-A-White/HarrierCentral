@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.46+1260 (2026-08-01)
+
+### Improvements
+- **"I'm Lost" distance now counts down as you walk.** The arrow and distance
+  update with every GPS fix instead of once every five seconds, so you can see
+  straight away whether you're getting warmer. Which trail point you're aimed
+  at still only changes every five seconds, so the needle doesn't hop between
+  two equally-close bits of trail while you're trying to follow it.
+
 ## 2.15.45+1259 (2026-08-01)
 
 ### Fixes

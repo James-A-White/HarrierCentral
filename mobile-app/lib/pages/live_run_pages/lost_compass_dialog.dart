@@ -77,6 +77,16 @@ class LostCompassController extends GetxController {
   final RxnString retargetNotice = RxnString();
   Timer? _retargetNoticeTimer;
 
+  /// The trail point currently being pointed at. Chosen on the slow loop and
+  /// held between polls: re-picking it on every GPS fix would make the arrow
+  /// and distance jump around as near-equal candidates traded places.
+  latlong.LatLng? _targetPoint;
+
+  /// Freshest fix from our own stream; falls back to the shared service value
+  /// until the first one arrives.
+  Position? _lastPosition;
+
+  StreamSubscription<Position>? _positionSub;
   StreamSubscription<CompassEvent>? _compassSub;
   Timer? _refreshTimer;
 
@@ -97,6 +107,27 @@ class LostCompassController extends GetxController {
       }
       deviceHeading.value = h;
     });
+    // Own high-rate position stream for the lifetime of the dialog. The app's
+    // shared idle stream only reports every 250m, which is useless here, and a
+    // runner who is lost may not be tracking at all. Distance/bearing to the
+    // held target cost nothing to recompute — no network, just trigonometry —
+    // so the readout moves with each fix rather than once per poll.
+    _positionSub =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.best,
+            distanceFilter: 0, // every fix the OS gives us
+          ),
+        ).listen(
+          (pos) {
+            _lastPosition = pos;
+            _updateReadout(pos);
+          },
+          onError: (Object e) {
+            if (kDebugMode) debugPrint('[LostCompass] position stream: $e');
+          },
+        );
+
     unawaited(refreshBearing());
     _refreshTimer = Timer.periodic(
       _refreshInterval,
@@ -104,8 +135,19 @@ class LostCompassController extends GetxController {
     );
   }
 
+  /// Recomputes bearing and distance to the CURRENTLY HELD target. Cheap and
+  /// purely local; safe to run on every GPS fix.
+  void _updateReadout(Position me) {
+    final target = _targetPoint;
+    if (target == null) return;
+    final from = latlong.LatLng(me.latitude, me.longitude);
+    bearingToTrail.value = (_distance.bearing(from, target) + 360) % 360;
+    distanceMeters.value = _distance.as(latlong.LengthUnit.Meter, from, target);
+  }
+
   @override
   void onClose() {
+    unawaited(_positionSub?.cancel());
     unawaited(_compassSub?.cancel());
     _refreshTimer?.cancel();
     _retargetNoticeTimer?.cancel();
@@ -117,7 +159,8 @@ class LostCompassController extends GetxController {
   /// current position. Runs every [_refreshInterval] — someone who is lost gets
   /// live data, and if the pack moves a trail closer, the arrow follows it.
   Future<void> refreshBearing({bool forceFetch = false}) async {
-    final Position? me = Get.find<LocationService>().lastKnownPosition.value;
+    final Position? me =
+        _lastPosition ?? Get.find<LocationService>().lastKnownPosition.value;
     if (me == null) {
       errorMessage.value =
           'Your location is not available yet. Make sure location is enabled '
@@ -251,19 +294,18 @@ class LostCompassController extends GetxController {
                 'there is no trail to point at. Ask in the chat — the pack '
                 'has been notified.'
           : 'Could not read any track positions. Try again in a moment.';
+      _targetPoint = null;
       bearingToTrail.value = null;
       distanceMeters.value = null;
       nearestRunnerName.value = null;
     } else {
       errorMessage.value = null;
       usingOwnTrack.value = fellBack;
-      bearingToTrail.value =
-          (_distance.bearing(myPoint, best.point) + 360) % 360;
-      distanceMeters.value = _distance.as(
-        latlong.LengthUnit.Meter,
-        myPoint,
-        best.point,
-      );
+      // Latch the chosen point. Bearing and distance are then recomputed
+      // against it on every GPS fix (see _updateReadout) rather than only
+      // here, so the numbers move as you walk instead of once per poll.
+      _targetPoint = best.point;
+      _updateReadout(me);
       final String nearestId = best.userId;
       nearestRunnerName.value = null;
       if (!fellBack) {
