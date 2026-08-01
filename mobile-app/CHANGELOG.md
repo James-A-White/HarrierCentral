@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.48+1262 (2026-08-01)
+
+### Improvements
+- **"I'm Lost" now also says where that hasher has got to since** — e.g.
+  "Tuna Melt was there 33 minutes ago" followed by "Tuna Melt was 1.2 km away
+  3 minutes ago". Together those tell you whether the trail ahead is worth
+  chasing or long cold.
+- **Distances in the compass use your own units** (miles/yards or metres/km),
+  following your preference — and the kennel's when yours is set to Auto.
+
 ## 2.15.47+1261 (2026-08-01)
 
 ### Improvements

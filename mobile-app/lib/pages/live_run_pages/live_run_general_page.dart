@@ -1218,7 +1218,12 @@ class LiveRunGeneralPage extends StatelessWidget {
     // Shown regardless of whether the chat send succeeded — the bearing is
     // local-plus-tracking-service and is the more urgent of the two.
     if (!urgent && context.mounted) {
-      await showLostCompassDialog(context, run.event.eventId);
+      await showLostCompassDialog(
+        context,
+        run.event.eventId,
+        // Used only when the user's own units preference is "auto".
+        kennelDistanceUnitsPref: run.extensions.distanceUnitsPref,
+      );
     }
   }
 }

@@ -17,9 +17,15 @@ import 'package:latlong2/latlong.dart' as latlong;
 /// tracking, it falls back to the runner's own earlier track — i.e. "backtrack
 /// to where you left it" — and says so.
 class LostCompassController extends GetxController {
-  LostCompassController({required this.eventId});
+  LostCompassController({
+    required this.eventId,
+    this.kennelDistanceUnitsPref = 0,
+  });
 
   final String eventId;
+
+  /// The kennel's own units preference, used when the user's is "auto".
+  final int kennelDistanceUnitsPref;
 
   /// Points recorded within this window are "where I am now", not trail —
   /// excluded when falling back to the runner's own track.
@@ -94,6 +100,16 @@ class LostCompassController extends GetxController {
   /// "33 minutes ago" for the held target, or null when there isn't one.
   final RxnString targetAgeLabel = RxnString();
 
+  /// Where the target runner has got to since — their newest usable fix, and
+  /// when it was taken. The trail point you're walking to may be half an hour
+  /// old while its owner is a kilometre further on; that changes whether it's
+  /// worth chasing them or just rejoining the trail.
+  latlong.LatLng? _runnerLatestPoint;
+  int? _runnerLatestTimestampMs;
+
+  /// e.g. "Tuna Melt was 1.2 km away 3 minutes ago".
+  final RxnString runnerNowLabel = RxnString();
+
   StreamSubscription<Position>? _positionSub;
   StreamSubscription<CompassEvent>? _compassSub;
   Timer? _refreshTimer;
@@ -152,6 +168,56 @@ class LostCompassController extends GetxController {
     bearingToTrail.value = (_distance.bearing(from, target) + 360) % 360;
     distanceMeters.value = _distance.as(latlong.LengthUnit.Meter, from, target);
     targetAgeLabel.value = _ageLabel(_targetTimestampMs);
+
+    // Where that runner is now (as of their last fix) — recomputed here too,
+    // so it counts down as you walk rather than sticking until the next poll.
+    final latest = _runnerLatestPoint;
+    final name = nearestRunnerName.value;
+    if (latest == null || usingOwnTrack.value) {
+      runnerNowLabel.value = null;
+    } else {
+      final away = _distance.as(latlong.LengthUnit.Meter, from, latest);
+      final who = (name == null || name.isEmpty) ? 'They' : name;
+      runnerNowLabel.value =
+          '$who was ${formatDistance(away)} away '
+          '${_ageLabel(_runnerLatestTimestampMs) ?? 'just now'}';
+    }
+  }
+
+  /// Formats a distance in the user's own units, via the app's shared
+  /// formatter so this dialog reads like the rest of the app.
+  ///
+  /// The units preference is 2 = km, 3 = miles, 0 = auto. Auto defers to the
+  /// kennel's own preference — the same rule the runs list uses — which is why
+  /// [kennelDistanceUnitsPref] is passed in from the run.
+  String formatDistance(double meters) {
+    final prefs = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
+    final userPref = prefs & hasherPref_distanceMeasuredIn;
+    final bool imperial = userPref == 3
+        ? true
+        : userPref == 0
+        ? kennelDistanceUnitsPref == 3
+        : false;
+    return Utilities.getDistance(meters, isMetric: !imperial);
+  }
+
+  /// Records where [userId] has got to: their newest fix good enough to trust.
+  void _captureRunnerLatest(String userId) {
+    _runnerLatestPoint = null;
+    _runnerLatestTimestampMs = null;
+    for (final t in _tracks) {
+      if (normalizeUuid(t.id) != normalizeUuid(userId)) continue;
+      TrackPoint? newest;
+      for (final p in t.positions) {
+        if (p.acc > 25.0) continue;
+        if (newest == null || p.timestampMs > newest.timestampMs) newest = p;
+      }
+      if (newest != null) {
+        _runnerLatestPoint = latlong.LatLng(newest.lat, newest.lng);
+        _runnerLatestTimestampMs = newest.timestampMs;
+      }
+      return;
+    }
   }
 
   /// How long ago the target point was laid down, in plain words.
@@ -323,10 +389,13 @@ class LostCompassController extends GetxController {
           : 'Could not read any track positions. Try again in a moment.';
       _targetPoint = null;
       _targetTimestampMs = null;
+      _runnerLatestPoint = null;
+      _runnerLatestTimestampMs = null;
       bearingToTrail.value = null;
       distanceMeters.value = null;
       nearestRunnerName.value = null;
       targetAgeLabel.value = null;
+      runnerNowLabel.value = null;
     } else {
       errorMessage.value = null;
       usingOwnTrack.value = fellBack;
@@ -335,6 +404,7 @@ class LostCompassController extends GetxController {
       // here, so the numbers move as you walk instead of once per poll.
       _targetPoint = best.point;
       _targetTimestampMs = best.timestampMs;
+      _captureRunnerLatest(best.userId);
       _updateReadout(me);
       final String nearestId = best.userId;
       nearestRunnerName.value = null;
@@ -483,25 +553,37 @@ class LostCompassController extends GetxController {
   String get distanceLabel {
     final m = distanceMeters.value;
     if (m == null) return '--';
-    if (m < 1000) return '${m.round()} m';
-    return '${(m / 1000).toStringAsFixed(2)} km';
+    return formatDistance(m);
   }
 }
 
-Future<void> showLostCompassDialog(BuildContext context, String eventId) {
+Future<void> showLostCompassDialog(
+  BuildContext context,
+  String eventId, {
+  int kennelDistanceUnitsPref = 0,
+}) {
   return showDialog<void>(
     context: context,
     barrierDismissible: true,
-    builder: (_) => LostCompassDialog(eventId: eventId),
+    builder: (_) => LostCompassDialog(
+      eventId: eventId,
+      kennelDistanceUnitsPref: kennelDistanceUnitsPref,
+    ),
   );
 }
 
 class LostCompassDialog extends StatelessWidget {
-  LostCompassDialog({super.key, required this.eventId})
-    : controller = Get.put(
-        LostCompassController(eventId: eventId),
-        tag: 'lost-compass-$eventId',
-      );
+  LostCompassDialog({
+    super.key,
+    required this.eventId,
+    int kennelDistanceUnitsPref = 0,
+  }) : controller = Get.put(
+         LostCompassController(
+           eventId: eventId,
+           kennelDistanceUnitsPref: kennelDistanceUnitsPref,
+         ),
+         tag: 'lost-compass-$eventId',
+       );
 
   final String eventId;
   final LostCompassController controller;
@@ -613,6 +695,16 @@ class LostCompassDialog extends StatelessWidget {
                           '${controller.targetAgeLabel.value}'
                     : 'They were there ${controller.targetAgeLabel.value}',
                 style: ts_alertDialogBody.copyWith(fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            // ...and where that runner has got to since.
+            if (controller.runnerNowLabel.value != null)
+              Text(
+                controller.runnerNowLabel.value!,
+                style: ts_alertDialogBody.copyWith(
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                ),
                 textAlign: TextAlign.center,
               ),
             if (heading == null)
