@@ -70,6 +70,17 @@ class RunPointBuffer {
     }
   }
 
+  /// Sends [points] as their own batch RIGHT NOW, bypassing both the queue and
+  /// the [flush] re-entrancy guard, and reports whether the server took them.
+  ///
+  /// [flush] deliberately returns early when a send is already in flight, which
+  /// is correct for ordinary GPS points (they simply ride the next batch) but
+  /// wrong for a distress mark: an in-flight batch on a bad link can hold the
+  /// guard for over a minute (15s timeout x 5 retries), and an "I'm lost" mark
+  /// must not sit in a queue behind it. Retry/backoff still applies, and the
+  /// one-point payload gives the best odds on a marginal signal.
+  Future<bool> sendNow(List<UserEventLocation> points) => _sendBatch(points);
+
   /// Stop the flush timer and release an injected test client, if any. The
   /// production one-shot path has no client to close.
   void dispose() {

@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.34+1248 (2026-08-01)
+
+### Fixes
+- **Distress marks are now sent immediately, never queued**: while tracking,
+  an "I'm Lost" / "Send Help" mark could sit in the normal GPS batch queue
+  behind an upload already in progress — up to a minute on a weak signal.
+  It is now sent on its own, out of band, the moment you press the button.
+- **You are now told what actually got through**: the confirmation says
+  whether the chat message sent, whether your position was marked on the map,
+  or — if you have no signal at all — that nothing could be sent.
+
 ## 2.15.33+1247 (2026-08-01)
 
 ### New Features

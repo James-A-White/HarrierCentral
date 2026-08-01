@@ -459,16 +459,40 @@ class LocationService extends GetxService {
   /// The GPS position is the real current position (where the photo was taken).
   /// If tracking is active the existing buffer is used; otherwise a one-shot
   /// flush is made directly to StorePositions.
-  Future<void> markPointAt({
+  /// Stores a typed mark at [timestampMs] for the given event/user.
+  ///
+  /// Set [immediate] for marks that must reach the server now rather than ride
+  /// the next batch (distress marks). That path sends a one-point batch out of
+  /// band, so it never queues behind the shared buffer's in-flight upload —
+  /// which on a bad link can block for over a minute. If the out-of-band send
+  /// fails after its retries, the point is handed to the live buffer so the
+  /// ordinary flush cycle keeps trying rather than dropping it.
+  ///
+  /// Returns true when the point is confirmed stored (always true on the
+  /// non-[immediate] path, which only guarantees it was queued).
+  Future<bool> markPointAt({
     required HashRunPointTypes pointType,
     required int timestampMs,
     required String overrideEventId,
     required String overrideUserId,
     String? label,
+    bool immediate = false,
   }) async {
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
-    );
+    final Position position;
+    try {
+      position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.best,
+        ),
+      );
+    } catch (e) {
+      // No fix available (services off, permission revoked, hardware timeout).
+      // Never let this throw out of an unawaited call.
+      if (kDebugMode) {
+        debugPrint('LocationService: markPointAt got no GPS fix: $e');
+      }
+      return false;
+    }
 
     String? pointStr = pointType.key;
     if (label != null) pointStr += '::$label';
@@ -481,6 +505,23 @@ class LocationService extends GetxService {
       alt: double.parse(position.altitude.toStringAsFixed(2)),
       type: pointStr,
     );
+
+    if (immediate) {
+      final buf = RunPointBuffer(
+        apiUrl: STORE_POSITIONS_URL,
+        eventId: overrideEventId,
+        userId: overrideUserId,
+      );
+      bool ok = false;
+      try {
+        ok = await buf.sendNow(<UserEventLocation>[point]);
+      } finally {
+        buf.dispose();
+      }
+      // Last resort: let the live track's own flush cycle keep retrying.
+      if (!ok && _runBuffer != null) _runBuffer!.enqueue(point);
+      return ok;
+    }
 
     if (_runBuffer != null) {
       _runBuffer!.enqueue(point);
@@ -495,6 +536,7 @@ class LocationService extends GetxService {
       await buf.flush();
       buf.dispose();
     }
+    return true;
   }
 
   /// Stores an admin time-boundary marker (AST = Official Start, AEN = Official

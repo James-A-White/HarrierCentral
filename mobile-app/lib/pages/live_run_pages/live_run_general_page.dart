@@ -436,8 +436,11 @@ class LiveRunGeneralController extends GetxController {
   /// message, so the pack is push-notified per their notification prefs — with
   /// the runner's current location as a maps link. When tracking, also drops a
   /// labelled mark on the live track so the pack map shows where the call came
-  /// from. Returns true when the chat send succeeded.
-  Future<bool> sendAssistanceMessage({required bool urgent}) async {
+  /// from. The two go out in parallel; the result reports each separately so
+  /// the user is told exactly what got through.
+  Future<({bool chatSent, bool markPlaced})> sendAssistanceMessage({
+    required bool urgent,
+  }) async {
     final String name =
         getStringPref(StringPrefsEnum.displayName) ?? 'A hasher';
     final Position? pos = lastPosition.value;
@@ -449,20 +452,21 @@ class LiveRunGeneralController extends GetxController {
         : "🧭 I'M LOST — $name has lost the trail. Location: $where";
 
     // Drop a distress mark so the call shows on EVERY PackTrack user's map.
-    // Uses markPointAt (not markPoint) because it stands up its own buffer when
+    // markPointAt (not markPoint) because it stands up its own buffer when
     // needed — someone who never started tracking, or already pressed End Run,
     // is exactly the person most likely to be lost, and they must still appear.
-    // The label carries who and when, so the map answers both without a tap.
-    unawaited(
-      _locationService.markPointAt(
-        pointType: urgent
-            ? HashRunPointTypes.helpNeeded
-            : HashRunPointTypes.lostRunner,
-        timestampMs: DateTime.now().millisecondsSinceEpoch,
-        overrideEventId: run.event.eventId,
-        overrideUserId: currentUserId,
-        label: '$name · ${DateFormat('h:mm a').format(DateTime.now())}',
-      ),
+    // immediate: true sends it out of band, so it never waits behind the live
+    // track's in-flight batch. Started BEFORE the chat POST and awaited after,
+    // so GPS acquisition overlaps the chat round-trip instead of delaying it.
+    final Future<bool> markFuture = _locationService.markPointAt(
+      pointType: urgent
+          ? HashRunPointTypes.helpNeeded
+          : HashRunPointTypes.lostRunner,
+      timestampMs: DateTime.now().millisecondsSinceEpoch,
+      overrideEventId: run.event.eventId,
+      overrideUserId: currentUserId,
+      label: '$name · ${DateFormat('h:mm a').format(DateTime.now())}',
+      immediate: true,
     );
 
     final String userId = currentUserId;
@@ -487,7 +491,10 @@ class LiveRunGeneralController extends GetxController {
         'messageReleasabilityFlags': kChatReleasabilityAll,
       });
     });
-    return !result.startsWith(ERROR_PREFIX);
+    return (
+      chatSent: !result.startsWith(ERROR_PREFIX),
+      markPlaced: await markFuture,
+    );
   }
 
   void _handleTrackingToggle(bool value) {
@@ -1186,15 +1193,22 @@ class LiveRunGeneralPage extends StatelessWidget {
     );
     if (confirmed != true) return;
 
-    final bool ok = await controller.sendAssistanceMessage(urgent: urgent);
+    final result = await controller.sendAssistanceMessage(urgent: urgent);
+    final bool anySent = result.chatSent || result.markPlaced;
     Get.snackbar(
-      ok ? 'Message sent' : 'Not sent',
-      ok
-          ? 'The pack has been notified via the run chat.'
-          : 'Could not send — please check your connection and try again.',
+      anySent ? 'Pack notified' : 'Nothing got through',
+      result.chatSent && result.markPlaced
+          ? 'Message sent and your position is marked on the run map.'
+          : result.chatSent
+          ? 'Message sent, but your position could not be marked on the map.'
+          : result.markPlaced
+          ? 'Your position is marked on the run map, but the chat message '
+                'failed to send.'
+          : 'No signal — nothing could be sent. Try again when you have a bar.',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: ok ? hc_blue : hc_red,
+      backgroundColor: anySent ? hc_blue : hc_red,
       colorText: Colors.white,
+      duration: const Duration(seconds: 5),
     );
 
     // "I'm Lost" also answers the immediate question: which way is the trail?
