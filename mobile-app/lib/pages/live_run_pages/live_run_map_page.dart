@@ -77,40 +77,28 @@ class LiveRunMapPage extends StatelessWidget {
             Positioned(
               top: 12,
               right: 12,
-              child: Material(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(8),
-                child: IconButton(
-                  tooltip: controller.trueNorthLock.value
-                      ? 'Unlock rotation'
-                      : 'Lock to North',
-                  icon: Icon(
-                    controller.trueNorthLock.value
-                        ? Icons.explore_off
-                        : Icons.explore,
-                    color: hc_blue,
-                  ),
-                  onPressed: () {
-                    controller.trueNorthLock.value =
-                        !controller.trueNorthLock.value;
-                  },
-                ),
+              child: MapOverlayButton(
+                icon: controller.trueNorthLock.value
+                    ? Icons.explore_off
+                    : Icons.explore,
+                tooltip: controller.trueNorthLock.value
+                    ? 'Unlock rotation'
+                    : 'Lock to North',
+                onTap: () {
+                  controller.trueNorthLock.value =
+                      !controller.trueNorthLock.value;
+                },
               ),
             ),
             // Open the map full-screen.
             Positioned(
               top: 12,
               left: 12,
-              child: Material(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(8),
-                child: IconButton(
-                  tooltip: 'Full screen',
-                  icon: Icon(Icons.fullscreen, color: hc_blue),
-                  onPressed: () => Get.to<void>(
-                    () => PackTrackFullScreenMap(run: run),
-                  ),
-                ),
+              child: MapOverlayButton(
+                icon: Icons.fullscreen,
+                tooltip: 'Full screen',
+                onTap: () =>
+                    Get.to<void>(() => PackTrackFullScreenMap(run: run)),
               ),
             ),
           ],

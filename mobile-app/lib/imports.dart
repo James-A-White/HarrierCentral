@@ -226,6 +226,7 @@ export 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
 export 'package:harrier_central/pages/menu_pages/imprint_page.dart';
 export 'package:harrier_central/pages/menu_pages/legal_page.dart';
 export 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
+export 'package:harrier_central/widgets/map_overlay_button.dart';
 export 'package:harrier_central/widgets/rose_canvas.dart';
 export 'package:harrier_central/pages/menu_pages/settings_page.dart';
 export 'package:harrier_central/pages/menu_pages/support_page.dart';

@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.39+1253 (2026-08-01)
+
+### Improvements
+- **Map buttons no longer disappear into the map.** Every control floating over
+  the run map — full screen, north lock, my location and the new radar view —
+  is now dark with a white outline instead of translucent white, which was
+  invisible over pale streets and unreadable on the radar's dark canvas.
+- **The radar button has moved up into the button group** on the right, below
+  My Location, and stays in the same place when you switch views so it doesn't
+  jump out from under your thumb.
+
 ## 2.15.38+1252 (2026-08-01)
 
 ### New Features
