@@ -1,5 +1,18 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.40+1254 (2026-08-01)
+
+### Improvements
+- **Getting in and out of the radar view is now obvious.** A "Map | Radar"
+  switch sits at the top of the run map, showing which view you're in and the
+  other one you can go to — replacing an icon that looked like every other
+  button on the map.
+- **The back button now leaves the radar, not the run.** Previously pressing
+  back (or swiping back on iPhone) from the radar closed the whole live run.
+- The **Full screen** button is hidden while in radar view, where it would
+  have opened a full-screen map and read as a second, wrong way out. Reset
+  range moved to its own button.
+
 ## 2.15.39+1253 (2026-08-01)
 
 ### Improvements

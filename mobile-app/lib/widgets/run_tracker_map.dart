@@ -117,10 +117,25 @@ class RunTrackerMap extends StatelessWidget {
                   ),
                 ),
                 _buildTimelineSlider(context, controller),
-                // Same slot the toggle occupies over the map, so switching
-                // views doesn't move the button out from under your thumb.
-                // (Locate is meaningless in the rose, so the slot is free.)
-                Positioned(top: 66, right: 12, child: _roseToggle(controller)),
+                // Same slot as over the map, so switching views never moves
+                // the control out from under your thumb.
+                Positioned(
+                  top: 12,
+                  left: 0,
+                  right: 0,
+                  child: Center(child: _viewSwitch(controller)),
+                ),
+                // Long-press anywhere on the readout resets the pinch range —
+                // the switch no longer carries that gesture.
+                Positioned(
+                  bottom: 96,
+                  right: 12,
+                  child: MapOverlayButton(
+                    icon: Icons.center_focus_strong,
+                    tooltip: 'Reset range',
+                    onTap: controller.resetRoseRange,
+                  ),
+                ),
               ],
             );
           }
@@ -251,21 +266,19 @@ class RunTrackerMap extends StatelessWidget {
               // north-lock button. A Column (not separate Positioneds) so the
               // stack closes up when locate is unavailable instead of leaving
               // a hole.
-              Positioned(
-                top: 66,
-                right: 12,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    if (appModel.hasLocationPermissions &&
-                        deviceInfo.deviceLat != null &&
-                        deviceInfo.deviceLon != null) ...<Widget>[
-                      _locateButton(controller),
-                      const SizedBox(height: 8),
-                    ],
-                    _roseToggle(controller),
-                  ],
+              if (appModel.hasLocationPermissions &&
+                  deviceInfo.deviceLat != null &&
+                  deviceInfo.deviceLon != null)
+                Positioned(
+                  top: 66,
+                  right: 12,
+                  child: _locateButton(controller),
                 ),
+              Positioned(
+                top: 12,
+                left: 0,
+                right: 0,
+                child: Center(child: _viewSwitch(controller)),
               ),
               // In-map photo showcase — grows a photo out of its pin to centre
               // and back as the playhead crosses it (topmost overlay).
@@ -445,13 +458,10 @@ class RunTrackerMap extends StatelessWidget {
 
   /// Switches the canvas between the map and the rose. Long-press while in the
   /// rose resets the pinch range back to the auto 90% fit.
-  Widget _roseToggle(RunTrackerMapController controller) {
-    final bool rose = controller.roseView.value;
-    return MapOverlayButton(
-      icon: rose ? Icons.map : Icons.radar,
-      tooltip: rose ? 'Back to the map' : 'Where is everyone?',
-      onTap: () => controller.roseView.value = !rose,
-      onLongPress: rose ? controller.resetRoseRange : null,
+  Widget _viewSwitch(RunTrackerMapController controller) {
+    return MapViewSwitch(
+      roseSelected: controller.roseView.value,
+      onSelect: (rose) => controller.roseView.value = rose,
     );
   }
 
