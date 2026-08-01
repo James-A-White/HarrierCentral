@@ -114,6 +114,8 @@ class EditorMapState extends State<EditorMap> {
           subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3'],
         ),
         MarkerLayer(
+          // Pins stay upright when the map is rotated (north lock off).
+          rotate: true,
           markers: <Marker>[
             if ((appModel.hasLocationPermissions) &&
                 (deviceInfo.deviceLat != null) &&

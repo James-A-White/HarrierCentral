@@ -179,6 +179,14 @@ class RunTrackerMap extends StatelessWidget {
                       ],
                     ),
                   MarkerLayer(
+                    // Keep pins and trail-mark icons upright on screen when the
+                    // map rotates to a runner's heading — a sideways or upside
+                    // down icon is just harder to read, and labelled marks
+                    // become unreadable. Individual markers can still opt out
+                    // (Marker.rotate wins over the layer), which the viewer dot
+                    // does so its heading wedge keeps pointing at a true
+                    // bearing rather than a screen-relative one.
+                    rotate: true,
                     markers: <Marker>[
                       if ((appModel.hasLocationPermissions) &&
                           (deviceInfo.deviceLat != null) &&
@@ -225,6 +233,7 @@ class RunTrackerMap extends StatelessWidget {
                   ),
                   MarkerClusterLayerWidget(
                     options: MarkerClusterLayerOptions(
+                      rotate: true, // photos and cluster counts stay upright
                       maxClusterRadius: 40,
                       size: const Size(52, 52),
                       spiderfyCircleRadius: 90,
@@ -258,7 +267,7 @@ class RunTrackerMap extends StatelessWidget {
                       ),
                     ),
                   ),
-                  MarkerLayer(markers: controller.runnerMarkers),
+                  MarkerLayer(rotate: true, markers: controller.runnerMarkers),
                 ],
               ),
               _buildTimelineSlider(context, controller),

@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.45+1259 (2026-08-01)
+
+### Fixes
+- **Map icons stay the right way up when the map rotates.** Trail marks, run
+  photos, runner pins and location pins used to tilt with the map once north
+  lock was off, so on a southbound leg they were upside down and labelled
+  marks were unreadable. They now stay upright. The blue dot's direction wedge
+  still turns, since pointing somewhere is its whole job.
+
 ## 2.15.44+1258 (2026-08-01)
 
 ### Fixes
