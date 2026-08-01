@@ -201,6 +201,130 @@ class RunTrackerMapController extends GetxController
 
   final latlng.Distance _distanceCalculator = const latlng.Distance();
 
+  // ── Rose view ───────────────────────────────────────────────────────────────
+  // An alternate rendering of the same replay: instead of a map, the focus
+  // runner sits at the centre and everyone else is a blip at their bearing and
+  // distance AT THE SCRUB POSITION. Shares the timeline, playback and filters —
+  // only the canvas changes.
+
+  /// Rose replaces the map canvas while true.
+  final RxBool roseView = false.obs;
+
+  /// Outer-ring range in metres; null = auto-fit to the nearest 90% of the pack.
+  final RxnDouble roseRange = RxnDouble();
+
+  /// Runner the rose is centred on: the explicitly selected one, else the
+  /// viewer's own track, else the nearest thing to a protagonist we have.
+  UserTrack? get roseFocusRunner {
+    final sel = selectedRunnerId.value;
+    if (sel != null) {
+      final r = _runnerById(sel);
+      if (r != null) return r;
+    }
+    final mine = _runnerById(_currentUserId);
+    if (mine != null) return mine;
+    return visibleRunners.isEmpty ? null : visibleRunners.first;
+  }
+
+  /// Name of the runner the rose is centred on, for the readout.
+  String get roseFocusRunnerLabel {
+    final focus = roseFocusRunner;
+    if (focus == null) return 'nobody';
+    if (focus.id == _currentUserId) return 'you';
+    final n = (userNames[focus.id] ?? '').trim();
+    return n.isEmpty ? 'a runner' : n;
+  }
+
+  /// Which way the focus runner was travelling at the scrub position — the
+  /// replay equivalent of a compass heading. Null (north-up) when locked to
+  /// north or when the track is too short to have a direction.
+  double? get roseHeading {
+    if (_trueNorthLock.value) return null;
+    final focus = roseFocusRunner;
+    if (focus == null) return null;
+    return _runnerHeadingDegrees(
+      focus,
+      timelineAvailable ? currentTimestampMs.value : null,
+    );
+  }
+
+  /// Everyone except the focus runner, placed relative to them at the scrub
+  /// position. Reuses the same interpolation the map markers use, so the rose
+  /// and the map can never disagree about where somebody was.
+  List<RoseBlip> get roseBlips {
+    final focus = roseFocusRunner;
+    if (focus == null) return const <RoseBlip>[];
+    final cutoff = timelineAvailable ? currentTimestampMs.value : null;
+    final origin = _interpolatedPosition(focus, cutoff);
+    if (origin == null) return const <RoseBlip>[];
+    final from = latlng.LatLng(origin.lat, origin.lng);
+
+    final out = <RoseBlip>[];
+    for (final user in visibleRunners) {
+      if (user.id == focus.id) continue;
+      final at = _interpolatedPosition(user, cutoff);
+      if (at == null) continue;
+      final to = latlng.LatLng(at.lat, at.lng);
+      out.add(
+        RoseBlip(
+          userId: user.id,
+          name: (userNames[user.id] ?? '').trim().isEmpty
+              ? 'Hasher'
+              : userNames[user.id]!,
+          bearing: (_distanceCalculator.bearing(from, to) + 360) % 360,
+          distanceMeters: _distanceCalculator.as(
+            latlng.LengthUnit.Meter,
+            from,
+            to,
+          ),
+          isLost: _hasDistressMark(user),
+          // Staleness is a live-mode idea; during replay every blip is
+          // definitionally "as of" the scrub position.
+          isStale: false,
+        ),
+      );
+    }
+    out.sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
+    return out;
+  }
+
+  /// Ring range in metres: the user's pinch if they've set one, otherwise sized
+  /// to hold the nearest 90% so a lone straggler can't squash the pack into the
+  /// middle. Recomputed per frame so it tracks the replay rather than freezing
+  /// at whatever the spread happened to be when the view opened.
+  double roseRangeMetres(List<RoseBlip> blips) {
+    final manual = roseRange.value;
+    if (manual != null) return manual;
+    if (blips.isEmpty) return 500.0;
+    final ds = blips.map((b) => b.distanceMeters).toList()..sort();
+    final p90 = ds[(((ds.length - 1) * 0.90).floor()).clamp(0, ds.length - 1)];
+    return math.max(50.0, p90 * 1.15);
+  }
+
+  void applyRoseScale(double scale, List<RoseBlip> blips) {
+    if (scale <= 0) return;
+    final current = roseRangeMetres(blips);
+    final maxRange = blips.isEmpty
+        ? 5000.0
+        : blips.map((b) => b.distanceMeters).reduce(math.max) * 2.0;
+    roseRange.value = (current / scale).clamp(25.0, math.max(100.0, maxRange));
+  }
+
+  void resetRoseRange() => roseRange.value = null;
+
+  bool _hasDistressMark(UserTrack track) {
+    for (final p in track.positions) {
+      final type = (p.type ?? '').trim();
+      if (type.isEmpty) continue;
+      final key = type.split('::').first.trim();
+      if (key == HashRunPointTypes.lostRunner.key ||
+          key == HashRunPointTypes.helpNeeded.key) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Marks of the same type closer than this are treated as the same physical
   // point (e.g. several runners marking one check) and collapsed to one marker.
   static const double _markDedupeMeters = 25.0;

@@ -73,6 +73,55 @@ class RunTrackerMap extends StatelessWidget {
         controller.updateTrueNorthLock(trueNorthLock);
         return Obx(() {
           final bool controllerLock = controller.trueNorthLock;
+          // Rose view swaps ONLY the canvas — the timeline, playback controls
+          // and lane filters below are shared, so scrubbing works identically
+          // in either rendering.
+          if (controller.roseView.value) {
+            final blips = controller.roseBlips;
+            final range = controller.roseRangeMetres(blips);
+            return Stack(
+              children: <Widget>[
+                Positioned.fill(
+                  child: GestureDetector(
+                    onScaleUpdate: (d) {
+                      if (d.pointerCount >= 2) {
+                        controller.applyRoseScale(d.scale, blips);
+                      }
+                    },
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 92),
+                      child: RoseCanvas(
+                        blips: blips,
+                        ringMetres: range,
+                        heading: controller.roseHeading,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 96,
+                  left: 0,
+                  right: 0,
+                  child: IgnorePointer(
+                    child: Text(
+                      'Ring = ${range < 1000 ? '${range.round()} m' : '${(range / 1000).toStringAsFixed(2)} km'}'
+                      '  ·  centred on ${controller.roseFocusRunnerLabel}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.yellow,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                _buildTimelineSlider(context, controller),
+                Positioned(top: 12, right: 12, child: _roseToggle(controller)),
+              ],
+            );
+          }
+
           return Stack(
             children: <Widget>[
               FlutterMap(
@@ -101,9 +150,12 @@ class RunTrackerMap extends StatelessWidget {
                           ),
                           radius: deviceInfo.deviceAccuracy!,
                           useRadiusInMeter: true,
-                          color: const Color(0xFF2A7FFF).withValues(alpha: 0.12),
-                          borderColor:
-                              const Color(0xFF2A7FFF).withValues(alpha: 0.4),
+                          color: const Color(
+                            0xFF2A7FFF,
+                          ).withValues(alpha: 0.12),
+                          borderColor: const Color(
+                            0xFF2A7FFF,
+                          ).withValues(alpha: 0.4),
                           borderStrokeWidth: 1,
                         ),
                       ],
@@ -170,7 +222,11 @@ class RunTrackerMap extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.photo_camera, color: Colors.white, size: 18),
+                            const Icon(
+                              Icons.photo_camera,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                             Text(
                               '${markers.length}',
                               style: const TextStyle(
@@ -188,6 +244,7 @@ class RunTrackerMap extends StatelessWidget {
                 ],
               ),
               _buildTimelineSlider(context, controller),
+              Positioned(bottom: 96, right: 12, child: _roseToggle(controller)),
               // Locate/recenter on the viewer's own position (sits below the
               // page's north-lock button in the live-run map).
               if (appModel.hasLocationPermissions &&
@@ -213,9 +270,8 @@ class RunTrackerMap extends StatelessWidget {
                 // which throws GetX's "improper use of Obx" — a full-screen grey
                 // ErrorWidget in release — and never observes showcaseZoom.
                 child: LayoutBuilder(
-                  builder: (ctx, cons) => Obx(
-                    () => _buildPhotoShowcase(controller, cons),
-                  ),
+                  builder: (ctx, cons) =>
+                      Obx(() => _buildPhotoShowcase(controller, cons)),
                 ),
               ),
             ],
@@ -329,7 +385,9 @@ class RunTrackerMap extends StatelessWidget {
               color: blue,
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 3),
-              boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 2)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black26, blurRadius: 2),
+              ],
             ),
           ),
         ],
@@ -374,6 +432,25 @@ class RunTrackerMap extends StatelessWidget {
       initialZoom: controller.initialZoom,
       minZoom: controller.minZoom,
       maxZoom: controller.maxZoom,
+    );
+  }
+
+  /// Switches the canvas between the map and the rose. Long-press while in the
+  /// rose resets the pinch range back to the auto 90% fit.
+  Widget _roseToggle(RunTrackerMapController controller) {
+    final bool rose = controller.roseView.value;
+    return Material(
+      color: Colors.white.withValues(alpha: 0.9),
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => controller.roseView.value = !rose,
+        onLongPress: rose ? controller.resetRoseRange : null,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(rose ? Icons.map : Icons.radar, color: hc_blue, size: 26),
+        ),
+      ),
     );
   }
 
@@ -475,11 +552,7 @@ class RunTrackerMap extends StatelessWidget {
     final text = distanceLabel.isEmpty ? label : '$label     $distanceLabel';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: ts_listValueStyle,
-      ),
+      child: Text(text, textAlign: TextAlign.center, style: ts_listValueStyle),
     );
   }
 
@@ -576,56 +649,57 @@ class RunTrackerMap extends StatelessWidget {
     // the map's top-level Obx via the timeline panel) means a tilt change
     // rebuilds only this bubble, never FlutterMap / the cluster layer.
     return Obx(() {
-    final bool tilt = controller.tiltEnabled.value;
-    final bool paused = controller.tiltPaused;
-    final double shown =
-        tilt ? controller.tiltSpeed.value : controller.playbackSpeed.value;
-    final bool reverse = tilt && shown < 0;
-    Widget child;
-    Color bg;
-    Color border;
-    if (tilt && paused) {
-      bg = const Color(0xFFEF4444); // red — paused
-      border = Colors.white70;
-      child = const Icon(Icons.pause, size: 15, color: Colors.white);
-    } else {
-      final bool active = tilt ? true : controller.playbackSpeed.value != 1.0;
-      // Distinct colours per direction: blue forward, orange reverse.
-      bg = reverse
-          ? const Color(0xFFF97316) // orange — reverse
-          : active
-          ? const Color(0xFF3B82F6) // blue — forward
-          : Colors.white.withValues(alpha: 0.12);
-      border = (active || reverse) ? Colors.white70 : Colors.white24;
-      final double mag = shown.abs();
-      final String num = tilt
-          ? mag.toStringAsFixed(1)
-          : (mag % 1 == 0 ? mag.toInt().toString() : mag.toStringAsFixed(1));
-      // No reverse glyph — the orange colour signals reverse, and the glyph
-      // crowded the text.
-      child = Text(
-        '×$num',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
+      final bool tilt = controller.tiltEnabled.value;
+      final bool paused = controller.tiltPaused;
+      final double shown = tilt
+          ? controller.tiltSpeed.value
+          : controller.playbackSpeed.value;
+      final bool reverse = tilt && shown < 0;
+      Widget child;
+      Color bg;
+      Color border;
+      if (tilt && paused) {
+        bg = const Color(0xFFEF4444); // red — paused
+        border = Colors.white70;
+        child = const Icon(Icons.pause, size: 15, color: Colors.white);
+      } else {
+        final bool active = tilt ? true : controller.playbackSpeed.value != 1.0;
+        // Distinct colours per direction: blue forward, orange reverse.
+        bg = reverse
+            ? const Color(0xFFF97316) // orange — reverse
+            : active
+            ? const Color(0xFF3B82F6) // blue — forward
+            : Colors.white.withValues(alpha: 0.12);
+        border = (active || reverse) ? Colors.white70 : Colors.white24;
+        final double mag = shown.abs();
+        final String num = tilt
+            ? mag.toStringAsFixed(1)
+            : (mag % 1 == 0 ? mag.toInt().toString() : mag.toStringAsFixed(1));
+        // No reverse glyph — the orange colour signals reverse, and the glyph
+        // crowded the text.
+        child = Text(
+          '×$num',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
+        );
+      }
+      return GestureDetector(
+        onTap: tilt ? null : controller.cycleSpeed,
+        child: Container(
+          width: 40,
+          height: 30,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: border, width: 1),
+          ),
+          child: child,
         ),
       );
-    }
-    return GestureDetector(
-      onTap: tilt ? null : controller.cycleSpeed,
-      child: Container(
-        width: 40,
-        height: 30,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: border, width: 1),
-        ),
-        child: child,
-      ),
-    );
     });
   }
 
@@ -701,8 +775,10 @@ class RunTrackerMap extends StatelessWidget {
       height: 58.0,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final double sidePad = ((constraints.maxWidth - tile) / 2)
-              .clamp(0.0, double.infinity);
+          final double sidePad = ((constraints.maxWidth - tile) / 2).clamp(
+            0.0,
+            double.infinity,
+          );
           return NotificationListener<ScrollEndNotification>(
             onNotification: (_) {
               controller.onCarouselScrollEnd();
@@ -731,8 +807,9 @@ class RunTrackerMap extends StatelessWidget {
     final bool selected = controller.selectedRunnerId.value == runner.id;
     final color = controller.runnerColor(runner.id);
     final logo = controller.userLogos[runner.id];
-    final emoji =
-        controller.trailTypeFor(controller.trailValueForRunner(runner)).emoji;
+    final emoji = controller
+        .trailTypeFor(controller.trailValueForRunner(runner))
+        .emoji;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () =>
@@ -805,5 +882,4 @@ class RunTrackerMap extends StatelessWidget {
       ),
     );
   }
-
 }

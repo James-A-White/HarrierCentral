@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.38+1252 (2026-08-01)
+
+### New Features
+- **The radar view now works on replays too.** A radar button on the run map
+  swaps the map for the rose while keeping the timeline, play button and trail
+  filters exactly where they are — so you can scrub or play the run back and
+  watch the pack open up and close in around you. The rose centres on the
+  selected runner (or you), points the way that runner was travelling, and
+  shows everyone else at their bearing and distance *at that moment* in the
+  replay. Pinch to change range; long-press the button to reset it.
+
 ## 2.15.37+1251 (2026-08-01)
 
 ### New Features
