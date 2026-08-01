@@ -2485,6 +2485,72 @@ class RunTrackerMapController extends GetxController
     _lastRotationDeg = desiredRotation;
   }
 
+  /// Heading is measured back along at least this much track rather than to the
+  /// immediately preceding fix. At walking pace consecutive fixes are a couple
+  /// of metres apart and the bearing between them is mostly GPS noise — which
+  /// is what made the map and radar jitter with rotation unlocked.
+  static const double _headingBaselineMeters = 18.0;
+
+  /// Direction of travel THROUGH the point at [index], measured as the chord
+  /// across a window of roughly [_headingBaselineMeters] of track centred on
+  /// it: back half the baseline, forward half the baseline, bearing between
+  /// those two.
+  ///
+  /// Centring is what keeps replay both smooth and honest. A backward-only
+  /// window smooths just as well but lags a corner by however long the baseline
+  /// takes to walk — the view would keep pointing down the old street after the
+  /// runner turned. During replay the later points already exist, so there is
+  /// no reason to pretend otherwise. At the live end of a track (or the very
+  /// start) the window degrades to one-sided, which is the best that's
+  /// available there.
+  ///
+  /// Purely geometric — no time-based easing, no retained state — so scrubbing
+  /// to the same instant always produces the same heading.
+  double? _headingOverBaseline(
+    UserTrack runner,
+    int index,
+    double atLat,
+    double atLng,
+  ) {
+    final half = _headingBaselineMeters / 2.0;
+
+    // Forward half first: how much of it exists decides how far back to reach.
+    double fwdLat = atLat, fwdLng = atLng;
+    double fwdTravelled = 0.0;
+    for (int i = index + 1; i < runner.positions.length; i++) {
+      final p = runner.positions[i];
+      fwdTravelled += _distanceCalculator.as(
+        latlng.LengthUnit.Meter,
+        latlng.LatLng(fwdLat, fwdLng),
+        latlng.LatLng(p.lat, p.lng),
+      );
+      fwdLat = p.lat;
+      fwdLng = p.lng;
+      if (fwdTravelled >= half) break;
+    }
+
+    // Spend whatever the forward half couldn't on the backward half, so the
+    // window is always ~a full baseline long. At the live end of a track that
+    // makes it fully backward-looking; mid-track it's centred.
+    final backTarget = _headingBaselineMeters - fwdTravelled.clamp(0.0, half);
+    double backLat = atLat, backLng = atLng;
+    double backTravelled = 0.0;
+    for (int i = index; i >= 0; i--) {
+      final p = runner.positions[i];
+      backTravelled += _distanceCalculator.as(
+        latlng.LengthUnit.Meter,
+        latlng.LatLng(backLat, backLng),
+        latlng.LatLng(p.lat, p.lng),
+      );
+      backLat = p.lat;
+      backLng = p.lng;
+      if (backTravelled >= backTarget) break;
+    }
+
+    if (backLat == fwdLat && backLng == fwdLng) return null; // hasn't moved
+    return _bearingDegrees(backLat, backLng, fwdLat, fwdLng);
+  }
+
   double? _runnerHeadingDegrees(UserTrack runner, double? cutoff) {
     if (runner.positions.length < 2) return null;
     final interpolated = _interpolatedPosition(runner, cutoff);
@@ -2496,11 +2562,13 @@ class RunTrackerMapController extends GetxController
     if (index == null) return null;
 
     if (cutoff == null || index == runner.positions.length - 1) {
-      if (runner.positions.length < 2) return null;
-      final before = runner.positions[runner.positions.length - 2];
       final current = runner.positions.last;
-      if (before.lat == current.lat && before.lng == current.lng) return null;
-      return _bearingDegrees(before.lat, before.lng, current.lat, current.lng);
+      return _headingOverBaseline(
+        runner,
+        runner.positions.length - 1,
+        current.lat,
+        current.lng,
+      );
     }
 
     final prev = runner.positions[index];
@@ -2524,7 +2592,7 @@ class RunTrackerMapController extends GetxController
       return null;
     }
 
-    return _bearingDegrees(prevLat, prevLng, targetLat, targetLng);
+    return _headingOverBaseline(runner, index, targetLat, targetLng);
   }
 
   int? _trackIndexAtTimestamp(UserTrack runner, double? cutoff) {

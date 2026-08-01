@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.41+1255 (2026-08-01)
+
+### Fixes
+- **The map and radar no longer jitter when rotation is unlocked.** Heading was
+  taken from the bearing between two neighbouring GPS fixes, which at walking
+  pace are a couple of metres apart — mostly noise, so the view twitched
+  constantly. It's now measured across about 18 m of track, and during replay
+  the window is centred on the moment being shown (using the points either
+  side), so the view is steady *and* still turns corners on time rather than
+  lagging behind them.
+
 ## 2.15.40+1254 (2026-08-01)
 
 ### Improvements
