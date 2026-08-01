@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.29+1243 (2026-08-01)
+
+### Fixes
+- **"Invalid access token" after a network dropout**: an action issued while
+  offline could transmit its original (now-expired) token once the network
+  returned, and the resulting error was never retried. The app now retries
+  exactly once with a freshly minted token — safe because the server rejects
+  stale tokens before doing any work, so nothing is ever repeated.
+
 ## 2.15.28+1242 (2026-07-31)
 
 ### Improvements

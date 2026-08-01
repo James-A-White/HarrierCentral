@@ -81,8 +81,12 @@ class ServiceCommon {
     // print('>>> http post $httpCounter $requestBody');
     // httpCounter++;
     final int maxAttempts = noRetries ? 1 : _maxRetryAttempts;
+    bool tokenRetryUsed = false;
 
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+    // The +1 head-room attempt exists ONLY for the single fresh-token retry
+    // below (tokenRetryUsed); normal status-code retries still stop at
+    // maxAttempts via isLastAttempt.
+    for (int attempt = 1; attempt <= maxAttempts + 1; attempt++) {
       final String requestBody = bodyFactory();
       final Response response = await _postWithClient(
         requestBody,
@@ -99,8 +103,22 @@ class ServiceCommon {
         return response.body;
       }
 
-      // Remote DB errors are not retried to avoid repeating side effects.
+      // Remote DB errors are not retried to avoid repeating side effects —
+      // with ONE exception: an 'Invalid access token' rejection. That comes
+      // from ValidateAppAuth, which RETURNs before any business logic runs,
+      // so nothing happened server-side and a retry repeats no side effects
+      // (safe even for noRetries callers like payments). This heals requests
+      // whose socket was held open across an offline gap or iOS suspend and
+      // physically transmitted after the token's ±2-time-window tolerance:
+      // the retry re-invokes bodyFactory, minting a fresh token at true
+      // transmit time. One shot only — a second rejection means a real auth
+      // problem (bad device secret / clock drift), so surface it.
       if (hasErrorId) {
+        if (!tokenRetryUsed &&
+            response.body.contains('"errorTitle":"Invalid access token"')) {
+          tokenRetryUsed = true;
+          continue;
+        }
         return checkHttpPostResponse(
           response,
           requestBody,
@@ -109,7 +127,7 @@ class ServiceCommon {
       }
 
       final bool isRetryable = _isRetryableStatus(response.statusCode);
-      final bool isLastAttempt = attempt == maxAttempts;
+      final bool isLastAttempt = attempt >= maxAttempts;
 
       if (!isRetryable) {
         return checkHttpPostResponse(
