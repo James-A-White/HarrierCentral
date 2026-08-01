@@ -11,11 +11,10 @@
       the new guard predicts tonight's sweep stamps just 4 rows (all genuine
       `TotalHaring` staleness — the one-time convergence "wave"), Stage-3
       clears 0.*
-- [ ] **Verify the morning after 2026-08-01's 03:10 sweep**: usage dashboard
-      Activity/day should be at organic levels (tens–hundreds, run-day spikes
-      aside). Note: on 2026-07-31 itself the dashboard still shows ~100k — the
-      07-31 03:10 sweep ran *before* the 04:57 deploy, and the rolling 24h
-      window needs a full quiet cycle to drain.
+- [x] **Verify the morning after 2026-08-01's 03:10 sweep**: VERIFIED
+      2026-08-01 09:59 UTC — HEM rows stamped in trailing 24h = **49** (was
+      101,706). Sweep completed in ~21s (03:10:21) vs ~4min pre-fix
+      (03:14:02). Usage dashboard Activity row now shows organic numbers.
 
 ## HC6 Migration
 
