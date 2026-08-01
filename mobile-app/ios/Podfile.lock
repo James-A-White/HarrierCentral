@@ -148,6 +148,8 @@ PODS:
     - Flutter
     - FlutterMacOS
   - TOCropViewController (3.1.2)
+  - torch_light (0.0.1):
+    - Flutter
   - url_launcher_ios (0.0.1):
     - Flutter
 
@@ -180,6 +182,7 @@ DEPENDENCIES:
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
+  - torch_light (from `.symlinks/plugins/torch_light/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
@@ -256,6 +259,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sign_in_with_apple/darwin"
   sqflite_darwin:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
+  torch_light:
+    :path: ".symlinks/plugins/torch_light/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -302,6 +307,7 @@ SPEC CHECKSUMS:
   sign_in_with_apple: fb98447f3dfb81e2926945ea43a8c9c7205eaca9
   sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
   TOCropViewController: a916930c465b5d9445a74d95e0c0da931771b4df
+  torch_light: 682062fa12102172fa38b6b14c106d93b060f83e
   url_launcher_ios: bb13df5870e8c4234ca12609d04010a21be43dfa
 
 PODFILE CHECKSUM: 5b676575e3ea90a08ff7112d739158de14fe2d90
