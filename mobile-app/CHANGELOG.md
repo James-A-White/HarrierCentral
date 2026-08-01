@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.50+1264 (2026-08-01)
+
+### Fixes
+- **Photo import now works for runs in another time zone.** Photo times were
+  being read against your phone's *current* zone, so importing after flying
+  home from a hash abroad could reject every photo as "not taken during the
+  run" — and misplace the ones it accepted on the map. Times are now compared
+  in the run's own local time, wherever you happen to be when you import.
+
 ## 2.15.49+1263 (2026-08-01)
 
 ### New Features

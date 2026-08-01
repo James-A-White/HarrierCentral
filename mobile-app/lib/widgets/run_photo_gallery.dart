@@ -132,13 +132,33 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
   /// The run has no end time of its own, so the end of the window is the last
   /// GPS point anyone recorded for it — with a conservative fallback when
   /// nobody tracked at all.
+  ///
+  /// The window is built in the RUN's wall clock, not the phone's. A photo's
+  /// EXIF time is the wall clock where it was taken, so comparing it against a
+  /// window derived from the phone's current zone breaks the moment someone
+  /// runs abroad and imports after flying home. The run's own UTC offset comes
+  /// free: it's the gap between the event's local time and its true instant.
   Future<void> _importFromCameraRoll() async {
     final run = widget.run;
     if (run == null) return;
     setState(() => _isImporting = true);
 
-    final DateTime start = run.event.eventStartDatetimeGmt.toLocal();
-    DateTime end = start.add(const Duration(hours: 6)); // untracked fallback
+    // Wall-clock digits of the run's start, held UTC-flagged so arithmetic
+    // never drags in the device zone.
+    final DateTime localStart = run.event.eventStartDatetime;
+    final DateTime startWall = DateTime.utc(
+      localStart.year,
+      localStart.month,
+      localStart.day,
+      localStart.hour,
+      localStart.minute,
+      localStart.second,
+    );
+    final Duration runOffset = startWall.difference(
+      run.event.eventStartDatetimeGmt.toUtc(),
+    );
+
+    DateTime endWall = startWall.add(const Duration(hours: 6)); // untracked
 
     final api = GetPositionsApi();
     try {
@@ -153,8 +173,12 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
         }
       }
       if (newest > 0) {
-        final last = DateTime.fromMillisecondsSinceEpoch(newest);
-        if (last.isAfter(start)) end = last;
+        // Track points are true instants; shift into the run's wall clock.
+        final lastWall = DateTime.fromMillisecondsSinceEpoch(
+          newest,
+          isUtc: true,
+        ).add(runOffset);
+        if (lastWall.isAfter(startWall)) endWall = lastWall;
       }
     } catch (_) {
       // Keep the fallback window — a failed lookup shouldn't block importing.
@@ -167,8 +191,9 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
       kennelId: run.kennel.kennelId,
       kennelSlug: run.kennel.kennelUniqueShortName,
       eventNumber: run.event.eventNumber,
-      runStart: start,
-      runEnd: end,
+      runStartWall: startWall,
+      runEndWall: endWall,
+      runUtcOffset: runOffset,
     );
 
     if (!mounted) return;

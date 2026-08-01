@@ -478,8 +478,15 @@ class KennelPhotoService {
   /// rejected — a photo without a position can't be placed on the track, and
   /// one without a time can't be shown to have been taken on the run at all.
   ///
-  /// [runStart] / [runEnd] bound the run. Callers pass the last recorded GPS
-  /// point as the end when the event has no end time of its own.
+  /// TIMEZONES. EXIF capture times carry no zone — they are the wall clock of
+  /// wherever the photo was taken. So the comparison is done entirely in the
+  /// RUN's wall clock: [runStartWall] and [runEndWall] are UTC-flagged
+  /// DateTimes carrying the run's local clock digits, and the photo's EXIF
+  /// digits are read the same way. Interpreting either against the phone's
+  /// CURRENT zone would break for a hasher who runs abroad and imports after
+  /// flying home — the window would shift by the zone difference and reject
+  /// every photo. [runUtcOffset] converts a wall time back to a true instant
+  /// for the GPS marker, which does need a real point in time.
   ///
   /// Returns counts so the caller can tell the user what happened.
   Future<({int imported, int rejected, int failed})> importFromCameraRoll({
@@ -487,14 +494,15 @@ class KennelPhotoService {
     required String kennelId,
     required String kennelSlug,
     required int eventNumber,
-    required DateTime runStart,
-    required DateTime runEnd,
+    required DateTime runStartWall,
+    required DateTime runEndWall,
+    required Duration runUtcOffset,
   }) async {
     // Phone clocks drift against GPS time; a little slack at each end beats
     // rejecting a legitimate photo taken moments before the off.
     const slack = Duration(minutes: 20);
-    final from = runStart.subtract(slack);
-    final to = runEnd.add(slack);
+    final from = runStartWall.subtract(slack);
+    final to = runEndWall.add(slack);
 
     // requestFullMetadata keeps EXIF (including GPS) on iOS — without it the
     // platform hands back a stripped copy and every photo would be rejected.
@@ -524,7 +532,10 @@ class KennelPhotoService {
         eventNumber: eventNumber,
         latitude: meta.lat,
         longitude: meta.lng,
-        takenAtMs: meta.takenAt.millisecondsSinceEpoch,
+        // Wall clock back to a true instant for the GPS track.
+        takenAtMs: meta.takenAt
+            .subtract(runUtcOffset)
+            .millisecondsSinceEpoch,
       );
       if (ok) {
         imported++;
@@ -558,14 +569,18 @@ class KennelPhotoService {
       if (lat == null || lng == null) return null;
       if (lat == 0 && lng == 0) return null; // null island — not a real fix
 
-      // EXIF dates are "YYYY:MM:DD HH:MM:SS" in local time at capture.
+      // EXIF dates are "YYYY:MM:DD HH:MM:SS" — the wall clock where the photo
+      // was taken, with NO zone. Parsed with a Z so it stays UTC-flagged and
+      // carries those digits verbatim, instead of Dart reinterpreting them in
+      // whatever zone the phone happens to be in now. The caller compares it
+      // against the run's wall clock.
       final raw = (tags['EXIF DateTimeOriginal'] ?? tags['Image DateTime'])
           ?.printable
           .trim();
       if (raw == null || raw.length < 19) return null;
       final iso =
           '${raw.substring(0, 4)}-${raw.substring(5, 7)}-${raw.substring(8, 10)}'
-          'T${raw.substring(11, 19)}';
+          'T${raw.substring(11, 19)}Z';
       final takenAt = DateTime.tryParse(iso);
       if (takenAt == null) return null;
 
