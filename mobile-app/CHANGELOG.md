@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.37+1251 (2026-08-01)
+
+### New Features
+- **"Where is everyone?" radar** — new radar icon in the Live Run top bar. You
+  are the dot in the middle; every other hasher is a blip at their true bearing,
+  with distance as the radius, labelled with name and how far away they are.
+  The ring starts sized to hold the nearest 90% of the pack so one hasher miles
+  away can't squash everyone into the centre — anyone beyond it is pinned to
+  the rim as a chevron so you still know they're out there. **Pinch to zoom**
+  the range in or out; the icon in the top bar resets it.
+  Hashers who have called for help show in orange with a halo, and anyone whose
+  position has gone quiet for 5 minutes dims. Updates every 15 seconds, in step
+  with the map. *Experimental — tell us if it earns its place.*
+
 ## 2.15.36+1250 (2026-08-01)
 
 ### Improvements

@@ -6,6 +6,7 @@ import 'package:harrier_central/pages/live_run_pages/live_run_chat_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_general_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_map_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_qr_page.dart';
+import 'package:harrier_central/pages/live_run_pages/live_run_rose_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_songbook_page.dart';
 
 class LiveRunShellController extends GetxController {
@@ -93,6 +94,11 @@ class LiveRunShell extends StatelessWidget {
             },
           ),
           actions: [
+            IconButton(
+              tooltip: 'Where is everyone?',
+              icon: const Icon(Icons.radar, color: Colors.white),
+              onPressed: () => Get.to(() => LiveRunRosePage(run: run)),
+            ),
             IconButton(
               tooltip: 'Share QR codes',
               icon: const Icon(Icons.qr_code_2, color: Colors.white),
