@@ -777,6 +777,33 @@ enum HashRunPointTypes {
     '🏁',
     'adminend.png',
     // Note: adminend.png asset not yet added; overlay falls back to icon.
+  ),
+  // Distress marks. Dropped by the I'm Lost / Send Help buttons on the Live
+  // Run Tools screen and rendered as an unmistakable red badge on EVERY
+  // PackTrack user's map — deliberately not the ordinary yellow label badge,
+  // so a call for help can never read as "nice pub here". The label carries
+  // who called it and when. Never deduped and never hidden by lane filters.
+  lostRunner(
+    'LST',
+    16,
+    '🧭 Lost 🧭',
+    MaterialCommunityIcons.map_marker_question,
+    Color.fromARGB(255, 230, 81, 0), // deep orange — needs help finding trail
+    'Lost',
+    '🧭',
+    'lost.png',
+    // Note: lost.png asset not yet added; overlay falls back to the icon.
+  ),
+  helpNeeded(
+    'SOS',
+    17,
+    '🆘 Help Needed 🆘',
+    MaterialCommunityIcons.alert_octagon,
+    Color.fromARGB(255, 198, 0, 0), // red — urgent assistance
+    'Help',
+    '🆘',
+    'sos.png',
+    // Note: sos.png asset not yet added; overlay falls back to the icon.
   );
 
   final String key;

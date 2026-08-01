@@ -41,10 +41,13 @@ class RunTrackerMapController extends GetxController
   // 20 s/km so detail is watchable. The rate is interpolated by zoom between
   // the two thresholds. Constants match public-web (MS_PER_KM_FAST/SLOW,
   // MIN_DURATION_MS) so a given run plays at the same speed on app and web.
-  static const double _msPerKmFast = 2500.0; // 2.5 s/km — fully zoomed out (≤ 15)
-  static const double _msPerKmSlow = 20000.0; // 20 s/km — fully zoomed in (≥ 22)
-  static const Duration _minPlaybackDuration =
-      Duration(seconds: 5); // floor so a very short trail doesn't flash past
+  static const double _msPerKmFast =
+      2500.0; // 2.5 s/km — fully zoomed out (≤ 15)
+  static const double _msPerKmSlow =
+      20000.0; // 20 s/km — fully zoomed in (≥ 22)
+  static const Duration _minPlaybackDuration = Duration(
+    seconds: 5,
+  ); // floor so a very short trail doesn't flash past
   static const Duration _autoUpdateInterval = Duration(seconds: 15);
 
   // Stable per-runner colour palette, matched to public-web's TRACK_COLORS so a
@@ -52,8 +55,14 @@ class RunTrackerMapController extends GetxController
   // in the loaded set (see [_assignRunnerColors]) and keyed by id, so filtering
   // trail lanes never reshuffles the colours.
   static const List<Color> _trackColors = <Color>[
-    Color(0xFFEF4444), Color(0xFF3B82F6), Color(0xFF22C55E), Color(0xFFF59E0B),
-    Color(0xFFA855F7), Color(0xFFEC4899), Color(0xFF06B6D4), Color(0xFFF97316),
+    Color(0xFFEF4444),
+    Color(0xFF3B82F6),
+    Color(0xFF22C55E),
+    Color(0xFFF59E0B),
+    Color(0xFFA855F7),
+    Color(0xFFEC4899),
+    Color(0xFF06B6D4),
+    Color(0xFFF97316),
   ];
   final Map<String, Color> _colorById = <String, Color>{};
 
@@ -240,9 +249,10 @@ class RunTrackerMapController extends GetxController
   // Uploader identity — populated lazily from local SQLite on first photo fetch.
   // Keyed by lowercase userId so multiple photos by the same person only trigger
   // one DB lookup. photoId → userId provides the join between the two maps.
-  final Map<String, String> _photoUploaderIdCache = {};  // photoId  → userId
-  final Map<String, String> _uploaderNameCache = {};     // userId   → display name
-  final Map<String, String> _uploaderPhotoCache = {};    // userId   → profile photo URL
+  final Map<String, String> _photoUploaderIdCache = {}; // photoId  → userId
+  final Map<String, String> _uploaderNameCache = {}; // userId   → display name
+  final Map<String, String> _uploaderPhotoCache =
+      {}; // userId   → profile photo URL
 
   Worker? _timelineWorker;
   Worker? _selectionWorker;
@@ -370,8 +380,8 @@ class RunTrackerMapController extends GetxController
   /// selected runner, the data size, and the photo-cache version.
   String _markerCacheKey({required bool photosOnly}) {
     final double? cutoff = timelineAvailable ? currentTimestampMs.value : null;
-    final String scale =
-        (photosOnly ? _photoMarkerScale() : _markerScale()).toStringAsFixed(3);
+    final String scale = (photosOnly ? _photoMarkerScale() : _markerScale())
+        .toStringAsFixed(3);
     return '${_visibleMarkCount(photosOnly: photosOnly, cutoff: cutoff)}'
         '|$scale'
         '|${selectedTrailValues.join(",")}'
@@ -386,12 +396,19 @@ class RunTrackerMapController extends GetxController
   /// type check; only actual marks are parsed.
   int _visibleMarkCount({required bool photosOnly, required double? cutoff}) {
     int n = 0;
-    for (final user in visibleRunners) {
+    // Must mirror _buildCheckpointMarkers' membership rule exactly, distress
+    // exception included — this count is the memo key, so a mark the builder
+    // would draw but the counter ignores never appears until something else
+    // changes the key.
+    final Set<UserTrack> visible = visibleRunners.toSet();
+    for (final user in userPositions) {
+      final bool laneVisible = visible.contains(user);
       for (final p in user.positions) {
         if ((p.type ?? '').isEmpty) continue;
         if (cutoff != null && p.timestampMs.toDouble() > cutoff) continue;
         final parsed = _parseCheckpointType(p.type);
         if (parsed == null) continue;
+        if (!laneVisible && !_isDistressType(parsed.type)) continue;
         final bool isPhoto = parsed.type == HashRunPointTypes.photo;
         if (photosOnly == isPhoto) n++;
       }
@@ -404,18 +421,25 @@ class RunTrackerMapController extends GetxController
     final cutoff = timelineAvailable ? currentTimestampMs.value : null;
 
     // Gather the mark points that belong on this layer (checkpoints vs photos).
-    // Only from lane-VISIBLE runners: hiding a trail type (e.g. Ballbreaker)
+    // From lane-VISIBLE runners only: hiding a trail type (e.g. Ballbreaker)
     // must hide the marks its runners put down, not just the polyline.
     final entries = <_MarkEntry>[];
-    for (final point in visibleRunners.expand((user) => user.positions)) {
-      final rawType = (point.type ?? '').trim();
-      if (rawType.isEmpty) continue;
-      if (cutoff != null && point.timestampMs.toDouble() > cutoff) continue;
-      final parsedType = _parseCheckpointType(point.type);
-      if (parsedType == null) continue;
-      final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
-      if (photosOnly != isPhoto) continue;
-      entries.add((point: point, type: rawType, parsed: parsedType));
+    // Distress marks come from EVERY runner, not just lane-visible ones: a call
+    // for help must never be filtered out because someone hid that trail type.
+    final Set<UserTrack> visible = visibleRunners.toSet();
+    for (final user in userPositions) {
+      final bool laneVisible = visible.contains(user);
+      for (final point in user.positions) {
+        final rawType = (point.type ?? '').trim();
+        if (rawType.isEmpty) continue;
+        if (cutoff != null && point.timestampMs.toDouble() > cutoff) continue;
+        final parsedType = _parseCheckpointType(point.type);
+        if (parsedType == null) continue;
+        if (!laneVisible && !_isDistressType(parsedType.type)) continue;
+        final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
+        if (photosOnly != isPhoto) continue;
+        entries.add((point: point, type: rawType, parsed: parsedType));
+      }
     }
 
     // When several runners mark the same physical point (e.g. a check), the
@@ -423,56 +447,75 @@ class RunTrackerMapController extends GetxController
     // are within _markDedupeMeters of an already-kept one. Photos are never
     // collapsed — each is a distinct image.
     final shown = photosOnly ? entries : _dedupeNearbyMarks(entries);
+    // Draw distress marks last so they sit above ordinary marks on a busy map.
+    shown.sort((a, b) {
+      final int ad = _isDistressType(a.parsed.type) ? 1 : 0;
+      final int bd = _isDistressType(b.parsed.type) ? 1 : 0;
+      return ad.compareTo(bd);
+    });
 
-    return shown.map((entry) {
-      final parsedType = entry.parsed;
-      final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
+    return shown
+        .map((entry) {
+          final parsedType = entry.parsed;
+          final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
 
-      final bool hasAttachedLabel =
-          (parsedType.customLabel?.isNotEmpty ?? false) &&
-          (parsedType.slotIcon != null ||
-              parsedType.glyphId != null ||
-              parsedType.text != null ||
-              parsedType.type == HashRunPointTypes.customLabel ||
-              parsedType.type == HashRunPointTypes.caution);
+          // Distress marks always claim label-sized bounds — their badge carries the
+          // caller's name and time and must not be clipped.
+          final bool isDistress = _isDistressType(parsedType.type);
+          final bool hasAttachedLabel =
+              isDistress ||
+              ((parsedType.customLabel?.isNotEmpty ?? false) &&
+                  (parsedType.slotIcon != null ||
+                      parsedType.glyphId != null ||
+                      parsedType.text != null ||
+                      parsedType.type == HashRunPointTypes.customLabel ||
+                      parsedType.type == HashRunPointTypes.caution));
 
-      const double baseIconSize = 72.0;
-      const double basePhotoSize = 144.0;
-      const double baseLabelWidth = 140.0;
-      const double baseLabelHeight = 140.0;
+          const double baseIconSize = 72.0;
+          const double basePhotoSize = 144.0;
+          const double baseLabelWidth = 140.0;
+          const double baseLabelHeight = 140.0;
 
-      final double scale = isPhoto ? _photoMarkerScale() : _markerScale();
-      final double markerWidth = hasAttachedLabel
-          ? baseLabelWidth * scale
-          : (isPhoto ? basePhotoSize : baseIconSize) * scale;
-      final double markerHeight = hasAttachedLabel
-          ? baseLabelHeight * scale
-          : (isPhoto ? basePhotoSize : baseIconSize) * scale;
+          final double scale = isPhoto ? _photoMarkerScale() : _markerScale();
+          final double markerWidth = hasAttachedLabel
+              ? baseLabelWidth * scale
+              : (isPhoto ? basePhotoSize : baseIconSize) * scale;
+          final double markerHeight = hasAttachedLabel
+              ? baseLabelHeight * scale
+              : (isPhoto ? basePhotoSize : baseIconSize) * scale;
 
-      final markChild = _buildCheckpointMarker(parsedType);
-      return Marker(
-        width: markerWidth,
-        height: markerHeight,
-        point: latlng.LatLng(entry.point.lat, entry.point.lng),
-        alignment: Alignment.topCenter,
-        // Photos keep their own tap behaviour. Tap a trail mark to see which
-        // runners passed through that point during the run, and when.
-        child: isPhoto
-            ? markChild
-            : GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => _showRunnersAtMark(
-                  latlng.LatLng(entry.point.lat, entry.point.lng),
-                  parsedType,
-                ),
-                child: markChild,
-              ),
-      );
-    }).toList(growable: false);
+          final markChild = _buildCheckpointMarker(parsedType);
+          return Marker(
+            width: markerWidth,
+            height: markerHeight,
+            point: latlng.LatLng(entry.point.lat, entry.point.lng),
+            alignment: Alignment.topCenter,
+            // Photos keep their own tap behaviour. Tap a trail mark to see which
+            // runners passed through that point during the run, and when.
+            child: isPhoto
+                ? markChild
+                : GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _showRunnersAtMark(
+                      latlng.LatLng(entry.point.lat, entry.point.lng),
+                      parsedType,
+                    ),
+                    child: markChild,
+                  ),
+          );
+        })
+        .toList(growable: false);
   }
 
   /// Collapses marks of the same type that sit within [_markDedupeMeters] of an
   /// already-kept mark, so multiple runners marking the same physical point
+  /// True for the two distress mark types (I'm Lost / Send Help), which get
+  /// special handling everywhere: never lane-filtered, never size-clipped, and
+  /// drawn last so they sit on top of ordinary marks.
+  bool _isDistressType(HashRunPointTypes? type) =>
+      type == HashRunPointTypes.helpNeeded ||
+      type == HashRunPointTypes.lostRunner;
+
   /// (e.g. a check) render as one marker instead of an overlapping stack. The
   /// first mark of each cluster is kept.
   List<_MarkEntry> _dedupeNearbyMarks(List<_MarkEntry> entries) {
@@ -571,8 +614,9 @@ class RunTrackerMapController extends GetxController
                     itemBuilder: (context, i) {
                       final r = reached[i];
                       final name = userNames[r.userId]?.trim();
-                      final label =
-                          (name == null || name.isEmpty) ? 'Runner' : name;
+                      final label = (name == null || name.isEmpty)
+                          ? 'Runner'
+                          : name;
                       final bool checked = r.returns > 0;
                       return ListTile(
                         dense: true,
@@ -587,8 +631,9 @@ class RunTrackerMapController extends GetxController
                         title: Text(
                           label,
                           style: TextStyle(
-                            fontWeight:
-                                checked ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: checked
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                         subtitle: Text(
@@ -597,9 +642,9 @@ class RunTrackerMapController extends GetxController
                               : 'nearest ${r.distance.toStringAsFixed(0)} m',
                         ),
                         trailing: Text(
-                          _formatTimestamp(r.timestampMs.toDouble())
-                              .split(' ')
-                              .last,
+                          _formatTimestamp(
+                            r.timestampMs.toDouble(),
+                          ).split(' ').last,
                         ),
                       );
                     },
@@ -632,6 +677,7 @@ class RunTrackerMapController extends GetxController
     String two(int n) => n.toString().padLeft(2, '0');
     return h > 0 ? '$h:${two(m)}:${two(s)}' : '$m:${two(s)}';
   }
+
   String get formattedDistanceLabel => _formatDistanceLabel();
 
   @override
@@ -679,9 +725,7 @@ class RunTrackerMapController extends GetxController
     _lastMarkerZoom = initialZoom;
     _startAutoUpdateTimer();
     _startCompass();
-    BootLogger.logBreadcrumb(
-      'PackTrack map OPENED (eventId=${event.eventId})',
-    );
+    BootLogger.logBreadcrumb('PackTrack map OPENED (eventId=${event.eventId})');
     unawaited(loadPositions());
     unawaited(_loadPhotoCache());
   }
@@ -758,7 +802,9 @@ class RunTrackerMapController extends GetxController
   // identity caches. Called on init and every auto-update tick.
   Future<void> _loadPhotoCache() async {
     try {
-      final raw = await KennelPhotoService().getRunPhotos(eventId: event.eventId);
+      final raw = await KennelPhotoService().getRunPhotos(
+        eventId: event.eventId,
+      );
       if (raw.startsWith(ERROR_PREFIX)) return;
       final outer = jsonDecode(raw) as List<dynamic>;
       // No envelope on success. rowset 0 = own photos, rowset 1 = public photos.
@@ -790,10 +836,12 @@ class RunTrackerMapController extends GetxController
               if (!_uploaderNameCache.containsKey(userId)) {
                 final userData = await QueryUsers.querySingleUser(userId);
                 if (userData.isNotEmpty) {
-                  _uploaderNameCache[userId] =
-                      _preferredDisplayName(userData.first);
-                  final photoUrl = userData.first[
-                      tableModel.hashersTableHelper.colPhoto] as String?;
+                  _uploaderNameCache[userId] = _preferredDisplayName(
+                    userData.first,
+                  );
+                  final photoUrl =
+                      userData.first[tableModel.hashersTableHelper.colPhoto]
+                          as String?;
                   _uploaderPhotoCache[userId] = photoUrl ?? '';
                 }
               }
@@ -808,7 +856,11 @@ class RunTrackerMapController extends GetxController
       }
     } catch (e, s) {
       debugPrint('_loadPhotoCache error: $e');
-      BootLogger.logError('[RunTrackerMapController._loadPhotoCache] eventId=${event.eventId}', e, s);
+      BootLogger.logError(
+        '[RunTrackerMapController._loadPhotoCache] eventId=${event.eventId}',
+        e,
+        s,
+      );
     }
   }
 
@@ -868,7 +920,11 @@ class RunTrackerMapController extends GetxController
       syncRunnerPickerToSelection(onlyIfMismatch: true, animated: false);
     } catch (error, s) {
       debugPrint('Error fetching positions: $error');
-      BootLogger.logError('[RunTrackerMapController.loadPositions] eventId=${event.eventId}', error, s);
+      BootLogger.logError(
+        '[RunTrackerMapController.loadPositions] eventId=${event.eventId}',
+        error,
+        s,
+      );
     }
   }
 
@@ -1079,7 +1135,9 @@ class RunTrackerMapController extends GetxController
     final lon = deviceInfo.deviceLon;
     if (lat == null || lon == null) return;
     final target = latlng.LatLng(lat, lon);
-    final z = mapController.camera.zoom < 16.0 ? 16.0 : mapController.camera.zoom;
+    final z = mapController.camera.zoom < 16.0
+        ? 16.0
+        : mapController.camera.zoom;
     mapController.move(target, z);
   }
 
@@ -1113,11 +1171,13 @@ class RunTrackerMapController extends GetxController
           ? rawId
           : _photoUrlCache[rawId.toLowerCase()];
       if (url == null || url.isEmpty) continue;
-      cues.add(PhotoCue(
-        timestampMs: p.timestampMs,
-        point: latlng.LatLng(p.lat, p.lng),
-        url: url,
-      ));
+      cues.add(
+        PhotoCue(
+          timestampMs: p.timestampMs,
+          point: latlng.LatLng(p.lat, p.lng),
+          url: url,
+        ),
+      );
     }
     return cues;
   }
@@ -1148,8 +1208,10 @@ class RunTrackerMapController extends GetxController
     if (ctx == null) return;
     for (final cue in _selectedRunnerCues) {
       unawaited(
-        precacheImage(CachedNetworkImageProvider(cue.url), ctx)
-            .catchError((Object _) {}),
+        precacheImage(
+          CachedNetworkImageProvider(cue.url),
+          ctx,
+        ).catchError((Object _) {}),
       );
     }
   }
@@ -1169,8 +1231,7 @@ class RunTrackerMapController extends GetxController
     }
     for (final cue in _selectedRunnerCues) {
       final t = cue.timestampMs.toDouble();
-      final crossed =
-          (prevMs < t && t <= curMs) || (curMs <= t && t < prevMs);
+      final crossed = (prevMs < t && t <= curMs) || (curMs <= t && t < prevMs);
       if (crossed) {
         _startShowcase(cue);
         return;
@@ -1205,8 +1266,10 @@ class RunTrackerMapController extends GetxController
     }
     if (nearest != null && best <= _scrubShowcaseWindowMs) {
       if (photoShowcase.value?.url != nearest.url) {
-        photoShowcase.value =
-            PhotoShowcaseState(url: nearest.url, point: nearest.point);
+        photoShowcase.value = PhotoShowcaseState(
+          url: nearest.url,
+          point: nearest.point,
+        );
       }
       showcaseZoom.value = 1.0; // static, full zoom
       showcasePan.value = 0.0; // centred
@@ -1248,8 +1311,10 @@ class RunTrackerMapController extends GetxController
   }
 
   void _scheduleShowcaseFrame({bool rescheduling = false}) {
-    _showcaseFrameCallbackId = WidgetsBinding.instance
-        .scheduleFrameCallback(_showcaseFrame, rescheduling: rescheduling);
+    _showcaseFrameCallbackId = WidgetsBinding.instance.scheduleFrameCallback(
+      _showcaseFrame,
+      rescheduling: rescheduling,
+    );
   }
 
   void _cancelShowcaseFrame() {
@@ -1440,10 +1505,12 @@ class RunTrackerMapController extends GetxController
     if (delta.abs() <= _tiltDeadDeg) {
       target = 1.0;
     } else if (delta > 0) {
-      target = 1.0 +
+      target =
+          1.0 +
           math.min((delta - _tiltDeadDeg) / _tiltSpanDeg, 1.0) * 3.0; // → ×4
     } else {
-      target = 1.0 +
+      target =
+          1.0 +
           math.max((delta + _tiltDeadDeg) / _tiltSpanDeg, -1.0) * 3.0; // → −×2
     }
     // Widened paused band: snap a small speed to a clean freeze so it's easy to
@@ -1470,14 +1537,15 @@ class RunTrackerMapController extends GetxController
 
     // Base (speed-1) duration so tilt rate is unaffected by the speed button.
     final int durMs =
-        (_lastBaseDuration ?? _playbackController.duration)
-                ?.inMilliseconds ??
-            10000;
+        (_lastBaseDuration ?? _playbackController.duration)?.inMilliseconds ??
+        10000;
     final double dv = dtMs / durMs * _tiltEma;
     // Hold at either bound instead of stopping — tilting the other way
     // resumes from there, which makes tilt-scrubbing feel continuous.
-    _playbackController.value =
-        (_playbackController.value + dv).clamp(0.0, 1.0);
+    _playbackController.value = (_playbackController.value + dv).clamp(
+      0.0,
+      1.0,
+    );
   }
 
   void updateTrueNorthLock(bool value) {
@@ -1565,10 +1633,7 @@ class RunTrackerMapController extends GetxController
             ),
             child: ClipRRect(
               //borderRadius: borderRadius,
-              child: Image(
-                image: avatarImageProvider(logo),
-                fit: BoxFit.cover,
-              ),
+              child: Image(image: avatarImageProvider(logo), fit: BoxFit.cover),
             ),
           ),
         ),
@@ -1655,6 +1720,13 @@ class RunTrackerMapController extends GetxController
       return _buildPhotoMarker(customLabel ?? '');
     }
 
+    // Distress marks get their own unmistakable treatment — never the ordinary
+    // yellow note badge (see HashRunPointTypes.lostRunner / helpNeeded).
+    if (type == HashRunPointTypes.helpNeeded ||
+        type == HashRunPointTypes.lostRunner) {
+      return _buildDistressMarker(type!, customLabel);
+    }
+
     final bool showLabel = customLabel != null && customLabel.isNotEmpty;
     final bool isCaution =
         type == HashRunPointTypes.caution || parsed.glyphId == 'caution';
@@ -1709,6 +1781,71 @@ class RunTrackerMapController extends GetxController
           width: baseIconSize * scale,
           height: baseIconSize * scale,
           child: icon,
+        ),
+      ],
+    );
+  }
+
+  /// A call for help / lost runner: heavy coloured badge with the caller's name
+  /// and time, over a matching pin. Sized well above ordinary marks and drawn
+  /// in the type's own colour so it reads instantly at a glance on a busy map.
+  Widget _buildDistressMarker(HashRunPointTypes type, String? label) {
+    final double scale = _markerScale();
+    final Color colour = type.color;
+    final bool urgent = type == HashRunPointTypes.helpNeeded;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9.0, vertical: 5.0),
+          decoration: BoxDecoration(
+            color: colour,
+            border: Border.all(color: Colors.white, width: 2.0),
+            borderRadius: BorderRadius.circular(8.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 150.0 * scale),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  urgent ? '🆘 HELP NEEDED' : '🧭 LOST',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                  ),
+                ),
+                if (label != null && label.isNotEmpty)
+                  Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 3.0),
+        Icon(
+          type.iconData,
+          color: colour,
+          size: 46.0 * scale,
+          shadows: const [Shadow(color: Colors.white, blurRadius: 6)],
         ),
       ],
     );
@@ -1826,8 +1963,9 @@ class RunTrackerMapController extends GetxController
     if (resolvedUrl == null) return const SizedBox.shrink();
 
     final String? resolvedLabel = label?.toLowerCase();
-    final String? assetId =
-        resolvedLabel != null ? _photoAssetIdCache[resolvedLabel] : null;
+    final String? assetId = resolvedLabel != null
+        ? _photoAssetIdCache[resolvedLabel]
+        : null;
 
     final marker = CameraPhotoMarker(
       photoUrl: resolvedUrl,
@@ -1840,8 +1978,7 @@ class RunTrackerMapController extends GetxController
     );
 
     final photoItems = _orderedPhotoItems;
-    final tappedIndex =
-        photoItems.indexWhere((p) => p.imageUrl == resolvedUrl);
+    final tappedIndex = photoItems.indexWhere((p) => p.imageUrl == resolvedUrl);
 
     return GestureDetector(
       onTap: () => Navigator.of(navigatorKey.currentContext!).push(
@@ -1871,18 +2008,21 @@ class RunTrackerMapController extends GetxController
         final label = parsed.customLabel;
         if (label == null || label.isEmpty) continue;
         final lowerLabel = label.toLowerCase();
-        final String? url =
-            label.startsWith('http') ? label : _photoUrlCache[lowerLabel];
+        final String? url = label.startsWith('http')
+            ? label
+            : _photoUrlCache[lowerLabel];
         if (url == null) continue;
         if (!seen.add(url)) continue; // deduplicate legacy-URL markers
         final caption = _photoCaptionCache[lowerLabel] ?? '';
         final userId = _photoUploaderIdCache[lowerLabel] ?? '';
-        items.add(MapPhotoItem(
-          imageUrl: url,
-          caption: caption,
-          uploaderName: _uploaderNameCache[userId] ?? '',
-          uploaderPhotoUrl: _uploaderPhotoCache[userId] ?? '',
-        ));
+        items.add(
+          MapPhotoItem(
+            imageUrl: url,
+            caption: caption,
+            uploaderName: _uploaderNameCache[userId] ?? '',
+            uploaderPhotoUrl: _uploaderPhotoCache[userId] ?? '',
+          ),
+        );
       }
     }
     return items;
@@ -1900,12 +2040,15 @@ class RunTrackerMapController extends GetxController
   //   initialZoom (full-run view) → 50 px
   //   maxZoom     (closest zoom)  → 360 px  (≈ fills a phone screen horizontally)
   double _photoMarkerScale() {
-    const double baseSize    = 144.0;
-    const double pxAtInitial =  50.0;
-    const double pxAtMax     = 360.0;
+    const double baseSize = 144.0;
+    const double pxAtInitial = 50.0;
+    const double pxAtMax = 360.0;
     if (maxZoom <= initialZoom) return pxAtMax / baseSize;
     final double zoom = _mapReady ? mapController.camera.zoom : initialZoom;
-    final double t = ((zoom - initialZoom) / (maxZoom - initialZoom)).clamp(0.0, 1.0);
+    final double t = ((zoom - initialZoom) / (maxZoom - initialZoom)).clamp(
+      0.0,
+      1.0,
+    );
     final double tCurved = t * t; // quadratic: faster shrink toward initialZoom
     return (pxAtInitial + (pxAtMax - pxAtInitial) * tCurved) / baseSize;
   }
@@ -2451,7 +2594,9 @@ class RunTrackerMapController extends GetxController
   double _trailDistanceMeters() {
     double max = 0.0;
     for (final runner in userPositions) {
-      final d = _sumInterpolatedDistance(_interpolatedTrackPoints(runner, null));
+      final d = _sumInterpolatedDistance(
+        _interpolatedTrackPoints(runner, null),
+      );
       if (d > max) max = d;
     }
     return max;
@@ -2525,7 +2670,11 @@ class _InterpolatedPoint {
 
 /// A mark point paired with its parsed type and raw type string (the latter is
 /// the dedup key in [RunTrackerMapController._dedupeNearbyMarks]).
-typedef _MarkEntry = ({TrackPoint point, String type, _ParsedCheckpointType parsed});
+typedef _MarkEntry = ({
+  TrackPoint point,
+  String type,
+  _ParsedCheckpointType parsed,
+});
 
 class _ParsedCheckpointType {
   const _ParsedCheckpointType({
@@ -2536,8 +2685,8 @@ class _ParsedCheckpointType {
     this.customLabel,
     this.action,
   }) : assert(
-          type != null || slotIcon != null || glyphId != null || text != null,
-        );
+         type != null || slotIcon != null || glyphId != null || text != null,
+       );
 
   final HashRunPointTypes? type; // legacy enum key
   final String? slotIcon; // legacy I-NNN.png filename

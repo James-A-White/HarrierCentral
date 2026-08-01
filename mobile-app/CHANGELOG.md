@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.33+1247 (2026-08-01)
+
+### New Features
+- **Distress marks now show on everyone's map**: pressing "I'm Lost" or
+  "Send Help" drops an unmistakable red/orange badge — with who called it and
+  when — onto the live map of every PackTrack user on the run. Previously the
+  call looked like an ordinary yellow note, the same as marking a nice pub.
+  The mark is now dropped even if that person never started tracking or had
+  already ended their run (the people most likely to need it), it is never
+  hidden by trail-type filters, and it draws on top of other marks.
+
 ## 2.15.32+1246 (2026-08-01)
 
 ### New Features

@@ -448,15 +448,22 @@ class LiveRunGeneralController extends GetxController {
         ? '🆘 HELP NEEDED — $name needs assistance on trail! Location: $where'
         : "🧭 I'M LOST — $name has lost the trail. Location: $where";
 
-    // Make the call visible on the live map too (marks need an active track).
-    if (isTracking.value || isPaused.value) {
-      unawaited(
-        _locationService.markPoint(
-          HashRunPointTypes.customLabel,
-          label: urgent ? 'HELP!' : 'Lost',
-        ),
-      );
-    }
+    // Drop a distress mark so the call shows on EVERY PackTrack user's map.
+    // Uses markPointAt (not markPoint) because it stands up its own buffer when
+    // needed — someone who never started tracking, or already pressed End Run,
+    // is exactly the person most likely to be lost, and they must still appear.
+    // The label carries who and when, so the map answers both without a tap.
+    unawaited(
+      _locationService.markPointAt(
+        pointType: urgent
+            ? HashRunPointTypes.helpNeeded
+            : HashRunPointTypes.lostRunner,
+        timestampMs: DateTime.now().millisecondsSinceEpoch,
+        overrideEventId: run.event.eventId,
+        overrideUserId: currentUserId,
+        label: '$name · ${DateFormat('h:mm a').format(DateTime.now())}',
+      ),
+    );
 
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
