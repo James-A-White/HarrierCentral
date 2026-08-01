@@ -1,12 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
-## 2.15.43+1257 (2026-08-01)
+## 2.15.44+1258 (2026-08-01)
 
 ### Fixes
-- **Map and radar rotation follows turns properly again.** The last build cured
-  the jitter but overshot into treacle — a 90° corner took 26 seconds to come
-  round. Turns now complete in about four seconds, and the heading is measured
-  over 35 m of track rather than 70 m so corners aren't rounded off.
+- **Map and radar rotation now keeps up.** Recent builds cured the jitter but
+  turned the view to treacle — worst during playback, where the run races past
+  far faster than real time while the rotation limit was still grinding through
+  the previous turn, so it never caught up. Turns now complete in well under a
+  second, and the heading is measured over 20 m of track instead of 70 m so
+  corners aren't rounded away.
 
 ## 2.15.42+1256 (2026-08-01)
 

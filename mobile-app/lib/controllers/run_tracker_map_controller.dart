@@ -2551,12 +2551,13 @@ class RunTrackerMapController extends GetxController
   /// Length of track the heading is fitted over. The single dial for how
   /// steady the view is: longer is smoother but rounds corners more.
   ///
-  /// 18m proved far too short (GPS scatter across it is still ±20-odd degrees
-  /// of angular error) and 70m too long — it rounded corners over most of a
-  /// minute of walking. 35m sits between: with the least-squares fit below
-  /// doing the noise rejection, the window doesn't need to be huge to be
-  /// steady, and a shorter one follows real turns much sooner.
-  static const double _headingBaselineMeters = 35.0;
+  /// Noise rejection is the least-squares fit's job, not this window's. Every
+  /// metre here is a metre of corner that gets rounded off, so it's kept as
+  /// short as the fit allows: 20m is ~4-5 fixes at Best tracking, enough for a
+  /// stable fit while still turning a corner close to when the runner did.
+  /// (The old 2-point chord needed a long window because it trusted only its
+  /// endpoints; the fit doesn't.)
+  static const double _headingBaselineMeters = 20.0;
 
   /// Don't re-rotate for less than this. Sub-degree corrections are invisible
   /// as direction but very visible as movement.
@@ -2567,11 +2568,15 @@ class RunTrackerMapController extends GetxController
   /// view slews toward the target instead of jumping. This is a display limit
   /// only — the underlying heading stays exactly as computed from the track.
   ///
-  /// 3.5°/s was far too slow to live with: a 90° corner took 26 seconds to come
-  /// round and a U-turn nearly a minute, so the view was permanently pointing
-  /// somewhere the runner no longer was. At 20°/s a corner swings through in
-  /// about four seconds — still visibly eased rather than snapped.
-  static const double _maxRotationDegPerSec = 20.0;
+  /// Now only there to take the edge off a step change, NOT to smooth — the
+  /// fitted heading does the smoothing. Earlier values fought playback: replay
+  /// time runs far faster than real time (a two-hour run scrubs past in
+  /// seconds), so the runner's heading can swing right round within a fraction
+  /// of a real second while a low cap is still grinding through the last turn.
+  /// The camera never arrived, which is what read as unresponsive. At 120°/s a
+  /// 90° corner takes about three quarters of a second — enough to look turned
+  /// rather than teleported, not enough to lag.
+  static const double _maxRotationDegPerSec = 120.0;
 
   /// Cadence of the slew. Fine enough to read as motion rather than steps.
   static const Duration _rotationStepInterval = Duration(milliseconds: 60);
