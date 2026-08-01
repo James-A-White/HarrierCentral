@@ -86,6 +86,14 @@ class LostCompassController extends GetxController {
   /// until the first one arrives.
   Position? _lastPosition;
 
+  /// When the target point was recorded. The gap between then and now is the
+  /// difference between catching the pack and arriving somewhere they left an
+  /// hour ago — worth knowing before you commit to walking there.
+  int? _targetTimestampMs;
+
+  /// "33 minutes ago" for the held target, or null when there isn't one.
+  final RxnString targetAgeLabel = RxnString();
+
   StreamSubscription<Position>? _positionSub;
   StreamSubscription<CompassEvent>? _compassSub;
   Timer? _refreshTimer;
@@ -143,6 +151,25 @@ class LostCompassController extends GetxController {
     final from = latlong.LatLng(me.latitude, me.longitude);
     bearingToTrail.value = (_distance.bearing(from, target) + 360) % 360;
     distanceMeters.value = _distance.as(latlong.LengthUnit.Meter, from, target);
+    targetAgeLabel.value = _ageLabel(_targetTimestampMs);
+  }
+
+  /// How long ago the target point was laid down, in plain words.
+  String? _ageLabel(int? timestampMs) {
+    if (timestampMs == null) return null;
+    final ms = DateTime.now().millisecondsSinceEpoch - timestampMs;
+    // Clock skew — say nothing rather than something wrong.
+    if (ms < 0) {
+      return null;
+    }
+    final minutes = ms ~/ 60000;
+    if (minutes < 1) return 'less than a minute ago';
+    if (minutes == 1) return '1 minute ago';
+    if (minutes < 60) return '$minutes minutes ago';
+    final hours = minutes ~/ 60;
+    final rem = minutes % 60;
+    if (rem == 0) return hours == 1 ? '1 hour ago' : '$hours hours ago';
+    return '${hours}h ${rem}m ago';
   }
 
   @override
@@ -295,9 +322,11 @@ class LostCompassController extends GetxController {
                 'has been notified.'
           : 'Could not read any track positions. Try again in a moment.';
       _targetPoint = null;
+      _targetTimestampMs = null;
       bearingToTrail.value = null;
       distanceMeters.value = null;
       nearestRunnerName.value = null;
+      targetAgeLabel.value = null;
     } else {
       errorMessage.value = null;
       usingOwnTrack.value = fellBack;
@@ -305,6 +334,7 @@ class LostCompassController extends GetxController {
       // against it on every GPS fix (see _updateReadout) rather than only
       // here, so the numbers move as you walk instead of once per poll.
       _targetPoint = best.point;
+      _targetTimestampMs = best.timestampMs;
       _updateReadout(me);
       final String nearestId = best.userId;
       nearestRunnerName.value = null;
@@ -366,11 +396,11 @@ class LostCompassController extends GetxController {
   /// Nearest position to [from] across [candidates], with the id of the runner
   /// whose track it belongs to. Each candidate's `cutoffMs` (when set) ignores
   /// that runner's points at or after that instant.
-  ({latlong.LatLng point, String userId})? _nearestAcross({
+  ({latlong.LatLng point, String userId, int timestampMs})? _nearestAcross({
     required List<({UserTrack track, int? cutoffMs})> candidates,
     required latlong.LatLng from,
   }) {
-    ({latlong.LatLng point, String userId})? best;
+    ({latlong.LatLng point, String userId, int timestampMs})? best;
     double bestMeters = double.infinity;
 
     for (final candidate in candidates) {
@@ -384,7 +414,11 @@ class LostCompassController extends GetxController {
         final meters = _distance.as(latlong.LengthUnit.Meter, from, at);
         if (meters < bestMeters) {
           bestMeters = meters;
-          best = (point: at, userId: candidate.track.id);
+          best = (
+            point: at,
+            userId: candidate.track.id,
+            timestampMs: p.timestampMs,
+          );
         }
       }
     }
@@ -568,6 +602,19 @@ class LostCompassDialog extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
+            // How old the spot you're heading for is. Catching the pack and
+            // reaching where they were an hour ago look identical without it.
+            if (controller.targetAgeLabel.value != null)
+              Text(
+                controller.usingOwnTrack.value
+                    ? 'You were there ${controller.targetAgeLabel.value}'
+                    : controller.nearestRunnerName.value != null
+                    ? '${controller.nearestRunnerName.value} was there '
+                          '${controller.targetAgeLabel.value}'
+                    : 'They were there ${controller.targetAgeLabel.value}',
+                style: ts_alertDialogBody.copyWith(fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
             if (heading == null)
               Text(
                 'Bearing ${controller.bearingToTrail.value?.round() ?? 0}° (${controller.compassPointLabel}) — no compass on this device',

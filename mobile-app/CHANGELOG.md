@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.47+1261 (2026-08-01)
+
+### Improvements
+- **"I'm Lost" now tells you how old the trail you're heading for is** — for
+  example "Tuna Melt was there 33 minutes ago". Converging on the pack and
+  walking to a spot they left an hour ago look identical on a compass, and
+  this is the difference between the two.
+
 ## 2.15.46+1260 (2026-08-01)
 
 ### Improvements
