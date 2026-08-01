@@ -26,7 +26,13 @@ class LostCompassController extends GetxController {
   static const Duration _ownTrackIgnoreWindow = Duration(minutes: 2);
 
   /// Re-fetch cadence. Tracks move; so does the runner.
-  static const Duration _refreshInterval = Duration(seconds: 20);
+  static const Duration _refreshInterval = Duration(seconds: 5);
+
+  /// How far BEFORE a runner's distress mark their track stops being trusted
+  /// as trail. Someone typically wanders off-trail for a while before they
+  /// admit it and press the button, so cutting exactly at the mark would still
+  /// leave their wandering in the candidate set.
+  static const Duration _lostLookBack = Duration(minutes: 5);
 
   final RxBool isLoading = true.obs;
   final RxnString errorMessage = RxnString();
@@ -43,8 +49,33 @@ class LostCompassController extends GetxController {
   /// because nobody else is tracking — "backtrack" rather than "join the pack".
   final RxBool usingOwnTrack = false.obs;
 
+  /// Display name of the runner whose track is nearest, so the user knows
+  /// whose line they're being pointed at.
+  final RxnString nearestRunnerName = RxnString();
+
   /// Number of other runners whose tracks were considered.
   final RxInt contributingRunners = 0.obs;
+
+  /// How many otherwise-eligible runners were skipped because they had marked
+  /// themselves lost. Surfaced so "no trail found" is never mysterious.
+  final RxInt excludedLostRunners = 0.obs;
+
+  /// Cache of userId → display name, read from the local common DB.
+  final Map<String, String> _nameCache = <String, String>{};
+
+  /// Accumulated tracks for the run. The first poll pulls everything; later
+  /// polls fetch only what is new (see [_afterTimestampMs]) and append.
+  List<UserTrack> _tracks = const <UserTrack>[];
+  String? _afterTimestampMs;
+  bool _fetching = false;
+
+  /// Runner whose trail the arrow currently points at, so a switch to a nearer
+  /// one can be announced rather than silently swinging the needle.
+  String? _targetRunnerId;
+
+  /// Set briefly when the arrow retargets to a closer trail.
+  final RxnString retargetNotice = RxnString();
+  Timer? _retargetNoticeTimer;
 
   StreamSubscription<CompassEvent>? _compassSub;
   Timer? _refreshTimer;
@@ -77,108 +108,274 @@ class LostCompassController extends GetxController {
   void onClose() {
     unawaited(_compassSub?.cancel());
     _refreshTimer?.cancel();
+    _retargetNoticeTimer?.cancel();
     super.onClose();
   }
 
-  Future<void> refreshBearing() async {
-    final String myUserId = currentUserId;
+  /// One tick of the refresh loop: poll the server for the pack's newest
+  /// positions, then recompute the bearing from those plus the runner's own
+  /// current position. Runs every [_refreshInterval] — someone who is lost gets
+  /// live data, and if the pack moves a trail closer, the arrow follows it.
+  Future<void> refreshBearing({bool forceFetch = false}) async {
+    final Position? me = Get.find<LocationService>().lastKnownPosition.value;
+    if (me == null) {
+      errorMessage.value =
+          'Your location is not available yet. Make sure location is enabled '
+          'and try again in a moment.';
+      isLoading.value = false;
+      return;
+    }
+
+    await _fetchTracks();
+
+    // No data yet (first fetch failed) — keep whatever error _fetchTracks set.
+    if (_tracks.isEmpty && errorMessage.value != null) {
+      isLoading.value = false;
+      return;
+    }
+
+    _recompute(me);
+    isLoading.value = false;
+  }
+
+  /// Polls the tracking service and merges the result into [_tracks].
+  ///
+  /// The first call pulls the whole run; every later call sends the server's
+  /// own `latestServerTimestampMs` back as `AfterTimestamp` so only NEW points
+  /// come down and are appended. At a 5-second cadence that keeps the data
+  /// live without re-downloading every runner's entire history twelve times a
+  /// minute — which matters on the phone of someone who is already lost and
+  /// burning battery. Guarded so a slow poll can't pile up behind the tick.
+  Future<void> _fetchTracks() async {
+    if (_fetching) return;
+    _fetching = true;
     final api = GetPositionsApi();
     try {
-      final Position? me = Get.find<LocationService>().lastKnownPosition.value;
-      if (me == null) {
-        errorMessage.value =
-            'Your location is not available yet. Make sure location is enabled '
-            'and try again in a moment.';
-        isLoading.value = false;
-        return;
-      }
-
+      final bool isFirst = _afterTimestampMs == null;
       final payload = await api.fetchPositions(
         eventId: eventId,
-        latestClientTimestampMs: '0000000000000000000',
+        latestClientTimestampMs: _afterTimestampMs ?? '0000000000000000000',
       );
-
-      final latlong.LatLng myPoint = latlong.LatLng(me.latitude, me.longitude);
-      final int nowMs = DateTime.now().millisecondsSinceEpoch;
-
-      // Pass 1: everyone else's tracks — that's the trail.
-      final others = payload.users
-          .where((u) => normalizeUuid(u.id) != normalizeUuid(myUserId))
-          .toList(growable: false);
-      contributingRunners.value = others.length;
-
-      var best = _nearestAcross(
-        tracks: others,
-        from: myPoint,
-        maxTimestampMs: null,
-      );
-      var fellBack = false;
-
-      // Pass 2: nobody else out there — backtrack along my own earlier track.
-      if (best == null) {
-        final mine = payload.users
-            .where((u) => normalizeUuid(u.id) == normalizeUuid(myUserId))
-            .toList(growable: false);
-        best = _nearestAcross(
-          tracks: mine,
-          from: myPoint,
-          maxTimestampMs: nowMs - _ownTrackIgnoreWindow.inMilliseconds,
-        );
-        fellBack = best != null;
-      }
-
-      if (best == null) {
-        errorMessage.value = contributingRunners.value == 0
-            ? 'No live tracks yet for this run, so there is nothing to point '
-                  'at. Ask in the chat — the pack has been notified.'
-            : 'Could not read any track positions. Try again in a moment.';
-        bearingToTrail.value = null;
-        distanceMeters.value = null;
+      if (isFirst) {
+        _tracks = payload.users;
       } else {
-        errorMessage.value = null;
-        usingOwnTrack.value = fellBack;
-        bearingToTrail.value = (_distance.bearing(myPoint, best) + 360) % 360;
-        distanceMeters.value = _distance.as(
-          latlong.LengthUnit.Meter,
-          myPoint,
-          best,
-        );
+        _mergeTracks(payload.users);
       }
+      // Keep the previous watermark if the server didn't return a new one,
+      // otherwise the next poll would re-request the whole run.
+      _afterTimestampMs = payload.latestServerTimestampMs ?? _afterTimestampMs;
+      errorMessage.value = null;
     } catch (e) {
       errorMessage.value =
           'Could not reach the tracking service. Check your signal and try again.';
-      if (kDebugMode) debugPrint('[LostCompass] refresh failed: $e');
+      if (kDebugMode) debugPrint('[LostCompass] fetch failed: $e');
     } finally {
-      isLoading.value = false;
+      _fetching = false;
       api.dispose();
     }
   }
 
-  /// Nearest position to [from] across [tracks]. [maxTimestampMs] (when set)
-  /// ignores points newer than that instant.
-  latlong.LatLng? _nearestAcross({
-    required List<UserTrack> tracks,
+  /// Appends an incremental payload's points to the tracks already held.
+  void _mergeTracks(List<UserTrack> incoming) {
+    if (incoming.isEmpty) return;
+    final byId = <String, UserTrack>{for (final t in _tracks) t.id: t};
+    for (final t in incoming) {
+      final existing = byId[t.id];
+      byId[t.id] = existing == null
+          ? t
+          : existing.copyWith(
+              positions: <TrackPoint>[...existing.positions, ...t.positions],
+            );
+    }
+    _tracks = byId.values.toList(growable: false);
+  }
+
+  /// Recomputes the bearing/distance from cached tracks and [me].
+  void _recompute(Position me) {
+    final String myUserId = currentUserId;
+    final latlong.LatLng myPoint = latlong.LatLng(me.latitude, me.longitude);
+    final int nowMs = DateTime.now().millisecondsSinceEpoch;
+
+    // Pass 1: everyone else's tracks — that's the trail. But NOT the track of
+    // anyone who has marked themselves lost: their line left the trail, and
+    // pointing one lost hasher at another's wandering just makes two lost
+    // hashers in the same wrong place. Their pre-lost track is still good
+    // trail, so we cut each lost runner's points at their distress mark
+    // (minus a look-back) rather than discarding the whole track.
+    final others = _tracks
+        .where((u) => normalizeUuid(u.id) != normalizeUuid(myUserId))
+        .toList(growable: false);
+    contributingRunners.value = others.length;
+
+    int excluded = 0;
+    final candidates = <({UserTrack track, int? cutoffMs})>[];
+    for (final u in others) {
+      final int? lostAtMs = _earliestDistressMs(u);
+      if (lostAtMs == null) {
+        candidates.add((track: u, cutoffMs: null));
+      } else {
+        excluded++;
+        candidates.add((
+          track: u,
+          cutoffMs: lostAtMs - _lostLookBack.inMilliseconds,
+        ));
+      }
+    }
+    excludedLostRunners.value = excluded;
+
+    var best = _nearestAcross(candidates: candidates, from: myPoint);
+    var fellBack = false;
+
+    // Pass 2: nobody else usable out there — backtrack along my own earlier
+    // track. Recent points are just where I'm standing, so they're cut too.
+    if (best == null) {
+      final mine = _tracks
+          .where((u) => normalizeUuid(u.id) == normalizeUuid(myUserId))
+          .map(
+            (u) => (
+              track: u,
+              cutoffMs: nowMs - _ownTrackIgnoreWindow.inMilliseconds,
+            ),
+          )
+          .toList(growable: false);
+      best = _nearestAcross(candidates: mine, from: myPoint);
+      fellBack = best != null;
+    }
+
+    if (best == null) {
+      errorMessage.value = contributingRunners.value == 0
+          ? 'No live tracks yet for this run, so there is nothing to point '
+                'at. Ask in the chat — the pack has been notified.'
+          : excluded > 0
+          ? 'The only other tracks belong to hashers who are also lost, so '
+                'there is no trail to point at. Ask in the chat — the pack '
+                'has been notified.'
+          : 'Could not read any track positions. Try again in a moment.';
+      bearingToTrail.value = null;
+      distanceMeters.value = null;
+      nearestRunnerName.value = null;
+    } else {
+      errorMessage.value = null;
+      usingOwnTrack.value = fellBack;
+      bearingToTrail.value =
+          (_distance.bearing(myPoint, best.point) + 360) % 360;
+      distanceMeters.value = _distance.as(
+        latlong.LengthUnit.Meter,
+        myPoint,
+        best.point,
+      );
+      final String nearestId = best.userId;
+      nearestRunnerName.value = null;
+      if (!fellBack) {
+        final cached = _nameCache[nearestId];
+        if (cached != null) {
+          nearestRunnerName.value = cached;
+        } else {
+          // Not cached yet — resolve in the background and fill it in.
+          unawaited(
+            _displayName(nearestId).then((n) {
+              if (n != null) nearestRunnerName.value = n;
+            }),
+          );
+        }
+        // The nearest trail is recomputed from scratch every tick, so a track
+        // that has come closer simply wins. Announce the switch — the needle
+        // swinging to a different trail should never be a silent surprise.
+        if (_targetRunnerId != null && _targetRunnerId != nearestId) {
+          unawaited(
+            _displayName(nearestId).then((n) {
+              retargetNotice.value = n == null
+                  ? 'Switched to a closer trail'
+                  : "Switched to $n's trail — it's closer";
+              _retargetNoticeTimer?.cancel();
+              _retargetNoticeTimer = Timer(
+                const Duration(seconds: 8),
+                () => retargetNotice.value = null,
+              );
+            }),
+          );
+        }
+        _targetRunnerId = nearestId;
+      } else {
+        _targetRunnerId = null;
+      }
+    }
+  }
+
+  /// Timestamp of the runner's earliest distress mark, or null if they have
+  /// never called for help. Marks carry `LST::…` / `SOS::…` in the type field.
+  int? _earliestDistressMs(UserTrack track) {
+    int? earliest;
+    for (final p in track.positions) {
+      final type = (p.type ?? '').trim();
+      if (type.isEmpty) continue;
+      final key = type.split('::').first.trim();
+      if (key != HashRunPointTypes.lostRunner.key &&
+          key != HashRunPointTypes.helpNeeded.key) {
+        continue;
+      }
+      if (earliest == null || p.timestampMs < earliest) {
+        earliest = p.timestampMs;
+      }
+    }
+    return earliest;
+  }
+
+  /// Nearest position to [from] across [candidates], with the id of the runner
+  /// whose track it belongs to. Each candidate's `cutoffMs` (when set) ignores
+  /// that runner's points at or after that instant.
+  ({latlong.LatLng point, String userId})? _nearestAcross({
+    required List<({UserTrack track, int? cutoffMs})> candidates,
     required latlong.LatLng from,
-    required int? maxTimestampMs,
   }) {
-    latlong.LatLng? best;
+    ({latlong.LatLng point, String userId})? best;
     double bestMeters = double.infinity;
 
-    for (final track in tracks) {
-      for (final p in track.positions) {
-        if (maxTimestampMs != null && p.timestampMs > maxTimestampMs) continue;
+    for (final candidate in candidates) {
+      final cutoff = candidate.cutoffMs;
+      for (final p in candidate.track.positions) {
+        if (cutoff != null && p.timestampMs >= cutoff) continue;
         // Drop wildly inaccurate fixes — pointing at GPS noise is worse than
         // pointing at nothing. Matches TrackPointFilter's accuracy gate.
         if (p.acc > 15.0) continue;
-        final candidate = latlong.LatLng(p.lat, p.lng);
-        final meters = _distance.as(latlong.LengthUnit.Meter, from, candidate);
+        final latlong.LatLng at = latlong.LatLng(p.lat, p.lng);
+        final meters = _distance.as(latlong.LengthUnit.Meter, from, at);
         if (meters < bestMeters) {
           bestMeters = meters;
-          best = candidate;
+          best = (point: at, userId: candidate.track.id);
         }
       }
     }
     return best;
+  }
+
+  /// Display name for a runner, read from the local common DB (same preference
+  /// order the map uses: hash name, then display name, then real name).
+  Future<String?> _displayName(String userId) async {
+    final cached = _nameCache[userId];
+    if (cached != null) return cached;
+    try {
+      final rows = await QueryUsers.querySingleUser(userId);
+      if (rows.isEmpty) return null;
+      final r = rows.first;
+      String pick(String? v) =>
+          (v != null && v.trim().isNotEmpty) ? v.trim() : '';
+      final candidates = <String>[
+        pick(r[tableModel.hashersTableHelper.colHashName] as String?),
+        pick(r[tableModel.hashersTableHelper.colDispName] as String?),
+        [
+          pick(r[tableModel.hashersTableHelper.colFirstName] as String?),
+          pick(r[tableModel.hashersTableHelper.colLastName] as String?),
+        ].where((p) => p.isNotEmpty).join(' '),
+      ];
+      final name = candidates.firstWhere((n) => n.isNotEmpty, orElse: () => '');
+      if (name.isEmpty) return null;
+      _nameCache[userId] = name;
+      return name;
+    } catch (e) {
+      if (kDebugMode) debugPrint('[LostCompass] name lookup failed: $e');
+      return null;
+    }
   }
 
   /// Compass point label ("NE", "SSW") for the absolute bearing — the fallback
@@ -318,14 +515,60 @@ class LostCompassDialog extends StatelessWidget {
               style: ts_titleCondensedVeryLargeBlack.copyWith(fontSize: 34),
             ),
             Text(
-              heading == null
-                  ? 'Bearing ${controller.bearingToTrail.value?.round() ?? 0}° (${controller.compassPointLabel}) — no compass on this device'
-                  : controller.usingOwnTrack.value
+              controller.usingOwnTrack.value
                   ? 'Back towards your own earlier track'
-                  : 'Towards the nearest runner\'s track',
-              style: ts_alertDialogBody.copyWith(fontSize: 13),
+                  : controller.nearestRunnerName.value != null
+                  ? "Towards ${controller.nearestRunnerName.value}'s trail"
+                  : "Towards the nearest runner's trail",
+              style: ts_alertDialogBody.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
               textAlign: TextAlign.center,
             ),
+            if (heading == null)
+              Text(
+                'Bearing ${controller.bearingToTrail.value?.round() ?? 0}° (${controller.compassPointLabel}) — no compass on this device',
+                style: ts_alertDialogBody.copyWith(fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            if (controller.retargetNotice.value != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 6.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                    vertical: 4.0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: hc_blue,
+                    borderRadius: BorderRadius.circular(6.0),
+                  ),
+                  child: Text(
+                    controller.retargetNotice.value!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            if (controller.excludedLostRunners.value > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(
+                  controller.excludedLostRunners.value == 1
+                      ? '1 hasher who is also lost was left out'
+                      : '${controller.excludedLostRunners.value} hashers who are also lost were left out',
+                  style: ts_alertDialogBody.copyWith(
+                    fontSize: 11,
+                    color: Colors.deepOrange.shade700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             const SizedBox(height: 8),
             Text(
               'Straight-line direction only — not a route. Watch for roads, '

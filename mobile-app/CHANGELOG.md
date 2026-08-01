@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.36+1250 (2026-08-01)
+
+### Improvements
+- **The lost compass now updates every 5 seconds** (was 20), polling the
+  server each tick for the pack's newest positions. If a trail comes closer
+  while you stand there, the arrow retargets to it and tells you it switched.
+- **It now names whose trail you're being pointed at** — "Towards Dart
+  Onion's trail" rather than just "the nearest runner's trail".
+- **Hashers who are themselves lost no longer count as trail.** Their track
+  after they called for help is where they wandered off, so pointing another
+  lost hasher at it would just put two people in the same wrong place. Their
+  earlier, on-trail portion is still used, and the dialog says how many were
+  left out.
+
 ## 2.15.35+1249 (2026-08-01)
 
 ### Improvements
