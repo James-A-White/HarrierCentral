@@ -240,6 +240,12 @@ class RunTrackerMapController extends GetxController
   /// north or when the track is too short to have a direction.
   double? get roseHeading {
     if (_trueNorthLock.value) return null;
+    // Use the rotation actually APPLIED to the map rather than the raw heading:
+    // it's the same value, already slew-limited, so the rose turns at the same
+    // pace as the map and the two can never disagree about which way is ahead.
+    final applied = _lastRotationDeg;
+    if (applied != null) return _normalizeDegrees(-applied);
+
     final focus = roseFocusRunner;
     if (focus == null) return null;
     return _runnerHeadingDegrees(
@@ -889,6 +895,7 @@ class RunTrackerMapController extends GetxController
     BootLogger.logBreadcrumb('PackTrack map CLOSED');
     WidgetsBinding.instance.removeObserver(this);
     _stopAutoUpdateTimer();
+    _stopRotationSlew();
     unawaited(_tiltSub?.cancel());
     unawaited(_compassSub?.cancel());
     _tiltTicker?.cancel();
@@ -2471,25 +2478,100 @@ class RunTrackerMapController extends GetxController
 
   void _applyRunnerRotation(UserTrack runner, double? cutoff) {
     if (_trueNorthLock.value) {
+      _stopRotationSlew();
       _lastRotationDeg = 0.0;
+      _targetRotationDeg = null;
       return;
     }
     final heading = _runnerHeadingDegrees(runner, cutoff);
     if (heading == null) return;
-    final desiredRotation = _normalizeDegrees(-heading);
-    if (_lastRotationDeg != null &&
-        (_lastRotationDeg! - desiredRotation).abs() < 1.0) {
-      return;
-    }
-    mapController.rotate(desiredRotation);
-    _lastRotationDeg = desiredRotation;
+    _targetRotationDeg = _normalizeDegrees(-heading);
+    _stepRotationTowardTarget();
   }
 
-  /// Heading is measured back along at least this much track rather than to the
-  /// immediately preceding fix. At walking pace consecutive fixes are a couple
-  /// of metres apart and the bearing between them is mostly GPS noise — which
-  /// is what made the map and radar jitter with rotation unlocked.
-  static const double _headingBaselineMeters = 18.0;
+  /// Shortest signed rotation from [from] to [to], in (-180, 180]. Compass
+  /// angles wrap, so plain subtraction is wrong by 360 near north.
+  static double _shortestDelta(double from, double to) =>
+      ((to - from + 540.0) % 360.0) - 180.0;
+
+  /// Moves the view one step toward [_targetRotationDeg], never faster than
+  /// [_maxRotationDegPerSec]. Keeps stepping on a timer until it arrives, so a
+  /// big change still completes even when no further headings come in (e.g.
+  /// after a single scrub, with playback paused).
+  void _stepRotationTowardTarget() {
+    final target = _targetRotationDeg;
+    if (target == null) return;
+
+    final now = DateTime.now();
+    final current = _lastRotationDeg;
+
+    // First rotation of the session: nothing to slew from, so take it as-is.
+    if (current == null) {
+      mapController.rotate(target);
+      _lastRotationDeg = target;
+      _lastRotationAt = now;
+      return;
+    }
+
+    final delta = _shortestDelta(current, target);
+    if (delta.abs() < _rotationDeadbandDeg) {
+      _stopRotationSlew();
+      return;
+    }
+
+    final elapsedSec = _lastRotationAt == null
+        ? _rotationStepInterval.inMilliseconds / 1000.0
+        : now.difference(_lastRotationAt!).inMilliseconds / 1000.0;
+    final maxStep = _maxRotationDegPerSec * math.max(elapsedSec, 0.0);
+
+    final step = delta.abs() <= maxStep
+        ? delta
+        : maxStep * (delta.isNegative ? -1 : 1);
+    final next = _normalizeDegrees(current + step);
+    mapController.rotate(next);
+    _lastRotationDeg = next;
+    _lastRotationAt = now;
+
+    // Still short of the target — keep slewing.
+    if (delta.abs() > maxStep) {
+      _rotationSlewTimer ??= Timer.periodic(
+        _rotationStepInterval,
+        (_) => _stepRotationTowardTarget(),
+      );
+    } else {
+      _stopRotationSlew();
+    }
+  }
+
+  void _stopRotationSlew() {
+    _rotationSlewTimer?.cancel();
+    _rotationSlewTimer = null;
+  }
+
+  /// Length of track the heading is fitted over. The single dial for how
+  /// steady the view is: longer is smoother but rounds corners more.
+  ///
+  /// 18m proved far too short in practice. GPS scatter of a few metres across
+  /// an 18m window is still ±20-odd degrees of angular error, so the view kept
+  /// twitching. At 70m the same scatter is worth about 6°.
+  static const double _headingBaselineMeters = 70.0;
+
+  /// Don't re-rotate for less than this. Sub-degree corrections are invisible
+  /// as direction but very visible as movement.
+  static const double _rotationDeadbandDeg = 2.0;
+
+  /// Hard ceiling on how fast the view may turn, in degrees of REAL time. Even
+  /// a perfectly smooth heading looks violent if the camera snaps to it, so the
+  /// view slews toward the target instead of jumping. This is a display limit
+  /// only — the underlying heading stays exactly as computed from the track.
+  static const double _maxRotationDegPerSec = 3.5;
+
+  /// Cadence of the slew. Fine enough to read as motion rather than steps.
+  static const Duration _rotationStepInterval = Duration(milliseconds: 60);
+
+  double? _targetRotationDeg;
+  DateTime? _lastRotationAt;
+  Timer? _rotationSlewTimer;
 
   /// Direction of travel THROUGH the point at [index], measured as the chord
   /// across a window of roughly [_headingBaselineMeters] of track centred on
@@ -2514,7 +2596,11 @@ class RunTrackerMapController extends GetxController
   ) {
     final half = _headingBaselineMeters / 2.0;
 
-    // Forward half first: how much of it exists decides how far back to reach.
+    // Collect the window, forward half first: how much of it exists decides how
+    // far back to reach, so the window is always ~a full baseline long. At the
+    // live end of a track that makes it fully backward-looking; mid-track it's
+    // centred.
+    final window = <TrackPoint>[];
     double fwdLat = atLat, fwdLng = atLng;
     double fwdTravelled = 0.0;
     for (int i = index + 1; i < runner.positions.length; i++) {
@@ -2526,12 +2612,10 @@ class RunTrackerMapController extends GetxController
       );
       fwdLat = p.lat;
       fwdLng = p.lng;
+      window.add(p);
       if (fwdTravelled >= half) break;
     }
 
-    // Spend whatever the forward half couldn't on the backward half, so the
-    // window is always ~a full baseline long. At the live end of a track that
-    // makes it fully backward-looking; mid-track it's centred.
     final backTarget = _headingBaselineMeters - fwdTravelled.clamp(0.0, half);
     double backLat = atLat, backLng = atLng;
     double backTravelled = 0.0;
@@ -2544,11 +2628,63 @@ class RunTrackerMapController extends GetxController
       );
       backLat = p.lat;
       backLng = p.lng;
+      window.insert(0, p);
       if (backTravelled >= backTarget) break;
     }
 
     if (backLat == fwdLat && backLng == fwdLng) return null; // hasn't moved
-    return _bearingDegrees(backLat, backLng, fwdLat, fwdLng);
+    // Chord across the window — also the reference that tells the fitted line
+    // which of its two opposite directions is "forwards".
+    final chord = _bearingDegrees(backLat, backLng, fwdLat, fwdLng);
+    return _fittedHeading(window, chord) ?? chord;
+  }
+
+  /// Direction of the best-fit line through [window], oriented to agree with
+  /// [referenceBearing].
+  ///
+  /// A chord uses only the two endpoints — i.e. it stakes the whole heading on
+  /// the two noisiest samples in the window and ignores everything between.
+  /// Fitting instead lets every point vote, so one bad fix moves the answer a
+  /// little rather than a lot. This is the principal axis of the points
+  /// (total least squares), which unlike y-on-x regression doesn't blow up for
+  /// tracks running north-south.
+  double? _fittedHeading(List<TrackPoint> window, double referenceBearing) {
+    if (window.length < 3) return null;
+
+    double sumLat = 0.0, sumLng = 0.0;
+    for (final p in window) {
+      sumLat += p.lat;
+      sumLng += p.lng;
+    }
+    final cLat = sumLat / window.length;
+    final cLng = sumLng / window.length;
+
+    // Local flat-earth metres about the centroid: fine over a ~70m window.
+    const double mPerDegLat = 111320.0;
+    final double mPerDegLng = 111320.0 * math.cos(cLat * math.pi / 180.0).abs();
+
+    double sxx = 0.0, sxy = 0.0, syy = 0.0;
+    for (final p in window) {
+      final dx = (p.lng - cLng) * mPerDegLng; // east
+      final dy = (p.lat - cLat) * mPerDegLat; // north
+      sxx += dx * dx;
+      sxy += dx * dy;
+      syy += dy * dy;
+    }
+    if (sxx + syy <= 0.0) return null; // all points coincide
+
+    final theta = 0.5 * math.atan2(2.0 * sxy, sxx - syy);
+    double east = math.cos(theta);
+    double north = math.sin(theta);
+
+    // The axis is direction-agnostic; point it the way the runner travelled.
+    final refRad = referenceBearing * math.pi / 180.0;
+    if (east * math.sin(refRad) + north * math.cos(refRad) < 0) {
+      east = -east;
+      north = -north;
+    }
+
+    return (math.atan2(east, north) * 180.0 / math.pi + 360.0) % 360.0;
   }
 
   double? _runnerHeadingDegrees(UserTrack runner, double? cutoff) {

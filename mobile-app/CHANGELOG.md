@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.42+1256 (2026-08-01)
+
+### Fixes
+- **Much calmer map and radar rotation.** Three changes together: the heading
+  is now fitted through *every* GPS point in the window rather than just the
+  two on the ends (one bad fix nudges it instead of throwing it), the window
+  is far longer at 70 m, and the view is now limited to turning about 3.5° per
+  second so it eases round to a new direction instead of snapping. The radar
+  turns in step with the map, so the two can never disagree.
+
 ## 2.15.41+1255 (2026-08-01)
 
 ### Fixes
