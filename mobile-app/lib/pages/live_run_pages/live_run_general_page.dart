@@ -195,11 +195,14 @@ class LiveRunGeneralController extends GetxController {
     }
   }
 
-  /// Opens the OS share sheet with this run's public page — where anyone can
-  /// watch the live PackTrack map without the app.
+  /// Opens the OS share sheet with the full-screen PackTrack page for this run
+  /// — the live map, no app needed. The dedicated /packtrack route requires a
+  /// numeric run number (it 404s otherwise), so uncounted runs, which have
+  /// none, fall back to the legacy run-detail link; its in-page map still
+  /// shows the live track.
   Future<void> shareRun() async {
     final String url = run.event.isCountedRun != 0
-        ? '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}/${run.event.eventNumber}'
+        ? '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}/${run.event.eventNumber}/packtrack'
         : '$BASE_HASHRUNS_DOT_ORG_URL#/RID?publicEventId=${run.event.publicEventId}';
     final String name = run.event.eventName.isEmpty
         ? '${run.kennel.kennelShortName} run'

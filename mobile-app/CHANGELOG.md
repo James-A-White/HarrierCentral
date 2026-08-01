@@ -1,5 +1,11 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.35+1249 (2026-08-01)
+
+### Improvements
+- **Share My Run now sends the full-screen PackTrack link**, so whoever you
+  send it to lands straight on the live map instead of the run page.
+
 ## 2.15.34+1248 (2026-08-01)
 
 ### Fixes
