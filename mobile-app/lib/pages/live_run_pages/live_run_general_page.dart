@@ -372,6 +372,57 @@ class LiveRunGeneralController extends GetxController {
     }
   }
 
+  /// Broadcasts an assistance request into the run chat — a normal event chat
+  /// message, so the pack is push-notified per their notification prefs — with
+  /// the runner's current location as a maps link. When tracking, also drops a
+  /// labelled mark on the live track so the pack map shows where the call came
+  /// from. Returns true when the chat send succeeded.
+  Future<bool> sendAssistanceMessage({required bool urgent}) async {
+    final String name =
+        getStringPref(StringPrefsEnum.displayName) ?? 'A hasher';
+    final Position? pos = lastPosition.value;
+    final String where = pos == null
+        ? '(location unavailable)'
+        : 'https://maps.google.com/?q=${pos.latitude.toStringAsFixed(5)},${pos.longitude.toStringAsFixed(5)}';
+    final String text = urgent
+        ? '🆘 HELP NEEDED — $name needs assistance on trail! Location: $where'
+        : "🧭 I'M LOST — $name has lost the trail. Location: $where";
+
+    // Make the call visible on the live map too (marks need an active track).
+    if (isTracking.value || isPaused.value) {
+      unawaited(
+        _locationService.markPoint(
+          HashRunPointTypes.customLabel,
+          label: urgent ? 'HELP!' : 'Lost',
+        ),
+      );
+    }
+
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String messageId = const Uuid().v4();
+
+    final String result = await ServiceCommon.sendHttpPost(() {
+      // Minted inside the closure: fresh token per attempt (token retry).
+      return jsonEncode(<String, dynamic>{
+        'queryType': 'sendEventMessage',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_sendEventMessage',
+          paramString: deviceSecret,
+        ),
+        'eventId': run.event.eventId,
+        'messageId': messageId,
+        'messageContent': text,
+        'messageReleasabilityFlags': kChatReleasabilityAll,
+      });
+    });
+    return !result.startsWith(ERROR_PREFIX);
+  }
+
   void _handleTrackingToggle(bool value) {
     isTracking.value = value;
     if (value) {
@@ -462,7 +513,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildChatSection(),
+                    _buildAssistRow(context),
                   ],
                 ),
               ),
@@ -923,13 +974,103 @@ class LiveRunGeneralPage extends StatelessWidget {
     }
   }
 
-  Widget _buildChatSection() {
-    return ChatStripWidget(
-      eventId: run.event.eventId,
-      publicEventId: run.event.publicEventId,
+  /// "I'm Lost" / "Send Help" — pack-assist broadcasts. Replaced the old
+  /// cramped chat strip (2026-08-01); the full Chat tab is one tap away on
+  /// the bottom nav.
+  Widget _buildAssistRow(BuildContext context) {
+    final buttonShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    );
+    return SizedBox(
+      height: 52,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.explore_off, size: 22),
+              label: Text("I'm Lost", style: ts_button.copyWith(fontSize: 16)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrange.shade700,
+                foregroundColor: Colors.white,
+                shape: buttonShape,
+              ),
+              onPressed: () =>
+                  unawaited(_confirmAndSendAssist(context, urgent: false)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.sos, size: 22),
+              label: Text('Send Help', style: ts_button.copyWith(fontSize: 16)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: hc_red,
+                foregroundColor: Colors.white,
+                shape: buttonShape,
+              ),
+              onPressed: () =>
+                  unawaited(_confirmAndSendAssist(context, urgent: true)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
+  Future<void> _confirmAndSendAssist(
+    BuildContext context, {
+    required bool urgent,
+  }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: Text(
+          urgent ? 'Send Help Request?' : "Tell the pack you're lost?",
+          style: ts_alertDialogTitle,
+        ),
+        content: Text(
+          urgent
+              ? 'This sends an urgent request for assistance to the run chat, '
+                    'including your current location. The pack will be notified.'
+              : "This posts a message to the run chat letting the pack know "
+                    "you've lost the trail, including your current location.",
+          style: ts_alertDialogBody,
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey.shade600,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Cancel', style: ts_button),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: urgent ? hc_red : Colors.deepOrange.shade700,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(urgent ? 'Send Help' : "I'm Lost", style: ts_button),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final bool ok = await controller.sendAssistanceMessage(urgent: urgent);
+    Get.snackbar(
+      ok ? 'Message sent' : 'Not sent',
+      ok
+          ? 'The pack has been notified via the run chat.'
+          : 'Could not send — please check your connection and try again.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: ok ? hc_blue : hc_red,
+      colorText: Colors.white,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

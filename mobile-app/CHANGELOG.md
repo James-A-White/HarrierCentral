@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.31+1245 (2026-08-01)
+
+### New Features
+- **"I'm Lost" and "Send Help" buttons on the Live Run Tools screen**: both
+  post to the run chat (notifying the pack per their notification settings)
+  with your current location as a maps link, after a confirmation prompt.
+  While tracking, they also drop a labelled mark on the live map at your
+  position. They replace the cramped chat strip — the full Chat tab is one
+  tap away on the bottom bar.
+
 ## 2.15.30+1244 (2026-08-01)
 
 ### Fixes
