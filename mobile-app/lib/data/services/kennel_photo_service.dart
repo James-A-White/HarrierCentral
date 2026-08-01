@@ -1,15 +1,18 @@
+import 'package:exif/exif.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 // Photo review action codes — match hcapp_updatePhotoStatus @action parameter.
 // Actions 3–6 are cumulative: each level implies all lower approval levels.
-const int photoActionDelete          = 1; // hard-delete (inappropriate content)
-const int photoActionKeepPrivate     = 2; // back to uploader-only (status 0)
-const int photoActionMembers         = 3; // kennel members only (status 2)
-const int photoActionPublic          = 4; // everyone: app + public web (status 3)
-const int photoActionFeature         = 5; // set Featured flag (kennel home showcase) — status unchanged
-const int photoActionMakeEventCover  = 6; // public + run cover photo (status 5, one per run)
-const int photoActionUnfeature       = 7; // clear Featured flag
+const int photoActionDelete = 1; // hard-delete (inappropriate content)
+const int photoActionKeepPrivate = 2; // back to uploader-only (status 0)
+const int photoActionMembers = 3; // kennel members only (status 2)
+const int photoActionPublic = 4; // everyone: app + public web (status 3)
+const int photoActionFeature =
+    5; // set Featured flag (kennel home showcase) — status unchanged
+const int photoActionMakeEventCover =
+    6; // public + run cover photo (status 5, one per run)
+const int photoActionUnfeature = 7; // clear Featured flag
 
 class KennelPhotoService {
   /// Orchestrates the full capture → upload → record flow.
@@ -45,7 +48,9 @@ class KennelPhotoService {
     final result = await _showSharePage(rawFile);
     if (result == null) return null;
     final imageFile = result.file; // full-quality, possibly cropped
-    final sharingOverride = result.intent == _PhotoShareIntent.saveAndShare ? 1 : 0;
+    final sharingOverride = result.intent == _PhotoShareIntent.saveAndShare
+        ? 1
+        : 0;
     final caption = result.caption;
 
     // 3. Client-side GUID — normalised to lowercase per project UUID rules
@@ -96,7 +101,8 @@ class KennelPhotoService {
         _enqueuePhotoMarker(
           photoId: photoGuid,
           eventId: eventId,
-          timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+          timestampMs:
+              markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
         );
       }
       return null;
@@ -126,7 +132,8 @@ class KennelPhotoService {
         _enqueuePhotoMarker(
           photoId: photoGuid,
           eventId: eventId,
-          timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+          timestampMs:
+              markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
         );
       }
       return null;
@@ -177,7 +184,8 @@ class KennelPhotoService {
         _enqueuePhotoMarker(
           photoId: photoGuid,
           eventId: eventId,
-          timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+          timestampMs:
+              markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
         );
       }
       return null;
@@ -226,9 +234,7 @@ class KennelPhotoService {
     if (!deviceInfo.isPhysicalDevice) {
       return _simulatorPlaceholder();
     }
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-    );
+    final picked = await ImagePicker().pickImage(source: ImageSource.camera);
     return picked == null ? null : File(picked.path);
   }
 
@@ -270,7 +276,8 @@ class KennelPhotoService {
       // Only attach coordinates when we have a real fix — skip null and the
       // 0,0 "no fix" sentinel so we never stamp a bogus location. saveImage
       // requires latitude and longitude together or not at all.
-      final bool hasCoords = latitude != null &&
+      final bool hasCoords =
+          latitude != null &&
           longitude != null &&
           !(latitude == 0.0 && longitude == 0.0);
 
@@ -285,7 +292,11 @@ class KennelPhotoService {
       return entity.id;
     } catch (e, s) {
       debugPrint('KennelPhotoService: camera roll save failed: $e');
-      BootLogger.logError('[KennelPhotoService._saveToDeviceLibrary] path=${imageFile.path}', e, s);
+      BootLogger.logError(
+        '[KennelPhotoService._saveToDeviceLibrary] path=${imageFile.path}',
+        e,
+        s,
+      );
       return null;
     }
   }
@@ -310,7 +321,11 @@ class KennelPhotoService {
       return result == null ? null : File(result.path);
     } catch (e, s) {
       debugPrint('KennelPhotoService: compress failed, using original: $e');
-      BootLogger.logError('[KennelPhotoService._compressForUpload] path=${imageFile.path}', e, s);
+      BootLogger.logError(
+        '[KennelPhotoService._compressForUpload] path=${imageFile.path}',
+        e,
+        s,
+      );
       return null;
     }
   }
@@ -362,7 +377,11 @@ class KennelPhotoService {
       );
     } catch (e, s) {
       debugPrint('GetPhotoUploadToken exception: $e');
-      BootLogger.logError('[KennelPhotoService._getUploadToken] kennelId=$kennelId kennelSlug=$kennelSlug runFolder=$runFolder', e, s);
+      BootLogger.logError(
+        '[KennelPhotoService._getUploadToken] kennelId=$kennelId kennelSlug=$kennelSlug runFolder=$runFolder',
+        e,
+        s,
+      );
     }
     return null;
   }
@@ -378,9 +397,9 @@ class KennelPhotoService {
       request.headers['content-type'] = 'image/jpeg';
       request.headers['x-ms-blob-type'] = 'BlockBlob';
       request.bodyBytes = await imageFile.readAsBytes();
-      final response = await request
-          .send()
-          .timeout(const Duration(seconds: 60));
+      final response = await request.send().timeout(
+        const Duration(seconds: 60),
+      );
       return response.statusCode == 201;
     } catch (e, s) {
       BootLogger.logError('[KennelPhotoService._uploadToBlob]', e, s);
@@ -451,10 +470,230 @@ class KennelPhotoService {
 
   // ── GPS track marker ─────────────────────────────────────────────────────
 
+  /// Opens the phone's own photo picker and imports whichever of the chosen
+  /// photos belong to this run.
+  ///
+  /// A photo qualifies only if its own EXIF carries BOTH a GPS position and a
+  /// capture time, and that time falls inside the run. Anything else is
+  /// rejected — a photo without a position can't be placed on the track, and
+  /// one without a time can't be shown to have been taken on the run at all.
+  ///
+  /// [runStart] / [runEnd] bound the run. Callers pass the last recorded GPS
+  /// point as the end when the event has no end time of its own.
+  ///
+  /// Returns counts so the caller can tell the user what happened.
+  Future<({int imported, int rejected, int failed})> importFromCameraRoll({
+    required String eventId,
+    required String kennelId,
+    required String kennelSlug,
+    required int eventNumber,
+    required DateTime runStart,
+    required DateTime runEnd,
+  }) async {
+    // Phone clocks drift against GPS time; a little slack at each end beats
+    // rejecting a legitimate photo taken moments before the off.
+    const slack = Duration(minutes: 20);
+    final from = runStart.subtract(slack);
+    final to = runEnd.add(slack);
+
+    // requestFullMetadata keeps EXIF (including GPS) on iOS — without it the
+    // platform hands back a stripped copy and every photo would be rejected.
+    final picked = await ImagePicker().pickMultiImage(
+      requestFullMetadata: true,
+    );
+    if (picked.isEmpty) return (imported: 0, rejected: 0, failed: 0);
+
+    int imported = 0, rejected = 0, failed = 0;
+
+    for (final x in picked) {
+      final file = File(x.path);
+      final meta = await _readPhotoMetadata(file);
+      if (meta == null) {
+        rejected++;
+        continue;
+      }
+      if (meta.takenAt.isBefore(from) || meta.takenAt.isAfter(to)) {
+        rejected++;
+        continue;
+      }
+      final ok = await uploadExistingPhoto(
+        imageFile: file,
+        eventId: eventId,
+        kennelId: kennelId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+        latitude: meta.lat,
+        longitude: meta.lng,
+        takenAtMs: meta.takenAt.millisecondsSinceEpoch,
+      );
+      if (ok) {
+        imported++;
+      } else {
+        failed++;
+      }
+    }
+
+    return (imported: imported, rejected: rejected, failed: failed);
+  }
+
+  /// Reads GPS + capture time from a photo's EXIF. Null when either is absent
+  /// — both are required, so there's nothing to salvage from a partial read.
+  Future<({double lat, double lng, DateTime takenAt})?> _readPhotoMetadata(
+    File file,
+  ) async {
+    try {
+      final tags = await readExifFromBytes(await file.readAsBytes());
+      if (tags.isEmpty) return null;
+
+      final lat = _exifCoordinate(
+        tags['GPS GPSLatitude'],
+        tags['GPS GPSLatitudeRef'],
+        negativeRef: 'S',
+      );
+      final lng = _exifCoordinate(
+        tags['GPS GPSLongitude'],
+        tags['GPS GPSLongitudeRef'],
+        negativeRef: 'W',
+      );
+      if (lat == null || lng == null) return null;
+      if (lat == 0 && lng == 0) return null; // null island — not a real fix
+
+      // EXIF dates are "YYYY:MM:DD HH:MM:SS" in local time at capture.
+      final raw = (tags['EXIF DateTimeOriginal'] ?? tags['Image DateTime'])
+          ?.printable
+          .trim();
+      if (raw == null || raw.length < 19) return null;
+      final iso =
+          '${raw.substring(0, 4)}-${raw.substring(5, 7)}-${raw.substring(8, 10)}'
+          'T${raw.substring(11, 19)}';
+      final takenAt = DateTime.tryParse(iso);
+      if (takenAt == null) return null;
+
+      return (lat: lat, lng: lng, takenAt: takenAt);
+    } catch (e) {
+      if (kDebugMode) debugPrint('[PhotoImport] EXIF read failed: $e');
+      return null;
+    }
+  }
+
+  /// EXIF stores coordinates as degrees/minutes/seconds rationals plus a
+  /// hemisphere ref; convert to a signed decimal degree.
+  double? _exifCoordinate(
+    IfdTag? value,
+    IfdTag? ref, {
+    required String negativeRef,
+  }) {
+    final values = value?.values.toList();
+    if (values == null || values.length < 3) return null;
+    double part(dynamic r) {
+      if (r is Ratio) {
+        return r.denominator == 0 ? 0.0 : r.numerator / r.denominator;
+      }
+      return double.tryParse(r.toString()) ?? 0.0;
+    }
+
+    final decimal =
+        part(values[0]) + part(values[1]) / 60.0 + part(values[2]) / 3600.0;
+    final hemisphere = ref?.printable.trim().toUpperCase() ?? '';
+    return hemisphere == negativeRef ? -decimal : decimal;
+  }
+
+  /// Uploads a photo the user took OUTSIDE the app (camera roll import).
+  ///
+  /// Unlike [captureAndUpload] there is no camera, no review page and no
+  /// camera-roll save — the photo is already on the device. Position and time
+  /// come from the photo's own metadata rather than from "now", so both the
+  /// database row and the GPS track marker land where and when the picture was
+  /// actually taken.
+  ///
+  /// Enters the normal pending queue, so a Hash Flash approves it exactly like
+  /// any in-app photo.
+  Future<bool> uploadExistingPhoto({
+    required File imageFile,
+    required String eventId,
+    required String kennelId,
+    required String kennelSlug,
+    required int eventNumber,
+    required double latitude,
+    required double longitude,
+    required int takenAtMs,
+    String? assetId,
+  }) async {
+    final runFolder = eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
+    final photoGuid = const Uuid().v4().toLowerCase();
+    final uploadFile = await _compressForUpload(imageFile) ?? imageFile;
+
+    if (!Utilities.isConnected()) {
+      await _queueForOfflineUpload(
+        imageFile: uploadFile,
+        photoGuid: photoGuid,
+        eventId: eventId,
+        kennelId: kennelId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+        sharingOverride: 0,
+        caption: null,
+        assetId: assetId,
+      );
+      _enqueuePhotoMarker(
+        photoId: photoGuid,
+        eventId: eventId,
+        timestampMs: takenAtMs,
+        atLat: latitude,
+        atLng: longitude,
+      );
+      return true; // queued — it will complete on the next connected launch
+    }
+
+    final tokenResult = await _getUploadToken(
+      kennelId: kennelId,
+      kennelSlug: kennelSlug,
+      runFolder: runFolder,
+      photoGuid: photoGuid,
+    );
+    final sasUrl = tokenResult?['sasUrl'];
+    final blobUrl = tokenResult?['blobUrl'];
+    if (sasUrl == null || blobUrl == null) return false;
+
+    final sasUri = Uri.tryParse(sasUrl);
+    if (sasUri == null ||
+        sasUri.host != 'harriercentral.blob.core.windows.net') {
+      return false;
+    }
+
+    if (!await _uploadToBlob(sasUrl: sasUrl, imageFile: uploadFile)) {
+      return false;
+    }
+
+    final recorded = await _addKennelPhoto(
+      eventId: eventId,
+      kennelId: kennelId,
+      photoId: photoGuid,
+      blobUrl: blobUrl,
+      assetId: assetId,
+      perRunSharingOverride: 0,
+      lat: latitude,
+      lng: longitude,
+    );
+    if (!recorded) return false;
+
+    _enqueuePhotoMarker(
+      photoId: photoGuid,
+      eventId: eventId,
+      timestampMs: takenAtMs,
+      atLat: latitude,
+      atLng: longitude,
+    );
+    return true;
+  }
+
   void _enqueuePhotoMarker({
     required String photoId,
     required String eventId,
     required int timestampMs,
+    // Imported photos mark where the PHOTO was taken, not where the phone is.
+    double? atLat,
+    double? atLng,
   }) {
     // Label is the photoId (UUID) only — the map controller resolves the
     // blob URL via hcapp_getRunPhotos so the URL is never stored in the
@@ -466,6 +705,8 @@ class KennelPhotoService {
         overrideEventId: eventId,
         overrideUserId: currentUserId,
         label: photoId,
+        atLat: atLat,
+        atLng: atLng,
       ),
     );
   }
@@ -596,23 +837,27 @@ class KennelPhotoService {
 
       final List<RunPhotoModel> ownPhotos = rowsets.isNotEmpty
           ? (rowsets[0] as List<dynamic>)
-              .map((dynamic r) =>
-                  RunPhotoModel.fromOwnJson(r as Map<String, dynamic>))
-              .toList()
+                .map(
+                  (dynamic r) =>
+                      RunPhotoModel.fromOwnJson(r as Map<String, dynamic>),
+                )
+                .toList()
           : <RunPhotoModel>[];
 
       final List<RunPhotoModel> otherPhotos = rowsets.length > 1
           ? (rowsets[1] as List<dynamic>)
-              .map((dynamic r) =>
-                  RunPhotoModel.fromOthersJson(r as Map<String, dynamic>))
-              .toList()
+                .map(
+                  (dynamic r) =>
+                      RunPhotoModel.fromOthersJson(r as Map<String, dynamic>),
+                )
+                .toList()
           : <RunPhotoModel>[];
 
-      final List<RunPhotoModel> merged = <RunPhotoModel>[
-        ...ownPhotos,
-        ...otherPhotos,
-      ]..sort((RunPhotoModel a, RunPhotoModel b) =>
-          a.createdAt.compareTo(b.createdAt));
+      final List<RunPhotoModel> merged =
+          <RunPhotoModel>[...ownPhotos, ...otherPhotos]..sort(
+            (RunPhotoModel a, RunPhotoModel b) =>
+                a.createdAt.compareTo(b.createdAt),
+          );
 
       return (success: true, photos: merged);
     } catch (_) {
@@ -732,8 +977,9 @@ class KennelPhotoService {
   /// Downloads [blobUrl] to a temp file so it can be passed to ImageCropper.
   Future<File?> downloadToTempFile(String blobUrl) async {
     try {
-      final response =
-          await get(Uri.parse(blobUrl)).timeout(const Duration(seconds: 30));
+      final response = await get(
+        Uri.parse(blobUrl),
+      ).timeout(const Duration(seconds: 30));
       if (response.statusCode != 200) {
         BootLogger.logError(
           '[KennelPhotoService.downloadToTempFile] HTTP ${response.statusCode}',
@@ -750,7 +996,10 @@ class KennelPhotoService {
       return file;
     } catch (e, s) {
       BootLogger.logError(
-          '[KennelPhotoService.downloadToTempFile] url=$blobUrl', e, s);
+        '[KennelPhotoService.downloadToTempFile] url=$blobUrl',
+        e,
+        s,
+      );
       return null;
     }
   }
@@ -829,20 +1078,22 @@ class KennelPhotoService {
 
       final pos = Get.find<LocationService>().lastKnownPosition.value;
 
-      await KennelPhotoUploadQueue.enqueue(PendingPhotoUpload(
-        photoId: photoGuid,
-        eventId: eventId,
-        kennelId: kennelId,
-        kennelSlug: kennelSlug,
-        eventNumber: eventNumber,
-        sharingOverride: sharingOverride,
-        filePath: queuedPath,
-        lat: pos?.latitude ?? 0.0,
-        lng: pos?.longitude ?? 0.0,
-        savedAtMs: DateTime.now().millisecondsSinceEpoch,
-        caption: caption,
-        assetId: assetId,
-      ));
+      await KennelPhotoUploadQueue.enqueue(
+        PendingPhotoUpload(
+          photoId: photoGuid,
+          eventId: eventId,
+          kennelId: kennelId,
+          kennelSlug: kennelSlug,
+          eventNumber: eventNumber,
+          sharingOverride: sharingOverride,
+          filePath: queuedPath,
+          lat: pos?.latitude ?? 0.0,
+          lng: pos?.longitude ?? 0.0,
+          savedAtMs: DateTime.now().millisecondsSinceEpoch,
+          caption: caption,
+          assetId: assetId,
+        ),
+      );
 
       Get.snackbar(
         'Photo queued',
@@ -855,7 +1106,11 @@ class KennelPhotoService {
         duration: const Duration(seconds: 5),
       );
     } catch (e, s) {
-      BootLogger.logError('[KennelPhotoService._queueForOfflineUpload] photoGuid=$photoGuid', e, s);
+      BootLogger.logError(
+        '[KennelPhotoService._queueForOfflineUpload] photoGuid=$photoGuid',
+        e,
+        s,
+      );
       Get.snackbar(
         'Photo could not be saved',
         isOnlineFailure
@@ -903,8 +1158,9 @@ class KennelPhotoService {
           continue;
         }
 
-        final runFolder =
-            entry.eventNumber > 0 ? '${entry.kennelSlug}-${entry.eventNumber}' : 'other';
+        final runFolder = entry.eventNumber > 0
+            ? '${entry.kennelSlug}-${entry.eventNumber}'
+            : 'other';
 
         final tokenResult = await _getUploadToken(
           kennelId: entry.kennelId,
@@ -913,7 +1169,9 @@ class KennelPhotoService {
           photoGuid: entry.photoId,
         );
         if (tokenResult == null) {
-          debugPrint('[KennelPhotoService] Queue: token failed for ${entry.photoId} — stopping');
+          debugPrint(
+            '[KennelPhotoService] Queue: token failed for ${entry.photoId} — stopping',
+          );
           stoppedEarly = true;
           break;
         }
@@ -923,7 +1181,9 @@ class KennelPhotoService {
 
         final uploadOk = await _uploadToBlob(sasUrl: sasUrl, imageFile: file);
         if (!uploadOk) {
-          debugPrint('[KennelPhotoService] Queue: blob upload failed for ${entry.photoId} — stopping');
+          debugPrint(
+            '[KennelPhotoService] Queue: blob upload failed for ${entry.photoId} — stopping',
+          );
           stoppedEarly = true;
           break;
         }
@@ -944,7 +1204,9 @@ class KennelPhotoService {
         await file.delete();
 
         uploadedCount++;
-        debugPrint('[KennelPhotoService] Queue: uploaded ${entry.photoId} ($uploadedCount/$total)');
+        debugPrint(
+          '[KennelPhotoService] Queue: uploaded ${entry.photoId} ($uploadedCount/$total)',
+        );
       } catch (e, s) {
         BootLogger.logError(
           '[KennelPhotoService.processPendingQueue] photoId=${entry.photoId}',
@@ -1007,7 +1269,11 @@ enum _PhotoShareIntent { savePrivate, saveAndShare }
 
 /// Carries the final file (possibly edited), the user's sharing intent, and optional caption.
 class _PhotoShareResult {
-  const _PhotoShareResult({required this.file, required this.intent, this.caption});
+  const _PhotoShareResult({
+    required this.file,
+    required this.intent,
+    this.caption,
+  });
   final File file;
   final _PhotoShareIntent intent;
   final String? caption;
@@ -1100,108 +1366,115 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
                 Container(
                   color: Colors.black.withValues(alpha: 0.75),
                   padding: EdgeInsets.only(
-                  left: 12,
-                  right: 12,
-                  top: 12,
-                  bottom: MediaQuery.of(context).padding.bottom + 12,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: _captionController,
-                      maxLines: 3,
-                      minLines: 1,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Add a caption… (optional)',
-                        hintStyle: const TextStyle(
-                            color: Colors.white38, fontSize: 14),
-                        filled: true,
-                        fillColor: Colors.white10,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                    left: 12,
+                    right: 12,
+                    top: 12,
+                    bottom: MediaQuery.of(context).padding.bottom + 12,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _captionController,
+                        maxLines: 3,
+                        minLines: 1,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 10),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        '$_wordCount / 200 words',
-                        style: TextStyle(
-                          color: _wordCount > 200
-                              ? Colors.redAccent
-                              : Colors.white38,
-                          fontSize: 11,
+                        decoration: InputDecoration(
+                          hintText: 'Add a caption… (optional)',
+                          hintStyle: const TextStyle(
+                            color: Colors.white38,
+                            fontSize: 14,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white10,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    _IntentButton(
-                      icon: Icons.delete_outline,
-                      label: 'Discard',
-                      subtitle: 'Remove the photo',
-                      color: hc_red,
-                      onTap: () => Get.back<_PhotoShareResult>(),
-                    ),
-                    if (_canEdit) ...[
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '$_wordCount / 200 words',
+                          style: TextStyle(
+                            color: _wordCount > 200
+                                ? Colors.redAccent
+                                : Colors.white38,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      _IntentButton(
+                        icon: Icons.delete_outline,
+                        label: 'Discard',
+                        subtitle: 'Remove the photo',
+                        color: hc_red,
+                        onTap: () => Get.back<_PhotoShareResult>(),
+                      ),
+                      if (_canEdit) ...[
+                        const SizedBox(height: 8),
+                        _IntentButton(
+                          icon: Icons.edit_outlined,
+                          label: 'Edit',
+                          subtitle: 'Crop or adjust the photo',
+                          color: Colors.blueGrey.shade600,
+                          onTap: _onEdit,
+                        ),
+                      ],
                       const SizedBox(height: 8),
                       _IntentButton(
-                        icon: Icons.edit_outlined,
-                        label: 'Edit',
-                        subtitle: 'Crop or adjust the photo',
-                        color: Colors.blueGrey.shade600,
-                        onTap: _onEdit,
+                        icon: Icons.lock_outline,
+                        label: 'Save privately',
+                        subtitle: 'Visible only to you',
+                        color: Colors.grey.shade700,
+                        onTap: () => Get.back(
+                          result: _PhotoShareResult(
+                            file: _currentFile,
+                            intent: _PhotoShareIntent.savePrivate,
+                            caption: _captionText(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _IntentButton(
+                        icon: Icons.share_outlined,
+                        label: 'Save and share',
+                        subtitle: 'Forwards to Hash Flash for review',
+                        color: Colors.green.shade700,
+                        onTap: () => Get.back(
+                          result: _PhotoShareResult(
+                            file: _currentFile,
+                            intent: _PhotoShareIntent.saveAndShare,
+                            caption: _captionText(),
+                          ),
+                        ),
                       ),
                     ],
-                    const SizedBox(height: 8),
-                    _IntentButton(
-                      icon: Icons.lock_outline,
-                      label: 'Save privately',
-                      subtitle: 'Visible only to you',
-                      color: Colors.grey.shade700,
-                      onTap: () => Get.back(
-                        result: _PhotoShareResult(
-                          file: _currentFile,
-                          intent: _PhotoShareIntent.savePrivate,
-                          caption: _captionText(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _IntentButton(
-                      icon: Icons.share_outlined,
-                      label: 'Save and share',
-                      subtitle: 'Forwards to Hash Flash for review',
-                      color: Colors.green.shade700,
-                      onTap: () => Get.back(
-                        result: _PhotoShareResult(
-                          file: _currentFile,
-                          intent: _PhotoShareIntent.saveAndShare,
-                          caption: _captionText(),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+
+            // Cropping overlay — prevents tapping buttons while cropper is active
+            if (_isCropping)
+              const Positioned.fill(
+                child: ColoredBox(
+                  color: Colors.black54,
+                  child: Center(child: CircularProgressIndicator()),
                 ),
               ),
-            ],
-          ),
-
-          // Cropping overlay — prevents tapping buttons while cropper is active
-          if (_isCropping)
-            const Positioned.fill(
-              child: ColoredBox(
-                color: Colors.black54,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -1249,7 +1522,9 @@ class _IntentButton extends StatelessWidget {
                   Text(
                     subtitle,
                     style: ts_bodySmall.copyWith(
-                        color: Colors.white70, fontSize: 12),
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),

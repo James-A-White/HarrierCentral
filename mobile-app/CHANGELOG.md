@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.49+1263 (2026-08-01)
+
+### New Features
+- **Add photos you took on your own camera.** A new "Add your photos" button
+  on a run's photo tab opens your normal photo picker; anything you choose that
+  was taken during the run, with a location recorded, is sent to the Hash Flash
+  for review exactly like a photo taken in the app — and appears on the run map
+  at the spot it was taken. Photos without a location, without a date, or taken
+  outside the run are skipped, and you're told how many and why.
+
 ## 2.15.48+1262 (2026-08-01)
 
 ### Improvements

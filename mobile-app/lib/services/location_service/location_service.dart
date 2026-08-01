@@ -15,17 +15,23 @@ String pad19(int epochMs) => epochMs.toString().padLeft(19, '0');
 // When unset (null pref), Best is the default.
 LocationAccuracy _trackingAccuracy() {
   switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
-    case 0: return LocationAccuracy.medium;
-    case 1: return LocationAccuracy.high;
-    default: return LocationAccuracy.bestForNavigation;
+    case 0:
+      return LocationAccuracy.medium;
+    case 1:
+      return LocationAccuracy.high;
+    default:
+      return LocationAccuracy.bestForNavigation;
   }
 }
 
 int _trackingDistanceFilter() {
   switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
-    case 0: return 20; // Power Saver: coarse track
-    case 1: return 10; // Balanced: moderate
-    default: return 5; // Best: fine-grained
+    case 0:
+      return 20; // Power Saver: coarse track
+    case 1:
+      return 10; // Balanced: moderate
+    default:
+      return 5; // Best: fine-grained
   }
 }
 
@@ -34,9 +40,12 @@ int _trackingDistanceFilter() {
 // 15s → 1min → 15min instead of the old 15s / 15s / 15min.
 Duration _trackingAndroidInterval() {
   switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
-    case 0: return const Duration(minutes: 15); // Power Saver
-    case 1: return const Duration(minutes: 1); // Balanced
-    default: return const Duration(seconds: 15); // Best
+    case 0:
+      return const Duration(minutes: 15); // Power Saver
+    case 1:
+      return const Duration(minutes: 1); // Balanced
+    default:
+      return const Duration(seconds: 15); // Best
   }
 }
 
@@ -138,24 +147,24 @@ class LocationService extends GetxService {
           androidInterval: _trackingAndroidInterval(),
         );
         await _geoLocationStreamSubscription?.cancel();
-        _geoLocationStreamSubscription = Geolocator.getPositionStream(
-          locationSettings: locationSettings,
-        ).listen(
-          updateDeviceLocation,
-          onError: (error) {
-            if (kDebugMode) debugPrint('LocationStream Error: $error');
-            BootLogger.logBreadcrumb(
-              'PackTrack: location stream error while TRACKING: $error',
+        _geoLocationStreamSubscription =
+            Geolocator.getPositionStream(
+              locationSettings: locationSettings,
+            ).listen(
+              updateDeviceLocation,
+              onError: (error) {
+                if (kDebugMode) debugPrint('LocationStream Error: $error');
+                BootLogger.logBreadcrumb(
+                  'PackTrack: location stream error while TRACKING: $error',
+                );
+              },
             );
-          },
-        );
         BootLogger.logBreadcrumb(
           'PackTrack: run tracking STARTED '
           '(distanceFilter=${_trackingDistanceFilter()}m, '
           'accuracy=${_trackingAccuracy()}) ${BootLogger.memInfo()}',
         );
         if (kDebugMode) debugPrint('LocationService: Started run tracking.');
-
       } else if (isPaused.value) {
         // Paused — keep monitoring at a finer interval so auto-resume can
         // fire when the device moves >= _autoPauseResumeDistanceMeters.
@@ -167,22 +176,24 @@ class LocationService extends GetxService {
           androidInterval: const Duration(seconds: 15),
         );
         await _geoLocationStreamSubscription?.cancel();
-        _geoLocationStreamSubscription = Geolocator.getPositionStream(
-          locationSettings: locationSettings,
-        ).listen(
-          updateDeviceLocation,
-          onError: (error) {
-            if (kDebugMode) debugPrint('LocationStream Error: $error');
-            BootLogger.logBreadcrumb(
-              'PackTrack: location stream error while PAUSED: $error',
+        _geoLocationStreamSubscription =
+            Geolocator.getPositionStream(
+              locationSettings: locationSettings,
+            ).listen(
+              updateDeviceLocation,
+              onError: (error) {
+                if (kDebugMode) debugPrint('LocationStream Error: $error');
+                BootLogger.logBreadcrumb(
+                  'PackTrack: location stream error while PAUSED: $error',
+                );
+              },
             );
-          },
-        );
         BootLogger.logBreadcrumb(
           'PackTrack: run tracking AUTO-PAUSED (monitoring for resume)',
         );
-        if (kDebugMode) debugPrint('LocationService: Auto-paused. Monitoring for resume.');
-
+        if (kDebugMode) {
+          debugPrint('LocationService: Auto-paused. Monitoring for resume.');
+        }
       } else {
         // Fully stopped — drop back to low-power idle stream.
         final locationSettings = getLocSettings(
@@ -194,18 +205,21 @@ class LocationService extends GetxService {
         await _geoLocationStreamSubscription?.cancel();
         await _runBuffer?.flush();
         _lastFlushTime = DateTime.now();
-        _geoLocationStreamSubscription = Geolocator.getPositionStream(
-          locationSettings: locationSettings,
-        ).listen(
-          updateDeviceLocation,
-          onError: (error) {
-            if (kDebugMode) debugPrint('LocationStream Error: $error');
-            BootLogger.logBreadcrumb(
-              'PackTrack: location stream error while STOPPED/idle: $error',
+        _geoLocationStreamSubscription =
+            Geolocator.getPositionStream(
+              locationSettings: locationSettings,
+            ).listen(
+              updateDeviceLocation,
+              onError: (error) {
+                if (kDebugMode) debugPrint('LocationStream Error: $error');
+                BootLogger.logBreadcrumb(
+                  'PackTrack: location stream error while STOPPED/idle: $error',
+                );
+              },
             );
-          },
+        BootLogger.logBreadcrumb(
+          'PackTrack: run tracking STOPPED (idle stream)',
         );
-        BootLogger.logBreadcrumb('PackTrack: run tracking STOPPED (idle stream)');
         if (kDebugMode) debugPrint('LocationService: Stopped run tracking.');
       }
     });
@@ -346,7 +360,8 @@ class LocationService extends GetxService {
       _pausePoint = latlng.LatLng(pos.latitude, pos.longitude);
     }
     isPaused.value = true;
-    joinRunTracking.value = false; // ever worker: isPaused==true → monitoring settings
+    joinRunTracking.value =
+        false; // ever worker: isPaused==true → monitoring settings
     await _runBuffer?.flush();
     _lastFlushTime = DateTime.now();
   }
@@ -360,7 +375,8 @@ class LocationService extends GetxService {
     _pausePoint = null;
     _isResumingFromPause = true;
     isPaused.value = false;
-    joinRunTracking.value = true; // ever worker: _isResumingFromPause==true → no reset
+    joinRunTracking.value =
+        true; // ever worker: _isResumingFromPause==true → no reset
   }
 
   /// Seeds the in-memory session track from an already-stored track so the live
@@ -392,16 +408,20 @@ class LocationService extends GetxService {
     } else if (wasPaused) {
       // Was paused: joinRunTracking is already false so the ever worker won't
       // fire — manually restore idle stream settings.
-      final settings = getLocSettings(100, LocationAccuracy.lowest, false, true);
-      await _geoLocationStreamSubscription?.cancel();
-      _geoLocationStreamSubscription = Geolocator.getPositionStream(
-        locationSettings: settings,
-      ).listen(
-        updateDeviceLocation,
-        onError: (error) {
-          if (kDebugMode) debugPrint('LocationStream Error: $error');
-        },
+      final settings = getLocSettings(
+        100,
+        LocationAccuracy.lowest,
+        false,
+        true,
       );
+      await _geoLocationStreamSubscription?.cancel();
+      _geoLocationStreamSubscription =
+          Geolocator.getPositionStream(locationSettings: settings).listen(
+            updateDeviceLocation,
+            onError: (error) {
+              if (kDebugMode) debugPrint('LocationStream Error: $error');
+            },
+          );
     }
   }
 
@@ -437,8 +457,9 @@ class LocationService extends GetxService {
   Future<void> declareTrailType(int trailValue) async {
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings:
-            const LocationSettings(accuracy: LocationAccuracy.best),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.best,
+        ),
       );
       await updateDeviceLocation(
         position,
@@ -477,21 +498,42 @@ class LocationService extends GetxService {
     required String overrideUserId,
     String? label,
     bool immediate = false,
+    // Explicit position for marks that belong somewhere other than where the
+    // device is standing — e.g. importing a photo taken earlier in the run,
+    // whose marker must land where the PHOTO was taken, not at the sofa the
+    // user is importing it from. Both must be supplied to take effect.
+    double? atLat,
+    double? atLng,
   }) async {
     final Position position;
-    try {
-      position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.best,
-        ),
+    if (atLat != null && atLng != null) {
+      position = Position(
+        latitude: atLat,
+        longitude: atLng,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(timestampMs),
+        accuracy: 0,
+        altitude: 0,
+        altitudeAccuracy: 0,
+        heading: 0,
+        headingAccuracy: 0,
+        speed: 0,
+        speedAccuracy: 0,
       );
-    } catch (e) {
-      // No fix available (services off, permission revoked, hardware timeout).
-      // Never let this throw out of an unawaited call.
-      if (kDebugMode) {
-        debugPrint('LocationService: markPointAt got no GPS fix: $e');
+    } else {
+      try {
+        position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.best,
+          ),
+        );
+      } catch (e) {
+        // No fix available (services off, permission revoked, hardware timeout).
+        // Never let this throw out of an unawaited call.
+        if (kDebugMode) {
+          debugPrint('LocationService: markPointAt got no GPS fix: $e');
+        }
+        return false;
       }
-      return false;
     }
 
     String? pointStr = pointType.key;
@@ -705,13 +747,15 @@ class LocationService extends GetxService {
 
       // Append to the local session track and recompute filtered distance.
       // Uses the same TrackPointFilter as the map view so both displays agree.
-      _sessionTrack.add(TrackPoint(
-        lat: double.parse(lat.toStringAsFixed(5)),
-        lng: double.parse(lon.toStringAsFixed(5)),
-        acc: double.parse(accuracy.toStringAsFixed(2)),
-        alt: double.parse(altitude.toStringAsFixed(2)),
-        timestampMs: tsMs,
-      ));
+      _sessionTrack.add(
+        TrackPoint(
+          lat: double.parse(lat.toStringAsFixed(5)),
+          lng: double.parse(lon.toStringAsFixed(5)),
+          acc: double.parse(accuracy.toStringAsFixed(2)),
+          alt: double.parse(altitude.toStringAsFixed(2)),
+          timestampMs: tsMs,
+        ),
+      );
       // Recompute the filtered distance at most ~every 10s (or on a forced flush
       // — mark/stop), not on every point, to avoid an O(n²) refilter over the run.
       final nowDist = DateTime.now();

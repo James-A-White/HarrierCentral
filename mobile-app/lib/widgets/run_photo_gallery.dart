@@ -74,21 +74,133 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final body = Container(
       decoration: Backgrounds.defaultHcBackground(),
       child: _isLoading
           ? const Center(
               child: HcAppCircularProgressIndicator(key: Key('rpg_load')),
             )
           : _hasError
-              ? _buildError()
-              : RefreshIndicator(
-                  onRefresh: _refresh,
-                  child: _photos.isEmpty
-                      ? _buildEmpty(context)
-                      : _buildGrid(context),
-                ),
+          ? _buildError()
+          : RefreshIndicator(
+              onRefresh: _refresh,
+              child: _photos.isEmpty
+                  ? _buildEmpty(context)
+                  : _buildGrid(context),
+            ),
     );
+
+    // Importing needs the run for its kennel, number and time window. The guest
+    // gallery has no aggregate, so it simply doesn't get the button.
+    if (widget.run == null) return body;
+
+    return Stack(
+      children: <Widget>[
+        Positioned.fill(child: body),
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton.extended(
+            heroTag: 'import-run-photos',
+            backgroundColor: hc_blue,
+            foregroundColor: Colors.white,
+            icon: _isImporting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.add_photo_alternate),
+            label: Text(
+              _isImporting ? 'Adding…' : 'Add your photos',
+              style: ts_button,
+            ),
+            onPressed: _isImporting ? null : _importFromCameraRoll,
+          ),
+        ),
+      ],
+    );
+  }
+
+  bool _isImporting = false;
+
+  /// Imports photos the user took on their own camera during this run.
+  ///
+  /// The run has no end time of its own, so the end of the window is the last
+  /// GPS point anyone recorded for it — with a conservative fallback when
+  /// nobody tracked at all.
+  Future<void> _importFromCameraRoll() async {
+    final run = widget.run;
+    if (run == null) return;
+    setState(() => _isImporting = true);
+
+    final DateTime start = run.event.eventStartDatetimeGmt.toLocal();
+    DateTime end = start.add(const Duration(hours: 6)); // untracked fallback
+
+    final api = GetPositionsApi();
+    try {
+      final payload = await api.fetchPositions(
+        eventId: run.event.eventId,
+        latestClientTimestampMs: '0000000000000000000',
+      );
+      int newest = 0;
+      for (final u in payload.users) {
+        for (final p in u.positions) {
+          if (p.timestampMs > newest) newest = p.timestampMs;
+        }
+      }
+      if (newest > 0) {
+        final last = DateTime.fromMillisecondsSinceEpoch(newest);
+        if (last.isAfter(start)) end = last;
+      }
+    } catch (_) {
+      // Keep the fallback window — a failed lookup shouldn't block importing.
+    } finally {
+      api.dispose();
+    }
+
+    final result = await KennelPhotoService().importFromCameraRoll(
+      eventId: run.event.eventId,
+      kennelId: run.kennel.kennelId,
+      kennelSlug: run.kennel.kennelUniqueShortName,
+      eventNumber: run.event.eventNumber,
+      runStart: start,
+      runEnd: end,
+    );
+
+    if (!mounted) return;
+    setState(() => _isImporting = false);
+
+    if (result.imported == 0 && result.rejected == 0 && result.failed == 0) {
+      return; // picker cancelled — say nothing
+    }
+
+    final parts = <String>[];
+    if (result.imported > 0) {
+      parts.add('${result.imported} sent to the Hash Flash for review');
+    }
+    if (result.rejected > 0) {
+      parts.add(
+        '${result.rejected} skipped — no location or not taken during the run',
+      );
+    }
+    if (result.failed > 0) {
+      parts.add('${result.failed} could not be uploaded');
+    }
+
+    Get.snackbar(
+      result.imported > 0 ? 'Photos added' : 'No photos added',
+      parts.join('. '),
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: result.imported > 0 ? hc_blue : hc_red,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 6),
+    );
+
+    if (result.imported > 0) await _load();
   }
 
   Widget _buildError() {
@@ -226,24 +338,26 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
     // in user's name. Cached per uploader so N photos = at most N distinct reads.
     final photographers = await _resolvePhotographers();
 
-    final items = _photos.map((p) {
-      final uid = normalizeUuid(p.userId ?? '');
-      final info = photographers[uid];
-      return MapPhotoItem(
-        imageUrl: p.effectiveUrl,
-        caption: p.displayCaption,
-        uploaderName: info?.name ?? (p.uploaderDisplayName ?? ''),
-        uploaderPhotoUrl: info?.photo ?? '',
-        capturedAt: p.createdAt.year > 1 ? p.createdAt : null,
-        latitude: p.latitude,
-        longitude: p.longitude,
-        photoId: (canEdit && p.isOwnPhoto) ? p.photoId : null,
-        originalBlobUrl: (canEdit && p.isOwnPhoto) ? p.blobUrl : null,
-        kennelId: (canEdit && p.isOwnPhoto) ? widget.kennelId : null,
-        kennelSlug: (canEdit && p.isOwnPhoto) ? widget.kennelSlug : null,
-        eventNumber: (canEdit && p.isOwnPhoto) ? widget.eventNumber : null,
-      );
-    }).toList(growable: false);
+    final items = _photos
+        .map((p) {
+          final uid = normalizeUuid(p.userId ?? '');
+          final info = photographers[uid];
+          return MapPhotoItem(
+            imageUrl: p.effectiveUrl,
+            caption: p.displayCaption,
+            uploaderName: info?.name ?? (p.uploaderDisplayName ?? ''),
+            uploaderPhotoUrl: info?.photo ?? '',
+            capturedAt: p.createdAt.year > 1 ? p.createdAt : null,
+            latitude: p.latitude,
+            longitude: p.longitude,
+            photoId: (canEdit && p.isOwnPhoto) ? p.photoId : null,
+            originalBlobUrl: (canEdit && p.isOwnPhoto) ? p.blobUrl : null,
+            kennelId: (canEdit && p.isOwnPhoto) ? widget.kennelId : null,
+            kennelSlug: (canEdit && p.isOwnPhoto) ? widget.kennelSlug : null,
+            eventNumber: (canEdit && p.isOwnPhoto) ? widget.eventNumber : null,
+          );
+        })
+        .toList(growable: false);
 
     if (!context.mounted) return;
     await Navigator.push<void>(
@@ -263,7 +377,7 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
   /// Resolves photographer name + avatar for every distinct uploader in the
   /// current photo set, keyed by normalised userId.
   Future<Map<String, ({String name, String photo})>>
-      _resolvePhotographers() async {
+  _resolvePhotographers() async {
     final result = <String, ({String name, String photo})>{};
     final currentUserId = normalizeUuid(
       getStringPref(StringPrefsEnum.userId) ?? '',
@@ -286,7 +400,7 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
       if (rows.isNotEmpty) {
         photo =
             (rows.first[tableModel.hashersTableHelper.colPhoto] as String?) ??
-                '';
+            '';
       }
 
       result[uid] = (name: name, photo: photo);
