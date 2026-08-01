@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.30+1244 (2026-08-01)
+
+### Fixes
+- **Fresh-token retry now covers every API call**: six call sites (photo
+  add/list/pending/caption, chat message fetch, find-account search) built
+  their access token once outside the retry closure, so the new stale-token
+  retry would have re-sent the same expired token. All now mint the token
+  inside the closure, per attempt, like the rest of the app.
+
 ## 2.15.29+1243 (2026-08-01)
 
 ### Fixes

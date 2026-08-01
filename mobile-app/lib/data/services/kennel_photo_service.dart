@@ -418,11 +418,6 @@ class KennelPhotoService {
     final body = <String, dynamic>{
       'queryType': 'addKennelPhoto',
       'deviceId': deviceId,
-      'accessToken': Utilities.generateToken(
-        userId,
-        'hcapp_addKennelPhoto',
-        paramString: deviceSecret,
-      ),
       'photoId': photoId,
       'eventId': eventId,
       'kennelId': kennelId,
@@ -441,9 +436,15 @@ class KennelPhotoService {
       body['description'] = caption;
     }
 
-    final result = await ServiceCommon.sendHttpPost(
-      () => jsonEncode(body),
-    );
+    final result = await ServiceCommon.sendHttpPost(() {
+      // Minted inside the closure: fresh token per attempt (token retry).
+      body['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_addKennelPhoto',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    });
 
     return !result.startsWith(ERROR_PREFIX);
   }
@@ -531,18 +532,21 @@ class KennelPhotoService {
     final body = <String, String>{
       'queryType': 'getKennelPendingPhotos',
       'deviceId': deviceId,
-      'accessToken': Utilities.generateToken(
-        userId,
-        'hcapp_getKennelPendingPhotos',
-        paramString: deviceSecret,
-      ),
       'kennelId': kennelId,
     };
     if (eventId != null && eventId.isNotEmpty) {
       body['eventId'] = eventId;
     }
 
-    return ServiceCommon.sendHttpPost(() => jsonEncode(body));
+    return ServiceCommon.sendHttpPost(() {
+      // Minted inside the closure: fresh token per attempt (token retry).
+      body['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_getKennelPendingPhotos',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    });
   }
 
   Future<String> getRunPhotos({
@@ -556,11 +560,6 @@ class KennelPhotoService {
     final body = <String, dynamic>{
       'queryType': 'getRunPhotos',
       'deviceId': deviceId,
-      'accessToken': Utilities.generateToken(
-        userId,
-        'hcapp_getRunPhotos',
-        paramString: deviceSecret,
-      ),
       'eventId': eventId,
     };
 
@@ -568,7 +567,15 @@ class KennelPhotoService {
       body['afterUpdatedAt'] = afterUpdatedAt;
     }
 
-    return ServiceCommon.sendHttpPost(() => jsonEncode(body));
+    return ServiceCommon.sendHttpPost(() {
+      // Minted inside the closure: fresh token per attempt (token retry).
+      body['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_getRunPhotos',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    });
   }
 
   /// Returns all visible photos for a run merged into a flat list:
@@ -649,18 +656,21 @@ class KennelPhotoService {
     final body = <String, dynamic>{
       'queryType': 'updatePhotoCaption',
       'deviceId': deviceId,
-      'accessToken': Utilities.generateToken(
-        userId,
-        'hcapp_updatePhotoCaption',
-        paramString: deviceSecret,
-      ),
       'photoId': photoId,
     };
     if (description != null && description.isNotEmpty) {
       body['description'] = description;
     }
 
-    return ServiceCommon.sendHttpPost(() => jsonEncode(body), noRetries: true);
+    return ServiceCommon.sendHttpPost(() {
+      // Minted inside the closure: fresh token per attempt (token retry).
+      body['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_updatePhotoCaption',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    }, noRetries: true);
   }
 
   // ── Pending photo badge ───────────────────────────────────────────────────

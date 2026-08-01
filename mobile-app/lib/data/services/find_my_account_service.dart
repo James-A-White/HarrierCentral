@@ -41,10 +41,6 @@ class FindMyAccountService {
 
     final Map<String, dynamic> body = <String, dynamic>{
       'queryType': 'findHashersByHashName',
-      'accessToken': Utilities.generateToken(
-        GUID_EMPTY,
-        'hcapp_findHashersByHashName',
-      ),
       'searchTerm': searchTerm,
     };
 
@@ -53,10 +49,14 @@ class FindMyAccountService {
       body['lon'] = lon;
     }
 
-    final String responseBody = await ServiceCommon.sendHttpPost(
-      () => jsonEncode(body),
-      noRetries: true,
-    );
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      // Minted inside the closure: fresh token per attempt (token retry).
+      body['accessToken'] = Utilities.generateToken(
+        GUID_EMPTY,
+        'hcapp_findHashersByHashName',
+      );
+      return jsonEncode(body);
+    }, noRetries: true);
 
     if (responseBody.startsWith(ERROR_PREFIX)) return null;
 

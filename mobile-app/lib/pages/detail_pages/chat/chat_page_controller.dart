@@ -198,18 +198,21 @@ class ChatPageController extends GetxController {
     final body = <String, dynamic>{
       'queryType': isKennelThread ? 'getKennelMessages' : 'getEventMessages',
       'deviceId': deviceId,
-      'accessToken': Utilities.generateToken(
-        userId,
-        isKennelThread ? 'hcapp_getKennelMessages' : 'hcapp_getEventMessages',
-        paramString: deviceSecret,
-      ),
       _idKey: eventId,
     };
     if (sinceSequenceCount != null) {
       body['sinceSequenceCount'] = sinceSequenceCount;
     }
 
-    return ServiceCommon.sendHttpPost(() => jsonEncode(body));
+    return ServiceCommon.sendHttpPost(() {
+      // Minted inside the closure: fresh token per attempt (token retry).
+      body['accessToken'] = Utilities.generateToken(
+        userId,
+        isKennelThread ? 'hcapp_getKennelMessages' : 'hcapp_getEventMessages',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    });
   }
 
   List<core.Message> _parseMessages(List<dynamic> messageList) {
