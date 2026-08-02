@@ -435,8 +435,14 @@ class LiveRunGeneralController extends GetxController {
     }
   }
 
-  /// Timestamp of the distress mark this session dropped, if any.
-  int? _distressMarkMs;
+  /// Timestamps of EVERY distress mark this session dropped.
+  ///
+  /// A list, not a single value: the compass now offers "Tell the pack again"
+  /// alongside the all clear, so a runner who has moved can drop a fresh mark
+  /// where they are now. Holding only the latest would strand every earlier
+  /// LOST badge on the live map permanently — the all clear would tidy up one
+  /// and leave the rest sending sweepers to places the runner left long ago.
+  final List<int> _distressMarkMs = <int>[];
 
   /// Tells the pack the runner is back on trail, and removes the distress mark
   /// from the live map so nobody keeps searching. The chat message is the
@@ -451,19 +457,18 @@ class LiveRunGeneralController extends GetxController {
               '${pos.latitude.toStringAsFixed(5)},'
               '${pos.longitude.toStringAsFixed(5)}';
 
-    // Clear the mark first so the map is right even if the message fails.
-    final int? markMs = _distressMarkMs;
-    if (markMs != null) {
+    // Clear the marks first so the map is right even if the message fails.
+    if (_distressMarkMs.isNotEmpty) {
       final api = DeletePositionsApi();
       try {
         await api.deletePoints(
           eventId: run.event.eventId,
           userId: currentUserId,
-          timestampsMs: <int>[markMs],
+          timestampsMs: List<int>.of(_distressMarkMs),
         );
-        _distressMarkMs = null;
+        _distressMarkMs.clear();
       } catch (e) {
-        if (kDebugMode) debugPrint('[LiveRun] clear distress mark failed: $e');
+        if (kDebugMode) debugPrint('[LiveRun] clear distress marks failed: $e');
       } finally {
         api.dispose();
       }
@@ -522,13 +527,14 @@ class LiveRunGeneralController extends GetxController {
     // Remembered so "I've found the trail" can clear it: a LOST badge left
     // sitting on the live map after the runner is fine sends the sweepers
     // looking for someone who is already back with the pack.
-    _distressMarkMs = DateTime.now().millisecondsSinceEpoch;
+    final int markMs = DateTime.now().millisecondsSinceEpoch;
+    _distressMarkMs.add(markMs);
 
     final Future<bool> markFuture = _locationService.markPointAt(
       pointType: urgent
           ? HashRunPointTypes.helpNeeded
           : HashRunPointTypes.lostRunner,
-      timestampMs: _distressMarkMs!,
+      timestampMs: markMs,
       overrideEventId: run.event.eventId,
       overrideUserId: currentUserId,
       label: '$name · ${DateFormat('h:mm a').format(DateTime.now())}',

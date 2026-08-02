@@ -1,5 +1,18 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.60+1274 (2026-08-02)
+
+### Improvements
+- **Once you've told the pack you're lost, both buttons stay available.** "I've
+  found the trail" and "Tell the pack again" now sit side by side, so you can
+  send an updated position if you've moved instead of having to choose between
+  the two.
+
+### Fixes
+- **The all clear now removes every lost marker you dropped**, not just the last
+  one — so telling the pack twice can't leave an old marker on the map sending
+  people to where you used to be.
+
 ## 2.15.59+1273 (2026-08-02)
 
 ### New Features

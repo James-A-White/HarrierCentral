@@ -181,6 +181,11 @@ class LostCompassController extends GetxController {
   final RxBool hasAnnounced = false.obs;
   final RxBool isAnnouncing = false.obs;
 
+  /// Which announcement is in flight — true for the all clear, false for the
+  /// lost message, null when nothing is. Once both buttons are on screen at the
+  /// same time, "Sending…" has to land on the one that was actually pressed.
+  final Rxn<bool> announcingAllClear = Rxn<bool>();
+
   /// When the last poll actually came back with data.
   ///
   /// A failed poll doesn't blank the arrow — cached tracks are still the best
@@ -987,6 +992,7 @@ class LostCompassDialog extends StatelessWidget {
   /// Sends the lost announcement, or the all clear once already announced.
   Future<void> _handleAnnounce(BuildContext context, bool announced) async {
     controller.isAnnouncing.value = true;
+    controller.announcingAllClear.value = announced;
     try {
       if (announced) {
         final ok = await onAnnounceFound?.call() ?? false;
@@ -1025,6 +1031,7 @@ class LostCompassDialog extends StatelessWidget {
       );
     } finally {
       controller.isAnnouncing.value = false;
+      controller.announcingAllClear.value = null;
     }
   }
 
@@ -1249,33 +1256,64 @@ class LostCompassDialog extends StatelessWidget {
           Obx(() {
             final announced = controller.hasAnnounced.value;
             final busy = controller.isAnnouncing.value;
-            // Before announcing: offer to tell the pack. After: offer the all
-            // clear, which is the only thing that stops people searching.
-            return SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: Icon(
-                  announced ? Icons.check_circle : Icons.campaign,
-                  size: 20,
+            final sendingAllClear = controller.announcingAllClear.value;
+
+            Widget button({
+              required bool allClear,
+              required IconData icon,
+              required String text,
+              required Color colour,
+            }) {
+              return SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: Icon(icon, size: 20),
+                  label: Text(
+                    // Only the button that was actually pressed says so.
+                    busy && sendingAllClear == allClear ? 'Sending…' : text,
+                    style: ts_button,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colour,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: busy
+                      ? null
+                      : () => unawaited(_handleAnnounce(context, allClear)),
                 ),
-                label: Text(
-                  busy
-                      ? 'Sending…'
-                      : announced
-                      ? "I've found the trail"
-                      : "Tell the pack I'm lost",
-                  style: ts_button,
+              );
+            }
+
+            // Before announcing there is only one thing to say. Afterwards
+            // both stay available: the all clear is what stops people
+            // searching, and telling them again re-sends with wherever you
+            // have got to since — which is the more useful of the two if you
+            // have been moving while waiting.
+            if (!announced) {
+              return button(
+                allClear: false,
+                icon: Icons.campaign,
+                text: "Tell the pack I'm lost",
+                colour: Colors.deepOrange.shade700,
+              );
+            }
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                button(
+                  allClear: true,
+                  icon: Icons.check_circle,
+                  text: "I've found the trail",
+                  colour: Colors.green.shade700,
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: announced
-                      ? Colors.green.shade700
-                      : Colors.deepOrange.shade700,
-                  foregroundColor: Colors.white,
+                const SizedBox(height: 8),
+                button(
+                  allClear: false,
+                  icon: Icons.campaign,
+                  text: 'Tell the pack again',
+                  colour: Colors.deepOrange.shade700,
                 ),
-                onPressed: busy
-                    ? null
-                    : () => unawaited(_handleAnnounce(context, announced)),
-              ),
+              ],
             );
           }),
         ElevatedButton(
