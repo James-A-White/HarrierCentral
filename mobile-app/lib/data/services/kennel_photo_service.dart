@@ -672,7 +672,9 @@ class KennelPhotoService {
         kennelId: kennelId,
         kennelSlug: kennelSlug,
         eventNumber: eventNumber,
-        sharingOverride: 0,
+        // 1 = submit for review (status 1, pending). Imports are always sent
+        // to the Hash Flash — the gallery snackbar tells the user so.
+        sharingOverride: 1,
         caption: null,
         assetId: assetId,
       );
@@ -712,7 +714,9 @@ class KennelPhotoService {
       photoId: photoGuid,
       blobUrl: blobUrl,
       assetId: assetId,
-      perRunSharingOverride: 0,
+      // 1 = submit for review (status 1, pending) — NOT approved. 0 would keep
+      // the photo private forever and it would never reach the Hash Flash.
+      perRunSharingOverride: 1,
       lat: latitude,
       lng: longitude,
     );

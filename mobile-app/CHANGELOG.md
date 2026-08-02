@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.62+1276 (2026-08-02)
+
+### Fixes
+- **Imported camera-roll photos now actually reach the Hash Flash.** "Add your
+  photos" was saving imports as private-forever, so despite the "sent to the
+  Hash Flash for review" message they never appeared in the review queue and
+  could never be approved or shared. Imports are now submitted as pending
+  review, exactly like an in-app "Save and share" photo — nothing is shared
+  until the Hash Flash (or another authorised reviewer) approves it.
+
 ## 2.15.61+1275 (2026-08-02)
 
 ### Fixes
