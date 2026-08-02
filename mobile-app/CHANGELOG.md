@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.58+1272 (2026-08-02)
+
+### Fixes
+- **The radar's scale is readable again.** "Ring = 100 m · centred on you" was
+  tucked under the playback panel at the bottom of the radar. It now sits just
+  below the Map / Radar switch at the top, on its own dark badge, so it stays
+  clear of the panel however tall the panel gets.
+
 ## 2.15.57+1271 (2026-08-02)
 
 ### New Features

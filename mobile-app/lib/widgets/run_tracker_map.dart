@@ -99,31 +99,56 @@ class RunTrackerMap extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned(
-                  bottom: 96,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    child: Text(
-                      'Ring = ${range < 1000 ? '${range.round()} m' : '${(range / 1000).toStringAsFixed(2)} km'}'
-                      '  ·  centred on ${controller.roseFocusRunnerLabel}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.yellow,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
                 _buildTimelineSlider(context, controller),
-                // Same slot as over the map, so switching views never moves
-                // the control out from under your thumb.
+                // Switch in the same slot as over the map, so changing view
+                // never moves the control out from under your thumb — with the
+                // scale legend hung directly beneath it.
+                //
+                // The legend used to sit at bottom: 96, which put it under the
+                // playback panel: the panel is drawn later in this Stack and
+                // its height varies with what it contains (runner carousel,
+                // trail chips, selected name), so no fixed bottom offset clears
+                // it. Anchoring to the switch instead means it can never be
+                // covered, whatever the panel grows to.
                 Positioned(
                   top: 12,
                   left: 0,
                   right: 0,
-                  child: Center(child: _viewSwitch(controller)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      _viewSwitch(controller),
+                      const SizedBox(height: 10),
+                      IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.72),
+                            borderRadius: BorderRadius.circular(999.0),
+                            border: Border.all(
+                              color: Colors.yellow.withValues(alpha: 0.55),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14.0,
+                              vertical: 6.0,
+                            ),
+                            child: Text(
+                              'Ring = ${range < 1000 ? '${range.round()} m' : '${(range / 1000).toStringAsFixed(2)} km'}'
+                              '  ·  centred on ${controller.roseFocusRunnerLabel}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.yellow,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 // Long-press anywhere on the readout resets the pinch range —
                 // the switch no longer carries that gesture.
