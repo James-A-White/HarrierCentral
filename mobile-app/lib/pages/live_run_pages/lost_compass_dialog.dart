@@ -40,6 +40,27 @@ class LostCompassController extends GetxController {
   /// leave their wandering in the candidate set.
   static const Duration _lostLookBack = Duration(minutes: 5);
 
+  /// Inside this, "which way to the trail" stops being a useful question —
+  /// you're standing on it, and the bearing to the nearest recorded point is
+  /// within your own GPS error anyway. The dialog switches to telling you which
+  /// way the trail RUNS and to look around for marks.
+  ///
+  /// Points are recorded every ~5 m of movement at the default tracking
+  /// quality, so being 20 m from the nearest one means being ~20 m off the
+  /// line — close enough to see a blob of flour.
+  static const double _onTrailRadiusMeters = 20.0;
+
+  /// And this is how far you have to get back OFF it before the dial returns to
+  /// pointing you at it. Without the gap, standing near the boundary would flip
+  /// the whole dial — icon, colour, headline — on every GPS fix, several times
+  /// a second, which reads as a broken screen rather than a close call.
+  static const double _offTrailRadiusMeters = 32.0;
+
+  /// How far along the trail to look when working out which way it goes. Short
+  /// enough to follow a bend, long enough that a couple of noisy fixes can't
+  /// swing the answer.
+  static const double _onwardLookAheadMeters = 30.0;
+
   /// The ONE accuracy gate for every use of a track point in this dialog.
   ///
   /// It used to be two: 15 m when choosing the point the arrow aims at, 25 m
@@ -137,6 +158,16 @@ class LostCompassController extends GetxController {
   final RxnString nearestHasherName = RxnString();
   final RxnString hasherAgeLabel = RxnString();
 
+  /// True once the nearest trail point is inside [_onTrailRadiusMeters]. The
+  /// first arrow stops being a "walk this way" instruction at that point and
+  /// becomes "you're here, this is where it goes".
+  final RxBool onTrail = false.obs;
+
+  /// Bearing the trail runs in from the matched point, or null when the pack
+  /// hasn't gone any further yet. Recomputed on the poll, not per GPS fix — it
+  /// is a property of the trail, not of where you are standing.
+  final RxnDouble trailOnwardBearing = RxnDouble();
+
   /// True when the nearest hasher is the same person whose trail the first
   /// arrow points at — used to drop the now-duplicated prose line.
   bool get hasherIsTrailOwner =>
@@ -221,8 +252,15 @@ class LostCompassController extends GetxController {
     if (target == null) return;
     final from = latlong.LatLng(me.latitude, me.longitude);
     bearingToTrail.value = (_distance.bearing(from, target) + 360) % 360;
-    distanceMeters.value = _distance.as(latlong.LengthUnit.Meter, from, target);
+    final double metres = _distance.as(latlong.LengthUnit.Meter, from, target);
+    distanceMeters.value = metres;
     targetAgeLabel.value = _ageLabel(_targetTimestampMs);
+    // Flips as you walk, not once per poll — the moment you step onto the line
+    // the dialog should stop telling you to go somewhere. Wider to leave than
+    // to enter, so a fix wobbling across the boundary doesn't strobe the dial.
+    onTrail.value = onTrail.value
+        ? metres <= _offTrailRadiusMeters
+        : metres <= _onTrailRadiusMeters;
 
     // Where that runner is now (as of their last fix) — recomputed here too,
     // so it counts down as you walk rather than sticking until the next poll.
@@ -277,14 +315,29 @@ class LostCompassController extends GetxController {
   /// kennel's own preference — the same rule the runs list uses — which is why
   /// [kennelDistanceUnitsPref] is passed in from the run.
   String formatDistance(double meters) {
+    final bool imperial = _useImperial;
+    // Utilities.getDistance switches to miles below 3 miles, which at the
+    // ranges this dialog deals in reads ".01 miles" — true, and no use to
+    // anyone standing on a trail looking for flour. Close in, use paces.
+    if (meters < _shortRangeMeters) {
+      return imperial
+          ? '${(meters * 1.09361).round()} yards'
+          : '${meters.round()} meters';
+    }
+    return Utilities.getDistance(meters, isMetric: !imperial);
+  }
+
+  /// Below this, distances are given in metres or yards rather than km/miles.
+  static const double _shortRangeMeters = 150.0;
+
+  bool get _useImperial {
     final prefs = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
     final userPref = prefs & hasherPref_distanceMeasuredIn;
-    final bool imperial = userPref == 3
+    return userPref == 3
         ? true
         : userPref == 0
         ? kennelDistanceUnitsPref == 3
         : false;
-    return Utilities.getDistance(meters, isMetric: !imperial);
   }
 
   /// Records where [userId] has got to: their newest fix good enough to trust.
@@ -489,6 +542,8 @@ class LostCompassController extends GetxController {
       _runnerLatestTimestampMs = null;
       bearingToTrail.value = null;
       distanceMeters.value = null;
+      onTrail.value = false;
+      trailOnwardBearing.value = null;
       nearestRunnerName.value = null;
       targetAgeLabel.value = null;
       runnerNowLabel.value = null;
@@ -510,6 +565,12 @@ class LostCompassController extends GetxController {
       // here, so the numbers move as you walk instead of once per poll.
       _targetPoint = best.point;
       _targetTimestampMs = best.timestampMs;
+      // Only for someone else's trail. On your OWN track "onward" is the
+      // direction you were already going when you got lost, which is the last
+      // way you want to be sent — the fallback case shows a bullseye instead.
+      trailOnwardBearing.value = fellBack
+          ? null
+          : _onwardBearing(best.track, best.index);
       _captureRunnerLatest(best.userId);
       final String nearestId = best.userId;
       // Settle who owns the trail BEFORE the readout runs — it asks
@@ -626,16 +687,36 @@ class LostCompassController extends GetxController {
   /// Nearest position to [from] across [candidates], with the id of the runner
   /// whose track it belongs to. Each candidate's `cutoffMs` (when set) ignores
   /// that runner's points at or after that instant.
-  ({latlong.LatLng point, String userId, int timestampMs})? _nearestAcross({
+  ///
+  /// Also hands back the track and the index within it, so [_onwardBearing] can
+  /// look at what the pack did NEXT from that point — which is the only useful
+  /// thing to say once you are standing on the trail already.
+  ({
+    latlong.LatLng point,
+    String userId,
+    int timestampMs,
+    UserTrack track,
+    int index,
+  })?
+  _nearestAcross({
     required List<({UserTrack track, int? cutoffMs})> candidates,
     required latlong.LatLng from,
   }) {
-    ({latlong.LatLng point, String userId, int timestampMs})? best;
+    ({
+      latlong.LatLng point,
+      String userId,
+      int timestampMs,
+      UserTrack track,
+      int index,
+    })?
+    best;
     double bestMeters = double.infinity;
 
     for (final candidate in candidates) {
       final cutoff = candidate.cutoffMs;
-      for (final p in candidate.track.positions) {
+      final positions = candidate.track.positions;
+      for (int i = 0; i < positions.length; i++) {
+        final p = positions[i];
         if (cutoff != null && p.timestampMs >= cutoff) continue;
         // Drop wildly inaccurate fixes — pointing at GPS noise is worse than
         // pointing at nothing.
@@ -648,11 +729,40 @@ class LostCompassController extends GetxController {
             point: at,
             userId: candidate.track.id,
             timestampMs: p.timestampMs,
+            track: candidate.track,
+            index: i,
           );
         }
       }
     }
     return best;
+  }
+
+  /// Which way the trail carries ON from the matched point — the bearing to the
+  /// first later point far enough away that GPS wobble isn't setting the angle.
+  ///
+  /// Null when the matched point is at or near the end of that track: the pack
+  /// hasn't been any further yet, so there is no onward direction to give.
+  double? _onwardBearing(UserTrack track, int fromIndex) {
+    final positions = track.positions;
+    if (fromIndex < 0 || fromIndex >= positions.length) return null;
+    final TrackPoint start = positions[fromIndex];
+    final latlong.LatLng from = latlong.LatLng(start.lat, start.lng);
+
+    for (int i = fromIndex + 1; i < positions.length; i++) {
+      final p = positions[i];
+      if (p.acc > _maxUsableAccuracyMeters) continue;
+      // Index order should be time order, but the list is built by appending
+      // successive delta fetches — check rather than trust, or a mis-ordered
+      // batch would point people back the way they came.
+      if (p.timestampMs <= start.timestampMs) continue;
+      final latlong.LatLng at = latlong.LatLng(p.lat, p.lng);
+      if (_distance.as(latlong.LengthUnit.Meter, from, at) >=
+          _onwardLookAheadMeters) {
+        return (_distance.bearing(from, at) + 360) % 360;
+      }
+    }
+    return null;
   }
 
   /// Display name for a runner, read from the local common DB (same preference
@@ -686,8 +796,11 @@ class LostCompassController extends GetxController {
 
   /// Compass point label ("NE", "SSW") for the absolute bearing — the fallback
   /// readout when the device has no magnetometer.
-  String get compassPointLabel {
-    final b = bearingToTrail.value;
+  /// [of] defaults to the bearing to the nearest trail point, but in the
+  /// follow-me state the arrow shows the trail's onward bearing instead — the
+  /// footer has to name the same angle the arrow is drawing.
+  String compassPointFor(double? of) {
+    final b = of ?? bearingToTrail.value;
     if (b == null) return '--';
     const names = <String>[
       'N',
@@ -778,6 +891,8 @@ class LostCompassDialog extends StatelessWidget {
     required String caption,
     required String? age,
     required bool compact,
+    IconData icon = Icons.navigation,
+    bool emphasiseRing = false,
   }) {
     // With a compass the arrow is relative to how the phone is held; without
     // one it shows the absolute bearing (paired with the N/NE/… readout).
@@ -785,6 +900,13 @@ class LostCompassDialog extends StatelessWidget {
         ? bearing
         : (bearing - heading + 360) % 360;
     final double dial = compact ? 116 : 170;
+    // Icons.navigation and Icons.double_arrow have different rest angles:
+    // navigation points up, double_arrow points right. Bearings are measured
+    // from up, so the chevron needs a quarter turn taken off it.
+    final double iconOffsetDegrees = icon == Icons.double_arrow ? -90.0 : 0.0;
+    // The bullseye is the one glyph that must NOT rotate — it means "here",
+    // not "that way".
+    final bool rotates = icon != Icons.adjust;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -808,8 +930,13 @@ class LostCompassDialog extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.blueGrey.shade50,
-                  border: Border.all(color: Colors.blueGrey.shade200, width: 2),
+                  color: emphasiseRing
+                      ? Colors.green.shade50
+                      : Colors.blueGrey.shade50,
+                  border: Border.all(
+                    color: emphasiseRing ? color : Colors.blueGrey.shade200,
+                    width: emphasiseRing ? 5 : 2,
+                  ),
                 ),
               ),
               Positioned(
@@ -824,12 +951,10 @@ class LostCompassDialog extends StatelessWidget {
                 ),
               ),
               Transform.rotate(
-                angle: arrowDegrees * math.pi / 180.0,
-                child: Icon(
-                  Icons.navigation,
-                  size: compact ? 70 : 104,
-                  color: color,
-                ),
+                angle: rotates
+                    ? (arrowDegrees + iconOffsetDegrees) * math.pi / 180.0
+                    : 0.0,
+                child: Icon(icon, size: compact ? 70 : 104, color: color),
               ),
             ],
           ),
@@ -939,15 +1064,55 @@ class LostCompassDialog extends StatelessWidget {
         // where the nearest person is. They disagree often enough — someone
         // doubling back is nearer than any part of the line they laid — that
         // showing only the first read as a bug.
+        // The trail dial has three states. Far off, it points at the nearest
+        // trail point. Standing ON the trail that bearing is meaningless — it
+        // is inside your own GPS error and swings with every fix — so it
+        // becomes either "the trail runs THIS way" (a follow-me chevron along
+        // the line) or, when the pack has not gone any further and there is no
+        // onward direction to give, a bullseye that says stop and look around.
+        final bool onTrail = controller.onTrail.value;
+        final double? onward = controller.trailOnwardBearing.value;
+        final bool followMe = onTrail && onward != null;
+        final bool lookAround = onTrail && onward == null;
+        final double? displayBearing = followMe
+            ? onward
+            : controller.bearingToTrail.value;
+
         final Widget trailCompass = _compass(
-          label: controller.usingOwnTrack.value ? 'Your track' : 'The trail',
-          bearing: controller.bearingToTrail.value ?? 0,
+          label: onTrail
+              ? (controller.usingOwnTrack.value
+                    ? "You're on your own track"
+                    : "You're on the trail")
+              : controller.usingOwnTrack.value
+              ? 'Your track'
+              : 'The trail',
+          bearing: followMe ? onward : (controller.bearingToTrail.value ?? 0),
           heading: heading,
-          distance: controller.distanceLabel,
-          color: controller.usingOwnTrack.value
+          // On the trail, the distance to the nearest recorded point is noise
+          // dressed up as a number — say what to do instead.
+          distance: followMe
+              ? 'On trail'
+              : lookAround
+              ? 'Look around'
+              : controller.distanceLabel,
+          icon: followMe
+              ? Icons.double_arrow
+              : lookAround
+              ? Icons.adjust
+              : Icons.navigation,
+          color: onTrail
+              ? Colors.green.shade700
+              : controller.usingOwnTrack.value
               ? Colors.deepOrange.shade700
               : hc_blue,
-          caption: controller.usingOwnTrack.value
+          // A thick green ring makes the dial itself the bullseye, rather than
+          // needing a second piece of furniture to say the same thing.
+          emphasiseRing: onTrail,
+          caption: followMe
+              ? 'The trail runs this way'
+              : lookAround
+              ? 'Within ${controller.distanceLabel} — check for marks'
+              : controller.usingOwnTrack.value
               ? 'Back to your own earlier track'
               : controller.nearestRunnerName.value != null
               ? "${controller.nearestRunnerName.value}'s trail"
@@ -1003,7 +1168,9 @@ class LostCompassDialog extends StatelessWidget {
               ),
             if (heading == null)
               Text(
-                'Bearing ${controller.bearingToTrail.value?.round() ?? 0}° (${controller.compassPointLabel}) — no compass on this device',
+                'Bearing ${displayBearing?.round() ?? 0}° '
+                '(${controller.compassPointFor(displayBearing)}) '
+                '— no compass on this device',
                 style: ts_alertDialogBody.copyWith(fontSize: 12),
                 textAlign: TextAlign.center,
               ),

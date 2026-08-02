@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.59+1273 (2026-08-02)
+
+### New Features
+- **"Where is the trail?" knows when you've found it.** Get within 20 m of the
+  trail and the arrow stops sending you somewhere. Instead it turns green and
+  becomes a "this way" chevron pointing the direction the trail actually runs,
+  so you can carry on along it rather than standing on it wondering.
+- **If the pack hasn't gone any further yet**, there is no onward direction to
+  give — so you get a bullseye and "Look around", with how close you are.
+
+### Improvements
+- **Short distances read properly.** Standing 15 m from the trail said
+  ".01 miles", which is true and useless. Close in it now says metres or yards.
+
 ## 2.15.58+1272 (2026-08-02)
 
 ### Fixes
