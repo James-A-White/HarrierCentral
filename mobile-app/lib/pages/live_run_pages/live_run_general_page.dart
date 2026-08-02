@@ -435,6 +435,64 @@ class LiveRunGeneralController extends GetxController {
     }
   }
 
+  /// Timestamp of the distress mark this session dropped, if any.
+  int? _distressMarkMs;
+
+  /// Tells the pack the runner is back on trail, and removes the distress mark
+  /// from the live map so nobody keeps searching. The chat message is the
+  /// permanent record; the map should only show what is still true.
+  Future<bool> sendFoundTrailMessage() async {
+    final String name =
+        getStringPref(StringPrefsEnum.displayName) ?? 'A hasher';
+    final Position? pos = lastPosition.value;
+    final String where = pos == null
+        ? ''
+        : ' Location: https://maps.google.com/?q='
+              '${pos.latitude.toStringAsFixed(5)},'
+              '${pos.longitude.toStringAsFixed(5)}';
+
+    // Clear the mark first so the map is right even if the message fails.
+    final int? markMs = _distressMarkMs;
+    if (markMs != null) {
+      final api = DeletePositionsApi();
+      try {
+        await api.deletePoints(
+          eventId: run.event.eventId,
+          userId: currentUserId,
+          timestampsMs: <int>[markMs],
+        );
+        _distressMarkMs = null;
+      } catch (e) {
+        if (kDebugMode) debugPrint('[LiveRun] clear distress mark failed: $e');
+      } finally {
+        api.dispose();
+      }
+    }
+
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String messageId = const Uuid().v4();
+
+    final String result = await ServiceCommon.sendHttpPost(() {
+      return jsonEncode(<String, dynamic>{
+        'queryType': 'sendEventMessage',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_sendEventMessage',
+          paramString: deviceSecret,
+        ),
+        'eventId': run.event.eventId,
+        'messageId': messageId,
+        'messageContent': '✅ BACK ON TRAIL — $name has found the trail.$where',
+        'messageReleasabilityFlags': kChatReleasabilityAll,
+      });
+    });
+    return !result.startsWith(ERROR_PREFIX);
+  }
+
   /// Broadcasts an assistance request into the run chat — a normal event chat
   /// message, so the pack is push-notified per their notification prefs — with
   /// the runner's current location as a maps link. When tracking, also drops a
@@ -461,11 +519,16 @@ class LiveRunGeneralController extends GetxController {
     // immediate: true sends it out of band, so it never waits behind the live
     // track's in-flight batch. Started BEFORE the chat POST and awaited after,
     // so GPS acquisition overlaps the chat round-trip instead of delaying it.
+    // Remembered so "I've found the trail" can clear it: a LOST badge left
+    // sitting on the live map after the runner is fine sends the sweepers
+    // looking for someone who is already back with the pack.
+    _distressMarkMs = DateTime.now().millisecondsSinceEpoch;
+
     final Future<bool> markFuture = _locationService.markPointAt(
       pointType: urgent
           ? HashRunPointTypes.helpNeeded
           : HashRunPointTypes.lostRunner,
-      timestampMs: DateTime.now().millisecondsSinceEpoch,
+      timestampMs: _distressMarkMs!,
       overrideEventId: run.event.eventId,
       overrideUserId: currentUserId,
       label: '$name · ${DateFormat('h:mm a').format(DateTime.now())}',
@@ -1158,6 +1221,21 @@ class LiveRunGeneralPage extends StatelessWidget {
     BuildContext context, {
     required bool urgent,
   }) async {
+    // "I'm Lost" is a question before it's an announcement. Open the compass
+    // straight away and let the runner decide whether to tell anyone — most of
+    // the time the arrow answers it and nobody needs troubling. Send Help is
+    // the opposite: it exists to notify, so it still confirms and sends.
+    if (!urgent) {
+      await showLostCompassDialog(
+        context,
+        run.event.eventId,
+        kennelDistanceUnitsPref: run.extensions.distanceUnitsPref,
+        onAnnounceLost: () => controller.sendAssistanceMessage(urgent: false),
+        onAnnounceFound: controller.sendFoundTrailMessage,
+      );
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -1213,18 +1291,6 @@ class LiveRunGeneralPage extends StatelessWidget {
       colorText: Colors.white,
       duration: const Duration(seconds: 5),
     );
-
-    // "I'm Lost" also answers the immediate question: which way is the trail?
-    // Shown regardless of whether the chat send succeeded — the bearing is
-    // local-plus-tracking-service and is the more urgent of the two.
-    if (!urgent && context.mounted) {
-      await showLostCompassDialog(
-        context,
-        run.event.eventId,
-        // Used only when the user's own units preference is "auto".
-        kennelDistanceUnitsPref: run.extensions.distanceUnitsPref,
-      );
-    }
   }
 }
 

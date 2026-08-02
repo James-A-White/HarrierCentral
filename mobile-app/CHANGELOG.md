@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.52+1266 (2026-08-02)
+
+### Improvements
+- **"I'm Lost" no longer tells everyone the moment you press it.** It now just
+  opens the compass and points you at the trail — usually that's the end of it
+  and nobody needs bothering. If you do want help there's a **"Tell the pack
+  I'm lost"** button in the dialog, and it only sends when you press it.
+- **New "I've found the trail" button.** Once you've told the pack, one tap
+  sends the all clear and removes your lost marker from the run map, so nobody
+  keeps looking for someone who's already back.
+
 ## 2.15.51+1265 (2026-08-01)
 
 ### Improvements

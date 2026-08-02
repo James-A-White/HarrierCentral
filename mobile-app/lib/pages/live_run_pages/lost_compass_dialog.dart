@@ -110,6 +110,12 @@ class LostCompassController extends GetxController {
   /// e.g. "Tuna Melt was 1.2 km away 3 minutes ago".
   final RxnString runnerNowLabel = RxnString();
 
+  /// True once the runner has chosen to tell the pack. Opening the compass
+  /// alone announces nothing — most of the time the arrow settles it and there
+  /// is no reason to interrupt everyone.
+  final RxBool hasAnnounced = false.obs;
+  final RxBool isAnnouncing = false.obs;
+
   StreamSubscription<Position>? _positionSub;
   StreamSubscription<CompassEvent>? _compassSub;
   Timer? _refreshTimer;
@@ -561,6 +567,8 @@ Future<void> showLostCompassDialog(
   BuildContext context,
   String eventId, {
   int kennelDistanceUnitsPref = 0,
+  Future<({bool chatSent, bool markPlaced})> Function()? onAnnounceLost,
+  Future<bool> Function()? onAnnounceFound,
 }) {
   return showDialog<void>(
     context: context,
@@ -568,6 +576,8 @@ Future<void> showLostCompassDialog(
     builder: (_) => LostCompassDialog(
       eventId: eventId,
       kennelDistanceUnitsPref: kennelDistanceUnitsPref,
+      onAnnounceLost: onAnnounceLost,
+      onAnnounceFound: onAnnounceFound,
     ),
   );
 }
@@ -577,6 +587,8 @@ class LostCompassDialog extends StatelessWidget {
     super.key,
     required this.eventId,
     int kennelDistanceUnitsPref = 0,
+    this.onAnnounceLost,
+    this.onAnnounceFound,
   }) : controller = Get.put(
          LostCompassController(
            eventId: eventId,
@@ -587,6 +599,57 @@ class LostCompassDialog extends StatelessWidget {
 
   final String eventId;
   final LostCompassController controller;
+
+  /// Announces to the run chat. Null hides the announce button (e.g. if the
+  /// dialog is ever opened somewhere with no run context).
+  final Future<({bool chatSent, bool markPlaced})> Function()? onAnnounceLost;
+
+  /// Tells the pack the runner is back on trail and clears the distress mark.
+  final Future<bool> Function()? onAnnounceFound;
+
+  /// Sends the lost announcement, or the all clear once already announced.
+  Future<void> _handleAnnounce(BuildContext context, bool announced) async {
+    controller.isAnnouncing.value = true;
+    try {
+      if (announced) {
+        final ok = await onAnnounceFound?.call() ?? false;
+        if (ok) controller.hasAnnounced.value = false;
+        Get.snackbar(
+          ok ? 'Pack told' : 'Not sent',
+          ok
+              ? "The pack knows you're back on trail, and your lost marker has "
+                    'been removed from the map.'
+              : 'Could not send — check your connection and try again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: ok ? hc_blue : hc_red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final result = await onAnnounceLost?.call();
+      final chatSent = result?.chatSent ?? false;
+      final markPlaced = result?.markPlaced ?? false;
+      if (chatSent || markPlaced) controller.hasAnnounced.value = true;
+      Get.snackbar(
+        chatSent || markPlaced ? 'Pack notified' : 'Nothing got through',
+        chatSent && markPlaced
+            ? 'Message sent and your position is marked on the run map.'
+            : chatSent
+            ? 'Message sent, but your position could not be marked on the map.'
+            : markPlaced
+            ? 'Your position is marked on the run map, but the chat message '
+                  'failed to send.'
+            : 'No signal — nothing could be sent. Try again when you have a bar.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: chatSent || markPlaced ? hc_blue : hc_red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+    } finally {
+      controller.isAnnouncing.value = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -763,7 +826,41 @@ class LostCompassDialog extends StatelessWidget {
           ],
         );
       }),
+      actionsOverflowDirection: VerticalDirection.down,
       actions: [
+        if (onAnnounceLost != null)
+          Obx(() {
+            final announced = controller.hasAnnounced.value;
+            final busy = controller.isAnnouncing.value;
+            // Before announcing: offer to tell the pack. After: offer the all
+            // clear, which is the only thing that stops people searching.
+            return SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: Icon(
+                  announced ? Icons.check_circle : Icons.campaign,
+                  size: 20,
+                ),
+                label: Text(
+                  busy
+                      ? 'Sending…'
+                      : announced
+                      ? "I've found the trail"
+                      : "Tell the pack I'm lost",
+                  style: ts_button,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: announced
+                      ? Colors.green.shade700
+                      : Colors.deepOrange.shade700,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: busy
+                    ? null
+                    : () => unawaited(_handleAnnounce(context, announced)),
+              ),
+            );
+          }),
         TextButton(
           onPressed: () => unawaited(controller.refreshBearing()),
           style: text_button_style,
