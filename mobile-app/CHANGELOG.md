@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.63+1277 (2026-08-02)
+
+### Improvements
+- **The lost compass now celebrates finding the trail.** The moment you step
+  onto the trail the arrow flashes, the phone chimes and gives a small buzz —
+  you don't have to be staring at the screen to know you've made it. The
+  arrow also changes shape at that moment: the wedge that pointed *at* the
+  trail becomes a straight shaft-and-arrowhead pointing *along* it, showing
+  which way the trail runs. The celebration only fires on a genuine arrival —
+  opening the compass while already standing on the trail stays quiet.
+
 ## 2.15.62+1276 (2026-08-02)
 
 ### Fixes

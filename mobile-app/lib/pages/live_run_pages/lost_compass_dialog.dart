@@ -163,6 +163,17 @@ class LostCompassController extends GetxController {
   /// becomes "you're here, this is where it goes".
   final RxBool onTrail = false.obs;
 
+  /// Dim phase of the arrival flash — the arrow blinks a few times when the
+  /// runner steps onto the trail, then settles back to solid.
+  final RxBool arrowDimmed = false.obs;
+  Timer? _flashTimer;
+  int _flashTicks = 0;
+
+  /// The celebration is for ARRIVING, not for being there. Opening the dialog
+  /// while already standing on the line flashes and beeps at nobody — so it
+  /// only fires after at least one genuinely off-trail reading.
+  bool _hasBeenOffTrail = false;
+
   /// Bearing the trail runs in from the matched point, or null when the pack
   /// hasn't gone any further yet. Recomputed on the poll, not per GPS fix — it
   /// is a property of the trail, not of where you are standing.
@@ -263,9 +274,13 @@ class LostCompassController extends GetxController {
     // Flips as you walk, not once per poll — the moment you step onto the line
     // the dialog should stop telling you to go somewhere. Wider to leave than
     // to enter, so a fix wobbling across the boundary doesn't strobe the dial.
-    onTrail.value = onTrail.value
+    final bool wasOnTrail = onTrail.value;
+    final bool nowOnTrail = wasOnTrail
         ? metres <= _offTrailRadiusMeters
         : metres <= _onTrailRadiusMeters;
+    if (!nowOnTrail) _hasBeenOffTrail = true;
+    if (nowOnTrail && !wasOnTrail && _hasBeenOffTrail) _celebrateArrival();
+    onTrail.value = nowOnTrail;
 
     // Where that runner is now (as of their last fix) — recomputed here too,
     // so it counts down as you walk rather than sticking until the next poll.
@@ -298,6 +313,38 @@ class LostCompassController extends GetxController {
         hasher,
       );
       hasherAgeLabel.value = _ageLabel(_hasherTimestampMs);
+    }
+  }
+
+  /// You made it — flash the arrow, sound a chime, buzz the hand. The moment
+  /// of stepping onto the trail is easy to miss on a screen you're only
+  /// glancing at while scanning the ground for flour; the beep means the phone
+  /// can go back in the pocket.
+  void _celebrateArrival() {
+    _flashTimer?.cancel();
+    _flashTicks = 0;
+    _flashTimer = Timer.periodic(const Duration(milliseconds: 160), (t) {
+      arrowDimmed.value = !arrowDimmed.value;
+      // Even tick count ends on the visible phase.
+      if (++_flashTicks >= 10) {
+        t.cancel();
+        arrowDimmed.value = false;
+      }
+    });
+    unawaited(HapticFeedback.mediumImpact());
+    unawaited(_playArrivalChime());
+  }
+
+  Future<void> _playArrivalChime() async {
+    final player = AudioPlayer();
+    try {
+      await player.setAsset('assets/sounds/trail_found.wav');
+      await player.play();
+    } catch (e) {
+      // A silent arrival is fine — the flash and the green dial still land.
+      if (kDebugMode) debugPrint('[LostCompass] chime failed: $e');
+    } finally {
+      unawaited(player.dispose());
     }
   }
 
@@ -388,6 +435,7 @@ class LostCompassController extends GetxController {
     unawaited(_compassSub?.cancel());
     _refreshTimer?.cancel();
     _retargetNoticeTimer?.cancel();
+    _flashTimer?.cancel();
     super.onClose();
   }
 
@@ -898,6 +946,7 @@ class LostCompassDialog extends StatelessWidget {
     required bool compact,
     IconData icon = Icons.navigation,
     bool emphasiseRing = false,
+    bool flashDimmed = false,
   }) {
     // With a compass the arrow is relative to how the phone is held; without
     // one it shows the absolute bearing (paired with the N/NE/… readout).
@@ -905,10 +954,8 @@ class LostCompassDialog extends StatelessWidget {
         ? bearing
         : (bearing - heading + 360) % 360;
     final double dial = compact ? 116 : 170;
-    // Icons.navigation and Icons.double_arrow have different rest angles:
-    // navigation points up, double_arrow points right. Bearings are measured
-    // from up, so the chevron needs a quarter turn taken off it.
-    final double iconOffsetDegrees = icon == Icons.double_arrow ? -90.0 : 0.0;
+    // Both glyphs rest pointing up (Icons.navigation and Icons.arrow_upward),
+    // and bearings are measured from up — no rest-angle correction needed.
     // The bullseye is the one glyph that must NOT rotate — it means "here",
     // not "that way".
     final bool rotates = icon != Icons.adjust;
@@ -956,10 +1003,19 @@ class LostCompassDialog extends StatelessWidget {
                 ),
               ),
               Transform.rotate(
-                angle: rotates
-                    ? (arrowDegrees + iconOffsetDegrees) * math.pi / 180.0
-                    : 0.0,
-                child: Icon(icon, size: compact ? 70 : 104, color: color),
+                angle: rotates ? arrowDegrees * math.pi / 180.0 : 0.0,
+                // The arrival flash: a few quick blinks with a slight swell,
+                // then back to solid. Implicit animations so each phase change
+                // is a fade, not a hard cut.
+                child: AnimatedScale(
+                  scale: flashDimmed ? 1.18 : 1.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: AnimatedOpacity(
+                    opacity: flashDimmed ? 0.15 : 1.0,
+                    duration: const Duration(milliseconds: 130),
+                    child: Icon(icon, size: compact ? 70 : 104, color: color),
+                  ),
+                ),
               ),
             ],
           ),
@@ -1102,8 +1158,11 @@ class LostCompassDialog extends StatelessWidget {
               : lookAround
               ? 'Look around'
               : controller.distanceLabel,
+          // Off trail: the wedge ("go that way"). On trail: a shaft with an
+          // arrowhead — a "follow this line" glyph aimed along the trail's
+          // onward direction, visually distinct from the go-to-it wedge.
           icon: followMe
-              ? Icons.double_arrow
+              ? Icons.arrow_upward
               : lookAround
               ? Icons.adjust
               : Icons.navigation,
@@ -1132,6 +1191,7 @@ class LostCompassDialog extends StatelessWidget {
               ? 'you were there ${controller.targetAgeLabel.value}'
               : 'was there ${controller.targetAgeLabel.value}',
           compact: showHasher,
+          flashDimmed: controller.arrowDimmed.value,
         );
 
         return Column(
