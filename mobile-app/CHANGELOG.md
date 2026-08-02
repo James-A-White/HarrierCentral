@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.55+1269 (2026-08-02)
+
+### Improvements
+- **The run editor is faster to type in.** Every keystroke used to redraw the
+  whole editor — all five tabs and the map. Now typing only redraws the save
+  button, which is the only thing that needs to react.
+- **Tab switching does less work**, redrawing once when the tab changes rather
+  than on every frame of the slide.
+
+### Fixes
+- **The run editor no longer leaves anything behind when you close it.** Its
+  text fields, focus handling and tab state are now released when you leave the
+  page instead of accumulating with each run you open.
+
 ## 2.15.54+1268 (2026-08-02)
 
 ### Improvements

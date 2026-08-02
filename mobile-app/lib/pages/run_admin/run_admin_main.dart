@@ -217,44 +217,44 @@ class RunAdminPage extends StatelessWidget {
     // ── On the Day ──────────────────────────────────────────────────
     final dayButtons = <Widget>[
       if (can(KennelFeature.manageAttendance)) ...<Widget>[
-      _buildButton(
-        label: 'Manual\r\ncheck in',
-        iconAsset: 'images/icons/check_in_pack_icon.png',
-        size: btnSize,
-        onPressed: () async {
-          await Get.to(
-            () => CheckInPackPage(controllerTag: aggregate.event.eventId),
-            binding: BindingsBuilder(() {
-              Get.put(
-                CheckInPackController(aggregate),
-                tag: aggregate.event.eventId,
-                permanent: false,
-              );
-            }),
-          );
-          unawaited(
-            tableModel.syncUserDataService.updateFromBackend(
-              EnumDataTables.hashers.flag,
-              false,
-              debugText: 'RunAdmin: sync hashers on check-in page exit',
-            ),
-          );
-        },
-      ),
-      _buildButton(
-        label: 'Scan to\r\ncheck in',
-        iconAsset: 'images/icons/qr_scanner_phone_icon.png',
-        size: btnSize,
-        onPressed: () async {
-          await Navigator.push<dynamic>(
-            context,
-            MaterialPageRoute<dynamic>(
-              builder: (BuildContext context) =>
-                  CheckInScannerPage(eventAggregate: aggregate),
-            ),
-          );
-        },
-      ),
+        _buildButton(
+          label: 'Manual\r\ncheck in',
+          iconAsset: 'images/icons/check_in_pack_icon.png',
+          size: btnSize,
+          onPressed: () async {
+            await Get.to(
+              () => CheckInPackPage(controllerTag: aggregate.event.eventId),
+              binding: BindingsBuilder(() {
+                Get.put(
+                  CheckInPackController(aggregate),
+                  tag: aggregate.event.eventId,
+                  permanent: false,
+                );
+              }),
+            );
+            unawaited(
+              tableModel.syncUserDataService.updateFromBackend(
+                EnumDataTables.hashers.flag,
+                false,
+                debugText: 'RunAdmin: sync hashers on check-in page exit',
+              ),
+            );
+          },
+        ),
+        _buildButton(
+          label: 'Scan to\r\ncheck in',
+          iconAsset: 'images/icons/qr_scanner_phone_icon.png',
+          size: btnSize,
+          onPressed: () async {
+            await Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) =>
+                    CheckInScannerPage(eventAggregate: aggregate),
+              ),
+            );
+          },
+        ),
       ],
     ];
 

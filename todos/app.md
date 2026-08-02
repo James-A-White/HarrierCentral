@@ -51,6 +51,23 @@ schema changes.
   Other, and is always pressable (it is the wizard, not a dirty-save).
 - [ ] **Map and Image tabs** keep their own buttons and show no bottom bar.
 
+Also in this build (2.15.55+1269), the editor moved to GetX — `StatefulWidget`
+→ `StatelessWidget` + `EditRunDetailsController`. Intended to be behaviour-
+identical, so the checklist above covers it, plus:
+
+- [ ] **Type in a field and watch the save button** — it must go red on the
+  first character. Typing now only repaints the bar (`Obx`), so if the bar were
+  wired wrong it would stay grey while you type.
+- [ ] **Every tab still renders and its own buttons still work** — Map save,
+  Map "no location", Image pick/crop/delete, Details "Copy data from external
+  source". These were moved wholesale; a missed reference shows up as a blank
+  tab or a dead button.
+- [ ] **Open and close the editor ten times** — it should not get slower or
+  heavier. `global: false` meant GetX never called `onClose()`; teardown is now
+  wired explicitly through `dispose:`.
+- [ ] **Back out mid-save** (press Save, then immediately back) — should not
+  crash. Mutations after teardown are ignored.
+
 ## Device test — 2.15.21+1235 photo review (shipped blind 2026-07-30)
 
 Released to TestFlight with `flutter analyze` only — no simulator or device run.

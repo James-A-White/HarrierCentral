@@ -82,7 +82,9 @@ class _HashTrashPageState extends State<HashTrashPage>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(_status == 1 ? 'Published!' : 'Saved as draft'),
-              backgroundColor: _status == 1 ? Colors.green.shade700 : Colors.blueGrey,
+              backgroundColor: _status == 1
+                  ? Colors.green.shade700
+                  : Colors.blueGrey,
             ),
           );
         } else {
@@ -116,7 +118,10 @@ class _HashTrashPageState extends State<HashTrashPage>
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     )
                   : const Icon(Icons.save, color: Colors.white),
               onPressed: _isSaving ? null : _save,
@@ -142,7 +147,10 @@ class _HashTrashPageState extends State<HashTrashPage>
                   // Status toggle
                   Container(
                     color: Colors.black26,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: Row(
                       children: [
                         Text(
@@ -175,10 +183,7 @@ class _HashTrashPageState extends State<HashTrashPage>
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
-                      children: [
-                        _buildEditor(),
-                        _buildPreview(),
-                      ],
+                      children: [_buildEditor(), _buildPreview()],
                     ),
                   ),
                 ],
@@ -204,7 +209,9 @@ class _HashTrashPageState extends State<HashTrashPage>
               hintStyle: const TextStyle(color: Colors.white38),
               filled: true,
               fillColor: Colors.black26,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: Colors.white24),
@@ -213,19 +220,29 @@ class _HashTrashPageState extends State<HashTrashPage>
             ),
           ),
           const SizedBox(height: 12),
-          Text('Article (markdown)', style: ts_bodySmall.copyWith(color: Colors.white70)),
+          Text(
+            'Article (markdown)',
+            style: ts_bodySmall.copyWith(color: Colors.white70),
+          ),
           const SizedBox(height: 4),
           TextField(
             controller: _contentController,
             minLines: 12,
             maxLines: null,
-            style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontSize: 13),
+            style: const TextStyle(
+              color: Colors.white,
+              fontFamily: 'monospace',
+              fontSize: 13,
+            ),
             decoration: InputDecoration(
-              hintText: 'Write the Hash Trash here...\n\nMarkdown is supported:\n**bold**, *italic*, # Heading, [link](url)',
+              hintText:
+                  'Write the Hash Trash here...\n\nMarkdown is supported:\n**bold**, *italic*, # Heading, [link](url)',
               hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
               filled: true,
               fillColor: Colors.black26,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: Colors.white24),
@@ -251,9 +268,7 @@ class _HashTrashPageState extends State<HashTrashPage>
     return Container(
       color: Colors.white,
       child: Markdown(
-        data: headline.isNotEmpty
-            ? '# $headline\n\n$content'
-            : content,
+        data: headline.isNotEmpty ? '# $headline\n\n$content' : content,
         padding: const EdgeInsets.all(16),
       ),
     );

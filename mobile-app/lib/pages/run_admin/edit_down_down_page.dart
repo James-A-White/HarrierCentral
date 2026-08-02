@@ -44,7 +44,9 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
   void initState() {
     super.initState();
     _chargeController = TextEditingController(text: widget.downDown.chargeText);
-    _songController = TextEditingController(text: widget.downDown.songChoice ?? '');
+    _songController = TextEditingController(
+      text: widget.downDown.songChoice ?? '',
+    );
     _linkedSongId = widget.downDown.songId;
     _chargePhotoUrl = widget.downDown.chargePhotoUrl;
   }
@@ -84,7 +86,8 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
     final pattern = '%${query.trim()}%';
     final kId = widget.kennelId;
 
-    final kennelRows = await database.rawQuery('''
+    final kennelRows = await database.rawQuery(
+      '''
       SELECT ${tbl.colSongId}, ${tbl.colSongName}
       FROM $songTable
       WHERE ${tbl.colRemoved} = 0
@@ -95,45 +98,58 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
         CASE WHEN ${tbl.colAddedByKennelId} = ? THEN 0 ELSE 1 END,
         ${tbl.colSongName}
       LIMIT 30
-    ''', [kId, pattern, kId]);
+    ''',
+      [kId, pattern, kId],
+    );
 
     if (kennelRows.isNotEmpty) {
       if (mounted) {
-        setState(() => _songResults = kennelRows
-            .map((r) => _SongResult(
+        setState(
+          () => _songResults = kennelRows
+              .map(
+                (r) => _SongResult(
                   songId: r[tbl.colSongId] as String,
                   songName: r[tbl.colSongName] as String,
-                ))
-            .toList());
+                ),
+              )
+              .toList(),
+        );
       }
       return;
     }
 
-    final globalRows = await database.rawQuery('''
+    final globalRows = await database.rawQuery(
+      '''
       SELECT ${tbl.colSongId}, ${tbl.colSongName}
       FROM $songTable
       WHERE ${tbl.colRemoved} = 0
         AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
       ORDER BY ${tbl.colSongName}
       LIMIT 30
-    ''', [pattern]);
+    ''',
+      [pattern],
+    );
 
     if (mounted) {
-      setState(() => _songResults = globalRows
-          .map((r) => _SongResult(
+      setState(
+        () => _songResults = globalRows
+            .map(
+              (r) => _SongResult(
                 songId: r[tbl.colSongId] as String,
                 songName: r[tbl.colSongName] as String,
-              ))
-          .toList());
+              ),
+            )
+            .toList(),
+      );
     }
   }
 
   Future<void> _save() async {
     final chargeText = _chargeController.text.trim();
     if (chargeText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Charge text is required')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Charge text is required')));
       return;
     }
 
@@ -170,19 +186,21 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
   }
 
   Widget _fieldLabel(String text) => Padding(
-        padding: const EdgeInsets.only(left: 2, bottom: 5),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(left: 2, bottom: 5),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        fontSize: 13,
+      ),
+    ),
+  );
 
   static const _fieldDecoration = InputDecoration(
-    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(8)),
+    ),
     filled: true,
     fillColor: Colors.white,
   );
@@ -202,7 +220,10 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                   child: SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
                   ),
                 )
               : IconButton(
@@ -302,7 +323,10 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : Icon(
                               _chargePhotoUrl != null
@@ -311,7 +335,9 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                               color: Colors.white70,
                             ),
                       label: Text(
-                        _chargePhotoUrl != null ? 'Photo added' : 'Add photo (optional)',
+                        _chargePhotoUrl != null
+                            ? 'Photo added'
+                            : 'Add photo (optional)',
                         style: const TextStyle(color: Colors.white70),
                       ),
                       style: OutlinedButton.styleFrom(
@@ -354,10 +380,17 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                   itemBuilder: (context, index) {
                     final song = _songResults[index];
                     return ListTile(
-                      leading: const Icon(Icons.music_note, color: Colors.white70, size: 20),
+                      leading: const Icon(
+                        Icons.music_note,
+                        color: Colors.white70,
+                        size: 20,
+                      ),
                       title: Text(
                         song.songName,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
                       ),
                       onTap: () {
                         _suppressNextSearch = true;

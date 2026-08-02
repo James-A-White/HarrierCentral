@@ -73,7 +73,9 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
     final name = (value ?? _externalNameController.text).trim();
     _externalNameController.clear();
     if (name.isEmpty) return;
-    final exists = _externalNames.any((n) => n.toLowerCase() == name.toLowerCase());
+    final exists = _externalNames.any(
+      (n) => n.toLowerCase() == name.toLowerCase(),
+    );
     if (!exists) {
       setState(() => _externalNames.add(name));
     } else {
@@ -91,7 +93,8 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
     final pattern = '%${query.trim()}%';
     final kId = widget.kennelId;
 
-    final kennelRows = await database.rawQuery('''
+    final kennelRows = await database.rawQuery(
+      '''
       SELECT ${tbl.colSongId}, ${tbl.colSongName}
       FROM $songTable
       WHERE ${tbl.colRemoved} = 0
@@ -102,36 +105,49 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
         CASE WHEN ${tbl.colAddedByKennelId} = ? THEN 0 ELSE 1 END,
         ${tbl.colSongName}
       LIMIT 10
-    ''', [kId, pattern, kId]);
+    ''',
+      [kId, pattern, kId],
+    );
 
     if (kennelRows.isNotEmpty) {
       if (mounted) {
-        setState(() => _songResults = kennelRows
-            .map((r) => _SongResult(
+        setState(
+          () => _songResults = kennelRows
+              .map(
+                (r) => _SongResult(
                   songId: r[tbl.colSongId] as String,
                   songName: r[tbl.colSongName] as String,
-                ))
-            .toList());
+                ),
+              )
+              .toList(),
+        );
       }
       return;
     }
 
-    final globalRows = await database.rawQuery('''
+    final globalRows = await database.rawQuery(
+      '''
       SELECT ${tbl.colSongId}, ${tbl.colSongName}
       FROM $songTable
       WHERE ${tbl.colRemoved} = 0
         AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
       ORDER BY ${tbl.colSongName}
       LIMIT 10
-    ''', [pattern]);
+    ''',
+      [pattern],
+    );
 
     if (mounted) {
-      setState(() => _songResults = globalRows
-          .map((r) => _SongResult(
+      setState(
+        () => _songResults = globalRows
+            .map(
+              (r) => _SongResult(
                 songId: r[tbl.colSongId] as String,
                 songName: r[tbl.colSongName] as String,
-              ))
-          .toList());
+              ),
+            )
+            .toList(),
+      );
     }
   }
 
@@ -141,10 +157,13 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
       // Sync the event HEM table first so attendees are available locally.
       // Without this the event_ tables are empty unless run admin was opened first.
       if (Utilities.isConnected()) {
-        await tableModel.syncEventAdminService.updateRsvpsFromBackend(widget.eventId);
+        await tableModel.syncEventAdminService.updateRsvpsFromBackend(
+          widget.eventId,
+        );
       }
 
-      final query = '''
+      final query =
+          '''
         SELECT
           h.${tableModel.hashersTableHelper.colHasherId} as hasherId,
           coalesce(
@@ -169,10 +188,12 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
       final results = await database.rawQuery(query);
       setState(() {
         _attendees = results
-            .map((r) => _AttendeeItem(
-                  hasherId: r['hasherId'] as String,
-                  displayName: r['displayName'] as String? ?? '<no name>',
-                ))
+            .map(
+              (r) => _AttendeeItem(
+                hasherId: r['hasherId'] as String,
+                displayName: r['displayName'] as String? ?? '<no name>',
+              ),
+            )
             .toList();
       });
     } catch (e, s) {
@@ -181,7 +202,8 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  List<_AttendeeItem> get _selected => _attendees.where((a) => a.selected).toList();
+  List<_AttendeeItem> get _selected =>
+      _attendees.where((a) => a.selected).toList();
 
   Future<void> _takeChargePhoto() async {
     setState(() => _isCapturingPhoto = true);
@@ -209,14 +231,16 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
 
     if (_selected.isEmpty && _externalNames.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add at least one person — a hasher or a name')),
+        const SnackBar(
+          content: Text('Add at least one person — a hasher or a name'),
+        ),
       );
       return;
     }
     if (_chargeController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter the charge')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter the charge')));
       return;
     }
 
@@ -228,14 +252,19 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
         hasherIds: _selected.map((a) => a.hasherId).toList(),
         chargeText: _chargeController.text.trim(),
         externalNames: _externalNames,
-        songChoice: _songController.text.trim().isEmpty ? null : _songController.text.trim(),
+        songChoice: _songController.text.trim().isEmpty
+            ? null
+            : _songController.text.trim(),
         songId: _linkedSongId,
         chargePhotoUrl: _chargePhotoUrl,
       );
       if (mounted) {
         if (id != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Down Down recorded!'), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text('Down Down recorded!'),
+              backgroundColor: Colors.green,
+            ),
           );
           Get.back();
         } else {
@@ -250,7 +279,10 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Error saving. Please try again.'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+            content: const Text('Error saving. Please try again.'),
+            backgroundColor: Colors.red.shade700,
+          ),
         );
       }
     }
@@ -286,10 +318,17 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                           decoration: InputDecoration(
                             labelText: 'Charge',
                             hintText: 'What did they do?',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             filled: true,
                             fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.fromLTRB(12, 12, 52, 12),
+                            contentPadding: const EdgeInsets.fromLTRB(
+                              12,
+                              12,
+                              52,
+                              12,
+                            ),
                           ),
                         ),
                         Positioned(
@@ -307,9 +346,16 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                                     ? const SizedBox(
                                         width: 18,
                                         height: 18,
-                                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
                                       )
-                                    : const Icon(Icons.send, color: Colors.white, size: 20),
+                                    : const Icon(
+                                        Icons.send,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                               ),
                             ),
                           ),
@@ -324,7 +370,9 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                       decoration: InputDecoration(
                         labelText: 'Recommended song (optional)',
                         hintText: 'e.g. Down Down',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         filled: true,
                         fillColor: Colors.white,
                         prefixIcon: const Icon(Icons.music_note),
@@ -333,7 +381,8 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                                 message: 'Unlink song',
                                 child: IconButton(
                                   icon: const Icon(Icons.link_off, size: 18),
-                                  onPressed: () => setState(() => _linkedSongId = null),
+                                  onPressed: () =>
+                                      setState(() => _linkedSongId = null),
                                 ),
                               )
                             : null,
@@ -365,8 +414,15 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                             final song = _songResults[index];
                             return ListTile(
                               dense: true,
-                              leading: const Icon(Icons.music_note, size: 16, color: Colors.black54),
-                              title: Text(song.songName, style: const TextStyle(fontSize: 14)),
+                              leading: const Icon(
+                                Icons.music_note,
+                                size: 16,
+                                color: Colors.black54,
+                              ),
+                              title: Text(
+                                song.songName,
+                                style: const TextStyle(fontSize: 14),
+                              ),
                               onTap: () {
                                 _suppressNextSongSearch = true;
                                 _songController.text = song.songName;
@@ -390,18 +446,29 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
                                   )
                                 : Icon(
-                                    _chargePhotoUrl != null ? Icons.check_circle_outline : Icons.camera_alt,
+                                    _chargePhotoUrl != null
+                                        ? Icons.check_circle_outline
+                                        : Icons.camera_alt,
                                     color: Colors.white70,
                                   ),
                             label: Text(
-                              _chargePhotoUrl != null ? 'Photo added' : 'Add photo (optional)',
+                              _chargePhotoUrl != null
+                                  ? 'Photo added'
+                                  : 'Add photo (optional)',
                               style: const TextStyle(color: Colors.white70),
                             ),
-                            style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.white30)),
-                            onPressed: _isCapturingPhoto ? null : _takeChargePhoto,
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.white30),
+                            ),
+                            onPressed: _isCapturingPhoto
+                                ? null
+                                : _takeChargePhoto,
                           ),
                         ),
                         if (_chargePhotoUrl != null) ...[
@@ -415,12 +482,18 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                               cacheWidth: 132,
                               cacheHeight: 132,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.close, size: 18, color: Colors.white54),
-                            onPressed: () => setState(() => _chargePhotoUrl = null),
+                            icon: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.white54,
+                            ),
+                            onPressed: () =>
+                                setState(() => _chargePhotoUrl = null),
                             tooltip: 'Remove photo',
                           ),
                         ],
@@ -435,7 +508,10 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                       children: [
                         const Text(
                           'People not in the app',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         TextField(
@@ -445,7 +521,9 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                           onSubmitted: _addExternalName,
                           decoration: InputDecoration(
                             hintText: 'Add a name, then tap +',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             filled: true,
                             fillColor: Colors.white,
                             isDense: true,
@@ -463,18 +541,26 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                             spacing: 6,
                             runSpacing: 6,
                             children: _externalNames
-                                .map((name) => Chip(
-                                      label: Text(name),
-                                      backgroundColor: Colors.yellow.shade700,
-                                      labelStyle: const TextStyle(
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      deleteIconColor: Colors.black54,
-                                      onDeleted: () => setState(() => _externalNames.remove(name)),
-                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
-                                    ))
+                                .map(
+                                  (name) => Chip(
+                                    label: Text(name),
+                                    backgroundColor: Colors.yellow.shade700,
+                                    labelStyle: const TextStyle(
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    deleteIconColor: Colors.black54,
+                                    onDeleted: () => setState(
+                                      () => _externalNames.remove(name),
+                                    ),
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: const VisualDensity(
+                                      horizontal: -2,
+                                      vertical: -2,
+                                    ),
+                                  ),
+                                )
                                 .toList(),
                           ),
                         ],
@@ -483,12 +569,18 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                   ),
                   const SizedBox(height: 8),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         Text(
                           'People in the app ($selectedCount selected)',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),
@@ -500,7 +592,9 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                             child: Text(
                               'No attendees found yet.\nCheck-in data may still be loading.',
                               textAlign: TextAlign.center,
-                              style: ts_headingLarge.copyWith(color: Colors.white70),
+                              style: ts_headingLarge.copyWith(
+                                color: Colors.white70,
+                              ),
                             ),
                           )
                         : ListView.builder(
@@ -516,14 +610,25 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                                     color: Colors.yellow,
                                   ),
                                 ),
-                                onChanged: (v) => setState(() => attendee.selected = v ?? false),
+                                onChanged: (v) => setState(
+                                  () => attendee.selected = v ?? false,
+                                ),
                                 activeColor: Colors.yellow,
                                 checkColor: Colors.black87,
-                                side: const BorderSide(color: Colors.yellow, width: 1.5),
-                                controlAffinity: ListTileControlAffinity.leading,
+                                side: const BorderSide(
+                                  color: Colors.yellow,
+                                  width: 1.5,
+                                ),
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
                                 dense: true,
-                                visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                                visualDensity: const VisualDensity(
+                                  horizontal: -4,
+                                  vertical: -4,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                               );
                             },
                           ),

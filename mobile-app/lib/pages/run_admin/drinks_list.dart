@@ -184,7 +184,11 @@ class DrinksListState extends State<DrinksList>
       if (kDebugMode) {
         debugPrint('[DrinksList._buildAwardsList] error: $e');
       }
-      BootLogger.logError('[DrinksList._buildAwardsList] eventId=${widget.eventAggregate.event.eventId}', e, s);
+      BootLogger.logError(
+        '[DrinksList._buildAwardsList] eventId=${widget.eventAggregate.event.eventId}',
+        e,
+        s,
+      );
     }
   }
 

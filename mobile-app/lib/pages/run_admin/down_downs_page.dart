@@ -80,7 +80,10 @@ class _DownDownsPageState extends State<DownDownsPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Failed to load Down Downs'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+            content: const Text('Failed to load Down Downs'),
+            backgroundColor: Colors.red.shade700,
+          ),
         );
       }
     }
@@ -110,21 +113,24 @@ class _DownDownsPageState extends State<DownDownsPage> {
     }
   }
 
-  DownDownModel _copyWith(DownDownModel dd, {bool? isDone, bool? isCancelled}) =>
-      DownDownModel(
-        downDownId: dd.downDownId,
-        chargeText: dd.chargeText,
-        isDone: isDone ?? dd.isDone,
-        isCancelled: isCancelled ?? dd.isCancelled,
-        createdByDisplayName: dd.createdByDisplayName,
-        createdByPhoto: dd.createdByPhoto,
-        createdAt: dd.createdAt,
-        songChoice: dd.songChoice,
-        songId: dd.songId,
-        chargePhotoUrl: dd.chargePhotoUrl,
-        hashers: dd.hashers,
-        externalNames: dd.externalNames,
-      );
+  DownDownModel _copyWith(
+    DownDownModel dd, {
+    bool? isDone,
+    bool? isCancelled,
+  }) => DownDownModel(
+    downDownId: dd.downDownId,
+    chargeText: dd.chargeText,
+    isDone: isDone ?? dd.isDone,
+    isCancelled: isCancelled ?? dd.isCancelled,
+    createdByDisplayName: dd.createdByDisplayName,
+    createdByPhoto: dd.createdByPhoto,
+    createdAt: dd.createdAt,
+    songChoice: dd.songChoice,
+    songId: dd.songId,
+    chargePhotoUrl: dd.chargePhotoUrl,
+    hashers: dd.hashers,
+    externalNames: dd.externalNames,
+  );
 
   Future<void> _markDone(DownDownModel dd) async {
     final ok = await _service.markDownDownDone(
@@ -135,7 +141,8 @@ class _DownDownsPageState extends State<DownDownsPage> {
     if (ok && mounted) {
       setState(() {
         final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (i >= 0) _downDowns[i] = _copyWith(dd, isDone: true, isCancelled: false);
+        if (i >= 0)
+          _downDowns[i] = _copyWith(dd, isDone: true, isCancelled: false);
         _sortList();
       });
     }
@@ -146,12 +153,21 @@ class _DownDownsPageState extends State<DownDownsPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Undo Down Down?', style: ts_alertDialogTitle),
-        content: Text('Mark this charge as pending again?', style: ts_alertDialogBody),
+        content: Text(
+          'Mark this charge as pending again?',
+          style: ts_alertDialogBody,
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: themeBackgroundColor, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeBackgroundColor,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Yes, undo'),
           ),
         ],
@@ -182,7 +198,8 @@ class _DownDownsPageState extends State<DownDownsPage> {
     if (ok && mounted) {
       setState(() {
         final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (i >= 0) _downDowns[i] = _copyWith(dd, isCancelled: true, isDone: false);
+        if (i >= 0)
+          _downDowns[i] = _copyWith(dd, isCancelled: true, isDone: false);
         _sortList();
       });
     }
@@ -193,12 +210,21 @@ class _DownDownsPageState extends State<DownDownsPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Restore Down Down?', style: ts_alertDialogTitle),
-        content: Text('Mark this charge as pending again?', style: ts_alertDialogBody),
+        content: Text(
+          'Mark this charge as pending again?',
+          style: ts_alertDialogBody,
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: themeBackgroundColor, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeBackgroundColor,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Yes, restore'),
           ),
         ],
@@ -258,7 +284,10 @@ class _DownDownsPageState extends State<DownDownsPage> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to share song'), backgroundColor: Colors.red),
+          const SnackBar(
+            content: Text('Failed to share song'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -300,37 +329,37 @@ class _DownDownsPageState extends State<DownDownsPage> {
         child: _isLoading
             ? const HcAppCircularProgressIndicator(key: Key('dd_loading'))
             : _downDowns.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(30),
-                      child: Text(
-                        'No Down Downs yet for this run',
-                        textAlign: TextAlign.center,
-                        style: ts_headingLarge.copyWith(color: Colors.white),
-                      ),
-                    ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: _downDowns.length,
-                    separatorBuilder: (context, i) => Divider(
-                      height: 2,
-                      thickness: 1.5,
-                      color: Colors.lightBlueAccent.withValues(alpha: 0.7),
-                    ),
-                    itemBuilder: (context, index) {
-                      final dd = _downDowns[index];
-                      final names = dd.allChargedNames.join(', ');
-                      return _DownDownTile(
-                        dd: dd,
-                        hasherNames: names,
-                        onCancelTap: () => _handleCancelTap(dd),
-                        onCheckTap: () => _handleCheckTap(dd),
-                        onEditTap: () => _openEditPage(dd),
-                        onShareTap: dd.songId != null ? () => _shareSong(dd) : null,
-                      );
-                    },
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(30),
+                  child: Text(
+                    'No Down Downs yet for this run',
+                    textAlign: TextAlign.center,
+                    style: ts_headingLarge.copyWith(color: Colors.white),
                   ),
+                ),
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: _downDowns.length,
+                separatorBuilder: (context, i) => Divider(
+                  height: 2,
+                  thickness: 1.5,
+                  color: Colors.lightBlueAccent.withValues(alpha: 0.7),
+                ),
+                itemBuilder: (context, index) {
+                  final dd = _downDowns[index];
+                  final names = dd.allChargedNames.join(', ');
+                  return _DownDownTile(
+                    dd: dd,
+                    hasherNames: names,
+                    onCancelTap: () => _handleCancelTap(dd),
+                    onCheckTap: () => _handleCheckTap(dd),
+                    onEditTap: () => _openEditPage(dd),
+                    onShareTap: dd.songId != null ? () => _shareSong(dd) : null,
+                  );
+                },
+              ),
       ),
     );
   }
@@ -407,7 +436,11 @@ class _DownDownTile extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 6),
                     child: Row(
                       children: [
-                        const Icon(Icons.music_note, size: 15, color: Colors.white70),
+                        const Icon(
+                          Icons.music_note,
+                          size: 15,
+                          color: Colors.white70,
+                        ),
                         const SizedBox(width: 5),
                         Expanded(
                           child: Text(
@@ -454,7 +487,9 @@ class _DownDownTile extends StatelessWidget {
                         onTap: onCancelTap,
                         child: Icon(
                           dd.isCancelled ? Icons.cancel : Icons.cancel_outlined,
-                          color: dd.isCancelled ? Colors.redAccent : Colors.lightBlueAccent,
+                          color: dd.isCancelled
+                              ? Colors.redAccent
+                              : Colors.lightBlueAccent,
                           size: 30,
                         ),
                       ),
@@ -467,8 +502,12 @@ class _DownDownTile extends StatelessWidget {
                       child: GestureDetector(
                         onTap: onCheckTap,
                         child: Icon(
-                          dd.isDone ? Icons.check_circle : Icons.check_circle_outline,
-                          color: dd.isDone ? Colors.yellow : Colors.lightBlueAccent,
+                          dd.isDone
+                              ? Icons.check_circle
+                              : Icons.check_circle_outline,
+                          color: dd.isDone
+                              ? Colors.yellow
+                              : Colors.lightBlueAccent,
                           size: 30,
                         ),
                       ),
@@ -482,7 +521,11 @@ class _DownDownTile extends StatelessWidget {
                 child: Center(
                   child: GestureDetector(
                     onTap: onEditTap,
-                    child: const Icon(Icons.edit_outlined, color: Colors.white38, size: 20),
+                    child: const Icon(
+                      Icons.edit_outlined,
+                      color: Colors.white38,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),

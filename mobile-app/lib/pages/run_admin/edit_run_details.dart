@@ -1,541 +1,77 @@
-import 'package:harrier_central/data/models/azure_place_model.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/run_admin/edit_run_details_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
-class EditRunDetailsPage extends StatefulWidget {
+class EditRunDetailsPage extends StatelessWidget {
   const EditRunDetailsPage(this.isNewRun, this.eventAggregate, {super.key});
 
   final bool isNewRun;
   final RunAdminAggregate eventAggregate;
 
   @override
-  EditRunDetailsPageState createState() => EditRunDetailsPageState();
-}
-
-enum EditingTabEnum {
-  details(0, 'Details', 1, 0), // use the kennel default setting
-  address(1, 'Address', 2, 0), // use the kennel default setting
-  map(2, 'Map', 3, 1), // always notify
-  image(3, 'Image', 4, 2), // never notify
-  other(4, 'Other', 4, 3); //
-
-  final int value;
-  final String label;
-  final int next;
-  final int previous;
-
-  const EditingTabEnum(this.value, this.label, this.next, this.previous);
-
-  static final Map<int, EditingTabEnum> _valueMap = {
-    for (var state in EditingTabEnum.values) state.value: state,
-  };
-
-  static EditingTabEnum? fromInt(int value) => _valueMap[value];
-}
-
-class EditRunDetailsPageState extends State<EditRunDetailsPage>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  final List<Tab> _tabs = <Tab>[];
-
-  EditingTabEnum _currentTab = EditingTabEnum.details;
-
-  late TabController _tabController;
-  bool _isUpdating = false;
-
-  late RunAdminAggregate _eventAggregate;
-
-  late latlng.LatLng _mapCenter;
-
-  //GlobalKey _tabKey;
-
-  final GlobalKey<FormState> _detailsFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _addressFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _otherDetailsFormKey = GlobalKey<FormState>();
-
-  final GlobalKey<EditorMapState> _mapKey = GlobalKey<EditorMapState>();
-
-  final FocusNode _focusNodeAbsoluteEventNumber = FocusNode();
-  final FocusNode _focusNodeEventPriceForMembers = FocusNode();
-  final FocusNode _focusNodeEventPriceForNonMembers = FocusNode();
-  final FocusNode _focusNodeEventPriceForExtras = FocusNode();
-  final FocusNode _focusNodeExtrasDescription = FocusNode();
-  final FocusNode _focusNodeDatetime = FocusNode();
-  final FocusNode _focusNodeEventName = FocusNode();
-  final FocusNode _focusNodeStreetAddress = FocusNode();
-  final FocusNode _focusNodeCity = FocusNode();
-  final FocusNode _focusNodeRegion = FocusNode();
-  final FocusNode _focusNodeSubRegion = FocusNode();
-  final FocusNode _focusNodePostCode = FocusNode();
-  final FocusNode _focusNodeCountry = FocusNode();
-  final FocusNode _focusNodeEventDescription = FocusNode();
-  final FocusNode _focusNodeLocationOneLineDesc = FocusNode();
-  final FocusNode _focusNodeHares = FocusNode();
-
-  final TextEditingController _eventDatetimeController =
-      TextEditingController();
-  final TextEditingController _eventNameController = TextEditingController();
-  final TextEditingController _locationStreetController =
-      TextEditingController();
-  final TextEditingController _locationCityController = TextEditingController();
-  final TextEditingController _locationRegionController =
-      TextEditingController();
-  final TextEditingController _locationSubRegionController =
-      TextEditingController();
-  final TextEditingController _locationPostCodeController =
-      TextEditingController();
-  final TextEditingController _locationCountryController =
-      TextEditingController();
-
-  final TextEditingController _eventDescriptionController =
-      TextEditingController();
-  final TextEditingController _locationOneLineDescController =
-      TextEditingController();
-  final TextEditingController _absoluteEventNumberController =
-      TextEditingController();
-  final TextEditingController _eventPriceForMembersController =
-      TextEditingController();
-  final TextEditingController _eventPriceForNonMembersController =
-      TextEditingController();
-  final TextEditingController _eventPriceForExtrasController =
-      TextEditingController();
-  final TextEditingController _extrasDescriptionController =
-      TextEditingController();
-  final TextEditingController _haresController = TextEditingController();
-
-  bool _isVisible = true;
-  bool _isCountedRun = true;
-  int _usersCanEditRunAttendence = 0;
-  bool _isPromotedEvent = false;
-  int _eventGeographicScope = 1;
-  bool _trueNorthLock = true;
-
-  //Future<File> _imageFromCamera;
-  Future<File?> _imageFromGallery = Future.value(null);
-  //final SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
-  //SelectedImageTypeEnum _previousImageTypeSelection = SelectedImageTypeEnum.none;
-
-  @override
-  void dispose() {
-    _eventDatetimeController.dispose();
-    _eventNameController.dispose();
-    _locationStreetController.dispose();
-    _locationCityController.dispose();
-    _locationRegionController.dispose();
-    _locationSubRegionController.dispose();
-    _locationPostCodeController.dispose();
-    _locationCountryController.dispose();
-    _eventDescriptionController.dispose();
-    _locationOneLineDescController.dispose();
-
-    _focusNodeDatetime.dispose();
-    _focusNodeEventName.dispose();
-    _focusNodeStreetAddress.dispose();
-    _focusNodeCity.dispose();
-    _focusNodeRegion.dispose();
-    _focusNodeSubRegion.dispose();
-    _focusNodePostCode.dispose();
-    _focusNodeCountry.dispose();
-    _focusNodeEventDescription.dispose();
-    _focusNodeLocationOneLineDesc.dispose();
-
-    _tabController.dispose();
-
-    _absoluteEventNumberController.dispose();
-    _eventPriceForMembersController.dispose();
-    _eventPriceForNonMembersController.dispose();
-    _eventPriceForExtrasController.dispose();
-    _extrasDescriptionController.dispose();
-    _haresController.dispose();
-
-    _focusNodeAbsoluteEventNumber.dispose();
-    _focusNodeEventPriceForMembers.dispose();
-    _focusNodeEventPriceForNonMembers.dispose();
-    _focusNodeEventPriceForExtras.dispose();
-    _focusNodeExtrasDescription.dispose();
-    _focusNodeHares.dispose();
-    super.dispose();
-  }
-
-  void _setTextFields() {
-    _eventNameController.text = _eventAggregate.event.eventName;
-    _locationStreetController.text = _eventAggregate.event.locationStreet ?? '';
-    _locationCityController.text = _eventAggregate.event.locationCity ?? '';
-    _locationRegionController.text = _eventAggregate.event.locationRegion ?? '';
-    _locationSubRegionController.text =
-        _eventAggregate.event.locationSubRegion ?? '';
-    _locationPostCodeController.text =
-        _eventAggregate.event.locationPostCode ?? '';
-    _locationCountryController.text =
-        _eventAggregate.event.locationCountry ?? '';
-    _eventDescriptionController.text =
-        _eventAggregate.event.eventDescription ?? '';
-    _eventDatetimeController.text = DateFormat(
-      'E, d MMM, yyyy, h:mm a',
-    ).format(_eventAggregate.event.eventStartDatetime);
-    _locationOneLineDescController.text =
-        _eventAggregate.event.locationOneLineDesc ?? '';
-    _haresController.text = _eventAggregate.event.hares ?? '';
-
-    _absoluteEventNumberController.text =
-        _eventAggregate.event.absoluteEventNumber?.toString() ?? '';
-    _eventPriceForMembersController.text =
-        _eventAggregate.event.eventPriceForMembers?.toStringAsFixed(
-          _eventAggregate.extensions.digAfterDec,
-        ) ??
-        '';
-    _eventPriceForNonMembersController.text =
-        _eventAggregate.event.eventPriceForNonMembers?.toStringAsFixed(
-          _eventAggregate.extensions.digAfterDec,
-        ) ??
-        '';
-    _eventPriceForExtrasController.text =
-        _eventAggregate.event.eventPriceForExtras?.toStringAsFixed(
-          _eventAggregate.extensions.digAfterDec,
-        ) ??
-        '';
-    _extrasDescriptionController.text =
-        _eventAggregate.event.extrasDescription ?? '';
-    _eventGeographicScope = _eventAggregate.event.eventGeographicScope;
-
-    // The four checkbox-backed fields are also assigned by their
-    // CheckboxFormField validators, but those only run when the Other tab is
-    // built. Seed them from the event so a save made from any tab sends the
-    // event's real values rather than the field declaration defaults.
-    _isVisible = _eventAggregate.event.isVisible == 1;
-    _isCountedRun = _eventAggregate.event.isCountedRun == 1;
-    _isPromotedEvent = _eventAggregate.event.isPromotedEvent == 1;
-    // -1 means "explicitly clear" to the SP, which is how an unset value has to
-    // round-trip — sending 0 would turn "inherit" into an explicit "no".
-    _usersCanEditRunAttendence =
-        switch (_eventAggregate.event.canEditRunAttendence) {
-          null => -1,
-          1 => 1,
-          _ => 0,
-        };
-  }
-
-  /// Every editable value across the Details, Address and Other tabs, flattened
-  /// so the save bar can tell whether anything has changed since it was last
-  /// loaded or saved.
-  Map<String, String> _formSnapshot() => <String, String>{
-    'eventName': _eventNameController.text,
-    'eventDatetime': _eventDatetimeController.text,
-    'eventDescription': _eventDescriptionController.text,
-    'locationOneLineDesc': _locationOneLineDescController.text,
-    'locationStreet': _locationStreetController.text,
-    'locationCity': _locationCityController.text,
-    'locationRegion': _locationRegionController.text,
-    'locationSubRegion': _locationSubRegionController.text,
-    'locationPostCode': _locationPostCodeController.text,
-    'locationCountry': _locationCountryController.text,
-    'absoluteEventNumber': _absoluteEventNumberController.text,
-    'eventPriceForMembers': _eventPriceForMembersController.text,
-    'eventPriceForNonMembers': _eventPriceForNonMembersController.text,
-    'eventPriceForExtras': _eventPriceForExtrasController.text,
-    'extrasDescription': _extrasDescriptionController.text,
-    'hares': _haresController.text,
-    'isVisible': '$_isVisible',
-    'isCountedRun': '$_isCountedRun',
-    'isPromotedEvent': '$_isPromotedEvent',
-    'usersCanEditRunAttendence': '$_usersCanEditRunAttendence',
-    'eventGeographicScope': '$_eventGeographicScope',
-  };
-
-  Map<String, String> _savedSnapshot = <String, String>{};
-
-  /// True when anything on any of the three form tabs differs from what is
-  /// stored on the server. Drives the enabled state of the anchored save bar.
-  bool get _isDirty {
-    final Map<String, String> current = _formSnapshot();
-    for (final MapEntry<String, String> entry in current.entries) {
-      if (_savedSnapshot[entry.key] != entry.value) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  void _captureSavedSnapshot() {
-    _savedSnapshot = _formSnapshot();
-  }
-
-  /// Validates the Details tab. The Address and Other tabs carry no validators,
-  /// and the Details form may not be mounted (TabBarView disposes tabs that are
-  /// not adjacent to the current one), so the same three "must not be empty"
-  /// rules are repeated here in plain Dart.
-  String? _validateForSave() {
-    if (_eventNameController.text.isEmpty) {
-      return 'Please provide an event name';
-    }
-    if (_eventDescriptionController.text.isEmpty) {
-      return 'Please provide an event description';
-    }
-    if (_locationOneLineDescController.text.isEmpty) {
-      return 'Please provide a location description';
-    }
-    return null;
-  }
-
-  /// Single save for everything on the Details, Address and Other tabs. The Map
-  /// and Image tabs keep their own buttons — they act on a picked point or an
-  /// uploaded file rather than on form content.
-  Future<bool> _saveAll() async {
-    final String? validationError = _validateForSave();
-    if (validationError != null) {
-      if (_currentTab != EditingTabEnum.details) {
-        _tabController.animateTo(EditingTabEnum.details.value);
-      }
-      // Run the form's own validation too so the offending field shows its
-      // error inline, once the tab it lives on has been built.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _detailsFormKey.currentState?.validate();
-      });
-      await Utilities.showAlert('Cannot save yet', validationError, 'OK');
-      return false;
-    }
-
-    // Pulls the current checkbox values back into the state fields when the
-    // Other tab happens to be built.
-    _otherDetailsFormKey.currentState?.validate();
-
-    FocusScope.of(context).unfocus();
-    setStateIfMounted(() {
-      _isUpdating = true;
-    });
-
-    final DateFormat formatter = DateFormat('E, d MMM, yyyy, h:mm a');
-    final EventsService nSvc = EventsService();
-    final String eventId = await nSvc.addEditEvent(
-      eventId: _eventAggregate.event.eventId,
-      kennelId: _eventAggregate.event.kennelId,
-      eventName: _eventNameController.text,
-      eventStartDatetime: formatter.tryParse(_eventDatetimeController.text),
-      eventDescription: _eventDescriptionController.text,
-      locationOneLineDesc: _locationOneLineDescController.text,
-      useFbRunDetails: 0,
-      locationStreet: _locationStreetController.text,
-      locationCity: _locationCityController.text,
-      locationRegion: _locationRegionController.text,
-      locationSubRegion: _locationSubRegionController.text,
-      locationPostCode: _locationPostCodeController.text,
-      locationCountry: _locationCountryController.text,
-      eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
-          ? -2
-          : double.tryParse(
-              _eventPriceForMembersController.text.replaceAll(',', '.'),
-            ),
-      eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty
-          ? -2
-          : double.tryParse(
-              _eventPriceForNonMembersController.text.replaceAll(',', '.'),
-            ),
-      eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
-          ? -2
-          : double.tryParse(
-              _eventPriceForExtrasController.text.replaceAll(',', '.'),
-            ),
-      // note for "auto" the value we send to the server is '0' because this will
-      // remove any previous absoluteEventNumber that is stored there
-      absoluteEventNumber: _absoluteEventNumberController.text.isEmpty
-          ? 0
-          : int.tryParse(_absoluteEventNumberController.text),
-      extrasDescription: _extrasDescriptionController.text.isEmpty
-          ? '<none>'
-          : _extrasDescriptionController.text,
-      hares: _haresController.text,
-      isCountedRun: _isCountedRun,
-      isVisible: _isVisible,
-      isPromotedEvent: _isPromotedEvent,
-      eventGeographicScope: _eventGeographicScope,
-      usersCanEditRunAttendence: _usersCanEditRunAttendence,
+  Widget build(BuildContext context) {
+    return GetBuilder<EditRunDetailsController>(
+      // global: false keeps this instance out of GetX's registry, so pushing a
+      // second editor on top of the first cannot collide with it.
+      global: false,
+      init: EditRunDetailsController(
+        isNewRun: isNewRun,
+        aggregate: eventAggregate,
+      ),
+      // A controller GetBuilder never registered is a controller GetBuilder
+      // never deletes — its dispose() only calls delete() for instances found
+      // in the registry. Without this the editor would leak 16 text
+      // controllers, 16 focus nodes and a TabController on every open.
+      // onDelete is guarded against running twice.
+      dispose: (GetBuilderState<EditRunDetailsController> state) =>
+          state.controller?.onDelete(),
+      builder: (EditRunDetailsController c) => _buildPage(context, c),
     );
-
-    await _refreshAfterSave(eventId);
-    setStateIfMounted(() {
-      _isUpdating = false;
-      _captureSavedSnapshot();
-    });
-    return true;
   }
 
   /// The anchored save bar. Always on screen so the button never has to be
   /// scrolled to, and greyed out until something actually changes.
-  Widget _buildSaveBar() {
-    // For a new run the bar is the wizard's Next/Finish, so it stays live even
-    // on a tab the user chose not to fill in.
-    final bool enabled = (_isDirty || widget.isNewRun) && !_isUpdating;
-    final String label = widget.isNewRun
-        ? (_currentTab == EditingTabEnum.other ? 'Finish' : 'Next')
-        : 'Save changes to Harrier Central';
+  ///
+  /// This is the one part of the page that reacts on its own. Typing only calls
+  /// `recomputeDirty()`, never `update()`, so a keystroke repaints this bar and
+  /// nothing else — the tabs and the map stay untouched.
+  Widget _buildSaveBar(EditRunDetailsController c) {
+    return Obx(() {
+      // For a new run the bar is the wizard's Next/Finish, so it stays live
+      // even on a tab the user chose not to fill in.
+      final bool enabled =
+          (c.isDirty.value || c.isNewRun) && !c.isUpdating.value;
+      final String label = c.isNewRun
+          ? (c.currentTab.value == EditingTabEnum.other ? 'Finish' : 'Next')
+          : 'Save changes to Harrier Central';
 
-    return Container(
-      height: 70.0,
-      color: Colors.yellow[100],
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-      child: Center(
-        child: _isUpdating
-            ? const SizedBox(
-                height: 45.0,
-                width: 45.0,
-                child: HcAppCircularProgressIndicator(key: Key('331904772')),
-              )
-            : SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: hc_red,
-                    disabledBackgroundColor: Colors.grey,
-                    disabledForegroundColor: Colors.white70,
+      return Container(
+        height: 70.0,
+        color: Colors.yellow[100],
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+        child: Center(
+          child: c.isUpdating.value
+              ? const SizedBox(
+                  height: 45.0,
+                  width: 45.0,
+                  child: HcAppCircularProgressIndicator(key: Key('331904772')),
+                )
+              : SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: hc_red,
+                      disabledBackgroundColor: Colors.grey,
+                      disabledForegroundColor: Colors.white70,
+                    ),
+                    onPressed: enabled ? c.onSaveBarPressed : null,
+                    child: Text(label, style: ts_button),
                   ),
-                  onPressed: enabled ? _onSaveBarPressed : null,
-                  child: Text(label, style: ts_button),
                 ),
-              ),
-      ),
-    );
-  }
-
-  Future<void> _onSaveBarPressed() async {
-    final bool addressChanged = _addressChanged;
-    final bool saved = await _saveAll();
-    if (!saved || !mounted) return;
-
-    if (widget.isNewRun) {
-      if (_currentTab == EditingTabEnum.other) {
-        if (!mounted) return;
-        Navigator.of(navigatorKey.currentContext!).pop();
-        return;
-      }
-      _tabController.animateTo(_currentTab.next);
-      return;
-    }
-
-    final SnackBar snackBar = SnackBar(
-      duration: const Duration(seconds: 3),
-      content: Text(
-        'Run details have been saved',
-        textAlign: TextAlign.center,
-        style: ts_titleCondensed,
-      ),
-      backgroundColor: hc_blue,
-    );
-    if (!mounted) return;
-    ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
-
-    if (addressChanged) {
-      await _offerAutoLocateAfterAddressChange();
-    }
-  }
-
-  static const List<String> _addressKeys = <String>[
-    'locationStreet',
-    'locationCity',
-    'locationRegion',
-    'locationSubRegion',
-    'locationPostCode',
-    'locationCountry',
-  ];
-
-  bool get _addressChanged {
-    final Map<String, String> current = _formSnapshot();
-    return _addressKeys.any(
-      (String key) => _savedSnapshot[key] != current[key],
-    );
-  }
-
-  /// A new address usually means the map pin is now wrong, so offer to move it.
-  /// Only runs when the address actually changed in the save that just ran.
-  Future<void> _offerAutoLocateAfterAddressChange() async {
-    final bool hasEnoughAddress =
-        _locationPostCodeController.text.trim().isNotEmpty ||
-        (_locationStreetController.text.trim().isNotEmpty &&
-            _locationCityController.text.trim().isNotEmpty);
-
-    if (hasEnoughAddress) {
-      if (!mounted) return;
-      final bool? locate = await showDialog<bool>(
-        context: navigatorKey.currentContext!,
-        builder: (BuildContext ctx) => AlertDialog(
-          title: const Text('Address saved'),
-          content: const Text(
-            'Would you like me to try to automatically find the map pin for the new address?',
-          ),
-          actions: <Widget>[
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Not now'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: hc_blue,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Auto-locate'),
-            ),
-          ],
         ),
       );
-      if (locate == true) {
-        await _geocodeAndNavigateToMap();
-      }
-      return;
-    }
-
-    if (!mounted) return;
-    await showDialog<void>(
-      context: navigatorKey.currentContext!,
-      builder: (BuildContext ctx) => AlertDialog(
-        title: const Text('Pin location needed'),
-        content: const Text(
-          "The address isn't specific enough for automatic location — you'll need to set the pin manually on the Map tab.",
-        ),
-        actions: <Widget>[
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Dismiss'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: hc_blue,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              _tabController.animateTo(EditingTabEnum.map.value);
-            },
-            child: const Text('Go to Map'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Asked on the way out of the page, which is the only point where unsaved
-  /// form content can actually be lost — moving between tabs keeps everything.
-  Future<bool> _confirmDiscardOnExit() async {
-    if (!_isDirty) return true;
-
-    final bool? save = await Utilities.showAlert2(
-      'Unsaved changes',
-      'You have changes to this run that have not been saved. Save them now?',
-      'Save',
-      showCancelButton: true,
-      cancelButtonText: 'Discard',
-    );
-
-    if (save == null) return false; // dismissed — stay on the page
-    if (!save) return true; // discard and leave
-    return _saveAll();
+    });
   }
 
   Container _genericTextField({
@@ -587,26 +123,21 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     );
   }
 
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
+  Widget _buildPage(BuildContext context, EditRunDetailsController c) {
     // The Map and Image tabs act on a picked point or an uploaded file rather
     // than on form content, so they keep their own buttons and get no save bar.
     final bool showSaveBar =
-        _currentTab == EditingTabEnum.details ||
-        _currentTab == EditingTabEnum.address ||
-        _currentTab == EditingTabEnum.other;
+        c.currentTab.value == EditingTabEnum.details ||
+        c.currentTab.value == EditingTabEnum.address ||
+        c.currentTab.value == EditingTabEnum.other;
 
     return PopScope<Object?>(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
         final NavigatorState navigator = Navigator.of(context);
-        final bool leave = await _confirmDiscardOnExit();
-        if (leave && mounted) {
+        final bool leave = await c.confirmDiscardOnExit();
+        if (leave && context.mounted) {
           navigator.pop();
         }
       },
@@ -619,7 +150,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           title: Text('Edit run details', style: ts_appBarTitle),
         ),
         bottomNavigationBar: showSaveBar
-            ? SafeArea(top: false, child: _buildSaveBar())
+            ? SafeArea(top: false, child: _buildSaveBar(c))
             : null,
         body: Container(
           decoration: Backgrounds.defaultHcBackgroundLight(),
@@ -676,7 +207,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     // reviewed for 2.0+
                     child: TabBar(
                       onTap: (void _) {
-                        setStateIfMounted(() {});
+                        c.mutate(() {});
                       },
                       labelStyle: ts_tabSelected,
                       unselectedLabelStyle: ts_tabUnselected,
@@ -701,8 +232,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         borderRadius: BorderRadius.circular(999),
                       ),
 
-                      tabs: _tabs,
-                      controller: _tabController,
+                      tabs: c.tabs,
+                      controller: c.tabController,
                     ),
                   ),
                 ),
@@ -716,14 +247,14 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   width: MediaQuery.sizeOf(context).width,
                   child: TabBarView(
                     physics: const NeverScrollableScrollPhysics(),
-                    controller: _tabController,
+                    controller: c.tabController,
                     children: <Widget>[
-                      _buildDetailsPage(context),
-                      _buildAddressPage(context),
-                      _buildMapPage(),
-                      _buildImagePage(),
-                      _buildOtherDetailsPage(context),
-                      //OtherInfoTab(_eventAggregate, widget.getUpdatedEventAggregate),
+                      _buildDetailsPage(context, c),
+                      _buildAddressPage(context, c),
+                      _buildMapPage(c),
+                      _buildImagePage(c),
+                      _buildOtherDetailsPage(context, c),
+                      //OtherInfoTab(c.eventAggregate, widget.getUpdatedEventAggregate),
                     ],
                   ),
                 ),
@@ -735,307 +266,45 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    _initTabs();
-    _tabController = TabController(vsync: this, length: _tabs.length);
-    _tabController.addListener(() {
-      FocusScope.of(context).unfocus();
-      setStateIfMounted(() {
-        _currentTab = EditingTabEnum.fromInt(_tabController.index)!;
-      });
-    });
-
-    _eventAggregate = widget.eventAggregate;
-
-    _mapCenter = latlng.LatLng(
-      _eventAggregate.extensions.latitude ?? _eventAggregate.extensions.kenlLat,
-      _eventAggregate.extensions.longitude ??
-          _eventAggregate.extensions.kenlLon,
-    );
-
-    _setTextFields();
-
-    _focusNodeEventName.addListener(() {
-      setStateIfMounted(() {});
-    });
-
-    _focusNodeEventDescription.addListener(() {
-      setStateIfMounted(() {});
-    });
-
-    _focusNodeDatetime.addListener(() {
-      setStateIfMounted(() {});
-    });
-
-    _focusNodeLocationOneLineDesc.addListener(() {
-      setStateIfMounted(() {});
-    });
-
-    _focusNodeAbsoluteEventNumber.addListener(() {
-      setStateIfMounted(() {});
-    });
-
-    _focusNodeEventPriceForMembers.addListener(() {
-      setStateIfMounted(() {});
-    });
-
-    _focusNodeEventPriceForNonMembers.addListener(() {
-      setStateIfMounted(() {});
-    });
-
-    _eventPriceForExtrasController.addListener(() {
-      setStateIfMounted(() {});
-    });
-
-    _extrasDescriptionController.addListener(() {
-      setStateIfMounted(() {});
-    });
-
-    // Every field that feeds _formSnapshot has to rebuild the page as it is
-    // typed into, otherwise the save bar won't notice it has become dirty.
-    for (final TextEditingController controller in <TextEditingController>[
-      _eventNameController,
-      _eventDatetimeController,
-      _eventDescriptionController,
-      _locationOneLineDescController,
-      _locationStreetController,
-      _locationCityController,
-      _locationRegionController,
-      _locationSubRegionController,
-      _locationPostCodeController,
-      _locationCountryController,
-      _absoluteEventNumberController,
-      _eventPriceForMembersController,
-      _eventPriceForNonMembersController,
-      _haresController,
-    ]) {
-      controller.addListener(() {
-        setStateIfMounted(() {});
-      });
-    }
-
-    _captureSavedSnapshot();
-  }
-
-  void _initTabs() {
-    if (_tabs.isEmpty) {
-      _tabs.add(const Tab(text: 'Details'));
-      _tabs.add(const Tab(text: 'Address'));
-      _tabs.add(const Tab(text: 'Map'));
-      _tabs.add(const Tab(text: 'Image'));
-      _tabs.add(const Tab(text: 'Other'));
-      //tabs.add(const Tab(text: 'Date/Time'));
-    }
-  }
-
-  Future<void> _useExternalSourceDetails() async {
-    setStateIfMounted(() {
-      _isUpdating = true;
-    });
-    final EventsService nSvc = EventsService();
-    final String eventId = await nSvc.addEditEvent(
-      eventId: _eventAggregate.event.eventId,
-      kennelId: _eventAggregate.event.kennelId,
-      useFbRunDetails: 1,
-    );
-
-    await _refreshAfterSave(eventId);
-    setStateIfMounted(() {
-      _isUpdating = false;
-      _setTextFields();
-      // The fields now hold what the server holds, so the bar goes back to
-      // disabled rather than showing the reload as a pending change.
-      _captureSavedSnapshot();
-      final SnackBar snackBar = SnackBar(
-        duration: const Duration(seconds: 3),
-        content: Text(
-          _eventAggregate.event.eventInboundIntegrationId >=
-                  integrationPlatformNames.length
-              ? 'Run details being synced from external source'
-              : 'Run details being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-          textAlign: TextAlign.center,
-          style: ts_titleCondensedBlack,
-        ),
-        backgroundColor: hc_blue,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    });
-  }
-
-  Future<void> _refreshAfterSave(String eventId) async {
-    final String userId = getStringPref(StringPrefsEnum.userId) ?? '';
-    final RunAdminAggregate? updated =
-        await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
-    if (updated != null) {
-      _eventAggregate = updated;
-    }
-    Get.find<DataChangeService>().notify(
-      DataChangeEvent(type: DataChangeType.runUpdated, id: eventId),
-    );
-  }
-
-  Future<void> _openLocationLookup() async {
-    FocusScope.of(context).unfocus();
-    final query = _locationOneLineDescController.text.trim();
-
-    await showModalBottomSheet<void>(
-      context: navigatorKey.currentContext!,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _GazetteerBottomSheet(
-        initialQuery: query,
-        kennelLat: _eventAggregate.extensions.kenlLat,
-        kennelLon: _eventAggregate.extensions.kenlLon,
-        onResultSelected: _applyGazetteerResult,
-      ),
-    );
-  }
-
-  void _applyGazetteerResult(AzurePlaceResult result) {
-    final addr = result.address;
-    setStateIfMounted(() {
-      _locationStreetController.text =
-          addr?.streetNameAndNumber ?? addr?.streetName ?? '';
-      _locationCityController.text =
-          addr?.municipality ?? addr?.localName ?? '';
-      _locationRegionController.text = addr?.countrySubdivision ?? '';
-      _locationSubRegionController.text = '';
-      _locationPostCodeController.text = addr?.postalCode ?? '';
-      _locationCountryController.text = addr?.country ?? '';
-      if (result.position?.lat != null && result.position?.lon != null) {
-        _mapCenter = latlng.LatLng(
-          result.position!.lat!,
-          result.position!.lon!,
-        );
-      }
-    });
-    _tabController.animateTo(EditingTabEnum.address.value);
-  }
-
-  Future<void> _geocodeAndNavigateToMap() async {
-    String country = _locationCountryController.text.trim();
-    if (country.isEmpty) {
-      final List<Map<String, dynamic>> rows = await database.rawQuery(
-        'SELECT ${tableModel.countriesTableHelper.colCountryName} '
-        'FROM ${EnumDataTables.countries.commonTableName} '
-        'WHERE ${tableModel.countriesTableHelper.colCountryId} = ? LIMIT 1',
-        <String>[_eventAggregate.kennel.countryId],
-      );
-      if (rows.isNotEmpty) {
-        country =
-            (rows[0][tableModel.countriesTableHelper.colCountryName]
-                as String?) ??
-            '';
-      }
-    }
-
-    final List<String> parts = <String>[
-      _locationStreetController.text.trim(),
-      _locationCityController.text.trim(),
-      _locationRegionController.text.trim(),
-      _locationPostCodeController.text.trim(),
-      country,
-    ].where((String s) => s.isNotEmpty).toList();
-
-    if (parts.isEmpty) return;
-
-    setStateIfMounted(() {
-      _isUpdating = true;
-    });
-
-    final Uri uri = Uri.https(
-      'nominatim.openstreetmap.org',
-      '/search',
-      <String, String>{'q': parts.join(', '), 'format': 'json', 'limit': '1'},
-    );
-
-    try {
-      final Response response = await get(
-        uri,
-        headers: <String, String>{
-          'User-Agent': 'HarrierCentral/2.5 (harrier-central-app)',
-        },
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final List<dynamic> results =
-            jsonDecode(response.body) as List<dynamic>;
-        if (results.isNotEmpty) {
-          final double? lat = double.tryParse(
-            (results[0]['lat'] as String?) ?? '',
-          );
-          final double? lon = double.tryParse(
-            (results[0]['lon'] as String?) ?? '',
-          );
-          if (lat != null && lon != null) {
-            setStateIfMounted(() {
-              _mapCenter = latlng.LatLng(lat, lon);
-              _isUpdating = false;
-            });
-            _tabController.animateTo(EditingTabEnum.map.value);
-            return;
-          }
-        }
-      }
-    } catch (_) {}
-
-    setStateIfMounted(() {
-      _isUpdating = false;
-    });
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-      SnackBar(
-        duration: const Duration(seconds: 4),
-        content: Text(
-          "Couldn't locate that address — set the pin manually on the Map tab",
-          textAlign: TextAlign.center,
-          style: ts_titleCondensed,
-        ),
-        backgroundColor: Colors.orange.shade700,
-      ),
-    );
-  }
-
-  KeyboardActionsConfig _buildConfig(BuildContext context) {
+  KeyboardActionsConfig _buildConfig(
+    BuildContext context,
+    EditRunDetailsController c,
+  ) {
     return KeyboardActionsConfig(
       keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
       keyboardBarColor: Colors.grey[200],
       nextFocus: true,
       actions: <KeyboardActionsItem>[
-        KeyboardActionsItem(focusNode: _focusNodeEventName),
-        KeyboardActionsItem(focusNode: _focusNodeEventDescription),
+        KeyboardActionsItem(focusNode: c.focusNodeEventName),
+        KeyboardActionsItem(focusNode: c.focusNodeEventDescription),
 
-        KeyboardActionsItem(focusNode: _focusNodeAbsoluteEventNumber),
-        KeyboardActionsItem(focusNode: _focusNodeEventPriceForMembers),
-        KeyboardActionsItem(focusNode: _focusNodeEventPriceForNonMembers),
-        KeyboardActionsItem(focusNode: _focusNodeEventPriceForExtras),
-        KeyboardActionsItem(focusNode: _focusNodeExtrasDescription),
-        KeyboardActionsItem(focusNode: _focusNodeHares),
+        KeyboardActionsItem(focusNode: c.focusNodeAbsoluteEventNumber),
+        KeyboardActionsItem(focusNode: c.focusNodeEventPriceForMembers),
+        KeyboardActionsItem(focusNode: c.focusNodeEventPriceForNonMembers),
+        KeyboardActionsItem(focusNode: c.focusNodeEventPriceForExtras),
+        KeyboardActionsItem(focusNode: c.focusNodeExtrasDescription),
+        KeyboardActionsItem(focusNode: c.focusNodeHares),
 
         // KeyboardActionsItem(
         //   focusNode: focusNodeDatetime,
         // ),
-        KeyboardActionsItem(focusNode: _focusNodeLocationOneLineDesc),
+        KeyboardActionsItem(focusNode: c.focusNodeLocationOneLineDesc),
       ],
     );
   }
 
-  Widget _buildAddressPage(BuildContext context) {
+  Widget _buildAddressPage(BuildContext context, EditRunDetailsController c) {
     return Theme(
       data: Theme.of(context).copyWith(
         disabledColor: Colors.grey,
         iconTheme: IconTheme.of(context).copyWith(color: hc_red, size: 35),
       ),
       child: KeyboardActions(
-        config: _buildConfig(context),
+        config: _buildConfig(context, c),
         tapOutsideBehavior: TapOutsideBehavior.none,
         child: SingleChildScrollView(
           child: Form(
-            key: _addressFormKey,
+            key: c.addressFormKey,
             child: Wrap(
               children: <Widget>[
                 Column(
@@ -1058,49 +327,52 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         ),
                       ),
                       child: Text(
-                        _eventAggregate.event.useFbRunDetails == 1
-                            ? _eventAggregate.event.eventInboundIntegrationId >=
+                        c.eventAggregate.event.useFbRunDetails == 1
+                            ? c
+                                          .eventAggregate
+                                          .event
+                                          .eventInboundIntegrationId >=
                                       integrationPlatformNames.length
                                   ? 'Run data from external source'
-                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                                  : 'Run data from ${integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}'
                             : 'Run data from Harrier Central',
                         textAlign: TextAlign.center,
                         style: ts_headingBlack,
                       ),
                     ),
                     _genericTextField(
-                      focusNode: _focusNodeStreetAddress,
-                      textEditignController: _locationStreetController,
+                      focusNode: c.focusNodeStreetAddress,
+                      textEditignController: c.locationStreetController,
                       labelText: 'Street Address',
                       useValidator: false,
                     ),
                     _genericTextField(
-                      focusNode: _focusNodeCity,
-                      textEditignController: _locationCityController,
+                      focusNode: c.focusNodeCity,
+                      textEditignController: c.locationCityController,
                       labelText: 'City',
                       useValidator: false,
                     ),
                     _genericTextField(
-                      focusNode: _focusNodeRegion,
-                      textEditignController: _locationRegionController,
+                      focusNode: c.focusNodeRegion,
+                      textEditignController: c.locationRegionController,
                       labelText: 'Region/State',
                       useValidator: false,
                     ),
                     _genericTextField(
-                      focusNode: _focusNodeSubRegion,
-                      textEditignController: _locationSubRegionController,
+                      focusNode: c.focusNodeSubRegion,
+                      textEditignController: c.locationSubRegionController,
                       labelText: 'Sub-Region/County',
                       useValidator: false,
                     ),
                     _genericTextField(
-                      focusNode: _focusNodePostCode,
-                      textEditignController: _locationPostCodeController,
+                      focusNode: c.focusNodePostCode,
+                      textEditignController: c.locationPostCodeController,
                       labelText: 'Postal Code',
                       useValidator: false,
                     ),
                     _genericTextField(
-                      focusNode: _focusNodeCountry,
-                      textEditignController: _locationCountryController,
+                      focusNode: c.focusNodeCountry,
+                      textEditignController: c.locationCountryController,
                       labelText: 'Country',
                       useValidator: false,
                     ),
@@ -1116,18 +388,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     );
   }
 
-  Widget _buildDetailsPage(BuildContext context) {
+  Widget _buildDetailsPage(BuildContext context, EditRunDetailsController c) {
     return Theme(
       data: Theme.of(context).copyWith(
         disabledColor: Colors.grey,
         iconTheme: IconTheme.of(context).copyWith(color: hc_red, size: 35),
       ),
       child: KeyboardActions(
-        config: _buildConfig(context),
+        config: _buildConfig(context, c),
         tapOutsideBehavior: TapOutsideBehavior.none,
         child: SingleChildScrollView(
           child: Form(
-            key: _detailsFormKey,
+            key: c.detailsFormKey,
             child: Wrap(
               children: <Widget>[
                 Column(
@@ -1150,18 +422,21 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         ),
                       ),
                       child: Text(
-                        _eventAggregate.event.useFbRunDetails == 1
-                            ? _eventAggregate.event.eventInboundIntegrationId >=
+                        c.eventAggregate.event.useFbRunDetails == 1
+                            ? c
+                                          .eventAggregate
+                                          .event
+                                          .eventInboundIntegrationId >=
                                       integrationPlatformNames.length
                                   ? 'Run data from external source'
-                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                                  : 'Run data from ${integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}'
                             : 'Run data from Harrier Central',
                         textAlign: TextAlign.center,
                         style: ts_headingBlack,
                       ),
                     ),
                     Container(
-                      color: _focusNodeEventName.hasFocus
+                      color: c.focusNodeEventName.hasFocus
                           ? Colors.yellow.shade50
                           : Colors.white,
                       margin: const EdgeInsets.only(
@@ -1171,8 +446,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         right: 25.0,
                       ),
                       child: TextFormField(
-                        focusNode: _focusNodeEventName,
-                        controller: _eventNameController,
+                        focusNode: c.focusNodeEventName,
+                        controller: c.eventNameController,
                         minLines: 1,
                         maxLines: 2,
                         onChanged: (String text) {
@@ -1201,7 +476,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color: _focusNodeEventDescription.hasFocus
+                      color: c.focusNodeEventDescription.hasFocus
                           ? Colors.yellow.shade50
                           : Colors.white,
                       margin: const EdgeInsets.only(
@@ -1215,8 +490,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           //widget.EventDescription = text;
                         },
                         maxLines: null,
-                        focusNode: _focusNodeEventDescription,
-                        controller: _eventDescriptionController,
+                        focusNode: c.focusNodeEventDescription,
+                        controller: c.eventDescriptionController,
                         validator: (String? val) {
                           if ((val ?? '').isEmpty) {
                             return 'Please provide an event description';
@@ -1240,7 +515,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color: _focusNodeLocationOneLineDesc.hasFocus
+                      color: c.focusNodeLocationOneLineDesc.hasFocus
                           ? Colors.yellow.shade50
                           : Colors.white,
                       margin: const EdgeInsets.only(
@@ -1250,8 +525,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         right: 25.0,
                       ),
                       child: TextFormField(
-                        focusNode: _focusNodeLocationOneLineDesc,
-                        controller: _locationOneLineDescController,
+                        focusNode: c.focusNodeLocationOneLineDesc,
+                        controller: c.locationOneLineDescController,
                         minLines: 1,
                         maxLines: 2,
                         onChanged: (String text) {
@@ -1279,13 +554,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.search),
                             tooltip: 'Lookup location',
-                            onPressed: _openLocationLookup,
+                            onPressed: c.openLocationLookup,
                           ),
                         ),
                       ),
                     ),
                     Container(
-                      color: _focusNodeDatetime.hasFocus
+                      color: c.focusNodeDatetime.hasFocus
                           ? Colors.yellow.shade50
                           : Colors.white,
                       margin: const EdgeInsets.only(
@@ -1298,8 +573,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       //   onDateTimeChanged: (value) {},
                       // ),
                       child: TextFormField(
-                        controller: _eventDatetimeController,
-                        focusNode: _focusNodeDatetime,
+                        controller: c.eventDatetimeController,
+                        focusNode: c.focusNodeDatetime,
                         readOnly: true,
                         onTap: () async {
                           final DateFormat formatter = DateFormat(
@@ -1307,7 +582,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           );
                           DateTime eventStartDate =
                               formatter.tryParse(
-                                _eventDatetimeController.text,
+                                c.eventDatetimeController.text,
                               ) ??
                               DateTime.now();
 
@@ -1357,10 +632,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ).format(selectedDateTime);
 
                             // Update the controller
-                            _eventDatetimeController.text = formatted;
+                            c.eventDatetimeController.text = formatted;
 
                             // Optionally trigger rebuild or setState
-                            setStateIfMounted(() {});
+                            c.mutate(() {});
                           }
                         },
                         decoration: InputDecoration(
@@ -1379,16 +654,16 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
 
                       // DateTimePicker(
                       //   onFieldSubmitted: (value) {
-                      //     _eventDatetimeController.text = value;
-                      //     setStateIfMounted(() {});
+                      //     c.eventDatetimeController.text = value;
+                      //     c.mutate(() {});
                       //   },
                       //   onChanged: (value) {
-                      //     _eventDatetimeController.text = value;
-                      //     setStateIfMounted(() {});
+                      //     c.eventDatetimeController.text = value;
+                      //     c.mutate(() {});
                       //   },
                       //   onSaved: (newValue) {
-                      //     _eventDatetimeController.text = newValue ?? '';
-                      //     setStateIfMounted(() {});
+                      //     c.eventDatetimeController.text = newValue ?? '';
+                      //     c.mutate(() {});
                       //   },
                       //   decoration: InputDecoration(
                       //     labelText: 'Date / Time',
@@ -1399,8 +674,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       //     ),
                       //     hintStyle: ts_hint,
                       //   ),
-                      //   focusNode: _focusNodeDatetime,
-                      //   controller: _eventDatetimeController,
+                      //   focusNode: c.focusNodeDatetime,
+                      //   controller: c.eventDatetimeController,
                       //   type: DateTimePickerType.dateTime,
                       //   use24HourFormat: false,
                       //   locale: const Locale('en', 'US'),
@@ -1430,27 +705,30 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         ),
                       ),
                       child: Text(
-                        _eventAggregate.event.useFbRunDetails == 1
-                            ? _eventAggregate.event.eventInboundIntegrationId >=
+                        c.eventAggregate.event.useFbRunDetails == 1
+                            ? c
+                                          .eventAggregate
+                                          .event
+                                          .eventInboundIntegrationId >=
                                       integrationPlatformNames.length
                                   ? 'Run data from external source'
-                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                                  : 'Run data from ${integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}'
                             : 'Run data from Harrier Central',
                         textAlign: TextAlign.center,
                         style: ts_headingBlack,
                       ),
                     ),
                     const SizedBox(height: 20.0),
-                    if ((_eventAggregate.event.eventFacebookId != null) &&
-                        (!_isUpdating)) ...<Widget>[
+                    if ((c.eventAggregate.event.eventFacebookId != null) &&
+                        (!c.isUpdating.value)) ...<Widget>[
                       ElevatedButton(
                         child: Text(
-                          'Copy data from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                          'Copy data from ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                           style: ts_button,
                         ),
                         onPressed: () async {
-                          await _useExternalSourceDetails();
-                          setStateIfMounted(() {});
+                          await c.useExternalSourceDetails();
+                          c.mutate(() {});
                         },
                       ),
                     ],
@@ -1465,12 +743,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     );
   }
 
-  Widget _buildImagePage() {
+  Widget _buildImagePage(EditRunDetailsController c) {
     return FutureBuilder<File?>(
-      future: _imageFromGallery,
+      future: c.imageFromGallery,
       builder: (BuildContext context, AsyncSnapshot<File?> snapshot) {
         if (snapshot.hasData) {
-          if (_isUpdating) {
+          if (c.isUpdating.value) {
             return const SizedBox(
               height: 70.0,
               width: 70.0,
@@ -1500,37 +778,37 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   ),
                   child: Text('Use this image', style: ts_button),
                   onPressed: () async {
-                    if ((_eventAggregate.event.eventId.isNotEmpty) &&
-                        (_eventAggregate.event.eventId != GUID_EMPTY)) {
-                      setStateIfMounted(() {
-                        _isUpdating = true;
+                    if ((c.eventAggregate.event.eventId.isNotEmpty) &&
+                        (c.eventAggregate.event.eventId != GUID_EMPTY)) {
+                      c.mutate(() {
+                        c.isUpdating.value = true;
                       });
-                      final String fileName = await _upload(
+                      final String fileName = await c.upload(
                         snapshot.data!,
-                        _eventAggregate.event.eventId,
+                        c.eventAggregate.event.eventId,
                       );
 
                       final EventsService nSvc = EventsService();
                       final String eventId = await nSvc.addEditEvent(
-                        eventId: _eventAggregate.event.eventId,
-                        kennelId: _eventAggregate.event.kennelId,
+                        eventId: c.eventAggregate.event.eventId,
+                        kennelId: c.eventAggregate.event.kennelId,
                         eventImageUrl: BASE_EVENT_IMAGE_URL + fileName,
                         useFbImage: 0,
                       );
 
-                      await _refreshAfterSave(eventId);
+                      await c.refreshAfterSave(eventId);
 
-                      if (widget.isNewRun) {
-                        setStateIfMounted(() {
-                          _isUpdating = false;
+                      if (c.isNewRun) {
+                        c.mutate(() {
+                          c.isUpdating.value = false;
                         });
                         await Future<void>.delayed(
                           const Duration(milliseconds: 1000),
                         );
-                        _tabController.animateTo(_currentTab.next);
+                        c.tabController.animateTo(c.currentTab.value.next);
                       } else {
-                        setStateIfMounted(() {
-                          _isUpdating = false;
+                        c.mutate(() {
+                          c.isUpdating.value = false;
                         });
 
                         final SnackBar snackBar = SnackBar(
@@ -1543,7 +821,6 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           backgroundColor: hc_blue,
                         );
 
-                        if (!mounted) return;
                         ScaffoldMessenger.of(
                           navigatorKey.currentContext!,
                         ).showSnackBar(snackBar);
@@ -1564,12 +841,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   ),
                   child: Text('Select again from gallery', style: ts_button),
                   onPressed: () async {
-                    await _getImageFromGallery(ImageSource.gallery);
+                    await c.getImageFromGallery(ImageSource.gallery);
                   },
                 ),
               ),
-              if ((_eventAggregate.event.eventFacebookId != null) &&
-                  (!_isUpdating)) ...<Widget>[
+              if ((c.eventAggregate.event.eventFacebookId != null) &&
+                  (!c.isUpdating.value)) ...<Widget>[
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: ElevatedButton(
@@ -1580,27 +857,27 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ), // double.infinity is the width and 30 is the height
                     ),
                     child: Text(
-                      'Use image from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                      'Use image from ${integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                       style: ts_button,
                     ),
                     onPressed: () async {
-                      setStateIfMounted(() {
-                        _isUpdating = true;
+                      c.mutate(() {
+                        c.isUpdating.value = true;
                       });
                       final EventsService nSvc = EventsService();
                       final String eventId = await nSvc.addEditEvent(
-                        eventId: _eventAggregate.event.eventId,
-                        kennelId: _eventAggregate.event.kennelId,
+                        eventId: c.eventAggregate.event.eventId,
+                        kennelId: c.eventAggregate.event.kennelId,
                         useFbImage: 1,
                       );
 
-                      await _refreshAfterSave(eventId);
-                      setStateIfMounted(() {
-                        _isUpdating = false;
+                      await c.refreshAfterSave(eventId);
+                      c.mutate(() {
+                        c.isUpdating.value = false;
                         final SnackBar snackBar = SnackBar(
                           duration: const Duration(seconds: 3),
                           content: Text(
-                            'Image is being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                            'Image is being synced from ${integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                             textAlign: TextAlign.center,
                             style: ts_titleCondensedBlack,
                           ),
@@ -1624,8 +901,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   ),
                   child: Text('Use original image', style: ts_button),
                   onPressed: () {
-                    setStateIfMounted(() {
-                      _imageFromGallery = Future<File?>.value(null);
+                    c.mutate(() {
+                      c.imageFromGallery = Future<File?>.value(null);
                     });
                   },
                 ),
@@ -1634,7 +911,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
             ],
           );
         } else {
-          return _isUpdating
+          return c.isUpdating.value
               ? const SizedBox(
                   height: 70.0,
                   width: 70.0,
@@ -1644,7 +921,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    if (_eventAggregate.event.eventImage != null) ...<Widget>[
+                    if (c.eventAggregate.event.eventImage != null) ...<Widget>[
                       Expanded(
                         child: Container(
                           margin: const EdgeInsets.all(20.0),
@@ -1654,7 +931,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             children: <Widget>[
                               Expanded(
                                 child: CachedNetworkImage(
-                                  imageUrl: _eventAggregate.event.eventImage!,
+                                  imageUrl: c.eventAggregate.event.eventImage!,
                                   // errorWidget:
                                   //     (BuildContext context, String url, Exception error) =>
                                   //         const  Icon(Icons.error),
@@ -1681,7 +958,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                         style: ts_button,
                                       ),
                                       onPressed: () async {
-                                        await _getImageFromGallery(
+                                        await c.getImageFromGallery(
                                           ImageSource.gallery,
                                         );
                                       },
@@ -1738,23 +1015,22 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                           ),
                                         );
                                         if (confirmed != true) return;
-                                        setStateIfMounted(() {
-                                          _isUpdating = true;
+                                        c.mutate(() {
+                                          c.isUpdating.value = true;
                                         });
                                         final EventsService nSvc =
                                             EventsService();
-                                        final String eventId = await nSvc
-                                            .addEditEvent(
-                                              eventId:
-                                                  _eventAggregate.event.eventId,
-                                              kennelId: _eventAggregate
-                                                  .event
-                                                  .kennelId,
-                                              deleteEventImage: true,
-                                            );
-                                        await _refreshAfterSave(eventId);
-                                        setStateIfMounted(() {
-                                          _isUpdating = false;
+                                        final String
+                                        eventId = await nSvc.addEditEvent(
+                                          eventId:
+                                              c.eventAggregate.event.eventId,
+                                          kennelId:
+                                              c.eventAggregate.event.kennelId,
+                                          deleteEventImage: true,
+                                        );
+                                        await c.refreshAfterSave(eventId);
+                                        c.mutate(() {
+                                          c.isUpdating.value = false;
                                           final SnackBar snackBar = SnackBar(
                                             duration: const Duration(
                                               seconds: 3,
@@ -1766,7 +1042,6 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                             ),
                                             backgroundColor: hc_blue,
                                           );
-                                          if (!mounted) return;
                                           ScaffoldMessenger.of(
                                             navigatorKey.currentContext!,
                                           ).showSnackBar(snackBar);
@@ -1774,9 +1049,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                       },
                                     ),
                                   ),
-                                  if ((_eventAggregate.event.eventFacebookId !=
+                                  if ((c.eventAggregate.event.eventFacebookId !=
                                           null) &&
-                                      (!_isUpdating)) ...<Widget>[
+                                      (!c.isUpdating.value)) ...<Widget>[
                                     const SizedBox(height: 10),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
@@ -1790,32 +1065,33 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                           ), // double.infinity is the width and 30 is the height
                                         ),
                                         child: Text(
-                                          'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                          'Use ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                                           style: ts_button,
                                         ),
                                         onPressed: () async {
-                                          setStateIfMounted(() {
-                                            _isUpdating = true;
+                                          c.mutate(() {
+                                            c.isUpdating.value = true;
                                           });
                                           final EventsService nSvc =
                                               EventsService();
                                           final String eventId = await nSvc
                                               .addEditEvent(
-                                                eventId: _eventAggregate
+                                                eventId: c
+                                                    .eventAggregate
                                                     .event
                                                     .eventId,
                                                 useFbImage: 1,
                                               );
 
-                                          await _refreshAfterSave(eventId);
-                                          setStateIfMounted(() {
-                                            _isUpdating = false;
+                                          await c.refreshAfterSave(eventId);
+                                          c.mutate(() {
+                                            c.isUpdating.value = false;
                                             final SnackBar snackBar = SnackBar(
                                               duration: const Duration(
                                                 seconds: 3,
                                               ),
                                               content: Text(
-                                                'Image is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                                'Image is being synced from ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                                                 textAlign: TextAlign.center,
                                                 style: ts_titleCondensedBlack,
                                               ),
@@ -1837,7 +1113,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         ),
                       ),
                     ],
-                    if (_eventAggregate.event.eventImage == null) ...<Widget>[
+                    if (c.eventAggregate.event.eventImage == null) ...<Widget>[
                       Text(
                         'No image provided',
                         textAlign: TextAlign.center,
@@ -1859,17 +1135,17 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           ),
                           child: Text('Select from gallery', style: ts_button),
                           onPressed: () async {
-                            await _getImageFromGallery(ImageSource.gallery);
+                            await c.getImageFromGallery(ImageSource.gallery);
                           },
                         ),
                       ),
                     ],
-                    if (widget.isNewRun) ...<Widget>[
+                    if (c.isNewRun) ...<Widget>[
                       ElevatedButton(
                         child: Text('Skip', style: ts_button),
                         onPressed: () {
-                          setStateIfMounted(() {
-                            _tabController.animateTo(_currentTab.next);
+                          c.mutate(() {
+                            c.tabController.animateTo(c.currentTab.value.next);
                           });
                         },
                       ),
@@ -1882,71 +1158,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     );
   }
 
-  Future<String> _upload(File imageFile, String eventId) async {
-    final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
-    final String fileName = 'eventImage_${eventId}_$datetime.jpg';
-    final Uri uri = Uri.parse(
-      'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D',
-    );
-
-    final Request request = Request('PUT', uri);
-
-    final Map<String, String> headers = <String, String>{
-      'content-type': 'image/jpeg',
-      'x-ms-blob-type': 'BlockBlob',
-    };
-
-    request.headers.addAll(headers);
-
-    request.bodyBytes = imageFile.readAsBytesSync();
-    // StreamedResponse response = await request.send();
-    // //print('Avatar thumbnail upload response = ${response.statusCode}');
-
-    await request.send();
-
-    return fileName;
-  }
-
-  Future<void> _getImageFromGallery(ImageSource source) async {
-    if ((_eventAggregate.event.eventId.isEmpty) ||
-        (_eventAggregate.event.eventId == GUID_EMPTY)) {
-      await Utilities.showAlert(
-        'Please save Details first',
-        'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.',
-        'OK',
-      );
-
-      _tabController.animateTo(EditingTabEnum.details.index);
-    } else {
-      final XFile? image = await ImagePicker().pickImage(source: source);
-
-      if (image == null) {
-        // setStateIfMounted(() {
-        //   _selectedRadioValue = _previouslySelectedRadioValue;
-        //   _imageTypeSelection = _previousImageTypeSelection;
-        // });
-      } else {
-        final ImageCropper ic = ImageCropper();
-        final CroppedFile? croppedFile = await ic.cropImage(
-          sourcePath: image.path,
-          //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-          //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-          maxWidth: 1000,
-          maxHeight: 1000,
-          compressFormat: ImageCompressFormat.jpg,
-          compressQuality: 50,
-        );
-
-        setStateIfMounted(() {
-          if (croppedFile != null) {
-            _imageFromGallery = Future<File>.value(File(croppedFile.path));
-          }
-        });
-      }
-    }
-  }
-
-  Widget _buildMapPage() {
+  Widget _buildMapPage(EditRunDetailsController c) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1960,34 +1172,34 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
               //   height: MediaQuery.sizeOf(context).height - 300,
               //   child:
               EditorMap(
-                _eventAggregate.extensions.latitude == null
+                c.eventAggregate.extensions.latitude == null
                     ? null
                     : latlng.LatLng(
-                        _eventAggregate.extensions.latitude!,
-                        _eventAggregate.extensions.longitude!,
+                        c.eventAggregate.extensions.latitude!,
+                        c.eventAggregate.extensions.longitude!,
                       ),
-                _mapCenter,
+                c.mapCenter,
                 latlng.LatLng(
-                  _eventAggregate.extensions.kenlLat,
-                  _eventAggregate.extensions.kenlLon,
+                  c.eventAggregate.extensions.kenlLat,
+                  c.eventAggregate.extensions.kenlLon,
                 ),
                 1.0,
                 18.0,
                 14.0,
-                _trueNorthLock,
-                _mapKey,
+                c.trueNorthLock,
+                c.mapKey,
                 mapMoved: (latlng.LatLng newPosition) {
-                  _mapCenter = newPosition;
+                  c.mapCenter = newPosition;
                 },
               ),
-              if ((_mapCenter.latitude == CLEAR_LATLONG) ||
-                  (_mapCenter.longitude == CLEAR_LATLONG)) ...<Widget>[
+              if ((c.mapCenter.latitude == CLEAR_LATLONG) ||
+                  (c.mapCenter.longitude == CLEAR_LATLONG)) ...<Widget>[
                 GestureDetector(
                   onTapDown: (dynamic tapDownDetails) {
-                    setStateIfMounted(() {
-                      _mapCenter = latlng.LatLng(
-                        _eventAggregate.extensions.kenlLat,
-                        _eventAggregate.extensions.kenlLon,
+                    c.mutate(() {
+                      c.mapCenter = latlng.LatLng(
+                        c.eventAggregate.extensions.kenlLat,
+                        c.eventAggregate.extensions.kenlLon,
                       );
                     });
                   },
@@ -2005,8 +1217,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   ),
                 ),
               ],
-              if ((_mapCenter.latitude != CLEAR_LATLONG) ||
-                  (_mapCenter.longitude != CLEAR_LATLONG)) ...<Widget>[
+              if ((c.mapCenter.latitude != CLEAR_LATLONG) ||
+                  (c.mapCenter.longitude != CLEAR_LATLONG)) ...<Widget>[
                 IgnorePointer(
                   ignoring: true,
                   child: Image.asset(
@@ -2029,8 +1241,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                   ),
                   child: Text(
-                    _eventAggregate.event.useFbLatLon == 1
-                        ? 'Location from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                    c.eventAggregate.event.useFbLatLon == 1
+                        ? 'Location from ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}'
                         : 'Location from Harrier Central',
                     textAlign: TextAlign.center,
                     style: ts_headingBlack,
@@ -2043,8 +1255,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 top: 10.0,
                 child: GestureDetector(
                   onTap: () {
-                    setStateIfMounted(() {
-                      _mapCenter = const latlng.LatLng(
+                    c.mutate(() {
+                      c.mapCenter = const latlng.LatLng(
                         CLEAR_LATLONG,
                         CLEAR_LATLONG,
                       );
@@ -2067,8 +1279,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   top: 10.0,
                   child: GestureDetector(
                     onTap: () {
-                      setStateIfMounted(() {
-                        _mapCenter = latlng.LatLng(
+                      c.mutate(() {
+                        c.mapCenter = latlng.LatLng(
                           deviceInfo.deviceLat!,
                           deviceInfo.deviceLon!,
                         );
@@ -2085,17 +1297,17 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 ),
               ],
 
-              if (_eventAggregate.extensions.isMapAndDistanceValid ??
+              if (c.eventAggregate.extensions.isMapAndDistanceValid ??
                   false) ...<Widget>[
                 Positioned(
                   right: 130.0,
                   top: 10.0,
                   child: GestureDetector(
                     onTap: () {
-                      setStateIfMounted(() {
-                        _mapCenter = latlng.LatLng(
-                          _eventAggregate.extensions.latitude!,
-                          _eventAggregate.extensions.longitude!,
+                      c.mutate(() {
+                        c.mapCenter = latlng.LatLng(
+                          c.eventAggregate.extensions.latitude!,
+                          c.eventAggregate.extensions.longitude!,
                         );
                       });
                     },
@@ -2114,15 +1326,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 top: 10.0,
                 child: GestureDetector(
                   onTap: () {
-                    setStateIfMounted(() {
-                      _trueNorthLock = !_trueNorthLock;
+                    c.mutate(() {
+                      c.trueNorthLock = !c.trueNorthLock;
                     });
                   },
                   child: SizedBox(
                     height: 50.0,
                     width: 50.0,
                     child: Image.asset(
-                      _trueNorthLock
+                      c.trueNorthLock
                           ? 'images/other/set_map_to_true_north_lock.png'
                           : 'images/other/set_map_rotation_enabled.png',
                     ),
@@ -2133,7 +1345,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 left: 10.0,
                 right: 10.0,
                 bottom: 80.0,
-                child: _isUpdating
+                child: c.isUpdating.value
                     ? const SizedBox(
                         height: 70.0,
                         width: 70.0,
@@ -2144,33 +1356,35 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          if (widget.isNewRun) ...<Widget>[
+                          if (c.isNewRun) ...<Widget>[
                             ElevatedButton(
                               child: Text('Skip', style: ts_button),
                               onPressed: () {
-                                setStateIfMounted(() {
-                                  _tabController.animateTo(_currentTab.next);
+                                c.mutate(() {
+                                  c.tabController.animateTo(
+                                    c.currentTab.value.next,
+                                  );
                                 });
                               },
                             ),
                             const SizedBox(width: 10.0),
                             ElevatedButton(
-                              onPressed: _geocodeAndNavigateToMap,
+                              onPressed: c.geocodeAndNavigateToMap,
                               child: Text('Auto-locate', style: ts_button),
                             ),
                             const SizedBox(width: 10.0),
                           ],
                           ElevatedButton(
                             child: Text(
-                              ((_mapCenter.latitude == CLEAR_LATLONG) &&
-                                      (_mapCenter.longitude == CLEAR_LATLONG))
+                              ((c.mapCenter.latitude == CLEAR_LATLONG) &&
+                                      (c.mapCenter.longitude == CLEAR_LATLONG))
                                   ? 'Set no location'
                                   : 'Set Location',
                               style: ts_button,
                             ),
                             onPressed: () async {
-                              if ((_eventAggregate.event.eventId.isEmpty) ||
-                                  (_eventAggregate.event.eventId ==
+                              if ((c.eventAggregate.event.eventId.isEmpty) ||
+                                  (c.eventAggregate.event.eventId ==
                                       GUID_EMPTY)) {
                                 await Utilities.showAlert(
                                   'Please save details first',
@@ -2178,42 +1392,45 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                   'OK',
                                 );
 
-                                _tabController.animateTo(
+                                c.tabController.animateTo(
                                   EditingTabEnum.details.index,
                                 );
                               } else {
-                                setStateIfMounted(() {
-                                  _isUpdating = true;
+                                c.mutate(() {
+                                  c.isUpdating.value = true;
                                 });
                                 final EventsService nSvc = EventsService();
                                 //check to see if "no location" is set. If so, don't overwrite it
-                                if ((_mapCenter.latitude != CLEAR_LATLONG) &&
-                                    (_mapCenter.longitude != CLEAR_LATLONG) &&
-                                    (_mapKey.currentState?.mapController !=
+                                if ((c.mapCenter.latitude != CLEAR_LATLONG) &&
+                                    (c.mapCenter.longitude != CLEAR_LATLONG) &&
+                                    (c.mapKey.currentState?.mapController !=
                                         null)) {
-                                  _mapCenter = _mapKey
+                                  c.mapCenter = c
+                                      .mapKey
                                       .currentState!
                                       .mapController
                                       .camera
                                       .center;
                                 }
                                 final String eventId = await nSvc.addEditEvent(
-                                  eventId: _eventAggregate.event.eventId,
-                                  kennelId: _eventAggregate.event.kennelId,
-                                  lat: _mapCenter.latitude,
-                                  lon: _mapCenter.longitude,
+                                  eventId: c.eventAggregate.event.eventId,
+                                  kennelId: c.eventAggregate.event.kennelId,
+                                  lat: c.mapCenter.latitude,
+                                  lon: c.mapCenter.longitude,
                                   useFbLatLon: 0,
                                 );
-                                await _refreshAfterSave(eventId);
+                                await c.refreshAfterSave(eventId);
 
-                                if (widget.isNewRun) {
-                                  setStateIfMounted(() {
-                                    _isUpdating = false;
+                                if (c.isNewRun) {
+                                  c.mutate(() {
+                                    c.isUpdating.value = false;
                                   });
                                   await Future<void>.delayed(
                                     const Duration(milliseconds: 1000),
                                   );
-                                  _tabController.animateTo(_currentTab.next);
+                                  c.tabController.animateTo(
+                                    c.currentTab.value.next,
+                                  );
                                 } else {
                                   final SnackBar snackBar = SnackBar(
                                     duration: const Duration(seconds: 3),
@@ -2225,74 +1442,77 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                     backgroundColor: hc_blue,
                                   );
 
-                                  if (!mounted) return;
                                   ScaffoldMessenger.of(
-                                    context,
+                                    navigatorKey.currentContext!,
                                   ).showSnackBar(snackBar);
                                 }
 
                                 await Future<void>.delayed(
                                   const Duration(milliseconds: 500),
                                 );
-                                setStateIfMounted(() {
-                                  _isUpdating = false;
+                                c.mutate(() {
+                                  c.isUpdating.value = false;
                                 });
 
                                 //_showEventPopup(_calendarController.selectedDay);
                               }
                             },
                           ),
-                          if ((_eventAggregate.event.eventFacebookId != null) &&
-                              (!_isUpdating)) ...<Widget>[
+                          if ((c.eventAggregate.event.eventFacebookId !=
+                                  null) &&
+                              (!c.isUpdating.value)) ...<Widget>[
                             const SizedBox(width: 20.0),
                             Expanded(
                               child: ElevatedButton(
                                 child: AutoSizeText(
-                                  'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                  'Use ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                                   style: ts_button,
                                   minFontSize: 3.0,
                                   maxLines: 1,
                                   //overflow: TextOverflow.ellipsis,
                                 ),
                                 onPressed: () async {
-                                  setStateIfMounted(() {
-                                    _isUpdating = true;
+                                  c.mutate(() {
+                                    c.isUpdating.value = true;
                                   });
                                   final EventsService nSvc = EventsService();
                                   final String eventId = await nSvc
                                       .addEditEvent(
-                                        eventId: _eventAggregate.event.eventId,
+                                        eventId: c.eventAggregate.event.eventId,
                                         useFbLatLon: 1,
                                       );
 
-                                  await _refreshAfterSave(eventId);
-                                  setStateIfMounted(() {
-                                    if ((_eventAggregate.extensions.latitude ==
+                                  await c.refreshAfterSave(eventId);
+                                  c.mutate(() {
+                                    if ((c.eventAggregate.extensions.latitude ==
                                             null) ||
-                                        (_eventAggregate.extensions.longitude ==
+                                        (c
+                                                .eventAggregate
+                                                .extensions
+                                                .longitude ==
                                             null)) {
-                                      _mapCenter = latlng.LatLng(
-                                        _eventAggregate.extensions.kenlLat,
-                                        _eventAggregate.extensions.kenlLon,
+                                      c.mapCenter = latlng.LatLng(
+                                        c.eventAggregate.extensions.kenlLat,
+                                        c.eventAggregate.extensions.kenlLon,
                                       );
                                     } else {
-                                      _mapCenter = latlng.LatLng(
-                                        _eventAggregate.extensions.latitude!,
-                                        _eventAggregate.extensions.longitude!,
+                                      c.mapCenter = latlng.LatLng(
+                                        c.eventAggregate.extensions.latitude!,
+                                        c.eventAggregate.extensions.longitude!,
                                       );
                                     }
-                                    _isUpdating = false;
+                                    c.isUpdating.value = false;
                                     final SnackBar snackBar = SnackBar(
                                       duration: const Duration(seconds: 3),
                                       content: Text(
-                                        'Location is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                        'Location is being synced from ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                                         textAlign: TextAlign.center,
                                         style: ts_titleCondensedBlack,
                                       ),
                                       backgroundColor: hc_blue,
                                     );
                                     ScaffoldMessenger.of(
-                                      context,
+                                      navigatorKey.currentContext!,
                                     ).showSnackBar(snackBar);
                                   });
                                 },
@@ -2309,18 +1529,21 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     );
   }
 
-  Widget _buildOtherDetailsPage(BuildContext context) {
+  Widget _buildOtherDetailsPage(
+    BuildContext context,
+    EditRunDetailsController c,
+  ) {
     return Theme(
       data: Theme.of(context).copyWith(
         disabledColor: Colors.grey,
         iconTheme: IconTheme.of(context).copyWith(color: hc_red, size: 35),
       ),
       child: KeyboardActions(
-        config: _buildConfig(context),
+        config: _buildConfig(context, c),
         tapOutsideBehavior: TapOutsideBehavior.none,
         child: SingleChildScrollView(
           child: Form(
-            key: _otherDetailsFormKey,
+            key: c.otherDetailsFormKey,
             child: Wrap(
               children: <Widget>[
                 Column(
@@ -2361,7 +1584,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color: _focusNodeHares.hasFocus
+                      color: c.focusNodeHares.hasFocus
                           ? Colors.yellow.shade50
                           : Colors.white,
                       margin: const EdgeInsets.only(
@@ -2373,15 +1596,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       child: TextFormField(
                         // onChanged: (String text) {
                         //   if ((text == null) || (text.isEmpty)) {
-                        //     _absoluteEventNumberController.text = '<auto>';
+                        //     c.absoluteEventNumberController.text = '<auto>';
                         //   } else if ((text.length > 6) && (text.contains('<auto>'))) {
-                        //     _absoluteEventNumberController.text = _absoluteEventNumberController.text.replaceAll('<auto>', '');
-                        //     _absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: _absoluteEventNumberController.text.length));
+                        //     c.absoluteEventNumberController.text = c.absoluteEventNumberController.text.replaceAll('<auto>', '');
+                        //     c.absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: c.absoluteEventNumberController.text.length));
                         //   }
                         // },
                         maxLines: 1,
-                        focusNode: _focusNodeHares,
-                        controller: _haresController,
+                        focusNode: c.focusNodeHares,
+                        controller: c.haresController,
                         // validator: (String val) {
                         //   if (val.isEmpty) {
                         //     return 'Please provide an event number or leave blank for auto numbering';
@@ -2417,7 +1640,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color: _focusNodeAbsoluteEventNumber.hasFocus
+                      color: c.focusNodeAbsoluteEventNumber.hasFocus
                           ? Colors.yellow.shade50
                           : Colors.white,
                       margin: const EdgeInsets.only(
@@ -2429,15 +1652,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       child: TextFormField(
                         // onChanged: (String text) {
                         //   if ((text == null) || (text.isEmpty)) {
-                        //     _absoluteEventNumberController.text = '<auto>';
+                        //     c.absoluteEventNumberController.text = '<auto>';
                         //   } else if ((text.length > 6) && (text.contains('<auto>'))) {
-                        //     _absoluteEventNumberController.text = _absoluteEventNumberController.text.replaceAll('<auto>', '');
-                        //     _absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: _absoluteEventNumberController.text.length));
+                        //     c.absoluteEventNumberController.text = c.absoluteEventNumberController.text.replaceAll('<auto>', '');
+                        //     c.absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: c.absoluteEventNumberController.text.length));
                         //   }
                         // },
                         maxLines: 1,
-                        focusNode: _focusNodeAbsoluteEventNumber,
-                        controller: _absoluteEventNumberController,
+                        focusNode: c.focusNodeAbsoluteEventNumber,
+                        controller: c.absoluteEventNumberController,
                         // validator: (String val) {
                         //   if (val.isEmpty) {
                         //     return 'Please provide an event number or leave blank for auto numbering';
@@ -2485,22 +1708,22 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeEventPriceForMembers.hasFocus
+                              color: c.focusNodeEventPriceForMembers.hasFocus
                                   ? Colors.yellow.shade50
                                   : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
                                 //   if ((text == null) || (text.isEmpty)) {
-                                //     //_eventPriceForMembersController.text = '';
+                                //     //c.eventPriceForMembersController.text = '';
                                 //   } else if ((text.length > 9) && (text.contains('<default>'))) {
-                                //     // _eventPriceForMembersController.text = _eventPriceForMembersController.text.replaceAll('<default>', '');
-                                //     // _eventPriceForMembersController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForMembersController.text.length));
+                                //     // c.eventPriceForMembersController.text = c.eventPriceForMembersController.text.replaceAll('<default>', '');
+                                //     // c.eventPriceForMembersController.selection = TextSelection.fromPosition(TextPosition(offset: c.eventPriceForMembersController.text.length));
                                 //   }
                                 // },
                                 maxLines: 1,
-                                focusNode: _focusNodeEventPriceForMembers,
-                                controller: _eventPriceForMembersController,
+                                focusNode: c.focusNodeEventPriceForMembers,
+                                controller: c.eventPriceForMembersController,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                       signed: false,
@@ -2525,23 +1748,23 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeEventPriceForNonMembers.hasFocus
+                              color: c.focusNodeEventPriceForNonMembers.hasFocus
                                   ? Colors.yellow.shade50
                                   : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
                                 //   if ((text == null) || (text.isEmpty)) {
-                                //     //_eventPriceForNonMembersController.text = '<default>';
+                                //     //c.eventPriceForNonMembersController.text = '<default>';
                                 //   } else if ((text.length > 9) && (text.contains('<default>'))) {
-                                //     _eventPriceForNonMembersController.text = _eventPriceForNonMembersController.text.replaceAll('<default>', '');
-                                //     _eventPriceForNonMembersController.selection =
-                                //         TextSelection.fromPosition(TextPosition(offset: _eventPriceForNonMembersController.text.length));
+                                //     c.eventPriceForNonMembersController.text = c.eventPriceForNonMembersController.text.replaceAll('<default>', '');
+                                //     c.eventPriceForNonMembersController.selection =
+                                //         TextSelection.fromPosition(TextPosition(offset: c.eventPriceForNonMembersController.text.length));
                                 //   }
                                 // },
                                 maxLines: 1,
-                                focusNode: _focusNodeEventPriceForNonMembers,
-                                controller: _eventPriceForNonMembersController,
+                                focusNode: c.focusNodeEventPriceForNonMembers,
+                                controller: c.eventPriceForNonMembersController,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                       signed: false,
@@ -2591,22 +1814,22 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeEventPriceForExtras.hasFocus
+                              color: c.focusNodeEventPriceForExtras.hasFocus
                                   ? Colors.yellow.shade50
                                   : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
                                 //   if ((text == null) || (text.isEmpty)) {
-                                //     _eventPriceForExtrasController.text = '<none>';
+                                //     c.eventPriceForExtrasController.text = '<none>';
                                 //   } else if ((text.length > 6) && (text.contains('<none>'))) {
-                                //     _eventPriceForExtrasController.text = _eventPriceForExtrasController.text.replaceAll('<none>', '');
-                                //     _eventPriceForExtrasController.selection = TextSelection.fromPosition(TextPosition(offset: _eventPriceForExtrasController.text.length));
+                                //     c.eventPriceForExtrasController.text = c.eventPriceForExtrasController.text.replaceAll('<none>', '');
+                                //     c.eventPriceForExtrasController.selection = TextSelection.fromPosition(TextPosition(offset: c.eventPriceForExtrasController.text.length));
                                 //   }
                                 // },
                                 maxLines: 1,
-                                focusNode: _focusNodeEventPriceForExtras,
-                                controller: _eventPriceForExtrasController,
+                                focusNode: c.focusNodeEventPriceForExtras,
+                                controller: c.eventPriceForExtrasController,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                       signed: false,
@@ -2631,22 +1854,22 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeExtrasDescription.hasFocus
+                              color: c.focusNodeExtrasDescription.hasFocus
                                   ? Colors.yellow.shade50
                                   : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
                                 //   if ((text == null) || (text.isEmpty)) {
-                                //     _extrasDescriptionController.text = '<none>';
+                                //     c.extrasDescriptionController.text = '<none>';
                                 //   } else if ((text.length > 6) && (text.contains('<none>'))) {
-                                //     _extrasDescriptionController.text = _extrasDescriptionController.text.replaceAll('<none>', '');
-                                //     _extrasDescriptionController.selection = TextSelection.fromPosition(TextPosition(offset: _extrasDescriptionController.text.length));
+                                //     c.extrasDescriptionController.text = c.extrasDescriptionController.text.replaceAll('<none>', '');
+                                //     c.extrasDescriptionController.selection = TextSelection.fromPosition(TextPosition(offset: c.extrasDescriptionController.text.length));
                                 //   }
                                 // },
                                 maxLines: 1,
-                                focusNode: _focusNodeExtrasDescription,
-                                controller: _extrasDescriptionController,
+                                focusNode: c.focusNodeExtrasDescription,
+                                controller: c.extrasDescriptionController,
                                 keyboardType: TextInputType.text,
                                 textCapitalization:
                                     TextCapitalization.sentences,
@@ -2668,7 +1891,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      //color: c.focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
                       margin: const EdgeInsets.only(
                         top: 10.0,
                         bottom: 10.0,
@@ -2690,13 +1913,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                               style: ts_regularBlack,
                             ),
                             validator: (bool? result) {
-                              _isVisible = result ?? false;
+                              c.isVisible = result ?? false;
                               return null;
                             },
-                            initialValue: _isVisible,
+                            initialValue: c.isVisible,
                             onChanged: (bool? result) {
-                              setStateIfMounted(() {
-                                _isVisible = result ?? false;
+                              c.mutate(() {
+                                c.isVisible = result ?? false;
                               });
                             },
                           ),
@@ -2705,14 +1928,14 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                               'Count this run',
                               style: ts_regularBlack,
                             ),
-                            initialValue: _isCountedRun,
+                            initialValue: c.isCountedRun,
                             validator: (bool? result) {
-                              _isCountedRun = result ?? false;
+                              c.isCountedRun = result ?? false;
                               return null;
                             },
                             onChanged: (bool? result) {
-                              setStateIfMounted(() {
-                                _isCountedRun = result ?? false;
+                              c.mutate(() {
+                                c.isCountedRun = result ?? false;
                               });
                             },
                           ),
@@ -2721,23 +1944,23 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                               'Users can edit run history',
                               style: ts_regularBlack,
                             ),
-                            initialValue: _usersCanEditRunAttendence == 1,
+                            initialValue: c.usersCanEditRunAttendence == 1,
                             tristate: true,
                             validator: (bool? result) {
                               if (result == null) {
-                                _usersCanEditRunAttendence = -1;
+                                c.usersCanEditRunAttendence = -1;
                               } else {
-                                _usersCanEditRunAttendence = result ? 1 : 0;
+                                c.usersCanEditRunAttendence = result ? 1 : 0;
                               }
 
                               return null;
                             },
                             onChanged: (bool? result) {
-                              setStateIfMounted(() {
+                              c.mutate(() {
                                 if (result == null) {
-                                  _usersCanEditRunAttendence = -1;
+                                  c.usersCanEditRunAttendence = -1;
                                 } else {
-                                  _usersCanEditRunAttendence = result ? 1 : 0;
+                                  c.usersCanEditRunAttendence = result ? 1 : 0;
                                 }
                               });
                             },
@@ -2747,14 +1970,14 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                               'Promote this run',
                               style: ts_regularBlack,
                             ),
-                            initialValue: _isPromotedEvent,
+                            initialValue: c.isPromotedEvent,
                             validator: (bool? result) {
-                              _isPromotedEvent = result ?? false;
+                              c.isPromotedEvent = result ?? false;
                               return null;
                             },
                             onChanged: (bool? result) {
-                              setStateIfMounted(() {
-                                _isPromotedEvent = result ?? false;
+                              c.mutate(() {
+                                c.isPromotedEvent = result ?? false;
                               });
                             },
                           ),
@@ -2774,7 +1997,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
+                      //color: c.focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
                       margin: const EdgeInsets.only(
                         top: 10.0,
                         bottom: 10.0,
@@ -2789,10 +2012,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         ),
                       ),
                       child: RadioGroup(
-                        groupValue: _eventGeographicScope,
+                        groupValue: c.eventGeographicScope,
                         onChanged: (int? value) {
-                          setStateIfMounted(() {
-                            _eventGeographicScope = value ?? 0;
+                          c.mutate(() {
+                            c.eventGeographicScope = value ?? 0;
                           });
                         },
 
@@ -2863,246 +2086,6 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           ),
         ),
       ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Gazetteer bottom sheet
-// ---------------------------------------------------------------------------
-
-class _GazetteerBottomSheet extends StatefulWidget {
-  const _GazetteerBottomSheet({
-    required this.initialQuery,
-    required this.kennelLat,
-    required this.kennelLon,
-    required this.onResultSelected,
-  });
-
-  final String initialQuery;
-  final double kennelLat;
-  final double kennelLon;
-  final void Function(AzurePlaceResult) onResultSelected;
-
-  @override
-  State<_GazetteerBottomSheet> createState() => _GazetteerBottomSheetState();
-}
-
-class _GazetteerBottomSheetState extends State<_GazetteerBottomSheet> {
-  late final TextEditingController _searchController;
-  List<AzurePlaceResult> _results = [];
-  bool _isSearching = false;
-  bool _hasSearched = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchController = TextEditingController(text: widget.initialQuery);
-    if (widget.initialQuery.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _search());
-    }
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _search() async {
-    final query = _searchController.text.trim();
-    if (query.isEmpty) return;
-
-    setState(() {
-      _isSearching = true;
-      _results = [];
-    });
-
-    try {
-      final uri = Uri.parse(APP_GEOCODE_PLACE_TO_ADDRESS_API_URL).replace(
-        queryParameters: {
-          'q': query,
-          'lat': widget.kennelLat.toString(),
-          'lon': widget.kennelLon.toString(),
-        },
-      );
-      final response = await get(
-        uri,
-        headers: {'Accept': 'application/json'},
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final place = AzurePlace.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>,
-        );
-        setState(() {
-          _results = place.results ?? [];
-          _hasSearched = true;
-        });
-      }
-    } catch (_) {
-      // leave results empty
-    } finally {
-      setState(() => _isSearching = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.75,
-      minChildSize: 0.4,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (_, scrollController) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Column(
-          children: [
-            _buildHandle(),
-            _buildHeader(),
-            _buildSearchBar(),
-            const Divider(height: 1),
-            Expanded(child: _buildResults(scrollController)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHandle() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Container(
-        width: 40,
-        height: 4,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: Row(
-        children: [
-          Icon(Icons.search, color: hc_red, size: 22),
-          const SizedBox(width: 10),
-          Text('Location Lookup', style: ts_headingBlack),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              autofocus: false,
-              decoration: InputDecoration(
-                hintText: 'Search for a place…',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                isDense: true,
-              ),
-              onSubmitted: (_) => _search(),
-            ),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: hc_red,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            ),
-            onPressed: _isSearching ? null : _search,
-            child: _isSearching
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text('Search'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildResults(ScrollController scrollController) {
-    if (_isSearching) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_results.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Text(
-            _hasSearched
-                ? 'No results found'
-                : 'Enter a place name, address, or establishment',
-            style: ts_mediumBlack.copyWith(color: Colors.grey.shade600),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    }
-    return ListView.separated(
-      controller: scrollController,
-      itemCount: _results.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
-      itemBuilder: (_, index) => _buildResultTile(_results[index]),
-    );
-  }
-
-  Widget _buildResultTile(AzurePlaceResult result) {
-    final addr = result.address;
-    final name =
-        result.poi?.name ?? addr?.freeformAddress ?? 'Unknown location';
-    final subtitle = [
-      addr?.municipality,
-      addr?.countrySubdivision,
-      addr?.country,
-    ].where((s) => s != null && s.isNotEmpty).join(', ');
-
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: hc_red,
-        child: const Icon(Icons.place, color: Colors.white, size: 18),
-      ),
-      title: Text(
-        name,
-        style: ts_titleMediumBlack,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: subtitle.isNotEmpty
-          ? Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis)
-          : null,
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () {
-        Navigator.of(context).pop();
-        widget.onResultSelected(result);
-      },
     );
   }
 }
