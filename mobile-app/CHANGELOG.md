@@ -1,5 +1,28 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.57+1271 (2026-08-02)
+
+### New Features
+- **"Where is the trail?" now shows two arrows.** One points at the nearest bit
+  of trail, the other at the nearest hasher — where they are right now. These
+  are genuinely different places: someone doubling back can be much closer than
+  any part of the line they laid, and now you can see both and choose.
+
+### Fixes
+- **The distance over the arrow no longer disagrees with the distance under
+  it.** The arrow ignored GPS fixes accurate to worse than 15 m while the "they
+  were X away" line accepted up to 25 m, so a middling fix counted for one and
+  not the other — the arrow then aimed at an older, further point. Both now use
+  the same standard, and the arrow uses fresher positions as a result.
+- **It says when it has lost signal.** If the live feed stops, the arrow keeps
+  working from the last positions it has, but now tells you how old they are
+  instead of looking confident.
+
+### Improvements
+- **The Refresh button is gone.** It updates itself every few seconds, and the
+  distance and bearing recalculate with every GPS fix, so there was nothing to
+  refresh.
+
 ## 2.15.56+1270 (2026-08-02)
 
 ### Improvements

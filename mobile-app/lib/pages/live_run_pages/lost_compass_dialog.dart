@@ -40,6 +40,16 @@ class LostCompassController extends GetxController {
   /// leave their wandering in the candidate set.
   static const Duration _lostLookBack = Duration(minutes: 5);
 
+  /// The ONE accuracy gate for every use of a track point in this dialog.
+  ///
+  /// It used to be two: 15 m when choosing the point the arrow aims at, 25 m
+  /// when reporting where that runner had got to. A fix accurate to somewhere
+  /// between the two therefore counted as "they are 110 m away" while being
+  /// invisible to the arrow, which then aimed at an older, further point — the
+  /// dialog said ".11 miles" over an arrow and ".07 miles away" underneath it.
+  /// Any new use of a track point must gate on this and nothing else.
+  static const double _maxUsableAccuracyMeters = 25.0;
+
   final RxBool isLoading = true.obs;
   final RxnString errorMessage = RxnString();
 
@@ -110,11 +120,49 @@ class LostCompassController extends GetxController {
   /// e.g. "Tuna Melt was 1.2 km away 3 minutes ago".
   final RxnString runnerNowLabel = RxnString();
 
+  /// The second arrow: the nearest hasher's CURRENT position, as against the
+  /// nearest point of anyone's trail.
+  ///
+  /// These answer different questions and routinely disagree. The trail is
+  /// where the pack went; the nearest hasher is a person you could catch. When
+  /// someone doubles back, their newest fix can be much closer than any part of
+  /// the line they laid — showing only the trail arrow made the dialog look
+  /// wrong ("go .11 miles that way" under "they are .07 miles away").
+  latlong.LatLng? _hasherPoint;
+  int? _hasherTimestampMs;
+  String? _hasherUserId;
+
+  final RxnDouble bearingToHasher = RxnDouble();
+  final RxnDouble distanceToHasherMeters = RxnDouble();
+  final RxnString nearestHasherName = RxnString();
+  final RxnString hasherAgeLabel = RxnString();
+
+  /// True when the nearest hasher is the same person whose trail the first
+  /// arrow points at — used to drop the now-duplicated prose line.
+  bool get hasherIsTrailOwner =>
+      _hasherUserId != null &&
+      _targetRunnerId != null &&
+      normalizeUuid(_hasherUserId!) == normalizeUuid(_targetRunnerId!);
+
   /// True once the runner has chosen to tell the pack. Opening the compass
   /// alone announces nothing — most of the time the arrow settles it and there
   /// is no reason to interrupt everyone.
   final RxBool hasAnnounced = false.obs;
   final RxBool isAnnouncing = false.obs;
+
+  /// When the last poll actually came back with data.
+  ///
+  /// A failed poll doesn't blank the arrow — cached tracks are still the best
+  /// guess and someone lost with no signal needs them. But _recompute clears
+  /// errorMessage whenever it finds a target, so the failure left no trace and
+  /// a runner walking out of coverage saw a confident arrow aimed at minutes-old
+  /// data. [staleSeconds] keeps that visible.
+  DateTime? _lastFetchOk;
+  final RxnInt staleSeconds = RxnInt();
+
+  /// How far behind the live feed we tolerate before saying so. Two missed
+  /// polls — one is just a slow request.
+  static const int _staleAfterSeconds = 12;
 
   StreamSubscription<Position>? _positionSub;
   StreamSubscription<CompassEvent>? _compassSub;
@@ -168,6 +216,7 @@ class LostCompassController extends GetxController {
   /// Recomputes bearing and distance to the CURRENTLY HELD target. Cheap and
   /// purely local; safe to run on every GPS fix.
   void _updateReadout(Position me) {
+    _refreshStaleness();
     final target = _targetPoint;
     if (target == null) return;
     final from = latlong.LatLng(me.latitude, me.longitude);
@@ -177,9 +226,11 @@ class LostCompassController extends GetxController {
 
     // Where that runner is now (as of their last fix) — recomputed here too,
     // so it counts down as you walk rather than sticking until the next poll.
+    // Suppressed when the second arrow is already that same person: the arrow
+    // says it better than the sentence does.
     final latest = _runnerLatestPoint;
     final name = nearestRunnerName.value;
-    if (latest == null || usingOwnTrack.value) {
+    if (latest == null || usingOwnTrack.value || hasherIsTrailOwner) {
       runnerNowLabel.value = null;
     } else {
       final away = _distance.as(latlong.LengthUnit.Meter, from, latest);
@@ -188,6 +239,35 @@ class LostCompassController extends GetxController {
           '$who was ${formatDistance(away)} away '
           '${_ageLabel(_runnerLatestTimestampMs) ?? 'just now'}';
     }
+
+    // Second arrow. Same trigonometry, different target — recomputed on every
+    // fix for the same reason the first one is.
+    final hasher = _hasherPoint;
+    if (hasher == null) {
+      bearingToHasher.value = null;
+      distanceToHasherMeters.value = null;
+      hasherAgeLabel.value = null;
+    } else {
+      bearingToHasher.value = (_distance.bearing(from, hasher) + 360) % 360;
+      distanceToHasherMeters.value = _distance.as(
+        latlong.LengthUnit.Meter,
+        from,
+        hasher,
+      );
+      hasherAgeLabel.value = _ageLabel(_hasherTimestampMs);
+    }
+  }
+
+  /// Seconds since the last poll that actually returned, or null while the
+  /// feed is keeping up.
+  void _refreshStaleness() {
+    final last = _lastFetchOk;
+    if (last == null) {
+      staleSeconds.value = null;
+      return;
+    }
+    final int secs = DateTime.now().difference(last).inSeconds;
+    staleSeconds.value = secs >= _staleAfterSeconds ? secs : null;
   }
 
   /// Formats a distance in the user's own units, via the app's shared
@@ -215,7 +295,7 @@ class LostCompassController extends GetxController {
       if (normalizeUuid(t.id) != normalizeUuid(userId)) continue;
       TrackPoint? newest;
       for (final p in t.positions) {
-        if (p.acc > 25.0) continue;
+        if (p.acc > _maxUsableAccuracyMeters) continue;
         if (newest == null || p.timestampMs > newest.timestampMs) newest = p;
       }
       if (newest != null) {
@@ -257,7 +337,7 @@ class LostCompassController extends GetxController {
   /// positions, then recompute the bearing from those plus the runner's own
   /// current position. Runs every [_refreshInterval] — someone who is lost gets
   /// live data, and if the pack moves a trail closer, the arrow follows it.
-  Future<void> refreshBearing({bool forceFetch = false}) async {
+  Future<void> refreshBearing() async {
     final Position? me =
         _lastPosition ?? Get.find<LocationService>().lastKnownPosition.value;
     if (me == null) {
@@ -306,6 +386,7 @@ class LostCompassController extends GetxController {
       // Keep the previous watermark if the server didn't return a new one,
       // otherwise the next poll would re-request the whole run.
       _afterTimestampMs = payload.latestServerTimestampMs ?? _afterTimestampMs;
+      _lastFetchOk = DateTime.now();
       errorMessage.value = null;
     } catch (e) {
       errorMessage.value =
@@ -365,6 +446,15 @@ class LostCompassController extends GetxController {
     }
     excludedLostRunners.value = excluded;
 
+    // Second arrow: the nearest hasher's current position. Anyone who has
+    // marked themselves lost is skipped for the same reason their post-mark
+    // track is — walking towards another lost hasher just concentrates the
+    // problem.
+    _resolveNearestHasher(
+      others: others.where((u) => _earliestDistressMs(u) == null),
+      from: myPoint,
+    );
+
     var best = _nearestAcross(candidates: candidates, from: myPoint);
     var fellBack = false;
 
@@ -402,6 +492,16 @@ class LostCompassController extends GetxController {
       nearestRunnerName.value = null;
       targetAgeLabel.value = null;
       runnerNowLabel.value = null;
+      // No usable trail point means no usable position from anyone, so the
+      // second arrow has nothing to aim at either — don't leave it pointing at
+      // whatever it found last time.
+      _hasherPoint = null;
+      _hasherTimestampMs = null;
+      _hasherUserId = null;
+      bearingToHasher.value = null;
+      distanceToHasherMeters.value = null;
+      nearestHasherName.value = null;
+      hasherAgeLabel.value = null;
     } else {
       errorMessage.value = null;
       usingOwnTrack.value = fellBack;
@@ -411,8 +511,14 @@ class LostCompassController extends GetxController {
       _targetPoint = best.point;
       _targetTimestampMs = best.timestampMs;
       _captureRunnerLatest(best.userId);
-      _updateReadout(me);
       final String nearestId = best.userId;
+      // Settle who owns the trail BEFORE the readout runs — it asks
+      // hasherIsTrailOwner to decide whether the "was N away" line would just
+      // repeat the second arrow, and the previous tick's owner is the wrong
+      // answer to that question. Keep the old value for the retarget notice.
+      final String? previousOwner = _targetRunnerId;
+      _targetRunnerId = fellBack ? null : nearestId;
+      _updateReadout(me);
       nearestRunnerName.value = null;
       if (!fellBack) {
         final cached = _nameCache[nearestId];
@@ -429,7 +535,7 @@ class LostCompassController extends GetxController {
         // The nearest trail is recomputed from scratch every tick, so a track
         // that has come closer simply wins. Announce the switch — the needle
         // swinging to a different trail should never be a silent surprise.
-        if (_targetRunnerId != null && _targetRunnerId != nearestId) {
+        if (previousOwner != null && previousOwner != nearestId) {
           unawaited(
             _displayName(nearestId).then((n) {
               retargetNotice.value = n == null
@@ -443,10 +549,58 @@ class LostCompassController extends GetxController {
             }),
           );
         }
-        _targetRunnerId = nearestId;
-      } else {
-        _targetRunnerId = null;
       }
+    }
+  }
+
+  /// Picks the nearest hasher by where they are NOW — each runner's newest
+  /// usable fix, then the closest of those. Not the same search as the trail
+  /// arrow, which considers every point of every track no matter how old.
+  void _resolveNearestHasher({
+    required Iterable<UserTrack> others,
+    required latlong.LatLng from,
+  }) {
+    latlong.LatLng? bestPoint;
+    int? bestTimestampMs;
+    String? bestUserId;
+    double bestMeters = double.infinity;
+
+    for (final t in others) {
+      TrackPoint? newest;
+      for (final p in t.positions) {
+        if (p.acc > _maxUsableAccuracyMeters) continue;
+        if (newest == null || p.timestampMs > newest.timestampMs) newest = p;
+      }
+      if (newest == null) continue;
+      final latlong.LatLng at = latlong.LatLng(newest.lat, newest.lng);
+      final double meters = _distance.as(latlong.LengthUnit.Meter, from, at);
+      if (meters < bestMeters) {
+        bestMeters = meters;
+        bestPoint = at;
+        bestTimestampMs = newest.timestampMs;
+        bestUserId = t.id;
+      }
+    }
+
+    _hasherPoint = bestPoint;
+    _hasherTimestampMs = bestTimestampMs;
+    _hasherUserId = bestUserId;
+
+    if (bestUserId == null) {
+      nearestHasherName.value = null;
+      return;
+    }
+    final cached = _nameCache[bestUserId];
+    if (cached != null) {
+      nearestHasherName.value = cached;
+    } else {
+      final String id = bestUserId;
+      unawaited(
+        _displayName(id).then((n) {
+          // Only apply if that runner is still the nearest when the name lands.
+          if (n != null && _hasherUserId == id) nearestHasherName.value = n;
+        }),
+      );
     }
   }
 
@@ -484,8 +638,8 @@ class LostCompassController extends GetxController {
       for (final p in candidate.track.positions) {
         if (cutoff != null && p.timestampMs >= cutoff) continue;
         // Drop wildly inaccurate fixes — pointing at GPS noise is worse than
-        // pointing at nothing. Matches TrackPointFilter's accuracy gate.
-        if (p.acc > 15.0) continue;
+        // pointing at nothing.
+        if (p.acc > _maxUsableAccuracyMeters) continue;
         final latlong.LatLng at = latlong.LatLng(p.lat, p.lng);
         final meters = _distance.as(latlong.LengthUnit.Meter, from, at);
         if (meters < bestMeters) {
@@ -561,6 +715,12 @@ class LostCompassController extends GetxController {
     if (m == null) return '--';
     return formatDistance(m);
   }
+
+  String get hasherDistanceLabel {
+    final m = distanceToHasherMeters.value;
+    if (m == null) return '--';
+    return formatDistance(m);
+  }
 }
 
 Future<void> showLostCompassDialog(
@@ -606,6 +766,98 @@ class LostCompassDialog extends StatelessWidget {
 
   /// Tells the pack the runner is back on trail and clears the distress mark.
   final Future<bool> Function()? onAnnounceFound;
+
+  /// One dial: circle, arrow, distance, who or what it points at, and how old
+  /// that reading is. [compact] shrinks it so two fit side by side.
+  Widget _compass({
+    required String label,
+    required double bearing,
+    required double? heading,
+    required String distance,
+    required Color color,
+    required String caption,
+    required String? age,
+    required bool compact,
+  }) {
+    // With a compass the arrow is relative to how the phone is held; without
+    // one it shows the absolute bearing (paired with the N/NE/… readout).
+    final double arrowDegrees = heading == null
+        ? bearing
+        : (bearing - heading + 360) % 360;
+    final double dial = compact ? 116 : 170;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: ts_alertDialogBody.copyWith(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: dial,
+          width: dial,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.blueGrey.shade50,
+                  border: Border.all(color: Colors.blueGrey.shade200, width: 2),
+                ),
+              ),
+              Positioned(
+                top: 6,
+                child: Text(
+                  heading == null ? 'N' : '▲',
+                  style: TextStyle(
+                    fontSize: compact ? 11 : 14,
+                    color: Colors.blueGrey.shade400,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Transform.rotate(
+                angle: arrowDegrees * math.pi / 180.0,
+                child: Icon(
+                  Icons.navigation,
+                  size: compact ? 70 : 104,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          distance,
+          style: ts_titleCondensedVeryLargeBlack.copyWith(
+            fontSize: compact ? 24 : 34,
+          ),
+        ),
+        Text(
+          caption,
+          style: ts_alertDialogBody.copyWith(
+            fontSize: compact ? 12 : 14,
+            fontWeight: FontWeight.w700,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        if (age != null)
+          Text(
+            age,
+            style: ts_alertDialogBody.copyWith(fontSize: compact ? 11 : 13),
+            textAlign: TextAlign.center,
+          ),
+      ],
+    );
+  }
 
   /// Sends the lost announcement, or the all clear once already announced.
   Future<void> _handleAnnounce(BuildContext context, bool announced) async {
@@ -679,88 +931,67 @@ class LostCompassDialog extends StatelessWidget {
           );
         }
 
-        final bearing = controller.bearingToTrail.value ?? 0;
         final heading = controller.deviceHeading.value;
-        // With a compass the arrow is relative to how the phone is held; without
-        // one it shows the absolute bearing (paired with the N/NE/… readout).
-        final double arrowDegrees = heading == null
-            ? bearing
-            : (bearing - heading + 360) % 360;
+        final double? hasherBearing = controller.bearingToHasher.value;
+        final bool showHasher = hasherBearing != null;
+
+        // Two targets that answer different questions: where the trail is, and
+        // where the nearest person is. They disagree often enough — someone
+        // doubling back is nearer than any part of the line they laid — that
+        // showing only the first read as a bug.
+        final Widget trailCompass = _compass(
+          label: controller.usingOwnTrack.value ? 'Your track' : 'The trail',
+          bearing: controller.bearingToTrail.value ?? 0,
+          heading: heading,
+          distance: controller.distanceLabel,
+          color: controller.usingOwnTrack.value
+              ? Colors.deepOrange.shade700
+              : hc_blue,
+          caption: controller.usingOwnTrack.value
+              ? 'Back to your own earlier track'
+              : controller.nearestRunnerName.value != null
+              ? "${controller.nearestRunnerName.value}'s trail"
+              : "The nearest runner's trail",
+          // How old the spot you're heading for is. Catching the pack and
+          // reaching where they were an hour ago look identical without it.
+          age: controller.targetAgeLabel.value == null
+              ? null
+              : controller.usingOwnTrack.value
+              ? 'you were there ${controller.targetAgeLabel.value}'
+              : 'was there ${controller.targetAgeLabel.value}',
+          compact: showHasher,
+        );
 
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              height: 170,
-              width: 170,
-              child: Stack(
-                alignment: Alignment.center,
+            if (!showHasher)
+              trailCompass
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.blueGrey.shade50,
-                      border: Border.all(
-                        color: Colors.blueGrey.shade200,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    child: Text(
-                      heading == null ? 'N' : '▲',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.blueGrey.shade400,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Transform.rotate(
-                    angle: arrowDegrees * math.pi / 180.0,
-                    child: Icon(
-                      Icons.navigation,
-                      size: 104,
-                      color: controller.usingOwnTrack.value
-                          ? Colors.deepOrange.shade700
-                          : hc_blue,
+                  Expanded(child: trailCompass),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _compass(
+                      label: 'Nearest hasher',
+                      bearing: hasherBearing,
+                      heading: heading,
+                      distance: controller.hasherDistanceLabel,
+                      color: Colors.green.shade700,
+                      caption: controller.nearestHasherName.value ?? 'A hasher',
+                      age: controller.hasherAgeLabel.value == null
+                          ? null
+                          : 'seen ${controller.hasherAgeLabel.value}',
+                      compact: true,
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              controller.distanceLabel,
-              style: ts_titleCondensedVeryLargeBlack.copyWith(fontSize: 34),
-            ),
-            Text(
-              controller.usingOwnTrack.value
-                  ? 'Back towards your own earlier track'
-                  : controller.nearestRunnerName.value != null
-                  ? "Towards ${controller.nearestRunnerName.value}'s trail"
-                  : "Towards the nearest runner's trail",
-              style: ts_alertDialogBody.copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            // How old the spot you're heading for is. Catching the pack and
-            // reaching where they were an hour ago look identical without it.
-            if (controller.targetAgeLabel.value != null)
-              Text(
-                controller.usingOwnTrack.value
-                    ? 'You were there ${controller.targetAgeLabel.value}'
-                    : controller.nearestRunnerName.value != null
-                    ? '${controller.nearestRunnerName.value} was there '
-                          '${controller.targetAgeLabel.value}'
-                    : 'They were there ${controller.targetAgeLabel.value}',
-                style: ts_alertDialogBody.copyWith(fontSize: 13),
-                textAlign: TextAlign.center,
-              ),
-            // ...and where that runner has got to since.
+            const SizedBox(height: 6),
+            // Where the trail's owner has got to since — only when that isn't
+            // already the second arrow.
             if (controller.runnerNowLabel.value != null)
               Text(
                 controller.runnerNowLabel.value!,
@@ -797,6 +1028,25 @@ class LostCompassDialog extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
+                ),
+              ),
+            // The arrow keeps working on cached tracks when a poll fails, which
+            // is right — but silently, which wasn't.
+            if (controller.staleSeconds.value != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 6.0),
+                child: Text(
+                  controller.staleSeconds.value! >= 60
+                      ? 'No signal — this is where the pack was '
+                            '${controller.staleSeconds.value! ~/ 60} min ago'
+                      : 'No signal — positions are '
+                            '${controller.staleSeconds.value}s old',
+                  style: ts_alertDialogBody.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.deepOrange.shade700,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             if (controller.excludedLostRunners.value > 0)
@@ -861,11 +1111,6 @@ class LostCompassDialog extends StatelessWidget {
               ),
             );
           }),
-        TextButton(
-          onPressed: () => unawaited(controller.refreshBearing()),
-          style: text_button_style,
-          child: Text('Refresh', style: ts_button),
-        ),
         ElevatedButton(
           onPressed: () {
             Get.delete<LostCompassController>(tag: 'lost-compass-$eventId');
