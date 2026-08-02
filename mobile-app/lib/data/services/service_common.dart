@@ -15,22 +15,35 @@ class ServiceCommon {
           RegExp(r'"accessToken":"[^"]*"'),
           '"accessToken":"[REDACTED]"',
         )
-        .replaceAll(
-          RegExp(r'"deviceId":"[^"]*"'),
-          '"deviceId":"[REDACTED]"',
-        )
+        .replaceAll(RegExp(r'"deviceId":"[^"]*"'), '"deviceId":"[REDACTED]"')
         .replaceAll(
           RegExp(r'"deviceSecret":"[^"]*"'),
           '"deviceSecret":"[REDACTED]"',
         );
   }
 
+  /// Status we stamp on a request that hit [_requestTimeout] locally.
+  ///
+  /// It used to be 0, which looked tidy and never once worked: package:http's
+  /// BaseResponse throws ArgumentError for any status below 100, so
+  /// `Response('', 0)` threw instead of returning. The throw landed in the
+  /// catchError below, which logged "network error" and substituted a 500 — so
+  /// every local timeout was reported as a server error, was retryable, and
+  /// burned all six retry slots at 30 s each. Exactly what the sentinel was
+  /// introduced to prevent, and it sent us hunting for a server-side 500 that
+  /// had never happened (HC.ErrorLog was empty because the server was fine).
+  ///
+  /// 599 is outside the range any server returns and is legal to construct.
+  /// Anything used here MUST be >= 100.
+  static const int kLocalTimeoutStatus = 599;
+
   static const int _maxRetryAttempts = 6;
   static const int _baseBackoffMs = 500;
   static final Random _retryRandom = Random();
 
   // Per-request timeout. If a single POST stalls longer than this the call is
-  // treated as a non-retryable connection failure (status 0) so the caller
+  // treated as a non-retryable connection failure ([kLocalTimeoutStatus]) so
+  // the caller
   // moves on instead of hanging forever. 30 s covers slow Azure cold-starts
   // while still preventing the infinite-boot-hang on partially-connected networks.
   static const Duration _requestTimeout = Duration(seconds: 30);
@@ -49,15 +62,17 @@ class ServiceCommon {
     });
 
     await post(
-      Uri.parse(BASE_AF_API_URL),
-      headers: <String, String>{'content-type': 'application/json'},
-      body: body,
-    ).timeout(
-      const Duration(seconds: 30),
-      onTimeout: () => Response('', 408),
-    ).catchError((dynamic error) {
-      return Future<Response>.value(Response('', 500));
-    });
+          Uri.parse(BASE_AF_API_URL),
+          headers: <String, String>{'content-type': 'application/json'},
+          body: body,
+        )
+        .timeout(
+          const Duration(seconds: 30),
+          onTimeout: () => Response('', 408),
+        )
+        .catchError((dynamic error) {
+          return Future<Response>.value(Response('', 500));
+        });
   }
 
   // [bodyFactory] is called once per attempt so the access token embedded in
@@ -139,10 +154,10 @@ class ServiceCommon {
 
       if (isLastAttempt) {
         _showSnackbarSafely(
-          title: response.statusCode == 0
+          title: response.statusCode == kLocalTimeoutStatus
               ? 'Request Timed Out'
               : 'Connection Issue',
-          message: response.statusCode == 0
+          message: response.statusCode == kLocalTimeoutStatus
               ? 'The server took too long to respond. Please try again.'
               : 'Unable to connect. Please check your connection.',
           backgroundColor: hc_red,
@@ -195,11 +210,15 @@ class ServiceCommon {
             // Status 0 = our internal "request timed out" sentinel.
             // _isRetryableStatus treats 0 as non-retryable so a hung request
             // fails fast instead of burning all 6 retry slots at 30 s each.
-            onTimeout: () => Response('', 0),
+            onTimeout: () => Response('', kLocalTimeoutStatus),
           )
           .catchError((dynamic error) {
             if (!_isConnectionProbe(requestBody)) {
-              BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}', null);
+              BootLogger.logError(
+                '[ERROR][HTTP]',
+                'transport failure (server NOT reached — no server-side log will exist) → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}',
+                null,
+              );
             }
             return Future<Response>.value(Response('', 500));
           });
@@ -211,10 +230,17 @@ class ServiceCommon {
           headers: <String, String>{'content-type': 'application/json'},
           body: requestBody,
         )
-        .timeout(_requestTimeout, onTimeout: () => Response('', 0))
+        .timeout(
+          _requestTimeout,
+          onTimeout: () => Response('', kLocalTimeoutStatus),
+        )
         .catchError((dynamic error) {
           if (!_isConnectionProbe(requestBody)) {
-            BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}', null);
+            BootLogger.logError(
+              '[ERROR][HTTP]',
+              'transport failure (server NOT reached — no server-side log will exist) → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}',
+              null,
+            );
           }
           return Future<Response>.value(Response('', 500));
         });
@@ -229,8 +255,9 @@ class ServiceCommon {
       requestBody.contains('"queryType":"checkConnection"');
 
   static bool _isRetryableStatus(int statusCode) {
-    // 0 = our request-timed-out sentinel — don't retry, fail fast.
-    if (statusCode == 0) return false;
+    // Our own timeout sentinel — don't retry, fail fast. Checked before the
+    // >= 500 rule, which would otherwise swallow it.
+    if (statusCode == kLocalTimeoutStatus) return false;
     if (statusCode == 408 || statusCode == 429) return true;
     if (statusCode >= 500) return true;
     return false;
@@ -414,7 +441,8 @@ class ServiceCommon {
         // check so the ribbon reflects the correct state. Only show a snackbar
         // if the backend is confirmed reachable — i.e. the error was transient.
         // Application errors (4xx) are not connectivity issues; always snackbar.
-        final isNetworkFailure = response.statusCode == 0 ||
+        final isNetworkFailure =
+            response.statusCode == kLocalTimeoutStatus ||
             response.statusCode == 408 ||
             response.statusCode >= 500;
 

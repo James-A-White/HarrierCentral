@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.61+1275 (2026-08-02)
+
+### Fixes
+- **A slow request no longer ties the app up for three minutes.** When a request
+  took too long, the app was mislabelling it as a server error and retrying it
+  six times, thirty seconds apart, instead of giving up straight away as it was
+  meant to. It now stops on the first timeout and says so.
+- **Timeouts are no longer reported as server errors** in the diagnostic log,
+  which was sending investigations after server faults that never happened.
+
 ## 2.15.60+1274 (2026-08-02)
 
 ### Improvements
