@@ -1,5 +1,31 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.54+1268 (2026-08-02)
+
+### Improvements
+- **One save button for the whole run editor.** Editing a run used to mean a
+  separate save on the Details, Address and Other tabs, each one hidden at the
+  bottom of a long scroll. Now there is a single button anchored to the bottom
+  of the screen that saves everything you have changed, wherever you changed it.
+- **The save button tells you when there is something to save.** It stays greyed
+  out until you change something and turns red the moment you do, so it is
+  obvious that a change is still pending.
+- **You are asked before leaving with unsaved changes.** Backing out of the run
+  editor with pending edits now offers to save them first. Moving between tabs
+  keeps your edits, so it no longer needs to interrupt you.
+- **Auto-locate is only offered when the address actually changed**, rather than
+  on every save of the Address tab.
+
+### Fixes
+- **Settings on the Other tab could be reset by a save made from another tab.**
+  "Show run", "Count this run", "Promote this run" and "Users can edit run
+  history" were only read from the screen when the Other tab was on display, so
+  a save from elsewhere could write the defaults over them.
+- **A toggle on the Other tab was forgotten if you switched tabs and came back**
+  before saving.
+- **"Users can edit run history" no longer turns an inherited setting into an
+  explicit "no"** when the run had never had the setting applied.
+
 ## 2.15.53+1267 (2026-08-02)
 
 ### Fixes

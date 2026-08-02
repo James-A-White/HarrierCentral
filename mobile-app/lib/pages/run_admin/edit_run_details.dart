@@ -197,6 +197,345 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     _extrasDescriptionController.text =
         _eventAggregate.event.extrasDescription ?? '';
     _eventGeographicScope = _eventAggregate.event.eventGeographicScope;
+
+    // The four checkbox-backed fields are also assigned by their
+    // CheckboxFormField validators, but those only run when the Other tab is
+    // built. Seed them from the event so a save made from any tab sends the
+    // event's real values rather than the field declaration defaults.
+    _isVisible = _eventAggregate.event.isVisible == 1;
+    _isCountedRun = _eventAggregate.event.isCountedRun == 1;
+    _isPromotedEvent = _eventAggregate.event.isPromotedEvent == 1;
+    // -1 means "explicitly clear" to the SP, which is how an unset value has to
+    // round-trip — sending 0 would turn "inherit" into an explicit "no".
+    _usersCanEditRunAttendence =
+        switch (_eventAggregate.event.canEditRunAttendence) {
+          null => -1,
+          1 => 1,
+          _ => 0,
+        };
+  }
+
+  /// Every editable value across the Details, Address and Other tabs, flattened
+  /// so the save bar can tell whether anything has changed since it was last
+  /// loaded or saved.
+  Map<String, String> _formSnapshot() => <String, String>{
+    'eventName': _eventNameController.text,
+    'eventDatetime': _eventDatetimeController.text,
+    'eventDescription': _eventDescriptionController.text,
+    'locationOneLineDesc': _locationOneLineDescController.text,
+    'locationStreet': _locationStreetController.text,
+    'locationCity': _locationCityController.text,
+    'locationRegion': _locationRegionController.text,
+    'locationSubRegion': _locationSubRegionController.text,
+    'locationPostCode': _locationPostCodeController.text,
+    'locationCountry': _locationCountryController.text,
+    'absoluteEventNumber': _absoluteEventNumberController.text,
+    'eventPriceForMembers': _eventPriceForMembersController.text,
+    'eventPriceForNonMembers': _eventPriceForNonMembersController.text,
+    'eventPriceForExtras': _eventPriceForExtrasController.text,
+    'extrasDescription': _extrasDescriptionController.text,
+    'hares': _haresController.text,
+    'isVisible': '$_isVisible',
+    'isCountedRun': '$_isCountedRun',
+    'isPromotedEvent': '$_isPromotedEvent',
+    'usersCanEditRunAttendence': '$_usersCanEditRunAttendence',
+    'eventGeographicScope': '$_eventGeographicScope',
+  };
+
+  Map<String, String> _savedSnapshot = <String, String>{};
+
+  /// True when anything on any of the three form tabs differs from what is
+  /// stored on the server. Drives the enabled state of the anchored save bar.
+  bool get _isDirty {
+    final Map<String, String> current = _formSnapshot();
+    for (final MapEntry<String, String> entry in current.entries) {
+      if (_savedSnapshot[entry.key] != entry.value) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void _captureSavedSnapshot() {
+    _savedSnapshot = _formSnapshot();
+  }
+
+  /// Validates the Details tab. The Address and Other tabs carry no validators,
+  /// and the Details form may not be mounted (TabBarView disposes tabs that are
+  /// not adjacent to the current one), so the same three "must not be empty"
+  /// rules are repeated here in plain Dart.
+  String? _validateForSave() {
+    if (_eventNameController.text.isEmpty) {
+      return 'Please provide an event name';
+    }
+    if (_eventDescriptionController.text.isEmpty) {
+      return 'Please provide an event description';
+    }
+    if (_locationOneLineDescController.text.isEmpty) {
+      return 'Please provide a location description';
+    }
+    return null;
+  }
+
+  /// Single save for everything on the Details, Address and Other tabs. The Map
+  /// and Image tabs keep their own buttons — they act on a picked point or an
+  /// uploaded file rather than on form content.
+  Future<bool> _saveAll() async {
+    final String? validationError = _validateForSave();
+    if (validationError != null) {
+      if (_currentTab != EditingTabEnum.details) {
+        _tabController.animateTo(EditingTabEnum.details.value);
+      }
+      // Run the form's own validation too so the offending field shows its
+      // error inline, once the tab it lives on has been built.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _detailsFormKey.currentState?.validate();
+      });
+      await Utilities.showAlert('Cannot save yet', validationError, 'OK');
+      return false;
+    }
+
+    // Pulls the current checkbox values back into the state fields when the
+    // Other tab happens to be built.
+    _otherDetailsFormKey.currentState?.validate();
+
+    FocusScope.of(context).unfocus();
+    setStateIfMounted(() {
+      _isUpdating = true;
+    });
+
+    final DateFormat formatter = DateFormat('E, d MMM, yyyy, h:mm a');
+    final EventsService nSvc = EventsService();
+    final String eventId = await nSvc.addEditEvent(
+      eventId: _eventAggregate.event.eventId,
+      kennelId: _eventAggregate.event.kennelId,
+      eventName: _eventNameController.text,
+      eventStartDatetime: formatter.tryParse(_eventDatetimeController.text),
+      eventDescription: _eventDescriptionController.text,
+      locationOneLineDesc: _locationOneLineDescController.text,
+      useFbRunDetails: 0,
+      locationStreet: _locationStreetController.text,
+      locationCity: _locationCityController.text,
+      locationRegion: _locationRegionController.text,
+      locationSubRegion: _locationSubRegionController.text,
+      locationPostCode: _locationPostCodeController.text,
+      locationCountry: _locationCountryController.text,
+      eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
+          ? -2
+          : double.tryParse(
+              _eventPriceForMembersController.text.replaceAll(',', '.'),
+            ),
+      eventPriceForNonMembers: _eventPriceForNonMembersController.text.isEmpty
+          ? -2
+          : double.tryParse(
+              _eventPriceForNonMembersController.text.replaceAll(',', '.'),
+            ),
+      eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
+          ? -2
+          : double.tryParse(
+              _eventPriceForExtrasController.text.replaceAll(',', '.'),
+            ),
+      // note for "auto" the value we send to the server is '0' because this will
+      // remove any previous absoluteEventNumber that is stored there
+      absoluteEventNumber: _absoluteEventNumberController.text.isEmpty
+          ? 0
+          : int.tryParse(_absoluteEventNumberController.text),
+      extrasDescription: _extrasDescriptionController.text.isEmpty
+          ? '<none>'
+          : _extrasDescriptionController.text,
+      hares: _haresController.text,
+      isCountedRun: _isCountedRun,
+      isVisible: _isVisible,
+      isPromotedEvent: _isPromotedEvent,
+      eventGeographicScope: _eventGeographicScope,
+      usersCanEditRunAttendence: _usersCanEditRunAttendence,
+    );
+
+    await _refreshAfterSave(eventId);
+    setStateIfMounted(() {
+      _isUpdating = false;
+      _captureSavedSnapshot();
+    });
+    return true;
+  }
+
+  /// The anchored save bar. Always on screen so the button never has to be
+  /// scrolled to, and greyed out until something actually changes.
+  Widget _buildSaveBar() {
+    // For a new run the bar is the wizard's Next/Finish, so it stays live even
+    // on a tab the user chose not to fill in.
+    final bool enabled = (_isDirty || widget.isNewRun) && !_isUpdating;
+    final String label = widget.isNewRun
+        ? (_currentTab == EditingTabEnum.other ? 'Finish' : 'Next')
+        : 'Save changes to Harrier Central';
+
+    return Container(
+      height: 70.0,
+      color: Colors.yellow[100],
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+      child: Center(
+        child: _isUpdating
+            ? const SizedBox(
+                height: 45.0,
+                width: 45.0,
+                child: HcAppCircularProgressIndicator(key: Key('331904772')),
+              )
+            : SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: hc_red,
+                    disabledBackgroundColor: Colors.grey,
+                    disabledForegroundColor: Colors.white70,
+                  ),
+                  onPressed: enabled ? _onSaveBarPressed : null,
+                  child: Text(label, style: ts_button),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Future<void> _onSaveBarPressed() async {
+    final bool addressChanged = _addressChanged;
+    final bool saved = await _saveAll();
+    if (!saved || !mounted) return;
+
+    if (widget.isNewRun) {
+      if (_currentTab == EditingTabEnum.other) {
+        if (!mounted) return;
+        Navigator.of(navigatorKey.currentContext!).pop();
+        return;
+      }
+      _tabController.animateTo(_currentTab.next);
+      return;
+    }
+
+    final SnackBar snackBar = SnackBar(
+      duration: const Duration(seconds: 3),
+      content: Text(
+        'Run details have been saved',
+        textAlign: TextAlign.center,
+        style: ts_titleCondensed,
+      ),
+      backgroundColor: hc_blue,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(snackBar);
+
+    if (addressChanged) {
+      await _offerAutoLocateAfterAddressChange();
+    }
+  }
+
+  static const List<String> _addressKeys = <String>[
+    'locationStreet',
+    'locationCity',
+    'locationRegion',
+    'locationSubRegion',
+    'locationPostCode',
+    'locationCountry',
+  ];
+
+  bool get _addressChanged {
+    final Map<String, String> current = _formSnapshot();
+    return _addressKeys.any(
+      (String key) => _savedSnapshot[key] != current[key],
+    );
+  }
+
+  /// A new address usually means the map pin is now wrong, so offer to move it.
+  /// Only runs when the address actually changed in the save that just ran.
+  Future<void> _offerAutoLocateAfterAddressChange() async {
+    final bool hasEnoughAddress =
+        _locationPostCodeController.text.trim().isNotEmpty ||
+        (_locationStreetController.text.trim().isNotEmpty &&
+            _locationCityController.text.trim().isNotEmpty);
+
+    if (hasEnoughAddress) {
+      if (!mounted) return;
+      final bool? locate = await showDialog<bool>(
+        context: navigatorKey.currentContext!,
+        builder: (BuildContext ctx) => AlertDialog(
+          title: const Text('Address saved'),
+          content: const Text(
+            'Would you like me to try to automatically find the map pin for the new address?',
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Not now'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: hc_blue,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Auto-locate'),
+            ),
+          ],
+        ),
+      );
+      if (locate == true) {
+        await _geocodeAndNavigateToMap();
+      }
+      return;
+    }
+
+    if (!mounted) return;
+    await showDialog<void>(
+      context: navigatorKey.currentContext!,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: const Text('Pin location needed'),
+        content: const Text(
+          "The address isn't specific enough for automatic location — you'll need to set the pin manually on the Map tab.",
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Dismiss'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: hc_blue,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _tabController.animateTo(EditingTabEnum.map.value);
+            },
+            child: const Text('Go to Map'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Asked on the way out of the page, which is the only point where unsaved
+  /// form content can actually be lost — moving between tabs keeps everything.
+  Future<bool> _confirmDiscardOnExit() async {
+    if (!_isDirty) return true;
+
+    final bool? save = await Utilities.showAlert2(
+      'Unsaved changes',
+      'You have changes to this run that have not been saved. Save them now?',
+      'Save',
+      showCancelButton: true,
+      cancelButtonText: 'Discard',
+    );
+
+    if (save == null) return false; // dismissed — stay on the page
+    if (!save) return true; // discard and leave
+    return _saveAll();
   }
 
   Container _genericTextField({
@@ -254,122 +593,143 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return AppScaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-        title: Text('Edit run details', style: ts_appBarTitle),
-      ),
-      body: Container(
-        decoration: Backgrounds.defaultHcBackgroundLight(),
-        child: Stack(
-          alignment: AlignmentDirectional.center,
-          children: <Widget>[
-            // Positioned(
-            //     top: 30,
-            //     left: 0,
-            //     right: 0,
-            //     child: Text(
-            //       'QR Code Scanner',
-            //       textAlign: TextAlign.center,
-            //       style: const TextStyle(
-            //           fontFamily: 'AvenirNextRegular',
-            //           fontStyle: FontStyle.normal,
-            //           color: Colors.white,
-            //           fontSize: 24.0,
-            //           height: 1.0),
-            //     )),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                //color: Colors.white,
-                height: 45,
-                decoration: BoxDecoration(
-                  // border: new Border.all(width: 1.0, color: Colors.black),
-                  //shape: BoxShape.circle,
-                  color: Colors.yellow.shade50,
-                  boxShadow: const <BoxShadow>[
-                    BoxShadow(
-                      color: Color.fromARGB(70, 0, 0, 0),
-                      offset: Offset(0.0, 6.0),
-                      blurRadius: 10.0,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              top: -25,
-              left: 0,
-              right: 0,
-              child: Container(
-                //color: Colors.red,
-                //width: 200,
-                padding: const EdgeInsets.only(top: 10.0),
-                child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  //width: 140.0,
-                  height: 75.0,
-                  // reviewed for 2.0+
-                  child: TabBar(
-                    onTap: (void _) {
-                      setStateIfMounted(() {});
-                    },
-                    labelStyle: ts_tabSelected,
-                    unselectedLabelStyle: ts_tabUnselected,
-                    isScrollable: false,
-                    unselectedLabelColor: Colors.black,
-                    labelColor: Colors.white,
-                    labelPadding: const EdgeInsets.only(
-                      top: 5,
-                      left: 0,
-                      right: 0,
-                    ),
-                    indicatorSize: TabBarIndicatorSize.label,
-                    // labelPadding: EdgeInsets.symmetric(
-                    //   horizontal: 20.0,
-                    // ),
-                    indicatorPadding: EdgeInsets.symmetric(
-                      horizontal: -15.0,
-                      vertical: 13.0,
-                    ),
-                    indicator: BoxDecoration(
-                      color: hc_red,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
+    // The Map and Image tabs act on a picked point or an uploaded file rather
+    // than on form content, so they keep their own buttons and get no save bar.
+    final bool showSaveBar =
+        _currentTab == EditingTabEnum.details ||
+        _currentTab == EditingTabEnum.address ||
+        _currentTab == EditingTabEnum.other;
 
-                    tabs: _tabs,
-                    controller: _tabController,
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (didPop) return;
+        final NavigatorState navigator = Navigator.of(context);
+        final bool leave = await _confirmDiscardOnExit();
+        if (leave && mounted) {
+          navigator.pop();
+        }
+      },
+      child: AppScaffold(
+        resizeToAvoidBottomInset: true,
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: themeAppBarBackground,
+          iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+          title: Text('Edit run details', style: ts_appBarTitle),
+        ),
+        bottomNavigationBar: showSaveBar
+            ? SafeArea(top: false, child: _buildSaveBar())
+            : null,
+        body: Container(
+          decoration: Backgrounds.defaultHcBackgroundLight(),
+          child: Stack(
+            alignment: AlignmentDirectional.center,
+            children: <Widget>[
+              // Positioned(
+              //     top: 30,
+              //     left: 0,
+              //     right: 0,
+              //     child: Text(
+              //       'QR Code Scanner',
+              //       textAlign: TextAlign.center,
+              //       style: const TextStyle(
+              //           fontFamily: 'AvenirNextRegular',
+              //           fontStyle: FontStyle.normal,
+              //           color: Colors.white,
+              //           fontSize: 24.0,
+              //           height: 1.0),
+              //     )),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  //color: Colors.white,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    // border: new Border.all(width: 1.0, color: Colors.black),
+                    //shape: BoxShape.circle,
+                    color: Colors.yellow.shade50,
+                    boxShadow: const <BoxShadow>[
+                      BoxShadow(
+                        color: Color.fromARGB(70, 0, 0, 0),
+                        offset: Offset(0.0, 6.0),
+                        blurRadius: 10.0,
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              top: 46,
-              bottom: 0,
-              child: SizedBox(
-                //key: _tabKey,
-                //color: Colors.teal,
-                width: MediaQuery.sizeOf(context).width,
-                child: TabBarView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  controller: _tabController,
-                  children: <Widget>[
-                    _buildDetailsPage(context),
-                    _buildAddressPage(context),
-                    _buildMapPage(),
-                    _buildImagePage(),
-                    _buildOtherDetailsPage(context),
-                    //OtherInfoTab(_eventAggregate, widget.getUpdatedEventAggregate),
-                  ],
+              Positioned(
+                top: -25,
+                left: 0,
+                right: 0,
+                child: Container(
+                  //color: Colors.red,
+                  //width: 200,
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    //width: 140.0,
+                    height: 75.0,
+                    // reviewed for 2.0+
+                    child: TabBar(
+                      onTap: (void _) {
+                        setStateIfMounted(() {});
+                      },
+                      labelStyle: ts_tabSelected,
+                      unselectedLabelStyle: ts_tabUnselected,
+                      isScrollable: false,
+                      unselectedLabelColor: Colors.black,
+                      labelColor: Colors.white,
+                      labelPadding: const EdgeInsets.only(
+                        top: 5,
+                        left: 0,
+                        right: 0,
+                      ),
+                      indicatorSize: TabBarIndicatorSize.label,
+                      // labelPadding: EdgeInsets.symmetric(
+                      //   horizontal: 20.0,
+                      // ),
+                      indicatorPadding: EdgeInsets.symmetric(
+                        horizontal: -15.0,
+                        vertical: 13.0,
+                      ),
+                      indicator: BoxDecoration(
+                        color: hc_red,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+
+                      tabs: _tabs,
+                      controller: _tabController,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+              Positioned(
+                top: 46,
+                bottom: 0,
+                child: SizedBox(
+                  //key: _tabKey,
+                  //color: Colors.teal,
+                  width: MediaQuery.sizeOf(context).width,
+                  child: TabBarView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    controller: _tabController,
+                    children: <Widget>[
+                      _buildDetailsPage(context),
+                      _buildAddressPage(context),
+                      _buildMapPage(),
+                      _buildImagePage(),
+                      _buildOtherDetailsPage(context),
+                      //OtherInfoTab(_eventAggregate, widget.getUpdatedEventAggregate),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -433,6 +793,31 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     _extrasDescriptionController.addListener(() {
       setStateIfMounted(() {});
     });
+
+    // Every field that feeds _formSnapshot has to rebuild the page as it is
+    // typed into, otherwise the save bar won't notice it has become dirty.
+    for (final TextEditingController controller in <TextEditingController>[
+      _eventNameController,
+      _eventDatetimeController,
+      _eventDescriptionController,
+      _locationOneLineDescController,
+      _locationStreetController,
+      _locationCityController,
+      _locationRegionController,
+      _locationSubRegionController,
+      _locationPostCodeController,
+      _locationCountryController,
+      _absoluteEventNumberController,
+      _eventPriceForMembersController,
+      _eventPriceForNonMembersController,
+      _haresController,
+    ]) {
+      controller.addListener(() {
+        setStateIfMounted(() {});
+      });
+    }
+
+    _captureSavedSnapshot();
   }
 
   void _initTabs() {
@@ -461,6 +846,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     setStateIfMounted(() {
       _isUpdating = false;
       _setTextFields();
+      // The fields now hold what the server holds, so the bar goes back to
+      // disabled rather than showing the reload as a pending change.
+      _captureSavedSnapshot();
       final SnackBar snackBar = SnackBar(
         duration: const Duration(seconds: 3),
         content: Text(
@@ -487,175 +875,6 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     Get.find<DataChangeService>().notify(
       DataChangeEvent(type: DataChangeType.runUpdated, id: eventId),
     );
-  }
-
-  Future<void> _updateRunDetails(EditingTabEnum tabType) async {
-    if (tabType == EditingTabEnum.details) {
-      if (_detailsFormKey.currentState?.validate() ?? false) {
-        //    If all data are correct then save data to out variables
-        _detailsFormKey.currentState!.save();
-
-        FocusScope.of(context).unfocus();
-        setStateIfMounted(() {
-          _isUpdating = true;
-        });
-
-        final DateFormat formatter = DateFormat('E, d MMM, yyyy, h:mm a');
-
-        final EventsService nSvc = EventsService();
-        final String eventId = await nSvc.addEditEvent(
-          eventId: _eventAggregate.event.eventId,
-          eventName: _eventNameController.text,
-          eventStartDatetime: formatter.tryParse(_eventDatetimeController.text),
-          eventDescription: _eventDescriptionController.text,
-          locationOneLineDesc: _locationOneLineDescController.text,
-          useFbRunDetails: 0,
-          isCountedRun: _eventAggregate.event.isCountedRun == 1,
-          kennelId: _eventAggregate.event.kennelId,
-          eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
-              ? -2
-              : double.tryParse(
-                  _eventPriceForMembersController.text.replaceAll(',', '.'),
-                ),
-          eventPriceForNonMembers:
-              _eventPriceForNonMembersController.text.isEmpty
-              ? -2
-              : double.tryParse(
-                  _eventPriceForNonMembersController.text.replaceAll(',', '.'),
-                ),
-          eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
-              ? -2
-              : double.tryParse(
-                  _eventPriceForExtrasController.text.replaceAll(',', '.'),
-                ),
-        );
-
-        await _refreshAfterSave(eventId);
-        setStateIfMounted(() {
-          _isUpdating = false;
-        });
-      }
-    } else {
-      if ((_eventAggregate.event.eventId.isEmpty) ||
-          (_eventAggregate.event.eventId == GUID_EMPTY)) {
-        await Utilities.showAlert(
-          'Please save Details first',
-          'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.',
-          'OK',
-        );
-        _tabController.animateTo(EditingTabEnum.details.value);
-      } else if (tabType == EditingTabEnum.address) {
-        if (_addressFormKey.currentState?.validate() ?? false) {
-          //    If all data are correct then save data to out variables
-          _addressFormKey.currentState!.save();
-
-          FocusScope.of(context).unfocus();
-          setStateIfMounted(() {
-            _isUpdating = true;
-          });
-
-          final EventsService nSvc = EventsService();
-          final String eventId = await nSvc.addEditEvent(
-            eventId: _eventAggregate.event.eventId,
-            kennelId: _eventAggregate.event.kennelId,
-            locationStreet: _locationStreetController.text,
-            locationCity: _locationCityController.text,
-            locationRegion: _locationRegionController.text,
-            locationSubRegion: _locationSubRegionController.text,
-            locationPostCode: _locationPostCodeController.text,
-            locationCountry: _locationCountryController.text,
-          );
-
-          await _refreshAfterSave(eventId);
-          setStateIfMounted(() {
-            _isUpdating = false;
-            // final SnackBar snackBar = SnackBar(
-            //   duration: const Duration(seconds: 3),
-            //   content: Text(
-            //     'Address has been saved',
-            //     textAlign: TextAlign.center,
-            //     style: ts_titleCondensed,
-            //   ),
-            //   backgroundColor: hc_blue,
-            // );
-
-            // if (!mounted) return;
-            // ScaffoldMessenger.of(
-            //   navigatorKey.currentContext!,
-            // ).showSnackBar(snackBar);
-          });
-        }
-      } else if (tabType == EditingTabEnum.other) {
-        if (_otherDetailsFormKey.currentState?.validate() ?? false) {
-          //    If all data are correct then save data to out variables
-          _otherDetailsFormKey.currentState!.save();
-
-          FocusScope.of(context).unfocus();
-          setStateIfMounted(() {
-            _isUpdating = true;
-          });
-          final EventsService nSvc = EventsService();
-          final String eventId = await nSvc.addEditEvent(
-            eventId: _eventAggregate.event.eventId,
-            kennelId: _eventAggregate.event.kennelId,
-            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
-                ? -2
-                : double.tryParse(
-                    _eventPriceForMembersController.text.replaceAll(',', '.'),
-                  ),
-            eventPriceForNonMembers:
-                _eventPriceForNonMembersController.text.isEmpty
-                ? -2
-                : double.tryParse(
-                    _eventPriceForNonMembersController.text.replaceAll(
-                      ',',
-                      '.',
-                    ),
-                  ),
-            // note for "auto" the value we send to the server is '0' because this will
-            // remove any previous absoluteEventNumber that is stored there
-            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty
-                ? 0
-                : int.tryParse(_absoluteEventNumberController.text),
-            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
-                ? -2
-                : double.tryParse(
-                    _eventPriceForExtrasController.text.replaceAll(',', '.'),
-                  ),
-            extrasDescription: _extrasDescriptionController.text.isEmpty
-                ? '<none>'
-                : _extrasDescriptionController.text,
-            hares: _haresController.text,
-            isCountedRun: _isCountedRun,
-            isVisible: _isVisible,
-            isPromotedEvent: _isPromotedEvent,
-            eventGeographicScope: _eventGeographicScope,
-            usersCanEditRunAttendence: _usersCanEditRunAttendence,
-          );
-
-          await _refreshAfterSave(eventId);
-          setStateIfMounted(() {
-            _isUpdating = false;
-            final SnackBar snackBar = SnackBar(
-              duration: const Duration(seconds: 3),
-              content: Text(
-                'Other info has been saved',
-                textAlign: TextAlign.center,
-                style: ts_titleCondensed,
-              ),
-              backgroundColor: hc_blue,
-            );
-
-            if (!mounted) return;
-            ScaffoldMessenger.of(
-              navigatorKey.currentContext!,
-            ).showSnackBar(snackBar);
-          });
-        }
-      } else {
-        // print('Unhandled tab type in _updateRunDetails');
-      }
-    }
   }
 
   Future<void> _openLocationLookup() async {
@@ -687,8 +906,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
       _locationPostCodeController.text = addr?.postalCode ?? '';
       _locationCountryController.text = addr?.country ?? '';
       if (result.position?.lat != null && result.position?.lon != null) {
-        _mapCenter =
-            latlng.LatLng(result.position!.lat!, result.position!.lon!);
+        _mapCenter = latlng.LatLng(
+          result.position!.lat!,
+          result.position!.lon!,
+        );
       }
     });
     _tabController.animateTo(EditingTabEnum.address.value);
@@ -706,7 +927,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
       if (rows.isNotEmpty) {
         country =
             (rows[0][tableModel.countriesTableHelper.colCountryName]
-                    as String?) ??
+                as String?) ??
             '';
       }
     }
@@ -884,140 +1105,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       useValidator: false,
                     ),
                     const SizedBox(height: 20.0),
-                    _isUpdating
-                        ? const SizedBox(
-                            height: 70.0,
-                            width: 70.0,
-                            child: HcAppCircularProgressIndicator(
-                              key: Key('112096562'),
-                            ),
-                          )
-                        : ElevatedButton(
-                            child: Text(
-                              widget.isNewRun
-                                  ? 'Next'
-                                  : 'Save changes to Harrier Central',
-                              style: ts_button,
-                            ),
-                            onPressed: () async {
-                              if (_addressFormKey.currentState?.validate() ??
-                                  false) {
-                                await _updateRunDetails(EditingTabEnum.address);
-
-                                if (widget.isNewRun) {
-                                  // this delay is required to ensure that the _isUpdating setState
-                                  // to function properly
-                                  _tabController.animateTo(_currentTab.next);
-                                } else {
-                                  final bool hasEnoughAddress =
-                                      _locationPostCodeController.text
-                                          .trim()
-                                          .isNotEmpty ||
-                                      (_locationStreetController.text
-                                              .trim()
-                                              .isNotEmpty &&
-                                          _locationCityController.text
-                                              .trim()
-                                              .isNotEmpty);
-                                  if (hasEnoughAddress) {
-                                    if (!mounted) return;
-                                    final bool? locate =
-                                        await showDialog<bool>(
-                                          context:
-                                              navigatorKey.currentContext!,
-                                          builder:
-                                              (BuildContext ctx) =>
-                                                  AlertDialog(
-                                                    title: const Text(
-                                                      'Address saved',
-                                                    ),
-                                                    content: const Text(
-                                                      'Would you like me to try to automatically find the map pin for the new address?',
-                                                    ),
-                                                    actions: <Widget>[
-                                                      ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor:
-                                                              Colors.teal,
-                                                          foregroundColor:
-                                                              Colors.white,
-                                                        ),
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                              ctx,
-                                                            ).pop(false),
-                                                        child: const Text(
-                                                          'Not now',
-                                                        ),
-                                                      ),
-                                                      ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor:
-                                                              hc_blue,
-                                                          foregroundColor:
-                                                              Colors.white,
-                                                        ),
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                              ctx,
-                                                            ).pop(true),
-                                                        child: const Text(
-                                                          'Auto-locate',
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                        );
-                                    if (locate == true) {
-                                      await _geocodeAndNavigateToMap();
-                                    }
-                                  } else {
-                                    if (!mounted) return;
-                                    await showDialog<void>(
-                                      context: navigatorKey.currentContext!,
-                                      builder: (BuildContext ctx) => AlertDialog(
-                                        title: const Text('Pin location needed'),
-                                        content: const Text(
-                                          "The address isn't specific enough for automatic location — you'll need to set the pin manually on the Map tab.",
-                                        ),
-                                        actions: <Widget>[
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.teal,
-                                              foregroundColor: Colors.white,
-                                            ),
-                                            onPressed: () =>
-                                                Navigator.of(ctx).pop(),
-                                            child: const Text('Dismiss'),
-                                          ),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: hc_blue,
-                                              foregroundColor: Colors.white,
-                                            ),
-                                            onPressed: () {
-                                              Navigator.of(ctx).pop();
-                                              _tabController.animateTo(
-                                                EditingTabEnum.map.value,
-                                              );
-                                            },
-                                            child: const Text('Go to Map'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                }
-                                await Future<void>.delayed(
-                                  const Duration(milliseconds: 500),
-                                );
-                                setStateIfMounted(() {
-                                  _isUpdating = false;
-                                });
-                              }
-                            },
-                          ),
-                    const SizedBox(height: 80.0),
+                    const SizedBox(height: 20.0),
                   ],
                 ),
               ],
@@ -1353,55 +1441,6 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     const SizedBox(height: 20.0),
-                    _isUpdating
-                        ? const SizedBox(
-                            height: 70.0,
-                            width: 70.0,
-                            child: HcAppCircularProgressIndicator(
-                              key: Key('112096562'),
-                            ),
-                          )
-                        : ElevatedButton(
-                            child: Text(
-                              widget.isNewRun
-                                  ? 'Next'
-                                  : 'Save changes to Harrier Central',
-                              style: ts_button,
-                            ),
-                            onPressed: () async {
-                              if (_detailsFormKey.currentState?.validate() ??
-                                  false) {
-                                await _updateRunDetails(EditingTabEnum.details);
-
-                                if (widget.isNewRun) {
-                                  // this delay is required to ensure that the _isUpdating setState
-                                  // to function properly
-                                  _tabController.animateTo(_currentTab.next);
-                                } else {
-                                  final SnackBar snackBar = SnackBar(
-                                    duration: const Duration(seconds: 3),
-                                    content: Text(
-                                      'Run details have been saved',
-                                      textAlign: TextAlign.center,
-                                      style: ts_titleCondensed,
-                                    ),
-                                    backgroundColor: hc_blue,
-                                  );
-
-                                  if (!mounted) return;
-                                  ScaffoldMessenger.of(
-                                    navigatorKey.currentContext!,
-                                  ).showSnackBar(snackBar);
-                                }
-                                await Future<void>.delayed(
-                                  const Duration(milliseconds: 500),
-                                );
-                                setStateIfMounted(() {
-                                  _isUpdating = false;
-                                });
-                              }
-                            },
-                          ),
                     if ((_eventAggregate.event.eventFacebookId != null) &&
                         (!_isUpdating)) ...<Widget>[
                       ElevatedButton(
@@ -1666,62 +1705,51 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                         style: ts_button,
                                       ),
                                       onPressed: () async {
-                                        final bool? confirmed =
-                                            await showDialog<bool>(
-                                              context: context,
-                                              builder:
-                                                  (BuildContext ctx) =>
-                                                      AlertDialog(
-                                                        title: const Text(
-                                                          'Delete image',
-                                                        ),
-                                                        content: const Text(
-                                                          'Remove the image from this run? This cannot be undone.',
-                                                        ),
-                                                        actions: <Widget>[
-                                                          ElevatedButton(
-                                                            style: ElevatedButton.styleFrom(
-                                                              backgroundColor: Colors.teal,
-                                                              foregroundColor: Colors.white,
-                                                            ),
-                                                            onPressed: () =>
-                                                                Navigator.of(
-                                                                  ctx,
-                                                                ).pop(false),
-                                                            child: const Text(
-                                                              'Cancel',
-                                                            ),
-                                                          ),
-                                                          ElevatedButton(
-                                                            style: ElevatedButton.styleFrom(
-                                                              backgroundColor: Colors.red[700],
-                                                              foregroundColor: Colors.white,
-                                                            ),
-                                                            onPressed: () =>
-                                                                Navigator.of(
-                                                                  ctx,
-                                                                ).pop(true),
-                                                            child: const Text(
-                                                              'Delete',
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                            );
+                                        final bool?
+                                        confirmed = await showDialog<bool>(
+                                          context: context,
+                                          builder: (BuildContext ctx) => AlertDialog(
+                                            title: const Text('Delete image'),
+                                            content: const Text(
+                                              'Remove the image from this run? This cannot be undone.',
+                                            ),
+                                            actions: <Widget>[
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.teal,
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                                onPressed: () => Navigator.of(
+                                                  ctx,
+                                                ).pop(false),
+                                                child: const Text('Cancel'),
+                                              ),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.red[700],
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                                onPressed: () =>
+                                                    Navigator.of(ctx).pop(true),
+                                                child: const Text('Delete'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
                                         if (confirmed != true) return;
                                         setStateIfMounted(() {
                                           _isUpdating = true;
                                         });
                                         final EventsService nSvc =
                                             EventsService();
-                                        final String eventId =
-                                            await nSvc.addEditEvent(
+                                        final String eventId = await nSvc
+                                            .addEditEvent(
                                               eventId:
                                                   _eventAggregate.event.eventId,
-                                              kennelId:
-                                                  _eventAggregate
-                                                      .event
-                                                      .kennelId,
+                                              kennelId: _eventAggregate
+                                                  .event
+                                                  .kennelId,
                                               deleteEventImage: true,
                                             );
                                         await _refreshAfterSave(eventId);
@@ -2665,18 +2693,27 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                               _isVisible = result ?? false;
                               return null;
                             },
-                            initialValue: _eventAggregate.event.isVisible == 1,
+                            initialValue: _isVisible,
+                            onChanged: (bool? result) {
+                              setStateIfMounted(() {
+                                _isVisible = result ?? false;
+                              });
+                            },
                           ),
                           CheckboxFormField(
                             title: Text(
                               'Count this run',
                               style: ts_regularBlack,
                             ),
-                            initialValue:
-                                _eventAggregate.event.isCountedRun == 1,
+                            initialValue: _isCountedRun,
                             validator: (bool? result) {
                               _isCountedRun = result ?? false;
                               return null;
+                            },
+                            onChanged: (bool? result) {
+                              setStateIfMounted(() {
+                                _isCountedRun = result ?? false;
+                              });
                             },
                           ),
                           CheckboxFormField(
@@ -2684,12 +2721,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                               'Users can edit run history',
                               style: ts_regularBlack,
                             ),
-                            initialValue:
-                                _eventAggregate.event.canEditRunAttendence ==
-                                    null
-                                ? false
-                                : _eventAggregate.event.canEditRunAttendence ==
-                                      1,
+                            initialValue: _usersCanEditRunAttendence == 1,
                             tristate: true,
                             validator: (bool? result) {
                               if (result == null) {
@@ -2700,17 +2732,30 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
 
                               return null;
                             },
+                            onChanged: (bool? result) {
+                              setStateIfMounted(() {
+                                if (result == null) {
+                                  _usersCanEditRunAttendence = -1;
+                                } else {
+                                  _usersCanEditRunAttendence = result ? 1 : 0;
+                                }
+                              });
+                            },
                           ),
                           CheckboxFormField(
                             title: Text(
                               'Promote this run',
                               style: ts_regularBlack,
                             ),
-                            initialValue:
-                                _eventAggregate.event.isPromotedEvent == 1,
+                            initialValue: _isPromotedEvent,
                             validator: (bool? result) {
                               _isPromotedEvent = result ?? false;
                               return null;
+                            },
+                            onChanged: (bool? result) {
+                              setStateIfMounted(() {
+                                _isPromotedEvent = result ?? false;
+                              });
                             },
                           ),
                         ],
@@ -2810,87 +2855,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         ),
                       ),
                     ),
-                    Container(
-                      margin: const EdgeInsets.only(
-                        top: 10.0,
-                        bottom: 60.0,
-                        left: 25.0,
-                        right: 25.0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        //crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          _isUpdating
-                              ? const SizedBox(
-                                  height: 70.0,
-                                  width: 70.0,
-                                  child: HcAppCircularProgressIndicator(
-                                    key: Key('3444910299'),
-                                  ),
-                                )
-                              : SizedBox(
-                                  width: 300.0,
-                                  child: ElevatedButton(
-                                    child: Text(
-                                      widget.isNewRun
-                                          ? 'Finish'
-                                          : 'Save Other Information',
-                                      style: ts_button,
-                                    ),
-                                    onPressed: () async {
-                                      setStateIfMounted(() {
-                                        _isUpdating = true;
-                                      });
-                                      await _updateRunDetails(
-                                        EditingTabEnum.other,
-                                      );
-
-                                      if (widget.isNewRun) {
-                                        if (!mounted) return;
-                                        Navigator.of(
-                                          navigatorKey.currentContext!,
-                                        ).pop();
-                                      } else {
-                                        final SnackBar snackBar = SnackBar(
-                                          duration: const Duration(seconds: 3),
-                                          content: Text(
-                                            'Other info has been saved',
-                                            textAlign: TextAlign.center,
-                                            style: ts_titleCondensed,
-                                          ),
-                                          backgroundColor: hc_blue,
-                                        );
-
-                                        if (!mounted) return;
-                                        ScaffoldMessenger.of(
-                                          navigatorKey.currentContext!,
-                                        ).showSnackBar(snackBar);
-                                      }
-                                      setStateIfMounted(() {
-                                        _isUpdating = false;
-                                      });
-                                    },
-                                  ),
-                                ),
-                          // if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
-                          //   const SizedBox(width: 10.0),
-                          //   Container(
-                          //     width: 162.0,
-                          //     child: ElevatedButton(
-                          //       child: Text('Use Facebook', style: buttonLabelStyleMedium),
-                          //       onPressed: () {
-                          //         setStateIfMounted(() {
-                          //           _isUpdating = true;
-                          //           _useFacebookDetails();
-                          //         });
-                          //       },
-                          //     ),
-                          //   ),
-                          // ]
-                        ],
-                      ),
-                    ),
+                    const SizedBox(height: 20.0),
                   ],
                 ),
               ],
@@ -2961,9 +2926,10 @@ class _GazetteerBottomSheetState extends State<_GazetteerBottomSheet> {
           'lon': widget.kennelLon.toString(),
         },
       );
-      final response = await get(uri, headers: {
-        'Accept': 'application/json',
-      }).timeout(const Duration(seconds: 10));
+      final response = await get(
+        uri,
+        headers: {'Accept': 'application/json'},
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final place = AzurePlace.fromJson(
@@ -3027,10 +2993,7 @@ class _GazetteerBottomSheetState extends State<_GazetteerBottomSheet> {
         children: [
           Icon(Icons.search, color: hc_red, size: 22),
           const SizedBox(width: 10),
-          Text(
-            'Location Lookup',
-            style: ts_headingBlack,
-          ),
+          Text('Location Lookup', style: ts_headingBlack),
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.close),
@@ -3113,7 +3076,8 @@ class _GazetteerBottomSheetState extends State<_GazetteerBottomSheet> {
 
   Widget _buildResultTile(AzurePlaceResult result) {
     final addr = result.address;
-    final name = result.poi?.name ?? addr?.freeformAddress ?? 'Unknown location';
+    final name =
+        result.poi?.name ?? addr?.freeformAddress ?? 'Unknown location';
     final subtitle = [
       addr?.municipality,
       addr?.countrySubdivision,
@@ -3125,7 +3089,12 @@ class _GazetteerBottomSheetState extends State<_GazetteerBottomSheet> {
         backgroundColor: hc_red,
         child: const Icon(Icons.place, color: Colors.white, size: 18),
       ),
-      title: Text(name, style: ts_titleMediumBlack, maxLines: 2, overflow: TextOverflow.ellipsis),
+      title: Text(
+        name,
+        style: ts_titleMediumBlack,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
       subtitle: subtitle.isNotEmpty
           ? Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis)
           : null,
@@ -3146,6 +3115,7 @@ class CheckboxFormField extends FormField<bool> {
     super.validator,
     bool super.initialValue = false,
     bool tristate = false,
+    ValueChanged<bool?>? onChanged,
   }) : super(
          builder: (FormFieldState<bool> state) {
            return CheckboxListTile(
@@ -3153,7 +3123,10 @@ class CheckboxFormField extends FormField<bool> {
              title: title,
              tristate: tristate,
              value: state.value,
-             onChanged: state.didChange,
+             onChanged: (bool? value) {
+               state.didChange(value);
+               onChanged?.call(value);
+             },
              subtitle: state.hasError
                  ? Builder(
                      builder: (BuildContext context) => Text(

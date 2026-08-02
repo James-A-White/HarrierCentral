@@ -18,6 +18,39 @@ Items flagged during development that need follow-up.
 
 ---
 
+## Device test — 2.15.54+1268 run editor single save (shipped blind 2026-08-02)
+
+Released with `flutter analyze` only. The Details, Address and Other tabs no
+longer have their own save buttons — one anchored bar saves all three at once,
+so **every save now writes every field on those three tabs**, not just the
+tab you were on. That is the thing to watch. Screen: run admin → Edit run
+details (`lib/pages/run_admin/edit_run_details.dart`).
+
+Rollback: `git revert <this commit>` — one self-contained commit, no SP or
+schema changes.
+
+- [ ] **Open a run, change nothing, press nothing** — the bar is grey and
+  unpressable. Type one character anywhere → it turns red immediately.
+- [ ] **Edit the name on Details, the postcode on Address, the hares on Other,
+  then save once.** All three must stick. This is the whole point of the change.
+- [ ] **Other-tab switches survive a save from another tab.** Set "Promote this
+  run" on, go to Details, save from there, reopen the run: it is still on.
+  (Before this build those four switches were only read while the Other tab was
+  on screen, so a save from elsewhere wrote the defaults over them.)
+- [ ] **A toggle survives a tab round-trip** — flip a switch on Other, go to
+  Details, come back to Other: still flipped, bar still red.
+- [ ] **"Users can edit run history"** on a run that never had it set: save and
+  check the run still behaves as inheriting, not as an explicit "no".
+- [ ] **Back out with unsaved changes** → prompt offering Save / Discard.
+  Discard leaves without writing; Save writes then leaves; the phone's back
+  gesture behaves the same as the app-bar arrow.
+- [ ] **Address auto-locate** now only offers after a save in which the address
+  actually changed — confirm it fires when you edit the address, and does *not*
+  fire when you only edit the run name.
+- [ ] **New run wizard** — the bar reads Next on Details/Address, Finish on
+  Other, and is always pressable (it is the wizard, not a dirty-save).
+- [ ] **Map and Image tabs** keep their own buttons and show no bottom bar.
+
 ## Device test — 2.15.21+1235 photo review (shipped blind 2026-07-30)
 
 Released to TestFlight with `flutter analyze` only — no simulator or device run.
