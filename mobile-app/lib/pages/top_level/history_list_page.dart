@@ -220,29 +220,45 @@ class HistoryListPageState extends State<HistoryListPage>
           ORDER BY totalRunsThisKennel desc
           ''';
 
-    _runCountsListByKennel = <RunHistoryModel>[];
+    // Build into a LOCAL list and swap it in atomically.
+    //
+    // This used to empty _runCountsListByKennel BEFORE the await and refill it
+    // one row at a time afterwards. Any frame painted in between rendered the
+    // ListView with the item count from the old list against the new, empty
+    // one — "RangeError (length): Invalid value: Valid value range is empty: 6"
+    // on the History tab, seen in the wild 2026-07-31. The field must never be
+    // left inconsistent across an await.
     try {
       final List<Map<String, dynamic>> results = await database.rawQuery(query);
 
-      _totalHaring = 0;
-      _totalRuns = 0;
+      final List<RunHistoryModel> next = <RunHistoryModel>[];
+      // Accumulate locally too: these are totals, so a second refresh landing
+      // while the first is mid-flight would otherwise double-count into them.
+      int totalHaring = 0;
+      int totalRuns = 0;
 
-      for (int i = 0; i < results.length; i++) {
-        final RunHistoryModel hlrItem = RunHistoryModel.fromMap(results[i]);
-        _totalHaring += hlrItem.totalHaringThisKennel;
-        _totalRuns += hlrItem.totalRunsThisKennel;
+      for (final Map<String, dynamic> row in results) {
+        final RunHistoryModel hlrItem = RunHistoryModel.fromMap(row);
+        totalHaring += hlrItem.totalHaringThisKennel;
+        totalRuns += hlrItem.totalRunsThisKennel;
         if ((hlrItem.totalRunsThisKennel > 0) || (hlrItem.following == 1)) {
-          _runCountsListByKennel.add(hlrItem);
-        }
-
-        if (forceRefresh && (i == results.length - 1)) {
-          setStateIfMounted(() {
-            _isLoading = false;
-          });
+          next.add(hlrItem);
         }
       }
+
+      setStateIfMounted(() {
+        _runCountsListByKennel = next;
+        _totalHaring = totalHaring;
+        _totalRuns = totalRuns;
+        // Previously only cleared inside the loop on the last row, so a user
+        // with no qualifying kennels sat on the spinner forever.
+        if (forceRefresh) _isLoading = false;
+      });
     } catch (e) {
-      //print(e);
+      if (kDebugMode) debugPrint('[HistoryList] queryKennelStats failed: $e');
+      setStateIfMounted(() {
+        if (forceRefresh) _isLoading = false;
+      });
     }
   }
 
@@ -298,14 +314,18 @@ class HistoryListPageState extends State<HistoryListPage>
   }
 
   Widget _buildKennelStatsList() {
+    // Snapshot the list for this build so itemCount and itemBuilder can never
+    // disagree, however the field is mutated while the frame is in flight.
+    final List<RunHistoryModel> kennels = _runCountsListByKennel;
     return Expanded(
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         //itemCount: runCountsList.length + 1,
-        itemCount: _runCountsListByKennel.length,
+        itemCount: kennels.length,
         padding: const EdgeInsets.only(top: 20),
         itemExtent: 100.0,
         itemBuilder: (BuildContext context, int index) {
+          if (index >= kennels.length) return const SizedBox.shrink();
           // if (index == 0) {
           //   return KennelRunHistoryMyRunsItem(refreshCounters: () {
           //       refreshRunHistoryFromTable(true);
@@ -313,14 +333,14 @@ class HistoryListPageState extends State<HistoryListPage>
           // } else {
 
           return KennelRunHistoryCountListItem(
-            kennelInfo: _runCountsListByKennel[index],
+            kennelInfo: kennels[index],
+            // Reads the FIELD, not the snapshot: this runs after the refresh
+            // has swapped a new list in, and the caller wants the fresh row.
             refreshCounters: (String kennelId) async {
               await queryKennelStats(true);
               if (kennelId.isNotEmpty) {
-                for (int i = 0; i < _runCountsListByKennel.length; i++) {
-                  if (_runCountsListByKennel[i].kennelId == kennelId) {
-                    return _runCountsListByKennel[i];
-                  }
+                for (final RunHistoryModel k in _runCountsListByKennel) {
+                  if (k.kennelId == kennelId) return k;
                 }
               }
             },

@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.53+1267 (2026-08-02)
+
+### Fixes
+- **History tab could break when refreshing your kennel stats.** Refreshing
+  briefly emptied the list while the screen was still drawing the old one,
+  which could throw an error over the stats. Found in a user's diagnostic log.
+- **History tab could also spin forever** for anyone with no qualifying
+  kennels — the loading indicator was only cleared while processing results,
+  so no results meant it never cleared.
+
 ## 2.15.52+1266 (2026-08-02)
 
 ### Improvements
