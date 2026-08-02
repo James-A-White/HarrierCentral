@@ -1,5 +1,18 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.56+1270 (2026-08-02)
+
+### Improvements
+- **Share your run from the full-screen map.** The link button now opens your
+  phone's share sheet with a message and the live-tracking link, instead of
+  quietly copying the link to the clipboard. Same wording as the share button
+  in Run Tools.
+
+### Fixes
+- **The "My location" button on the full-screen map is usable again.** The link
+  button sat exactly on top of it and hid it completely. Share has moved to the
+  left, under the close button.
+
 ## 2.15.55+1269 (2026-08-02)
 
 ### Improvements

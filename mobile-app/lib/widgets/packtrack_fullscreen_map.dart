@@ -1,5 +1,6 @@
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
+import 'package:share_plus/share_plus.dart';
 
 /// Full-screen PackTrack map for a run, opened from the run's map view. Fills
 /// the whole screen with an overlaid close button (top-left).
@@ -10,11 +11,7 @@ import 'package:latlong2/latlong.dart' as latlng;
 /// The trade-off is a fresh view (re-fetch, playback at the live edge); trimming
 /// stays on the embedded map.
 class PackTrackFullScreenMap extends StatelessWidget {
-  const PackTrackFullScreenMap({
-    super.key,
-    required this.run,
-    this.focusPoint,
-  });
+  const PackTrackFullScreenMap({super.key, required this.run, this.focusPoint});
 
   final RunDetailsAggregate run;
 
@@ -31,6 +28,38 @@ class PackTrackFullScreenMap extends StatelessWidget {
           '/${run.event.eventNumber}/packtrack';
     }
     return '$BASE_HASHRUNS_DOT_ORG_URL#/RID?publicEventId=${run.event.publicEventId}';
+  }
+
+  /// Same wording as the Run Tools share button, so a run shared from either
+  /// place reads the same to whoever receives it.
+  Future<void> _shareRunLink() async {
+    final String name = run.event.eventName.isEmpty
+        ? '${run.kennel.kennelShortName} run'
+        : run.event.eventName;
+    await SharePlus.instance.share(
+      ShareParams(
+        text:
+            "I'm running $name with ${run.kennel.kennelShortName} — "
+            'follow me live: $_packTrackUrl',
+        subject: 'Follow my hash live',
+      ),
+    );
+  }
+
+  Widget _overlayButton({
+    required String tooltip,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.55),
+      shape: const CircleBorder(),
+      child: IconButton(
+        tooltip: tooltip,
+        icon: Icon(icon, color: Colors.white),
+        onPressed: onPressed,
+      ),
+    );
   }
 
   @override
@@ -70,7 +99,8 @@ class PackTrackFullScreenMap extends StatelessWidget {
     // Admin trim editor, targeting THIS fullscreen map's controller. Trimming
     // lives only here (the fullscreen view has room to spread the controls out).
     final trimTag = 'trim-$mapTag';
-    final trimController = Get.isRegistered<PackTrackTrimController>(tag: trimTag)
+    final trimController =
+        Get.isRegistered<PackTrackTrimController>(tag: trimTag)
         ? Get.find<PackTrackTrimController>(tag: trimTag)
         : Get.put(
             PackTrackTrimController(run: run, mapControllerTag: mapTag),
@@ -113,42 +143,30 @@ class PackTrackFullScreenMap extends StatelessWidget {
                 ),
               ),
             ),
+          // Overlay controls run down the LEFT edge. RunTrackerMap owns the
+          // right-hand column — its locate/north-lock button sits at top 66,
+          // which is where a top-right button on this route lands once the
+          // status bar inset is added, so share used to cover it completely.
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             left: 12,
-            child: Material(
-              color: Colors.black.withValues(alpha: 0.55),
-              shape: const CircleBorder(),
-              child: IconButton(
-                tooltip: 'Close',
-                icon: const Icon(Icons.close, color: Colors.white),
-                onPressed: () => Navigator.of(context).maybePop(),
-              ),
-            ),
-          ),
-          // Copy the public PackTrack link for this run so spectators can watch
-          // in a browser.
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            right: 12,
-            child: Material(
-              color: Colors.black.withValues(alpha: 0.55),
-              shape: const CircleBorder(),
-              child: IconButton(
-                tooltip: 'Copy live-tracking link',
-                icon: const Icon(Icons.link, color: Colors.white),
-                onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: _packTrackUrl));
-                  Get.snackbar(
-                    'Link copied',
-                    'The live PackTrack link for this run is on your clipboard.',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: hc_blue,
-                    colorText: Colors.white,
-                    duration: const Duration(seconds: 3),
-                  );
-                },
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                _overlayButton(
+                  tooltip: 'Close',
+                  icon: Icons.close,
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+                const SizedBox(height: 10),
+                // Hands the public PackTrack link to the OS share sheet so
+                // spectators can watch in a browser without the app.
+                _overlayButton(
+                  tooltip: 'Share live-tracking link',
+                  icon: Icons.ios_share,
+                  onPressed: _shareRunLink,
+                ),
+              ],
             ),
           ),
           // Admin trim bar, spread across the bottom (renders nothing for
