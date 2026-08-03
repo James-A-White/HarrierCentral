@@ -95,6 +95,9 @@ class RunContentService {
         'songId': ?songId,
         if (chargePhotoUrl?.isNotEmpty == true) 'chargePhotoUrl': chargePhotoUrl,
       }),
+      // The SP mints the DownDown id server-side (NEWID(), no dedupe key), so
+      // an auto-retry after a lost response would create a duplicate charge.
+      noRetries: true,
     );
 
     if (result.startsWith(ERROR_PREFIX)) return null;
