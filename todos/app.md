@@ -106,12 +106,15 @@ schema changes, so there is no database state to unwind.
 
 ## PackTrack
 
-- [ ] **PackTrack: Label mark must be a permanent core mark** (James, 2026-07-11).
-  The Label mark (`I-400.png`, addText action) is currently part of the kennel's
-  configurable symbol set — a kennel that omits it leaves its hares with NO way
-  to drop a labelled mark on trail (hit live on a run). Make Label (and likely
-  Caution/warning too, per the "only symbols that should have labels" rule)
-  always available regardless of the kennel's chosen trail-symbol config.
+- [x] **PackTrack: Label mark must be a permanent core mark** (James, 2026-07-11).
+  Done — `_ensureLabelSlot` in `lib/data/models/trail_slot/trail_slot.dart`
+  appends the canonical Label slot (addText) whenever a kennel's
+  `trailSymbolsConfigJson` omits a text-capable Label, so hares always have a
+  way to drop a labelled mark. Verified in code 2026-08-03.
+- [ ] **PackTrack: should Caution also be guaranteed?** Follow-up to the item
+  above — Caution (addText) is still omittable by a kennel's symbol config.
+  Less critical than Label (a labelled Label mark can say "CAUTION"), so this
+  is a taste call for James, not a bug.
 
 ---
 
