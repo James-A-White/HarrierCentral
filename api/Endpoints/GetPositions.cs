@@ -52,7 +52,12 @@ namespace HcWebApi.Endpoints
             request.IncludeTrimmed = request.IncludeTrimmed
                 || string.Equals(GetQueryValue(req, "includeTrimmed"), "true", StringComparison.OrdinalIgnoreCase);
 
-            const string eventTableName = "EventPositions"; // PK = eventId, RK = serverTs-callerTs
+            // PK = eventId, RK = callerTs-userId (legacy rows: serverTs-callerTs).
+            // Both key formats are 19-digit-epoch-ms-led, so the RowKey range
+            // seek below works across both; per-point timestamps are read from
+            // the TimestampMs / ServerTimestampMs properties, with RowKey
+            // parsing only as a legacy fallback.
+            const string eventTableName = "EventPositions";
             TableClient eventTable = _tableServiceClient.GetTableClient(eventTableName);
             await eventTable.CreateIfNotExistsAsync();
 

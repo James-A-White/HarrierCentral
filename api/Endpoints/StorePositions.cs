@@ -58,8 +58,8 @@ namespace HcWebApi.Endpoints
             }
 
             // Table names (can be adjusted if you prefer different names)
-            const string eventTableName = "EventPositions";    // PK = eventId, RK = serverTs-callerTs
-            const string userTableName = "UserPositions";      // PK = userId, RK = serverTs-callerTs
+            const string eventTableName = "EventPositions";    // PK = eventId, RK = callerTs-userId (legacy rows: serverTs-callerTs)
+            const string userTableName = "UserPositions";      // PK = userId, RK = callerTs-userId (legacy rows: serverTs-callerTs)
 
             TableClient eventTable = _tableServiceClient.GetTableClient(eventTableName);
             TableClient userTable = _tableServiceClient.GetTableClient(userTableName);
@@ -81,7 +81,16 @@ namespace HcWebApi.Endpoints
                 }
                 String ts = tsDigits.PadLeft(19, '0');
 
-                string compositeRowKey = $"{serverTimestamp}-{ts}";
+                // RowKey must be deterministic per logical point so that a
+                // re-sent batch (the client retries on timeout, and a batch the
+                // server stored but whose response was lost stays queued for
+                // the next flush) Replaces the same rows instead of storing
+                // duplicates. Caller timestamp + userId identifies a point;
+                // the server arrival time lives in the ServerTimestampMs
+                // property, which readers already prefer over the RowKey.
+                // The same composite key is written to both tables —
+                // DeletePositions depends on that invariant.
+                string compositeRowKey = $"{ts}-{payload.UserId}";
 
                 string? typeCode = pos.Type?.Trim();
                 bool hasValidType = !string.IsNullOrWhiteSpace(typeCode);
@@ -96,7 +105,7 @@ namespace HcWebApi.Endpoints
                     hasValidType = false;
                 }
 
-                // Entity keyed by Event (PK=eventId, RK=timestamp|userId)
+                // Entity keyed by Event (PK=eventId, RK=callerTs-userId)
                 var entityByEvent = new TableEntity(payload.EventId, compositeRowKey)
                 {
                     {"UserId", payload.UserId},
@@ -115,7 +124,7 @@ namespace HcWebApi.Endpoints
                 }
 
 
-                // Entity keyed by User (PK=userId, RK=eventId|timestamp)
+                // Entity keyed by User (PK=userId, RK=callerTs-userId)
                 var entityByUser = new TableEntity(payload.UserId, compositeRowKey)
                 {
                     {"UserId", payload.UserId},

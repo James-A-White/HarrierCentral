@@ -85,8 +85,8 @@ namespace HcWebApi.Endpoints
                 return CreateJsonResult(StatusCodes.Status200OK, new { deleted = 0 });
             }
 
-            const string eventTableName = "EventPositions"; // PK = eventId, RK = serverTs-callerTs
-            const string userTableName = "UserPositions";    // PK = userId,  RK = serverTs-callerTs
+            const string eventTableName = "EventPositions"; // PK = eventId, RK = callerTs-userId (legacy rows: serverTs-callerTs)
+            const string userTableName = "UserPositions";    // PK = userId,  RK = callerTs-userId (legacy rows: serverTs-callerTs)
             TableClient eventTable = _tableServiceClient.GetTableClient(eventTableName);
             TableClient userTable = _tableServiceClient.GetTableClient(userTableName);
             await eventTable.CreateIfNotExistsAsync();
