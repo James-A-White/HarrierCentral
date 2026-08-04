@@ -104,6 +104,21 @@ schema changes, so there is no database state to unwind.
 
 ---
 
+## Device test — 2.15.64+1278 radar arrow + eased rotation (shipped 2026-08-04)
+
+Released with `flutter analyze` only. Screens: live run → map → Radar.
+
+- [ ] **North-locked radar**: turn on the spot — the centre blue wedge rotates
+  with you. Unlock → wedge returns to the top and the whole rose turns instead.
+- [ ] **Replay radar, north-locked**: wedge follows the focus runner's
+  direction of travel at the scrub position.
+- [ ] **Map rotation feel**: turns should start and settle softly (ease-in/out)
+  rather than at constant speed; a heading reversal should wind down through
+  zero, not snap. Tuning dial: `_rotationAccelDegPerSec2` (480).
+- [ ] **Lock to North mid-turn**: map stops dead on north, no residual creep.
+- [ ] **Wedge steppiness**: the wedge follows the raw compass in 2° ticks — if
+  it looks steppy on device, route it through the same easing.
+
 ## PackTrack
 
 - [x] **PackTrack: Label mark must be a permanent core mark** (James, 2026-07-11).
