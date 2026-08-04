@@ -1,5 +1,34 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.64+1278 (2026-08-04)
+
+### Improvements
+- **The radar's centre arrow now shows which way you're facing.** With the
+  compass locked to North the radar used to keep its little blue arrow pinned
+  straight up, as if you were forever facing north. It now rotates with you —
+  turn on the spot and the arrow turns too, so "that blip is off to my left"
+  is readable at a glance. During replay it shows the focus runner's direction
+  of travel instead. Heading-up mode is unchanged (the arrow stays at the top
+  because the whole rose turns).
+- **Map and radar rotation now ease in and out.** On top of the existing
+  smoothing, turns build up speed and settle into place rather than starting
+  and stopping at full rate — and a direction reversal winds down through zero
+  instead of snapping. One easing drives both the map and the radar rose, so
+  they can never disagree about which way is ahead.
+
+### Fixes
+- **Adding a Down Down no longer risks a duplicate charge.** On a flaky
+  connection, a charge whose confirmation was lost in transit could be
+  silently re-sent and recorded twice. It now goes up exactly once; if the
+  connection genuinely fails you get told, rather than guessed at.
+- **Assistance broadcasts go to the people involved, not the whole kennel.**
+  Lost-hasher alerts and "back on trail" messages now release to
+  Mismanagement, RSVPs and Hares — the people actually on or running the
+  event — instead of every member the kennel has ever had.
+- **Locking the map to North mid-turn now stops the turn dead.** Previously a
+  rotation still in flight could keep nudging the freshly locked map away
+  from north.
+
 ## 2.15.63+1277 (2026-08-02)
 
 ### Improvements

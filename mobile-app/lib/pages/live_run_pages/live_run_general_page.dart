@@ -492,7 +492,7 @@ class LiveRunGeneralController extends GetxController {
         'eventId': run.event.eventId,
         'messageId': messageId,
         'messageContent': '✅ BACK ON TRAIL — $name has found the trail.$where',
-        'messageReleasabilityFlags': kChatReleasabilityAll,
+        'messageReleasabilityFlags': kChatReleasabilityAssistance,
       });
     });
     return !result.startsWith(ERROR_PREFIX);
@@ -560,7 +560,7 @@ class LiveRunGeneralController extends GetxController {
         'eventId': run.event.eventId,
         'messageId': messageId,
         'messageContent': text,
-        'messageReleasabilityFlags': kChatReleasabilityAll,
+        'messageReleasabilityFlags': kChatReleasabilityAssistance,
       });
     });
     return (

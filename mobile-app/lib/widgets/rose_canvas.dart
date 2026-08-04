@@ -37,6 +37,7 @@ class RoseCanvas extends StatelessWidget {
     required this.blips,
     required this.ringMetres,
     this.heading,
+    this.facingDeg,
   });
 
   final List<RoseBlip> blips;
@@ -46,6 +47,13 @@ class RoseCanvas extends StatelessWidget {
   /// the top. Null renders north-up.
   final double? heading;
 
+  /// Direction the centre marker faces, degrees clockwise from north. Under
+  /// heading-up rendering pass the same value as [heading] and the wedge sits
+  /// at the top, exactly as before; under north-up rendering the rose stays
+  /// put, so this is what lets the wedge show which way the hasher is facing.
+  /// Null keeps the wedge pointing up.
+  final double? facingDeg;
+
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
@@ -54,6 +62,7 @@ class RoseCanvas extends StatelessWidget {
         blips: blips,
         ringMetres: ringMetres,
         heading: heading,
+        facingDeg: facingDeg,
       ),
     );
   }
@@ -64,11 +73,13 @@ class RosePainter extends CustomPainter {
     required this.blips,
     required this.ringMetres,
     required this.heading,
+    this.facingDeg,
   });
 
   final List<RoseBlip> blips;
   final double ringMetres;
   final double? heading;
+  final double? facingDeg;
 
   /// Labels are placed nearest-first and skipped when they'd collide, so a
   /// crowded rose degrades into fewer labels rather than unreadable mush.
@@ -119,8 +130,11 @@ class RosePainter extends CustomPainter {
       );
     }
 
-    // Viewer: facing wedge + dot. Heading-up ⇒ the wedge always points up.
-    final wedgeDeg = (heading == null ? 0.0 : 0.0) - 90;
+    // Viewer: facing wedge + dot. The wedge is drawn at the facing direction
+    // relative to however the rose itself is rotated: heading-up passes
+    // facing == rot so the wedge sits at the top; north-up passes rot == 0 so
+    // the wedge swings to wherever the hasher is pointing.
+    final wedgeDeg = (facingDeg == null ? 0.0 : facingDeg! - rot) - 90;
     final wa = wedgeDeg * math.pi / 180;
     canvas.drawPath(
       Path()
@@ -246,6 +260,7 @@ class RosePainter extends CustomPainter {
   bool shouldRepaint(covariant RosePainter old) =>
       old.ringMetres != ringMetres ||
       old.heading != heading ||
+      old.facingDeg != facingDeg ||
       old.blips != blips;
 }
 

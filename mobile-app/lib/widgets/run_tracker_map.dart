@@ -91,10 +91,18 @@ class RunTrackerMap extends StatelessWidget {
                     child: Container(
                       color: Colors.black.withValues(alpha: 0.55),
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 92),
-                      child: RoseCanvas(
-                        blips: blips,
-                        ringMetres: range,
-                        heading: controller.roseHeading,
+                      // Own Obx: under north-lock roseFacingDeg follows the
+                      // compass, which ticks every ≥2°. Reading it here (not
+                      // in the rose's top-level Obx) means a facing change
+                      // repaints only this canvas — never the timeline,
+                      // legend or playback panel around it.
+                      child: Obx(
+                        () => RoseCanvas(
+                          blips: blips,
+                          ringMetres: range,
+                          heading: controller.roseHeading,
+                          facingDeg: controller.roseFacingDeg,
+                        ),
                       ),
                     ),
                   ),

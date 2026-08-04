@@ -1,3 +1,6 @@
+1.0.31+29
+    • StorePositions: deterministic RowKey (callerTs-userId) — a retried GPS batch now replaces the same rows instead of storing duplicate track points and trail marks
+
 1.0.30+28
     • Nightly MemberStandingSweep timer now also runs a full run-count recompute
       (HC6.nonApi_updateRunCountsForAllUsers) so stamped run counts self-heal.

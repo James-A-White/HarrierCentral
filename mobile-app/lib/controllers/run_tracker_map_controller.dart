@@ -254,6 +254,28 @@ class RunTrackerMapController extends GetxController
     );
   }
 
+  /// Direction the rose's centre wedge faces, degrees clockwise from north.
+  ///
+  /// Heading-up (north unlocked): the whole rose already rotates to the
+  /// heading, so the wedge must sit at the top — return the same value the
+  /// rose is rotated by and the two cancel out. North-locked: the rose stays
+  /// put, so the wedge alone carries the direction — the viewer's live
+  /// compass facing when the rose is centred on them during a live run,
+  /// otherwise the focus runner's direction of travel at the scrub position.
+  double? get roseFacingDeg {
+    if (!_trueNorthLock.value) return roseHeading;
+    final focus = roseFocusRunner;
+    if (focus == null) return null;
+    if (focus.id == _currentUserId && !_isStaleEvent) {
+      final compass = deviceHeading.value;
+      if (compass != null) return compass;
+    }
+    return _runnerHeadingDegrees(
+      focus,
+      timelineAvailable ? currentTimestampMs.value : null,
+    );
+  }
+
   /// Everyone except the focus runner, placed relative to them at the scrub
   /// position. Reuses the same interpolation the map markers use, so the rose
   /// and the map can never disagree about where somebody was.
@@ -1683,6 +1705,10 @@ class RunTrackerMapController extends GetxController
     if (_trueNorthLock.value == value) return;
     _trueNorthLock.value = value;
     if (value) {
+      // Kill any in-flight slew BEFORE snapping, or its timer keeps turning
+      // the "locked" map toward the stale target.
+      _stopRotationSlew();
+      _targetRotationDeg = null;
       mapController.rotate(0.0);
       _lastRotationDeg = 0.0;
     } else {
@@ -2494,10 +2520,19 @@ class RunTrackerMapController extends GetxController
   static double _shortestDelta(double from, double to) =>
       ((to - from + 540.0) % 360.0) - 180.0;
 
-  /// Moves the view one step toward [_targetRotationDeg], never faster than
-  /// [_maxRotationDegPerSec]. Keeps stepping on a timer until it arrives, so a
-  /// big change still completes even when no further headings come in (e.g.
-  /// after a single scrub, with playback paused).
+  /// Moves the view one step toward [_targetRotationDeg]. Keeps stepping on a
+  /// timer until it settles, so a big change still completes even when no
+  /// further headings come in (e.g. after a single scrub, with playback
+  /// paused).
+  ///
+  /// The step is eased, not constant-rate: turn speed carries between steps
+  /// and may only change by [_rotationAccelDegPerSec2], so a turn builds up
+  /// from stationary (ease-in), and the approach speed is capped at what a
+  /// full-rate deceleration could still stop from at the target, so it
+  /// settles into place instead of stopping dead (ease-out). A reversal —
+  /// target flips to the other side mid-turn — winds down through zero and
+  /// back up rather than snapping, which is where the old constant-rate slew
+  /// looked mechanical.
   void _stepRotationTowardTarget() {
     final target = _targetRotationDeg;
     if (target == null) return;
@@ -2514,38 +2549,63 @@ class RunTrackerMapController extends GetxController
     }
 
     final delta = _shortestDelta(current, target);
-    if (delta.abs() < _rotationDeadbandDeg) {
+
+    // Settled: inside the deadband with no residual speed worth playing out.
+    if (delta.abs() < _rotationDeadbandDeg &&
+        _rotationVelDegPerSec.abs() < _rotationSettledDegPerSec) {
       _stopRotationSlew();
       return;
     }
 
-    final elapsedSec = _lastRotationAt == null
+    double elapsedSec = _lastRotationAt == null
         ? _rotationStepInterval.inMilliseconds / 1000.0
         : now.difference(_lastRotationAt!).inMilliseconds / 1000.0;
-    final maxStep = _maxRotationDegPerSec * math.max(elapsedSec, 0.0);
+    // A stall (backgrounded app, dropped frames) must not integrate into one
+    // giant catch-up step.
+    elapsedSec = math.min(math.max(elapsedSec, 0.0), 0.25);
 
-    final step = delta.abs() <= maxStep
-        ? delta
-        : maxStep * (delta.isNegative ? -1 : 1);
+    // Ease-out: the fastest approach a full-rate deceleration can still stop
+    // from at the target (v = √(2·a·d)), capped at the hard rate ceiling.
+    final double desired =
+        delta.sign *
+        math.min(
+          _maxRotationDegPerSec,
+          math.sqrt(2.0 * _rotationAccelDegPerSec2 * delta.abs()),
+        );
+
+    // Ease-in: speed may only change by the acceleration cap per step.
+    final double maxDv = _rotationAccelDegPerSec2 * elapsedSec;
+    double dv = desired - _rotationVelDegPerSec;
+    if (dv > maxDv) {
+      dv = maxDv;
+    } else if (dv < -maxDv) {
+      dv = -maxDv;
+    }
+    _rotationVelDegPerSec += dv;
+
+    double step = _rotationVelDegPerSec * elapsedSec;
+    // Never step past the target within a frame.
+    if (step.abs() >= delta.abs() && step.sign == delta.sign) {
+      step = delta;
+      _rotationVelDegPerSec = 0.0;
+    }
+
     final next = _normalizeDegrees(current + step);
     mapController.rotate(next);
     _lastRotationDeg = next;
     _lastRotationAt = now;
 
-    // Still short of the target — keep slewing.
-    if (delta.abs() > maxStep) {
-      _rotationSlewTimer ??= Timer.periodic(
-        _rotationStepInterval,
-        (_) => _stepRotationTowardTarget(),
-      );
-    } else {
-      _stopRotationSlew();
-    }
+    // Keep the timer running until settled so the tail of the ease completes.
+    _rotationSlewTimer ??= Timer.periodic(
+      _rotationStepInterval,
+      (_) => _stepRotationTowardTarget(),
+    );
   }
 
   void _stopRotationSlew() {
     _rotationSlewTimer?.cancel();
     _rotationSlewTimer = null;
+    _rotationVelDegPerSec = 0.0;
   }
 
   /// Length of track the heading is fitted over. The single dial for how
@@ -2581,6 +2641,20 @@ class RunTrackerMapController extends GetxController
   /// Cadence of the slew. Fine enough to read as motion rather than steps.
   static const Duration _rotationStepInterval = Duration(milliseconds: 60);
 
+  /// How fast the turn rate itself may change, in deg/s². This is the easing
+  /// dial: the rate ceiling above bounds how fast the view turns, this bounds
+  /// how abruptly it gets to that speed and back off it. Lower = softer,
+  /// dreamier starts and stops but later arrival; at 480 the ramp to full
+  /// rate takes 0.25 s (15° of travel), which keeps a 90° corner around a
+  /// second — eased at both ends without reintroducing the never-arrives lag
+  /// the rate ceiling's comment warns about.
+  static const double _rotationAccelDegPerSec2 = 480.0;
+
+  /// Residual turn speed below this is invisible — together with the position
+  /// deadband it defines "settled", where the slew timer stops.
+  static const double _rotationSettledDegPerSec = 5.0;
+
+  double _rotationVelDegPerSec = 0.0;
   double? _targetRotationDeg;
   DateTime? _lastRotationAt;
   Timer? _rotationSlewTimer;

@@ -3,6 +3,11 @@ import 'package:harrier_central/imports.dart';
 
 const int kChatReleasabilityAll = 63;
 
+/// Assistance / all-clear broadcasts: Mismanagement (0x01) + RSVPs (0x08) +
+/// Hares (0x10) — the people actually involved in the run, not every hasher
+/// who ever had a kennel association.
+const int kChatReleasabilityAssistance = 0x19;
+
 class ChatPageController extends GetxController {
   ChatPageController({
     required this.eventId,
