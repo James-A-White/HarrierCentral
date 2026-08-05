@@ -104,6 +104,17 @@ schema changes, so there is no database state to unwind.
 
 ---
 
+## Device test — pending next build: steering slide + carousel guard (2026-08-05)
+
+- [ ] **Lost-compass steering slide** (live run → I'm Lost, within 40 m of a
+  trail): the arrow sits off-centre toward the trail's side and glides to
+  centre as you converge; turning on the spot moves it side to side; it should
+  drift smoothly, never hop, and sit dead-still once you're on the line.
+- [ ] **Follow-me caption** now reads "Follow the trail — it runs this way".
+- [ ] **Carousel guard**: open the run-detail map tab AND the live-run map for
+  the same run, leave both up 30+ s — no "Bad state" errors in the boot log,
+  runner-picker still snaps correctly after closing one surface.
+
 ## Device test — 2.15.64+1278 radar arrow + eased rotation (shipped 2026-08-04)
 
 Released with `flutter analyze` only. Screens: live run → map → Radar.
