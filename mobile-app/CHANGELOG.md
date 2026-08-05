@@ -1,5 +1,21 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.15.65+1279 (2026-08-05)
+
+### New Features
+- **The lost compass now steers you onto the trail.** Within 40 m, the trail
+  arrow slides toward whichever side of you the trail is on and glides back
+  to centre as you converge — walk toward the arrow and keep it centred to
+  stay on the line. Smoothed and eased so GPS jitter reads as a gentle
+  drift, never a jump; sits dead-still once you're on the trail. The
+  on-trail caption now reads "Follow the trail — it runs this way".
+
+### Fixes
+- **Run map no longer logs errors when two views of the same run are open.**
+  Having the run-detail map and the live-run map up at once made every
+  position poll throw internally (degrading camera-follow); both views now
+  coexist cleanly.
+
 ## 2.15.64+1278 (2026-08-04)
 
 ### Improvements
