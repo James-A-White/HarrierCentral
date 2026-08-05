@@ -167,6 +167,39 @@ class LostCompassController extends GetxController {
   /// runner steps onto the trail, then settles back to solid.
   final RxBool arrowDimmed = false.obs;
   Timer? _flashTimer;
+
+  // ── Steering slide (course-deviation indicator) ──────────────────────────
+  // Inside [_steeringActiveMeters] the trail arrow also SLIDES sideways in
+  // its dial, toward whichever side of you the trail line is on given the way
+  // the phone is facing: walk toward the arrow and it glides to centre as you
+  // converge on the line. sin(relative bearing) × distance is exactly the
+  // trail's lateral offset in metres, and it keeps working when you face away
+  // from the trail because everything is relative to the facing, not the
+  // trail's axis.
+
+  /// Distance inside which the slide is live — final approach plus the whole
+  /// on-trail band. Further out the arrow's direction is the guidance and the
+  /// slide stays centred.
+  static const double _steeringActiveMeters = 40.0;
+
+  /// Lateral metres that push the arrow to the dial's edge. One on-trail
+  /// radius: any worse than that reads as "fully off to that side".
+  static const double _steeringFullScaleMeters = 20.0;
+
+  /// Inside this the slide pins to dead centre. A couple of metres is below
+  /// GPS noise, and a centred arrow that never twitches is itself the signal
+  /// that you're ON the line.
+  static const double _steeringDeadbandMeters = 2.5;
+
+  /// EMA weight per update (GPS fix or ≥2° heading change). Low enough that a
+  /// single wild fix moves the arrow a quarter of the way at most; the eased
+  /// AnimatedAlign in the dial does the rest of the visual smoothing.
+  static const double _steeringSmoothing = 0.25;
+
+  /// Smoothed slide position in [-1, 1] (negative = trail is to your left);
+  /// null when steering is inactive (too far out, no compass, no target).
+  final RxnDouble steeringSlide = RxnDouble();
+  double? _steeringEma;
   int _flashTicks = 0;
 
   /// The celebration is for ARRIVING, not for being there. Opening the dialog
@@ -231,6 +264,7 @@ class LostCompassController extends GetxController {
         if (diff < 2.0) return;
       }
       deviceHeading.value = h;
+      _updateSteering();
     });
     // Own high-rate position stream for the lifetime of the dialog. The app's
     // shared idle stream only reports every 250m, which is useless here, and a
@@ -281,6 +315,7 @@ class LostCompassController extends GetxController {
     if (!nowOnTrail) _hasBeenOffTrail = true;
     if (nowOnTrail && !wasOnTrail && _hasBeenOffTrail) _celebrateArrival();
     onTrail.value = nowOnTrail;
+    _updateSteering();
 
     // Where that runner is now (as of their last fix) — recomputed here too,
     // so it counts down as you walk rather than sticking until the next poll.
@@ -313,6 +348,42 @@ class LostCompassController extends GetxController {
         hasher,
       );
       hasherAgeLabel.value = _ageLabel(_hasherTimestampMs);
+    }
+  }
+
+  /// Recomputes the steering slide. Cheap trigonometry — safe on every GPS
+  /// fix AND every heading change (turning on the spot moves the trail from
+  /// one side of you to the other, so heading alone must move the slide).
+  void _updateSteering() {
+    final double? bearing = bearingToTrail.value;
+    final double? metres = distanceMeters.value;
+    final double? heading = deviceHeading.value;
+    if (bearing == null ||
+        metres == null ||
+        heading == null ||
+        metres > _steeringActiveMeters) {
+      _steeringEma = null;
+      if (steeringSlide.value != null) steeringSlide.value = null;
+      return;
+    }
+
+    final double relRad = (bearing - heading) * math.pi / 180.0;
+    double lateralMeters = math.sin(relRad) * metres;
+    if (lateralMeters.abs() < _steeringDeadbandMeters) lateralMeters = 0.0;
+    final double norm = (lateralMeters / _steeringFullScaleMeters)
+        .clamp(-1.0, 1.0)
+        .toDouble();
+
+    final double? prev = _steeringEma;
+    final double next = prev == null
+        ? norm
+        : prev + _steeringSmoothing * (norm - prev);
+    _steeringEma = next;
+
+    // Skip sub-visible writes so the dial isn't rebuilt for nothing.
+    final double? shown = steeringSlide.value;
+    if (shown == null || (next - shown).abs() > 0.01) {
+      steeringSlide.value = next;
     }
   }
 
@@ -597,6 +668,7 @@ class LostCompassController extends GetxController {
       distanceMeters.value = null;
       onTrail.value = false;
       trailOnwardBearing.value = null;
+      _updateSteering(); // null bearing/distance → slide resets to inactive
       nearestRunnerName.value = null;
       targetAgeLabel.value = null;
       runnerNowLabel.value = null;
@@ -947,6 +1019,7 @@ class LostCompassDialog extends StatelessWidget {
     IconData icon = Icons.navigation,
     bool emphasiseRing = false,
     bool flashDimmed = false,
+    double? slide,
   }) {
     // With a compass the arrow is relative to how the phone is held; without
     // one it shows the absolute bearing (paired with the N/NE/… readout).
@@ -1002,18 +1075,34 @@ class LostCompassDialog extends StatelessWidget {
                   ),
                 ),
               ),
-              Transform.rotate(
-                angle: rotates ? arrowDegrees * math.pi / 180.0 : 0.0,
-                // The arrival flash: a few quick blinks with a slight swell,
-                // then back to solid. Implicit animations so each phase change
-                // is a fade, not a hard cut.
-                child: AnimatedScale(
-                  scale: flashDimmed ? 1.18 : 1.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: AnimatedOpacity(
-                    opacity: flashDimmed ? 0.15 : 1.0,
-                    duration: const Duration(milliseconds: 130),
-                    child: Icon(icon, size: compact ? 70 : 104, color: color),
+              // The steering slide: within the approach band the arrow sits
+              // off-centre toward whichever side the trail is on — walk toward
+              // it and it glides home. Eased so a jumpy GPS fix reads as a
+              // drift, never a hop; slide == null (steering inactive) is just
+              // a centred arrow, identical to the pre-steering dial.
+              Positioned.fill(
+                child: AnimatedAlign(
+                  alignment: Alignment((slide ?? 0.0).clamp(-1.0, 1.0), 0.0),
+                  duration: const Duration(milliseconds: 450),
+                  curve: Curves.easeInOut,
+                  child: Transform.rotate(
+                    angle: rotates ? arrowDegrees * math.pi / 180.0 : 0.0,
+                    // The arrival flash: a few quick blinks with a slight
+                    // swell, then back to solid. Implicit animations so each
+                    // phase change is a fade, not a hard cut.
+                    child: AnimatedScale(
+                      scale: flashDimmed ? 1.18 : 1.0,
+                      duration: const Duration(milliseconds: 150),
+                      child: AnimatedOpacity(
+                        opacity: flashDimmed ? 0.15 : 1.0,
+                        duration: const Duration(milliseconds: 130),
+                        child: Icon(
+                          icon,
+                          size: compact ? 70 : 104,
+                          color: color,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -1175,7 +1264,7 @@ class LostCompassDialog extends StatelessWidget {
           // needing a second piece of furniture to say the same thing.
           emphasiseRing: onTrail,
           caption: followMe
-              ? 'The trail runs this way'
+              ? 'Follow the trail — it runs this way'
               : lookAround
               ? 'Within ${controller.distanceLabel} — check for marks'
               : controller.usingOwnTrack.value
@@ -1192,6 +1281,9 @@ class LostCompassDialog extends StatelessWidget {
               : 'was there ${controller.targetAgeLabel.value}',
           compact: showHasher,
           flashDimmed: controller.arrowDimmed.value,
+          // Steering slide: only the trail dial gets it — the hasher dial
+          // points at a person, not a line you can be either side of.
+          slide: controller.steeringSlide.value,
         );
 
         return Column(
