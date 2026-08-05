@@ -2422,9 +2422,17 @@ class RunTrackerMapController extends GetxController
     final index = _runnerIndex(selectedId);
     if (index == null) return;
 
-    if (!runnerCarouselController.hasClients) {
+    // .offset asserts EXACTLY one attached scroll view. Two map surfaces of
+    // the same run (run-detail replay + live-run map tab) share this
+    // controller by design, so both carousels can be attached at once —
+    // reading offset then throws "Bad state: Too many elements" on every
+    // poll (seen live 2026-08-04). Skip the sync entirely in that state; it
+    // resumes when one surface unmounts.
+    final int attachedCarousels = runnerCarouselController.positions.length;
+    if (attachedCarousels > 1) return;
+    if (attachedCarousels == 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (runnerCarouselController.hasClients) {
+        if (runnerCarouselController.positions.length == 1) {
           syncRunnerPickerToSelection(animated: false, onlyIfMismatch: true);
         }
       });
@@ -2453,7 +2461,9 @@ class RunTrackerMapController extends GetxController
   /// Snaps the carousel to the nearest tile after a scroll gesture settles and
   /// selects that runner. Called from the widget's ScrollEndNotification.
   void onCarouselScrollEnd() {
-    if (!runnerCarouselController.hasClients) return;
+    // Same single-attachment guard as syncRunnerPickerToSelection: .offset
+    // throws when two map surfaces have this carousel mounted at once.
+    if (runnerCarouselController.positions.length != 1) return;
     final list = visibleRunners;
     if (list.isEmpty) return;
     final idx = (runnerCarouselController.offset / runnerTileExtent)
