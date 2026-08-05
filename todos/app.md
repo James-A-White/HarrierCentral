@@ -106,6 +106,12 @@ schema changes, so there is no database state to unwind.
 
 ## Device test — pending next build: steering slide + carousel guard (2026-08-05)
 
+- [ ] **What's New in 3.0 slider**: first boot after installing the build
+  shows the six announcement screens, once only (kill + relaunch → straight
+  to the app). Skip works from any screen. "On-On!" on the last screen lands
+  in the app. Fresh install: new-user intro as normal, and NO 3.0 slides on
+  the second boot.
+
 - [ ] **Lost-compass steering slide** (live run → I'm Lost, within 40 m of a
   trail): the arrow sits off-centre toward the trail's side and glides to
   centre as you converge; turning on the spot moves it side to side; it should
