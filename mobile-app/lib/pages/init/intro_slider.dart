@@ -162,9 +162,17 @@ class IntroSliderPageState extends State<IntroSliderPage> {
   }
 
   Future<void> onDonePress() async {
-    await Navigator.of(
-      context,
-    ).pushReplacementNamed(RouteNames.PERMISSIONS_SLIDER.toString());
+    final NavigatorState navigator = Navigator.of(context);
+    // A fresh onboarding covers everything the current "What's New"
+    // announcement would say, so stamp it seen — without this, a brand-new
+    // user would get the 3.0 upgrade slides on their SECOND boot.
+    await setStringPref(
+      StringPrefsEnum.whatsNewSeenVersion,
+      WHATS_NEW_VERSION,
+    );
+    await navigator.pushReplacementNamed(
+      RouteNames.PERMISSIONS_SLIDER.toString(),
+    );
   }
 
   Future<void> onSkipPress() async {

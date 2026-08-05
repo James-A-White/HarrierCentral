@@ -336,6 +336,22 @@ class AppBootService {
     await ensureCredentialsEncrypted();
 
     await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
+
+    // One-time "What's New" announcement for EXISTING users whose device
+    // hasn't shown this generation yet (fresh installs are stamped by the
+    // new-user intro, so they never see it). Replaces the main-nav route for
+    // this boot only — the slider itself continues to MainNavigationPage.
+    // The songbook proximity auto-nav below is deliberately skipped on this
+    // boot; it would stack a page on top of the announcement.
+    if (getStringPref(StringPrefsEnum.whatsNewSeenVersion) !=
+        WHATS_NEW_VERSION) {
+      await Get.off(
+        () => const WhatsNew30SliderPage(),
+        routeName: RouteNames.WHATS_NEW.toString(),
+      );
+      return;
+    }
+
     debugPrint('[BOOT] Get.off(MainNavigationPage) start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await Get.off(() => MainNavigationPage(), routeName: '/main');
     debugPrint('[BOOT] Get.off(MainNavigationPage) done: ${DateTime.now().millisecondsSinceEpoch}ms');
