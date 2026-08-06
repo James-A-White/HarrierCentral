@@ -61,11 +61,6 @@ enum StringPrefsEnum {
   thirdPartyUserId,
   userId,
   guestSavedSearchTerm,
-
-  /// Which "What's New" announcement this device has already shown (e.g.
-  /// '3.0'). Compared against [WHATS_NEW_VERSION]; mismatch on a normal boot
-  /// by an existing user shows the announcement slider once.
-  whatsNewSeenVersion,
 }
 
 enum NumPrefsEnum {

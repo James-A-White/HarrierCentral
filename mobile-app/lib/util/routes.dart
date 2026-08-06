@@ -14,7 +14,6 @@ enum RouteNames {
   GET_STARTED_SLIDER,
   USER_QR_CODE,
   GUEST_DISCOVERY,
-  WHATS_NEW,
 }
 
 final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
@@ -32,6 +31,4 @@ final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
       const UserQrCodePage(),
   RouteNames.AVATAR_ICON_PAGE.toString(): (BuildContext context) =>
       const AvatarIconsPage(),
-  RouteNames.WHATS_NEW.toString(): (BuildContext context) =>
-      const WhatsNew30SliderPage(),
 };
