@@ -4,6 +4,71 @@ Items flagged during development that need follow-up.
 
 ---
 
+## Post-3.0 — do AFTER the App Store release ships
+
+Deliberately parked during the 3.0 stabilization push (2026-08). Ordered
+roughly by recommended sequence.
+
+### Toolchain (do first, as one dedicated session)
+
+- [ ] **Flutter SDK 3.41.9 → 3.44.x** (latest stable as of 2026-07-23:
+  3.44.8, Dart 3.12). Held back pre-release because an engine jump at the
+  end of a stabilization phase invalidates device testing. Expect new lints
+  and plugin re-resolution; full regression pass after.
+- [ ] **Tier-2 dependency majors** (need pubspec edits; see commit
+  `050825df` for the Tier-1 baseline): permission_handler 12→13,
+  device_info_plus 12→13, share_plus 12→13, package_info_plus 9→10,
+  sensors_plus 6→7 (tilt-scrub uses this — retest), map_launcher 4→6,
+  keyboard_actions 4→5, calendar_date_picker2 2→3.
+- [ ] **flutter_secure_storage 9→10 — handle separately.** This is the
+  keychain holding the reset code + device credentials. After upgrading,
+  retest the full self-healing recovery path on a real device: wipe app →
+  reinstall → auto-reauthorize from keychain.
+- [ ] **Firebase CocoaPods → Swift Package Manager.** Google stops
+  publishing new Firebase SDK versions to CocoaPods after **October 2026**
+  — this has a real deadline. Flutter supports SPM; migrate the iOS build
+  and drop the pod pins.
+- [ ] **Tier-3 stragglers**: latlong2 0.9→0.10 (pinned by flutter_map —
+  underpins all PackTrack distance/bearing maths, take it only when
+  flutter_map does), torch_light 1→2, discontinued transitive `js` package
+  (disappears with future plugin majors).
+
+### Features and debt
+
+- [ ] **Background boot sync — wire the other tabs** (see section below;
+  deferred since 2026-06-20).
+- [ ] **Radar wedge easing**: under north-lock the centre wedge follows the
+  raw compass in 2° ticks. Sub-pixel at current size, but if it reads
+  steppy on device, route it through the same eased slew as the map
+  rotation (2.15.64).
+- [ ] **Kennel-admin follow guard** (from the sync-domains skill, "not yet
+  implemented"): entering kennel admin for a kennel you don't follow should
+  silently follow + force-replicate its run history first, so admin screens
+  never work from partial common-domain data.
+- [ ] **Test infrastructure**: the widget/integration test plan exists but
+  is commented out (sqflite_ffi setup unresolved — the 2 standing analyze
+  errors in test/). Decide to fix or delete.
+- [ ] **In-app help replacement** (see Help system section below).
+
+### Investigations still open
+
+- [ ] **PackTrack mark-multiplication root cause**: the ×7 moving-track
+  bursts from the 2026-06-20 LH3 run were never reproduced (stationary and
+  simulator are clean; the batch-retry duplication class was fixed by the
+  idempotent StorePositions RowKey, api 1.0.31). Needs the moving-taps
+  device test on "Test this Mess" before it can be closed or chased.
+- [ ] **Tuna's device RSS peak 892MB** during 1h51m of tracking
+  (2026-08-04 log). No crash, but that's high-water for a background
+  tracking session — worth a profiling pass if any tracking-session OOM
+  reports appear in MetricKit.
+
+### Waiting on HC5 retirement (~Dec 2026 – Mar 2027)
+
+- [ ] Drop `EventStartDatetimeIndexed` + its trigger and the other HC5
+  compatibility remnants (see memory: retire-hc5 cleanup list).
+
+---
+
 ## Help system
 
 - [ ] **Find a better way to provide in-app help** (if anyone ever uses it).
