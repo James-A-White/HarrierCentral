@@ -106,11 +106,12 @@ schema changes, so there is no database state to unwind.
 
 ## Device test — pending next build: steering slide + carousel guard (2026-08-05)
 
-- [ ] **What's New in 3.0 slider**: first boot after installing the build
-  shows the six announcement screens, once only (kill + relaunch → straight
-  to the app). Skip works from any screen. "On-On!" on the last screen lands
-  in the app. Fresh install: new-user intro as normal, and NO 3.0 slides on
-  the second boot.
+- [ ] **3.0 splash sequence** (server images, no app code): once
+  `version_3.0_*.avif` images are uploaded to the `splash-sequences` blob
+  container, any device upgrading across the 2.15→3.0 minor-version boundary
+  shows them once via the existing MainNavigationPage splash system. Verify
+  on the first 3.0.x build: sequence shows once, Done lands in the app,
+  3.0.0→3.0.1 does NOT re-show.
 
 - [ ] **Lost-compass steering slide** (live run → I'm Lost, within 40 m of a
   trail): the arrow sits off-centre toward the trail's side and glides to
