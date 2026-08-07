@@ -12,7 +12,7 @@
 -- =====================================================================
 
 -- ── HC.Kennel ────────────────────────────────────────────────────────
-DISABLE TRIGGER [HC].[trgUpdateModifiedOnDateForKennel] ON [HC].[Kennel];
+DISABLE TRIGGER [HC].[trgUpdateModifiedOnDateForKennels] ON [HC].[Kennel];
 GO
 
 ALTER TABLE [HC].[Kennel] ADD
@@ -27,7 +27,7 @@ ALTER TABLE [HC].[Kennel] ADD
     [MembershipPrice]            DECIMAL(10, 4) NOT NULL CONSTRAINT [DF_Kennel_MembershipPrice] DEFAULT ((0));
 GO
 
-ENABLE TRIGGER [HC].[trgUpdateModifiedOnDateForKennel] ON [HC].[Kennel];
+ENABLE TRIGGER [HC].[trgUpdateModifiedOnDateForKennels] ON [HC].[Kennel];
 GO
 
 -- ── HC.Payment ───────────────────────────────────────────────────────
@@ -48,7 +48,7 @@ GO
 -- Verify: both triggers re-enabled, columns present.
 SELECT t.name AS trigger_name, t.is_disabled
 FROM sys.triggers t
-WHERE t.name IN ('trgUpdateModifiedOnDateForKennel', 'trgUpdateModifiedOnDateForPayment');
+WHERE t.name IN ('trgUpdateModifiedOnDateForKennels', 'trgUpdateModifiedOnDateForPayment');
 
 SELECT COLUMN_NAME, DATA_TYPE
 FROM INFORMATION_SCHEMA.COLUMNS
