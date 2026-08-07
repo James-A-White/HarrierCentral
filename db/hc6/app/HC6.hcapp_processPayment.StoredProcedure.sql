@@ -37,7 +37,24 @@ AS
 --
 --   @paymentType = 100: marks an existing payment as confirmed by the
 --     WankerBanker (bank transfer verification). All other types insert
---     a new payment after cancelling any existing one for that HEM row.
+--     a new payment after cancelling any existing one for that HEM row
+--     IN THE SAME PRODUCT — the exists/cancel logic is ProductType-scoped
+--     so a membership charge never cancels the run payment on the HEM.
+--
+--   productType = 2 (membership, 2026-08-08 — docs/membership_payments_plan.md):
+--     Debit = the membership fee (@specialRunPrice override, else
+--     Kennel.MembershipPrice); event pricing, extras and HKM discounts do
+--     not apply. Credit-neutral by construction (credit=paid, debit=fee).
+--     On success HKM.MembershipExpirationDate advances per the kennel's
+--     MembershipRenewalMode: 1=rolling (max(expiry, now) +
+--     MembershipDurationInMonths), 2=fixed year (expiry = day after
+--     MembershipPeriodEndDate; refused if the period has lapsed),
+--     3=lifetime (2999-12-31 sentinel; charging an existing lifetime
+--     member is refused). The expiry-as-was is stored in
+--     Payment.PreviousMembershipExpiry; replacing or cancelling
+--     (paymentType 1) a membership payment restores it first, so
+--     replays and corrections are idempotent. The HEM is only an anchor:
+--     membership charges never mark attendance/RSVP.
 -- Parameters:
 --   @deviceId               - Registered device UUID
 --   @accessToken            - Compound token: paramString = DeviceSecret + HemId + '#' + INT(paymentAmount)
@@ -127,12 +144,14 @@ END
 -- ---------------------------------------------------------------
 -- Parameter validation
 -- ---------------------------------------------------------------
-IF (@eventId IS NULL AND @productType = 1)
+-- Membership payments also need the event anchor (Payment.EventId is NOT
+-- NULL; the members-list surface anchors to the kennel's most recent run).
+IF (@eventId IS NULL AND @productType IN (1, 2))
 BEGIN
     SET @errorCode = 1240; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null or empty eventId',
-            'eventId required for productType = 1', @procName, @userId);
+            'eventId required for productType 1 and 2', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing event' AS errorTitle, 'An event must be specified.' AS errorUserMessage,
@@ -231,7 +250,8 @@ BEGIN TRY
                 @paymentReference  AS paymentReference,
                 0                  AS discountAmount,
                 0                  AS discountPercent,
-                ''                 AS discountDescription;
+                ''                 AS discountDescription,
+                NULL               AS newMembershipExpiry;
 
             GOTO SyncAndReturn;
         END
@@ -265,12 +285,18 @@ BEGIN TRY
             BEGIN
                 SET @hasherEventMapId = NEWID();
 
+                -- Membership charges (productType = 2) use the HEM purely as a
+                -- payment anchor: create it neutral (no RSVP, no attendance)
+                -- rather than marking the hasher as going to the anchor run.
                 INSERT HC.HasherEventMap
                     ([id], [UserId], [EventId], [KennelId], [RsvpState],
                      [Rsvp], [UserStartEvent], [AttendenceState], [updatedAt])
                 VALUES
                     (@hasherEventMapId, @userIdWhoPaid, @eventId, @kennelId,
-                     3, GETDATE(), GETDATE(), COALESCE(@minimumAttendenceValue, 0), GETDATE());
+                     CASE WHEN @productType = 2 THEN 0 ELSE 3 END,
+                     CASE WHEN @productType = 2 THEN NULL ELSE GETDATE() END,
+                     CASE WHEN @productType = 2 THEN NULL ELSE GETDATE() END,
+                     COALESCE(@minimumAttendenceValue, 0), GETDATE());
             END
         END
 
@@ -282,6 +308,17 @@ BEGIN TRY
         DECLARE @debitAmount        MONEY;
         DECLARE @payer_userIdGuid   UNIQUEIDENTIFIER;
         DECLARE @paymentExists      INT;
+
+        -- Membership (productType = 2) context — see plan doc.
+        DECLARE @membershipMode      SMALLINT;
+        DECLARE @membershipFee       DECIMAL(10,4);
+        DECLARE @membershipMonths    INT;
+        DECLARE @membershipPeriodEnd DATE;
+        DECLARE @memberExpiry        DATETIMEOFFSET(7);
+        DECLARE @newMemberExpiry     DATETIMEOFFSET(7);
+        -- Lifetime sentinel: works with every existing
+        -- "MembershipExpirationDate > GETDATE()" check unchanged.
+        DECLARE @lifetimeExpiry      DATETIMEOFFSET(7) = '2999-12-31';
 
         -- Serialize concurrent payment operations for this HEM. Two racing calls
         -- (a double-tap / client retry) could otherwise BOTH read
@@ -297,9 +334,13 @@ BEGIN TRY
         FROM HC.HasherEventMap hem WITH (UPDLOCK, HOLDLOCK)
         WHERE hem.id = @hasherEventMapId;
 
+        -- ProductType-scoped: a membership charge on a check-in HEM must not
+        -- count (or later cancel) the run payment sharing that HEM, and vice
+        -- versa. Each product keeps its own single-active-payment invariant.
         SELECT @paymentExists = COUNT(*)
         FROM HC.Payment p
-        WHERE p.HasherEventMapId = @hasherEventMapId AND p.CancelledDate IS NULL;
+        WHERE p.HasherEventMapId = @hasherEventMapId AND p.CancelledDate IS NULL
+          AND p.ProductType = @productType;
 
         SELECT
             @originalEventPrice = CASE WHEN COALESCE(hkm.MembershipExpirationDate, '2000-01-01') > GETDATE() THEN
@@ -320,7 +361,12 @@ BEGIN TRY
                 END, hem.DisplayName, '<no name>'),
             @discountAmount     = COALESCE(hkm.DiscountAmount, 0),
             @discountPercent    = COALESCE(hkm.DiscountPercent, 0),
-            @discountDescription = COALESCE(hkm.DiscountDescription, '')
+            @discountDescription = COALESCE(hkm.DiscountDescription, ''),
+            @membershipMode      = k.MembershipRenewalMode,
+            @membershipFee       = k.MembershipPrice,
+            @membershipMonths    = k.MembershipDurationInMonths,
+            @membershipPeriodEnd = k.MembershipPeriodEndDate,
+            @memberExpiry        = hkm.MembershipExpirationDate
         FROM HC.HasherEventMap hem
         INNER JOIN HC.Event e     ON e.id  = hem.EventId
         INNER JOIN HC.Kennel k    ON k.id  = e.KennelId
@@ -334,16 +380,79 @@ BEGIN TRY
         SET @eventPrice = @eventPrice + @extrasPrice;
 
         -- ---------------------------------------------------------------
-        -- paymentType = 1: mark as not paid (cancel existing)
+        -- productType = 2: membership pricing replaces event pricing.
+        -- Fee = @specialRunPrice override, else the kennel default. Run
+        -- discounts and extras never apply to memberships.
+        -- ---------------------------------------------------------------
+        IF (@productType = 2)
+        BEGIN
+            SET @originalEventPrice  = COALESCE(@specialRunPrice, @membershipFee, 0);
+            SET @eventPrice          = @originalEventPrice;
+            SET @extrasPrice         = 0;
+            SET @discountAmount      = 0;
+            SET @discountPercent     = 0;
+            SET @discountDescription = '';
+
+            -- Fixed-year mode needs a live membership year to sell into.
+            IF (@membershipMode = 2 AND @paymentType BETWEEN 2 AND 8
+                AND COALESCE(@membershipPeriodEnd, '2000-01-01') < CAST(GETDATE() AS DATE))
+            BEGIN
+                SET @errorCode = 1245; SET @errorType = 2; SET @errorId = NEWID();
+                INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+                VALUES (@errorId, '<unknown>', 'Membership year lapsed',
+                        'MembershipPeriodEndDate is unset or in the past', @procName, @userId);
+                ROLLBACK TRANSACTION;
+                SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+                SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                       'Membership year not set' AS errorTitle,
+                       'This kennel''s membership year has ended or is not configured. Update the membership period in kennel settings first.' AS errorUserMessage,
+                       @procName AS errorProc;
+                RETURN;
+            END
+
+            -- Lifetime members can't be charged again.
+            IF (@membershipMode = 3 AND @paymentType BETWEEN 2 AND 8
+                AND @memberExpiry >= @lifetimeExpiry)
+            BEGIN
+                SET @errorCode = 1246; SET @errorType = 2; SET @errorId = NEWID();
+                INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+                VALUES (@errorId, '<unknown>', 'Already a lifetime member',
+                        'Attempt to charge membership to a lifetime member', @procName, @userId);
+                ROLLBACK TRANSACTION;
+                SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+                SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                       'Already a lifetime member' AS errorTitle,
+                       'This hasher already holds a lifetime membership.' AS errorUserMessage,
+                       @procName AS errorProc;
+                RETURN;
+            END
+        END
+
+        -- ---------------------------------------------------------------
+        -- paymentType = 1: mark as not paid (cancel existing, same product)
         -- ---------------------------------------------------------------
         IF (@paymentType = 1 AND @paymentExists > 0)
         BEGIN
+            -- Cancelling a membership payment un-applies its extension:
+            -- restore the expiry the member had before that payment.
+            IF (@productType = 2)
+            BEGIN
+                UPDATE hkm SET
+                    hkm.MembershipExpirationDate = p.PreviousMembershipExpiry,
+                    hkm.updatedAt                = GETDATE()
+                FROM HC.HasherKennelMap hkm
+                INNER JOIN HC.Payment p ON p.UserId = hkm.UserId AND p.KennelId = hkm.KennelId
+                WHERE p.HasherEventMapId = @hasherEventMapId
+                  AND p.CancelledDate IS NULL AND p.ProductType = 2;
+            END
+
             UPDATE HC.Payment SET
                 IsCancelled        = 1,
                 CancelledDate      = GETDATE(),
                 CancelledBy_UserId = @userId,
                 updatedAt          = GETDATE()
-            WHERE CancelledDate IS NULL AND HasherEventMapId = @hasherEventMapId;
+            WHERE CancelledDate IS NULL AND HasherEventMapId = @hasherEventMapId
+              AND ProductType = @productType;
         END
 
         -- ---------------------------------------------------------------
@@ -362,8 +471,9 @@ BEGIN TRY
 
             -- paymentType = 6 (hash credit): auto-create a follower HKM record for
             -- hashers who don't have one yet so credit can be accumulated and spent
-            -- by non-members and visitors.
-            IF (@paymentType = 6 AND @payer_userIdGuid IS NOT NULL)
+            -- by non-members and visitors. Membership purchases (productType = 2)
+            -- need the HKM row too — it carries the expiration date being bought.
+            IF ((@paymentType = 6 OR @productType = 2) AND @payer_userIdGuid IS NOT NULL)
             BEGIN
                 IF NOT EXISTS (
                     SELECT 1 FROM HC.HasherKennelMap
@@ -427,15 +537,33 @@ BEGIN TRY
             -- Hash credits: credit amount = 0 (balance already tracked elsewhere)
             IF (@paymentType = 6 OR @paymentType = 8) SET @creditAmount = 0;
 
-            -- Cancel existing payment before inserting new one
+            -- Cancel existing same-product payment before inserting new one.
+            -- For a replaced MEMBERSHIP payment, first un-apply its extension
+            -- (restore the pre-payment expiry it recorded) so re-charges and
+            -- client replays are idempotent rather than compounding.
             IF (@paymentExists > 0)
             BEGIN
+                IF (@productType = 2)
+                BEGIN
+                    SELECT TOP 1 @memberExpiry = p.PreviousMembershipExpiry
+                    FROM HC.Payment p
+                    WHERE p.HasherEventMapId = @hasherEventMapId
+                      AND p.CancelledDate IS NULL AND p.ProductType = 2
+                    ORDER BY p.createdAt ASC;
+
+                    UPDATE HC.HasherKennelMap SET
+                        MembershipExpirationDate = @memberExpiry,
+                        updatedAt                = GETDATE()
+                    WHERE UserId = @payer_userIdGuid AND KennelId = @kennelId;
+                END
+
                 UPDATE HC.Payment SET
                     IsCancelled        = 1,
                     CancelledDate      = GETDATE(),
                     CancelledBy_UserId = @userId,
                     updatedAt          = GETDATE()
-                WHERE CancelledDate IS NULL AND HasherEventMapId = @hasherEventMapId;
+                WHERE CancelledDate IS NULL AND HasherEventMapId = @hasherEventMapId
+                  AND ProductType = @productType;
             END
 
             INSERT HC.Payment
@@ -445,7 +573,8 @@ BEGIN TRY
                  [PaymentType], [ProductType], [PaymentReference],
                  [DoPayForExtras], [PaymentProvider],
                  [DiscountAmount], [DiscountPercent], [DiscountDescription],
-                 [SpecialRunPriceReason], [Surcharge], [updatedAt])
+                 [SpecialRunPriceReason], [Surcharge],
+                 [PreviousMembershipExpiry], [updatedAt])
             VALUES
                 (@kennelId, @payer_userIdGuid, @eventId, @hasherEventMapId,
                  @creditAmount, @debitAmount, 0,
@@ -456,17 +585,48 @@ BEGIN TRY
                  @discountAmount, @discountPercent, @discountDescription,
                  COALESCE(@specialRunPriceReason, ''),
                  COALESCE(@surcharge, 0),
+                 CASE WHEN @productType = 2 THEN @memberExpiry ELSE NULL END,
                  GETDATE());
 
-            -- Mark HEM as attended and RSVP'd (minimum state if set)
-            UPDATE HC.HasherEventMap SET
-                UserStartEvent   = GETDATE(),
-                RsvpState        = 3,
-                AttendenceState  = CASE WHEN AttendenceState < @minimumAttendenceValue THEN @minimumAttendenceValue ELSE AttendenceState END,
-                updatedAt        = GETDATE()
-            WHERE id = @hasherEventMapId;
+            -- ---------------------------------------------------------------
+            -- productType = 2: advance the membership expiration date.
+            -- @memberExpiry is the pre-payment value (restored above if this
+            -- replaced an earlier charge) — also stamped on the payment row
+            -- as the unwind anchor.
+            -- ---------------------------------------------------------------
+            IF (@productType = 2)
+            BEGIN
+                SET @newMemberExpiry =
+                    CASE @membershipMode
+                        WHEN 3 THEN @lifetimeExpiry
+                        -- Day AFTER the period end, so the end date itself is
+                        -- still a valid membership day under "> GETDATE()".
+                        WHEN 2 THEN CAST(DATEADD(DAY, 1, @membershipPeriodEnd) AS DATETIMEOFFSET(7))
+                        ELSE DATEADD(MONTH, COALESCE(@membershipMonths, 12),
+                             CASE WHEN COALESCE(@memberExpiry, '2000-01-01') > SYSDATETIMEOFFSET()
+                                  THEN @memberExpiry ELSE SYSDATETIMEOFFSET() END)
+                    END;
 
-            SELECT @attendenceState = CASE WHEN COALESCE(@attendenceState, 0) < @minimumAttendenceValue THEN @minimumAttendenceValue ELSE @attendenceState END;
+                UPDATE HC.HasherKennelMap SET
+                    MembershipExpirationDate = @newMemberExpiry,
+                    updatedAt                = GETDATE()
+                WHERE UserId = @payer_userIdGuid AND KennelId = @kennelId;
+            END
+            ELSE
+            BEGIN
+                -- Mark HEM as attended and RSVP'd (minimum state if set).
+                -- Membership charges skip this: their HEM is only an anchor —
+                -- a members-list charge must not mark someone as attending
+                -- the kennel's most recent run.
+                UPDATE HC.HasherEventMap SET
+                    UserStartEvent   = GETDATE(),
+                    RsvpState        = 3,
+                    AttendenceState  = CASE WHEN AttendenceState < @minimumAttendenceValue THEN @minimumAttendenceValue ELSE AttendenceState END,
+                    updatedAt        = GETDATE()
+                WHERE id = @hasherEventMapId;
+
+                SELECT @attendenceState = CASE WHEN COALESCE(@attendenceState, 0) < @minimumAttendenceValue THEN @minimumAttendenceValue ELSE @attendenceState END;
+            END
         END
 
     COMMIT TRANSACTION;
@@ -510,7 +670,11 @@ SELECT
     @paymentReference    AS paymentReference,
     @discountAmount      AS discountAmount,
     @discountPercent     AS discountPercent,
-    @discountDescription AS discountDescription;
+    @discountDescription AS discountDescription,
+    -- productType = 2 only: the expiry just written, so the app can show
+    -- "membership now valid until X" without waiting for a sync. NULL for
+    -- other products (additive column — see contract).
+    @newMemberExpiry     AS newMembershipExpiry;
 
 SyncAndReturn:
 
