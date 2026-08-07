@@ -51,7 +51,12 @@ class ServiceCommon {
   /// Sends a session-level error log to HC.ClientErrorLog on the server.
   /// Token validation is skipped server-side so this can be called even when
   /// the device secret is unavailable.
-  static Future<void> recordClientErrorLog(String errorLog) async {
+  ///
+  /// Returns whether the server accepted it, so the caller can requeue on
+  /// failure. A whole session's log rides on ONE of these posts — silently
+  /// discarding a timeout here is how the 2026-08-06 Canning Town run log
+  /// was lost (cleared from the pref, upload failed, gone).
+  static Future<bool> recordClientErrorLog(String errorLog) async {
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
 
     final String body = jsonEncode(<String, String>{
@@ -61,7 +66,7 @@ class ServiceCommon {
       'errorLog': errorLog,
     });
 
-    await post(
+    final Response response = await post(
           Uri.parse(BASE_AF_API_URL),
           headers: <String, String>{'content-type': 'application/json'},
           body: body,
@@ -73,6 +78,8 @@ class ServiceCommon {
         .catchError((dynamic error) {
           return Future<Response>.value(Response('', 500));
         });
+
+    return response.statusCode >= 200 && response.statusCode < 300;
   }
 
   // [bodyFactory] is called once per attempt so the access token embedded in

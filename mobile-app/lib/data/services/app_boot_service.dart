@@ -134,11 +134,35 @@ class AppBootService {
 
   /// Reads the previous session's error log, sends it to the server, then
   /// clears the pref so it doesn't repeat on the next boot.
+  ///
+  /// Cleared BEFORE the send so an app death mid-send can't double-upload —
+  /// but a FAILED send re-appends the log to the pref so the next boot
+  /// retries. Without the requeue, one flaky POST at boot silently erased a
+  /// whole session's log (the 2026-08-06 run log died this way), and the
+  /// long flaky-network sessions worth diagnosing are exactly the ones most
+  /// likely to boot next on a bad connection.
   static Future<void> _sendPreviousSessionErrors() async {
     final log = getStringPref(StringPrefsEnum.lastSessionErrorLog);
     if (log == null || log.isEmpty) return;
     await setStringPref(StringPrefsEnum.lastSessionErrorLog, null);
-    unawaited(ServiceCommon.recordClientErrorLog(log));
+    unawaited(
+      ServiceCommon.recordClientErrorLog(log).then((bool accepted) {
+        if (accepted) return;
+        // By now the CURRENT session has been seeding the pref (the STARTUP
+        // entry lands right after this call) — merge the failed log back in
+        // FRONT so entries stay chronological, with the same separator and
+        // cap as _persistErrorEntry. The cap trims the oldest content first.
+        final String newer =
+            getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '';
+        var restored = newer.isEmpty ? log : '$log\n===\n$newer';
+        if (restored.length > 100000) {
+          restored = restored.substring(restored.length - 100000);
+        }
+        unawaited(
+          setStringPref(StringPrefsEnum.lastSessionErrorLog, restored),
+        );
+      }),
+    );
   }
 
   /// Wires BootLogger to start persisting errors to the pref if the debug
