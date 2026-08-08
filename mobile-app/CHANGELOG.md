@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.0+1282 (2026-08-08)
+
+Version name held at 3.0.0 through the beta; build number increments only.
+
+### Improvements
+- **Payment sheets restyled.** The membership and haberdashery sheets now
+  sit on a dark-green panel with white input fields — clearer to read and
+  visually distinct from the page behind them.
+
 ## 3.0.1+1281 (2026-08-08)
 
 ### New Features
