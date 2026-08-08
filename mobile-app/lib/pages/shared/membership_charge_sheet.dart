@@ -92,15 +92,27 @@ class MembershipChargeController extends GetxController {
     return e != null && e.isAfter(DateTime.now());
   }
 
-  /// Fixed-year mode with a lapsed/unset period cannot sell memberships —
-  /// mirror the SP's refusal up front rather than after a round trip.
-  bool get fixedYearLapsed {
+  /// Fixed-year mode needs a configured end month/day to sell into. It is a
+  /// RECURRING annual window (only month/day matter), so it never lapses —
+  /// mirror the SP's null-only refusal up front rather than after a round trip.
+  bool get fixedYearUnset {
     if (renewalMode.value != 2) return false;
-    final DateTime? end = periodEndDate.value;
-    return end == null ||
-        end.isBefore(DateTime(
-          DateTime.now().year, DateTime.now().month, DateTime.now().day,
-        ));
+    return periodEndDate.value == null;
+  }
+
+  /// The next occurrence of [end]'s month/day on or after today — the shared
+  /// renewal anniversary. Day is clamped to the target month's length so a
+  /// 29-Feb end lands on 28 Feb in a non-leap year.
+  DateTime _nextAnniversary(DateTime end) {
+    final DateTime today = DateTime.now();
+    DateTime forYear(int y) {
+      final int lastDay = DateTime(y, end.month + 1, 0).day;
+      return DateTime(y, end.month, end.day > lastDay ? lastDay : end.day);
+    }
+
+    final DateTime thisYear = forYear(today.year);
+    final DateTime todayDate = DateTime(today.year, today.month, today.day);
+    return thisYear.isBefore(todayDate) ? forYear(today.year + 1) : thisYear;
   }
 
   @override
@@ -207,7 +219,7 @@ class MembershipChargeController extends GetxController {
         final DateTime? end = periodEndDate.value;
         return end == null
             ? 'Membership year not configured'
-            : 'Membership until ${formatDate(end)}';
+            : 'Membership until ${formatDate(_nextAnniversary(end))}';
       default:
         final DateTime now = DateTime.now();
         final DateTime base =
@@ -349,13 +361,13 @@ class MembershipChargeSheetBody extends StatelessWidget {
             ),
           );
         }
-        if (c.fixedYearLapsed) {
+        if (c.fixedYearUnset) {
           return SizedBox(
             height: 180,
             child: Center(
               child: Text(
-                'This kennel\'s membership year has ended or is not set up.\n'
-                'Update the membership period in kennel settings first.',
+                'This kennel\'s membership year is not set up.\n'
+                'Set the membership year end in kennel settings first.',
                 textAlign: TextAlign.center,
                 style: ts_body,
               ),
