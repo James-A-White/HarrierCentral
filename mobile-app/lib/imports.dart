@@ -265,6 +265,7 @@ export 'package:harrier_central/pages/top_level/run_locations.dart';
 export 'package:harrier_central/pages/top_level/run_locations_controller.dart';
 export 'package:harrier_central/pages/top_level/songs_page.dart';
 export 'package:harrier_central/pages/top_level/songs_page_controller.dart';
+export 'package:harrier_central/pages/shared/membership_charge_sheet.dart';
 export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 
 // services

@@ -10,6 +10,7 @@ class PaymentSnackBar extends SnackBar {
     required this.onPaidCallback,
     required this.amountOwed,
     required this.multiSelectEnabled,
+    this.onChargeMembership,
   }) : super(content: const Text('test'));
 
   final BuildContext context;
@@ -19,6 +20,10 @@ class PaymentSnackBar extends SnackBar {
   final Function onPaidCallback;
   final double amountOwed;
   final bool multiSelectEnabled;
+
+  /// Opens the membership charge sheet for this hasher. Hidden in
+  /// multi-select (memberships are individual) and when null.
+  final VoidCallback? onChargeMembership;
 
   @override
   Duration get duration => const Duration(seconds: 30);
@@ -650,6 +655,22 @@ class PaymentSnackBar extends SnackBar {
                               ),
                       ],
                     ),
+                    if (onChargeMembership != null && !multiSelectEnabled)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: TextButton.icon(
+                          onPressed: onChargeMembership,
+                          icon: const Icon(
+                            Icons.card_membership,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                          label: Text(
+                            'Charge annual membership',
+                            style: ts_titleSmallCondensedBold,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
         ],

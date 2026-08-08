@@ -170,7 +170,7 @@ class CheckInPackController extends GetxController
       FROM ${EnumDataTables.hashers.commonTableName} h 
       LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm ON h.hasherId = hkm.userId
       LEFT OUTER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
-      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL AND COALESCE(pay.productType, 1) = 1
       LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
       WHERE h.${tableModel.hashersTableHelper.colDispName} NOT LIKE 'Placeholder user for%'
       ORDER BY nameForDisplay;
@@ -227,7 +227,7 @@ class CheckInPackController extends GetxController
       INNER JOIN ${EnumDataTables.hashers.commonTableName} h 
         ON hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}
       LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay 
-        ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+        ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL AND COALESCE(pay.productType, 1) = 1
       WHERE h.${tableModel.hashersTableHelper.colRemoved} = 0
     ''';
 
@@ -326,7 +326,7 @@ class CheckInPackController extends GetxController
       FROM ${EnumDataTables.hasherKennelMap.eventTableName} hkm
       INNER JOIN ${EnumDataTables.hashers.commonTableName} h ON h.hasherId = hkm.userId
       LEFT OUTER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
-      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL AND COALESCE(pay.productType, 1) = 1
       LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
       WHERE hkm.kennelId = "${eventAggregate.event.kennelId}" 
         AND COALESCE(hem.virginVisitorType, 0) = 0
@@ -388,7 +388,7 @@ class CheckInPackController extends GetxController
           ken2.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
       FROM ${EnumDataTables.hasherEventMap.eventTableName} hem2
       INNER JOIN ${EnumDataTables.hashers.commonTableName} h2 ON h2.hasherId = hem2.userId
-      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
+      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL AND COALESCE(pay2.productType, 1) = 1
       LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken2 on h2.${tableModel.hashersTableHelper.colHomeKennelId} = ken2.${tableModel.kennelsTableHelper.colKennelId}
       LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm_v ON hkm_v.userId = hem2.userId AND hkm_v.kennelId = "${eventAggregate.event.kennelId}"
       WHERE hem2.eventId = "${eventAggregate.event.eventId}"
@@ -438,7 +438,7 @@ class CheckInPackController extends GetxController
           ken3.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
       FROM ${EnumDataTables.hasherEventMap.eventTableName} hem3
       INNER JOIN ${EnumDataTables.hashers.commonTableName} h3 ON h3.hasherId = hem3.userId
-      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
+      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL AND COALESCE(pay3.productType, 1) = 1
       LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', '$offsetFromGmtToLocal')
       LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${eventAggregate.event.kennelId}" 
       LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken3 on h3.${tableModel.hashersTableHelper.colHomeKennelId} = ken3.${tableModel.kennelsTableHelper.colKennelId}
@@ -638,6 +638,26 @@ class CheckInPackController extends GetxController
               await refreshPackListFromTables(false);
               await _refreshCounters(forceRefresh: true);
             },
+        onChargeMembership: () {
+          ScaffoldMessenger.of(
+            context,
+          ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+          unawaited(
+            showMembershipChargeSheet(
+              context: context,
+              kennelId: eventAggregate.event.kennelId,
+              userId: hasher.hasherId ?? '',
+              displayName: hasher.nameForDisplay,
+              eventId: eventAggregate.event.eventId,
+              hasherEventMapId: hasher.hemId,
+              appDomainType: AppDomainType.event,
+              onCharged: () async {
+                await refreshPackListFromTables(false);
+                await _refreshCounters(forceRefresh: true);
+              },
+            ),
+          );
+        },
         onPaidCallback: (updated, paymentType, {userInput}) async {
           ScaffoldMessenger.of(
             context,

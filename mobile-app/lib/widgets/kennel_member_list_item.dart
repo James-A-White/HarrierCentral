@@ -2,6 +2,10 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 enum EnumMemberPopupActions {
+  /// Paid renewal via processPayment (productType 2) — records the payment
+  /// and advances expiry per the kennel's renewal mode. The add* actions
+  /// below remain the unpaid admin-grant path.
+  chargeMembership,
   addOneMonth,
   addSixMonths,
   addOneYear,
@@ -320,6 +324,21 @@ class KennelMemberListItem extends StatelessWidget {
                                 ),
                               ],
                               'returnValue': EnumMemberPopupActions.addOneMonth,
+                            },
+                            <String, dynamic>{
+                              'title': 'Charge membership (paid)',
+                              'icon': <Widget>[
+                                const SizedBox(
+                                  height: 30,
+                                  width: 30,
+                                  child: Icon(
+                                    Icons.card_membership,
+                                    color: Colors.yellow,
+                                  ),
+                                ),
+                              ],
+                              'returnValue':
+                                  EnumMemberPopupActions.chargeMembership,
                             },
                             <String, dynamic>{
                               'title': 'Add six months',

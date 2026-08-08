@@ -590,6 +590,44 @@ class KennelMemberListState extends State<KennelMembersList>
                                   switch (retVal) {
                                     case EnumMemberPopupActions.cancelDialog:
                                       break;
+                                    case EnumMemberPopupActions
+                                        .chargeMembership:
+                                      final KennelMemberResultsModel m =
+                                          snapshot.data![index];
+                                      await showMembershipChargeSheet(
+                                        context: context,
+                                        kennelId: widget
+                                            .kennelListAggregate
+                                            .kennel
+                                            .kennelId,
+                                        userId: m.hasherId,
+                                        displayName: m.dispName,
+                                        appDomainType: AppDomainType.kennel,
+                                        onCharged: () async {
+                                          // The payment SP's bundled sync
+                                          // returns user-domain rowsets; the
+                                          // target's HKM lives in the KENNEL
+                                          // domain, so pull it explicitly.
+                                          await tableModel
+                                              .syncKennelAdminService
+                                              .updateFromBackend(
+                                                EnumDataTables
+                                                    .hasherKennelMap
+                                                    .flag,
+                                                true,
+                                                widget
+                                                    .kennelListAggregate
+                                                    .kennel
+                                                    .kennelId,
+                                              );
+                                          await _refreshKennelMembersFromTable(
+                                            true,
+                                          );
+                                          await _refreshCounters(true);
+                                          setStateIfMounted(() {});
+                                        },
+                                      );
+                                      break;
                                     case EnumMemberPopupActions.addOneMonth:
                                       await _modifyMembership(
                                         snapshot,
