@@ -1,5 +1,20 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1281 (2026-08-08)
+
+### New Features
+- **Sell haberdashery.** From the check-in payment card, "Sell
+  haberdashery" records a sale — an amount, a description of what was
+  sold, and the payment method. Like memberships, it's recorded without
+  touching Hash Credit (though credit can pay), and you can record several
+  sales per person.
+
+### Improvements
+- **Payment reports now separate non-run money.** Membership and
+  haberdashery payments no longer inflate the run's cash totals or make a
+  member look paid-up for the run. A new "Other sales" section on the
+  report lists those takings with per-product subtotals.
+
 ## 3.0.0+1280 (2026-08-08)
 
 Harrier Central 3.0 — the official 3.0 beta. Upgrading from 2.x shows

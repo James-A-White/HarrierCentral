@@ -2,6 +2,14 @@
 
 ---
 
+## 2.0.59+694 (2026-08-08)
+
+- **Phone layout fix**: the tab navigation bar no longer overflows the
+  screen edge on a phone — Back/Next become icon-only arrows while
+  Undo/Save keep their labels.
+
+---
+
 ## 2.0.58+693 (2026-08-08)
 
 - **Membership settings** (kennel → Hash Cash tab): renewal mode
