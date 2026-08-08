@@ -169,6 +169,29 @@ schema changes, so there is no database state to unwind.
 
 ---
 
+## Device test — membership payments (Phase 2 shipped blind 2026-08-08)
+
+Requires the SP deploy first (next Dance). Plan: docs/membership_payments_plan.md.
+
+- [ ] **Check-in charge**: run admin → check in → hasher → "Charge annual
+  membership" → fee pre-filled from kennel default, charge cash → snackbar
+  shows the NEW expiry; run payment status is UNCHANGED (the run does not
+  show as paid).
+- [ ] **Run payment still isolated**: pay for the run AND charge membership
+  on the same hasher — both recorded; cancelling one leaves the other.
+- [ ] **Members list charge**: kennel admin → members → member popup →
+  "Charge membership (paid)" → expiry updates in the list after charge; the
+  member is NOT marked as attending/RSVP'd to the anchor run.
+- [ ] **Credit neutrality**: charge membership with cash → member's Hash
+  Credit balance unchanged. Charge with Hash Credit → balance drops by fee.
+- [ ] **Renewal modes** (set per kennel in SQL until portal UI exists):
+  rolling extends from expiry/today; fixed-year sets to period end (+
+  refusal when period lapsed); lifetime shows ∞ and refuses re-charge.
+- [ ] **Fee override**: edit the fee before charging → recorded amount and
+  expiry both correct.
+- [ ] **Unpaid grant path unchanged**: swipe / add-months actions still work
+  and record NO payment.
+
 ## Device test — pending next build: steering slide + carousel guard (2026-08-05)
 
 - [ ] **3.0 splash sequence** (server images, no app code): once
