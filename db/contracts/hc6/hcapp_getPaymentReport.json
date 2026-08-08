@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getPaymentReport",
-  "version": "1.0.0",
-  "description": "Returns a combined payment report for an event as a single rowset. Four segments are UNION'd and distinguished by paymentType: (1) actual payment rows (paymentType 2–8, including non-cancelled); (2) virtual 'not paid' rows for attendees without a payment (paymentType=1); (3) aggregate summary rows per payment type with paymentType+100 offset (e.g. Cash total → paymentType=103); (4) a standalone count row for unpaid attendees (paymentType=101, always emitted when @eventId is provided). Also returns each unpaid attendee's kennel credit balance (creditRemaining) so the WankerBanker can apply offsets. Read SP — no success envelope.",
+  "version": "1.1.0",
+  "description": "Returns a combined payment report for an event as a single rowset. Four segments are UNION'd and distinguished by paymentType: (1) actual payment rows (paymentType 2\u20138, including non-cancelled); (2) virtual 'not paid' rows for attendees without a payment (paymentType=1); (3) aggregate summary rows per payment type with paymentType+100 offset (e.g. Cash total \u2192 paymentType=103); (4) a standalone count row for unpaid attendees (paymentType=101, always emitted when @eventId is provided). Also returns each unpaid attendee's kennel credit balance (creditRemaining) so the WankerBanker can apply offsets. Read SP \u2014 no success envelope.",
   "parameters": [
     {
       "name": "deviceId",
@@ -32,18 +32,48 @@
       "name": "AuthError",
       "description": "Returned when ValidateAppAuth fails (bad token, device not found, etc.). Mutually exclusive with PaymentReport rowset.",
       "columns": [
-        { "name": "errorId",          "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID for this error instance." },
-        { "name": "errorType",        "type": "INT",              "nullable": false, "description": "Error classification code. 11=auth failure." },
-        { "name": "errorCode",        "type": "INT",              "nullable": false, "description": "Specific error code within the errorType." },
-        { "name": "errorTitle",       "type": "NVARCHAR(500)",    "nullable": false, "description": "Short error title for display." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)",    "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc",        "type": "NVARCHAR(128)",    "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID for this error instance."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code. 11=auth failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code within the errorType."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title for display."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
       "index": 0,
       "name": "PaymentReport",
-      "description": "UNION of 4 segments — caller must inspect paymentType to classify each row. paymentType 2–8: real payment rows (non-cancelled). paymentType 1: synthetic 'not paid' row per attendee lacking a payment. paymentType 101+: aggregate summary rows (original paymentType + 100); paymentType 101 also serves as the 'not paid' count row. Ordered by paidBy ascending. Mutually exclusive with AuthError rowset.",
+      "description": "UNION of 4 segments \u2014 caller must inspect paymentType to classify each row. paymentType 2\u20138: real payment rows (non-cancelled). paymentType 1: synthetic 'not paid' row per attendee lacking a payment. paymentType 101+: aggregate summary rows (original paymentType + 100); paymentType 101 also serves as the 'not paid' count row. Ordered by paidBy ascending. Mutually exclusive with AuthError rowset.",
       "columns": [
         {
           "name": "hasherEventMapId",
@@ -140,6 +170,12 @@
           "type": "SMALLINT",
           "nullable": false,
           "description": "Currency decimal places from Country.DigitsAfterDecimal. 0 for aggregate rows."
+        },
+        {
+          "name": "productType",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1=event, 2=membership, 3=haberdashery. LAST column by design \u2014 the Excel endpoint reads earlier columns by ordinal. Summary rows (paymentType>100) are now grouped by paymentType AND productType. Added 1.1.0; not-paid detection also scoped to run payments."
         }
       ]
     }
@@ -148,39 +184,39 @@
   "codeSmells": [
     {
       "severity": "high",
-      "issue": "paymentType+100 sentinel — mixed data and metadata in a single column",
-      "detail": "Aggregate summary rows are distinguished by paymentType = originalType + 100 (e.g. Cash → 103, not-paid count → 101). Callers must branch on paymentType >= 101 to detect aggregate rows. This encodes row category into a value column, making the schema ambiguous and fragile if new payment types approach 100."
+      "issue": "paymentType+100 sentinel \u2014 mixed data and metadata in a single column",
+      "detail": "Aggregate summary rows are distinguished by paymentType = originalType + 100 (e.g. Cash \u2192 103, not-paid count \u2192 101). Callers must branch on paymentType >= 101 to detect aggregate rows. This encodes row category into a value column, making the schema ambiguous and fragile if new payment types approach 100."
     },
     {
       "severity": "medium",
-      "issue": "Part 3 and Part 4 overlap on paymentType=101 — duplicate not-paid count rows",
-      "detail": "Part 3 (aggregate per payment type) includes a GROUP BY COALESCE(pay.PaymentType,1)+100 that can produce a paymentType=101 row for attendees whose HEM row has no payment at all (LEFT JOIN produces NULL PaymentType → COALESCE gives 1 → +100 = 101). Part 4 then always emits its own paymentType=101 row when @eventId IS NOT NULL. The two rows can coexist in the result with the same paymentType, confusing callers. The @hashersNotPaidCount variable is computed before Part 3 runs but Parts 3 and 4 emit separate rows; callers must be aware."
+      "issue": "Part 3 and Part 4 overlap on paymentType=101 \u2014 duplicate not-paid count rows",
+      "detail": "Part 3 (aggregate per payment type) includes a GROUP BY COALESCE(pay.PaymentType,1)+100 that can produce a paymentType=101 row for attendees whose HEM row has no payment at all (LEFT JOIN produces NULL PaymentType \u2192 COALESCE gives 1 \u2192 +100 = 101). Part 4 then always emits its own paymentType=101 row when @eventId IS NOT NULL. The two rows can coexist in the result with the same paymentType, confusing callers. The @hashersNotPaidCount variable is computed before Part 3 runs but Parts 3 and 4 emit separate rows; callers must be aware."
     },
     {
       "severity": "medium",
-      "issue": "No TRY/CATCH block — unhandled runtime errors propagate raw to caller",
+      "issue": "No TRY/CATCH block \u2014 unhandled runtime errors propagate raw to caller",
       "detail": "The SP has no TRY/CATCH wrapper. Any runtime error (e.g. a missing kennel or country row, temp table failure) will propagate as a raw SQL error rather than the structured HC6 error rowset, breaking client error handling assumptions."
     },
     {
       "severity": "medium",
       "issue": "Credit balance query in #creditTemp aggregates across all kennels",
-      "detail": "The LEFT OUTER JOIN on HC.Payment for credit balance (line 112) has no KennelId filter — it sums credit across all kennels for the user. This may overstate available credit if the user has credits in unrelated kennels. Intent may be deliberate (global wallet) but it is undocumented."
+      "detail": "The LEFT OUTER JOIN on HC.Payment for credit balance (line 112) has no KennelId filter \u2014 it sums credit across all kennels for the user. This may overstate available credit if the user has credits in unrelated kennels. Intent may be deliberate (global wallet) but it is undocumented."
     },
     {
       "severity": "low",
       "issue": "Part 1 filters cancelled payments but Part 3 may include cancelled HEM rows",
-      "detail": "Part 1 (real payment rows) filters WHERE pay.CancelledBy_UserId IS NULL. Part 3 (aggregates) also filters pay.CancelledBy_UserId IS NULL. However, the LEFT JOIN in Part 3 joins on HasherEventMap rows (not filtered by CancelledBy), meaning aggregate sums correctly exclude cancelled payments, but the GROUP BY produces one row per non-cancelled payment type only — consistent with intent."
+      "detail": "Part 1 (real payment rows) filters WHERE pay.CancelledBy_UserId IS NULL. Part 3 (aggregates) also filters pay.CancelledBy_UserId IS NULL. However, the LEFT JOIN in Part 3 joins on HasherEventMap rows (not filtered by CancelledBy), meaning aggregate sums correctly exclude cancelled payments, but the GROUP BY produces one row per non-cancelled payment type only \u2014 consistent with intent."
     },
     {
       "severity": "low",
-      "issue": "paymentDate and cancelledDate returned as DATETIMEOFFSET — HC5 cast to DATETIME (timezone stripped)",
+      "issue": "paymentDate and cancelledDate returned as DATETIMEOFFSET \u2014 HC5 cast to DATETIME (timezone stripped)",
       "detail": "HC5 cast PaidDate and CancelledDate to DATETIME, losing timezone offset. HC6 returns the raw DATETIMEOFFSET(7) columns directly from the Payment table, which is correct but is a wire-format change callers must handle."
     }
   ],
   "breakingChanges": [
     "isMember is now computed dynamically from HasherKennelMap.MembershipExpirationDate compared to GETDATE() rather than a stored IsMember flag. Event price applied to not-paid rows may differ from HC5 in edge cases where the stored flag was stale.",
     "@eventId default sentinel changed from '00000000-0000-0000-0000-000000000000' to NULL. The null-UUID is still accepted and normalised to NULL internally, so existing callers sending the null-UUID are unaffected.",
-    "paymentDate and cancelledDate are now returned as DATETIMEOFFSET(7) instead of DATETIME — timezone offset is preserved. Callers that expected DATETIME must be updated.",
-    "Auth is now performed by HC6.ValidateAppAuth (SP number 42) instead of the HC5 inline auth pattern. Error rowset columns are errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc — the HC5 error rowset did not include errorCode."
+    "paymentDate and cancelledDate are now returned as DATETIMEOFFSET(7) instead of DATETIME \u2014 timezone offset is preserved. Callers that expected DATETIME must be updated.",
+    "Auth is now performed by HC6.ValidateAppAuth (SP number 42) instead of the HC5 inline auth pattern. Error rowset columns are errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc \u2014 the HC5 error rowset did not include errorCode."
   ]
 }

@@ -114,8 +114,11 @@ WHERE @eventId IS NOT NULL
   AND hem.EventId = @eventId
   AND hem.AttendenceState >= 20
   AND hem.id NOT IN (
+      -- Run payments only: a membership or haberdashery purchase on the
+      -- same HEM must not make the hasher look paid-up for the run.
       SELECT pay2.HasherEventMapId FROM HC.Payment pay2
       WHERE pay2.EventId = @eventId AND pay2.PaymentType >= 2 AND pay2.CancelledBy_UserId IS NULL
+        AND COALESCE(pay2.ProductType, 1) = 1
   );
 
 -- Credit balance and event price for each unpaid attendee
@@ -173,7 +176,10 @@ SELECT * FROM (
         pay.Notes                                                                              AS notes,
         pay.CreditAvailable                                                                    AS creditRemaining,
         coun.CurrencySymbol                                                                    AS currencySymbol,
-        coun.DigitsAfterDecimal                                                                AS digitsAfterDecimal
+        coun.DigitsAfterDecimal                                                                AS digitsAfterDecimal,
+        -- LAST column by design: the Excel endpoint reads earlier columns
+        -- by ordinal (1=event, 2=membership, 3=haberdashery).
+        COALESCE(pay.ProductType, 1)                                                           AS productType
     FROM HC.Payment pay
     INNER JOIN HC.HasherEventMap hem ON hem.id   = pay.HasherEventMapId
     INNER JOIN HC.Event evt          ON pay.EventId = evt.id
@@ -203,12 +209,15 @@ SELECT * FROM (
         NULL,
         t.creditAvailable,
         t.CurrencySymbol,
-        t.DigitsAfterDecimal
+        t.DigitsAfterDecimal,
+        1
     FROM #creditTemp t
 
     UNION
 
-    -- Part 3: aggregate summary rows per payment type (paymentType + 100 distinguishes them)
+    -- Part 3: aggregate summary rows per payment type (paymentType + 100
+    -- distinguishes them), split by product so membership/haberdashery
+    -- money never inflates the run totals.
     SELECT
         '00000000-0000-0000-0000-000000000000',
         '00000000-0000-0000-0000-000000000000',
@@ -225,14 +234,15 @@ SELECT * FROM (
         NULL,
         0,
         '',
-        0
+        0,
+        COALESCE(pay.ProductType, 1)
     FROM HC.HasherEventMap hem
     LEFT OUTER JOIN HC.Payment pay ON pay.HasherEventMapId = hem.id
     WHERE @eventId IS NOT NULL
       AND hem.EventId = @eventId
       AND pay.CancelledBy_UserId IS NULL
       AND pay.PaymentType > 1
-    GROUP BY COALESCE(pay.PaymentType, 1) + 100
+    GROUP BY COALESCE(pay.PaymentType, 1) + 100, COALESCE(pay.ProductType, 1)
 
     UNION
 
@@ -250,7 +260,8 @@ SELECT * FROM (
         @hashersNotPaidCount,
         NULL,
         0,
-        '', 0
+        '', 0,
+        1
     WHERE @eventId IS NOT NULL
 
 ) tbl
