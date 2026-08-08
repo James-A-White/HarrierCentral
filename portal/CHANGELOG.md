@@ -2,6 +2,15 @@
 
 ---
 
+## 2.0.58+693 (2026-08-08)
+
+- **Membership settings** (kennel → Hash Cash tab): renewal mode
+  (rolling / fixed year / lifetime), default membership fee, and the
+  mode's duration or membership-year dates. Drives the app's new
+  "Charge membership" dialog.
+
+---
+
 ## 2.0.57+692 — 2026-07-28
 
 ### Improvements

@@ -1,5 +1,22 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.0+1280 (2026-08-08)
+
+Harrier Central 3.0 — the official 3.0 beta. Upgrading from 2.x shows
+the new seven-screen welcome tour.
+
+### New Features
+- **Annual memberships.** Kennels can now charge membership through the
+  app — from the check-in page or the kennel members list. The payment is
+  recorded without touching Hash Credit (though credit CAN be used to
+  pay), and the member's expiration date advances by the kennel's rule:
+  rolling, fixed membership year, or lifetime. Fee is pre-filled from
+  kennel settings and adjustable per charge.
+
+### Fixes
+- **Session diagnostic logs survive a bad connection.** A failed upload
+  now requeues for the next launch instead of being silently lost.
+
 ## 2.15.65+1279 (2026-08-05)
 
 ### New Features
