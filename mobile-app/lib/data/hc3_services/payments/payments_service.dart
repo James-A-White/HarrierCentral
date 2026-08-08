@@ -227,9 +227,11 @@ class PaymentsService {
     bool? useSpecialPriceAsDefault,
     // productTypeMembership charges the kennel's membership fee (or
     // specialRunPrice as an override) and advances the member's expiry —
-    // see docs/membership_payments_plan.md. Default keeps every existing
-    // caller an event payment.
+    // see docs/membership_payments_plan.md. productTypeHaberdashery sells
+    // an item for @paymentAmount with [notes] as the description. Default
+    // keeps every existing caller an event payment.
     EnumProductType productType = productTypeEvent,
+    String? notes,
   }) async {
     List<dynamic> results = <dynamic>[];
 
@@ -305,6 +307,7 @@ class PaymentsService {
       'appDomainType': appDomainStr,
       'paymentReference': paymentReference,
       'transactionTimestamp': DateTime.now().toString(),
+      if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
     };
 
     if (specialRunPrice != null) {

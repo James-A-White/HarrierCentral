@@ -11,6 +11,7 @@ class PaymentSnackBar extends SnackBar {
     required this.amountOwed,
     required this.multiSelectEnabled,
     this.onChargeMembership,
+    this.onSellHaberdashery,
   }) : super(content: const Text('test'));
 
   final BuildContext context;
@@ -24,6 +25,9 @@ class PaymentSnackBar extends SnackBar {
   /// Opens the membership charge sheet for this hasher. Hidden in
   /// multi-select (memberships are individual) and when null.
   final VoidCallback? onChargeMembership;
+
+  /// Opens the haberdashery sale sheet. Same visibility rules as membership.
+  final VoidCallback? onSellHaberdashery;
 
   @override
   Duration get duration => const Duration(seconds: 30);
@@ -669,6 +673,19 @@ class PaymentSnackBar extends SnackBar {
                             'Charge annual membership',
                             style: ts_titleSmallCondensedBold,
                           ),
+                        ),
+                      ),
+                    if (onSellHaberdashery != null && !multiSelectEnabled)
+                      TextButton.icon(
+                        onPressed: onSellHaberdashery,
+                        icon: const Icon(
+                          Icons.checkroom,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+                        label: Text(
+                          'Sell haberdashery',
+                          style: ts_titleSmallCondensedBold,
                         ),
                       ),
                   ],

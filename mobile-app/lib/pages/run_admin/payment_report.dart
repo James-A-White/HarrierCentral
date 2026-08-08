@@ -115,7 +115,7 @@ SELECT
     INNER JOIN ${EnumDataTables.kennels.commonTableName} k ON k.kennelId = e.kennelId
     LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm ON hkm.userId = hem.userId AND hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
     LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} h ON h.hasherId = hem.userId
-    LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay ON pay.hemId = hem.hemId AND pay.CancelledBy IS NULL
+    LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay ON pay.hemId = hem.hemId AND pay.CancelledBy IS NULL AND COALESCE(pay.productType, 1) = 1
     LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} paidTo ON paidTo.hasherId = pay.paidTo
     LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} confBy ON confBy.hasherId = pay.confirmedBy
     WHERE hem.attendenceState >= 20
@@ -153,12 +153,44 @@ SELECT
   }
 
   List<Map<String, dynamic>> _paymentTotals = <Map<String, dynamic>>[];
+
+  /// Membership / haberdashery payments taken at this run (productType != 1).
+  /// Shown in their own section so non-run money is visible without polluting
+  /// the run-payment rows or totals.
+  List<Map<String, dynamic>> _nonRunPayments = <Map<String, dynamic>>[];
   double _totalCollected = 0;
   double _extrasPaid = 0;
   int _transactionCount = 0;
 
+  Future<void> _refreshNonRunPayments() async {
+    try {
+      final String sql =
+          '''
+      SELECT
+        pay.${tableModel.paymentsTableHelper.colProductType} AS productType,
+        pay.${tableModel.paymentsTableHelper.colPaymentType} AS paymentType,
+        pay.creditAmount AS amount,
+        pay.notes AS notes,
+        COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName},
+                 h.dispName, hem.displayName, '<no name>') AS paidByName
+      FROM ${EnumDataTables.payments.eventTableName} pay
+      INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem ON hem.hemId = pay.hemId
+      LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} h ON h.hasherId = hem.userId
+      LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm
+        ON hkm.userId = hem.userId AND hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
+      WHERE pay.cancelledBy IS NULL AND COALESCE(pay.productType, 1) != 1
+      ORDER BY pay.${tableModel.paymentsTableHelper.colPaidDate}
+      ''';
+      _nonRunPayments = await database.rawQuery(sql);
+    } catch (e, s) {
+      BootLogger.logError('[PaymentReport._refreshNonRunPayments]', e, s);
+      _nonRunPayments = <Map<String, dynamic>>[];
+    }
+  }
+
   Future<void> refreshTotals() async {
     _paymentTotals = <Map<String, dynamic>>[];
+    await _refreshNonRunPayments();
 
     try {
       final String sql =
@@ -170,7 +202,7 @@ SELECT
             SELECT COUNT(*) 
             FROM ${EnumDataTables.hasherEventMap.eventTableName} hem 
             WHERE  hem.attendenceState >= 20
-            AND hem.hemId not in (SELECT hemId from ${EnumDataTables.payments.eventTableName} pay3 where pay3.cancelledBy IS NULL) 
+            AND hem.hemId not in (SELECT hemId from ${EnumDataTables.payments.eventTableName} pay3 where pay3.cancelledBy IS NULL AND COALESCE(pay3.productType, 1) = 1) 
           ) as count, 
           0.0 as totalCollected,
           0.0 as totalDebited,
@@ -182,26 +214,26 @@ SELECT
                 SELECT COUNT(*) 
                 FROM ${EnumDataTables.payments.eventTableName} pay 
                 INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
-                WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL
+                WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL AND COALESCE(pay.productType, 1) = 1
 
             ) as count,
             (
                 SELECT SUM(pay2.creditAmount)
                 FROM ${EnumDataTables.payments.eventTableName} pay2 
                 INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
-                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
+                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL AND COALESCE(pay2.productType, 1) = 1
             ) as totalCollected,
             (
                 SELECT SUM(pay2.${tableModel.paymentsTableHelper.colDebitAmount})
                 FROM ${EnumDataTables.payments.eventTableName} pay2 
                 INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
-                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
+                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL AND COALESCE(pay2.productType, 1) = 1
             ) as totalDebited,
             (
                 SELECT SUM(pay2.${tableModel.paymentsTableHelper.colDoPayForExtras})
                 FROM ${EnumDataTables.payments.eventTableName} pay2 
                 INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
-                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
+                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL AND COALESCE(pay2.productType, 1) = 1
             ) as extrasPaid
           FROM (SELECT 1 as paymentType union values (2), (3), (4), (5), (6), (7), (8) ) x
 
@@ -300,6 +332,71 @@ SELECT
     _filteredList.sort(
       (PaymentAggregate a, PaymentAggregate b) =>
           a.extensions.paidByName.compareTo(b.extensions.paidByName),
+    );
+  }
+
+  /// A collapsible strip summarising membership + haberdashery money taken at
+  /// this run — separate from the run-payment rows and totals above.
+  Widget _buildNonRunPaymentsBanner() {
+    final String curSym = widget.eventAggregate.extensions.curSym;
+    final int digits = widget.eventAggregate.extensions.digAfterDec;
+
+    double memberTotal = 0;
+    double haberTotal = 0;
+    for (final Map<String, dynamic> p in _nonRunPayments) {
+      final double amt = (p['amount'] as num?)?.toDouble() ?? 0.0;
+      if ((p['productType'] as int?) == productTypeMembership.value) {
+        memberTotal += amt;
+      } else {
+        haberTotal += amt;
+      }
+    }
+
+    final List<String> parts = <String>[
+      if (memberTotal != 0)
+        'Memberships ${IveCoreUtilities.getFormattedMoney(memberTotal, digits, curSym)}',
+      if (haberTotal != 0)
+        'Haberdashery ${IveCoreUtilities.getFormattedMoney(haberTotal, digits, curSym)}',
+    ];
+
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+        leading: Icon(Icons.shopping_bag_outlined, color: hc_blue),
+        title: Text('Other sales', style: ts_titleSmallCondensedBold),
+        subtitle: Text(
+          parts.isEmpty ? '—' : parts.join('  ·  '),
+          style: ts_body.copyWith(fontSize: 13),
+        ),
+        children: _nonRunPayments.map((Map<String, dynamic> p) {
+          final bool isMembership =
+              (p['productType'] as int?) == productTypeMembership.value;
+          final double amt = (p['amount'] as num?)?.toDouble() ?? 0.0;
+          final String? note = (p['notes'] as String?)?.trim();
+          return ListTile(
+            dense: true,
+            leading: Icon(
+              isMembership ? Icons.card_membership : Icons.checkroom,
+              size: 20,
+              color: Colors.black54,
+            ),
+            title: Text(
+              '${p['paidByName'] ?? '<no name>'} — '
+              '${IveCoreUtilities.getFormattedMoney(amt, digits, curSym)}',
+              style: ts_body.copyWith(fontSize: 14),
+            ),
+            subtitle: Text(
+              isMembership
+                  ? 'Membership'
+                  : (note == null || note.isEmpty)
+                  ? 'Haberdashery'
+                  : 'Haberdashery — $note',
+              style: ts_body.copyWith(fontSize: 12, color: Colors.black54),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -573,6 +670,7 @@ SELECT
                     ],
                   ),
                 ),
+                if (_nonRunPayments.isNotEmpty) _buildNonRunPaymentsBanner(),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10.0),

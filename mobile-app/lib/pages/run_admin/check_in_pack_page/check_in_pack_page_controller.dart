@@ -658,6 +658,26 @@ class CheckInPackController extends GetxController
             ),
           );
         },
+        onSellHaberdashery: () {
+          ScaffoldMessenger.of(
+            context,
+          ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+          unawaited(
+            showHaberdasherySaleSheet(
+              context: context,
+              eventId: eventAggregate.event.eventId,
+              kennelId: eventAggregate.event.kennelId,
+              userId: hasher.hasherId ?? '',
+              displayName: hasher.nameForDisplay,
+              hasherEventMapId: hasher.hemId,
+              appDomainType: AppDomainType.event,
+              onSold: () async {
+                await refreshPackListFromTables(false);
+                await _refreshCounters(forceRefresh: true);
+              },
+            ),
+          );
+        },
         onPaidCallback: (updated, paymentType, {userInput}) async {
           ScaffoldMessenger.of(
             context,
