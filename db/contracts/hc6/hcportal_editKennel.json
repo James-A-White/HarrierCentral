@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_editKennel",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Updates an existing kennel's settings. Update-only (no insert path). Uses a COALESCE pattern: only parameters supplied as non-NULL are written; NULL means 'leave unchanged'. Two exceptions: @latitude and @longitude use -999.0 as a sentinel to explicitly set both columns to NULL (geographic nulling). There is no sentinel for clearing string fields to NULL. Covers kennel identity, dissemination, Google Calendar, payment config (3 slots), pricing, currency, location, tags, membership, notifications, and feature tier. Includes duplicate-name detection with auto-suggested alternatives for KennelUniqueShortName. UPDATE wrapped in a transaction.",
   "parameters": [
     {
@@ -474,6 +474,34 @@
       "description": "Duration of membership period in months. NULL = no change."
     },
     {
+      "name": "membershipRenewalMode",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.MembershipRenewalMode",
+      "description": "Membership renewal rule: 1=rolling, 2=fixed year, 3=lifetime. NULL = leave unchanged (COALESCE partial update)."
+    },
+    {
+      "name": "membershipPeriodStartDate",
+      "type": "DATE",
+      "nullable": true,
+      "mapsToColumn": "Kennel.MembershipPeriodStartDate",
+      "description": "Fixed-year mode: membership year start. NULL = unchanged; cannot be cleared back to NULL."
+    },
+    {
+      "name": "membershipPeriodEndDate",
+      "type": "DATE",
+      "nullable": true,
+      "mapsToColumn": "Kennel.MembershipPeriodEndDate",
+      "description": "Fixed-year mode: membership year end. NULL = unchanged; cannot be cleared back to NULL."
+    },
+    {
+      "name": "membershipPrice",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.MembershipPrice",
+      "description": "Default membership fee shown in the app charge dialog. NULL = unchanged."
+    },
+    {
       "name": "runCountStartDate",
       "type": "DATETIMEOFFSET(7)",
       "nullable": true,
@@ -529,8 +557,18 @@
       "name": "ErrorEnvelope",
       "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error. Duplicate KennelUniqueShortName errors include auto-suggested alternatives in ErrorMessage.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -554,7 +592,7 @@
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Kennel — all provided non-NULL fields via COALESCE pattern. Latitude and Longitude are set to NULL if either @latitude or @longitude equals -999.0."
+    "UPDATE HC.Kennel \u2014 all provided non-NULL fields via COALESCE pattern. Latitude and Longitude are set to NULL if either @latitude or @longitude equals -999.0."
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",

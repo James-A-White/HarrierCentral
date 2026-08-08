@@ -71,6 +71,13 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_editKennel]
 	@defaultRunTags3 INT = NULL,
 	@kennelGeolocation GEOGRAPHY = NULL,
 	@membershipDurationInMonths INT = NULL,
+	-- Membership payments (2026-08-08): renewal rule config. COALESCE
+	-- partial-update semantics — the period dates can be changed but not
+	-- cleared back to NULL (harmless: they only apply in mode 2).
+	@membershipRenewalMode SMALLINT = NULL,
+	@membershipPeriodStartDate DATE = NULL,
+	@membershipPeriodEndDate DATE = NULL,
+	@membershipPrice DECIMAL(10, 4) = NULL,
 	@runCountStartDate DATETIMEOFFSET(7) = NULL,
 	@distancePreference SMALLINT = NULL,
 	@extApiKey NVARCHAR(120) = NULL,
@@ -287,6 +294,10 @@ BEGIN TRY
 		DefaultRunTags3 = COALESCE(@defaultRunTags3, DefaultRunTags3),
 		KennelGeolocation = COALESCE(@kennelGeolocation, KennelGeolocation),
 		MembershipDurationInMonths = COALESCE(@membershipDurationInMonths, MembershipDurationInMonths),
+		MembershipRenewalMode = COALESCE(@membershipRenewalMode, MembershipRenewalMode),
+		MembershipPeriodStartDate = COALESCE(@membershipPeriodStartDate, MembershipPeriodStartDate),
+		MembershipPeriodEndDate = COALESCE(@membershipPeriodEndDate, MembershipPeriodEndDate),
+		MembershipPrice = COALESCE(@membershipPrice, MembershipPrice),
 		RunCountStartDate = COALESCE(@runCountStartDate, RunCountStartDate),
 		DistancePreference = COALESCE(@distancePreference, DistancePreference),
 		ExtApiKey = COALESCE(@extApiKey, ExtApiKey),
