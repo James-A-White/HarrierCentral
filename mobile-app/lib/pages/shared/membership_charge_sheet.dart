@@ -311,9 +311,8 @@ class MembershipChargeSheetBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = controller;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: Backgrounds.defaultHcBackground().copyWith(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       padding: EdgeInsets.only(
         left: 20,
@@ -374,9 +373,10 @@ class MembershipChargeSheetBody extends StatelessWidget {
             Text(
               c.currentStatusLabel,
               style: ts_body.copyWith(
+                // Lightened for the dark jungle background.
                 color: c.isCurrentMember
-                    ? Colors.green.shade700
-                    : Colors.red.shade700,
+                    ? Colors.greenAccent.shade100
+                    : Colors.red.shade200,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -386,10 +386,15 @@ class MembershipChargeSheetBody extends StatelessWidget {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
                 labelText: 'Membership fee',
+                labelStyle: const TextStyle(color: Colors.black54),
                 prefixText: c.currencySymbol.value ?? '',
+                prefixStyle: const TextStyle(color: Colors.black),
                 border: const OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
                 isDense: true,
               ),
             ),

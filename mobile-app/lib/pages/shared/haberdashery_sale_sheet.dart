@@ -169,9 +169,8 @@ class HaberdasherySaleSheetBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = controller;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: Backgrounds.defaultHcBackground().copyWith(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       padding: EdgeInsets.only(
         left: 20,
@@ -193,10 +192,15 @@ class HaberdasherySaleSheetBody extends StatelessWidget {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
                 labelText: 'Amount',
+                labelStyle: const TextStyle(color: Colors.black54),
                 prefixText: c.currencySymbol.value ?? '',
+                prefixStyle: const TextStyle(color: Colors.black),
                 border: const OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
                 isDense: true,
               ),
             ),
@@ -206,11 +210,17 @@ class HaberdasherySaleSheetBody extends StatelessWidget {
             controller: c.descriptionController,
             textCapitalization: TextCapitalization.sentences,
             maxLength: 500,
+            style: const TextStyle(color: Colors.black),
             decoration: const InputDecoration(
               labelText: 'What was sold',
+              labelStyle: TextStyle(color: Colors.black54),
               hintText: 'e.g. T-shirt (L), club badge',
+              hintStyle: TextStyle(color: Colors.black38),
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
               isDense: true,
+              counterStyle: TextStyle(color: Colors.white),
             ),
           ),
           const SizedBox(height: 4),
