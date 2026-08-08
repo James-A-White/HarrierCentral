@@ -311,7 +311,8 @@ class MembershipChargeSheetBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = controller;
     return Container(
-      decoration: Backgrounds.defaultHcBackground().copyWith(
+      decoration: BoxDecoration(
+        color: hc_sheetGreen,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       padding: EdgeInsets.only(

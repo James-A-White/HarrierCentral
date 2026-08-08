@@ -3,6 +3,12 @@ import 'package:harrier_central/imports.dart';
 Color hc_blue = Colors.blue.shade800;
 Color hc_red = Colors.red.shade900;
 
+/// Deep forest green used as the surface for the payment bottom sheets
+/// (membership / haberdashery). Dark enough for white input fields and
+/// light text to sit on with strong contrast, on-brand without reusing
+/// the busy full-screen jungle photo.
+Color hc_sheetGreen = const Color(0xFF14342A);
+
 OutlinedBorder button_shape = RoundedRectangleBorder(
   borderRadius: BorderRadius.circular(10), // Set the radius here
 );
