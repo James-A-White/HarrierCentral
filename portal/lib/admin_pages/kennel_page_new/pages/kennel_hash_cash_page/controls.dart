@@ -58,8 +58,9 @@ extension KennelHashCashControlsExtension on KennelPageFormController {
         'How membership payments extend a member\'s expiration date.\n\n'
             'Rolling: each payment adds the membership duration, stacking '
             'on whatever time remains.\n\n'
-            'Fixed year: everyone\'s membership runs to the same end date '
-            '(set the year below).\n\n'
+            'Fixed year: everyone\'s membership runs to the same renewal date '
+            'each year — set the month and day below. A payment runs to the '
+            'next time that date comes around.\n\n'
             'Lifetime: one payment, membership never expires.',
       ),
       editedFieldValue: originalData.membershipRenewalMode.toString(),

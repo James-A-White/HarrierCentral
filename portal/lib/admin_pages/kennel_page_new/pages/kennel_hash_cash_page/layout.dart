@@ -137,23 +137,28 @@ class KennelHashCashTabContent extends StatelessWidget {
                 rowFlexValues: const [1, 1],
                 rowLeftPaddingValues: const [0.0, 10.0],
                 children: [
-                  _buildMembershipDateField(
+                  _buildMonthDayField(
                     label: 'Membership year starts',
                     current: controller.editedData.value
                         .membershipPeriodStartDate,
-                    onPicked: (DateTime d) {
+                    onChanged: (int month, int day) {
                       controller.editedData.value = controller.editedData.value
-                          .copyWith(membershipPeriodStartDate: d);
+                          .copyWith(
+                            // Year is a sentinel — only month/day are used.
+                            membershipPeriodStartDate: DateTime(2000, month, day),
+                          );
                       controller.checkIfFormIsDirty();
                     },
                   ),
-                  _buildMembershipDateField(
+                  _buildMonthDayField(
                     label: 'Membership year ends',
                     current:
                         controller.editedData.value.membershipPeriodEndDate,
-                    onPicked: (DateTime d) {
+                    onChanged: (int month, int day) {
                       controller.editedData.value = controller.editedData.value
-                          .copyWith(membershipPeriodEndDate: d);
+                          .copyWith(
+                            membershipPeriodEndDate: DateTime(2000, month, day),
+                          );
                       controller.checkIfFormIsDirty();
                     },
                   ),
@@ -188,40 +193,73 @@ class KennelHashCashTabContent extends StatelessWidget {
   // ---------------------------------------------------------------------------
 
   /// Builds a price text field.
-  /// Tappable date field that opens the standard calendar picker. Used for
-  /// the fixed-year membership start/end dates. Bound to editedData so an
-  /// undo (which rebuilds from originalData) restores the shown value.
-  Widget _buildMembershipDateField({
+  /// Month + day selectors for the fixed-year membership window. The
+  /// membership year recurs every year, so only month/day are chosen (no
+  /// year). Bound to editedData so undo restores the shown value. The day
+  /// list follows the selected month (29 Feb allowed as a recurring anchor).
+  Widget _buildMonthDayField({
     required String label,
     required DateTime? current,
-    required ValueChanged<DateTime> onPicked,
+    required void Function(int month, int day) onChanged,
   }) {
-    final DateFormat fmt = DateFormat('dd MMM yyyy');
-    return Builder(
-      builder: (BuildContext context) => InkWell(
-        onTap: () async {
-          final DateTime? picked = await showDatePicker(
-            context: context,
-            initialDate: current ?? DateTime.now(),
-            firstDate: DateTime(2020),
-            lastDate: DateTime(2100),
-          );
-          if (picked != null) onPicked(picked);
-        },
-        borderRadius: BorderRadius.circular(4),
-        child: InputDecorator(
-          decoration: InputDecoration(
-            labelText: label,
-            border: const OutlineInputBorder(),
-            suffixIcon: const Icon(Icons.calendar_today, size: 16),
-          ),
-          child: Text(
-            current != null ? fmt.format(current) : 'Select…',
-            style: TextStyle(
-              color: current != null ? null : const Color(0xFF9CA3AF),
+    final int? month = current?.month;
+    final int? day = current?.day;
+    // Leap-year reference so February offers 29.
+    final int daysInMonth = month == null
+        ? 31
+        : DateTime(2000, month + 1, 0).day;
+
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: DropdownButton<int>(
+              isExpanded: true,
+              underline: const SizedBox.shrink(),
+              hint: const Text('Month'),
+              value: month,
+              items: List<DropdownMenuItem<int>>.generate(
+                12,
+                (int i) => DropdownMenuItem<int>(
+                  value: i + 1,
+                  child: Text(DateFormat('MMMM').format(DateTime(2000, i + 1))),
+                ),
+              ),
+              onChanged: (int? m) {
+                if (m == null) return;
+                final int maxDay = DateTime(2000, m + 1, 0).day;
+                onChanged(m, (day ?? 1) > maxDay ? maxDay : (day ?? 1));
+              },
             ),
           ),
-        ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: DropdownButton<int>(
+              isExpanded: true,
+              underline: const SizedBox.shrink(),
+              hint: const Text('Day'),
+              value: day != null && day <= daysInMonth ? day : null,
+              items: List<DropdownMenuItem<int>>.generate(
+                daysInMonth,
+                (int i) => DropdownMenuItem<int>(
+                  value: i + 1,
+                  child: Text('${i + 1}'),
+                ),
+              ),
+              onChanged: month == null
+                  ? null
+                  : (int? d) {
+                      if (d != null) onChanged(month, d);
+                    },
+            ),
+          ),
+        ],
       ),
     );
   }
