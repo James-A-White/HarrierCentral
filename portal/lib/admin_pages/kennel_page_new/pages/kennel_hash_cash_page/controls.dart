@@ -33,33 +33,9 @@ extension KennelHashCashControlsExtension on KennelPageFormController {
     _registerMembershipRenewalModeControl(tabKey, tabIndex);
     _registerMembershipPriceControl(tabKey, tabIndex);
     _registerMembershipDurationControl(tabKey, tabIndex);
-    _registerMembershipPeriodDateControl(
-      tabKey,
-      tabIndex,
-      fieldName: 'membershipPeriodStartDate',
-      title: 'Membership Year Start',
-      label: 'Membership year starts (YYYY-MM-DD)',
-      help:
-          'Fixed-year mode only: the first day of your kennel\'s membership '
-          'year. Informational — payments always extend to the end date.',
-      original: originalData.membershipPeriodStartDate,
-      apply: (DateTime? d) => editedData.value =
-          editedData.value.copyWith(membershipPeriodStartDate: d),
-    );
-    _registerMembershipPeriodDateControl(
-      tabKey,
-      tabIndex,
-      fieldName: 'membershipPeriodEndDate',
-      title: 'Membership Year End',
-      label: 'Membership year ends (YYYY-MM-DD)',
-      help:
-          'Fixed-year mode only: the last day of your kennel\'s membership '
-          'year. Every membership payment extends to this date, and charging '
-          'is refused once it has passed until you update it.',
-      original: originalData.membershipPeriodEndDate,
-      apply: (DateTime? d) => editedData.value =
-          editedData.value.copyWith(membershipPeriodEndDate: d),
-    );
+    // The fixed-year membership start/end dates are rendered as calendar
+    // date pickers in the layout (bound directly to editedData), not as
+    // text controls — see _buildMembershipDateField.
   }
 
   // ---------------------------------------------------------------------------
@@ -177,47 +153,6 @@ extension KennelHashCashControlsExtension on KennelPageFormController {
         editedData.value = editedData.value.copyWith(
           membershipDurationInMonths: months,
         );
-        uiControls[fieldKey]?.editedFieldValue = value;
-      },
-    );
-  }
-
-  /// Registers a membership-year date control (fixed-year mode).
-  void _registerMembershipPeriodDateControl(
-    String tabKey,
-    int tabIndex, {
-    required String fieldName,
-    required String title,
-    required String label,
-    required String help,
-    required DateTime? original,
-    required void Function(DateTime?) apply,
-  }) {
-    final fieldKey = '${tabKey}_$fieldName';
-    final String originalText = original == null
-        ? ''
-        : original.toIso8601String().substring(0, 10);
-
-    uiControls[fieldKey] = UiControlDefinition(
-      controlType: UiControlType.string,
-      sidebarEntryKey: fieldKey,
-      sidebarExitKey: '${tabKey}_generic',
-      sidebarData: SideBarData(title, FontAwesome5Solid.calendar_alt, help),
-      editedFieldValue: originalText,
-      originalFieldValue: originalText,
-      globalKey: GlobalKey<FormFieldState>(),
-      label: label,
-      maxStringLength: 10,
-      minStringLength: 0,
-      maxLines: 1,
-      allowEmpty: true,
-      includeOverrideButton: false,
-      textController: textControllers[fieldKey] = TextEditingController(),
-      tabIndex: tabIndex,
-      regex: r'^(\d{4}-\d{2}-\d{2})?$',
-      regexErrorString: 'Use YYYY-MM-DD (e.g., 2027-03-31)',
-      updateEditedValue: (String? value) {
-        apply(DateTime.tryParse(value ?? ''));
         uiControls[fieldKey]?.editedFieldValue = value;
       },
     );

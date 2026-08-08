@@ -137,8 +137,26 @@ class KennelHashCashTabContent extends StatelessWidget {
                 rowFlexValues: const [1, 1],
                 rowLeftPaddingValues: const [0.0, 10.0],
                 children: [
-                  _buildPriceField('${tabKey}_membershipPeriodStartDate'),
-                  _buildPriceField('${tabKey}_membershipPeriodEndDate'),
+                  _buildMembershipDateField(
+                    label: 'Membership year starts',
+                    current: controller.editedData.value
+                        .membershipPeriodStartDate,
+                    onPicked: (DateTime d) {
+                      controller.editedData.value = controller.editedData.value
+                          .copyWith(membershipPeriodStartDate: d);
+                      controller.checkIfFormIsDirty();
+                    },
+                  ),
+                  _buildMembershipDateField(
+                    label: 'Membership year ends',
+                    current:
+                        controller.editedData.value.membershipPeriodEndDate,
+                    onPicked: (DateTime d) {
+                      controller.editedData.value = controller.editedData.value
+                          .copyWith(membershipPeriodEndDate: d);
+                      controller.checkIfFormIsDirty();
+                    },
+                  ),
                 ],
               );
             case 3:
@@ -170,6 +188,44 @@ class KennelHashCashTabContent extends StatelessWidget {
   // ---------------------------------------------------------------------------
 
   /// Builds a price text field.
+  /// Tappable date field that opens the standard calendar picker. Used for
+  /// the fixed-year membership start/end dates. Bound to editedData so an
+  /// undo (which rebuilds from originalData) restores the shown value.
+  Widget _buildMembershipDateField({
+    required String label,
+    required DateTime? current,
+    required ValueChanged<DateTime> onPicked,
+  }) {
+    final DateFormat fmt = DateFormat('dd MMM yyyy');
+    return Builder(
+      builder: (BuildContext context) => InkWell(
+        onTap: () async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: current ?? DateTime.now(),
+            firstDate: DateTime(2020),
+            lastDate: DateTime(2100),
+          );
+          if (picked != null) onPicked(picked);
+        },
+        borderRadius: BorderRadius.circular(4),
+        child: InputDecorator(
+          decoration: InputDecoration(
+            labelText: label,
+            border: const OutlineInputBorder(),
+            suffixIcon: const Icon(Icons.calendar_today, size: 16),
+          ),
+          child: Text(
+            current != null ? fmt.format(current) : 'Select…',
+            style: TextStyle(
+              color: current != null ? null : const Color(0xFF9CA3AF),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPriceField(String controlKey) {
     final uiControl = controller.uiControls[controlKey];
 
