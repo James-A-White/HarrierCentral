@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_processPayment",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Uses a standard device-secret access token (@param = NULL \u2014 ValidateAppAuth uses the stored DeviceSecret as the token context). paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType.",
   "parameters": [
     {
@@ -51,7 +51,7 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Payment.ProductType",
-      "description": "1=event, 2=membership, 3=haberdashery. productType=2 records a credit-neutral membership payment (debit = fee) and advances HKM.MembershipExpirationDate per Kennel.MembershipRenewalMode (1=rolling +MembershipDurationInMonths from max(expiry, now); 2=fixed year, expiry = day after Kennel.MembershipPeriodEndDate, refused (errorType 2) if the period has lapsed; 3=lifetime, expiry = sentinel 2999-12-31, refused if already lifetime). eventId is required (anchor). The HEM is anchor-only: no attendance/RSVP is set. The exists/cancel-existing logic is ProductType-scoped: each product keeps its own single-active-payment-per-HEM invariant."
+      "description": "1=event, 2=membership, 3=haberdashery. productType=2 records a credit-neutral membership payment (debit = fee) and advances HKM.MembershipExpirationDate per Kennel.MembershipRenewalMode (1=rolling +MembershipDurationInMonths from max(expiry, now); 2=fixed year, expiry = day after Kennel.MembershipPeriodEndDate, refused (errorType 2) if the period has lapsed; 3=lifetime, expiry = sentinel 2999-12-31, refused if already lifetime). eventId is required (anchor). The HEM is anchor-only: no attendance/RSVP is set. The exists/cancel-existing logic is ProductType-scoped: each product keeps its own single-active-payment-per-HEM invariant. productType=3 (haberdashery, 1.2.0): debit = sale amount (@specialRunPrice override, else @paymentAmount); no event pricing/discounts/extras; HEM is anchor-only; MULTIPLE sales per HEM co-exist (no cancel-existing); paymentType=1 is refused (errorType 2) \u2014 individual sale cancellation is future work."
     },
     {
       "name": "paymentAmount",
@@ -160,6 +160,13 @@
       "nullable": true,
       "mapsToColumn": "HasherKennelMap.DiscountAmount",
       "description": "When non-zero and @specialRunPrice is set, the derived discount (originalEventPrice - specialRunPrice) is saved as a permanent discount on HasherKennelMap for this hasher at this kennel. Sentinel: NULL is treated as 0 (do not persist)."
+    },
+    {
+      "name": "notes",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Payment.Notes",
+      "description": "Free-text note stored on the payment (haberdashery item description). Blank/whitespace stored as NULL. Added 1.2.0."
     }
   ],
   "rowsets": [

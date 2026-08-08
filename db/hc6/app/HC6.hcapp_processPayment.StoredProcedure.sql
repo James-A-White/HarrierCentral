@@ -21,7 +21,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_processPayment]
     @transactionTimestamp   NVARCHAR(50)        = NULL,
     @specialRunPrice        SMALLMONEY          = NULL,
     @specialRunPriceReason  NVARCHAR(50)        = NULL,
-    @useSpecialPriceAsDefault SMALLINT          = NULL
+    @useSpecialPriceAsDefault SMALLINT          = NULL,
+    -- Free-text payment note (haberdashery item description). Stored on
+    -- Payment.Notes, which the payment report already returns.
+    @notes                  NVARCHAR(500)       = NULL
 
 AS
 -- =====================================================================
@@ -285,17 +288,18 @@ BEGIN TRY
             BEGIN
                 SET @hasherEventMapId = NEWID();
 
-                -- Membership charges (productType = 2) use the HEM purely as a
-                -- payment anchor: create it neutral (no RSVP, no attendance)
-                -- rather than marking the hasher as going to the anchor run.
+                -- Membership/haberdashery charges (productType 2/3) use the
+                -- HEM purely as a payment anchor: create it neutral (no RSVP,
+                -- no attendance) rather than marking the hasher as going to
+                -- the anchor run.
                 INSERT HC.HasherEventMap
                     ([id], [UserId], [EventId], [KennelId], [RsvpState],
                      [Rsvp], [UserStartEvent], [AttendenceState], [updatedAt])
                 VALUES
                     (@hasherEventMapId, @userIdWhoPaid, @eventId, @kennelId,
-                     CASE WHEN @productType = 2 THEN 0 ELSE 3 END,
-                     CASE WHEN @productType = 2 THEN NULL ELSE GETDATE() END,
-                     CASE WHEN @productType = 2 THEN NULL ELSE GETDATE() END,
+                     CASE WHEN @productType IN (2, 3) THEN 0 ELSE 3 END,
+                     CASE WHEN @productType IN (2, 3) THEN NULL ELSE GETDATE() END,
+                     CASE WHEN @productType IN (2, 3) THEN NULL ELSE GETDATE() END,
                      COALESCE(@minimumAttendenceValue, 0), GETDATE());
             END
         END
@@ -413,6 +417,7 @@ BEGIN TRY
             -- Lifetime members can't be charged again.
             IF (@membershipMode = 3 AND @paymentType BETWEEN 2 AND 8
                 AND @memberExpiry >= @lifetimeExpiry)
+
             BEGIN
                 SET @errorCode = 1246; SET @errorType = 2; SET @errorId = NEWID();
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
@@ -426,6 +431,38 @@ BEGIN TRY
                        @procName AS errorProc;
                 RETURN;
             END
+        END
+
+        -- ---------------------------------------------------------------
+        -- productType = 3: haberdashery sale — price is the sale amount
+        -- (or @specialRunPrice override); no event pricing, extras or
+        -- discounts. Multiple sales per HEM co-exist (see below), and
+        -- "mark as not paid" is refused: with several live rows it is
+        -- ambiguous which sale it would cancel.
+        -- ---------------------------------------------------------------
+        IF (@productType = 3)
+        BEGIN
+            IF (@paymentType = 1)
+            BEGIN
+                SET @errorCode = 1247; SET @errorType = 2; SET @errorId = NEWID();
+                INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+                VALUES (@errorId, '<unknown>', 'Cannot bulk-cancel haberdashery',
+                        'paymentType 1 is not supported for productType 3', @procName, @userId);
+                ROLLBACK TRANSACTION;
+                SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+                SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                       'Not supported' AS errorTitle,
+                       'Haberdashery sales cannot be bulk-cancelled.' AS errorUserMessage,
+                       @procName AS errorProc;
+                RETURN;
+            END
+
+            SET @originalEventPrice  = COALESCE(@specialRunPrice, @paymentAmount, 0);
+            SET @eventPrice          = @originalEventPrice;
+            SET @extrasPrice         = 0;
+            SET @discountAmount      = 0;
+            SET @discountPercent     = 0;
+            SET @discountDescription = '';
         END
 
         -- ---------------------------------------------------------------
@@ -541,7 +578,9 @@ BEGIN TRY
             -- For a replaced MEMBERSHIP payment, first un-apply its extension
             -- (restore the pre-payment expiry it recorded) so re-charges and
             -- client replays are idempotent rather than compounding.
-            IF (@paymentExists > 0)
+            -- Haberdashery (productType 3) NEVER replaces: each sale is its
+            -- own row and multiple purchases per HEM co-exist.
+            IF (@paymentExists > 0 AND @productType != 3)
             BEGIN
                 IF (@productType = 2)
                 BEGIN
@@ -574,7 +613,7 @@ BEGIN TRY
                  [DoPayForExtras], [PaymentProvider],
                  [DiscountAmount], [DiscountPercent], [DiscountDescription],
                  [SpecialRunPriceReason], [Surcharge],
-                 [PreviousMembershipExpiry], [updatedAt])
+                 [PreviousMembershipExpiry], [Notes], [updatedAt])
             VALUES
                 (@kennelId, @payer_userIdGuid, @eventId, @hasherEventMapId,
                  @creditAmount, @debitAmount, 0,
@@ -586,6 +625,7 @@ BEGIN TRY
                  COALESCE(@specialRunPriceReason, ''),
                  COALESCE(@surcharge, 0),
                  CASE WHEN @productType = 2 THEN @memberExpiry ELSE NULL END,
+                 NULLIF(LTRIM(RTRIM(@notes)), ''),
                  GETDATE());
 
             -- ---------------------------------------------------------------
@@ -612,12 +652,12 @@ BEGIN TRY
                     updatedAt                = GETDATE()
                 WHERE UserId = @payer_userIdGuid AND KennelId = @kennelId;
             END
-            ELSE
+            ELSE IF (@productType = 1)
             BEGIN
                 -- Mark HEM as attended and RSVP'd (minimum state if set).
-                -- Membership charges skip this: their HEM is only an anchor —
-                -- a members-list charge must not mark someone as attending
-                -- the kennel's most recent run.
+                -- Membership and haberdashery charges skip this: their HEM is
+                -- only an anchor — a non-run charge must not mark someone as
+                -- attending the anchor run.
                 UPDATE HC.HasherEventMap SET
                     UserStartEvent   = GETDATE(),
                     RsvpState        = 3,
