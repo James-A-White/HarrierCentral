@@ -336,15 +336,15 @@ class _ModernNavButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isBack;
 
-  /// Tightens padding / icon / font so the bar fits on a phone without the
-  /// Next button overflowing off the right edge.
+  /// Phone rendering: icon-only arrow (with tooltip). Four labelled buttons
+  /// can't fit a phone width — the Next button ran off the right edge
+  /// (seen live 2026-08-08) — and the arrows read fine without words while
+  /// Undo/Save keep their labels.
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final gap = compact ? 6.0 : 8.0;
-    final iconSize = compact ? 16.0 : 18.0;
-    return Material(
+    final button = Material(
       color: HcButtonTokens.navigation, // unified nav colour (blue)
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
@@ -352,32 +352,35 @@ class _ModernNavButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 12 : 20,
+            horizontal: compact ? 14 : 20,
             vertical: 12,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isBack) ...[
-                Icon(icon, color: Colors.white, size: iconSize),
-                SizedBox(width: gap),
-              ],
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: compact ? 14 : 15,
-                  fontWeight: FontWeight.w600,
+          child: compact
+              ? Icon(icon, color: Colors.white, size: 20)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isBack) ...[
+                      Icon(icon, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (!isBack) ...[
+                      const SizedBox(width: 8),
+                      Icon(icon, color: Colors.white, size: 18),
+                    ],
+                  ],
                 ),
-              ),
-              if (!isBack) ...[
-                SizedBox(width: gap),
-                Icon(icon, color: Colors.white, size: iconSize),
-              ],
-            ],
-          ),
         ),
       ),
     );
+    return compact ? Tooltip(message: label, child: button) : button;
   }
 }
