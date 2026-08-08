@@ -50,8 +50,10 @@ AS
 --     not apply. Credit-neutral by construction (credit=paid, debit=fee).
 --     On success HKM.MembershipExpirationDate advances per the kennel's
 --     MembershipRenewalMode: 1=rolling (max(expiry, now) +
---     MembershipDurationInMonths), 2=fixed year (expiry = day after
---     MembershipPeriodEndDate; refused if the period has lapsed),
+--     MembershipDurationInMonths), 2=fixed year — RECURRING annual window;
+--     only the month/day of MembershipPeriodEndDate matter (its year is a
+--     sentinel); expiry = day after the NEXT occurrence of that month/day;
+--     refused only if the end month/day is unconfigured,
 --     3=lifetime (2999-12-31 sentinel; charging an existing lifetime
 --     member is refused). The expiry-as-was is stored in
 --     Payment.PreviousMembershipExpiry; replacing or cancelling
@@ -397,19 +399,22 @@ BEGIN TRY
             SET @discountPercent     = 0;
             SET @discountDescription = '';
 
-            -- Fixed-year mode needs a live membership year to sell into.
+            -- Fixed-year mode is a RECURRING annual window: only the month/day
+            -- of MembershipPeriodEndDate matter (the stored year is a
+            -- sentinel). The window never "lapses" — it rolls to next year —
+            -- so we only refuse when the end date has not been configured.
             IF (@membershipMode = 2 AND @paymentType BETWEEN 2 AND 8
-                AND COALESCE(@membershipPeriodEnd, '2000-01-01') < CAST(GETDATE() AS DATE))
+                AND @membershipPeriodEnd IS NULL)
             BEGIN
                 SET @errorCode = 1245; SET @errorType = 2; SET @errorId = NEWID();
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-                VALUES (@errorId, '<unknown>', 'Membership year lapsed',
-                        'MembershipPeriodEndDate is unset or in the past', @procName, @userId);
+                VALUES (@errorId, '<unknown>', 'Membership year not set',
+                        'MembershipPeriodEndDate is not configured', @procName, @userId);
                 ROLLBACK TRANSACTION;
                 SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
                 SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                        'Membership year not set' AS errorTitle,
-                       'This kennel''s membership year has ended or is not configured. Update the membership period in kennel settings first.' AS errorUserMessage,
+                       'This kennel''s membership year end is not configured. Set it in kennel settings first.' AS errorUserMessage,
                        @procName AS errorProc;
                 RETURN;
             END
@@ -636,16 +641,38 @@ BEGIN TRY
             -- ---------------------------------------------------------------
             IF (@productType = 2)
             BEGIN
-                SET @newMemberExpiry =
-                    CASE @membershipMode
-                        WHEN 3 THEN @lifetimeExpiry
-                        -- Day AFTER the period end, so the end date itself is
-                        -- still a valid membership day under "> GETDATE()".
-                        WHEN 2 THEN CAST(DATEADD(DAY, 1, @membershipPeriodEnd) AS DATETIMEOFFSET(7))
-                        ELSE DATEADD(MONTH, COALESCE(@membershipMonths, 12),
-                             CASE WHEN COALESCE(@memberExpiry, '2000-01-01') > SYSDATETIMEOFFSET()
-                                  THEN @memberExpiry ELSE SYSDATETIMEOFFSET() END)
-                    END;
+                IF (@membershipMode = 2)
+                BEGIN
+                    -- Fixed-year: expiry = the day AFTER the NEXT occurrence of
+                    -- the configured end month/day (so the anniversary itself is
+                    -- still a valid membership day under "> GETDATE()"). Only
+                    -- month/day of @membershipPeriodEnd are used; its year is a
+                    -- sentinel. Day is clamped to the target month's length so a
+                    -- 29-Feb end never errors in a non-leap year.
+                    DECLARE @annToday DATE = CAST(SYSDATETIMEOFFSET() AS DATE);
+                    DECLARE @annMonth INT = MONTH(@membershipPeriodEnd);
+                    DECLARE @annDay   INT = DAY(@membershipPeriodEnd);
+                    DECLARE @annYear  INT = YEAR(@annToday);
+                    DECLARE @annFirst DATE = DATEFROMPARTS(@annYear, @annMonth, 1);
+                    DECLARE @annCand  DATE = DATEADD(DAY,
+                        (CASE WHEN @annDay > DAY(EOMONTH(@annFirst))
+                              THEN DAY(EOMONTH(@annFirst)) ELSE @annDay END) - 1, @annFirst);
+                    IF (@annCand < @annToday)
+                    BEGIN
+                        SET @annFirst = DATEFROMPARTS(@annYear + 1, @annMonth, 1);
+                        SET @annCand  = DATEADD(DAY,
+                            (CASE WHEN @annDay > DAY(EOMONTH(@annFirst))
+                                  THEN DAY(EOMONTH(@annFirst)) ELSE @annDay END) - 1, @annFirst);
+                    END
+                    SET @newMemberExpiry = CAST(DATEADD(DAY, 1, @annCand) AS DATETIMEOFFSET(7));
+                END
+                ELSE IF (@membershipMode = 3)
+                    SET @newMemberExpiry = @lifetimeExpiry;
+                ELSE
+                    -- Rolling: add the duration to max(current expiry, now).
+                    SET @newMemberExpiry = DATEADD(MONTH, COALESCE(@membershipMonths, 12),
+                         CASE WHEN COALESCE(@memberExpiry, '2000-01-01') > SYSDATETIMEOFFSET()
+                              THEN @memberExpiry ELSE SYSDATETIMEOFFSET() END);
 
                 UPDATE HC.HasherKennelMap SET
                     MembershipExpirationDate = @newMemberExpiry,
