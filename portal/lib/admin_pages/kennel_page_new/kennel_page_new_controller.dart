@@ -204,6 +204,10 @@ class KennelPageFormController extends TabUiController
   /// Allow hashers to mark themselves as paid.
   final RxBool allowSelfPayment = false.obs;
 
+  /// Membership renewal mode (1=rolling, 2=fixed year, 3=lifetime).
+  /// Mirrors editedData so the layout can show mode-specific fields.
+  final RxInt membershipRenewalMode = 1.obs;
+
   // ---------------------------------------------------------------------------
   // State - Songs Tab
   // ---------------------------------------------------------------------------

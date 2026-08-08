@@ -49,6 +49,12 @@ abstract class KennelModel with _$KennelModel {
     required int defaultRunTags2,
     required int defaultRunTags3,
     required int membershipDurationInMonths,
+    // Membership payments renewal config (2026-08-08).
+    // Mode: 1=rolling, 2=fixed year, 3=lifetime.
+    @Default(1) int membershipRenewalMode,
+    DateTime? membershipPeriodStartDate,
+    DateTime? membershipPeriodEndDate,
+    @Default(0.0) double membershipPrice,
     required int defaultDistancePreference,
     required int notificationMinutesBeforeRunForChatPushNotifications,
     required int notificationMinutesBeforeRunForCheckinReminder,

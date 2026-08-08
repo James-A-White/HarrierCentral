@@ -40,6 +40,10 @@ class KennelHashCashTabContent extends StatelessWidget {
               HelperWidgets().categoryLabelWidget('Payment Settings'),
               _buildPaymentSettingsSection(isMobileScreen),
 
+              // Membership Section
+              HelperWidgets().categoryLabelWidget('Membership'),
+              _buildMembershipSection(isMobileScreen),
+
               const SizedBox(height: 20),
             ],
           ),
@@ -87,6 +91,76 @@ class KennelHashCashTabContent extends StatelessWidget {
           value: controller.allowSelfPayment,
           label: 'Hasher can mark themselves as paid',
         ),
+      ],
+    );
+  }
+
+  /// Builds the Membership section: renewal mode + fee, plus the fields the
+  /// selected mode actually uses (duration for rolling, year dates for fixed).
+  Widget _buildMembershipSection(bool isMobileScreen) {
+    final tabKey = KennelTabType.hashCash.key;
+    final modeControl = controller.uiControls['${tabKey}_membershipRenewalMode'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RowColumn(
+          isRow: !isMobileScreen,
+          rowFlexValues: const [1, 1],
+          rowLeftPaddingValues: const [0.0, 10.0],
+          children: [
+            if (modeControl != null)
+              MouseRegion(
+                onEnter: (_) => controller.setSidebarData(
+                  '${tabKey}_membershipRenewalMode',
+                ),
+                onExit: (_) =>
+                    controller.setSidebarData('${tabKey}_generic'),
+                child: EditableDropdownField(
+                  controller: controller,
+                  uiControl: modeControl,
+                  value: controller.membershipRenewalMode,
+                  items: modeControl.dropdownItems ?? {},
+                ),
+              )
+            else
+              const SizedBox.shrink(),
+            _buildPriceField('${tabKey}_membershipPrice'),
+          ],
+        ),
+        // Mode-specific configuration.
+        Obx(() {
+          switch (controller.membershipRenewalMode.value) {
+            case 2:
+              return RowColumn(
+                isRow: !isMobileScreen,
+                rowFlexValues: const [1, 1],
+                rowLeftPaddingValues: const [0.0, 10.0],
+                children: [
+                  _buildPriceField('${tabKey}_membershipPeriodStartDate'),
+                  _buildPriceField('${tabKey}_membershipPeriodEndDate'),
+                ],
+              );
+            case 3:
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'One payment grants membership for life.',
+                  style: bodyStyleBlack,
+                ),
+              );
+            default:
+              return RowColumn(
+                isRow: !isMobileScreen,
+                rowFlexValues: const [1, 1],
+                rowLeftPaddingValues: const [0.0, 10.0],
+                children: [
+                  _buildPriceField('${tabKey}_membershipDurationInMonths'),
+                  const SizedBox.shrink(),
+                ],
+              );
+          }
+        }),
       ],
     );
   }
