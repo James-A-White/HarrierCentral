@@ -2,6 +2,13 @@
 
 ---
 
+## 2.0.60+695 (2026-08-08)
+
+- **Calendar date pickers** for the fixed-year membership start/end dates
+  (kennel → Hash Cash tab), replacing the free-text YYYY-MM-DD boxes.
+
+---
+
 ## 2.0.59+694 (2026-08-08)
 
 - **Phone layout fix**: the tab navigation bar no longer overflows the
