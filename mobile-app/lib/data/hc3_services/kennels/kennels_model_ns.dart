@@ -36,6 +36,13 @@ abstract class KennelsModel with _$KennelsModel implements BaseModel {
     required double defaultPriceForMembers,
     required double defaultPriceForNonMembers,
     required int membershipDurationInMonths,
+    // Membership payments (2026-08-08). @Default so rows cached before the
+    // 527 migration (columns NULL until the kennel next re-syncs) parse
+    // safely. Mode: 1=rolling, 2=fixed year, 3=lifetime.
+    @Default(1) int membershipRenewalMode,
+    DateTime? membershipPeriodStartDate,
+    DateTime? membershipPeriodEndDate,
+    @Default(0.0) double membershipPrice,
     required DateTime defaultRunStartTime,
     String? currencyCode,
     String? primaryCultureCode,

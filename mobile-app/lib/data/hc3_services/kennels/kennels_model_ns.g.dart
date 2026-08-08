@@ -42,6 +42,14 @@ _KennelsModel _$KennelsModelFromJson(
       .toDouble(),
   membershipDurationInMonths: (json['membershipDurationInMonths'] as num)
       .toInt(),
+  membershipRenewalMode: (json['membershipRenewalMode'] as num?)?.toInt() ?? 1,
+  membershipPeriodStartDate: json['membershipPeriodStartDate'] == null
+      ? null
+      : DateTime.parse(json['membershipPeriodStartDate'] as String),
+  membershipPeriodEndDate: json['membershipPeriodEndDate'] == null
+      ? null
+      : DateTime.parse(json['membershipPeriodEndDate'] as String),
+  membershipPrice: (json['membershipPrice'] as num?)?.toDouble() ?? 0.0,
   defaultRunStartTime: DateTime.parse(json['defaultRunStartTime'] as String),
   currencyCode: json['currencyCode'] as String?,
   primaryCultureCode: json['primaryCultureCode'] as String?,
@@ -124,6 +132,12 @@ Map<String, dynamic> _$KennelsModelToJson(
   'defaultPriceForMembers': instance.defaultPriceForMembers,
   'defaultPriceForNonMembers': instance.defaultPriceForNonMembers,
   'membershipDurationInMonths': instance.membershipDurationInMonths,
+  'membershipRenewalMode': instance.membershipRenewalMode,
+  'membershipPeriodStartDate': instance.membershipPeriodStartDate
+      ?.toIso8601String(),
+  'membershipPeriodEndDate': instance.membershipPeriodEndDate
+      ?.toIso8601String(),
+  'membershipPrice': instance.membershipPrice,
   'defaultRunStartTime': instance.defaultRunStartTime.toIso8601String(),
   'currencyCode': instance.currencyCode,
   'primaryCultureCode': instance.primaryCultureCode,

@@ -45,6 +45,10 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
   final String colDefaultPriceForMembers = 'defaultPriceForMembers';
   final String colDefaultPriceForNonMembers = 'defaultPriceForNonMembers';
   final String colMembershipDurationInMonths = 'membershipDurationInMonths';
+  final String colMembershipRenewalMode = 'membershipRenewalMode';
+  final String colMembershipPeriodStartDate = 'membershipPeriodStartDate';
+  final String colMembershipPeriodEndDate = 'membershipPeriodEndDate';
+  final String colMembershipPrice = 'membershipPrice';
   final String colDefaultRunStartTime = 'defaultRunStartTime';
   final String colCurrencyCode = 'currencyCode';
   final String colPrimaryCultureCode = 'primaryCultureCode';
@@ -120,6 +124,10 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
             $colDefaultPriceForMembers NUM NOT NULL,
             $colDefaultPriceForNonMembers NUM NOT NULL,
             $colMembershipDurationInMonths INT NOT NULL,
+            $colMembershipRenewalMode INT,
+            $colMembershipPeriodStartDate TEXT,
+            $colMembershipPeriodEndDate TEXT,
+            $colMembershipPrice NUM,
             $colDefaultRunStartTime TEXT NOT NULL,
             $colCurrencyCode TEXT,
             $colPrimaryCultureCode TEXT,

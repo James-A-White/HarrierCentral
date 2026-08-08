@@ -225,6 +225,11 @@ class PaymentsService {
     double? specialRunPrice,
     String? specialRunPriceReason,
     bool? useSpecialPriceAsDefault,
+    // productTypeMembership charges the kennel's membership fee (or
+    // specialRunPrice as an override) and advances the member's expiry —
+    // see docs/membership_payments_plan.md. Default keeps every existing
+    // caller an event payment.
+    EnumProductType productType = productTypeEvent,
   }) async {
     List<dynamic> results = <dynamic>[];
 
@@ -287,7 +292,7 @@ class PaymentsService {
       'eventId': eventId,
       'hasherEventMapId': hasherEventMapId,
       'paymentType': paymentType.toString(),
-      'productType': productTypeEvent.value.toString(),
+      'productType': productType.value.toString(),
       'paymentAmount': paymentAmount.toString(),
       'minimumAttendenceValue': minimumAttendenceValue.toString(),
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),

@@ -418,6 +418,18 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // Membership payments: kennel renewal config (kennels are common-only).
+    MigrationsModel(
+      dbVersion: 527,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colMembershipRenewalMode} INT;
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colMembershipPeriodStartDate} TEXT;
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colMembershipPeriodEndDate} TEXT;
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colMembershipPrice} NUM;
+      ''',
+      appliedAtInt: 0,
+    ),
+
   ];
 
   static Future<void> createTables(
