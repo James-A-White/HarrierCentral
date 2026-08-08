@@ -148,6 +148,7 @@ namespace HcWebApi.Endpoints
                             ws.Cells[2, 7].Value = "Payment date";
                             ws.Cells[2, 8].Value = "Credit remaining";
                             ws.Cells[2, 9].Value = "Notes";
+                            ws.Cells[2, 10].Value = "Product";
 
                             int rowCounter = 3;
 
@@ -192,6 +193,15 @@ namespace HcWebApi.Endpoints
                                     string creditRemaining = double.TryParse(rows.IsDBNull(13) ? "" : rows.GetValue(13)?.ToString()?.Trim(), out var cr)
                                                                 ? cr.ToString(currencyFormat) : 0.0.ToString(currencyFormat);
 
+                                    // productType is the LAST column (ordinal 16): 1=event, 2=membership, 3=haberdashery.
+                                    int productTypeInt = int.TryParse(rows.IsDBNull(16) ? "" : rows.GetValue(16)?.ToString()?.Trim(), out var ptp) ? ptp : 1;
+                                    string product = productTypeInt switch
+                                    {
+                                        2 => "Membership",
+                                        3 => "Haberdashery",
+                                        _ => "Run",
+                                    };
+
                                     String paymentType = "Unknown";
 
                                     switch (paymentTypeInt)
@@ -232,6 +242,7 @@ namespace HcWebApi.Endpoints
                                     ws.Cells[rowCounter, 7].Value = paymentDate;
                                     ws.Cells[rowCounter, 8].Value = creditRemaining;
                                     ws.Cells[rowCounter, 9].Value = notes;
+                                    ws.Cells[rowCounter, 10].Value = product;
 
                                     rowCounter++;
 
