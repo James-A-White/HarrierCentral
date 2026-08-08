@@ -164,6 +164,10 @@ BEGIN TRY
 		, k.[DefaultRunTags2] as defaultRunTags2
 		, k.[DefaultRunTags3] as defaultRunTags3
 		, k.[MembershipDurationInMonths] as membershipDurationInMonths
+		, k.[MembershipRenewalMode] as membershipRenewalMode
+		, k.[MembershipPeriodStartDate] as membershipPeriodStartDate
+		, k.[MembershipPeriodEndDate] as membershipPeriodEndDate
+		, k.[MembershipPrice] as membershipPrice
 		, k.[RunCountStartDate] as runCountStartDate
 		, k.[DistancePreference] as distancePreference
 		, n.[DistancePreference] as defaultDistancePreference

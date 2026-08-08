@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getKennel",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Retrieves comprehensive details for a single kennel by its public ID. Returns kennel profile, location info, website settings, payment configuration (3 slots), default run settings, and related geographic data. Used by both the admin portal and public HashRuns.org sites. Two service account GUIDs bypass the hasher-existence check: 11111111-...=HashRuns.org public access, 22222222-...=admin portal service account. Read-only query.",
   "parameters": [
     {
@@ -32,8 +32,18 @@
       "name": "ErrorEnvelope",
       "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -41,95 +51,564 @@
       "name": "KennelDetailResult",
       "description": "Single row containing comprehensive kennel profile. JOINs HC.City, HC.Region, and HC.Country for geographic data. Only returned when no errors occur.",
       "columns": [
-        { "name": "kennelPublicId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.PublicKennelId — the public-facing ID" },
-        { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": false, "description": "Kennel.KennelName — full kennel name" },
-        { "name": "kennelShortName", "type": "NVARCHAR(25)", "nullable": false, "description": "Kennel.KennelShortName — abbreviated kennel name" },
-        { "name": "kennelUniqueShortName", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.KennelUniqueShortName — globally unique short identifier" },
-        { "name": "kennelLogo", "type": "NVARCHAR(500)", "nullable": false, "description": "Kennel.KennelLogo — URL to kennel logo image" },
-        { "name": "kennelDescription", "type": "NVARCHAR(4000)", "nullable": true, "description": "Kennel.KennelDescription — descriptive text about the kennel" },
-        { "name": "latitude", "type": "DECIMAL(18,14)", "nullable": true, "description": "Kennel.Latitude — kennel's geographic latitude" },
-        { "name": "longitude", "type": "DECIMAL(19,15)", "nullable": true, "description": "Kennel.Longitude — kennel's geographic longitude" },
-        { "name": "defaultLatitude", "type": "NUMERIC(12,9)", "nullable": false, "description": "City.latitude — default latitude from the kennel's city record" },
-        { "name": "defaultLongitude", "type": "NUMERIC(13,9)", "nullable": false, "description": "City.longitude — default longitude from the kennel's city record" },
-        { "name": "excludeFromLeaderboard", "type": "SMALLINT", "nullable": false, "description": "Kennel.ExcludeFromLeaderboard — flag to exclude kennel from leaderboard rankings" },
-        { "name": "publishToGoogleCalendar", "type": "SMALLINT", "nullable": false, "description": "Kennel.PublishToGoogleCalendar — enable/disable Google Calendar publishing" },
-        { "name": "publishToGoogleCalendarAddresses", "type": "NVARCHAR(1000)", "nullable": true, "description": "Kennel.PublishToGoogleCalendarAddresses — comma-separated email addresses for calendar invites" },
-        { "name": "mismanagementTeam", "type": "NVARCHAR(4000)", "nullable": true, "description": "Kennel.KennelMismanagementTeam — description of kennel leadership/management team" },
-        { "name": "kennelWebsiteUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelWebsiteUrl — external kennel website URL" },
-        { "name": "kennelCoverPhoto", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelCoverPhoto — URL to kennel cover photo" },
-        { "name": "cityName", "type": "NVARCHAR(100)", "nullable": false, "description": "City.CityName — name of the kennel's city" },
-        { "name": "regionName", "type": "NVARCHAR(100)", "nullable": false, "description": "Region.RegionName — name of the kennel's region/state/province" },
-        { "name": "countryName", "type": "NVARCHAR(250)", "nullable": false, "description": "Country.CountryName — name of the kennel's country" },
-        { "name": "continentName", "type": "NVARCHAR(100)", "nullable": false, "description": "Country.ContinentName — name of the kennel's continent" },
-        { "name": "countryFlag", "type": "NVARCHAR(100)", "nullable": true, "description": "Country.FlagFile — flag icon file for the country" },
-        { "name": "regionFlag", "type": "NVARCHAR(100)", "nullable": true, "description": "Region.FlagFile — flag icon file for the region" },
-        { "name": "cityFlag", "type": "NVARCHAR(100)", "nullable": true, "description": "City.FlagFile — flag icon file for the city" },
-        { "name": "websiteBackgroundColor", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel.WebsiteBackgroundColor — hex color code for website background" },
-        { "name": "websiteBackgroundImage", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.WebsiteBackgroundImage — URL to website background image" },
-        { "name": "websiteTitleText", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.WebsiteTitleText — custom title text for website" },
-        { "name": "websiteMenuBackgroundColor", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel.WebsiteMenuBackgroundColor — hex color code for menu background" },
-        { "name": "websiteMenuTextColor", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel.WebsiteMenuTextColor — hex color code for menu text" },
-        { "name": "websiteWelcomeText", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Kennel.WebsiteWelcomeText — welcome message HTML/text" },
-        { "name": "websiteBodyTextColor", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel.WebsiteBodyTextColor — hex color code for body text" },
-        { "name": "websiteTitleTextColor", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel.WebsiteTitleTextColor — hex color code for title text" },
-        { "name": "websiteMismanagementDescription", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Kennel.WebsiteMismanagementDescription — management team description for website" },
-        { "name": "websiteMismanagementJson", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Kennel.WebsiteMismanagementJson — JSON structure for management team display" },
-        { "name": "websiteExtraMenusJson", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Kennel.WebsiteExtraMenusJson — JSON structure for custom menu items" },
-        { "name": "websiteControlFlags", "type": "INT", "nullable": true, "description": "Kennel.WebsiteControlFlags — bit flags for website feature toggles" },
-        { "name": "websiteContactDetailsJson", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Kennel.WebsiteContactDetailsJson — JSON structure for contact information" },
-        { "name": "websiteBannerImage", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.WebsiteBannerImage — URL to banner image" },
-        { "name": "websiteUrlShortcode", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.WebsiteUrlShortcode — short URL slug for kennel website" },
-        { "name": "websiteTitleFont", "type": "NVARCHAR(100)", "nullable": true, "description": "Kennel.WebsiteTitleFont — font family for title text" },
-        { "name": "websiteBodyFont", "type": "NVARCHAR(100)", "nullable": true, "description": "Kennel.WebsiteBodyFont — font family for body text" },
-        { "name": "kennelStatus", "type": "SMALLINT", "nullable": false, "description": "Kennel.KennelStatus — current status code for the kennel" },
-        { "name": "kennelAdminEmailList", "type": "NVARCHAR(2000)", "nullable": true, "description": "Kennel.KennelAdminEmailList — comma-separated admin email addresses" },
-        { "name": "disseminateHashRunsDotOrg", "type": "SMALLINT", "nullable": false, "description": "Kennel.DisseminateHashRunsDotOrg — flag to publish events to HashRuns.org" },
-        { "name": "disseminateAllowWebLinks", "type": "SMALLINT", "nullable": false, "description": "Kennel.DisseminateAllowWebLinks — flag to allow web links in disseminated events" },
-        { "name": "disseminationAudience", "type": "INT", "nullable": false, "description": "Kennel.DisseminationAudience — audience level for event dissemination" },
-        { "name": "disseminateOnGlobalGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Kennel.DisseminateOnGlobalGoogleCalendar — flag to publish to global Google Calendar" },
-        { "name": "canEditRunAttendence", "type": "SMALLINT", "nullable": false, "description": "Kennel.CanEditRunAttendence — flag to allow editing run attendance. Note: column name retains original typo ('Attendence' not 'Attendance') — do not fix without coordinating with all clients." },
-        { "name": "kennelPinColor", "type": "SMALLINT", "nullable": false, "description": "Kennel.KennelPinColor — color code for map pin" },
-        { "name": "kennelEventsUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelEventsUrl — URL to kennel's events page" },
-        { "name": "kennelHcEventsUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelHcEventsUrl — URL to kennel's Harrier Central events page" },
-        { "name": "defaultEventPriceForMembers", "type": "DECIMAL(10,4)", "nullable": false, "description": "Kennel.DefaultEventPriceForMembers — default run price for members" },
-        { "name": "defaultEventPriceForNonMembers", "type": "DECIMAL(10,4)", "nullable": false, "description": "Kennel.DefaultEventPriceForNonMembers — default run price for non-members" },
-        { "name": "defaultRunStartTime", "type": "DATETIME", "nullable": false, "description": "Kennel.DefaultRunStartTime (TIME(7)) CAST to DATETIME — default run start time" },
-        { "name": "bankScheme", "type": "NVARCHAR(10)", "nullable": true, "description": "Kennel.BankScheme — bank account scheme (e.g. IBAN, SWIFT)" },
-        { "name": "bankAccountNumber", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.BankAccountNumber — bank account number" },
-        { "name": "bankBic", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.BankBic — BIC/SWIFT code" },
-        { "name": "bankBeneficiary", "type": "NVARCHAR(150)", "nullable": true, "description": "Kennel.BankBeneficiary — account beneficiary name" },
-        { "name": "kennelPaymentScheme", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.KennelPaymentScheme — payment slot 1: scheme identifier" },
-        { "name": "kennelPaymentUrl", "type": "NVARCHAR(2000)", "nullable": true, "description": "Kennel.KennelPaymentUrl — payment slot 1: payment URL" },
-        { "name": "kennelPaymentUrlExpires", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Kennel.KennelPaymentUrlExpires — payment slot 1: URL expiry timestamp" },
-        { "name": "kennelPaymentMemberSurcharge", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.KennelPaymentMemberSurcharge — payment slot 1: member surcharge" },
-        { "name": "kennelPaymentNonMemberSurcharge", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.KennelPaymentNonMemberSurcharge — payment slot 1: non-member surcharge" },
-        { "name": "kennelPaymentScheme2", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.KennelPaymentScheme2 — payment slot 2: scheme identifier" },
-        { "name": "kennelPaymentUrl2", "type": "NVARCHAR(2000)", "nullable": true, "description": "Kennel.KennelPaymentUrl2 — payment slot 2: payment URL" },
-        { "name": "kennelPaymentUrlExpires2", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Kennel.KennelPaymentUrlExpires2 — payment slot 2: URL expiry timestamp" },
-        { "name": "kennelPaymentMemberSurcharge2", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.KennelPaymentMemberSurcharge2 — payment slot 2: member surcharge" },
-        { "name": "kennelPaymentNonMemberSurcharge2", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.KennelPaymentNonMemberSurcharge2 — payment slot 2: non-member surcharge" },
-        { "name": "kennelPaymentScheme3", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.KennelPaymentScheme3 — payment slot 3: scheme identifier" },
-        { "name": "kennelPaymentUrl3", "type": "NVARCHAR(2000)", "nullable": true, "description": "Kennel.KennelPaymentUrl3 — payment slot 3: payment URL" },
-        { "name": "kennelPaymentUrlExpires3", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Kennel.KennelPaymentUrlExpires3 — payment slot 3: URL expiry timestamp" },
-        { "name": "kennelPaymentMemberSurcharge3", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.KennelPaymentMemberSurcharge3 — payment slot 3: member surcharge" },
-        { "name": "kennelPaymentNonMemberSurcharge3", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.KennelPaymentNonMemberSurcharge3 — payment slot 3: non-member surcharge" },
-        { "name": "allowSelfPayment", "type": "SMALLINT", "nullable": false, "description": "Kennel.AllowSelfPayment — flag to allow hashers to record their own payments" },
-        { "name": "allowNegativeCredit", "type": "SMALLINT", "nullable": false, "description": "Kennel.AllowNegativeCredit — flag to allow negative credit balances" },
-        { "name": "allowCredit", "type": "SMALLINT", "nullable": false, "description": "Kennel.AllowCredit — master flag: whether credit payments are allowed for this kennel (1=on, default 1)" },
-        { "name": "cityId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.CityId — foreign key to HC.City" },
-        { "name": "provinceStateId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.ProvinceStateId — foreign key to HC.Region" },
-        { "name": "countryId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.CountryId — foreign key to HC.Country" },
-        { "name": "defaultRunTags1", "type": "INT", "nullable": false, "description": "Kennel.DefaultRunTags1 — default bit-flag primary tags for new runs" },
-        { "name": "defaultRunTags2", "type": "INT", "nullable": false, "description": "Kennel.DefaultRunTags2 — default bit-flag secondary tags for new runs" },
-        { "name": "defaultRunTags3", "type": "INT", "nullable": false, "description": "Kennel.DefaultRunTags3 — default bit-flag tertiary tags for new runs" },
-        { "name": "membershipDurationInMonths", "type": "INT", "nullable": false, "description": "Kennel.MembershipDurationInMonths — length of membership validity in months" },
-        { "name": "runCountStartDate", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Kennel.RunCountStartDate — date from which run counting begins" },
-        { "name": "distancePreference", "type": "SMALLINT", "nullable": true, "description": "Kennel.DistancePreference — preferred distance unit (km/miles enum)" },
-        { "name": "defaultDistancePreference", "type": "SMALLINT", "nullable": false, "description": "Country.DistancePreference — country's default distance unit preference" },
-        { "name": "extApiKey", "type": "NVARCHAR(120)", "nullable": true, "description": "Kennel.ExtApiKey — external API key for integrations" },
-        { "name": "kennelSearchTags", "type": "NVARCHAR(4000)", "nullable": true, "description": "Kennel.KennelSearchTags — search keywords for kennel discovery" },
-        { "name": "notificationMinutesBeforeRunForChatPushNotifications", "type": "INT", "nullable": true, "description": "Kennel.NotificationMinutesBeforeRunForChatPushNotifications — minutes before run to send chat push notifications" },
-        { "name": "notificationMinutesBeforeRunForCheckinReminder", "type": "INT", "nullable": true, "description": "Kennel.NotificationMinutesBeforeRunForCheckinReminder — minutes before run to send check-in reminders" }
+        {
+          "name": "kennelPublicId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.PublicKennelId \u2014 the public-facing ID"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName \u2014 full kennel name"
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel.KennelShortName \u2014 abbreviated kennel name"
+        },
+        {
+          "name": "kennelUniqueShortName",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.KennelUniqueShortName \u2014 globally unique short identifier"
+        },
+        {
+          "name": "kennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Kennel.KennelLogo \u2014 URL to kennel logo image"
+        },
+        {
+          "name": "kennelDescription",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Kennel.KennelDescription \u2014 descriptive text about the kennel"
+        },
+        {
+          "name": "latitude",
+          "type": "DECIMAL(18,14)",
+          "nullable": true,
+          "description": "Kennel.Latitude \u2014 kennel's geographic latitude"
+        },
+        {
+          "name": "longitude",
+          "type": "DECIMAL(19,15)",
+          "nullable": true,
+          "description": "Kennel.Longitude \u2014 kennel's geographic longitude"
+        },
+        {
+          "name": "defaultLatitude",
+          "type": "NUMERIC(12,9)",
+          "nullable": false,
+          "description": "City.latitude \u2014 default latitude from the kennel's city record"
+        },
+        {
+          "name": "defaultLongitude",
+          "type": "NUMERIC(13,9)",
+          "nullable": false,
+          "description": "City.longitude \u2014 default longitude from the kennel's city record"
+        },
+        {
+          "name": "excludeFromLeaderboard",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.ExcludeFromLeaderboard \u2014 flag to exclude kennel from leaderboard rankings"
+        },
+        {
+          "name": "publishToGoogleCalendar",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.PublishToGoogleCalendar \u2014 enable/disable Google Calendar publishing"
+        },
+        {
+          "name": "publishToGoogleCalendarAddresses",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Kennel.PublishToGoogleCalendarAddresses \u2014 comma-separated email addresses for calendar invites"
+        },
+        {
+          "name": "mismanagementTeam",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Kennel.KennelMismanagementTeam \u2014 description of kennel leadership/management team"
+        },
+        {
+          "name": "kennelWebsiteUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelWebsiteUrl \u2014 external kennel website URL"
+        },
+        {
+          "name": "kennelCoverPhoto",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelCoverPhoto \u2014 URL to kennel cover photo"
+        },
+        {
+          "name": "cityName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "City.CityName \u2014 name of the kennel's city"
+        },
+        {
+          "name": "regionName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Region.RegionName \u2014 name of the kennel's region/state/province"
+        },
+        {
+          "name": "countryName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Country.CountryName \u2014 name of the kennel's country"
+        },
+        {
+          "name": "continentName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Country.ContinentName \u2014 name of the kennel's continent"
+        },
+        {
+          "name": "countryFlag",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Country.FlagFile \u2014 flag icon file for the country"
+        },
+        {
+          "name": "regionFlag",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Region.FlagFile \u2014 flag icon file for the region"
+        },
+        {
+          "name": "cityFlag",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "City.FlagFile \u2014 flag icon file for the city"
+        },
+        {
+          "name": "websiteBackgroundColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBackgroundColor \u2014 hex color code for website background"
+        },
+        {
+          "name": "websiteBackgroundImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBackgroundImage \u2014 URL to website background image"
+        },
+        {
+          "name": "websiteTitleText",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.WebsiteTitleText \u2014 custom title text for website"
+        },
+        {
+          "name": "websiteMenuBackgroundColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteMenuBackgroundColor \u2014 hex color code for menu background"
+        },
+        {
+          "name": "websiteMenuTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteMenuTextColor \u2014 hex color code for menu text"
+        },
+        {
+          "name": "websiteWelcomeText",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Kennel.WebsiteWelcomeText \u2014 welcome message HTML/text"
+        },
+        {
+          "name": "websiteBodyTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBodyTextColor \u2014 hex color code for body text"
+        },
+        {
+          "name": "websiteTitleTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteTitleTextColor \u2014 hex color code for title text"
+        },
+        {
+          "name": "websiteMismanagementDescription",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Kennel.WebsiteMismanagementDescription \u2014 management team description for website"
+        },
+        {
+          "name": "websiteMismanagementJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Kennel.WebsiteMismanagementJson \u2014 JSON structure for management team display"
+        },
+        {
+          "name": "websiteExtraMenusJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Kennel.WebsiteExtraMenusJson \u2014 JSON structure for custom menu items"
+        },
+        {
+          "name": "websiteControlFlags",
+          "type": "INT",
+          "nullable": true,
+          "description": "Kennel.WebsiteControlFlags \u2014 bit flags for website feature toggles"
+        },
+        {
+          "name": "websiteContactDetailsJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Kennel.WebsiteContactDetailsJson \u2014 JSON structure for contact information"
+        },
+        {
+          "name": "websiteBannerImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBannerImage \u2014 URL to banner image"
+        },
+        {
+          "name": "websiteUrlShortcode",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.WebsiteUrlShortcode \u2014 short URL slug for kennel website"
+        },
+        {
+          "name": "websiteTitleFont",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Kennel.WebsiteTitleFont \u2014 font family for title text"
+        },
+        {
+          "name": "websiteBodyFont",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBodyFont \u2014 font family for body text"
+        },
+        {
+          "name": "kennelStatus",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.KennelStatus \u2014 current status code for the kennel"
+        },
+        {
+          "name": "kennelAdminEmailList",
+          "type": "NVARCHAR(2000)",
+          "nullable": true,
+          "description": "Kennel.KennelAdminEmailList \u2014 comma-separated admin email addresses"
+        },
+        {
+          "name": "disseminateHashRunsDotOrg",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.DisseminateHashRunsDotOrg \u2014 flag to publish events to HashRuns.org"
+        },
+        {
+          "name": "disseminateAllowWebLinks",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.DisseminateAllowWebLinks \u2014 flag to allow web links in disseminated events"
+        },
+        {
+          "name": "disseminationAudience",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.DisseminationAudience \u2014 audience level for event dissemination"
+        },
+        {
+          "name": "disseminateOnGlobalGoogleCalendar",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.DisseminateOnGlobalGoogleCalendar \u2014 flag to publish to global Google Calendar"
+        },
+        {
+          "name": "canEditRunAttendence",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.CanEditRunAttendence \u2014 flag to allow editing run attendance. Note: column name retains original typo ('Attendence' not 'Attendance') \u2014 do not fix without coordinating with all clients."
+        },
+        {
+          "name": "kennelPinColor",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.KennelPinColor \u2014 color code for map pin"
+        },
+        {
+          "name": "kennelEventsUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelEventsUrl \u2014 URL to kennel's events page"
+        },
+        {
+          "name": "kennelHcEventsUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelHcEventsUrl \u2014 URL to kennel's Harrier Central events page"
+        },
+        {
+          "name": "defaultEventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Kennel.DefaultEventPriceForMembers \u2014 default run price for members"
+        },
+        {
+          "name": "defaultEventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Kennel.DefaultEventPriceForNonMembers \u2014 default run price for non-members"
+        },
+        {
+          "name": "defaultRunStartTime",
+          "type": "DATETIME",
+          "nullable": false,
+          "description": "Kennel.DefaultRunStartTime (TIME(7)) CAST to DATETIME \u2014 default run start time"
+        },
+        {
+          "name": "bankScheme",
+          "type": "NVARCHAR(10)",
+          "nullable": true,
+          "description": "Kennel.BankScheme \u2014 bank account scheme (e.g. IBAN, SWIFT)"
+        },
+        {
+          "name": "bankAccountNumber",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.BankAccountNumber \u2014 bank account number"
+        },
+        {
+          "name": "bankBic",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.BankBic \u2014 BIC/SWIFT code"
+        },
+        {
+          "name": "bankBeneficiary",
+          "type": "NVARCHAR(150)",
+          "nullable": true,
+          "description": "Kennel.BankBeneficiary \u2014 account beneficiary name"
+        },
+        {
+          "name": "kennelPaymentScheme",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentScheme \u2014 payment slot 1: scheme identifier"
+        },
+        {
+          "name": "kennelPaymentUrl",
+          "type": "NVARCHAR(2000)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrl \u2014 payment slot 1: payment URL"
+        },
+        {
+          "name": "kennelPaymentUrlExpires",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrlExpires \u2014 payment slot 1: URL expiry timestamp"
+        },
+        {
+          "name": "kennelPaymentMemberSurcharge",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentMemberSurcharge \u2014 payment slot 1: member surcharge"
+        },
+        {
+          "name": "kennelPaymentNonMemberSurcharge",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentNonMemberSurcharge \u2014 payment slot 1: non-member surcharge"
+        },
+        {
+          "name": "kennelPaymentScheme2",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentScheme2 \u2014 payment slot 2: scheme identifier"
+        },
+        {
+          "name": "kennelPaymentUrl2",
+          "type": "NVARCHAR(2000)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrl2 \u2014 payment slot 2: payment URL"
+        },
+        {
+          "name": "kennelPaymentUrlExpires2",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrlExpires2 \u2014 payment slot 2: URL expiry timestamp"
+        },
+        {
+          "name": "kennelPaymentMemberSurcharge2",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentMemberSurcharge2 \u2014 payment slot 2: member surcharge"
+        },
+        {
+          "name": "kennelPaymentNonMemberSurcharge2",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentNonMemberSurcharge2 \u2014 payment slot 2: non-member surcharge"
+        },
+        {
+          "name": "kennelPaymentScheme3",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentScheme3 \u2014 payment slot 3: scheme identifier"
+        },
+        {
+          "name": "kennelPaymentUrl3",
+          "type": "NVARCHAR(2000)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrl3 \u2014 payment slot 3: payment URL"
+        },
+        {
+          "name": "kennelPaymentUrlExpires3",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrlExpires3 \u2014 payment slot 3: URL expiry timestamp"
+        },
+        {
+          "name": "kennelPaymentMemberSurcharge3",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentMemberSurcharge3 \u2014 payment slot 3: member surcharge"
+        },
+        {
+          "name": "kennelPaymentNonMemberSurcharge3",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentNonMemberSurcharge3 \u2014 payment slot 3: non-member surcharge"
+        },
+        {
+          "name": "allowSelfPayment",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.AllowSelfPayment \u2014 flag to allow hashers to record their own payments"
+        },
+        {
+          "name": "allowNegativeCredit",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.AllowNegativeCredit \u2014 flag to allow negative credit balances"
+        },
+        {
+          "name": "allowCredit",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.AllowCredit \u2014 master flag: whether credit payments are allowed for this kennel (1=on, default 1)"
+        },
+        {
+          "name": "cityId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.CityId \u2014 foreign key to HC.City"
+        },
+        {
+          "name": "provinceStateId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.ProvinceStateId \u2014 foreign key to HC.Region"
+        },
+        {
+          "name": "countryId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.CountryId \u2014 foreign key to HC.Country"
+        },
+        {
+          "name": "defaultRunTags1",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.DefaultRunTags1 \u2014 default bit-flag primary tags for new runs"
+        },
+        {
+          "name": "defaultRunTags2",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.DefaultRunTags2 \u2014 default bit-flag secondary tags for new runs"
+        },
+        {
+          "name": "defaultRunTags3",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.DefaultRunTags3 \u2014 default bit-flag tertiary tags for new runs"
+        },
+        {
+          "name": "membershipDurationInMonths",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.MembershipDurationInMonths \u2014 length of membership validity in months"
+        },
+        {
+          "name": "membershipRenewalMode",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1=rolling, 2=fixed year, 3=lifetime."
+        },
+        {
+          "name": "membershipPeriodStartDate",
+          "type": "DATE",
+          "nullable": true,
+          "description": "Fixed-year membership year start."
+        },
+        {
+          "name": "membershipPeriodEndDate",
+          "type": "DATE",
+          "nullable": true,
+          "description": "Fixed-year membership year end."
+        },
+        {
+          "name": "membershipPrice",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Default membership fee."
+        },
+        {
+          "name": "runCountStartDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Kennel.RunCountStartDate \u2014 date from which run counting begins"
+        },
+        {
+          "name": "distancePreference",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.DistancePreference \u2014 preferred distance unit (km/miles enum)"
+        },
+        {
+          "name": "defaultDistancePreference",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Country.DistancePreference \u2014 country's default distance unit preference"
+        },
+        {
+          "name": "extApiKey",
+          "type": "NVARCHAR(120)",
+          "nullable": true,
+          "description": "Kennel.ExtApiKey \u2014 external API key for integrations"
+        },
+        {
+          "name": "kennelSearchTags",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Kennel.KennelSearchTags \u2014 search keywords for kennel discovery"
+        },
+        {
+          "name": "notificationMinutesBeforeRunForChatPushNotifications",
+          "type": "INT",
+          "nullable": true,
+          "description": "Kennel.NotificationMinutesBeforeRunForChatPushNotifications \u2014 minutes before run to send chat push notifications"
+        },
+        {
+          "name": "notificationMinutesBeforeRunForCheckinReminder",
+          "type": "INT",
+          "nullable": true,
+          "description": "Kennel.NotificationMinutesBeforeRunForCheckinReminder \u2014 minutes before run to send check-in reminders"
+        }
       ]
     }
   ],
