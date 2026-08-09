@@ -650,17 +650,29 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                   : hc_red,
               child: Row(
                 children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.only(left: 10.0),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10.0),
                     child: Icon(
                       Ionicons.ios_eye_off,
-                      color: Colors.white,
+                      // Dark on the light-grey "no permission" background,
+                      // white on the coloured active background.
+                      color: ((event.appAccessFlags & authCanManageRuns) == 0)
+                          ? Colors.black54
+                          : Colors.white,
                       size: 35.0,
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0),
-                    child: Text('Hide event', style: ts_titleMedium),
+                    child: Text(
+                      'Hide event',
+                      style: ts_titleMedium.copyWith(
+                        color:
+                            ((event.appAccessFlags & authCanManageRuns) == 0)
+                            ? Colors.black54
+                            : Colors.white,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -672,17 +684,27 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.only(right: 15.0),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 15.0),
                     child: Icon(
                       Ionicons.ios_eye,
-                      color: Colors.white,
+                      color: ((event.appAccessFlags & authCanManageRuns) == 0)
+                          ? Colors.black54
+                          : Colors.white,
                       size: 35.0,
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(right: 15.0),
-                    child: Text('Show event', style: ts_titleMedium),
+                    child: Text(
+                      'Show event',
+                      style: ts_titleMedium.copyWith(
+                        color:
+                            ((event.appAccessFlags & authCanManageRuns) == 0)
+                            ? Colors.black54
+                            : Colors.white,
+                      ),
+                    ),
                   ),
                 ],
               ),

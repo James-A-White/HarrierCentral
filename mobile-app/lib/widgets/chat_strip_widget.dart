@@ -111,9 +111,13 @@ class ChatStripWidget extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(12, 6, 4, 2),
                 child: Row(
                   children: [
-                    const Icon(Icons.chat_bubble_outline, size: 16),
+                    const Icon(
+                      Icons.chat_bubble_outline,
+                      size: 16,
+                      color: Colors.black87,
+                    ),
                     const SizedBox(width: 6),
-                    Text('Chat', style: ts_button),
+                    Text('Chat', style: ts_button.copyWith(color: Colors.black87)),
                     if (!controller.isLoading.value && count > 0) ...[
                       const SizedBox(width: 6),
                       Container(
@@ -213,12 +217,15 @@ class _MessageRow extends StatelessWidget {
         children: [
           Text(
             '${message.authorName}: ',
-            style: ts_bodySmall.copyWith(fontWeight: FontWeight.bold),
+            style: ts_bodySmall.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           Expanded(
             child: Text(
               message.text,
-              style: ts_bodySmall,
+              style: ts_bodySmall.copyWith(color: Colors.black87),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
