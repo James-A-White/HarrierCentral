@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1284 (2026-08-09)
+
+Re-versioned re-release of 1283 — same code. A 3.0.1 build was already on
+TestFlight, so Apple won't distribute a 3.0.0-named build (lower marketing
+version) no matter the build number. Version name is now held at 3.0.1
+through the beta; build number increments only, until production.
+
 ## 3.0.0+1283 (2026-08-09)
 
 ### Improvements
