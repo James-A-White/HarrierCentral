@@ -14,6 +14,18 @@ class PaymentReportListItem extends StatelessWidget {
   final int digitsAfterDecimal;
   final Function onTap;
 
+  /// Icon marking the product this line represents. Run payments (and the
+  /// "not paid" rows, where payment is null) show the run icon.
+  IconData _productIcon(int? productType) {
+    if (productType == productTypeMembership.value) {
+      return Icons.card_membership;
+    }
+    if (productType == productTypeHaberdashery.value) {
+      return Icons.checkroom;
+    }
+    return Icons.directions_run;
+  }
+
   @override
   Widget build(BuildContext context) {
     final String amountPaid = IveCoreUtilities.getFormattedMoney(
@@ -46,6 +58,16 @@ class PaymentReportListItem extends StatelessWidget {
             child: Row(
               children: <Widget>[
                 const SizedBox(width: 10.0),
+                // Product-type marker before the name: run fee / annual
+                // subscription / haberdashery.
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Icon(
+                    _productIcon(paymentReportItem.payment?.productType),
+                    size: 22.0,
+                    color: Colors.black54,
+                  ),
+                ),
                 Expanded(
                   child: AutoSizeText(
                     paymentReportItem.extensions.paidByName,

@@ -135,62 +135,77 @@ SELECT
       final PaymentQueryExtensionsModel extensions =
           PaymentQueryExtensionsModel.fromMap(results[i]);
 
-      final PaymentAggregate item = PaymentAggregate(
-        payment: paymentItem,
-        extensions: extensions,
+      _paymentsList.add(
+        PaymentAggregate(payment: paymentItem, extensions: extensions),
       );
-
-      _paymentsList.add(item);
-      if (i == results.length - 1) {
-        _paymentsList.sort(
-          (PaymentAggregate a, PaymentAggregate b) =>
-              a.extensions.paidByName.compareTo(b.extensions.paidByName),
-        );
-        _applyFilter();
-        setStateIfMounted(() {});
-      }
     }
+
+    // Fold membership + haberdashery payments into the same list as their
+    // own rows, then sort everything together by name.
+    await _appendNonRunPayments();
+
+    _paymentsList.sort(
+      (PaymentAggregate a, PaymentAggregate b) =>
+          a.extensions.paidByName.compareTo(b.extensions.paidByName),
+    );
+    _applyFilter();
+    setStateIfMounted(() {});
   }
 
   List<Map<String, dynamic>> _paymentTotals = <Map<String, dynamic>>[];
 
-  /// Membership / haberdashery payments taken at this run (productType != 1).
-  /// Shown in their own section so non-run money is visible without polluting
-  /// the run-payment rows or totals.
-  List<Map<String, dynamic>> _nonRunPayments = <Map<String, dynamic>>[];
+  /// Count of non-run (membership + haberdashery) payment rows in the list,
+  /// so the bottom "Total transactions" line matches what's on screen.
+  int _nonRunTxnCount = 0;
   double _totalCollected = 0;
   double _extrasPaid = 0;
   int _transactionCount = 0;
 
-  Future<void> _refreshNonRunPayments() async {
+  /// Appends membership (productType 2) and haberdashery (3) payments to
+  /// [_paymentsList] as their own rows — one line per non-run payment, so a
+  /// hasher who ran, renewed and bought haberdashery on the same day shows
+  /// three lines. Each is a real PaymentAggregate (same shape as a run
+  /// payment) so it renders and opens the detail popup the same way.
+  Future<void> _appendNonRunPayments() async {
+    final String offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
     try {
       final String sql =
           '''
-      SELECT
-        pay.${tableModel.paymentsTableHelper.colProductType} AS productType,
-        pay.${tableModel.paymentsTableHelper.colPaymentType} AS paymentType,
-        pay.creditAmount AS amount,
-        pay.notes AS notes,
+      SELECT pay.*,
+        hem.hemId AS pkHemId,
         COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName},
-                 h.dispName, hem.displayName, '<no name>') AS paidByName
+                 h.dispName, hem.displayName, '<no name>') AS paidByName,
+        COALESCE(paidTo.dispName, '') AS paidToName,
+        CASE
+          WHEN ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now', '$offsetFromGmtToLocal'))) THEN 1
+          ELSE 0
+        END AS isMember
       FROM ${EnumDataTables.payments.eventTableName} pay
       INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem ON hem.hemId = pay.hemId
       LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} h ON h.hasherId = hem.userId
       LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm
         ON hkm.userId = hem.userId AND hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
+      LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} paidTo ON paidTo.hasherId = pay.paidTo
       WHERE pay.cancelledBy IS NULL AND COALESCE(pay.productType, 1) != 1
-      ORDER BY pay.${tableModel.paymentsTableHelper.colPaidDate}
       ''';
-      _nonRunPayments = await database.rawQuery(sql);
+      final List<Map<String, dynamic>> rows = await database.rawQuery(sql);
+      _nonRunTxnCount = rows.length;
+      for (final Map<String, dynamic> row in rows) {
+        _paymentsList.add(
+          PaymentAggregate(
+            payment: tableModel.paymentsTableHelper.fromMap(row),
+            extensions: PaymentQueryExtensionsModel.fromMap(row),
+          ),
+        );
+      }
     } catch (e, s) {
-      BootLogger.logError('[PaymentReport._refreshNonRunPayments]', e, s);
-      _nonRunPayments = <Map<String, dynamic>>[];
+      BootLogger.logError('[PaymentReport._appendNonRunPayments]', e, s);
+      _nonRunTxnCount = 0;
     }
   }
 
   Future<void> refreshTotals() async {
     _paymentTotals = <Map<String, dynamic>>[];
-    await _refreshNonRunPayments();
 
     try {
       final String sql =
@@ -258,6 +273,8 @@ SELECT
             }
           }
         }
+        // Membership + haberdashery rows are transactions on screen too.
+        _transactionCount += _nonRunTxnCount;
       });
     } catch (e, s) {
       BootLogger.logError(
@@ -332,71 +349,6 @@ SELECT
     _filteredList.sort(
       (PaymentAggregate a, PaymentAggregate b) =>
           a.extensions.paidByName.compareTo(b.extensions.paidByName),
-    );
-  }
-
-  /// A collapsible strip summarising membership + haberdashery money taken at
-  /// this run — separate from the run-payment rows and totals above.
-  Widget _buildNonRunPaymentsBanner() {
-    final String curSym = widget.eventAggregate.extensions.curSym;
-    final int digits = widget.eventAggregate.extensions.digAfterDec;
-
-    double memberTotal = 0;
-    double haberTotal = 0;
-    for (final Map<String, dynamic> p in _nonRunPayments) {
-      final double amt = (p['amount'] as num?)?.toDouble() ?? 0.0;
-      if ((p['productType'] as int?) == productTypeMembership.value) {
-        memberTotal += amt;
-      } else {
-        haberTotal += amt;
-      }
-    }
-
-    final List<String> parts = <String>[
-      if (memberTotal != 0)
-        'Memberships ${IveCoreUtilities.getFormattedMoney(memberTotal, digits, curSym)}',
-      if (haberTotal != 0)
-        'Haberdashery ${IveCoreUtilities.getFormattedMoney(haberTotal, digits, curSym)}',
-    ];
-
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-        leading: Icon(Icons.shopping_bag_outlined, color: hc_blue),
-        title: Text('Other sales', style: ts_titleSmallCondensedBold),
-        subtitle: Text(
-          parts.isEmpty ? '—' : parts.join('  ·  '),
-          style: ts_body.copyWith(fontSize: 13),
-        ),
-        children: _nonRunPayments.map((Map<String, dynamic> p) {
-          final bool isMembership =
-              (p['productType'] as int?) == productTypeMembership.value;
-          final double amt = (p['amount'] as num?)?.toDouble() ?? 0.0;
-          final String? note = (p['notes'] as String?)?.trim();
-          return ListTile(
-            dense: true,
-            leading: Icon(
-              isMembership ? Icons.card_membership : Icons.checkroom,
-              size: 20,
-              color: Colors.black54,
-            ),
-            title: Text(
-              '${p['paidByName'] ?? '<no name>'} — '
-              '${IveCoreUtilities.getFormattedMoney(amt, digits, curSym)}',
-              style: ts_body.copyWith(fontSize: 14),
-            ),
-            subtitle: Text(
-              isMembership
-                  ? 'Membership'
-                  : (note == null || note.isEmpty)
-                  ? 'Haberdashery'
-                  : 'Haberdashery — $note',
-              style: ts_body.copyWith(fontSize: 12, color: Colors.black54),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 
@@ -670,7 +622,6 @@ SELECT
                     ],
                   ),
                 ),
-                if (_nonRunPayments.isNotEmpty) _buildNonRunPaymentsBanner(),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10.0),
@@ -1070,6 +1021,13 @@ SELECT
 
     _applyFilter();
     setStateIfMounted(() {});
+  }
+
+  /// Human label for a payment's product type, shown in the detail popup.
+  String _productLabel(int productType) {
+    if (productType == productTypeMembership.value) return 'Annual subscription';
+    if (productType == productTypeHaberdashery.value) return 'Haberdashery';
+    return 'Run fee';
   }
 
   Container _listItem(PaymentAggregate item, BuildContext topContext) {
@@ -1588,6 +1546,54 @@ SELECT
                       ),
                     ],
                   ),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: flexLeft,
+                        child: Text(
+                          'Product:',
+                          style: ts_regularMediumBlack,
+                          textAlign: TextAlign.right,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: spacer, height: 10.0),
+                      Expanded(
+                        flex: flexRight,
+                        child: Text(
+                          _productLabel(item.payment!.productType),
+                          style: ts_titleMediumBlack,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Haberdashery item description (Payment.Notes).
+                  if (item.payment!.productType ==
+                          productTypeHaberdashery.value &&
+                      (item.payment!.notes ?? '').trim().isNotEmpty)
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          flex: flexLeft,
+                          child: Text(
+                            'Item:',
+                            style: ts_regularMediumBlack,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: spacer, height: 10.0),
+                        Expanded(
+                          flex: flexRight,
+                          child: Text(
+                            item.payment!.notes!.trim(),
+                            style: ts_titleMediumBlack,
+                          ),
+                        ),
+                      ],
+                    ),
                   item.payment!.surcharge == 0
                       ? Container()
                       : Row(
@@ -1765,13 +1771,17 @@ SELECT
             //   ),
             // ),
             actions: <Widget>[
-              TextButton(
-                style: text_button_style,
-                child: Text('Cancel transaction', style: ts_button),
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('cancel');
-                },
-              ),
+              // Cancel is only wired for run payments — cancelling a
+              // membership/haberdashery sale is not yet supported, so hide it
+              // on those rows rather than mis-cancel a run payment.
+              if (item.payment!.productType == productTypeEvent.value)
+                TextButton(
+                  style: text_button_style,
+                  child: Text('Cancel transaction', style: ts_button),
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).pop('cancel');
+                  },
+                ),
               TextButton(
                 style: text_button_style,
                 child: Text('Close', style: ts_button),
