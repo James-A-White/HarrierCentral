@@ -2,6 +2,14 @@
 
 ---
 
+## 2.0.61+696 (2026-08-09)
+
+- **Membership year is month + day** (kennel → Hash Cash tab): the fixed-year
+  membership start/end are now Month + Day selectors, since the membership
+  year repeats every year.
+
+---
+
 ## 2.0.60+695 (2026-08-08)
 
 - **Calendar date pickers** for the fixed-year membership start/end dates

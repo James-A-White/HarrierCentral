@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.0+1283 (2026-08-09)
+
+### Improvements
+- **Fixed-year memberships recur every year.** A kennel's membership year is
+  now a month/day that repeats — a payment runs to the next time that date
+  comes around, and charging is never blocked "because the year passed".
+- **Payment report shows every transaction as its own line.** Memberships and
+  haberdashery sales appear alongside run payments, each with an icon (run
+  fee, annual subscription, haberdashery) before the name; the detail popup
+  shows the product and, for haberdashery, what was sold.
+
+### Fixes
+- **Fixed invisible text** in the live-run chat preview strip (white-on-white).
+
 ## 3.0.0+1282 (2026-08-08)
 
 Version name held at 3.0.0 through the beta; build number increments only.
