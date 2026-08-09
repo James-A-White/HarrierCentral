@@ -124,10 +124,11 @@ class CheckInPackController extends GetxController
           h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
           hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
           CASE 
-              WHEN (julianday(COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},'1/1/2020')) >= julianday('now', '$offsetFromGmtToLocal')) 
-              THEN 1 
-              ELSE 0 
+              WHEN (julianday(COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},'1/1/2020')) >= julianday('now', '$offsetFromGmtToLocal'))
+              THEN 1
+              ELSE 0
           END AS isMember,
+          hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} AS membershipExpirationDate,
           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},0) AS isFollowing,
           COALESCE(hem.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
           CASE 
@@ -280,10 +281,11 @@ class CheckInPackController extends GetxController
           h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
           hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
           CASE 
-              WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', '$offsetFromGmtToLocal')) 
-              THEN 1 
-              ELSE 0 
+              WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', '$offsetFromGmtToLocal'))
+              THEN 1
+              ELSE 0
           END AS isMember,
+          hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} AS membershipExpirationDate,
           hkm.${tableModel.hasherKennelMapTableHelper.colFollowing} AS isFollowing,
           COALESCE(hem.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
           CASE 
@@ -347,6 +349,7 @@ class CheckInPackController extends GetxController
           NULL AS hasherId,
           COALESCE(hem2.hemId, "00000000-0000-0000-0000-000000000000") AS hemId,
           0 AS isMember,
+          NULL AS membershipExpirationDate,
           0 AS isFollowing,
           hem2.isHare AS isHare,
           CASE 
@@ -400,6 +403,7 @@ class CheckInPackController extends GetxController
           hem3.userId AS hasherId,
           hem3.hemId AS hemId,
           0 AS isMember,
+          hkm4.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} AS membershipExpirationDate,
           hkm4.${tableModel.hasherKennelMapTableHelper.colFollowing} AS isFollowing,
           hem3.isHare AS isHare,
           CASE 
@@ -971,6 +975,23 @@ class CheckInPackController extends GetxController
     await refreshPackListFromTables(false);
 
     await _refreshCounters(forceRefresh: true);
+  }
+
+  /// Which member badge [hasher] gets: the green star, or an expiry warning
+  /// once their membership is inside the last 10% (then 5%) of the kennel's
+  /// membership period. SQL already decided membership itself, so a live
+  /// member never falls back to [MembershipStatus.none] on a boundary
+  /// disagreement between the two clocks.
+  MembershipStatus membershipStatusOf(CheckInPackModel hasher) {
+    if (hasher.isMember != 1) return MembershipStatus.none;
+
+    final MembershipStatus status = membershipStatusForText(
+      expiryText: hasher.membershipExpirationDate,
+      durationInMonths: eventAggregate.kennel.membershipDurationInMonths,
+      renewalMode: eventAggregate.kennel.membershipRenewalMode,
+    );
+
+    return status == MembershipStatus.none ? MembershipStatus.current : status;
   }
 
   TextStyle getRunLabelStyle(CheckInPackModel hasher) {

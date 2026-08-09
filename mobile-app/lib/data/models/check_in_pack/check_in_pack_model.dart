@@ -9,6 +9,7 @@ abstract class CheckInPackModel with _$CheckInPackModel implements BaseModel {
     String? hasherId,
     String? hemId,
     @Default(0) int isMember,
+    String? membershipExpirationDate,
     @Default(0) int isHare,
     int? isPaid,
     @Default('') String nameForDisplay,

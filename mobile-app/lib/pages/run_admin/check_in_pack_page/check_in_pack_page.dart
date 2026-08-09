@@ -871,10 +871,8 @@ class CheckInPackPage extends StatelessWidget {
                       if (hasher.isMember == 1)
                         Padding(
                           padding: const EdgeInsets.only(right: 2.0),
-                          child: Icon(
-                            MaterialCommunityIcons.star_circle,
-                            color: Colors.green.shade800,
-                            size: 23,
+                          child: membershipStatusIcon(
+                            controller.membershipStatusOf(hasher),
                           ),
                         ),
                       Text(
