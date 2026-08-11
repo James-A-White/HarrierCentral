@@ -192,23 +192,29 @@ Requires the SP deploy first (next Dance). Plan: docs/membership_payments_plan.m
 - [ ] **Unpaid grant path unchanged**: swipe / add-months actions still work
   and record NO payment.
 
-## Device test — membership expiry badge (2026-08-09, not yet released)
+## Device test — membership expiry badge (2026-08-11, not yet released)
 
-Check-in list star now steps down as a membership nears its end: green star →
-amber triangle inside the last 10% of the kennel's membership period → red
-alert triangle inside the last 5% (36 / 18 days on an annual kennel).
+Check-in list star steps down around a membership's end: green star → amber
+triangle inside the last 10% of the kennel's membership period (~36 days on
+an annual kennel) → red alert triangle AFTER expiry, kept up for 20% of the
+period (~73 days annual) as a "chase the renewal" flag, then no badge.
 Screen: run admin → check in.
 
 - [ ] **A comfortable member still shows the green star** and the name is still
   green + bold.
 - [ ] **Set a test member's `MembershipExpirationDate` to ~30 days out** on a
   12-month kennel → amber triangle, no exclamation.
-- [ ] **~10 days out** → red triangle with exclamation.
-- [ ] **Expired** → no badge at all, name black (unchanged behaviour).
+- [ ] **~10 days out** → still amber (there is no pre-expiry red any more).
+- [ ] **Expired yesterday** → red alert triangle, name black (they are no
+  longer a member — only the badge lingers).
+- [ ] **Expired ~2 months ago** (inside 20% of an annual period) → still red.
+- [ ] **Expired >73 days ago** on an annual kennel → no badge at all.
 - [ ] **Lifetime member** (renewal mode 3, expiry 2999) → green star, never a
   warning.
 - [ ] **Virgins / visitors** show no badge — they go through the other UNION
-  branches, which now carry a NULL expiry column.
+  branches, which carry a NULL expiry column.
+- [ ] **Non-following past member on the attendee list** (third UNION branch)
+  who lapsed recently → red badge shows there too (it reads hkm4's expiry).
 
 ## Device test — pending next build: steering slide + carousel guard (2026-08-05)
 

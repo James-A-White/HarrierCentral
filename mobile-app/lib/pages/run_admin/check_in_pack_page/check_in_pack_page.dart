@@ -868,7 +868,8 @@ class CheckInPackPage extends StatelessWidget {
                   top: 3,
                   child: Row(
                     children: [
-                      if (hasher.isMember == 1)
+                      if (controller.membershipStatusOf(hasher) !=
+                          MembershipStatus.none)
                         Padding(
                           padding: const EdgeInsets.only(right: 2.0),
                           child: membershipStatusIcon(

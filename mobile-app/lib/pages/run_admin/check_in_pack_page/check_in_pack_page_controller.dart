@@ -977,21 +977,31 @@ class CheckInPackController extends GetxController
     await _refreshCounters(forceRefresh: true);
   }
 
-  /// Which member badge [hasher] gets: the green star, or an expiry warning
-  /// once their membership is inside the last 10% (then 5%) of the kennel's
-  /// membership period. SQL already decided membership itself, so a live
-  /// member never falls back to [MembershipStatus.none] on a boundary
-  /// disagreement between the two clocks.
+  /// Which member badge [hasher] gets: the green star, an amber warning
+  /// through the last 10% of the kennel's membership period, or the red
+  /// lapsed flag for 20% of the period after expiry (past members only —
+  /// anyone with no expiry date on record gets nothing).
+  ///
+  /// SQL already decided membership itself, so on a boundary disagreement
+  /// between the two clocks a live member shows amber (their last day),
+  /// never red or nothing.
   MembershipStatus membershipStatusOf(CheckInPackModel hasher) {
-    if (hasher.isMember != 1) return MembershipStatus.none;
-
     final MembershipStatus status = membershipStatusForText(
       expiryText: hasher.membershipExpirationDate,
       durationInMonths: eventAggregate.kennel.membershipDurationInMonths,
       renewalMode: eventAggregate.kennel.membershipRenewalMode,
     );
 
-    return status == MembershipStatus.none ? MembershipStatus.current : status;
+    if (hasher.isMember == 1) {
+      return (status == MembershipStatus.none ||
+              status == MembershipStatus.lapsedRecently)
+          ? MembershipStatus.expiringSoon
+          : status;
+    }
+
+    return status == MembershipStatus.lapsedRecently
+        ? status
+        : MembershipStatus.none;
   }
 
   TextStyle getRunLabelStyle(CheckInPackModel hasher) {

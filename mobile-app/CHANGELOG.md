@@ -3,11 +3,13 @@
 ## 3.0.1+1285 (2026-08-11)
 
 ### Improvements
-- **Check-in list warns when a membership is nearly up.** The green member
-  star steps down: an amber triangle inside the last 10% of the kennel's
-  membership period, a red alert triangle inside the last 5% (36/18 days on
-  an annual plan). Lifetime memberships never warn; expired members are
-  unchanged.
+- **Check-in list warns when a membership is nearly up — or just lapsed.**
+  The green member star becomes an amber triangle through the last 10% of
+  the kennel's membership period (~36 days on an annual plan). Once the
+  membership expires it switches to a red alert triangle for 20% of the
+  period (~73 days annual) — a "chase the renewal" flag for past members.
+  After that the badge disappears. Lifetime memberships never warn; people
+  who never had a membership never get a badge.
 
 ## 3.0.1+1284 (2026-08-09)
 
