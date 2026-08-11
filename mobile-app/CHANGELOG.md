@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1285 (2026-08-11)
+
+### Improvements
+- **Check-in list warns when a membership is nearly up.** The green member
+  star steps down: an amber triangle inside the last 10% of the kennel's
+  membership period, a red alert triangle inside the last 5% (36/18 days on
+  an annual plan). Lifetime memberships never warn; expired members are
+  unchanged.
+
 ## 3.0.1+1284 (2026-08-09)
 
 Re-versioned re-release of 1283 — same code. A 3.0.1 build was already on
