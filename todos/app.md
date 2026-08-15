@@ -52,6 +52,15 @@ roughly by recommended sequence.
 
 ### Investigations still open
 
+- [ ] **ServiceCommon sync path still hits "Bad file descriptor" after iOS
+  resume** (Opee's device log, 2026-08-15: syncUserData transport failures at
+  app-foreground moments, then 599s; all self-healed). The PackTrack clients
+  were converted to one-shot http.post for exactly this — check whether
+  sendHttpPost (or something under it) still reuses a pooled client. Also
+  suspicious: "Retry 1 failed: 500" logged 0.4 ms after the transport
+  failure — a real retry can't round-trip that fast, so the retry may be
+  dying instantly on the same dead socket instead of opening a fresh one.
+
 - [ ] **PackTrack mark-multiplication root cause**: the ×7 moving-track
   bursts from the 2026-06-20 LH3 run were never reproduced (stationary and
   simulator are clean; the batch-retry duplication class was fixed by the
