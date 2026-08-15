@@ -118,7 +118,42 @@ class SyncUserDataService {
           );
   }
 
+  /// Serialises common-domain syncs. The boot full sync and the runs
+  /// controller's triggerBackgroundSync (tab switch) could overlap and race
+  /// bulkUpdateDatabase's check-then-insert, double-inserting new rows into
+  /// the common tables — which are never wiped short of a full re-sync, so
+  /// duplicates there are the stickiest of all (see AsyncSerializer). A
+  /// queued sync runs after the in-flight one commits, re-reads the advanced
+  /// watermarks, and becomes a cheap delta.
+  final AsyncSerializer _syncSerializer = AsyncSerializer();
+
   Future<bool> updateFromBackend(
+    int tablesToSync,
+    bool forceRefresh, {
+    String? clientAppIdentifer,
+    String? singleRecordId,
+    void Function(String)? informUser,
+    String? forceReplicateAllRunsForKennel,
+    String batchText = '',
+    required String debugText,
+    Client? client,
+    bool usePaging = false,
+  }) => _syncSerializer.run(
+    () => _updateFromBackend(
+      tablesToSync,
+      forceRefresh,
+      clientAppIdentifer: clientAppIdentifer,
+      singleRecordId: singleRecordId,
+      informUser: informUser,
+      forceReplicateAllRunsForKennel: forceReplicateAllRunsForKennel,
+      batchText: batchText,
+      debugText: debugText,
+      client: client,
+      usePaging: usePaging,
+    ),
+  );
+
+  Future<bool> _updateFromBackend(
     int tablesToSync,
     bool forceRefresh, {
     String? clientAppIdentifer,

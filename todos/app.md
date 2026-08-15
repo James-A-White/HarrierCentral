@@ -250,10 +250,12 @@ NULL expiry on the pack row = never a member.
 
 ## Device test — sync serializer / duplicate members fix (2026-08-16, not yet released)
 
-Kennel + event admin syncs are serialised (`AsyncSerializer`) so overlapping
-syncs can no longer double-insert rows (the duplicated kennel-members list).
-NOT self-healing — a device that already has duplicates keeps them until it
-enters a DIFFERENT kennel's admin (domain wipe). Few users affected per James.
+All three sync services — user, kennel and event admin — are serialised
+(`AsyncSerializer`) so overlapping syncs can no longer double-insert rows
+(the duplicated kennel-members list). NOT self-healing — a device that
+already has duplicates keeps them until that domain is wiped (different
+kennel/event admin; common domain only via full re-sync). Few users affected
+per James.
 
 - [ ] **Race check**: enter kennel admin and immediately pull-to-refresh the
   members list several times while the entry sync is still running → no
@@ -264,6 +266,11 @@ enters a DIFFERENT kennel's admin (domain wipe). Few users affected per James.
 - [ ] **Serialised, not dropped**: switch from kennel A admin to kennel B
   admin quickly — B's members list is B's (wipe still happens, second sync
   ran after the first, nothing skipped).
+- [ ] **Boot + tab switch** (user domain now guarded too): cold-boot as a
+  returning user and immediately bounce between tabs while the background
+  full sync runs — runs/kennels lists stay correct, no duplicate runs or
+  kennels, boot completes normally ("Filling Your Mug" unaffected on a
+  fresh install).
 
 ## Device test — membership expiry badge (2026-08-11, not yet released)
 
@@ -344,12 +351,10 @@ Released with `flutter analyze` only. Screens: live run → map → Radar.
   list refreshes when the sync lands; History / Kennels / Songs / Map still show
   last-session data until next visited. Follow-up: have them refresh via
   `DataChangeService` on background-sync completion (the "whole app" option).
-- [ ] **Background boot sync — concurrency** (deferred 2026-06-20). If the user
-  switches tabs during the boot background sync, the runs controller's
-  `triggerBackgroundSync` can run a second sync concurrently with the boot full
-  sync. UPDATE 2026-08-16: this CAN corrupt — two overlapping syncs both pass
-  bulkUpdateDatabase's check-then-insert for the same new rows and double-insert
-  them (no unique index stops it); this is exactly what duplicated the kennel
-  members list. Kennel and event admin syncs are now serialised via
-  `AsyncSerializer`; the USER-domain sync is still unguarded — wrap
-  `SyncUserDataService.updateFromBackend` in the same serializer when touched.
+- [x] **Background boot sync — concurrency** (deferred 2026-06-20, RESOLVED
+  2026-08-16). The overlap could corrupt: two concurrent syncs both pass
+  bulkUpdateDatabase's check-then-insert for the same new rows and
+  double-insert them (no unique index stops it) — this is what duplicated the
+  kennel members list. All three sync services (user/kennel/event) are now
+  serialised via `AsyncSerializer`: a sync arriving mid-flight queues, runs
+  after the first commits, and degrades to a cheap delta.
