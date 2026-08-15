@@ -456,16 +456,34 @@ class ServiceCommon {
         if (isNetworkFailure) {
           await networkService.handleApiFailure();
           if (networkService.backendReachable.value) {
+            // Honest wording: a locally-synthesized 599 (30 s stall) or a
+            // 500 stamped on a transport failure is NOT a server error — the
+            // server usually never saw the request. This fires routinely
+            // right after an iOS resume, when the first request can die on a
+            // socket the OS tore down mid-wake ("Bad file descriptor"); the
+            // old "Unknown Server Error" + "-" wording sent us hunting for
+            // server faults that never happened.
             _showSnackbarSafely(
-              title: 'Unknown Server Error',
-              message: response.reasonPhrase ?? ' - ${response.body}',
+              title: response.statusCode == kLocalTimeoutStatus
+                  ? 'Request Timed Out'
+                  : 'Connection Hiccup',
+              message: response.statusCode == kLocalTimeoutStatus
+                  ? 'The server took too long to respond. The app will '
+                        'catch up on its next refresh.'
+                  : 'A request failed to send — this can happen right '
+                        'after the app wakes up. It will retry on the next '
+                        'refresh.',
               backgroundColor: hc_blue,
             );
           }
         } else {
           _showSnackbarSafely(
-            title: 'Unknown Server Error',
-            message: response.reasonPhrase ?? ' - ${response.body}',
+            title: 'Server Error',
+            message: response.reasonPhrase == null ||
+                    response.reasonPhrase!.isEmpty
+                ? 'The server rejected a request '
+                      '(HTTP ${response.statusCode}).'
+                : '${response.reasonPhrase} (HTTP ${response.statusCode})',
             backgroundColor: hc_blue,
           );
         }
