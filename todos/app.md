@@ -269,6 +269,12 @@ NOTE for next portal release: `flutter build web` before the master merge.
   dropdown offers only None/Add Text; save → reload → still gone.
 - [ ] **Old run replay**: a historical track with an On Inn mark still shows
   the On Inn icon and truncates there (rendering unchanged).
+- [ ] **Slot infrastructure sweep (2nd pass, same day)**: TrailSlotAction is
+  addText-only; legacy icon mappings (oninn.png / I-500..504) unmapped both
+  ends; portal slot 4 is now a variable-purpose slot — open a kennel whose
+  config predates the removal, confirm slot 4's purpose dropdown shows
+  "-- none --" (stored 'On Inn' purpose coerced, not crashing) and an edit
+  + save does not write 'On Inn'/'endRun' back into the JSON.
 
 ## Device test — On Inn confirmation (2026-08-15, not yet released)
 

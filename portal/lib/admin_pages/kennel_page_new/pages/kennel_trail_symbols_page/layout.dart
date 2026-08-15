@@ -165,6 +165,15 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
     _invert = widget.slot.invert;
     _selectedAction = widget.slot.action;
     _selectedPurpose = widget.slot.purpose;
+    // Retired values (the On Inn removal, 2026-08-15): scrub rather than
+    // carry — _current would otherwise write them straight back on the next
+    // edit, and a variable-slot purpose dropdown can't display them anyway.
+    if (_selectedAction == 'endRun') _selectedAction = null;
+    if (!kFixedSlotPurposes.containsKey(widget.slot.slot) &&
+        _selectedPurpose != null &&
+        !kVariableSlotPurposes.contains(_selectedPurpose)) {
+      _selectedPurpose = null;
+    }
   }
 
   @override
@@ -395,7 +404,12 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
       );
     }
     return DropdownButtonFormField<String?>(
-      initialValue: _selectedPurpose,
+      // Coerce stored purposes that are no longer offered (e.g. 'On Inn' on
+      // slot 4, which was a fixed purpose before the On Inn removal) to none
+      // — an initialValue absent from the items list would assert.
+      initialValue: kVariableSlotPurposes.contains(_selectedPurpose)
+          ? _selectedPurpose
+          : null,
       isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Purpose',

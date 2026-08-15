@@ -1093,8 +1093,8 @@ class LiveRunGeneralPage extends StatelessWidget {
   }
 
   /// Handles a trail-mark tap: prompts for a label if the slot needs one,
-  /// flashes the confirmation, records the mark, and ends the run if the slot
-  /// is the terminator (On Inn).
+  /// flashes the confirmation, and records the mark. (On Inn is no longer a
+  /// slot — ending the run is the End Run button's job.)
   Future<void> _handleSlotTap(BuildContext context, TrailSlot slot) async {
     String? label;
 
@@ -1117,55 +1117,10 @@ class LiveRunGeneralPage extends StatelessWidget {
       label = trimmed;
     }
 
-    // On Inn is not just another mark: it truncates the drawn track for every
-    // viewer AND stops tracking. An accidental tap mid-run (LH3 #2846,
-    // 2026-08-15) cut 20+ minutes of live trail off everyone's map — so it
-    // always confirms before anything is recorded.
-    if (slot.parsedAction == TrailSlotAction.endRun) {
-      if (!context.mounted) return;
-      final confirmed = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => AlertDialog(
-          title: Text('Mark On Inn & end run?', style: ts_alertDialogTitle),
-          content: Text(
-            'This drops the On Inn mark — the end of the trail — on the pack '
-            'map and stops run tracking. The map stops drawing your track at '
-            'this mark. If you restart tracking later, the run continues '
-            'from where it left off.',
-            style: ts_alertDialogBody,
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey.shade600,
-                foregroundColor: Colors.white,
-              ),
-              child: Text('Keep Tracking', style: ts_button),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: hc_red,
-                foregroundColor: Colors.white,
-              ),
-              child: Text('On Inn & End Run', style: ts_button),
-            ),
-          ],
-        ),
-      );
-      if (confirmed != true) return;
-    }
-
     if (!context.mounted) return;
     unawaited(_showSlotFlash(context, slot, label));
 
     await controller.markSlot(slot, label: label);
-
-    if (slot.parsedAction == TrailSlotAction.endRun) {
-      controller.stopTracking();
-    }
   }
 
   /// "I'm Lost" / "Send Help" — pack-assist broadcasts. Replaced the old

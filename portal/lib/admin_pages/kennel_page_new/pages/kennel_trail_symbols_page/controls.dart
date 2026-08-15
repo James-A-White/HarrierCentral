@@ -81,11 +81,14 @@ class TrailSlotConfig {
     if (icon == null || icon.isEmpty) return empty;
     final f = icon.toLowerCase();
 
+    // On Inn entries (oninn.png / I-500..504) intentionally unmapped
+    // (2026-08-15): On Inn is no longer a placeable mark, so legacy configs
+    // carrying it convert to an empty slot and drop out.
     const named = {
       'check.png': 'g:check', 'caution.png': 'g:caution',
       'drinkstop.png': 'g:drinkstop', 'fishhook.png': 'g:fishhook',
       'hashview.png': 'g:hashview', 'label.png': 'g:label',
-      'oninn.png': 'g:oninn', 'regroup.png': 'g:regroup',
+      'regroup.png': 'g:regroup',
       'whichyway.png': 'g:whichyway',
       'checkback.png': 't:CB', 'falsetrail.png': 't:FT', 'shortcut.png': 't:SC',
     };
@@ -105,8 +108,6 @@ class TrailSlotConfig {
         450 => 'g:drinkstop',
         451 => 't:BS',
         452 => 't:DS',
-        500 => 'g:oninn',
-        >= 501 && <= 504 => 't:ON IN',
         550 => 'g:caution',
         _ => null,
       };
@@ -158,12 +159,14 @@ TrailGlyph? glyphById(String? id) {
 // Purpose metadata — fixed labels for slots 1–5, dropdown options for 6–12
 // ---------------------------------------------------------------------------
 
-/// Slots 1–5 have a fixed, non-editable purpose.
+/// Slots with a fixed, non-editable purpose. Slot 4 was 'On Inn' — removed
+/// 2026-08-15 with the rest of the On Inn slot infrastructure; it is now an
+/// ordinary variable-purpose slot (stored 'On Inn' purposes are coerced to
+/// none in the purpose dropdown).
 const Map<int, String> kFixedSlotPurposes = {
   1: 'Check',
   2: 'False Trail',
   3: 'Drink Stop',
-  4: 'On Inn',
   5: 'Caution',
 };
 

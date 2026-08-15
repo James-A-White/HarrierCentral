@@ -1,6 +1,10 @@
 import 'package:harrier_central/imports.dart';
 
-enum TrailSlotAction { addText, endRun }
+// 'endRun' (the On Inn terminator) was removed from the slot system
+// 2026-08-15 — ending a run is the End Run button's job. The raw string is
+// still recognised by the config cleanse filter so old kennel configs are
+// scrubbed, and by the map's track-type parser for historical marks.
+enum TrailSlotAction { addText }
 
 // ---------------------------------------------------------------------------
 // Canonical glyph library — mirrors docs/trail_markers/glyph_registry.json.
@@ -26,6 +30,9 @@ const kTrailGlyphs = <TrailGlyph>[
   TrailGlyph('hashview', 'hashview.mono.png', 'Hash View'),
   TrailGlyph('label', 'label.mono.png', 'Label'),
   TrailGlyph('drinkstop', 'drinkstop.mono.png', 'Drink Stop'),
+  // RENDER-ONLY: On Inn is no longer a placeable slot (2026-08-15), but the
+  // glyph stays so the map can draw historical GLY::oninn marks
+  // (run_tracker_map_controller resolves them via glyphById).
   TrailGlyph('oninn', 'oninn.mono.png', 'On Inn'),
   TrailGlyph('caution', 'caution.fixed.png', 'Caution', fixed: true),
 ];
@@ -65,7 +72,6 @@ class TrailSlot {
 
   TrailSlotAction? get parsedAction => switch (action) {
         'addText' => TrailSlotAction.addText,
-        'endRun' => TrailSlotAction.endRun,
         _ => null,
       };
 
@@ -124,11 +130,14 @@ class TrailSlot {
     if (icon == null || icon.isEmpty) return empty;
     final f = icon.toLowerCase();
 
+    // On Inn entries (oninn.png / I-500..504) intentionally unmapped
+    // (2026-08-15): On Inn is no longer a placeable mark, so legacy configs
+    // carrying it convert to an empty slot and drop out.
     const named = {
       'check.png': 'g:check', 'caution.png': 'g:caution',
       'drinkstop.png': 'g:drinkstop', 'fishhook.png': 'g:fishhook',
       'hashview.png': 'g:hashview', 'label.png': 'g:label',
-      'oninn.png': 'g:oninn', 'regroup.png': 'g:regroup',
+      'regroup.png': 'g:regroup',
       'whichyway.png': 'g:whichyway',
       'checkback.png': 't:CB', 'falsetrail.png': 't:FT', 'shortcut.png': 't:SC',
     };
@@ -148,8 +157,6 @@ class TrailSlot {
         450 => 'g:drinkstop',
         451 => 't:BS',
         452 => 't:DS',
-        500 => 'g:oninn',
-        >= 501 && <= 504 => 't:ON IN',
         550 => 'g:caution',
         _ => null,
       };
@@ -201,7 +208,7 @@ extension KennelsModelTrailSlots on KennelsModel {
   /// rather than trusted away: an endRun-action slot, the oninn glyph, or a
   /// legacy "ON IN" text tile.
   static bool _isOnInnSlot(TrailSlot s) =>
-      s.parsedAction == TrailSlotAction.endRun ||
+      s.action == 'endRun' ||
       s.glyphId == 'oninn' ||
       (s.kind == 'text' && (s.text ?? '').trim().toUpperCase() == 'ON IN');
 
