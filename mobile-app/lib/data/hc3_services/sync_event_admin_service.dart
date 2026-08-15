@@ -72,7 +72,31 @@ class SyncEventAdminService {
           );
   }
 
+  /// Serialises event-domain syncs. [updateFromBackend] and
+  /// [updateRsvpsFromBackend] both write the same event tables, so they
+  /// share ONE queue — overlapping them used to race bulkUpdateDatabase's
+  /// check-then-insert and duplicate rows (see AsyncSerializer). A queued
+  /// call runs after the in-flight one commits and re-reads the advanced
+  /// watermarks, so it degrades to a cheap delta.
+  final AsyncSerializer _syncSerializer = AsyncSerializer();
+
   Future<bool> updateFromBackend(
+    int flags,
+    bool forceRefresh,
+    String eventId, {
+    Function? informUser,
+    bool usePaging = false,
+  }) => _syncSerializer.run(
+    () => _updateFromBackend(
+      flags,
+      forceRefresh,
+      eventId,
+      informUser: informUser,
+      usePaging: usePaging,
+    ),
+  );
+
+  Future<bool> _updateFromBackend(
     int flags,
     bool forceRefresh,
     String eventId, {
@@ -196,6 +220,13 @@ class SyncEventAdminService {
   }
 
   Future<bool> updateRsvpsFromBackend(
+    String eventId, {
+    bool usePaging = false,
+  }) => _syncSerializer.run(
+    () => _updateRsvpsFromBackend(eventId, usePaging: usePaging),
+  );
+
+  Future<bool> _updateRsvpsFromBackend(
     String eventId, {
     bool usePaging = false,
   }) async {

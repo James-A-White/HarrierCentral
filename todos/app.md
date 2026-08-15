@@ -248,6 +248,23 @@ NULL expiry on the pack row = never a member.
   charge sheet from the members list shows "Lifetime membership — there is
   nothing to charge" with NO fee field / method chips / charge button.
 
+## Device test — sync serializer / duplicate members fix (2026-08-16, not yet released)
+
+Kennel + event admin syncs are serialised (`AsyncSerializer`) so overlapping
+syncs can no longer double-insert rows (the duplicated kennel-members list).
+NOT self-healing — a device that already has duplicates keeps them until it
+enters a DIFFERENT kennel's admin (domain wipe). Few users affected per James.
+
+- [ ] **Race check**: enter kennel admin and immediately pull-to-refresh the
+  members list several times while the entry sync is still running → no
+  member appears twice afterwards (fresh device or after visiting another
+  kennel's admin to force a wipe).
+- [ ] **Check-in double-refresh**: open check-in, pull-to-refresh repeatedly
+  during the initial load → no duplicate hashers in the pack list.
+- [ ] **Serialised, not dropped**: switch from kennel A admin to kennel B
+  admin quickly — B's members list is B's (wipe still happens, second sync
+  ran after the first, nothing skipped).
+
 ## Device test — membership expiry badge (2026-08-11, not yet released)
 
 Check-in list star steps down around a membership's end: green star → amber
@@ -330,5 +347,9 @@ Released with `flutter analyze` only. Screens: live run → map → Radar.
 - [ ] **Background boot sync — concurrency** (deferred 2026-06-20). If the user
   switches tabs during the boot background sync, the runs controller's
   `triggerBackgroundSync` can run a second sync concurrently with the boot full
-  sync. Watermark-based so wasteful, not corrupting — coordinate the two if it
-  proves noticeable.
+  sync. UPDATE 2026-08-16: this CAN corrupt — two overlapping syncs both pass
+  bulkUpdateDatabase's check-then-insert for the same new rows and double-insert
+  them (no unique index stops it); this is exactly what duplicated the kennel
+  members list. Kennel and event admin syncs are now serialised via
+  `AsyncSerializer`; the USER-domain sync is still unguarded — wrap
+  `SyncUserDataService.updateFromBackend` in the same serializer when touched.

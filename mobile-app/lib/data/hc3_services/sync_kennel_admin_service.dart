@@ -75,7 +75,33 @@ class SyncKennelAdminService {
     );
   }
 
+  /// Serialises kennel-domain syncs. Overlapping calls (admin-entry sync vs
+  /// the members page's pull-to-refresh, profile edits, etc.) used to race
+  /// bulkUpdateDatabase's check-then-insert and double-insert every row —
+  /// the duplicated kennel-members list. Queued calls run after the
+  /// in-flight one commits, so they re-read the advanced watermarks and
+  /// become cheap deltas.
+  final AsyncSerializer _syncSerializer = AsyncSerializer();
+
   Future<bool> updateFromBackend(
+    int flags,
+    bool forceRefresh,
+    String kennelId, {
+    Function? informUser,
+    bool usePaging = false,
+    String? targetHasherId,
+  }) => _syncSerializer.run(
+    () => _updateFromBackend(
+      flags,
+      forceRefresh,
+      kennelId,
+      informUser: informUser,
+      usePaging: usePaging,
+      targetHasherId: targetHasherId,
+    ),
+  );
+
+  Future<bool> _updateFromBackend(
     int flags,
     bool forceRefresh,
     String kennelId, {
