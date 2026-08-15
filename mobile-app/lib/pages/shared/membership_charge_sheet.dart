@@ -80,7 +80,10 @@ class MembershipChargeController extends GetxController {
 
   final TextEditingController feeController = TextEditingController();
 
-  static final DateTime _lifetimeSentinel = DateTime(2999);
+  /// Expiry at or beyond 2100 counts as lifetime — the project-wide
+  /// definition (the SP writes 2999 for renewal-mode-3 grants; hand-set
+  /// far-future dates count too). Shared with membership_status.dart.
+  static final DateTime _lifetimeSentinel = DateTime(2100);
 
   bool get isLifetimeMember {
     final DateTime? e = currentExpiry.value;
@@ -349,16 +352,26 @@ class MembershipChargeSheetBody extends StatelessWidget {
             ),
           );
         }
+        // Lifetime members get a statement, not a form — there is nothing
+        // to sell them, so no fee field, no payment method, no charge button.
         if (c.isLifetimeMember) {
-          return SizedBox(
-            height: 160,
-            child: Center(
-              child: Text(
-                '${c.displayName} is already a lifetime member.',
-                textAlign: TextAlign.center,
-                style: ts_body,
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text('Lifetime membership', style: ts_headingLarge),
+              const SizedBox(height: 2),
+              Text(c.displayName, style: ts_body),
+              const SizedBox(height: 6),
+              Text(
+                'Lifetime member — there is nothing to charge.',
+                style: ts_body.copyWith(
+                  color: Colors.greenAccent.shade100,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
+              const SizedBox(height: 12),
+            ],
           );
         }
         if (c.fixedYearUnset) {

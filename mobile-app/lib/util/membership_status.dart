@@ -21,9 +21,11 @@ enum MembershipStatus {
   lapsedRecently,
 }
 
-/// Expiry at or beyond this is a lifetime membership — the sentinel
-/// `hcapp_processPayment` writes for renewal mode 3. Never warns.
-final DateTime _lifetimeSentinel = DateTime(2999);
+/// Expiry at or beyond this is a lifetime membership. Never warns.
+/// `hcapp_processPayment` writes 2999 for renewal-mode-3 grants, but any
+/// hand-set date of 2100 or later counts as lifetime too — that is the
+/// project-wide definition, shared with the membership charge sheet.
+final DateTime _lifetimeSentinel = DateTime(2100);
 
 const double _soonFraction = 0.10;
 const double _lapsedFraction = 0.20;
