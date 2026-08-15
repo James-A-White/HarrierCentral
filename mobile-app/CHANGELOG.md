@@ -1,5 +1,22 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1286 (2026-08-16)
+
+### Fixes
+- **Duplicate members list**: overlapping data syncs could write every kennel
+  member (and check-in row) twice; all three sync paths are now serialised.
+- **"Where is the trail?" offline**: the lost compass now reads the locally
+  recorded track as well as the server's, so a solo runner with no signal is
+  still pointed back along their own trail; clearer messages before the pack
+  has been told.
+
+### Improvements
+- **Check-in popup**: membership and haberdashery actions are proper buttons;
+  the membership button only appears when a renewal is due and reads
+  "Renew membership" or "Purchase membership" as appropriate.
+- **Lifetime memberships**: any expiry of 2100 or later counts as lifetime —
+  green star, no renewal prompts, and the charge sheet refuses politely.
+
 ## 3.0.1+1285 (2026-08-11)
 
 ### Improvements
