@@ -244,7 +244,7 @@ class LostCompassController extends GetxController {
   /// polls — one is just a slow request.
   static const int _staleAfterSeconds = 12;
 
-  StreamSubscription<Position>? _positionSub;
+  Worker? _positionWorker;
   StreamSubscription<CompassEvent>? _compassSub;
   Timer? _refreshTimer;
 
@@ -266,26 +266,26 @@ class LostCompassController extends GetxController {
       deviceHeading.value = h;
       _updateSteering();
     });
-    // Own high-rate position stream for the lifetime of the dialog. The app's
-    // shared idle stream only reports every 250m, which is useless here, and a
-    // runner who is lost may not be tracking at all. Distance/bearing to the
-    // held target cost nothing to recompute — no network, just trigonometry —
-    // so the readout moves with each fix rather than once per poll.
-    _positionSub =
-        Geolocator.getPositionStream(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.best,
-            distanceFilter: 0, // every fix the OS gives us
-          ),
-        ).listen(
-          (pos) {
-            _lastPosition = pos;
-            _updateReadout(pos);
-          },
-          onError: (Object e) {
-            if (kDebugMode) debugPrint('[LostCompass] position stream: $e');
-          },
-        );
+    // High-rate position for the lifetime of the dialog, via the SHARED
+    // LocationService stream with a precision boost. A private
+    // Geolocator.getPositionStream here does NOT work: geolocator caches the
+    // platform stream with the first subscriber's settings and silently
+    // ignores later ones, so a "best/0m" stream opened while the service's
+    // idle stream (lowest/100m) is live just relays that idle cadence —
+    // which is exactly the frozen compass observed on the LH3 #2846 run.
+    // Distance/bearing to the held target cost nothing to recompute — no
+    // network, just trigonometry — so the readout moves with each fix rather
+    // than once per poll.
+    final LocationService locationService = Get.find<LocationService>();
+    locationService.requestPreciseStream();
+    _lastPosition = locationService.lastKnownPosition.value;
+    _positionWorker = ever<Position?>(locationService.lastKnownPosition, (
+      pos,
+    ) {
+      if (pos == null) return;
+      _lastPosition = pos;
+      _updateReadout(pos);
+    });
 
     unawaited(refreshBearing());
     _refreshTimer = Timer.periodic(
@@ -502,7 +502,10 @@ class LostCompassController extends GetxController {
 
   @override
   void onClose() {
-    unawaited(_positionSub?.cancel());
+    _positionWorker?.dispose();
+    if (Get.isRegistered<LocationService>()) {
+      Get.find<LocationService>().releasePreciseStream();
+    }
     unawaited(_compassSub?.cancel());
     _refreshTimer?.cancel();
     _retargetNoticeTimer?.cancel();

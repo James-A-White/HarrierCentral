@@ -248,6 +248,27 @@ NULL expiry on the pack row = never a member.
   charge sheet from the members list shows "Lifetime membership — there is
   nothing to charge" with NO fee field / method chips / charge button.
 
+## Device test — live viewer GPS boost (2026-08-15, not yet released)
+
+Root cause from the LH3 #2846 run: geolocator caches the platform position
+stream with the FIRST subscriber's settings and silently ignores later ones,
+so the lost compass's "own best/0m stream" actually relayed the idle stream
+(lowest accuracy, fix per 100 m) once tracking stopped. Fix: ref-counted
+`requestPreciseStream()`/`releasePreciseStream()` on LocationService (the one
+real stream), held by the PackTrack map controller and the lost compass; the
+map's blue dot is now its own Obx layer driven by `lastKnownPosition` instead
+of a value frozen into the last map rebuild.
+
+- [ ] **Not tracking, map open**: walk with the live-run map up, tracking OFF
+  → blue dot moves every few metres, not every 100 m.
+- [ ] **Not tracking, I'm Lost open**: distance/bearing readout and steering
+  slide update as you walk; arrows rotate with the compass.
+- [ ] **Close both surfaces** → idle stream restored (watch battery/location
+  indicator settle; breadcrumb "STOPPED (idle stream, preciseRequests=0)").
+- [ ] **Tracking unaffected**: start tracking with map open, stop tracking —
+  points still record at 5 m cadence while ON; dot stays live after stop.
+- [ ] **Replay map (run detail, past run)** still renders; dot live there too.
+
 ## Device test — sync serializer / duplicate members fix (2026-08-16, not yet released)
 
 All three sync services — user, kennel and event admin — are serialised

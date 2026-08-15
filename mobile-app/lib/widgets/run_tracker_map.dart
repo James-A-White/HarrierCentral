@@ -190,27 +190,9 @@ class RunTrackerMap extends StatelessWidget {
                   PolylineLayer(polylines: controller.dimmedPolylines),
                   if (controller.highlightedPolyline != null)
                     PolylineLayer(polylines: [controller.highlightedPolyline!]),
-                  // GPS-accuracy halo under the viewer dot when the fix is loose.
-                  if (controller.showsAccuracyHalo)
-                    CircleLayer(
-                      circles: <CircleMarker>[
-                        CircleMarker(
-                          point: latlng.LatLng(
-                            deviceInfo.deviceLat!,
-                            deviceInfo.deviceLon!,
-                          ),
-                          radius: deviceInfo.deviceAccuracy!,
-                          useRadiusInMeter: true,
-                          color: const Color(
-                            0xFF2A7FFF,
-                          ).withValues(alpha: 0.12),
-                          borderColor: const Color(
-                            0xFF2A7FFF,
-                          ).withValues(alpha: 0.4),
-                          borderStrokeWidth: 1,
-                        ),
-                      ],
-                    ),
+                  // Viewer dot + accuracy halo — own reactive layer (below the
+                  // main marker layer so pins stay on top).
+                  _viewerLayer(controller),
                   MarkerLayer(
                     // Keep pins and trail-mark icons upright on screen when the
                     // map rotates to a runner's heading — a sideways or upside
@@ -221,27 +203,6 @@ class RunTrackerMap extends StatelessWidget {
                     // bearing rather than a screen-relative one.
                     rotate: true,
                     markers: <Marker>[
-                      if ((appModel.hasLocationPermissions) &&
-                          (deviceInfo.deviceLat != null) &&
-                          (deviceInfo.deviceLon != null)) ...<Marker>[
-                        Marker(
-                          height: 44.0,
-                          width: 44.0,
-                          // Rotate with the map so the heading wedge points to a
-                          // true (map-north-relative) bearing even when the map
-                          // is rotated to a runner's heading. The dot itself is
-                          // circular, so rotation only affects the wedge.
-                          rotate: true,
-                          point: latlng.LatLng(
-                            deviceInfo.deviceLat!,
-                            deviceInfo.deviceLon!,
-                          ),
-                          child: IgnorePointer(
-                            ignoring: true,
-                            child: _viewerDot(controller),
-                          ),
-                        ),
-                      ],
                       if (eventLocation != null) ...<Marker>[
                         Marker(
                           width: 120.0,
@@ -456,6 +417,64 @@ class RunTrackerMap extends StatelessWidget {
                 BoxShadow(color: Colors.black26, blurRadius: 2),
               ],
             ),
+          ),
+        ],
+      );
+    });
+  }
+
+  /// Viewer dot + GPS-accuracy halo as their own reactive layer. Reading
+  /// [LocationService.lastKnownPosition] inside this Obx means every GPS fix
+  /// moves the dot immediately, repainting ONLY this layer — never FlutterMap,
+  /// the polylines or the marker-cluster layer. Before this, the dot's
+  /// position was read once per map rebuild, so it sat frozen until zoom or
+  /// the 15-second auto-update happened to rebuild the tree.
+  Widget _viewerLayer(RunTrackerMapController controller) {
+    if (!Get.isRegistered<LocationService>()) return const SizedBox.shrink();
+    final LocationService loc = Get.find<LocationService>();
+    return Obx(() {
+      final pos = loc.lastKnownPosition.value;
+      if (!appModel.hasLocationPermissions) return const SizedBox.shrink();
+      final double? lat = pos?.latitude ?? deviceInfo.deviceLat;
+      final double? lon = pos?.longitude ?? deviceInfo.deviceLon;
+      if (lat == null || lon == null) return const SizedBox.shrink();
+      final double? acc = pos?.accuracy ?? deviceInfo.deviceAccuracy;
+      final point = latlng.LatLng(lat, lon);
+      return Stack(
+        children: <Widget>[
+          // Halo only when the fix is loose enough to be worth signalling
+          // (matches web's 25 m threshold).
+          if (acc != null && acc > 25.0)
+            CircleLayer(
+              circles: <CircleMarker>[
+                CircleMarker(
+                  point: point,
+                  radius: acc,
+                  useRadiusInMeter: true,
+                  color: const Color(0xFF2A7FFF).withValues(alpha: 0.12),
+                  borderColor: const Color(0xFF2A7FFF).withValues(alpha: 0.4),
+                  borderStrokeWidth: 1,
+                ),
+              ],
+            ),
+          MarkerLayer(
+            rotate: true,
+            markers: <Marker>[
+              Marker(
+                height: 44.0,
+                width: 44.0,
+                // Rotate with the map so the heading wedge points to a true
+                // (map-north-relative) bearing even when the map is rotated
+                // to a runner's heading. The dot itself is circular, so
+                // rotation only affects the wedge.
+                rotate: true,
+                point: point,
+                child: IgnorePointer(
+                  ignoring: true,
+                  child: _viewerDot(controller),
+                ),
+              ),
+            ],
           ),
         ],
       );

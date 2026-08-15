@@ -875,6 +875,13 @@ class RunTrackerMapController extends GetxController
     // Start with map visible
     _isVisible = true;
     _lastMarkerZoom = initialZoom;
+    // A visible PackTrack map needs a live viewer position even when the
+    // user is not run-tracking (sweepers, latecomers, post-run tracing) —
+    // without the boost the idle stream reports lowest-accuracy fixes only
+    // every 100 m and the blue dot appears frozen.
+    if (Get.isRegistered<LocationService>()) {
+      Get.find<LocationService>().requestPreciseStream();
+    }
     _startAutoUpdateTimer();
     _startCompass();
     BootLogger.logBreadcrumb('PackTrack map OPENED (eventId=${event.eventId})');
@@ -916,6 +923,9 @@ class RunTrackerMapController extends GetxController
   void onClose() {
     BootLogger.logBreadcrumb('PackTrack map CLOSED');
     WidgetsBinding.instance.removeObserver(this);
+    if (Get.isRegistered<LocationService>()) {
+      Get.find<LocationService>().releasePreciseStream();
+    }
     _stopAutoUpdateTimer();
     _stopRotationSlew();
     unawaited(_tiltSub?.cancel());

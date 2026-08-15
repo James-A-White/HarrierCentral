@@ -195,30 +195,14 @@ class LocationService extends GetxService {
           debugPrint('LocationService: Auto-paused. Monitoring for resume.');
         }
       } else {
-        // Fully stopped — drop back to low-power idle stream.
-        final locationSettings = getLocSettings(
-          100,
-          LocationAccuracy.lowest,
-          false,
-          true,
-        );
-        await _geoLocationStreamSubscription?.cancel();
+        // Fully stopped — drop back to the idle stream (or the precise
+        // viewer stream if a map/compass surface is holding a boost).
         await _runBuffer?.flush();
         _lastFlushTime = DateTime.now();
-        _geoLocationStreamSubscription =
-            Geolocator.getPositionStream(
-              locationSettings: locationSettings,
-            ).listen(
-              updateDeviceLocation,
-              onError: (error) {
-                if (kDebugMode) debugPrint('LocationStream Error: $error');
-                BootLogger.logBreadcrumb(
-                  'PackTrack: location stream error while STOPPED/idle: $error',
-                );
-              },
-            );
+        await _subscribeIdleStream();
         BootLogger.logBreadcrumb(
-          'PackTrack: run tracking STOPPED (idle stream)',
+          'PackTrack: run tracking STOPPED (idle stream, '
+          'preciseRequests=$_preciseStreamRequests)',
         );
         if (kDebugMode) debugPrint('LocationService: Stopped run tracking.');
       }
@@ -348,6 +332,69 @@ class LocationService extends GetxService {
     return locationSettings;
   }
 
+  // ── Precision boost ───────────────────────────────────────────────────────
+  // Ref-counted request from UI surfaces that need a live viewer position
+  // while the user is NOT run-tracking — the PackTrack map's blue dot and the
+  // lost-compass dialog. Without it those surfaces get the idle stream:
+  // lowest accuracy, a fix only every 100 m.
+  //
+  // A surface CANNOT just open its own Geolocator stream with finer settings:
+  // geolocator caches the platform position stream with the FIRST
+  // subscriber's settings and silently ignores later subscribers' settings
+  // (method_channel_geolocator.dart — `if (_positionStream != null) return`).
+  // This service's always-on stream subscribes first, so the only way to
+  // change fidelity is to reconfigure THE shared stream here.
+  int _preciseStreamRequests = 0;
+
+  /// Call when a surface needing a live position opens; pair with
+  /// [releasePreciseStream] when it closes. While run tracking (or the pause
+  /// monitor) is active the stream is already fine-grained, so this only
+  /// re-subscribes in the idle state.
+  void requestPreciseStream() {
+    _preciseStreamRequests++;
+    if (_preciseStreamRequests == 1 &&
+        !joinRunTracking.value &&
+        !isPaused.value) {
+      unawaited(_subscribeIdleStream());
+    }
+  }
+
+  void releasePreciseStream() {
+    if (_preciseStreamRequests > 0) _preciseStreamRequests--;
+    if (_preciseStreamRequests == 0 &&
+        !joinRunTracking.value &&
+        !isPaused.value) {
+      unawaited(_subscribeIdleStream());
+    }
+  }
+
+  /// (Re)subscribes the shared stream for the not-tracking state: precise
+  /// viewer settings while any boost is held, low-power idle otherwise.
+  Future<void> _subscribeIdleStream() async {
+    final bool precise = _preciseStreamRequests > 0;
+    final LocationSettings settings = precise
+        ? getLocSettings(
+            5,
+            LocationAccuracy.best,
+            false,
+            false,
+            androidInterval: const Duration(seconds: 15),
+          )
+        : getLocSettings(100, LocationAccuracy.lowest, false, true);
+    await _geoLocationStreamSubscription?.cancel();
+    _geoLocationStreamSubscription =
+        Geolocator.getPositionStream(locationSettings: settings).listen(
+          updateDeviceLocation,
+          onError: (error) {
+            if (kDebugMode) debugPrint('LocationStream Error: $error');
+            BootLogger.logBreadcrumb(
+              'PackTrack: location stream error while '
+              '${precise ? 'PRECISE-idle' : 'STOPPED/idle'}: $error',
+            );
+          },
+        );
+  }
+
   // Pauses tracking: records the pause point, switches to low-power monitoring,
   // and flushes any buffered points. The session track is preserved so distance
   // continues accumulating correctly on resume.
@@ -425,21 +472,8 @@ class LocationService extends GetxService {
       joinRunTracking.value = false; // ever worker handles flush + idle stream
     } else if (wasPaused) {
       // Was paused: joinRunTracking is already false so the ever worker won't
-      // fire — manually restore idle stream settings.
-      final settings = getLocSettings(
-        100,
-        LocationAccuracy.lowest,
-        false,
-        true,
-      );
-      await _geoLocationStreamSubscription?.cancel();
-      _geoLocationStreamSubscription =
-          Geolocator.getPositionStream(locationSettings: settings).listen(
-            updateDeviceLocation,
-            onError: (error) {
-              if (kDebugMode) debugPrint('LocationStream Error: $error');
-            },
-          );
+      // fire — manually restore the idle (or boosted) stream settings.
+      await _subscribeIdleStream();
     }
   }
 
