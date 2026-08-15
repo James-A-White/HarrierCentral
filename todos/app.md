@@ -248,6 +248,20 @@ NULL expiry on the pack row = never a member.
   charge sheet from the members list shows "Lifetime membership — there is
   nothing to charge" with NO fee field / method chips / charge button.
 
+## Device test — On Inn confirmation (2026-08-15, not yet released)
+
+The hare's On Inn slot no longer marks + stops silently — it always confirms
+first (the red End Run button already did). Cancel = nothing recorded.
+
+- [ ] **Tap On Inn while tracking** → "Mark On Inn & end run?" dialog appears
+  BEFORE any flash or mark; Keep Tracking → no mark on the track (verify on
+  the map), tracking still running.
+- [ ] **Confirm** → flash, mark drops, tracking stops.
+- [ ] **Other slots unaffected** — Check/Label etc. still mark immediately
+  (label popup first where applicable).
+- [ ] **End Run button** dialog now says the run continues if you restart
+  tracking (stale "cannot be restarted" copy fixed).
+
 ## Device test — live viewer GPS boost (2026-08-15, not yet released)
 
 Root cause from the LH3 #2846 run: geolocator caches the platform position

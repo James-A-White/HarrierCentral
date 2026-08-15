@@ -766,8 +766,9 @@ class LiveRunGeneralPage extends StatelessWidget {
                       title: Text('End Run?', style: ts_alertDialogTitle),
                       content: Text(
                         'Are you sure you want to end your run? '
-                        'Once stopped, tracking cannot be restarted. '
-                        'Your data will be saved.',
+                        'Your data will be saved, and if you restart '
+                        'tracking later the run continues from where it '
+                        'left off.',
                         style: ts_alertDialogBody,
                       ),
                       actions: [
@@ -1114,6 +1115,47 @@ class LiveRunGeneralPage extends StatelessWidget {
       final trimmed = dialogResult?['label']?.trim() ?? '';
       if (trimmed.isEmpty) return;
       label = trimmed;
+    }
+
+    // On Inn is not just another mark: it truncates the drawn track for every
+    // viewer AND stops tracking. An accidental tap mid-run (LH3 #2846,
+    // 2026-08-15) cut 20+ minutes of live trail off everyone's map — so it
+    // always confirms before anything is recorded.
+    if (slot.parsedAction == TrailSlotAction.endRun) {
+      if (!context.mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          title: Text('Mark On Inn & end run?', style: ts_alertDialogTitle),
+          content: Text(
+            'This drops the On Inn mark — the end of the trail — on the pack '
+            'map and stops run tracking. The map stops drawing your track at '
+            'this mark. If you restart tracking later, the run continues '
+            'from where it left off.',
+            style: ts_alertDialogBody,
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade600,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Keep Tracking', style: ts_button),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: hc_red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('On Inn & End Run', style: ts_button),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
     }
 
     if (!context.mounted) return;
