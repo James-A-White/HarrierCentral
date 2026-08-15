@@ -1,3 +1,6 @@
+1.0.33+31
+    • StorePositions: optional resumed flag — first batch after a track restart deletes any prior On Inn terminator rows for that runner+event (mistaken On Inn cleanup, atomic with the upload)
+
 1.0.32+30
     • Payment report Excel: new Product column (Run / Membership / Haberdashery)
 

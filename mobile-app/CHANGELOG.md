@@ -1,5 +1,20 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1287 (2026-08-15)
+
+### Fixes
+- **Live blue dot and lost compass now update properly when not tracking.**
+  The shared GPS stream steps up to full precision whenever the PackTrack
+  map or the "Where is the trail?" dialog is open, and the map's blue dot
+  moves on every fix instead of waiting for the next map redraw.
+- **Mistaken On Inn recovery**: restarting tracking after an accidental
+  On Inn now reliably removes the mark server-side, even if it was still
+  uploading when you restarted.
+
+### Improvements
+- **On Inn asks first.** The On Inn trail mark now confirms before marking
+  the end of trail and stopping tracking — no more one-tap accidents.
+
 ## 3.0.1+1286 (2026-08-16)
 
 ### Fixes
