@@ -67,6 +67,48 @@ namespace HcWebApi.Endpoints
             await eventTable.CreateIfNotExistsAsync();
             await userTable.CreateIfNotExistsAsync();
 
+            // Resume cleanup: the first batch after a stop→restart carries
+            // resumed=true. A trail has exactly one On Inn, at the end — a
+            // terminator followed by later points is always a mistake (the
+            // runner tapped it, then resumed), so delete any terminator rows
+            // this user already has on this event before storing the new
+            // batch. This closes the race where the client's own resume-time
+            // strip (DeletePositions) runs before the mark's in-flight batch
+            // has landed (observed on LH3 #2846, 2026-08-15). Best-effort: a
+            // cleanup failure never blocks the position store.
+            int resumeDeleted = 0;
+            if (payload.Resumed)
+            {
+                try
+                {
+                    string filter =
+                        $"PartitionKey eq '{EscapeForFilter(payload.EventId)}' and UserId eq '{EscapeForFilter(payload.UserId)}' and Type ne ''";
+                    await foreach (TableEntity row in eventTable.QueryAsync<TableEntity>(
+                        filter: filter, select: new[] { "RowKey", "Type" }))
+                    {
+                        string? rowType = row.TryGetValue("Type", out var t) ? t?.ToString() : null;
+                        if (!IsTerminatorType(rowType)) continue;
+                        try { await eventTable.DeleteEntityAsync(payload.EventId, row.RowKey); }
+                        catch (Azure.RequestFailedException ex) when (ex.Status == 404) { }
+                        try { await userTable.DeleteEntityAsync(payload.UserId, row.RowKey); }
+                        catch (Azure.RequestFailedException ex) when (ex.Status == 404) { }
+                        resumeDeleted++;
+                    }
+                    if (resumeDeleted > 0)
+                    {
+                        _log.LogInformation(
+                            "StorePositions: resume cleanup deleted {Count} terminator(s) for event {EventId} / user {UserId}.",
+                            resumeDeleted, payload.EventId, payload.UserId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.LogWarning(
+                        "StorePositions: resume terminator cleanup failed for event {EventId}: {Message}. Continuing with store.",
+                        payload.EventId, ex.Message);
+                }
+            }
+
             int storedCount = 0;
             string serverTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString("D19");
 
@@ -148,8 +190,28 @@ namespace HcWebApi.Endpoints
                 storedCount++;
             }
 
-            return CreateJsonResult(StatusCodes.Status200OK, new { stored = storedCount });
+            return payload.Resumed
+                ? CreateJsonResult(StatusCodes.Status200OK,
+                    new { stored = storedCount, resumedTerminatorsDeleted = resumeDeleted })
+                : CreateJsonResult(StatusCodes.Status200OK, new { stored = storedCount });
         }
+
+        /// True when a stored Type string marks the end of the track: the
+        /// legacy OIN key, or any new-style mark whose action is endRun
+        /// (e.g. "GLY::oninn::A=endRun"). Mirrors the mobile map's _isOnInn.
+        private static bool IsTerminatorType(string? type)
+        {
+            if (string.IsNullOrWhiteSpace(type)) return false;
+            string[] parts = type.Split(new[] { "::" }, StringSplitOptions.None);
+            if (parts[0].Trim() == "OIN") return true;
+            foreach (string part in parts)
+            {
+                if (part.Trim() == "A=endRun") return true;
+            }
+            return false;
+        }
+
+        private static string EscapeForFilter(string value) => value.Replace("'", "''");
 
         private static ContentResult CreateJsonResult(int statusCode, object payload)
         {
@@ -168,6 +230,10 @@ namespace HcWebApi.Endpoints
             [JsonProperty("eventId")] public string EventId { get; set; } = string.Empty;
             [JsonProperty("userId")] public string UserId { get; set; } = string.Empty;
             [JsonProperty("positions")] public List<PositionItem> Positions { get; set; } = new();
+            // First batch after a stop→restart: asks the server to delete any
+            // prior terminator (On Inn) rows for this user+event. Optional —
+            // absent/false from older clients, and ignored by older servers.
+            [JsonProperty("resumed")] public bool Resumed { get; set; }
         }
 
         internal class PositionItem

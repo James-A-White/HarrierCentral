@@ -62,6 +62,11 @@ class LocationService extends GetxService {
   RunPointBuffer? _runBuffer;
   DateTime _lastFlushTime = DateTime.now();
 
+  // Armed by [seedSessionTrack] on a stop→restart; consumed when the live
+  // buffer is next touched, which forwards it as `resumed: true` on the
+  // first batch that reaches the server (terminator cleanup).
+  bool _resumedCleanupPending = false;
+
   // Throttle for the memory-usage breadcrumb emitted while tracking (~60s).
   DateTime? _lastMemLogTime;
   // Throttle for the on-disk lastLocationUpdate pref (~60s). The only reader
@@ -442,6 +447,11 @@ class LocationService extends GetxService {
     filteredSessionDistanceMeters.value =
         TrackPointFilter.cumulativeDistanceMeters(filtered);
     _isResumingExistingTrack = true;
+    // This is a stop→restart of an existing track: the first batch that
+    // reaches the server carries resumed=true so it deletes any prior
+    // terminator (On Inn) rows — backstop for the client-side strip, which
+    // can race a still-in-flight terminator batch and miss it.
+    _resumedCleanupPending = true;
   }
 
   /// Snapshot of the locally-recorded session track, but only when it belongs
@@ -766,6 +776,12 @@ class LocationService extends GetxService {
         eventId: eventId!,
         userId: userId!,
       );
+      // Hand a pending resume-cleanup to the live buffer (it may be a
+      // fresh instance or the pre-stop one — either carries the flag).
+      if (_resumedCleanupPending) {
+        _runBuffer!.markResumed();
+        _resumedCleanupPending = false;
+      }
 
       String? pointStr;
 

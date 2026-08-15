@@ -31,6 +31,14 @@ class RunPointBuffer {
   bool _uploading = false;
   Timer? _flushTimer;
 
+  // Set on resume (stop→restart of the same track): the next batch that
+  // REACHES the server carries `resumed: true`, asking it to delete any prior
+  // terminator (On Inn) rows for this user+event — a terminator followed by
+  // later points is always a mistake. Kept pending across failed sends so a
+  // bad-signal resume still cleans up on the first batch that gets through.
+  bool _resumedCleanupPending = false;
+  void markResumed() => _resumedCleanupPending = true;
+
   void enqueue(UserEventLocation p) {
     _q.addLast(p);
     _ensureTimer();
@@ -92,10 +100,12 @@ class RunPointBuffer {
   Future<bool> _sendBatch(List<UserEventLocation> batch) async {
     if (batch.isEmpty) return true;
 
+    final bool carriesResumedFlag = _resumedCleanupPending;
     final body = jsonEncode(<String, dynamic>{
       'eventId': eventId,
       'userId': userId,
       'positions': batch.map((p) => p.toJson()).toList(),
+      if (carriesResumedFlag) 'resumed': true,
     });
 
     // Simple retry with backoff for transient errors
@@ -111,6 +121,7 @@ class RunPointBuffer {
                 : http.post(uri, headers: headers, body: body))
             .timeout(_sendTimeout);
         if (resp.statusCode >= 200 && resp.statusCode < 300) {
+          if (carriesResumedFlag) _resumedCleanupPending = false;
           if (kDebugMode) {
             debugPrint(resp.body);
           }
