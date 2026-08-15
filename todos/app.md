@@ -228,6 +228,22 @@ Requires the SP deploy first (next Dance). Plan: docs/membership_payments_plan.m
 - [ ] **Unpaid grant path unchanged**: swipe / add-months actions still work
   and record NO payment.
 
+## Device test — check-in membership/haberdashery buttons (2026-08-15, not yet released)
+
+The check-in popup's two bottom actions are now real (white pill) buttons, and
+the membership one is gated on the same 10%-of-period rule as the expiry badge
+(`membershipStatusOf` passed into `PaymentSnackBar`). Label depends on history:
+NULL expiry on the pack row = never a member.
+
+- [ ] **Comfortable member** (>10% of period left, green star): NO membership
+  button at all; "Sell haberdashery" still shows.
+- [ ] **Lifetime member**: no membership button.
+- [ ] **Member inside last 10%** (amber badge): button reads "Renew membership".
+- [ ] **Lapsed member** (red badge, or lapsed long ago): "Renew membership".
+- [ ] **Virgin / visitor / follower who never joined**: "Purchase membership".
+- [ ] **Both buttons look pressable** — white pills, red text/icon, full width.
+- [ ] **Multi-select**: neither button appears (unchanged rule).
+
 ## Device test — membership expiry badge (2026-08-11, not yet released)
 
 Check-in list star steps down around a membership's end: green star → amber

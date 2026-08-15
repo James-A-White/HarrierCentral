@@ -615,6 +615,7 @@ class CheckInPackController extends GetxController
         packMember: hasher,
         amountOwed: amountOwed,
         multiSelectEnabled: showMultiSelect.value,
+        membershipStatus: membershipStatusOf(hasher),
         onRsvpCallback:
             (
               updated, {

@@ -12,6 +12,7 @@ class PaymentSnackBar extends SnackBar {
     required this.multiSelectEnabled,
     this.onChargeMembership,
     this.onSellHaberdashery,
+    this.membershipStatus,
   }) : super(content: const Text('test'));
 
   final BuildContext context;
@@ -28,6 +29,22 @@ class PaymentSnackBar extends SnackBar {
 
   /// Opens the haberdashery sale sheet. Same visibility rules as membership.
   final VoidCallback? onSellHaberdashery;
+
+  /// The hasher's reconciled membership tier (from
+  /// `CheckInPackPageController.membershipStatusOf`). While it is
+  /// [MembershipStatus.current] — more than 10% of the kennel's period left,
+  /// or a lifetime membership — the charge button is not offered at all;
+  /// there is nothing due.
+  final MembershipStatus? membershipStatus;
+
+  /// True when this hasher has ever held a membership of this kennel. The
+  /// pack query returns a NULL expiry for virgins, visitors and followers
+  /// who never joined, and the stored date (past or future) for anyone who
+  /// did — which is what decides "Renew" vs "Purchase" wording.
+  bool get _hasMembershipHistory {
+    final String? text = packMember.membershipExpirationDate;
+    return text != null && DateTime.tryParse(text) != null;
+  }
 
   @override
   Duration get duration => const Duration(seconds: 30);
@@ -659,33 +676,55 @@ class PaymentSnackBar extends SnackBar {
                               ),
                       ],
                     ),
-                    if (onChargeMembership != null && !multiSelectEnabled)
+                    // Membership is only offered when a renewal is actually
+                    // due: inside the last 10% of the kennel's period, lapsed,
+                    // or never held. A comfortable member sees no button.
+                    if (onChargeMembership != null &&
+                        !multiSelectEnabled &&
+                        membershipStatus != MembershipStatus.current)
                       Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: TextButton.icon(
-                          onPressed: onChargeMembership,
-                          icon: const Icon(
-                            Icons.card_membership,
-                            color: Colors.white,
-                            size: 26,
-                          ),
-                          label: Text(
-                            'Charge annual membership',
-                            style: ts_titleSmallCondensedBold,
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: onChargeMembership,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: hc_red,
+                            ),
+                            icon: const Icon(Icons.card_membership, size: 22),
+                            label: Text(
+                              _hasMembershipHistory
+                                  ? 'Renew membership'
+                                  : 'Purchase membership',
+                              style: ts_titleSmallCondensedBold.copyWith(
+                                color: hc_red,
+                                fontSize: 14,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     if (onSellHaberdashery != null && !multiSelectEnabled)
-                      TextButton.icon(
-                        onPressed: onSellHaberdashery,
-                        icon: const Icon(
-                          Icons.checkroom,
-                          color: Colors.white,
-                          size: 26,
-                        ),
-                        label: Text(
-                          'Sell haberdashery',
-                          style: ts_titleSmallCondensedBold,
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: onSellHaberdashery,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: hc_red,
+                            ),
+                            icon: const Icon(Icons.checkroom, size: 22),
+                            label: Text(
+                              'Sell haberdashery',
+                              style: ts_titleSmallCondensedBold.copyWith(
+                                color: hc_red,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                   ],
