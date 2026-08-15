@@ -366,16 +366,20 @@ Released with `flutter analyze` only. Screens: live run → map → Radar.
 
 ## PackTrack
 
-- [ ] **First On-Inn kills the whole drawn track — wrong for multi-lane
-  haring** (from the LH3 #2846 live run, 2026-08-15). James (haring) dropped
-  `GLY::oninn::A=endRun` at the end of one lane, re-declared `TRL::4` five
-  seconds later and kept laying — but `_isOnInn` truncates the polyline at
-  the FIRST terminator, so 20+ min of live trail was invisible to everyone
-  until the mark was deleted server-side (DeletePositions). Options: only
-  honour a terminator as track-end when it's the LAST point (or no points
-  follow within N min); or scope terminators per TRL lane segment. Also
-  consider: the live map's incremental poll never removes deleted points —
-  a deleted OIN stays in the client model until the map is reopened.
+- [ ] **Ignore a mid-track On-Inn at read time** (DESIGN AGREED with James
+  2026-08-15, not yet coded). A trail has exactly ONE On-Inn, at the end —
+  an On-Inn followed by later points is always a mistake (runner tapped it,
+  then resumed). On LH3 #2846 such a mark truncated 20+ min of live trail
+  for every viewer until deleted server-side. Fix: readers (mobile
+  `_isOnInn` path in run_tracker_map_controller + public-web viewer) honour
+  an On-Inn — as terminator AND as icon — only when it is effectively the
+  runner's LAST point (nothing after it beyond a short grace for straggler
+  queued fixes). Otherwise ignore it completely: draw through, no icon.
+  Zero API calls, no restart race, retroactive, and the open map's cached
+  model self-heals as new points arrive (the incremental poll can't express
+  deletions). The existing resume strip (DeletePositions) stays as
+  best-effort physical cleanup; a `resumed:true` StorePositions flag was
+  considered and DEFERRED (tidiness only once the read rule exists).
   Done — `_ensureLabelSlot` in `lib/data/models/trail_slot/trail_slot.dart`
   appends the canonical Label slot (addText) whenever a kennel's
   `trailSymbolsConfigJson` omits a text-capable Label, so hares always have a
