@@ -331,7 +331,16 @@ Released with `flutter analyze` only. Screens: live run → map → Radar.
 
 ## PackTrack
 
-- [x] **PackTrack: Label mark must be a permanent core mark** (James, 2026-07-11).
+- [ ] **First On-Inn kills the whole drawn track — wrong for multi-lane
+  haring** (from the LH3 #2846 live run, 2026-08-15). James (haring) dropped
+  `GLY::oninn::A=endRun` at the end of one lane, re-declared `TRL::4` five
+  seconds later and kept laying — but `_isOnInn` truncates the polyline at
+  the FIRST terminator, so 20+ min of live trail was invisible to everyone
+  until the mark was deleted server-side (DeletePositions). Options: only
+  honour a terminator as track-end when it's the LAST point (or no points
+  follow within N min); or scope terminators per TRL lane segment. Also
+  consider: the live map's incremental poll never removes deleted points —
+  a deleted OIN stays in the client model until the map is reopened.
   Done — `_ensureLabelSlot` in `lib/data/models/trail_slot/trail_slot.dart`
   appends the canonical Label slot (addText) whenever a kennel's
   `trailSymbolsConfigJson` omits a text-capable Label, so hares always have a
