@@ -140,7 +140,9 @@ const kTrailGlyphs = <TrailGlyph>[
   TrailGlyph('hashview', 'hashview.mono.png', 'Hash View'),
   TrailGlyph('label', 'label.mono.png', 'Label'),
   TrailGlyph('drinkstop', 'drinkstop.mono.png', 'Drink Stop'),
-  TrailGlyph('oninn', 'oninn.mono.png', 'On Inn'),
+  // 'oninn' removed 2026-08-15: On Inn is no longer a placeable mark —
+  // ending a run is the mobile End Run button's job. Existing configs
+  // containing it are cleansed in _parseTrailSlots.
   TrailGlyph('caution', 'caution.fixed.png', 'Caution', fixed: true),
 ];
 
@@ -194,7 +196,8 @@ final kDefaultTrailSlots = [
   TrailSlotConfig(slot: 8,  kind: 'glyph', glyphId: 'hashview',  name: 'Hash View',  purpose: 'Hash View'),
   TrailSlotConfig(slot: 9,  kind: 'glyph', glyphId: 'label',     name: 'Label',      action: 'addText', purpose: 'Label'),
   TrailSlotConfig(slot: 10, kind: 'glyph', glyphId: 'drinkstop', name: 'Drink Stop'),
-  TrailSlotConfig(slot: 11, kind: 'glyph', glyphId: 'oninn',     name: 'On Inn',     action: 'endRun'),
+  // Slot 11 was On Inn (action: endRun) — removed permanently 2026-08-15;
+  // ending a run is the mobile End Run button's job.
   TrailSlotConfig(slot: 12, kind: 'glyph', glyphId: 'caution',   name: 'Caution',    action: 'addText'),
 ];
 
@@ -235,6 +238,13 @@ extension KennelTrailSymbolsControlsExtension on KennelPageFormController {
         final parsed = jsonDecode(json) as List<dynamic>;
         for (final entry in parsed) {
           final config = TrailSlotConfig.fromJson(entry as Map<String, dynamic>);
+          // On Inn is no longer a placeable mark (2026-08-15) — configs saved
+          // before the removal can still contain one. Leave that slot empty;
+          // the next save writes the cleansed config back.
+          final bool isOnInn = config.action == 'endRun' ||
+              config.glyphId == 'oninn' ||
+              (config.text ?? '').trim().toUpperCase() == 'ON IN';
+          if (isOnInn) continue;
           if (config.slot >= 1 && config.slot <= 12) {
             result[config.slot - 1] = config;
           }

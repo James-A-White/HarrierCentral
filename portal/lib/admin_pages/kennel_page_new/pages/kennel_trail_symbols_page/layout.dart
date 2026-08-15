@@ -366,7 +366,10 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
       items: const [
         DropdownMenuItem(value: null, child: Text('None')),
         DropdownMenuItem(value: 'addText', child: Text('Add Text')),
-        DropdownMenuItem(value: 'endRun', child: Text('End Run')),
+        // 'endRun' removed 2026-08-15: On Inn / run termination is no longer
+        // a configurable mark action — the mobile End Run button owns it.
+        // Slots carrying endRun in old configs are dropped at parse time, so
+        // this dropdown can never be asked to display the removed value.
       ],
       onChanged: (v) {
         setState(() => _selectedAction = v);

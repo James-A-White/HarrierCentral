@@ -170,7 +170,11 @@ class TrailSlot {
     TrailSlot(slot: 8,  kind: 'glyph', glyphId: 'hashview',  name: 'Hash View'),
     TrailSlot(slot: 9,  kind: 'glyph', glyphId: 'label',     name: 'Label',      action: 'addText'),
     TrailSlot(slot: 10, kind: 'glyph', glyphId: 'drinkstop', name: 'Drink Stop'),
-    TrailSlot(slot: 11, kind: 'glyph', glyphId: 'oninn',     name: 'On Inn',     action: 'endRun'),
+    // Slot 11 was On Inn (action: endRun) — removed permanently 2026-08-15.
+    // Ending a run is the End Run button's job (which confirms first); a
+    // one-tap terminator in the marks grid cut live tracks by accident.
+    // The 'oninn' glyph stays in kTrailGlyphs so historical marks still
+    // render on maps.
     TrailSlot(slot: 12, kind: 'glyph', glyphId: 'caution',   name: 'Caution',    action: 'addText'),
   ];
 }
@@ -183,12 +187,23 @@ extension KennelsModelTrailSlots on KennelsModel {
       final list = jsonDecode(json) as List<dynamic>;
       final slots = list
           .map((e) => TrailSlot.fromJson(e as Map<String, dynamic>))
+          .where((s) => !_isOnInnSlot(s))
           .toList();
       return _ensureLabelSlot(slots);
     } catch (_) {
       return TrailSlot.defaults;
     }
   }
+
+  /// On Inn is no longer a placeable mark (2026-08-15) — ending a run is the
+  /// End Run button's job. Kennel configs saved before the removal (and the
+  /// portal's old editor) can still contain one, so it is filtered out here
+  /// rather than trusted away: an endRun-action slot, the oninn glyph, or a
+  /// legacy "ON IN" text tile.
+  static bool _isOnInnSlot(TrailSlot s) =>
+      s.parsedAction == TrailSlotAction.endRun ||
+      s.glyphId == 'oninn' ||
+      (s.kind == 'text' && (s.text ?? '').trim().toUpperCase() == 'ON IN');
 
   /// Guarantee a functional (text-capable) Label mark is always available.
   ///

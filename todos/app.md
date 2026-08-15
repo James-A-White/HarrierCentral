@@ -248,6 +248,28 @@ NULL expiry on the pack row = never a member.
   charge sheet from the members list shows "Lifetime membership — there is
   nothing to charge" with NO fee field / method chips / charge button.
 
+## Device test — On Inn slot removed (2026-08-15, not yet released)
+
+On Inn is no longer a placeable mark anywhere: mobile drops it from the
+defaults and cleanses it out of stored kennel configs at parse (endRun
+action, oninn glyph, or legacy "ON IN" text); the portal editor drops the
+default, the glyph-picker entry and the End Run action option, and cleanses
+old configs on load (next save persists the cleansed JSON). Ending a run is
+the End Run button's job. Historical GLY::oninn marks still RENDER on maps
+(mobile kTrailGlyphs keeps the glyph; public-web untouched).
+NOTE for next portal release: `flutter build web` before the master merge.
+
+- [ ] **Mobile marks grid** (kennel WITH a saved config that included On Inn,
+  e.g. CH3/LH3): no On Inn tile; Label/Caution still present; End Run button
+  still ends the run after confirming.
+- [ ] **Mobile marks grid** (kennel with NO config → defaults): 11 tiles, no
+  On Inn.
+- [ ] **Portal trail symbols page** on a kennel whose config included On Inn:
+  that slot row shows empty (not On Inn), glyph picker has no On Inn, action
+  dropdown offers only None/Add Text; save → reload → still gone.
+- [ ] **Old run replay**: a historical track with an On Inn mark still shows
+  the On Inn icon and truncates there (rendering unchanged).
+
 ## Device test — On Inn confirmation (2026-08-15, not yet released)
 
 The hare's On Inn slot no longer marks + stops silently — it always confirms
