@@ -243,6 +243,10 @@ NULL expiry on the pack row = never a member.
 - [ ] **Virgin / visitor / follower who never joined**: "Purchase membership".
 - [ ] **Both buttons look pressable** — white pills, red text/icon, full width.
 - [ ] **Multi-select**: neither button appears (unchanged rule).
+- [ ] **Lifetime = expiry ≥ 2100 (new definition)**: set a test member's
+  expiry to 2100-01-01 → green star, no membership button, and opening the
+  charge sheet from the members list shows "Lifetime membership — there is
+  nothing to charge" with NO fee field / method chips / charge button.
 
 ## Device test — membership expiry badge (2026-08-11, not yet released)
 
