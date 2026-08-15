@@ -83,6 +83,42 @@ roughly by recommended sequence.
 
 ---
 
+## Device test — lost compass own-track merge (2026-08-15, not yet released)
+
+The "Where is the trail?" dialog now merges the server's view of your own
+track with the locally-recorded session track (`LocationService._sessionTrack`)
+in the own-track fallback, so a solo runner whose uploads are lagging — or who
+has no connection at all — is still pointed back along their own trail.
+Background: on the 2026-08-11 CH3 HAFTAS run the dialog showed "No live tracks
+yet" even though James had ~18 min of points recorded (server-side fetch
+returned empty at that moment; full track present on the server now).
+Files: `lost_compass_dialog.dart`, `location_service.dart`.
+
+- [ ] **Solo tracking, airplane mode**: start tracking, walk a few hundred
+  metres, enable airplane mode, open I'm Lost → orange "Your track" arrow
+  pointing back along the walked line (no network needed).
+- [ ] **Solo tracking, normal signal**: I'm Lost within ~2 min of starting →
+  new "You're the only one tracking…" message (not "No live tracks yet");
+  after ~3+ min of movement → own-track arrow.
+- [ ] **Not tracking, nobody else tracking**: message reads "No live tracks
+  yet…" and now says "…tell the pack with the button below" (NOT "the pack
+  has been notified") before announcing; after pressing Tell the pack, a
+  refetch failure shows "the pack has been notified".
+- [ ] **Different run guard**: track run A, stop, open I'm Lost on run B →
+  run A's local session points must NOT be offered as run B's trail
+  (sessionTrackFor eventId gate).
+
+### Investigation still open (related)
+
+- [ ] **Why did GetPositions return zero users at 19:53 on the HAFTAS run?**
+  Server now holds the full 966-point track (19:32–20:18, all acc ≤ 21.8 m),
+  stored under the lowercase internal event id; store/fetch ids are
+  consistent across all call sites. Leading theory: upload batches were
+  queued behind failed flushes and landed later. Confirm via device log
+  harvest ("PackTrack: upload batch" breadcrumbs) or Azure Table server-side
+  Timestamps (needs prod storage connection string). The local-track merge
+  makes the compass immune to this either way.
+
 ## Device test — 2.15.54+1268 run editor single save (shipped blind 2026-08-02)
 
 Released with `flutter analyze` only. The Details, Address and Other tabs no

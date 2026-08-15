@@ -528,7 +528,12 @@ class LostCompassController extends GetxController {
     await _fetchTracks();
 
     // No data yet (first fetch failed) — keep whatever error _fetchTracks set.
-    if (_tracks.isEmpty && errorMessage.value != null) {
+    // Unless the device holds locally-recorded session points: a runner with
+    // no connection at all is exactly who needs the own-track fallback, and
+    // those points never depend on the server.
+    if (_tracks.isEmpty &&
+        errorMessage.value != null &&
+        _localSessionTrack().isEmpty) {
       isLoading.value = false;
       return;
     }
@@ -574,6 +579,13 @@ class LostCompassController extends GetxController {
       api.dispose();
     }
   }
+
+  /// The runner's own session points recorded on THIS device for this event —
+  /// including any still queued for upload. The server's view of the own track
+  /// can lag minutes behind (failed flushes retry every 30s) or be empty
+  /// (fully offline); this list is complete either way.
+  List<TrackPoint> _localSessionTrack() =>
+      Get.find<LocationService>().sessionTrackFor(eventId);
 
   /// Appends an incremental payload's points to the tracks already held.
   void _mergeTracks(List<UserTrack> incoming) {
@@ -637,28 +649,54 @@ class LostCompassController extends GetxController {
 
     // Pass 2: nobody else usable out there — backtrack along my own earlier
     // track. Recent points are just where I'm standing, so they're cut too.
+    // The server's view is merged with the locally-recorded session track:
+    // upload batches queue and retry on a bad link, so the server can be
+    // minutes behind or hold nothing at all while this device has the whole
+    // run in memory. Overlap between the two is harmless — a nearest-point
+    // search doesn't care about duplicates.
+    final List<TrackPoint> localTrack = _localSessionTrack();
     if (best == null) {
-      final mine = _tracks
-          .where((u) => normalizeUuid(u.id) == normalizeUuid(myUserId))
-          .map(
-            (u) => (
-              track: u,
-              cutoffMs: nowMs - _ownTrackIgnoreWindow.inMilliseconds,
-            ),
-          )
-          .toList(growable: false);
+      final int ownCutoffMs = nowMs - _ownTrackIgnoreWindow.inMilliseconds;
+      final mine = <({UserTrack track, int? cutoffMs})>[
+        for (final u in _tracks)
+          if (normalizeUuid(u.id) == normalizeUuid(myUserId))
+            (track: u, cutoffMs: ownCutoffMs),
+        if (localTrack.isNotEmpty)
+          (
+            track: UserTrack(id: myUserId, positions: localTrack),
+            cutoffMs: ownCutoffMs,
+          ),
+      ];
       best = _nearestAcross(candidates: mine, from: myPoint);
       fellBack = best != null;
     }
 
     if (best == null) {
+      // Only claim the pack knows if the runner has actually told them —
+      // before that, point at the announce button instead.
+      final String chatAdvice = hasAnnounced.value
+          ? 'Ask in the chat — the pack has been notified.'
+          : 'Ask in the chat, or tell the pack with the button below.';
+      // Distinguish "nobody is tracking" from "only you are tracking and your
+      // track is too fresh to backtrack along" — telling someone who has been
+      // recording for 90 seconds that there are no tracks reads as a bug.
+      final bool haveOwnPoints =
+          localTrack.isNotEmpty ||
+          _tracks.any(
+            (u) =>
+                normalizeUuid(u.id) == normalizeUuid(myUserId) &&
+                u.positions.isNotEmpty,
+          );
       errorMessage.value = contributingRunners.value == 0
-          ? 'No live tracks yet for this run, so there is nothing to point '
-                'at. Ask in the chat — the pack has been notified.'
+          ? (haveOwnPoints
+                ? "You're the only one tracking, and there isn't enough of "
+                      'your own track behind you to point back along yet. '
+                      '$chatAdvice'
+                : 'No live tracks yet for this run, so there is nothing to '
+                      'point at. $chatAdvice')
           : excluded > 0
           ? 'The only other tracks belong to hashers who are also lost, so '
-                'there is no trail to point at. Ask in the chat — the pack '
-                'has been notified.'
+                'there is no trail to point at. $chatAdvice'
           : 'Could not read any track positions. Try again in a moment.';
       _targetPoint = null;
       _targetTimestampMs = null;

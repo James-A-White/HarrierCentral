@@ -397,6 +397,24 @@ class LocationService extends GetxService {
     _isResumingExistingTrack = true;
   }
 
+  /// Snapshot of the locally-recorded session track, but only when it belongs
+  /// to [forEventId] — the session list survives a stop (it is only cleared on
+  /// the next fresh start), so callers must say which run they are asking
+  /// about or they could be handed another run's points.
+  ///
+  /// This is the lost-compass's offline data source: every recorded point is
+  /// in here regardless of whether its upload batch has reached the server
+  /// yet, so a runner with no signal at all can still be pointed back along
+  /// their own track.
+  List<TrackPoint> sessionTrackFor(String forEventId) {
+    final ownEventId = eventId;
+    if (ownEventId == null ||
+        normalizeUuid(ownEventId) != normalizeUuid(forEventId)) {
+      return const <TrackPoint>[];
+    }
+    return List<TrackPoint>.of(_sessionTrack);
+  }
+
   // Fully ends the session regardless of current state (tracking or paused).
   Future<void> stopTracking() async {
     _pausePoint = null;
