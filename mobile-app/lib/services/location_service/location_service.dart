@@ -131,6 +131,36 @@ class LocationService extends GetxService {
   // On-Inn cluster with tracking still on (docs/packtrack_auto_stop_plan.md).
   late final OnInnAutoStopMonitor _onInnAutoStop = OnInnAutoStopMonitor(this);
 
+  // Epoch-ms of the most recent deliberate tracking start/resume — the
+  // staleness guard for the remote "tracking ended" flag.
+  int _lastTrackingStartMs = 0;
+
+  /// A StorePositions response said an admin ended tracking for this run
+  /// (EndEventTracking flag). Stop the loop — unless the runner deliberately
+  /// (re)started tracking AFTER the flag was stamped, which means they know
+  /// the run is "over" and are tracking anyway (e.g. a straggler still out on
+  /// trail); their choice wins. No On-Inn is placed: the server doesn't know
+  /// where the runner is in the trail, only that the run is over.
+  void _onRemoteTrackingEnded(String endedAtMs) {
+    if (!joinRunTracking.value && !isPaused.value) return;
+    final endedMs = int.tryParse(endedAtMs) ?? 0;
+    if (endedMs > 0 && endedMs < _lastTrackingStartMs) return;
+    BootLogger.logBreadcrumb(
+      'PackTrack: remote stop — admin ended tracking for this run',
+    );
+    unawaited(stopTracking());
+    Get.snackbar(
+      'Run ended',
+      'A kennel admin marked this run as finished, so tracking has '
+          'stopped. Press Start Run Tracking again if you are still out '
+          'on trail.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: hc_blue,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 8),
+    );
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -140,6 +170,11 @@ class LocationService extends GetxService {
 
     _trackingWorker = ever<bool>(joinRunTracking, (value) async {
       if (value) {
+        // Any deliberate start/resume re-stamps the session: a remote
+        // "tracking ended" flag OLDER than this stamp is ignored, so a runner
+        // who restarts after an admin ended the run is not immediately
+        // re-stopped (see _onRemoteTrackingEnded).
+        _lastTrackingStartMs = DateTime.now().millisecondsSinceEpoch;
         // Starting or resuming tracking. Only reset the session track on a
         // fresh start — resuming from pause OR seeding an existing stored track
         // (app closed mid-run) both continue the same session.
@@ -781,6 +816,7 @@ class LocationService extends GetxService {
         apiUrl: STORE_POSITIONS_URL,
         eventId: eventId!,
         userId: userId!,
+        onRemoteTrackingEnded: _onRemoteTrackingEnded,
       );
       // Hand a pending resume-cleanup to the live buffer (it may be a
       // fresh instance or the pre-stop one — either carries the flag).

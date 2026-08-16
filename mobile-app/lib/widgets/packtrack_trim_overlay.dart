@@ -25,6 +25,88 @@ class PackTrackTrimController extends GetxController {
   final RxBool editing = false.obs;
   final RxBool busy = false.obs;
 
+  /// Event-level "tracking ended" flag (EndEventTracking). null = not yet
+  /// fetched; the button shows once the status is known.
+  final RxnBool trackingEnded = RxnBool();
+
+  @override
+  void onInit() {
+    super.onInit();
+    unawaited(_refreshTrackingEnded());
+  }
+
+  Future<void> _refreshTrackingEnded() async {
+    final api = EndEventTrackingApi();
+    try {
+      final status = await api.setEnded(eventId: _eventId, ended: null);
+      trackingEnded.value = status.ended;
+    } catch (_) {
+      // Status is cosmetic (button label) — stay unknown when offline.
+    } finally {
+      api.dispose();
+    }
+  }
+
+  /// Ends (or re-opens) tracking for EVERYONE on this run. While the flag is
+  /// set, every phone still uploading points stops its tracking loop within
+  /// one flush interval — the delivery rides the StorePositions responses, so
+  /// no push is involved and it reaches exactly the phones still transmitting
+  /// (docs/packtrack_auto_stop_plan.md). A runner who deliberately restarts
+  /// tracking afterwards is left alone (client-side staleness guard).
+  Future<void> toggleEveryonesTracking() async {
+    final bool ending = trackingEnded.value != true;
+    if (ending) {
+      final confirmed = await Get.dialog<bool>(
+        AlertDialog(
+          title: Text("Stop everyone's tracking?", style: ts_alertDialogTitle),
+          content: Text(
+            'Every phone still sending points for this run will stop '
+            'tracking within a minute or so. Anyone still out on trail can '
+            'simply start tracking again — they will not be stopped twice.',
+            style: ts_alertDialogBody,
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Get.back(result: false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade600,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Cancel', style: ts_button),
+            ),
+            ElevatedButton(
+              onPressed: () => Get.back(result: true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: hc_red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Stop tracking', style: ts_button),
+            ),
+          ],
+        ),
+        barrierDismissible: false,
+      );
+      if (confirmed != true) return;
+    }
+    busy.value = true;
+    final api = EndEventTrackingApi();
+    try {
+      final status = await api.setEnded(eventId: _eventId, ended: ending);
+      trackingEnded.value = status.ended;
+      _snack(
+        ending
+            ? "Tracking ended for everyone — phones still sending will stop "
+                  'within a minute.'
+            : 'Tracking re-opened.',
+      );
+    } catch (e) {
+      _snack('Could not update tracking — try again when online.');
+    } finally {
+      api.dispose();
+      busy.value = false;
+    }
+  }
+
   String get _eventId => run.event.eventId;
   String get _userId => getStringPref(StringPrefsEnum.userId) ?? '';
 
@@ -227,6 +309,19 @@ class TrimEditorOverlay extends StatelessWidget {
               onPressed: busy ? null : () => trimController.clear(),
               child: const Text('Clear window'),
             ),
+            if (trimController.trackingEnded.value != null)
+              TextButton(
+                onPressed: busy
+                    ? null
+                    : () =>
+                          unawaited(trimController.toggleEveryonesTracking()),
+                child: Text(
+                  trimController.trackingEnded.value == true
+                      ? 'Re-open tracking'
+                      : "Stop everyone's tracking",
+                  style: TextStyle(color: hc_red),
+                ),
+              ),
           ],
         ),
       );
@@ -300,6 +395,20 @@ class TrimEditorOverlay extends StatelessWidget {
             onPressed: busy ? null : () => trimController.clear(),
             child: const Text('Clear', style: TextStyle(color: Colors.white)),
           ),
+          if (trimController.trackingEnded.value != null) ...[
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: busy
+                  ? null
+                  : () => unawaited(trimController.toggleEveryonesTracking()),
+              child: Text(
+                trimController.trackingEnded.value == true
+                    ? 'Re-open tracking'
+                    : 'Stop everyone',
+                style: TextStyle(color: Colors.red.shade300),
+              ),
+            ),
+          ],
           const SizedBox(width: 4),
           IconButton(
             tooltip: 'Done',

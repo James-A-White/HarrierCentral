@@ -286,6 +286,7 @@ export 'package:harrier_central/util/constants.dart';
 export 'package:harrier_central/util/enums.dart';
 export 'package:harrier_central/util/get_positions.dart';
 export 'package:harrier_central/util/delete_positions.dart';
+export 'package:harrier_central/util/end_event_tracking.dart';
 export 'package:harrier_central/util/avatar.dart';
 export 'package:harrier_central/util/kennel_permissions.dart';
 export 'package:harrier_central/util/async_serializer.dart';

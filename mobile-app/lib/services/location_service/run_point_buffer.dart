@@ -9,6 +9,7 @@ class RunPointBuffer {
     required this.apiUrl,
     required this.eventId,
     required this.userId,
+    this.onRemoteTrackingEnded,
     http.Client? httpClient,
   }) : _injectedClient = httpClient;
 
@@ -18,6 +19,13 @@ class RunPointBuffer {
   final String apiUrl;
   final String eventId;
   final String userId;
+
+  /// Fired when a StorePositions response carries the event-level
+  /// "tracking ended" flag (an admin ended tracking for everyone via
+  /// EndEventTracking). The argument is the server's 19-digit endedAt epoch-ms
+  /// stamp. Only the LIVE tracking buffer wires this — one-shot buffers
+  /// (boundary markers, out-of-band marks) must not react to it.
+  final void Function(String endedAtMs)? onRemoteTrackingEnded;
 
   // No persistent client. This buffer flushes GPS batches every 30s *while the
   // app is backgrounded* during a run — precisely when iOS tears down sockets.
@@ -78,6 +86,22 @@ class RunPointBuffer {
     }
   }
 
+  /// Surfaces the piggybacked "tracking ended" flag from a successful
+  /// StorePositions response body. Best-effort: an unparseable body is an
+  /// older server or a proxy page — never an error.
+  void _checkRemoteTrackingEnded(String body) {
+    final callback = onRemoteTrackingEnded;
+    if (callback == null) return;
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map && decoded['trackingEnded'] == true) {
+        callback(decoded['trackingEndedAtMs']?.toString() ?? '');
+      }
+    } catch (_) {
+      // Not JSON — ignore.
+    }
+  }
+
   /// Sends [points] as their own batch RIGHT NOW, bypassing both the queue and
   /// the [flush] re-entrancy guard, and reports whether the server took them.
   ///
@@ -125,6 +149,7 @@ class RunPointBuffer {
           if (kDebugMode) {
             debugPrint(resp.body);
           }
+          _checkRemoteTrackingEnded(resp.body);
           return true;
         }
         // 429/5xx: retry; others: give up
