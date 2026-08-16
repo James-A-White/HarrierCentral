@@ -306,6 +306,23 @@ StorePositions flag echo).
   stopped phone presses Start Run Tracking again → keeps tracking, is NOT
   stopped a second time.
 
+## Device test — mark guards + zombie poll fix (2026-08-16, not yet released)
+
+- [ ] **Slot cooldown**: while tracking, tap Check twice quickly → ONE mark,
+  one flash; second tap does nothing at all. Tap Check then Whichy Way
+  immediately → both marked (different slots never block).
+- [ ] **Undo**: mark a Check → "Marked" snackbar with UNDO for ~8s → tap
+  UNDO → "removed" snackbar; a map opened fresh afterwards does NOT show the
+  mark. (An already-open map keeps it until full reload — expected.)
+- [ ] **Undo offline**: airplane mode, mark a Check, UNDO within seconds →
+  removed (came out of the queue); signal back → the mark never appears.
+- [ ] **Lost re-announce window**: I'm Lost → Tell the pack → immediately
+  announce again → the live map shows ONE lost badge (moved, not doubled);
+  wait >2 min and announce again → a second badge is allowed.
+- [ ] **Zombie poll fix**: open a live run's map, close it within ~1s (an
+  in-flight load), keep the app open 2+ min → boot log shows NO
+  "loadPositions … Null check operator" lines (previously every 15s).
+
 ## Device test — map pending-tail + freshness pill (2026-08-16, not yet released)
 
 Live map now fuses the viewer's own track: solid = confirmed on server,
