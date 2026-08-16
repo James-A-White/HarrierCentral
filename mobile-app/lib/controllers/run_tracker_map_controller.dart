@@ -875,6 +875,10 @@ class RunTrackerMapController extends GetxController
     // Start with map visible
     _isVisible = true;
     _lastMarkerZoom = initialZoom;
+    _stalenessTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => stalenessTick.value++,
+    );
     // A visible PackTrack map needs a live viewer position even when the
     // user is not run-tracking (sweepers, latecomers, post-run tracing) —
     // without the boost the idle stream reports lowest-accuracy fixes only
@@ -927,6 +931,7 @@ class RunTrackerMapController extends GetxController
       Get.find<LocationService>().releasePreciseStream();
     }
     _stopAutoUpdateTimer();
+    _stalenessTimer?.cancel();
     _stopRotationSlew();
     unawaited(_tiltSub?.cancel());
     unawaited(_compassSub?.cancel());
@@ -1076,6 +1081,7 @@ class RunTrackerMapController extends GetxController
       }).toList();
 
       userPositions.assignAll(cleanedUsers);
+      lastServerUpdateAt.value = DateTime.now();
       _assignRunnerColors(cleanedUsers);
       _refreshTrailFilter();
       _initializeTimelineBounds();
@@ -2374,6 +2380,68 @@ class RunTrackerMapController extends GetxController
     return ordered.firstWhere(
       (name) => name.isNotEmpty,
       orElse: () => 'Runner',
+    );
+  }
+
+  // ── Live staleness + pending own tail ─────────────────────────────────────
+
+  /// Wall-clock of the last successful positions fetch — feeds the map's
+  /// "Tracks updated N min ago" pill. Null until the first fetch lands.
+  final Rxn<DateTime> lastServerUpdateAt = Rxn<DateTime>();
+
+  /// Bumped every 15 s so the staleness pill re-renders while nothing else
+  /// changes — the auto-update timer stops in exactly the situations
+  /// (offline, backgrounded, poll failures) where the pill matters most.
+  final RxInt stalenessTick = 0.obs;
+  Timer? _stalenessTimer;
+
+  /// True while the event is inside its live window — the pill (and the
+  /// pending tail) only make sense for a run that is still being tracked,
+  /// not a finished-run replay opened days later.
+  bool get isLiveWindow => !_isStaleEvent;
+
+  /// The viewer's own locally-recorded points that have NOT yet appeared in
+  /// the server track — the un-uploaded tail, drawn dotted so the runner can
+  /// tell confirmed-on-server from still-in-the-phone. On a run with poor
+  /// data coverage the solid line can lag minutes behind; the dotted tail
+  /// keeps the drawn track continuous to "here". Bridged from the newest own
+  /// server point so solid and dotted join without a gap. Hidden during
+  /// playback (live-now data has no place mid-replay).
+  Polyline? get pendingOwnTailPolyline {
+    final String? me = _currentUserId;
+    if (me == null) return null;
+    if (isPlaying.value) return null;
+    if (!isLiveWindow) return null;
+    if (!Get.isRegistered<LocationService>()) return null;
+    final List<TrackPoint> local = Get.find<LocationService>()
+        .sessionTrackFor(event.eventId);
+    if (local.isEmpty) return null;
+
+    int newestServerTs = 0;
+    latlng.LatLng? bridge;
+    for (final u in userPositions) {
+      if (normalizeUuid(u.id) != normalizeUuid(me)) continue;
+      for (final p in u.positions) {
+        if (p.timestampMs > newestServerTs) {
+          newestServerTs = p.timestampMs;
+          bridge = latlng.LatLng(p.lat, p.lng);
+        }
+      }
+    }
+
+    final points = <latlng.LatLng>[
+      ?bridge,
+      for (final p in local)
+        if (p.timestampMs > newestServerTs) latlng.LatLng(p.lat, p.lng),
+    ];
+    final int tailCount = points.length - (bridge != null ? 1 : 0);
+    if (tailCount < 1 || points.length < 2) return null;
+
+    return Polyline(
+      points: points,
+      strokeWidth: 4.0,
+      pattern: const StrokePattern.dotted(spacingFactor: 2.0),
+      color: _colorForUser(me).withValues(alpha: 0.9),
     );
   }
 

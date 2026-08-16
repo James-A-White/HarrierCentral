@@ -190,6 +190,9 @@ class RunTrackerMap extends StatelessWidget {
                   PolylineLayer(polylines: controller.dimmedPolylines),
                   if (controller.highlightedPolyline != null)
                     PolylineLayer(polylines: [controller.highlightedPolyline!]),
+                  // The viewer's own un-uploaded tail, dotted — its own Obx so
+                  // every GPS fix extends it without rebuilding the map.
+                  _pendingTailLayer(controller),
                   // Viewer dot + accuracy halo — own reactive layer (below the
                   // main marker layer so pins stay on top).
                   _viewerLayer(controller),
@@ -282,6 +285,16 @@ class RunTrackerMap extends StatelessWidget {
                 left: 0,
                 right: 0,
                 child: Center(child: _viewSwitch(controller)),
+              ),
+              // "Tracks updated N min ago" — freshness of the live feed, so a
+              // runner in a coverage hole knows how old the drawn pack is.
+              Positioned(
+                top: 58,
+                left: 0,
+                right: 0,
+                child: IgnorePointer(
+                  child: Center(child: _tracksUpdatedPill(controller)),
+                ),
               ),
               // In-map photo showcase — grows a photo out of its pin to centre
               // and back as the playhead crosses it (topmost overlay).
@@ -477,6 +490,60 @@ class RunTrackerMap extends StatelessWidget {
             ],
           ),
         ],
+      );
+    });
+  }
+
+  /// The viewer's own not-yet-uploaded track tail as a dotted polyline. Own
+  /// Obx: reading [LocationService.lastKnownPosition] here means every GPS
+  /// fix extends the tail by repainting only this layer. The controller
+  /// getter also reads userPositions/isPlaying, so a successful upload (the
+  /// server track catching up) retracts the dotted portion automatically.
+  Widget _pendingTailLayer(RunTrackerMapController controller) {
+    if (!Get.isRegistered<LocationService>()) return const SizedBox.shrink();
+    final LocationService loc = Get.find<LocationService>();
+    return Obx(() {
+      loc.lastKnownPosition.value; // dependency: new fix → longer tail
+      final tail = controller.pendingOwnTailPolyline;
+      if (tail == null) return const SizedBox.shrink();
+      return PolylineLayer(polylines: [tail]);
+    });
+  }
+
+  /// Freshness pill for the live feed: how long since the last successful
+  /// positions fetch. Neutral under a minute; amber once the feed is two
+  /// missed polls behind — the situation (coverage hole) where knowing the
+  /// pack picture is stale actually changes what a runner does.
+  Widget _tracksUpdatedPill(RunTrackerMapController controller) {
+    return Obx(() {
+      controller.stalenessTick.value; // re-evaluate every 15 s
+      final DateTime? at = controller.lastServerUpdateAt.value;
+      if (at == null || !controller.isLiveWindow) {
+        return const SizedBox.shrink();
+      }
+      final int secs = DateTime.now().difference(at).inSeconds;
+      final String label = secs < 60
+          ? 'Tracks updated just now'
+          : secs < 3600
+          ? 'Tracks updated ${secs ~/ 60} min ago'
+          : 'Tracks updated ${secs ~/ 3600}h ${(secs % 3600) ~/ 60}m ago';
+      final bool lagging = secs >= 120;
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: lagging
+              ? Colors.deepOrange.shade700.withValues(alpha: 0.85)
+              : Colors.black.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       );
     });
   }

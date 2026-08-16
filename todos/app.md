@@ -263,6 +263,23 @@ NULL expiry on the pack row = never a member.
   charge sheet from the members list shows "Lifetime membership — there is
   nothing to charge" with NO fee field / method chips / charge button.
 
+## Device test — map pending-tail + freshness pill (2026-08-16, not yet released)
+
+Live map now fuses the viewer's own track: solid = confirmed on server,
+dotted = recorded locally but not yet uploaded (bridged so they join). Pill
+under the Map/Radar switch: "Tracks updated just now / N min ago", amber
+once ≥2 min behind. Both only on live-window events, never in replay.
+
+- [ ] **Normal signal**: while tracking with the map open, a short dotted
+  stub appears at your line's tip and retracts every ~30 s as batches land.
+- [ ] **Airplane mode mid-run**: dotted tail grows continuously from where
+  the solid line stops; pill counts up and turns amber at 2 min. Signal
+  back → solid line catches up, dotted retracts, pill returns to "just now".
+- [ ] **Playback/scrub**: no dotted tail while playing.
+- [ ] **Replay of an old run**: no pill, no tail.
+- [ ] **Another runner selected**: their line unchanged — the tail only ever
+  draws for YOUR track.
+
 ## Device test — On Inn slot removed (2026-08-15, not yet released)
 
 On Inn is no longer a placeable mark anywhere: mobile drops it from the
