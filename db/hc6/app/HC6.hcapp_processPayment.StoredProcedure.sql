@@ -24,7 +24,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_processPayment]
     @useSpecialPriceAsDefault SMALLINT          = NULL,
     -- Free-text payment note (haberdashery item description). Stored on
     -- Payment.Notes, which the payment report already returns.
-    @notes                  NVARCHAR(500)       = NULL
+    @notes                  NVARCHAR(500)       = NULL,
+    -- productType 2 only: 1 = also record the run fee (member pricing) and
+    -- check the payer in, atomically with the membership charge. Ignored for
+    -- other product types. See "Combined membership + run" in the header.
+    @alsoPayRunFee          SMALLINT            = 0
 
 AS
 -- =====================================================================
@@ -82,6 +86,17 @@ AS
 -- Modified: 2026-07-25 — added UPDLOCK/HOLDLOCK serialization on the HEM row
 --   before the check-then-cancel-then-insert, preventing a concurrent
 --   double-tap from inserting two non-cancelled payments for the same HEM.
+-- Modified: 2026-08-16 — two additions (docs/membership_payments_plan.md):
+--   (1) Zero-price ⇒ FREE: a cash/transfer/credit tap (types 3/4/6) on a run
+--       whose computed price is zero records PaymentType 2 with a provenance
+--       tag in Notes ('member'/'non-member') instead of a zero-amount "cash"
+--       fiction. Other-amount types (5/7/8) are never coerced.
+--   (2) Combined membership + run (@alsoPayRunFee = 1, productType 2 only):
+--       after the membership charge, atomically records the run fee at MEMBER
+--       pricing (zero ⇒ FREE + 'member' tag), same method family (other-
+--       amount variants map to base types), no extras, and checks the payer
+--       in (attendance floor @minimumAttendenceValue, default 20). adHocData
+--       gains runFeeAmount + runFeePaymentType (additive).
 -- HC5 Source: HC5.hcapp_processPayment
 -- Breaking Changes:
 --   TRY/CATCH and transaction added (HC5 had neither).
@@ -105,6 +120,8 @@ IF (@eventId          = '00000000-0000-0000-0000-000000000000') SET @eventId    
 IF (@productType IS NULL) SET @productType = 1;
 IF (@doPayForExtras IS NULL) SET @doPayForExtras = 0;
 IF (@minimumAttendenceValue < 0) SET @minimumAttendenceValue = NULL;
+-- Combined membership+run is a productType-2-only concept.
+IF (@alsoPayRunFee IS NULL OR @productType != 2) SET @alsoPayRunFee = 0;
 
 DECLARE @userId       UNIQUEIDENTIFIER;
 DECLARE @deviceSecret NVARCHAR(150);
@@ -256,7 +273,9 @@ BEGIN TRY
                 0                  AS discountAmount,
                 0                  AS discountPercent,
                 ''                 AS discountDescription,
-                NULL               AS newMembershipExpiry;
+                NULL               AS newMembershipExpiry,
+                NULL               AS runFeeAmount,
+                NULL               AS runFeePaymentType;
 
             GOTO SyncAndReturn;
         END
@@ -293,15 +312,17 @@ BEGIN TRY
                 -- Membership/haberdashery charges (productType 2/3) use the
                 -- HEM purely as a payment anchor: create it neutral (no RSVP,
                 -- no attendance) rather than marking the hasher as going to
-                -- the anchor run.
+                -- the anchor run. Exception: a combined membership+run charge
+                -- (@alsoPayRunFee) IS an attendance — create it like a run
+                -- payment would.
                 INSERT HC.HasherEventMap
                     ([id], [UserId], [EventId], [KennelId], [RsvpState],
                      [Rsvp], [UserStartEvent], [AttendenceState], [updatedAt])
                 VALUES
                     (@hasherEventMapId, @userIdWhoPaid, @eventId, @kennelId,
-                     CASE WHEN @productType IN (2, 3) THEN 0 ELSE 3 END,
-                     CASE WHEN @productType IN (2, 3) THEN NULL ELSE GETDATE() END,
-                     CASE WHEN @productType IN (2, 3) THEN NULL ELSE GETDATE() END,
+                     CASE WHEN @productType IN (2, 3) AND @alsoPayRunFee = 0 THEN 0 ELSE 3 END,
+                     CASE WHEN @productType IN (2, 3) AND @alsoPayRunFee = 0 THEN NULL ELSE GETDATE() END,
+                     CASE WHEN @productType IN (2, 3) AND @alsoPayRunFee = 0 THEN NULL ELSE GETDATE() END,
                      COALESCE(@minimumAttendenceValue, 0), GETDATE());
             END
         END
@@ -325,6 +346,10 @@ BEGIN TRY
         -- Lifetime sentinel: works with every existing
         -- "MembershipExpirationDate > GETDATE()" check unchanged.
         DECLARE @lifetimeExpiry      DATETIMEOFFSET(7) = '2999-12-31';
+
+        -- Combined membership+run leg (@alsoPayRunFee) — surfaced in adHocData.
+        DECLARE @runFeeCharged       MONEY    = NULL;
+        DECLARE @runFeePaymentType   SMALLINT = NULL;
 
         -- Serialize concurrent payment operations for this HEM. Two racing calls
         -- (a double-tap / client retry) could otherwise BOTH read
@@ -495,6 +520,23 @@ BEGIN TRY
                 updatedAt          = GETDATE()
             WHERE CancelledDate IS NULL AND HasherEventMapId = @hasherEventMapId
               AND ProductType = @productType;
+        END
+
+        -- ---------------------------------------------------------------
+        -- Zero-price ⇒ FREE (2026-08-16): a cash / bank-transfer / hash-
+        -- credit tap (types 3/4/6) on a run whose computed price is zero is
+        -- really a free run — record PaymentType 2 with a provenance tag in
+        -- Notes ('member' / 'non-member') instead of a zero-amount "cash"
+        -- fiction, so payment reports count real money only. Other-amount
+        -- types (5/7/8) carry deliberate explicit amounts — never coerced.
+        -- ---------------------------------------------------------------
+        IF (@productType = 1 AND @paymentType IN (3, 4, 6)
+            AND (@eventPrice - @extrasPrice) <= 0)
+        BEGIN
+            SET @paymentType = 2;
+            IF (@notes IS NULL)
+                SET @notes = CASE WHEN COALESCE(@memberExpiry, '2000-01-01') > GETDATE()
+                                  THEN 'member' ELSE 'non-member' END;
         END
 
         -- ---------------------------------------------------------------
@@ -694,6 +736,111 @@ BEGIN TRY
 
                 SELECT @attendenceState = CASE WHEN COALESCE(@attendenceState, 0) < @minimumAttendenceValue THEN @minimumAttendenceValue ELSE @attendenceState END;
             END
+
+            -- ---------------------------------------------------------------
+            -- Combined membership + run (@alsoPayRunFee = 1, productType 2):
+            -- the expiry update above has just made the payer a member, so the
+            -- run leg charges MEMBER pricing (with their HKM discounts). Zero
+            -- price ⇒ FREE + 'member' tag. Extras never apply on the combined
+            -- path (use the normal run-payment flow for extras). Same
+            -- transaction: membership, run fee and check-in commit or roll
+            -- back together.
+            -- ---------------------------------------------------------------
+            IF (@productType = 2 AND @alsoPayRunFee = 1)
+            BEGIN
+                DECLARE @runPrice               MONEY;
+                DECLARE @runDiscountAmount      SMALLMONEY   = 0;
+                DECLARE @runDiscountPercent     SMALLINT     = 0;
+                DECLARE @runDiscountDescription NVARCHAR(50) = '';
+
+                SELECT
+                    @runPrice = COALESCE(e.EventPriceForMembers, k.DefaultEventPriceForMembers,
+                                         e.EventPriceForNonMembers, k.DefaultEventPriceForNonMembers, 0),
+                    @runDiscountAmount      = COALESCE(hkm.DiscountAmount, 0),
+                    @runDiscountPercent     = COALESCE(hkm.DiscountPercent, 0),
+                    @runDiscountDescription = COALESCE(hkm.DiscountDescription, '')
+                FROM HC.Event e
+                INNER JOIN HC.Kennel k ON k.id = e.KennelId
+                LEFT OUTER JOIN HC.HasherKennelMap hkm
+                    ON hkm.UserId = @payer_userIdGuid AND hkm.KennelId = k.id
+                WHERE e.id = @eventId;
+
+                SET @runPrice = @runPrice - @runDiscountAmount;
+                SET @runPrice = @runPrice - (@runPrice * (@runDiscountPercent / 100.0));
+                IF (@runPrice < 0) SET @runPrice = 0;
+
+                -- Run-leg method: same family as the membership payment;
+                -- other-amount variants map to their base type (the explicit
+                -- amount was the membership fee — the run leg is charged at
+                -- the computed price). Zero price ⇒ FREE + provenance tag.
+                DECLARE @runPaymentType SMALLINT =
+                    CASE WHEN @runPrice <= 0 THEN 2
+                         WHEN @paymentType = 5 THEN 3
+                         WHEN @paymentType = 7 THEN 4
+                         WHEN @paymentType = 8 THEN 6
+                         ELSE @paymentType END;
+                DECLARE @runNotes NVARCHAR(500) =
+                    CASE WHEN @runPrice <= 0 THEN 'member' ELSE NULL END;
+                -- Hash-credit legs record credit 0 (balance is recomputed
+                -- post-commit), mirroring the main path.
+                DECLARE @runCredit MONEY =
+                    CASE WHEN @runPaymentType IN (6, 8) THEN 0 ELSE @runPrice END;
+
+                -- One active run payment per HEM — same invariant as the
+                -- main productType-1 path.
+                UPDATE HC.Payment SET
+                    IsCancelled        = 1,
+                    CancelledDate      = GETDATE(),
+                    CancelledBy_UserId = @userId,
+                    updatedAt          = GETDATE()
+                WHERE CancelledDate IS NULL AND HasherEventMapId = @hasherEventMapId
+                  AND ProductType = 1;
+
+                DECLARE @runRef NVARCHAR(50) =
+                    'HC:' + HC.NUMBER_TO_STR_BASE(36, (RAND() * (2147483647 - 60466177)) + 60466176);
+                DECLARE @runRefCount INT = 1;
+                WHILE (@runRefCount > 0)
+                BEGIN
+                    SELECT @runRefCount = COUNT(*) FROM HC.Payment WHERE PaymentReference = @runRef;
+                    IF (@runRefCount > 0)
+                        SET @runRef = LEFT(@runRef, 3) + HC.NUMBER_TO_STR_BASE(36, (RAND() * (2147483647 - 60466177)) + 60466176);
+                END
+
+                INSERT HC.Payment
+                    ([KennelId], [UserId], [EventId], [HasherEventMapId],
+                     [CreditAmount], [DebitAmount], [CreditAvailable],
+                     [PaymentProcessedBy_userId], [PaidDate],
+                     [PaymentType], [ProductType], [PaymentReference],
+                     [DoPayForExtras], [PaymentProvider],
+                     [DiscountAmount], [DiscountPercent], [DiscountDescription],
+                     [SpecialRunPriceReason], [Surcharge],
+                     [PreviousMembershipExpiry], [Notes], [updatedAt])
+                VALUES
+                    (@kennelId, @payer_userIdGuid, @eventId, @hasherEventMapId,
+                     @runCredit, @runPrice, 0,
+                     @userId, GETDATE(),
+                     @runPaymentType, 1, @runRef,
+                     0, @paymentProvider,
+                     @runDiscountAmount, @runDiscountPercent, @runDiscountDescription,
+                     '', 0,
+                     NULL, @runNotes, GETDATE());
+
+                -- Check the payer in — attendance floor defaults to 20
+                -- (at the hash) when the caller didn't specify.
+                UPDATE HC.HasherEventMap SET
+                    UserStartEvent   = GETDATE(),
+                    RsvpState        = 3,
+                    AttendenceState  = CASE WHEN COALESCE(AttendenceState, 0) < COALESCE(@minimumAttendenceValue, 20)
+                                            THEN COALESCE(@minimumAttendenceValue, 20) ELSE AttendenceState END,
+                    updatedAt        = GETDATE()
+                WHERE id = @hasherEventMapId;
+
+                SELECT @attendenceState = AttendenceState
+                FROM HC.HasherEventMap WHERE id = @hasherEventMapId;
+
+                SET @runFeeCharged     = @runPrice;
+                SET @runFeePaymentType = @runPaymentType;
+            END
         END
 
     COMMIT TRANSACTION;
@@ -741,7 +888,12 @@ SELECT
     -- productType = 2 only: the expiry just written, so the app can show
     -- "membership now valid until X" without waiting for a sync. NULL for
     -- other products (additive column — see contract).
-    @newMemberExpiry     AS newMembershipExpiry;
+    @newMemberExpiry     AS newMembershipExpiry,
+    -- Combined membership+run only (@alsoPayRunFee = 1): what the run leg
+    -- charged and how it was recorded (2 = free run). NULL otherwise
+    -- (additive columns — see contract).
+    @runFeeCharged       AS runFeeAmount,
+    @runFeePaymentType   AS runFeePaymentType;
 
 SyncAndReturn:
 
