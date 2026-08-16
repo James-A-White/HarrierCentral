@@ -2,6 +2,15 @@
 
 ---
 
+## 2.0.62+697 (2026-08-16)
+
+- **On Inn removed from the trail symbols editor** — no longer placeable in
+  any slot (default, glyph picker, and End Run action all removed); kennel
+  configs that still contain one are cleansed on load and on save. Slot 4's
+  fixed "On Inn" purpose is now an ordinary editable purpose.
+
+---
+
 ## 2.0.61+696 (2026-08-09)
 
 - **Membership year is month + day** (kennel → Hash Cash tab): the fixed-year

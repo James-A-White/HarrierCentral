@@ -1,5 +1,29 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1288 (2026-08-16)
+
+### New Features
+- **See your whole track, even with no signal.** The live map now draws your
+  own track in two parts: solid where the server has it, dotted for what
+  your phone has recorded but not yet uploaded — they join seamlessly, and
+  the dotted tail retracts as uploads land.
+- **"Tracks updated N min ago"** pill on the live map shows how fresh the
+  pack picture is; it turns amber when the feed falls 2+ minutes behind.
+
+### Improvements
+- **On Inn is no longer a trail mark.** Ending a run is the End Run button's
+  job (it asks first); the one-tap terminator tile that could accidentally
+  cut a live track is gone, including from kennel-configured mark sets.
+  Historical On Inn marks still show on old runs.
+- **Honest connection messages.** A request that dies or times out right
+  after the app wakes now says so ("Connection Hiccup" / "Request Timed
+  Out") instead of "Unknown Server Error —".
+
+### Fixes
+- **Radar hidden when a run has no tracks.** On future (or untracked) runs
+  the Radar button led to a blank screen; the Map/Radar switch now only
+  appears once at least one runner has live track points.
+
 ## 3.0.1+1287 (2026-08-15)
 
 ### Fixes
