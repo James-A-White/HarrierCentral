@@ -52,6 +52,16 @@ class RunPointBuffer {
     _ensureTimer();
   }
 
+  /// Removes a not-yet-uploaded point by its 19-digit timestamp. Undo path:
+  /// the mark may still be queued (bad signal), and a server-side delete
+  /// alone would let the queued copy re-upload afterwards. Returns true if a
+  /// queued point was removed.
+  bool removeByTs(String ts19) {
+    final before = _q.length;
+    _q.removeWhere((p) => p.ts == ts19);
+    return _q.length != before;
+  }
+
   void _ensureTimer() {
     _flushTimer ??= Timer.periodic(_flushInterval, (_) => unawaited(flush()));
   }

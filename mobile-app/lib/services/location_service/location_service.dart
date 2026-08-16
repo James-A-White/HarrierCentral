@@ -327,10 +327,11 @@ class LocationService extends GetxService {
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.lowest,
         ),
-      ).then(updateDeviceLocation).catchError((e) {
+      ).then(updateDeviceLocation).catchError((Object e) {
         if (kDebugMode) {
           debugPrint('Initial Location Fetch Error: $e');
         }
+        return null;
       }),
     );
   }
@@ -540,17 +541,27 @@ class LocationService extends GetxService {
     );
   }
 
-  Future<void> markSlot(TrailSlot slot, {String? label}) async {
+  /// Places a slot mark at the current position. Returns the recorded point's
+  /// epoch-ms timestamp (the undo handle — see
+  /// [LiveRunGeneralController.undoLastMark]), or null if nothing was
+  /// recorded (paused, buffer resetting).
+  Future<int?> markSlot(TrailSlot slot, {String? label}) async {
     final position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
     );
     // Self-describing track type: GLY::<id> / TXT::<text> [::L=label] [::A=action].
-    await updateDeviceLocation(
+    return updateDeviceLocation(
       position,
       forceFlush: true,
       rawType: slot.trackType(label: label),
     );
   }
+
+  /// Removes a queued (not-yet-uploaded) point by its timestamp — the local
+  /// half of a mark undo. Returns true if a point was removed from the live
+  /// buffer.
+  bool removeQueuedPoint(int timestampMs) =>
+      _runBuffer?.removeByTs(pad19(timestampMs)) ?? false;
 
   /// Emits a trail-type declaration point (`TRL::<value>`) at the current
   /// position, tagging the runner's track with the lane they're running.
@@ -724,14 +735,17 @@ class LocationService extends GetxService {
     buf.dispose();
   }
 
-  // Private method to handle location updates from the stream/one-time fetch
-  Future<void> updateDeviceLocation(
+  // Private method to handle location updates from the stream/one-time fetch.
+  // Returns the epoch-ms timestamp of the point it recorded to the tracking
+  // buffer (the undo handle for marks), or null when nothing was recorded.
+  Future<int?> updateDeviceLocation(
     Position position, {
     bool forceFlush = false,
     HashRunPointTypes? pointType,
     String? rawType,
     String? label,
   }) async {
+    int? recordedTsMs;
     final lat = position.latitude.toDouble();
     final lon = position.longitude.toDouble();
     final accuracy = position.accuracy.toDouble();
@@ -783,7 +797,7 @@ class LocationService extends GetxService {
           resumeTracking();
         }
       }
-      if (isPaused.value) return; // still paused — don't record
+      if (isPaused.value) return null; // still paused — don't record
     }
 
     if (joinRunTracking.value) {
@@ -809,7 +823,7 @@ class LocationService extends GetxService {
         }
         _runBuffer = null;
         // wait for next location update to re-initialize
-        return;
+        return null;
       }
 
       _runBuffer ??= RunPointBuffer(
@@ -853,6 +867,7 @@ class LocationService extends GetxService {
         type: pointStr,
       );
       _runBuffer?.enqueue(point);
+      recordedTsMs = tsMs;
       locationUpdateCount.value++;
 
       // Append to the local session track and recompute filtered distance.
@@ -891,6 +906,6 @@ class LocationService extends GetxService {
       _lastFlushTime = DateTime.now();
     }
 
-    return;
+    return recordedTsMs;
   }
 }

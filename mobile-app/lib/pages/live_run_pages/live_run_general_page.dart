@@ -402,8 +402,77 @@ class LiveRunGeneralController extends GetxController {
     stopTracking();
   }
 
+  // Same-slot cooldown + last-mark undo state (butt-dial/double-tap guard:
+  // two Whichy Ways landed 6s apart on the 2026-08-16 walking test).
+  static const Duration _slotCooldown = Duration(seconds: 8);
+  final Map<String, DateTime> _lastSlotMarkAt = {};
+  int? _lastMarkTsMs;
+
+  /// True when [slot] was marked within the last [_slotCooldown] — the tap is
+  /// swallowed silently (a legitimate second identical mark that close
+  /// together doesn't exist; a deliberate mistake is what Undo is for).
+  /// Different slots are never blocked.
+  bool slotCooldownActive(TrailSlot slot) {
+    final last = _lastSlotMarkAt[slot.trackType()];
+    return last != null && DateTime.now().difference(last) < _slotCooldown;
+  }
+
   Future<void> markSlot(TrailSlot slot, {String? label}) async {
-    await _locationService.markSlot(slot, label: label);
+    _lastSlotMarkAt[slot.trackType()] = DateTime.now();
+    final tsMs = await _locationService.markSlot(slot, label: label);
+    if (tsMs == null) return; // nothing recorded — nothing to undo
+    _lastMarkTsMs = tsMs;
+    Get.snackbar(
+      'Marked',
+      '${slot.name} added to the trail map.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: hc_blue,
+      colorText: Colors.white,
+      duration: _slotCooldown,
+      mainButton: TextButton(
+        onPressed: () => unawaited(undoLastMark(slot.name)),
+        child: const Text(
+          'UNDO',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  /// Removes the most recent slot mark: pulls it from the local upload queue
+  /// (bad-signal case — a server delete alone would let the queued copy
+  /// re-upload) AND deletes it server-side (marks force-flush, so it has
+  /// usually landed already). An open map keeps showing the mark until its
+  /// next full reload — the incremental poll can't express deletions.
+  Future<void> undoLastMark(String slotName) async {
+    final ts = _lastMarkTsMs;
+    if (ts == null) return;
+    _lastMarkTsMs = null;
+    if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
+    final removedLocally = _locationService.removeQueuedPoint(ts);
+    final api = DeletePositionsApi();
+    var removedRemotely = false;
+    try {
+      await api.deletePoints(
+        eventId: run.event.eventId,
+        userId: getStringPref(StringPrefsEnum.userId) ?? '',
+        timestampsMs: [ts],
+      );
+      removedRemotely = true;
+    } catch (_) {
+      // Offline: the local removal (if any) already stopped the upload.
+    } finally {
+      api.dispose();
+    }
+    Get.snackbar(
+      'Removed',
+      removedLocally || removedRemotely
+          ? '$slotName mark removed.'
+          : 'Could not remove the mark — try again when online.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: hc_blue,
+      colorText: Colors.white,
+    );
   }
 
   /// Returns the timestamp (epoch ms) that should be stamped on the GPS track
@@ -545,6 +614,31 @@ class LiveRunGeneralController extends GetxController {
     // sitting on the live map after the runner is fine sends the sweepers
     // looking for someone who is already back with the pack.
     final int markMs = DateTime.now().millisecondsSinceEpoch;
+
+    // Replace-within-window: a re-announce moments after the last one (double
+    // press, dialog closed and reopened — two identical LST marks landed 21s
+    // apart on Trail #2058, 2026-08-16) must MOVE the marker, not add a
+    // second. "Tell the pack again" after real time/movement still adds a
+    // fresh mark. Best-effort: a failed delete just leaves the old badge for
+    // the all clear to collect.
+    if (_distressMarkMs.isNotEmpty &&
+        markMs - _distressMarkMs.last < 2 * 60 * 1000) {
+      final int stale = _distressMarkMs.removeLast();
+      final api = DeletePositionsApi();
+      try {
+        await api.deletePoints(
+          eventId: run.event.eventId,
+          userId: currentUserId,
+          timestampsMs: [stale],
+        );
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('[LiveRun] replace stale distress mark failed: $e');
+        }
+      } finally {
+        api.dispose();
+      }
+    }
     _distressMarkMs.add(markMs);
 
     final Future<bool> markFuture = _locationService.markPointAt(
@@ -1131,6 +1225,10 @@ class LiveRunGeneralPage extends StatelessWidget {
   /// flashes the confirmation, and records the mark. (On Inn is no longer a
   /// slot — ending the run is the End Run button's job.)
   Future<void> _handleSlotTap(BuildContext context, TrailSlot slot) async {
+    // Double-tap / pocket-tap guard: an identical mark within seconds of the
+    // last one is never deliberate — swallow it before any popup or flash.
+    if (controller.slotCooldownActive(slot)) return;
+
     String? label;
 
     if (slot.parsedAction == TrailSlotAction.addText) {
