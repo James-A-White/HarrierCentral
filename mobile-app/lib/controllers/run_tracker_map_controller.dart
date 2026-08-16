@@ -1072,6 +1072,12 @@ class RunTrackerMapController extends GetxController
         latestClientTimestampMs: _afterTimestampMs ?? '0000000000000000000',
         includeTrimmed: adminEditMode,
       );
+      // The controller can close while the fetch is in flight (map page
+      // dismissed). Without this bail-out the continuation would RESTART the
+      // auto-update timer onClose just stopped and touch the disposed
+      // playback AnimationController — a zombie that then re-polls and throws
+      // every 15s until app kill (observed 71× in the 2026-08-16 device logs).
+      if (isClosed) return;
       _afterTimestampMs = data.latestServerTimestampMs;
       // Trail-type config arrives on the full fetch only; cache it (incremental
       // polls return null, so don't clobber the cached value).
@@ -1084,6 +1090,7 @@ class RunTrackerMapController extends GetxController
       officialEndMs.value = data.trimEndMs;
       _startAutoUpdateTimer();
       await _hydrateLogos(data.users);
+      if (isClosed) return; // closed during the logo hydration await
 
       // Filter and clean track points for each user
       final cleanedUsers = data.users.map((user) {
@@ -1219,6 +1226,7 @@ class RunTrackerMapController extends GetxController
 
   void _startAutoUpdateTimer() {
     _stopAutoUpdateTimer();
+    if (isClosed) return; // never revive the timer after onClose
     if (!_isVisible || _isPlaybackActive || _isStaleEvent) return;
     _autoUpdateTimer = Timer.periodic(_autoUpdateInterval, (_) {
       if (_isStaleEvent) {
