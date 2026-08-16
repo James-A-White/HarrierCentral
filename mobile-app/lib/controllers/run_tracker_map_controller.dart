@@ -561,6 +561,8 @@ class RunTrackerMapController extends GetxController
         final parsed = _parseCheckpointType(p.type);
         if (parsed == null) continue;
         if (!laneVisible && !_isDistressType(parsed.type)) continue;
+        // Mid-track On-Inn (runner resumed after it) — ignored entirely.
+        if (_isOnInn(p.type) && !_isTerminalOnInn(user, p)) continue;
         final bool isPhoto = parsed.type == HashRunPointTypes.photo;
         if (photosOnly == isPhoto) n++;
       }
@@ -588,6 +590,8 @@ class RunTrackerMapController extends GetxController
         final parsedType = _parseCheckpointType(point.type);
         if (parsedType == null) continue;
         if (!laneVisible && !_isDistressType(parsedType.type)) continue;
+        // Mid-track On-Inn (runner resumed after it) — ignored entirely.
+        if (_isOnInn(point.type) && !_isTerminalOnInn(user, point)) continue;
         final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
         if (photosOnly != isPhoto) continue;
         entries.add((point: point, type: rawType, parsed: parsedType));
@@ -2953,7 +2957,7 @@ class RunTrackerMapController extends GetxController
       final capped = <TrackPoint>[];
       for (final pos in runner.positions) {
         capped.add(pos);
-        if (_isOnInn(pos.type)) break;
+        if (_isTerminalOnInn(runner, pos)) break;
       }
       return capped
           .map(
@@ -2975,7 +2979,7 @@ class RunTrackerMapController extends GetxController
       results.add(
         _InterpolatedPoint(lat: pos.lat, lng: pos.lng, timestampMs: ts),
       );
-      if (_isOnInn(pos.type)) {
+      if (_isTerminalOnInn(runner, pos)) {
         break;
       }
     }
@@ -3032,7 +3036,7 @@ class RunTrackerMapController extends GetxController
         timestampMs: cutoff,
       );
     }
-    if (_isOnInn(current.type) || _isOnInn(next.type)) {
+    if (_isTerminalOnInn(runner, current) || _isTerminalOnInn(runner, next)) {
       return _InterpolatedPoint(
         lat: current.lat,
         lng: current.lng,
@@ -3078,6 +3082,22 @@ class RunTrackerMapController extends GetxController
     final parsed = _parseCheckpointType(rawType);
     if (parsed == null) return false;
     return parsed.action == 'endRun' || parsed.type == HashRunPointTypes.onInn;
+  }
+
+  /// Grace window for the On-Inn read rule: points recorded within this span
+  /// after an On-Inn are treated as straggler queued fixes, not a resume.
+  static const int _onInnGraceMs = 120 * 1000;
+
+  /// A trail has exactly ONE On-Inn, at the end — an On-Inn followed by later
+  /// points beyond [_onInnGraceMs] means the runner tapped it and then resumed,
+  /// so it must be ignored completely: drawn through, no icon
+  /// (docs/packtrack_auto_stop_plan.md). Only an On-Inn that is effectively
+  /// the runner's LAST point terminates the track and renders.
+  bool _isTerminalOnInn(UserTrack runner, TrackPoint pos) {
+    if (!_isOnInn(pos.type)) return false;
+    if (runner.positions.isEmpty) return true;
+    return runner.positions.last.timestampMs - pos.timestampMs <=
+        _onInnGraceMs;
   }
 
   void _applyPlaybackDurationFromZoom({double? zoomOverride}) {
