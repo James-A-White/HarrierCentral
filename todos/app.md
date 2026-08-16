@@ -284,6 +284,16 @@ once ≥2 min behind. Both only on live-window events, never in replay.
   screen); a live/past run WITH tracks still shows the switch and the radar
   works; a live run that starts with no trackers gains the switch when the
   first track arrives.
+- [ ] **Fullscreen map safe-area (iPhone 17 / notched)**: Map/Radar switch,
+  freshness pill and locate button sit BELOW the Dynamic Island on the
+  fullscreen map; embedded maps (run detail tab, live run) unchanged (AppBar
+  absorbs the inset there). Radar canvas's switch+legend column also clears
+  the island.
+- [ ] **Playhead clock is the selected runner's**: replay a run where the
+  selected runner finished before the longest track — their elapsed time
+  freezes at THEIR finish (e.g. Opee ~60 min) while the playhead continues
+  to the last runner's end; selecting the longer runner shows their clock
+  still counting; time before the selected runner's start shows 0:00.
 
 ## Device test — On Inn slot removed (2026-08-15, not yet released)
 

@@ -71,6 +71,12 @@ class RunTrackerMap extends StatelessWidget {
             ),
       builder: (controller) {
         controller.updateTrueNorthLock(trueNorthLock);
+        // Top overlays sit at fixed offsets from the widget's top edge. On
+        // the embedded maps an AppBar absorbs the system inset so this is 0;
+        // on the FULLSCREEN map the widget reaches under the status bar /
+        // Dynamic Island, which hid the Map/Radar switch on notched phones —
+        // so every top-anchored overlay adds the safe-area inset.
+        final double topInset = MediaQuery.paddingOf(context).top;
         return Obx(() {
           final bool controllerLock = controller.trueNorthLock;
           // Rose view swaps ONLY the canvas — the timeline, playback controls
@@ -123,7 +129,7 @@ class RunTrackerMap extends StatelessWidget {
                 // it. Anchoring to the switch instead means it can never be
                 // covered, whatever the panel grows to.
                 Positioned(
-                  top: 12,
+                  top: 12 + topInset,
                   left: 0,
                   right: 0,
                   child: Column(
@@ -280,12 +286,12 @@ class RunTrackerMap extends StatelessWidget {
                   deviceInfo.deviceLat != null &&
                   deviceInfo.deviceLon != null)
                 Positioned(
-                  top: 66,
+                  top: 66 + topInset,
                   right: 12,
                   child: _locateButton(controller),
                 ),
               Positioned(
-                top: 12,
+                top: 12 + topInset,
                 left: 0,
                 right: 0,
                 child: Center(child: _viewSwitch(controller)),
@@ -293,7 +299,7 @@ class RunTrackerMap extends StatelessWidget {
               // "Tracks updated N min ago" — freshness of the live feed, so a
               // runner in a coverage hole knows how old the drawn pack is.
               Positioned(
-                top: 58,
+                top: 58 + topInset,
                 left: 0,
                 right: 0,
                 child: IgnorePointer(

@@ -815,14 +815,35 @@ class RunTrackerMapController extends GetxController
 
   String get formattedTimelineLabel => _formatElapsed();
 
-  /// Elapsed run time from the start of the track to the current playhead, as
-  /// H:MM:SS — hours are shown only when > 0 (e.g. `7:32`, `1:07:32`). Replaces
-  /// the absolute timestamp in the map control panel.
+  /// Elapsed run time at the current playhead, as H:MM:SS — hours shown only
+  /// when > 0 (e.g. `7:32`, `1:07:32`).
+  ///
+  /// The readout belongs to the SELECTED runner, so it runs on THEIR clock:
+  /// it starts at their first point and freezes at their last. The global
+  /// timeline spans the longest track, so without the clamp a runner who
+  /// finished early kept "accruing" time until the last runner's finish —
+  /// their displayed finish time was someone else's.
   String _formatElapsed() {
     final cur = currentTimestampMs.value;
-    final start = minTimestampMs.value;
+    double? start = minTimestampMs.value;
     if (cur == null || start == null) return '0:00';
-    final totalSec = ((cur - start).clamp(0, double.infinity) / 1000).floor();
+
+    double effective = cur;
+    final runner = _runnerById(selectedRunnerId.value);
+    if (runner != null && runner.positions.isNotEmpty) {
+      double first = double.infinity;
+      double last = -double.infinity;
+      for (final p in runner.positions) {
+        final t = p.timestampMs.toDouble();
+        if (t < first) first = t;
+        if (t > last) last = t;
+      }
+      start = first;
+      effective = cur.clamp(first, last).toDouble();
+    }
+
+    final totalSec = ((effective - start).clamp(0, double.infinity) / 1000)
+        .floor();
     final h = totalSec ~/ 3600;
     final m = (totalSec % 3600) ~/ 60;
     final s = totalSec % 60;
