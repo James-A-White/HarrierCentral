@@ -190,10 +190,40 @@ namespace HcWebApi.Endpoints
                 storedCount++;
             }
 
-            return payload.Resumed
-                ? CreateJsonResult(StatusCodes.Status200OK,
-                    new { stored = storedCount, resumedTerminatorsDeleted = resumeDeleted })
-                : CreateJsonResult(StatusCodes.Status200OK, new { stored = storedCount });
+            // Piggyback the event-level "tracking ended" flag (set by an admin
+            // via EndEventTracking) on the response: every phone still
+            // uploading points sees it within one flush interval and stops its
+            // tracking loop — no push needed, and it reaches exactly the
+            // phones that are still transmitting. Best-effort: a read failure
+            // never turns into a failed store.
+            string? trackingEndedAtMs = null;
+            try
+            {
+                TableClient controlTable =
+                    _tableServiceClient.GetTableClient(EndEventTracking.ControlTableName);
+                var control = await controlTable.GetEntityIfExistsAsync<TableEntity>(
+                    payload.EventId, EndEventTracking.ControlRowKey);
+                if (control.HasValue &&
+                    control.Value!.TryGetValue(EndEventTracking.EndedAtProperty, out var endedVal))
+                {
+                    trackingEndedAtMs = endedVal?.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning(
+                    "StorePositions: tracking-ended flag read failed for event {EventId}: {Message}.",
+                    payload.EventId, ex.Message);
+            }
+
+            var result = new Dictionary<string, object?> { ["stored"] = storedCount };
+            if (payload.Resumed) result["resumedTerminatorsDeleted"] = resumeDeleted;
+            if (trackingEndedAtMs != null)
+            {
+                result["trackingEnded"] = true;
+                result["trackingEndedAtMs"] = trackingEndedAtMs;
+            }
+            return CreateJsonResult(StatusCodes.Status200OK, result);
         }
 
         /// True when a stored Type string marks the end of the track: the
