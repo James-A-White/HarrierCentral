@@ -306,6 +306,40 @@ StorePositions flag echo).
   stopped phone presses Start Run Tracking again → keeps tracking, is NOT
   stopped a second time.
 
+## Device test — payment package (2026-08-16, not yet released)
+
+Needs the SP deploy FIRST (processPayment 1.4.0 + util_ rewrite) — the
+report-page items work against the current SP, the zero-price and combined
+items do not. After the deploy, run
+`EXEC HC6.util_rewriteZeroCashRunPaymentsAsFree @dryRun = 1` by hand, review
+the per-kennel counts, then re-run with `@dryRun = 0` (James only).
+
+- [ ] **Footer totals**: a run with cash membership + haberdashery charges →
+  Run fees / Memberships / Haberdashery lines all show, sum to Total
+  collected; the "<null> paid" line is GONE on events without extras; an
+  event WITH extras still shows its extras line.
+- [ ] **Header chips all-products**: cash chip count+amount includes
+  membership/haberdashery cash rows and matches the rows shown when the
+  chip's filter is tapped.
+- [ ] **Unconfirmed card row**: black text, card icon with amber clock
+  badge; badge disappears after swipe-to-confirm; "Card pending" footer
+  line shows the amount + count and drops off once confirmed; Total
+  collected excludes pending, includes it after confirm.
+- [ ] **Zero-price ⇒ FREE** (after SP deploy): cash-tap a member on a
+  free-for-members run → recorded as Free (FREE chip counts it, cash chip
+  does not), payment detail shows the 'member' note.
+- [ ] **Combined button** (after SP deploy): check-in → hasher → charge
+  membership → sheet shows BOTH buttons; combined on a priced run charges
+  membership + member-price run fee, checks them in, snackbar shows both;
+  on a free-for-members run the button reads "check in (run free)" and the
+  run leg records as Free('member'); run already paid → combined hidden;
+  members-list sheet → single button only (and no attendance change).
+- [ ] **Combined atomicity smoke**: airplane mode mid-charge → NOTHING
+  recorded (no membership without run leg); retry succeeds cleanly.
+- [ ] **Historical rewrite** (after util run): an old run whose members paid
+  "cash £0" now shows them on the FREE chip with 'member' notes; cash chip
+  = real money only.
+
 ## Device test — mark guards + zombie poll fix (2026-08-16, not yet released)
 
 - [ ] **Slot cooldown**: while tracking, tap Check twice quickly → ONE mark,
