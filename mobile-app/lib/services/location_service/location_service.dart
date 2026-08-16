@@ -2,6 +2,7 @@
 
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart' as latlng;
+import 'on_inn_auto_stop.dart';
 import 'run_point_buffer.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
@@ -126,11 +127,16 @@ class LocationService extends GetxService {
 
   // --- GetX Service Lifecycle ---
 
+  // Prompts "Are you On Inn?" when the runner sits stationary at the pack's
+  // On-Inn cluster with tracking still on (docs/packtrack_auto_stop_plan.md).
+  late final OnInnAutoStopMonitor _onInnAutoStop = OnInnAutoStopMonitor(this);
+
   @override
   void onInit() {
     super.onInit();
     // Call the subscription logic on initialization
     unawaited(onInitAsync());
+    _onInnAutoStop.init();
 
     _trackingWorker = ever<bool>(joinRunTracking, (value) async {
       if (value) {

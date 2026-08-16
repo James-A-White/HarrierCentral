@@ -1076,3 +1076,11 @@ const EnumMapCenterOption centerOnCurrentLocation = EnumMapCenterOption(0);
 const EnumMapCenterOption centerOnHomeKennel = EnumMapCenterOption(1);
 
 const String BADGE_COUNT_JSON_KEY = 'BadgeCount';
+
+//////////////////////////
+///
+/// Outcome of the "Are you On Inn?" end-run dialog. Used by the manual End
+/// Run button and the On-Inn auto-stop prompt (docs/packtrack_auto_stop_plan.md).
+/// [onInn] records an On-Inn terminator mark before stopping; [stoppedEarly]
+/// stops without a mark; [keepTracking] cancels.
+enum EndRunChoice { onInn, stoppedEarly, keepTracking }

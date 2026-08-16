@@ -385,6 +385,23 @@ class LiveRunGeneralController extends GetxController {
     _stopElapsedTicker();
   }
 
+  /// Ends the run from the "Are you On Inn?" dialog. With [markOnInn] the
+  /// stop is recorded as an On-Inn terminator first (one-shot fix, force-
+  /// flushed while the buffer is still alive) so the drawn track ends with
+  /// the icon; "I stopped early" leaves no mark — the trail just ends, so an
+  /// early bailer never shows an On-Inn in the middle of nowhere
+  /// (docs/packtrack_auto_stop_plan.md).
+  Future<void> endRun({required bool markOnInn}) async {
+    if (markOnInn) {
+      try {
+        await _locationService.markPoint(HashRunPointTypes.onInn);
+      } catch (_) {
+        // Best-effort: a failed one-shot fix must never block the stop.
+      }
+    }
+    stopTracking();
+  }
+
   Future<void> markSlot(TrailSlot slot, {String? label}) async {
     await _locationService.markSlot(slot, label: label);
   }
@@ -759,21 +776,24 @@ class LiveRunGeneralPage extends StatelessWidget {
                   shape: buttonShape,
                 ),
                 onPressed: () async {
-                  final confirmed = await showDialog<bool>(
+                  final choice = await showDialog<EndRunChoice>(
                     context: context,
                     barrierDismissible: false,
                     builder: (_) => AlertDialog(
-                      title: Text('End Run?', style: ts_alertDialogTitle),
+                      title: Text('Are you On Inn?', style: ts_alertDialogTitle),
                       content: Text(
-                        'Are you sure you want to end your run? '
-                        'Your data will be saved, and if you restart '
-                        'tracking later the run continues from where it '
-                        'left off.',
+                        '"I\'m On Inn" marks the end of the trail on the map. '
+                        'If you stopped before the end, choose "I stopped '
+                        'early" — no mark is placed. Either way your data is '
+                        'saved, and if you restart tracking later the run '
+                        'continues from where it left off.',
                         style: ts_alertDialogBody,
                       ),
                       actions: [
                         ElevatedButton(
-                          onPressed: () => Navigator.of(context).pop(false),
+                          onPressed: () => Navigator.of(
+                            context,
+                          ).pop(EndRunChoice.keepTracking),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey.shade600,
                             foregroundColor: Colors.white,
@@ -781,17 +801,32 @@ class LiveRunGeneralPage extends StatelessWidget {
                           child: Text('Keep Tracking', style: ts_button),
                         ),
                         ElevatedButton(
-                          onPressed: () => Navigator.of(context).pop(true),
+                          onPressed: () => Navigator.of(
+                            context,
+                          ).pop(EndRunChoice.stoppedEarly),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange.shade800,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Text('I stopped early', style: ts_button),
+                        ),
+                        ElevatedButton(
+                          onPressed: () =>
+                              Navigator.of(context).pop(EndRunChoice.onInn),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: hc_red,
                             foregroundColor: Colors.white,
                           ),
-                          child: Text('End Run', style: ts_button),
+                          child: Text("I'm On Inn", style: ts_button),
                         ),
                       ],
                     ),
                   );
-                  if (confirmed == true) controller.stopTracking();
+                  if (choice == EndRunChoice.onInn) {
+                    await controller.endRun(markOnInn: true);
+                  } else if (choice == EndRunChoice.stoppedEarly) {
+                    await controller.endRun(markOnInn: false);
+                  }
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
