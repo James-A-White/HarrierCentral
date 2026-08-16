@@ -6,7 +6,7 @@ import { MapContainer, TileLayer, Polyline, Marker, Circle, useMap, useMapEvents
 import L from "leaflet";
 import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera } from "lucide-react";
 import {
-  fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, trackUpTo, sumDistanceMeters,
+  fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn, trackUpTo, sumDistanceMeters,
   haversineMeters, formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
   MARK_DEDUPE_METERS, resolveTrailTypeMap, trailValueForTrack,
 } from "@/lib/packtrack";
@@ -280,6 +280,8 @@ function visibleMarks(users: UserTrack[], cutoff: number): MarkEntry[] {
       // Drawable when it has a glyph, text, or a legacy flat icon (not a photo).
       if (!parsed || parsed.isPhoto) continue;
       if (!parsed.iconUrl && !parsed.glyphUrl && !parsed.text) continue;
+      // Mid-track On-Inn (runner resumed after it) — ignored entirely.
+      if (parsed.isOnInn && !isTerminalOnInn(user.positions, p)) continue;
       const rawType = (p.type ?? "").trim();
       const dup = kept.some(
         k => k.rawType === rawType &&

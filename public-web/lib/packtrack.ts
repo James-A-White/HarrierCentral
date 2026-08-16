@@ -171,6 +171,23 @@ export function isOnInn(rawType: string | null | undefined): boolean {
   return parseMark(rawType)?.isOnInn ?? false;
 }
 
+// Points within this span after an On-Inn are straggler queued fixes, not a
+// resume — mirrors the mobile read rule.
+const ON_INN_GRACE_MS = 120_000;
+
+/**
+ * A trail has exactly ONE On-Inn, at the end. An On-Inn followed by later
+ * points beyond a short grace means the runner tapped it and then resumed, so
+ * it is ignored completely — drawn through, no icon
+ * (docs/packtrack_auto_stop_plan.md). Only an On-Inn that is effectively the
+ * runner's LAST point terminates the track and renders.
+ */
+export function isTerminalOnInn(positions: TrackPoint[], p: TrackPoint): boolean {
+  if (!isOnInn(p.type)) return false;
+  const last = positions[positions.length - 1];
+  return !last || last.timestampMs - p.timestampMs <= ON_INN_GRACE_MS;
+}
+
 // ── Trail types ──────────────────────────────────────────────────────────────
 // A runner declares which trail they ran; it rides on the track as a
 // `TRL::<value>` point. Built-ins are values 1–5; kennel-custom start at 100.
@@ -396,14 +413,14 @@ export function trackUpTo(positions: TrackPoint[], cutoff: number): TrackPoint[]
     if (p.timestampMs > cutoff) break;
     out.push(p);
     idx = i;
-    if (isOnInn(p.type)) return out; // terminator — no interpolation past it
+    if (isTerminalOnInn(positions, p)) return out; // terminator — no interpolation past it
   }
   if (out.length === 0) return positions.length ? [positions[0]] : [];
 
   // Interpolate the partial segment to `cutoff`.
   const next = positions[idx + 1];
   const last = out[out.length - 1];
-  if (next && cutoff > last.timestampMs && next.timestampMs > last.timestampMs && !isOnInn(next.type)) {
+  if (next && cutoff > last.timestampMs && next.timestampMs > last.timestampMs && !isTerminalOnInn(positions, next)) {
     const ratio = Math.min(1, (cutoff - last.timestampMs) / (next.timestampMs - last.timestampMs));
     out.push({
       lat: last.lat + (next.lat - last.lat) * ratio,
