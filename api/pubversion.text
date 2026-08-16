@@ -1,3 +1,7 @@
+1.0.34+32
+    • EndEventTracking: new endpoint — sets/clears/reads an event-level "tracking ended" flag (X-Api-Key guarded; admin stop-everyone)
+    • StorePositions: echoes the tracking-ended flag in every response so phones still uploading stop their tracking loop within one flush
+
 1.0.33+31
     • StorePositions: optional resumed flag — first batch after a track restart deletes any prior On Inn terminator rows for that runner+event (mistaken On Inn cleanup, atomic with the upload)
 

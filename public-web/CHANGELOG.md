@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.18 — 2026-08-16
+
+- PackTrack: a mid-track On Inn (runner tapped it, then resumed) no longer truncates the drawn track or shows its icon — only an On Inn that is effectively the runner's last point ends the trail (matches the mobile app)
+
 ## 0.21.17 — 2026-07-25
 
 - PackTrack spectator harmonised with the app: photo zoom is rock-controlled via tilt (zoom one way, then the other, depending on the rock), and the speed chip turns orange when tracking backward

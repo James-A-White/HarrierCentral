@@ -1,5 +1,36 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1289 (2026-08-16)
+
+### New Features
+- **"Are you On Inn?"** Ending a run now offers three choices: "I'm On Inn"
+  (drops the On Inn mark where you stand, then stops), "I stopped early"
+  (stops with no mark), or Keep Tracking.
+- **Forgot to stop tracking?** If you sit still near the pack's On Inn marks
+  with tracking on, the app asks "Are you On Inn?" and stops by itself a few
+  minutes later if you don't answer — no more recording the drive home. A
+  long drink stop never triggers it.
+- **Admins can end tracking for everyone.** A new action in the map's trim
+  panel stops every phone still sending points for a finished run (they can
+  restart if genuinely still out on trail).
+
+### Improvements
+- **A resumed track no longer truncates at its old On Inn.** An On Inn
+  followed by later trail is ignored on every map — mobile and web.
+- **Trail-mark guards.** Accidental double-taps on the same mark are
+  swallowed, every mark shows an 8-second UNDO, and "Tell the pack" moments
+  after a previous alert moves your lost marker instead of duplicating it.
+
+### Fixes
+- **Live map error loop fixed.** Closing the map at the wrong moment could
+  leave a hidden loop polling and failing every 15 seconds until app restart.
+- **Duplicate members list fixed.** Overlapping syncs could double-insert
+  rows (e.g. kennel members appearing twice); all syncs are now serialised.
+- **Map controls respect the Dynamic Island** on the fullscreen map, and the
+  replay clock now shows the selected runner's own elapsed time.
+- **Photo crop:** hidden the aspect-ratio button that iOS 26 renders as an
+  empty panel (restored once the cropper library catches up).
+
 ## 3.0.1+1288 (2026-08-16)
 
 ### New Features
