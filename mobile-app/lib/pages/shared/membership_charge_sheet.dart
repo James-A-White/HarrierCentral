@@ -64,6 +64,24 @@ class MembershipChargeController extends GetxController {
   final RxBool isCharging = false.obs;
   final RxnString loadError = RxnString();
 
+  /// Check-in flow (event domain, real run context): the sheet also offers
+  /// the combined "membership + run fee / check in" action — one atomic SP
+  /// call records both payments and checks the payer in. A missing HEM is
+  /// fine (a virgin buying membership on arrival) — the SP resolves or
+  /// creates it. The members-list flow (kennel/user domain, anchor run)
+  /// deliberately stays membership-only: there is no run being attended.
+  bool get isCheckInFlow => appDomainType == AppDomainType.event;
+
+  /// The run price the combined action would charge — MEMBER pricing (they
+  /// are becoming/renewing a member in this very transaction) with the
+  /// hasher's kennel discounts applied. Mirrors the SP for display; the SP
+  /// is authoritative. Null until loaded.
+  final RxnDouble memberRunPrice = RxnDouble();
+
+  /// True when the HEM already carries a live run payment — nothing to
+  /// combine, so only the membership-only button shows.
+  final RxBool runAlreadyPaid = false.obs;
+
   /// Renewal mode: 1=rolling, 2=fixed year, 3=lifetime.
   final RxInt renewalMode = 1.obs;
   final RxInt durationMonths = 12.obs;
@@ -162,6 +180,7 @@ class MembershipChargeController extends GetxController {
       );
 
       await _loadExpiry();
+      if (isCheckInFlow) await _loadRunContext();
 
       // Members-list flow: anchor the payment to the kennel's most recent
       // run (Payment.EventId is NOT NULL server-side).
@@ -187,6 +206,59 @@ class MembershipChargeController extends GetxController {
       BootLogger.logError('[MembershipChargeController._load]', e, s);
       loadError.value = 'Could not load membership details.';
       isLoading.value = false;
+    }
+  }
+
+  /// Loads what the combined action would charge for the run leg (member
+  /// price with this hasher's kennel discounts) and whether the HEM already
+  /// has a live run payment. Best-effort: on any failure the combined button
+  /// simply doesn't show (memberRunPrice stays null).
+  Future<void> _loadRunContext() async {
+    try {
+      final e = tableModel.eventsTableHelper;
+      final k = tableModel.kennelsTableHelper;
+      final hkm = tableModel.hasherKennelMapTableHelper;
+      final pay = tableModel.paymentsTableHelper;
+
+      final List<Map<String, dynamic>> priceRows = await database.rawQuery(
+        '''
+        SELECT COALESCE(e.${e.colEventPriceForMembers}, k.${k.colDefaultPriceForMembers},
+                        e.${e.colEventPriceForNonMembers}, k.${k.colDefaultPriceForNonMembers}, 0) AS basePrice,
+               COALESCE(hkm.${hkm.colDiscountAmount}, 0) AS discountAmount,
+               COALESCE(hkm.${hkm.colDiscountPercent}, 0) AS discountPercent
+        FROM ${EnumDataTables.events.commonTableName} e
+        INNER JOIN ${EnumDataTables.kennels.commonTableName} k
+          ON k.${k.colKennelId} = e.${e.colKennelId}
+        LEFT OUTER JOIN ${hkm.getTableName(appDomainType)} hkm
+          ON hkm.${hkm.colUserId} = ? AND hkm.${hkm.colKennelId} = k.${k.colKennelId}
+        WHERE e.${e.colEventId} = ? LIMIT 1
+        ''',
+        <Object?>[userId, anchorEventId],
+      );
+      if (priceRows.isNotEmpty) {
+        final Map<String, dynamic> row = priceRows.first;
+        double price = ((row['basePrice'] as num?) ?? 0).toDouble();
+        price -= ((row['discountAmount'] as num?) ?? 0).toDouble();
+        price -= price * (((row['discountPercent'] as num?) ?? 0) / 100.0);
+        memberRunPrice.value = price < 0 ? 0 : price;
+      }
+
+      // No HEM yet (virgin at check-in) ⇒ no run payment can exist.
+      if ((hasherEventMapId ?? '').isEmpty) {
+        runAlreadyPaid.value = false;
+      } else {
+        final List<Map<String, dynamic>> payRows = await database.rawQuery(
+          'SELECT COUNT(*) AS n FROM ${EnumDataTables.payments.eventTableName} '
+          'WHERE ${pay.colHemId} = ? AND ${pay.colCancelledBy} IS NULL '
+          'AND COALESCE(${pay.colProductType}, 1) = 1',
+          <Object?>[hasherEventMapId],
+        );
+        runAlreadyPaid.value =
+            payRows.isNotEmpty && ((payRows.first['n'] as num?) ?? 0) > 0;
+      }
+    } catch (e, s) {
+      BootLogger.logError('[MembershipChargeController._loadRunContext]', e, s);
+      memberRunPrice.value = null;
     }
   }
 
@@ -243,7 +315,10 @@ class MembershipChargeController extends GetxController {
         : 'Membership LAPSED ${formatDate(e)}';
   }
 
-  Future<void> charge(BuildContext context) async {
+  /// Charges the membership; with [alsoPayRun] the SP atomically records the
+  /// run fee at member pricing (zero ⇒ free member run) and checks the payer
+  /// in — one call, all-or-nothing.
+  Future<void> charge(BuildContext context, {bool alsoPayRun = false}) async {
     final double? fee = double.tryParse(feeController.text.trim());
     if (fee == null || fee < 0) {
       showHcSnackbar('Enter a valid membership fee.', isError: true);
@@ -263,11 +338,14 @@ class MembershipChargeController extends GetxController {
         hasherEventMapId,
         paymentMethod.value,
         fee,
-        -1, // never touch attendance from a membership charge
+        // Combined path checks the payer in; membership-only never touches
+        // attendance.
+        alsoPayRun ? attendenceAtHash.value : -1,
         payForRunOnly,
         appDomainType,
         specialRunPrice: overridden ? fee : null,
         productType: productTypeMembership,
+        alsoPayRunFee: alsoPayRun,
       );
 
       if (results.isEmpty) {
@@ -276,11 +354,15 @@ class MembershipChargeController extends GetxController {
         return;
       }
 
-      // The SP returns the freshly written expiry in the adHocData rowset.
+      // The SP returns the freshly written expiry in the adHocData rowset,
+      // plus what the run leg charged on the combined path.
       final DateTime? newExpiry = DateTime.tryParse(
         (results[0]['newMembershipExpiry'] ?? '').toString(),
       );
       if (newExpiry != null) currentExpiry.value = newExpiry;
+      final double? runFee = alsoPayRun
+          ? double.tryParse((results[0]['runFeeAmount'] ?? '').toString())
+          : null;
 
       if (onCharged != null) await onCharged!();
       if (newExpiry == null) await _loadExpiry();
@@ -290,9 +372,14 @@ class MembershipChargeController extends GetxController {
           : currentExpiry.value == null
           ? 'updated'
           : formatDate(currentExpiry.value!);
+      final String runPart = !alsoPayRun
+          ? ''
+          : runFee == null || runFee <= 0
+          ? ' · checked in (run free)'
+          : ' · run fee ${formatMoney(runFee)} · checked in';
       showHcSnackbar(
         'Membership charged: $displayName — ${formatMoney(fee)} · '
-        'valid until $until',
+        'valid until $until$runPart',
       );
       if (context.mounted) Navigator.of(context).pop();
     } catch (e, s) {
@@ -451,12 +538,47 @@ class MembershipChargeSheetBody extends StatelessWidget {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Charge membership'),
+                    : Text(
+                        _showCombinedButton(c)
+                            ? 'Charge membership only'
+                            : 'Charge membership',
+                      ),
               ),
             ),
+            // Check-in flow only: the combined atomic action — membership +
+            // run fee (member pricing) + check-in in one SP call. Hidden when
+            // the run is already paid (nothing to combine) or the run price
+            // could not be loaded.
+            if (_showCombinedButton(c)) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: hc_red,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: c.isCharging.value
+                      ? null
+                      : () => unawaited(c.charge(context, alsoPayRun: true)),
+                  child: Text(
+                    (c.memberRunPrice.value ?? 0) <= 0
+                        ? 'Membership + check in (run free)'
+                        : 'Membership + run fee '
+                              '(${c.formatMoney(c.memberRunPrice.value!)})',
+                  ),
+                ),
+              ),
+            ],
           ],
         );
       }),
     );
   }
+
+  /// Combined button: check-in flow, run price known, run not already paid.
+  bool _showCombinedButton(MembershipChargeController c) =>
+      c.isCheckInFlow &&
+      c.memberRunPrice.value != null &&
+      !c.runAlreadyPaid.value;
 }

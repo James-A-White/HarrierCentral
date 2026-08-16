@@ -232,6 +232,10 @@ class PaymentsService {
     // keeps every existing caller an event payment.
     EnumProductType productType = productTypeEvent,
     String? notes,
+    // Combined membership+run (productType 2 only): the SP atomically records
+    // the run fee at member pricing and checks the payer in. Only sent when
+    // true, so membership-only calls stay compatible with a pre-1.4.0 SP.
+    bool alsoPayRunFee = false,
   }) async {
     List<dynamic> results = <dynamic>[];
 
@@ -308,6 +312,7 @@ class PaymentsService {
       'paymentReference': paymentReference,
       'transactionTimestamp': DateTime.now().toString(),
       if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
+      if (alsoPayRunFee) 'alsoPayRunFee': '1',
     };
 
     if (specialRunPrice != null) {
