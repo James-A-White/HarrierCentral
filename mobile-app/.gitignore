@@ -15,9 +15,11 @@ build/
 flutter_*.log
 
 # Android generated/local
-android/
 android/local.properties
 android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+android/.gradle/
+android/key.properties
+android/app/upload-keystore.jks
 
 # IntelliJ/Android Studio
 .idea/
