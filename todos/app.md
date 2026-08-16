@@ -452,6 +452,14 @@ Released with `flutter analyze` only. Screens: live run → map → Radar.
 
 ## PackTrack
 
+- [ ] **Stop⇒On-Inn & auto-stop** (DESIGN AGREED 2026-08-16, not coded; full
+  plan `docs/packtrack_auto_stop_plan.md`). Three-button stop dialog ("I'm On
+  Inn" / "I stopped early" / "Keep Tracking"), OIN-cluster auto-stop prompt
+  (never inactivity-based — drink stops), admin "everyone in?" with the stop
+  signal piggybacked on StorePositions responses. NOTE: promotes the
+  mid-track On-Inn read rule below from cleanup to prerequisite. Also agreed:
+  per-slot mark cooldown + undo toast (butt-dial double-tap), Tell-the-pack
+  debounce.
 - [ ] **Ignore a mid-track On-Inn at read time** (DESIGN AGREED with James
   2026-08-15, not yet coded). A trail has exactly ONE On-Inn, at the end —
   an On-Inn followed by later points is always a mistake (runner tapped it,
