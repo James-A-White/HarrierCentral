@@ -279,6 +279,11 @@ once ≥2 min behind. Both only on live-window events, never in replay.
 - [ ] **Replay of an old run**: no pill, no tail.
 - [ ] **Another runner selected**: their line unchanged — the tail only ever
   draws for YOUR track.
+- [ ] **Radar hidden without tracks** (same build): a FUTURE run's map tab
+  shows no Map/Radar switch at all (previously tapping Radar blanked the
+  screen); a live/past run WITH tracks still shows the switch and the radar
+  works; a live run that starts with no trackers gains the switch when the
+  first track arrives.
 
 ## Device test — On Inn slot removed (2026-08-15, not yet released)
 

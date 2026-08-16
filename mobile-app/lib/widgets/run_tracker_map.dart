@@ -76,7 +76,11 @@ class RunTrackerMap extends StatelessWidget {
           // Rose view swaps ONLY the canvas — the timeline, playback controls
           // and lane filters below are shared, so scrubbing works identically
           // in either rendering.
-          if (controller.roseView.value) {
+          // Rose needs track data: on a future run (or any untracked run)
+          // there is nothing to draw, and rendering it anyway produced a
+          // blank screen. With no data the map renders instead, and the
+          // Map/Radar switch is hidden (see _viewSwitch).
+          if (controller.roseView.value && controller.hasAnyTrackData) {
             final blips = controller.roseBlips;
             final range = controller.roseRangeMetres(blips);
             return Stack(
@@ -585,8 +589,11 @@ class RunTrackerMap extends StatelessWidget {
   }
 
   /// Switches the canvas between the map and the rose. Long-press while in the
-  /// rose resets the pinch range back to the auto 90% fit.
+  /// rose resets the pinch range back to the auto 90% fit. Hidden entirely
+  /// when the run has no track points (future / untracked runs) — the rose
+  /// would have nothing to draw, and a lone "Map" pill is just furniture.
   Widget _viewSwitch(RunTrackerMapController controller) {
+    if (!controller.hasAnyTrackData) return const SizedBox.shrink();
     return MapViewSwitch(
       roseSelected: controller.roseView.value,
       onSelect: (rose) => controller.roseView.value = rose,

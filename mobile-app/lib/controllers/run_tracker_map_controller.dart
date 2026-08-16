@@ -2400,6 +2400,12 @@ class RunTrackerMapController extends GetxController
   /// not a finished-run replay opened days later.
   bool get isLiveWindow => !_isStaleEvent;
 
+  /// True when at least one runner has track points. Future runs (and any
+  /// run nobody tracked) have none — the Radar has nothing to draw then, so
+  /// the Map/Radar switch is hidden and the rose canvas never renders.
+  bool get hasAnyTrackData =>
+      userPositions.any((u) => u.positions.isNotEmpty);
+
   /// The viewer's own locally-recorded points that have NOT yet appeared in
   /// the server track — the un-uploaded tail, drawn dotted so the runner can
   /// tell confirmed-on-server from still-in-the-phone. On a run with poor
