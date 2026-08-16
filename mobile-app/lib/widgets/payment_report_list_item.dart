@@ -26,6 +26,17 @@ class PaymentReportListItem extends StatelessWidget {
     return Icons.directions_run;
   }
 
+  /// Bank transfer awaiting confirmation — shown as a pending clock badge on
+  /// the payment icon. Text stays black (red is reserved for unpaid rows);
+  /// the swipe/tap-to-confirm behaviour is unchanged.
+  bool get _needsConfirm =>
+      (((paymentReportItem.payment?.paymentType ?? paymentTypeUnknown.value) ==
+              paymentBankTransfer.value) ||
+          ((paymentReportItem.payment?.paymentType ??
+                  paymentTypeUnknown.value) ==
+              paymentBankTransferOtherAmount.value)) &&
+      (paymentReportItem.payment?.confirmedBy == null);
+
   @override
   Widget build(BuildContext context) {
     final String amountPaid = IveCoreUtilities.getFormattedMoney(
@@ -77,16 +88,7 @@ class PaymentReportListItem extends StatelessWidget {
                       fontFamily: (paymentReportItem.extensions.isMember != 0)
                           ? 'AvenirNextCondensedDemiBold'
                           : 'AvenirNextCondensedMedium',
-                      color:
-                          ((((paymentReportItem.payment?.paymentType ??
-                                          paymentTypeUnknown.value) ==
-                                      paymentBankTransfer.value) ||
-                                  ((paymentReportItem.payment?.paymentType ??
-                                          paymentTypeUnknown.value) ==
-                                      paymentBankTransferOtherAmount.value)) &&
-                              (paymentReportItem.payment?.confirmedBy == null))
-                          ? hc_red
-                          : Colors.black,
+                      color: Colors.black,
                       fontStyle: FontStyle.normal,
                       fontSize: 22.0,
                       height: 1.0,
@@ -100,19 +102,8 @@ class PaymentReportListItem extends StatelessWidget {
                   children: [
                     Text(
                       amountPaid,
-                      style: TextStyle(
-                        color:
-                            ((((paymentReportItem.payment?.paymentType ??
-                                            paymentTypeUnknown.value) ==
-                                        paymentBankTransfer.value) ||
-                                    ((paymentReportItem.payment?.paymentType ??
-                                            paymentTypeUnknown.value) ==
-                                        paymentBankTransferOtherAmount
-                                            .value)) &&
-                                (paymentReportItem.payment?.confirmedBy ==
-                                    null))
-                            ? hc_red
-                            : Colors.black,
+                      style: const TextStyle(
+                        color: Colors.black,
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 22.0,
@@ -123,21 +114,8 @@ class PaymentReportListItem extends StatelessWidget {
                     if (extrasPaid != null)
                       Text(
                         'includes $extrasPaid for ${paymentReportItem.extensions.extrasDescription}',
-                        style: TextStyle(
-                          color:
-                              ((((paymentReportItem.payment?.paymentType ??
-                                              paymentTypeUnknown.value) ==
-                                          paymentBankTransfer.value) ||
-                                      ((paymentReportItem
-                                                  .payment
-                                                  ?.paymentType ??
-                                              paymentTypeUnknown.value) ==
-                                          paymentBankTransferOtherAmount
-                                              .value)) &&
-                                  (paymentReportItem.payment?.confirmedBy ==
-                                      null))
-                              ? hc_red
-                              : Colors.black,
+                        style: const TextStyle(
+                          color: Colors.black,
                           fontFamily: 'AvenirNextCondensedDemiBold',
                           fontStyle: FontStyle.normal,
                           fontSize: 16.0,
@@ -152,16 +130,41 @@ class PaymentReportListItem extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 5.0),
                   child: paymentReportItem.isLoading
                       ? Icon(delayIcon, color: hc_blue, size: 37.0)
-                      : Image.asset(
-                          'images/icons/payment_type_${paymentReportItem.payment?.paymentType ?? 0}.png',
-                          height: 30.0,
-                          width: 30.0,
-                          color:
-                              (paymentReportItem.payment?.paymentType ??
-                                      paymentTypeUnknown.value) <=
-                                  paymentNotPaid.value
-                              ? hc_red
-                              : Colors.green[700],
+                      : Stack(
+                          clipBehavior: Clip.none,
+                          children: <Widget>[
+                            Image.asset(
+                              'images/icons/payment_type_${paymentReportItem.payment?.paymentType ?? 0}.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color:
+                                  (paymentReportItem.payment?.paymentType ??
+                                          paymentTypeUnknown.value) <=
+                                      paymentNotPaid.value
+                                  ? hc_red
+                                  : Colors.green[700],
+                            ),
+                            // Awaiting-confirmation badge: the card icon stays
+                            // (it IS a card payment); the clock says "not
+                            // verified yet" and disappears on confirmation.
+                            if (_needsConfirm)
+                              Positioned(
+                                right: -4,
+                                bottom: -4,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  padding: const EdgeInsets.all(1),
+                                  child: Icon(
+                                    Icons.schedule,
+                                    size: 15,
+                                    color: Colors.amber.shade800,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                 ),
                 const SizedBox(width: 10),

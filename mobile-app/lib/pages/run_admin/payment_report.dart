@@ -154,12 +154,22 @@ SELECT
 
   List<Map<String, dynamic>> _paymentTotals = <Map<String, dynamic>>[];
 
-  /// Count of non-run (membership + haberdashery) payment rows in the list,
-  /// so the bottom "Total transactions" line matches what's on screen.
-  int _nonRunTxnCount = 0;
-  double _totalCollected = 0;
+  // Per-product footer totals (2026-08-16). Category lines show CONFIRMED
+  // money only; unconfirmed bank transfers are split into their own "Card
+  // pending" line so the category lines always sum to Total collected.
+  double _runGross = 0; // product 1, incl. extras portion
+  double _runPending = 0;
+  double _memberGross = 0; // product 2
+  double _memberPending = 0;
+  double _habGross = 0; // product 3
+  double _habPending = 0;
+  int _pendingCount = 0;
   double _extrasPaid = 0;
   int _transactionCount = 0;
+
+  double get _pendingTotal => _runPending + _memberPending + _habPending;
+  double get _totalCollected =>
+      _runGross + _memberGross + _habGross - _pendingTotal;
 
   /// Appends membership (productType 2) and haberdashery (3) payments to
   /// [_paymentsList] as their own rows — one line per non-run payment, so a
@@ -189,7 +199,6 @@ SELECT
       WHERE pay.cancelledBy IS NULL AND COALESCE(pay.productType, 1) != 1
       ''';
       final List<Map<String, dynamic>> rows = await database.rawQuery(sql);
-      _nonRunTxnCount = rows.length;
       for (final Map<String, dynamic> row in rows) {
         _paymentsList.add(
           PaymentAggregate(
@@ -200,7 +209,6 @@ SELECT
       }
     } catch (e, s) {
       BootLogger.logError('[PaymentReport._appendNonRunPayments]', e, s);
-      _nonRunTxnCount = 0;
     }
   }
 
@@ -224,31 +232,39 @@ SELECT
           0.0 as extrasPaid
             
           UNION
-          SELECT paymentType, 
+          -- Per-payment-type chip totals across ALL products (2026-08-16):
+          -- run payments keep their attendee (>= 20) scope; membership and
+          -- haberdashery rows count regardless of attendance, matching the
+          -- rows the list shows when a chip's filter is tapped.
+          SELECT paymentType,
             (
-                SELECT COUNT(*) 
-                FROM ${EnumDataTables.payments.eventTableName} pay 
-                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
-                WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL AND COALESCE(pay.productType, 1) = 1
+                SELECT COUNT(*)
+                FROM ${EnumDataTables.payments.eventTableName} pay
+                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem on hem.hemId = pay.hemId
+                WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL
+                  AND (COALESCE(pay.productType, 1) != 1 OR hem.attendenceState >= 20)
 
             ) as count,
             (
                 SELECT SUM(pay2.creditAmount)
-                FROM ${EnumDataTables.payments.eventTableName} pay2 
-                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
-                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL AND COALESCE(pay2.productType, 1) = 1
+                FROM ${EnumDataTables.payments.eventTableName} pay2
+                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId
+                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
+                  AND (COALESCE(pay2.productType, 1) != 1 OR hem2.attendenceState >= 20)
             ) as totalCollected,
             (
                 SELECT SUM(pay2.${tableModel.paymentsTableHelper.colDebitAmount})
-                FROM ${EnumDataTables.payments.eventTableName} pay2 
-                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
-                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL AND COALESCE(pay2.productType, 1) = 1
+                FROM ${EnumDataTables.payments.eventTableName} pay2
+                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId
+                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
+                  AND (COALESCE(pay2.productType, 1) != 1 OR hem2.attendenceState >= 20)
             ) as totalDebited,
             (
                 SELECT SUM(pay2.${tableModel.paymentsTableHelper.colDoPayForExtras})
-                FROM ${EnumDataTables.payments.eventTableName} pay2 
-                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
-                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL AND COALESCE(pay2.productType, 1) = 1
+                FROM ${EnumDataTables.payments.eventTableName} pay2
+                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId
+                WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
+                  AND (COALESCE(pay2.productType, 1) != 1 OR hem2.attendenceState >= 20)
             ) as extrasPaid
           FROM (SELECT 1 as paymentType union values (2), (3), (4), (5), (6), (7), (8) ) x
 
@@ -256,25 +272,59 @@ SELECT
           ''';
 
       final List<Map<String, dynamic>> results = await database.rawQuery(sql);
+
+      // Per-product footer totals: gross recorded money, the unconfirmed
+      // bank-transfer slice of it, and extras, per product category.
+      final String productSql =
+          '''
+          SELECT COALESCE(pay.productType, 1) AS productType,
+            COUNT(*) AS txnCount,
+            SUM(pay.creditAmount) AS gross,
+            SUM(CASE WHEN pay.paymentType IN (${paymentBankTransfer.value}, ${paymentBankTransferOtherAmount.value})
+                      AND pay.confirmedBy IS NULL THEN pay.creditAmount ELSE 0 END) AS pendingAmount,
+            SUM(CASE WHEN pay.paymentType IN (${paymentBankTransfer.value}, ${paymentBankTransferOtherAmount.value})
+                      AND pay.confirmedBy IS NULL THEN 1 ELSE 0 END) AS pendingCount,
+            SUM(pay.${tableModel.paymentsTableHelper.colDoPayForExtras}) AS extrasPaid
+          FROM ${EnumDataTables.payments.eventTableName} pay
+          INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem ON hem.hemId = pay.hemId
+          WHERE pay.cancelledBy IS NULL AND pay.paymentType > 1
+            AND (COALESCE(pay.productType, 1) != 1 OR hem.attendenceState >= 20)
+          GROUP BY COALESCE(pay.productType, 1)
+          ''';
+      final List<Map<String, dynamic>> productRows = await database.rawQuery(
+        productSql,
+      );
+
       setStateIfMounted(() {
         _paymentTotals = results;
-        _totalCollected = 0;
+        _runGross = 0;
+        _runPending = 0;
+        _memberGross = 0;
+        _memberPending = 0;
+        _habGross = 0;
+        _habPending = 0;
+        _pendingCount = 0;
         _extrasPaid = 0;
         _transactionCount = 0;
-        for (Map<String, dynamic> n in _paymentTotals) {
-          if (n.containsKey('paymentType') && (n['paymentType'] > 1)) {
-            if ((n.containsKey('totalCollected')) &&
-                (n['totalCollected'] != null)) {
-              _totalCollected += n['totalCollected'];
-              _extrasPaid += n['extrasPaid'];
-            }
-            if ((n.containsKey('count')) && (n['count'] != null)) {
-              _transactionCount += n['count'] as int;
-            }
+        for (final Map<String, dynamic> row in productRows) {
+          final int product = (row['productType'] as num?)?.toInt() ?? 1;
+          final double gross = (row['gross'] as num?)?.toDouble() ?? 0;
+          final double pending =
+              (row['pendingAmount'] as num?)?.toDouble() ?? 0;
+          _transactionCount += (row['txnCount'] as num?)?.toInt() ?? 0;
+          _pendingCount += (row['pendingCount'] as num?)?.toInt() ?? 0;
+          if (product == productTypeMembership.value) {
+            _memberGross = gross;
+            _memberPending = pending;
+          } else if (product == productTypeHaberdashery.value) {
+            _habGross = gross;
+            _habPending = pending;
+          } else {
+            _runGross = gross;
+            _runPending = pending;
+            _extrasPaid = (row['extrasPaid'] as num?)?.toDouble() ?? 0;
           }
         }
-        // Membership + haberdashery rows are transactions on screen too.
-        _transactionCount += _nonRunTxnCount;
       });
     } catch (e, s) {
       BootLogger.logError(
@@ -856,12 +906,9 @@ SELECT
                   ),
                 ),
                 Container(
-                  height: 110,
                   width: 9999.0,
-                  padding: const EdgeInsets.only(top: 14.0, left: 20.0),
+                  padding: const EdgeInsets.fromLTRB(20.0, 14.0, 20.0, 16.0),
                   decoration: const BoxDecoration(
-                    // border: new Border.all(width: 1.0, color: Colors.black),
-                    //shape: BoxShape.circle,
                     color: Colors.white,
                     boxShadow: <BoxShadow>[
                       BoxShadow(
@@ -871,27 +918,7 @@ SELECT
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        'Total transactions: $_transactionCount',
-                        style: ts_titleBlack,
-                      ),
-                      Text(
-                        'Run fees collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected - ((widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid), widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
-                        style: ts_titleBlack,
-                      ),
-                      Text(
-                        '${widget.eventAggregate.event.extrasDescription} paid: ${_extrasPaid.toInt()} for ${IveCoreUtilities.getFormattedMoney((widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
-                        style: ts_titleBlack,
-                      ),
-                      Text(
-                        'Total collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
-                        style: ts_titleBlack,
-                      ),
-                    ],
-                  ),
+                  child: _buildTotalsFooter(),
                 ),
               ],
             ),
@@ -1028,6 +1055,70 @@ SELECT
     if (productType == productTypeMembership.value) return 'Annual subscription';
     if (productType == productTypeHaberdashery.value) return 'Haberdashery';
     return 'Run fee';
+  }
+
+  /// Footer totals: one line per product category with activity (confirmed
+  /// money only), extras when the event has them configured, and an explicit
+  /// "Card pending" line for unconfirmed bank transfers — the category lines
+  /// plus pending always sum to the recorded gross, and "Total collected"
+  /// means verified money (2026-08-16, per James's treasurer-reconciliation
+  /// reading).
+  Widget _buildTotalsFooter() {
+    String money(double amount) => IveCoreUtilities.getFormattedMoney(
+      amount,
+      widget.eventAggregate.extensions.digAfterDec,
+      widget.eventAggregate.extensions.curSym,
+    );
+
+    final double extrasPrice =
+        widget.eventAggregate.event.eventPriceForExtras ?? 0;
+    final String? extrasDescription =
+        widget.eventAggregate.event.extrasDescription;
+    // '<null>' is a legacy sentinel that used to print literally in this
+    // footer ("<null> paid: 0 for £0.00" on events with no extras).
+    final bool extrasConfigured =
+        extrasPrice != 0 &&
+        extrasDescription != null &&
+        extrasDescription.trim().isNotEmpty &&
+        extrasDescription != '<null>';
+    final double extrasAmount = extrasConfigured
+        ? extrasPrice * _extrasPaid
+        : 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text('Total transactions: $_transactionCount', style: ts_titleBlack),
+        Text(
+          'Run fees: ${money(_runGross - _runPending - extrasAmount)}',
+          style: ts_titleBlack,
+        ),
+        if (extrasConfigured)
+          Text(
+            '$extrasDescription paid: ${_extrasPaid.toInt()} for ${money(extrasAmount)}',
+            style: ts_titleBlack,
+          ),
+        if (_memberGross > 0 || _memberPending > 0)
+          Text(
+            'Memberships: ${money(_memberGross - _memberPending)}',
+            style: ts_titleBlack,
+          ),
+        if (_habGross > 0 || _habPending > 0)
+          Text(
+            'Haberdashery: ${money(_habGross - _habPending)}',
+            style: ts_titleBlack,
+          ),
+        if (_pendingCount > 0)
+          Text(
+            'Card pending: ${money(_pendingTotal)} ($_pendingCount to confirm)',
+            style: ts_titleBlack.copyWith(color: Colors.amber.shade900),
+          ),
+        Text(
+          'Total collected: ${money(_totalCollected)}',
+          style: ts_titleBlack,
+        ),
+      ],
+    );
   }
 
   Container _listItem(PaymentAggregate item, BuildContext topContext) {
