@@ -786,6 +786,9 @@ class PhotoReviewController extends GetxController {
         sourcePath: file.path,
         compressFormat: ImageCompressFormat.jpg,
         compressQuality: 100,
+        // Aspect-ratio picker sheet renders empty on iOS 26 — see
+        // KennelPhotoService._onEdit.
+        uiSettings: [IOSUiSettings(aspectRatioPickerButtonHidden: true)],
       );
       if (cropped == null) return; // user cancelled — not an error
 

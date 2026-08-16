@@ -1378,6 +1378,9 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
       sourcePath: _currentFile.path,
       compressFormat: ImageCompressFormat.jpg,
       compressQuality: 100,
+      // Aspect-ratio picker sheet renders empty on iOS 26 (TOCropViewController
+      // predates Liquid Glass) — hidden until the plugin catches up.
+      uiSettings: [IOSUiSettings(aspectRatioPickerButtonHidden: true)],
     );
     if (cropped != null) {
       setState(() {

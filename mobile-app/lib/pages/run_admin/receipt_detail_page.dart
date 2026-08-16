@@ -224,6 +224,9 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         sourcePath: image.path,
         compressFormat: ImageCompressFormat.jpg,
         compressQuality: 70,
+        // Aspect-ratio picker sheet renders empty on iOS 26 — see
+        // KennelPhotoService._onEdit.
+        uiSettings: [IOSUiSettings(aspectRatioPickerButtonHidden: true)],
       );
 
       if (croppedFile != null) {

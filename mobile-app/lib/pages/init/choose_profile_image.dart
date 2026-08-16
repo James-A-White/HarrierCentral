@@ -520,6 +520,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         maxHeight: 300,
         compressFormat: ImageCompressFormat.jpg,
         compressQuality: 50,
+        // Aspect-ratio picker sheet renders empty on iOS 26 — see
+        // KennelPhotoService._onEdit. Ratio is locked to 1:1 here anyway.
+        uiSettings: [IOSUiSettings(aspectRatioPickerButtonHidden: true)],
       );
 
       if (croppedFile != null) {

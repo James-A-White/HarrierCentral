@@ -77,6 +77,17 @@ roughly by recommended sequence.
   tracking session — worth a profiling pass if any tracking-session OOM
   reports appear in MetricKit.
 
+### Date-triggered
+
+- [ ] **~2026-10-16 — re-check the hidden crop aspect-ratio button.** The
+  image_cropper aspect-ratio preset sheet renders as an empty glass panel on
+  iOS 26 (TOCropViewController predates Liquid Glass), so
+  `aspectRatioPickerButtonHidden: true` was set at all five `cropImage` call
+  sites on 2026-08-16. In two months: check whether an image_cropper release
+  (>12.2.1) fixes the iOS 26 sheet; if so, bump it (or fold into the Tier-2
+  dependency pass) and remove the five `IOSUiSettings` lines to restore the
+  preset picker.
+
 ### Waiting on HC5 retirement (~Dec 2026 – Mar 2027)
 
 - [ ] Drop `EventStartDatetimeIndexed` + its trigger and the other HC5

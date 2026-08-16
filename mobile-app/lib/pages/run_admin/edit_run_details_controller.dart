@@ -788,6 +788,9 @@ class EditRunDetailsController extends GetxController
           maxHeight: 1000,
           compressFormat: ImageCompressFormat.jpg,
           compressQuality: 50,
+          // Aspect-ratio picker sheet renders empty on iOS 26 — see
+          // KennelPhotoService._onEdit.
+          uiSettings: [IOSUiSettings(aspectRatioPickerButtonHidden: true)],
         );
 
         mutate(() {
