@@ -1,7 +1,17 @@
 # PackTrack — Stop⇒On-Inn & Auto-Stop Design
 
-**Status:** Design agreed with James 2026-08-16. Not coded. Parked until after
-the 3.0 App Store release.
+**Status:** IMPLEMENTED 2026-08-16 (same day as design; James pulled it
+forward from post-3.0). Steps ①–③ are mobile+public-web code, shipped blind
+(`flutter analyze` / `tsc` only — device-test checklist in todos/app.md).
+Step ④ is coded on both sides but **inert until the API is deployed**
+(EndEventTracking endpoint + StorePositions response flag). V2 detection
+(server-side "everyone looks in" push to admins) is NOT built.
+
+**Constraint added by James:** never assume the hare uses the app — technical
+uptake varies and many hashers are luddites. So nothing here keys on the
+hare: any app-using finisher seeds the On-Inn cluster (③), and the pack-wide
+stop (④) is a kennel-admin action in the PackTrack trim overlay, not a hook
+on the hare's End Run.
 
 **Motivating incident:** Brussels Trail #2058 (2026-08-16) — Rack of Lamb left
 tracking running 2+ hours after the run ended; the après and journey home were
@@ -88,10 +98,25 @@ local notification ("Tracking stopped — the run has ended"), offers one-tap
 resume for anyone genuinely not in yet. Worst-case latency = one flush
 interval; reaches exactly the phones that are still transmitting.
 
-V1 shortcut (no detection component): hook the flag to actions that already
-exist — hare's End Run confirm gains "Stop everyone's tracking too?", plus a
-manual "End tracking for all" in run admin. V2 adds the detection (needs an
-Azure Functions timer evaluating live events).
+V1 (built): a kennel-admin "Stop everyone's tracking" action in the PackTrack
+trim overlay (gated on `authCanManageRuns`, same as trimming), with a
+re-open toggle. Deliberately NOT hooked to the hare's End Run — hares often
+don't use the app. V2 (not built) adds detection: an Azure Functions timer
+evaluating live events and sending a visible push to admins.
+
+**Implementation notes (2026-08-16):**
+- Flag storage: Azure Table `EventTrackingControl` (PK=eventId, RK=`control`,
+  `TrackingEndedAtMs`). Endpoint `EndEventTracking` (X-Api-Key; ended
+  true/false/omitted = set/clear/status).
+- Delivery nuance: the signal rides on position batches, so a *stationary*
+  forgetter's phone (distance filter ⇒ no points ⇒ no flushes) only receives
+  it when they move again — which is exactly when it matters (the drive
+  home). The on-device ③ prompt covers the stationary window.
+- Staleness guard: the client ignores a flag stamped BEFORE its latest
+  deliberate tracking start, so a straggler who restarts after the admin
+  ends the run is not re-stopped (`LocationService._onRemoteTrackingEnded`).
+- Remote stop places NO On-Inn (the server doesn't know where the runner is
+  in the trail); manual and ③-prompted stops do.
 
 ---
 

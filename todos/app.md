@@ -274,6 +274,38 @@ NULL expiry on the pack row = never a member.
   charge sheet from the members list shows "Lifetime membership — there is
   nothing to charge" with NO fee field / method chips / charge button.
 
+## Device test — stop⇒On-Inn & auto-stop (2026-08-16, not yet released)
+
+Plan: `docs/packtrack_auto_stop_plan.md`. Steps ①–③ work with the CURRENT
+API; the two ④ items need the API deployed first (EndEventTracking +
+StorePositions flag echo).
+
+- [ ] **End Run dialog**: while tracking, tap End Run → "Are you On Inn?"
+  with THREE buttons. "I'm On Inn" → On-Inn mark at your position, tracking
+  stops, map shows the icon at your line's end. "I stopped early" → tracking
+  stops, NO mark, trail just ends. "Keep Tracking" → nothing recorded.
+- [ ] **Read rule — resume**: end with "I'm On Inn", restart tracking, walk
+  on 3+ min → the old On-Inn icon disappears from the map (mobile AND
+  public-web viewer) and the line draws through where it was.
+- [ ] **Read rule — history**: replay an old run whose track ends with an
+  On-Inn → icon and truncation unchanged (terminal On-Inns still honoured).
+- [ ] **Auto-stop prompt**: two phones; phone A ends with "I'm On Inn";
+  phone B (tracking >20 min) sits still within 30 m of A's mark for ~8 min →
+  B gets "Are you On Inn?" with the countdown line. "Keep Tracking" →
+  no re-prompt for 30 min.
+- [ ] **Auto-stop drink-stop immunity**: both phones stationary together
+  10+ min with NO On-Inn marks nearby → no prompt on either.
+- [ ] **Auto-stop unanswered**: trigger the prompt with phone B locked in a
+  pocket → after ~5 min tracking stops by itself and an On-Inn appears at
+  B's position (breadcrumb "auto-stop — prompt unanswered").
+- [ ] **④ Admin stop-everyone** (AFTER API deploy): admin opens the trim
+  overlay → "Stop everyone's tracking" → confirm → a phone still tracking
+  and MOVING stops within ~1 min with the "Run ended" snackbar; the trim
+  overlay button flips to "Re-open tracking".
+- [ ] **④ Straggler override** (AFTER API deploy): after stop-everyone, the
+  stopped phone presses Start Run Tracking again → keeps tracking, is NOT
+  stopped a second time.
+
 ## Device test — map pending-tail + freshness pill (2026-08-16, not yet released)
 
 Live map now fuses the viewer's own track: solid = confirmed on server,
@@ -452,16 +484,15 @@ Released with `flutter analyze` only. Screens: live run → map → Radar.
 
 ## PackTrack
 
-- [ ] **Stop⇒On-Inn & auto-stop** (DESIGN AGREED 2026-08-16, not coded; full
-  plan `docs/packtrack_auto_stop_plan.md`). Three-button stop dialog ("I'm On
-  Inn" / "I stopped early" / "Keep Tracking"), OIN-cluster auto-stop prompt
-  (never inactivity-based — drink stops), admin "everyone in?" with the stop
-  signal piggybacked on StorePositions responses. NOTE: promotes the
-  mid-track On-Inn read rule below from cleanup to prerequisite. Also agreed:
-  per-slot mark cooldown + undo toast (butt-dial double-tap), Tell-the-pack
-  debounce.
-- [ ] **Ignore a mid-track On-Inn at read time** (DESIGN AGREED with James
-  2026-08-15, not yet coded). A trail has exactly ONE On-Inn, at the end —
+- [x] **Stop⇒On-Inn & auto-stop** (IMPLEMENTED 2026-08-16, shipped blind —
+  device tests below; full plan `docs/packtrack_auto_stop_plan.md`). Steps
+  ①–③ live in mobile/public-web; step ④ (admin stop-everyone) is coded but
+  inert until the API deploy. Still to build from that session: per-slot mark
+  cooldown + undo toast (butt-dial double-tap), Tell-the-pack debounce, V2
+  "everyone in?" detection.
+- [x] **Ignore a mid-track On-Inn at read time** (DESIGN AGREED 2026-08-15,
+  IMPLEMENTED 2026-08-16 as step ① of the auto-stop plan — mobile
+  `_isTerminalOnInn` + public-web `isTerminalOnInn`, 2-min grace). A trail has exactly ONE On-Inn, at the end —
   an On-Inn followed by later points is always a mistake (runner tapped it,
   then resumed). On LH3 #2846 such a mark truncated 20+ min of live trail
   for every viewer until deleted server-side. Fix: readers (mobile
