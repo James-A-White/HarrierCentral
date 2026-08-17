@@ -76,8 +76,18 @@ final class MetricKitReporter: NSObject, MXMetricManagerSubscriber {
   }
 
   private func append(_ data: Data, kind: String) {
-    guard let json = String(data: data, encoding: .utf8), !json.isEmpty else { return }
-    // `json` is single-line valid JSON; embed it verbatim as the payload value.
+    // jsonRepresentation() returns PRETTY-PRINTED (multi-line) JSON, but this
+    // file is JSONL — one record per line. Re-serialize to compact single-line
+    // JSON; if that fails, flatten newlines so a record can never span lines
+    // (a multi-line record gets split into hundreds of fragment rows by drain()).
+    var payloadData = data
+    if let obj = try? JSONSerialization.jsonObject(with: data),
+       let compact = try? JSONSerialization.data(withJSONObject: obj) {
+      payloadData = compact
+    }
+    guard var json = String(data: payloadData, encoding: .utf8), !json.isEmpty else { return }
+    json = json.replacingOccurrences(of: "\n", with: " ")
+      .replacingOccurrences(of: "\r", with: " ")
     let line = "{\"kind\":\"\(kind)\",\"payload\":\(json)}\n"
     guard let bytes = line.data(using: .utf8) else { return }
     let url = fileURL
