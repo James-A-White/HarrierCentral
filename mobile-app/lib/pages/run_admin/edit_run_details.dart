@@ -340,6 +340,21 @@ class EditRunDetailsPage extends StatelessWidget {
                         style: ts_headingBlack,
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 15.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 40),
+                        ),
+                        icon: const Icon(Icons.search, size: 20),
+                        label: Text('Look up address', style: ts_button),
+                        onPressed: c.openLocationLookup,
+                      ),
+                    ),
                     _genericTextField(
                       focusNode: c.focusNodeStreetAddress,
                       textEditignController: c.locationStreetController,
