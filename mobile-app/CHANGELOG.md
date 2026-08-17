@@ -1,5 +1,26 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1290 (2026-08-17)
+
+### New Features
+- **Membership + run in one tap.** The check-in membership sheet now offers
+  "Membership + run fee (£X)" (or "+ check in" when the run is free for
+  members): one atomic action charges both, records both transactions, and
+  checks the hasher in. "Charge membership only" behaves as before.
+- **Honest payment report.** The totals footer shows each product line — Run
+  fees, Memberships, Haberdashery — plus a "Card pending" line for
+  unconfirmed bank transfers; "Total collected" now means verified money.
+  The header count chips include all products, so they match the filtered
+  list. The stray "<null> paid" line on events without extras is gone.
+
+### Improvements
+- **Unconfirmed card payments** show in black with a small amber clock badge
+  on the card icon (instead of red text); the badge disappears once the
+  transfer is confirmed.
+- **Free-for-members runs are recorded as Free.** A £0 "cash" tap now logs a
+  free run tagged "member" (server-side), so cash totals only ever contain
+  real money.
+
 ## 3.0.1+1289 (2026-08-16)
 
 ### New Features
