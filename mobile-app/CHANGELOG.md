@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1291 (2026-08-17)
+
+### Improvements
+- **Address lookup made obvious**: the run editor's Address tab now has a
+  full-width "Look up address" button (same gazetteer search as before,
+  which remains available via the search icon on the Details tab's
+  one-line description field).
+
 ## 3.0.1+1290 (2026-08-17)
 
 ### New Features
