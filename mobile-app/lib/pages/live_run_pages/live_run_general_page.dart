@@ -407,6 +407,7 @@ class LiveRunGeneralController extends GetxController {
   static const Duration _slotCooldown = Duration(seconds: 8);
   final Map<String, DateTime> _lastSlotMarkAt = {};
   int? _lastMarkTsMs;
+  Future<int?>? _pendingMark;
 
   /// True when [slot] was marked within the last [_slotCooldown] — the tap is
   /// swallowed silently (a legitimate second identical mark that close
@@ -417,26 +418,17 @@ class LiveRunGeneralController extends GetxController {
     return last != null && DateTime.now().difference(last) < _slotCooldown;
   }
 
+  /// Records the mark. Confirmation is the slot-flash popup (which carries the
+  /// Undo button) — no snackbar. The popup shows before the one-shot GPS fix
+  /// resolves, so the recorded timestamp is tracked as a pending future for
+  /// [undoLastMark] to await.
   Future<void> markSlot(TrailSlot slot, {String? label}) async {
     _lastSlotMarkAt[slot.trackType()] = DateTime.now();
-    final tsMs = await _locationService.markSlot(slot, label: label);
+    final Future<int?> pending = _locationService.markSlot(slot, label: label);
+    _pendingMark = pending;
+    final tsMs = await pending;
     if (tsMs == null) return; // nothing recorded — nothing to undo
     _lastMarkTsMs = tsMs;
-    Get.snackbar(
-      'Marked',
-      '${slot.name} added to the trail map.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: hc_blue,
-      colorText: Colors.white,
-      duration: _slotCooldown,
-      mainButton: TextButton(
-        onPressed: () => unawaited(undoLastMark(slot.name)),
-        child: const Text(
-          'UNDO',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
   }
 
   /// Removes the most recent slot mark: pulls it from the local upload queue
@@ -444,7 +436,15 @@ class LiveRunGeneralController extends GetxController {
   /// re-upload) AND deletes it server-side (marks force-flush, so it has
   /// usually landed already). An open map keeps showing the mark until its
   /// next full reload — the incremental poll can't express deletions.
+  ///
+  /// Awaits any in-flight mark first — the flash popup's Undo can be tapped
+  /// before the GPS fix has resolved.
   Future<void> undoLastMark(String slotName) async {
+    try {
+      await _pendingMark;
+    } catch (_) {
+      // A failed mark recorded nothing; _lastMarkTsMs stays null below.
+    }
     final ts = _lastMarkTsMs;
     if (ts == null) return;
     _lastMarkTsMs = null;
@@ -1251,7 +1251,14 @@ class LiveRunGeneralPage extends StatelessWidget {
     }
 
     if (!context.mounted) return;
-    unawaited(_showSlotFlash(context, slot, label));
+    unawaited(
+      _showSlotFlash(
+        context,
+        slot,
+        label,
+        onUndo: () => unawaited(controller.undoLastMark(slot.name)),
+      ),
+    );
 
     await controller.markSlot(slot, label: label);
   }
@@ -1431,26 +1438,29 @@ class LiveRunGeneralPage extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Slot flash overlay — shown immediately on tap, dismissed after 4 s or tap
+// Slot flash overlay — shown immediately on tap, dismissed after 8 s or tap.
+// Carries the Undo button (the popup lives as long as the undo window).
 // ---------------------------------------------------------------------------
 
 Future<void> _showSlotFlash(
   BuildContext context,
   TrailSlot slot,
-  String? label,
-) {
+  String? label, {
+  VoidCallback? onUndo,
+}) {
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
     barrierColor: Colors.black.withValues(alpha: 0.65),
-    builder: (_) => _SlotFlashDialog(slot: slot, label: label),
+    builder: (_) => _SlotFlashDialog(slot: slot, label: label, onUndo: onUndo),
   );
 }
 
 class _SlotFlashDialog extends StatefulWidget {
-  const _SlotFlashDialog({required this.slot, this.label});
+  const _SlotFlashDialog({required this.slot, this.label, this.onUndo});
   final TrailSlot slot;
   final String? label;
+  final VoidCallback? onUndo;
 
   @override
   _SlotFlashDialogState createState() => _SlotFlashDialogState();
@@ -1473,7 +1483,13 @@ class _SlotFlashDialogState extends State<_SlotFlashDialog>
     _scale = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutBack);
     _opacity = CurvedAnimation(parent: _animCtrl, curve: Curves.easeIn);
     _animCtrl.forward();
-    _timer = Timer(const Duration(seconds: 4), _dismiss);
+    // Matches the undo window (_slotCooldown) — the popup IS the undo surface.
+    _timer = Timer(const Duration(seconds: 8), _dismiss);
+  }
+
+  void _undo() {
+    widget.onUndo?.call();
+    _dismiss();
   }
 
   @override
@@ -1541,7 +1557,29 @@ class _SlotFlashDialogState extends State<_SlotFlashDialog>
                         textAlign: TextAlign.center,
                       ),
                     ],
-                    const SizedBox(height: 24),
+                    if (widget.onUndo != null) ...[
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(160, 44),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.undo, size: 20),
+                        label: const Text(
+                          'Undo',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onPressed: _undo,
+                      ),
+                    ],
+                    const SizedBox(height: 16),
                     Text(
                       'Tap to dismiss',
                       style: TextStyle(
