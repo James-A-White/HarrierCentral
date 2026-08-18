@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { MapContainer, TileLayer, Polyline, Marker, Circle, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera } from "lucide-react";
+import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera, Download } from "lucide-react";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn, trackUpTo, sumDistanceMeters,
   haversineMeters, formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
@@ -508,9 +508,11 @@ interface PackTrackViewProps {
   runPhotos: Record<string, RunPhoto>;
   /** Show the "Harrier Central 3.0" adventure title overlaid at the top. */
   showTitle?: boolean;
+  /** Kennel website background image; null/undefined → platform jungle tile. */
+  kennelBackgroundUrl?: string | null;
 }
 
-function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson, runPhotos, showTitle = false }: PackTrackViewProps) {
+function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson, runPhotos, showTitle = false, kennelBackgroundUrl = null }: PackTrackViewProps) {
   // Opens at 1.0 — the most recent position info (live view); playing from the
   // end restarts from 0 via togglePlay's reset.
   const [progress, setProgress] = useState(1);    // 0.0 → 1.0
@@ -1568,12 +1570,20 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
         </div>
       )}
 
-      {/* Photo lightbox — app-style full-screen viewer with caption overlay */}
+      {/* Photo lightbox — app-style full-screen viewer with caption overlay.
+          Backdrop is the kennel's website background (platform jungle tile when
+          none is configured), dimmed for photo legibility. */}
       {lightboxIdx != null && photoMarks[lightboxIdx] && typeof document !== "undefined" && createPortal(
         <div
-          className="fixed inset-0 z-[3000] bg-black/95 flex flex-col"
+          className="fixed inset-0 z-[3000] flex flex-col"
+          style={{
+            backgroundImage: `url(${kennelBackgroundUrl ?? "/images/jungle_background.jpg"})`,
+            backgroundSize: kennelBackgroundUrl ? "cover" : "1024px 1024px",
+            backgroundPosition: "center",
+          }}
           onClick={() => setLightboxIdx(null)}
         >
+          <div className="absolute inset-0 bg-black/70 pointer-events-none" />
           <button
             onClick={() => setLightboxIdx(null)}
             aria-label="Close photo"
@@ -1581,15 +1591,27 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
           >
             <X className="h-5 w-5 text-white" />
           </button>
+          <a
+            href={`/api/photo-download?u=${encodeURIComponent(photoMarks[lightboxIdx].photo.url)}&name=${encodeURIComponent(
+              (photoMarks[lightboxIdx].photo.title ?? `run-photo-${lightboxIdx + 1}`) +
+              (/\.\w{3,4}(\?|$)/.test(photoMarks[lightboxIdx].photo.url) ? "" : ".jpg"),
+            )}`}
+            download
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Download photo"
+            className="absolute top-3 left-3 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-black/55 border border-white/25"
+          >
+            <Download className="h-5 w-5 text-white" />
+          </a>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={photoMarks[lightboxIdx].photo.url}
             alt={photoMarks[lightboxIdx].photo.title ?? "Run photo"}
-            className="flex-1 min-h-0 w-full object-contain"
+            className="relative flex-1 min-h-0 w-full object-contain"
             onClick={(e) => e.stopPropagation()}
           />
           <div
-            className="shrink-0 px-4 pt-3 text-center"
+            className="relative shrink-0 px-4 pt-3 text-center"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1610,7 +1632,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
                 onClick={(e) => { e.stopPropagation(); setLightboxIdx(Math.max(lightboxIdx - 1, 0)); }}
                 disabled={lightboxIdx === 0}
                 aria-label="Previous photo"
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 border border-white/25 text-white text-xl disabled:opacity-30"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-black/60 border border-white/30 text-white text-2xl disabled:opacity-30"
               >
                 ‹
               </button>
@@ -1618,7 +1640,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
                 onClick={(e) => { e.stopPropagation(); setLightboxIdx(Math.min(lightboxIdx + 1, photoMarks.length - 1)); }}
                 disabled={lightboxIdx === photoMarks.length - 1}
                 aria-label="Next photo"
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 border border-white/25 text-white text-xl disabled:opacity-30"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-black/60 border border-white/30 text-white text-2xl disabled:opacity-30"
               >
                 ›
               </button>
@@ -1681,6 +1703,8 @@ interface PackTrackMapProps {
   open?: boolean;
   /** Called when the full-screen overlay requests to close. */
   onClose?: () => void;
+  /** Kennel website background image for the photo lightbox backdrop. */
+  kennelBackgroundUrl?: string | null;
   /**
    * When `true`, render as a standalone full-viewport page (no embedded card,
    * no portal overlay) — used by the dedicated `/[slug]/[runNumber]/packtrack`
@@ -1690,7 +1714,7 @@ interface PackTrackMapProps {
 }
 
 export default function PackTrackMap({
-  lat, lon, eventId, publicEventId, height = 240, onTrackLoaded, open = false, onClose, fullPage = false,
+  lat, lon, eventId, publicEventId, height = 240, onTrackLoaded, open = false, onClose, fullPage = false, kennelBackgroundUrl = null,
 }: PackTrackMapProps) {
   const [users, setUsers] = useState<UserTrack[]>([]);
   const [minTs, setMinTs] = useState(0);
@@ -1781,7 +1805,7 @@ export default function PackTrackMap({
     };
   }, [eventId, publicEventId]);
 
-  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson: trailCfg, runPhotos };
+  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson: trailCfg, runPhotos, kennelBackgroundUrl };
 
   // Standalone full-viewport page (dedicated PackTrack route). Fills the screen
   // with the playback view; the close button hands control back to the caller.

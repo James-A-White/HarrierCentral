@@ -1,5 +1,10 @@
 # public-web Changelog
 
+## 0.21.19 — 2026-08-18
+
+- PackTrack photo lightbox: new Download button saves the photo to the viewer's device (streamed same-origin so it works on phones)
+- PackTrack photo lightbox: backdrop is now the kennel's website background (Harrier Central jungle tile when none is set) instead of plain black; next/back buttons enlarged
+
 ## 0.21.18 — 2026-08-16
 
 - PackTrack: a mid-track On Inn (runner tapped it, then resumed) no longer truncates the drawn track or shows its icon — only an On Inn that is effectively the runner's last point ends the trail (matches the mobile app)

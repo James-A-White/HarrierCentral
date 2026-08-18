@@ -39,6 +39,8 @@ export interface RunDetailKennel {
   name: string;
   shortName: string;
   logoUrl?: string;
+  /** Kennel website background image; used as the photo lightbox backdrop. */
+  backgroundImageUrl?: string | null;
 }
 
 interface RunDetailProps {
@@ -294,6 +296,7 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
                   onTrackLoaded={setHasPackTrack}
                   open={packTrackOpen}
                   onClose={() => setPackTrackOpen(false)}
+                  kennelBackgroundUrl={kennel.backgroundImageUrl ?? null}
                 />
               </div>
             )}

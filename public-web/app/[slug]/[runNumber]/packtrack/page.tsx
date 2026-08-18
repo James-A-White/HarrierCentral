@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { isNumeric, resolveKennelAndEvent } from "@/lib/run-resolve";
+import { toKennelContext } from "@/lib/kennel-utils";
 import { PackTrackFullPage } from "@/components/kennel/PackTrackFullPage";
 
 interface PageProps {
@@ -42,6 +43,7 @@ export default async function PackTrackPage({ params }: PageProps) {
           lon={event.Longitude}
           eventId={event.EventId ?? event.PublicEventId}
           publicEventId={event.PublicEventId}
+          kennelBackgroundUrl={toKennelContext(kennelData).backgroundImageUrl ?? null}
         />
       </body>
     </html>

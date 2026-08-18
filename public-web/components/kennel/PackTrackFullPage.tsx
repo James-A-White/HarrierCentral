@@ -14,6 +14,8 @@ interface PackTrackFullPageProps {
   eventId: string;
   /** Event's public UUID — used to resolve runner display names. */
   publicEventId: string;
+  /** Kennel website background image for the photo lightbox backdrop. */
+  kennelBackgroundUrl?: string | null;
 }
 
 /**
@@ -21,7 +23,7 @@ interface PackTrackFullPageProps {
  * the PackTrack map full-screen; closing returns to the run detail page.
  */
 export function PackTrackFullPage({
-  slug, runNumber, lat, lon, eventId, publicEventId,
+  slug, runNumber, lat, lon, eventId, publicEventId, kennelBackgroundUrl = null,
 }: PackTrackFullPageProps) {
   const router = useRouter();
   return (
@@ -31,6 +33,7 @@ export function PackTrackFullPage({
       lon={lon}
       eventId={eventId}
       publicEventId={publicEventId}
+      kennelBackgroundUrl={kennelBackgroundUrl}
       onClose={() => router.push(`/${slug}/${runNumber}`)}
     />
   );

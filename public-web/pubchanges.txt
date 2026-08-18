@@ -1,3 +1,7 @@
+0.21.19
+    • PackTrack photo lightbox: Download button (same-origin streaming so phone downloads work)
+    • PackTrack photo lightbox: kennel website background (jungle default) behind photos instead of black; bigger next/back buttons
+
 0.21.18
     • PackTrack: mid-track On Inn (tapped then resumed) no longer truncates the track or shows its icon — only an effectively-final On Inn ends the trail (matches mobile)
 
