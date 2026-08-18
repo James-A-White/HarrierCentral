@@ -1,5 +1,18 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1292 (2026-08-18)
+
+### Fixes
+- **MetricKit diagnostics arrive intact**: crash/hang/memory reports were
+  being split line-by-line into hundreds of fragment rows on upload
+  (every payload since 2026-07-20); payloads are now compacted to a
+  single record before persisting.
+
+### Improvements
+- **Run editor lookup buttons**: the Details tab's magnifier is now a
+  labelled "Look up" button; the Address tab button quotes the one-line
+  description ("Look up \"...\"") so it's clear what will be searched.
+
 ## 3.0.1+1291 (2026-08-17)
 
 ### Improvements
