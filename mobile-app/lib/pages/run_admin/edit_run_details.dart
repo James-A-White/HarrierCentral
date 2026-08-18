@@ -346,13 +346,27 @@ class EditRunDetailsPage extends StatelessWidget {
                         left: 25.0,
                         right: 25.0,
                       ),
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 40),
-                        ),
-                        icon: const Icon(Icons.search, size: 20),
-                        label: Text('Look up address', style: ts_button),
-                        onPressed: c.openLocationLookup,
+                      child: ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: c.locationOneLineDescController,
+                        builder: (_, TextEditingValue value, _) {
+                          final String desc = value.text.trim();
+                          return ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 40),
+                            ),
+                            icon: const Icon(Icons.search, size: 20),
+                            label: Text(
+                              desc.isEmpty
+                                  ? 'Look up address'
+                                  : 'Look up "$desc"',
+                              style: ts_button,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onPressed: c.openLocationLookup,
+                          );
+                        },
                       ),
                     ),
                     _genericTextField(
@@ -566,10 +580,16 @@ class EditRunDetailsPage extends StatelessWidget {
                           ),
                           hintText: 'Location description',
                           hintStyle: ts_hint,
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.search),
-                            tooltip: 'Lookup location',
-                            onPressed: c.openLocationLookup,
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.only(right: 6.0),
+                            child: TextButton.icon(
+                              style: TextButton.styleFrom(
+                                foregroundColor: hc_red,
+                              ),
+                              icon: const Icon(Icons.search, size: 18),
+                              label: const Text('Look up'),
+                              onPressed: c.openLocationLookup,
+                            ),
                           ),
                         ),
                       ),
