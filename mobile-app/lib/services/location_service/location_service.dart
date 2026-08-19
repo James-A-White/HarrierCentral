@@ -11,6 +11,22 @@ import 'package:harrier_central/util/track_point_filter.dart';
 
 String pad19(int epochMs) => epochMs.toString().padLeft(19, '0');
 
+/// A slot mark captured at tap time but not yet committed to the track.
+/// Holds everything needed to record the point later, exactly as it was at
+/// the moment of the tap. See [LocationService.captureSlotMark] /
+/// [LocationService.commitSlotMark].
+class PendingSlotMark {
+  const PendingSlotMark({
+    required this.position,
+    required this.tsMs,
+    required this.rawType,
+  });
+
+  final Position position;
+  final int tsMs;
+  final String rawType;
+}
+
 // Tracking quality tiers — chosen by the user in preferences.
 // 0 = Power Saver, 1 = Balanced, 2 = Best
 // When unset (null pref), Best is the default.
@@ -541,27 +557,36 @@ class LocationService extends GetxService {
     );
   }
 
-  /// Places a slot mark at the current position. Returns the recorded point's
-  /// epoch-ms timestamp (the undo handle — see
-  /// [LiveRunGeneralController.undoLastMark]), or null if nothing was
-  /// recorded (paused, buffer resetting).
-  Future<int?> markSlot(TrailSlot slot, {String? label}) async {
+  /// Two-phase slot mark, phase 1 — CAPTURE. Fixes the position and timestamp
+  /// at the moment of the tap, but records nothing. The caller holds the
+  /// returned [PendingSlotMark] while the confirmation card is up: dismissal
+  /// commits it via [commitSlotMark]; Undo simply drops it (nothing was ever
+  /// queued or uploaded, so there is nothing to delete).
+  Future<PendingSlotMark> captureSlotMark(TrailSlot slot, {String? label}) async {
+    final tsMs = DateTime.now().millisecondsSinceEpoch;
     final position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
     );
-    // Self-describing track type: GLY::<id> / TXT::<text> [::L=label] [::A=action].
-    return updateDeviceLocation(
-      position,
-      forceFlush: true,
+    return PendingSlotMark(
+      position: position,
+      tsMs: tsMs,
+      // Self-describing track type: GLY::<id> / TXT::<text> [::L=label] [::A=action].
       rawType: slot.trackType(label: label),
     );
   }
 
-  /// Removes a queued (not-yet-uploaded) point by its timestamp — the local
-  /// half of a mark undo. Returns true if a point was removed from the live
-  /// buffer.
-  bool removeQueuedPoint(int timestampMs) =>
-      _runBuffer?.removeByTs(pad19(timestampMs)) ?? false;
+  /// Two-phase slot mark, phase 2 — COMMIT. Queues the captured mark on the
+  /// track buffer (stamped with its capture-time timestamp, not now) and
+  /// force-flushes. Returns the recorded timestamp, or null if nothing was
+  /// recorded (paused, buffer resetting).
+  Future<int?> commitSlotMark(PendingSlotMark mark) {
+    return updateDeviceLocation(
+      mark.position,
+      forceFlush: true,
+      rawType: mark.rawType,
+      atTsMs: mark.tsMs,
+    );
+  }
 
   /// Emits a trail-type declaration point (`TRL::<value>`) at the current
   /// position, tagging the runner's track with the lane they're running.
@@ -744,6 +769,7 @@ class LocationService extends GetxService {
     HashRunPointTypes? pointType,
     String? rawType,
     String? label,
+    int? atTsMs,
   }) async {
     int? recordedTsMs;
     final lat = position.latitude.toDouble();
@@ -857,7 +883,9 @@ class LocationService extends GetxService {
         }
       }
 
-      final tsMs = DateTime.now().millisecondsSinceEpoch;
+      // A deferred-commit mark carries its capture-time timestamp so it lands
+      // on the timeline at the moment of the tap, not the card's dismissal.
+      final tsMs = atTsMs ?? DateTime.now().millisecondsSinceEpoch;
       final point = UserEventLocation(
         ts: pad19(tsMs),
         lat: double.parse(lat.toStringAsFixed(5)),

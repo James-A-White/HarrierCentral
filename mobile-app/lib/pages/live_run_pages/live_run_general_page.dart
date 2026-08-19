@@ -402,12 +402,11 @@ class LiveRunGeneralController extends GetxController {
     stopTracking();
   }
 
-  // Same-slot cooldown + last-mark undo state (butt-dial/double-tap guard:
+  // Same-slot cooldown + pending-mark state (butt-dial/double-tap guard:
   // two Whichy Ways landed 6s apart on the 2026-08-16 walking test).
   static const Duration _slotCooldown = Duration(seconds: 8);
   final Map<String, DateTime> _lastSlotMarkAt = {};
-  int? _lastMarkTsMs;
-  Future<int?>? _pendingMark;
+  Future<PendingSlotMark>? _pendingCapture;
 
   /// True when [slot] was marked within the last [_slotCooldown] — the tap is
   /// swallowed silently (a legitimate second identical mark that close
@@ -418,61 +417,36 @@ class LiveRunGeneralController extends GetxController {
     return last != null && DateTime.now().difference(last) < _slotCooldown;
   }
 
-  /// Records the mark. Confirmation is the slot-flash popup (which carries the
-  /// Undo button) — no snackbar. The popup shows before the one-shot GPS fix
-  /// resolves, so the recorded timestamp is tracked as a pending future for
-  /// [undoLastMark] to await.
-  Future<void> markSlot(TrailSlot slot, {String? label}) async {
+  /// Deferred-commit mark, step 1: capture position + timestamp at the moment
+  /// of the tap. Nothing is queued or uploaded yet — the flash card's outcome
+  /// decides: dismissal (timeout / tap-away) → [commitPendingMark]; Undo →
+  /// [discardPendingMark]. Undo therefore never needs a server delete.
+  void captureSlotMark(TrailSlot slot, {String? label}) {
     _lastSlotMarkAt[slot.trackType()] = DateTime.now();
-    final Future<int?> pending = _locationService.markSlot(slot, label: label);
-    _pendingMark = pending;
-    final tsMs = await pending;
-    if (tsMs == null) return; // nothing recorded — nothing to undo
-    _lastMarkTsMs = tsMs;
+    _pendingCapture = _locationService.captureSlotMark(slot, label: label);
   }
 
-  /// Removes the most recent slot mark: pulls it from the local upload queue
-  /// (bad-signal case — a server delete alone would let the queued copy
-  /// re-upload) AND deletes it server-side (marks force-flush, so it has
-  /// usually landed already). An open map keeps showing the mark until its
-  /// next full reload — the incremental poll can't express deletions.
-  ///
-  /// Awaits any in-flight mark first — the flash popup's Undo can be tapped
-  /// before the GPS fix has resolved.
-  Future<void> undoLastMark(String slotName) async {
+  /// Deferred-commit mark, step 2a: the card was dismissed without Undo —
+  /// queue the captured point on the track buffer and flush. Awaits the
+  /// capture first (the one-shot GPS fix may still be resolving when the card
+  /// times out).
+  Future<void> commitPendingMark() async {
+    final pending = _pendingCapture;
+    _pendingCapture = null;
+    if (pending == null) return;
     try {
-      await _pendingMark;
+      final mark = await pending;
+      await _locationService.commitSlotMark(mark);
     } catch (_) {
-      // A failed mark recorded nothing; _lastMarkTsMs stays null below.
+      // GPS fix failed — there is no position to record. Nothing was shown as
+      // recorded beyond the flash card, so fail silently.
     }
-    final ts = _lastMarkTsMs;
-    if (ts == null) return;
-    _lastMarkTsMs = null;
-    if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
-    final removedLocally = _locationService.removeQueuedPoint(ts);
-    final api = DeletePositionsApi();
-    var removedRemotely = false;
-    try {
-      await api.deletePoints(
-        eventId: run.event.eventId,
-        userId: getStringPref(StringPrefsEnum.userId) ?? '',
-        timestampsMs: [ts],
-      );
-      removedRemotely = true;
-    } catch (_) {
-      // Offline: the local removal (if any) already stopped the upload.
-    } finally {
-      api.dispose();
-    }
-    Get.snackbar(
-      'Removed',
-      removedLocally || removedRemotely
-          ? '$slotName mark removed.'
-          : 'Could not remove the mark — try again when online.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: hc_blue,
-      colorText: Colors.white,
-    );
+  }
+
+  /// Deferred-commit mark, step 2b: Undo — drop the captured point. It was
+  /// never queued, so there is nothing to remove locally or remotely.
+  void discardPendingMark() {
+    _pendingCapture = null;
   }
 
   /// Returns the timestamp (epoch ms) that should be stamped on the GPS track
@@ -1251,16 +1225,16 @@ class LiveRunGeneralPage extends StatelessWidget {
     }
 
     if (!context.mounted) return;
-    unawaited(
-      _showSlotFlash(
-        context,
-        slot,
-        label,
-        onUndo: () => unawaited(controller.undoLastMark(slot.name)),
-      ),
+    // Capture NOW (position + timestamp of the tap); the card's outcome
+    // decides whether it is committed to the track or discarded.
+    controller.captureSlotMark(slot, label: label);
+    await _showSlotFlash(
+      context,
+      slot,
+      label,
+      onUndo: controller.discardPendingMark,
+      onCommit: () => unawaited(controller.commitPendingMark()),
     );
-
-    await controller.markSlot(slot, label: label);
   }
 
   /// "I'm Lost" / "Send Help" — pack-assist broadcasts. Replaced the old
@@ -1439,7 +1413,9 @@ class LiveRunGeneralPage extends StatelessWidget {
 
 // ---------------------------------------------------------------------------
 // Slot flash overlay — shown immediately on tap, dismissed after 8 s or tap.
-// Carries the Undo button (the popup lives as long as the undo window).
+// Carries the Undo button, and decides the pending mark's fate: any dismissal
+// without Undo (timeout, tap-away, navigation) fires onCommit exactly once;
+// Undo fires onUndo instead and the mark is never recorded.
 // ---------------------------------------------------------------------------
 
 Future<void> _showSlotFlash(
@@ -1447,20 +1423,32 @@ Future<void> _showSlotFlash(
   TrailSlot slot,
   String? label, {
   VoidCallback? onUndo,
+  VoidCallback? onCommit,
 }) {
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
     barrierColor: Colors.black.withValues(alpha: 0.65),
-    builder: (_) => _SlotFlashDialog(slot: slot, label: label, onUndo: onUndo),
+    builder: (_) => _SlotFlashDialog(
+      slot: slot,
+      label: label,
+      onUndo: onUndo,
+      onCommit: onCommit,
+    ),
   );
 }
 
 class _SlotFlashDialog extends StatefulWidget {
-  const _SlotFlashDialog({required this.slot, this.label, this.onUndo});
+  const _SlotFlashDialog({
+    required this.slot,
+    this.label,
+    this.onUndo,
+    this.onCommit,
+  });
   final TrailSlot slot;
   final String? label;
   final VoidCallback? onUndo;
+  final VoidCallback? onCommit;
 
   @override
   _SlotFlashDialogState createState() => _SlotFlashDialogState();
@@ -1487,19 +1475,36 @@ class _SlotFlashDialogState extends State<_SlotFlashDialog>
     _timer = Timer(const Duration(seconds: 8), _dismiss);
   }
 
+  // The mark's fate is settled exactly once, whichever way the card goes away
+  // (Undo, tap-away, timeout, or the route being torn down): dispose() is the
+  // commit safety net, so even an unexpected dismissal records the mark unless
+  // Undo was pressed.
+  bool _settled = false;
+
   void _undo() {
-    widget.onUndo?.call();
+    if (!_settled) {
+      _settled = true;
+      widget.onUndo?.call();
+    }
     _dismiss();
+  }
+
+  void _settleCommit() {
+    if (_settled) return;
+    _settled = true;
+    widget.onCommit?.call();
   }
 
   @override
   void dispose() {
+    _settleCommit();
     _animCtrl.dispose();
     _timer?.cancel();
     super.dispose();
   }
 
   void _dismiss() {
+    _settleCommit();
     if (mounted) Navigator.of(context).pop();
   }
 
