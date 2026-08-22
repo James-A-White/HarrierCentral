@@ -407,11 +407,15 @@ class AppBootService {
 
   /// DB version is too far behind — migrate to secure storage, wipe local DB,
   /// and re-authorise to pull a fresh profile from the server.
+  ///
+  /// Only reachable from [_handleExistingUser] (an authenticated returning
+  /// user), so this rebuild is ALWAYS an app upgrade — including
+  /// installedDbVersion == 0, which just means the old build predates the
+  /// databaseVersion pref (added 2.2.9; a 2.1.x upgrader reads 0). Any
+  /// upgrade markers must be written AFTER the Step 2 erase or they are
+  /// wiped with everything else (this bit both the 3.0 welcome dialog and
+  /// the version-splash check on real 2.x→3.0 upgrades).
   Future<void> _handleDbUpgrade(int installedDbVersion) async {
-    if (installedDbVersion != 0) {
-      await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UPGRADE_DB);
-    }
-
     // ── Step 0: Connectivity guard ───────────────────────────────────────────
     // We're about to wipe and re-authorise — without the backend we'd wipe and
     // be unable to recover. Keep the old DB and retry on the next online boot.
@@ -455,11 +459,22 @@ class AppBootService {
       await setStringPref(StringPrefsEnum.resetCode, resetCode);
     }
 
-    // ── Step 4: Record storage type ──────────────────────────────────────────
-    // GetStorage was just erased — this is the first write back into it.
+    // ── Step 4: Record storage type + upgrade markers ────────────────────────
+    // GetStorage was just erased — these are the first writes back into it.
+    // The bootType marker (drives the "Welcome to 3.0" dialog and post-boot
+    // consumers) and the app-version stamp (drives MainNavigationPage's
+    // version-changed splash check) both MUST be re-written here, after the
+    // erase: writing them earlier gets them wiped, which is why upgrades
+    // showed the generic dialog and no welcome sequence.
     await setStringPref(
       StringPrefsEnum.storageType,
       wroteToSecure ? 'encrypted' : 'legacy',
+    );
+    await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UPGRADE_DB);
+    final PackageInfo upgradePkg = await PackageInfo.fromPlatform();
+    await setStringPref(
+      StringPrefsEnum.harrierCentralVersion,
+      upgradePkg.version,
     );
 
     // ── Step 5: Delete local SQLite DB ───────────────────────────────────────
@@ -521,11 +536,6 @@ class AppBootService {
       // received (major.minor: "3.0", not "3.0.1").
       final PackageInfo pkg = await PackageInfo.fromPlatform();
       final String majorMinor = pkg.version.split('.').take(2).join('.');
-      // The Step-2 GetStorage erase wiped the version stamped at boot start,
-      // so MainNavigationPage's version-changed splash check would compare
-      // '' == '' and silently skip the version_X.Y welcome sequence on the
-      // one boot that should show it. Re-stamp before navigating.
-      await setStringPref(StringPrefsEnum.harrierCentralVersion, pkg.version);
       dialogTitle = 'Welcome to Harrier Central $majorMinor';
       dialogMessage =
           'Congratulations $userName — your app has been upgraded to Harrier '
