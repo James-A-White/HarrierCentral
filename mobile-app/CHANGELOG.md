@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1296 (2026-08-22) — iOS
+
+### Improvements
+- **Past Runs is personal now**: the past list (and its count) shows only
+  kennels you follow or hashes you attended — no more stranger kennels'
+  recent runs. The future list stays global for discovery.
+
 ## 3.0.1+1295 (2026-08-22)
 
 ### New Features
