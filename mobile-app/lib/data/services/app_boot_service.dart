@@ -521,6 +521,11 @@ class AppBootService {
       // received (major.minor: "3.0", not "3.0.1").
       final PackageInfo pkg = await PackageInfo.fromPlatform();
       final String majorMinor = pkg.version.split('.').take(2).join('.');
+      // The Step-2 GetStorage erase wiped the version stamped at boot start,
+      // so MainNavigationPage's version-changed splash check would compare
+      // '' == '' and silently skip the version_X.Y welcome sequence on the
+      // one boot that should show it. Re-stamp before navigating.
+      await setStringPref(StringPrefsEnum.harrierCentralVersion, pkg.version);
       dialogTitle = 'Welcome to Harrier Central $majorMinor';
       dialogMessage =
           'Congratulations $userName — your app has been upgraded to Harrier '
