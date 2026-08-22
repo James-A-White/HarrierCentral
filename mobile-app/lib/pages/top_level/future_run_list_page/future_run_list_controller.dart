@@ -111,16 +111,6 @@ class FutureRunListPageController extends GetxController {
       a.extensions.rsvpState >= rsvpYes.value ||
       a.extensions.attendenceState >= attendenceAtHash.value;
 
-  /// Whether a past run should appear in the past section. Excludes runs the
-  /// user declined (RSVP No) or was unsure about (RSVP Maybe) — unless they
-  /// actually attended (attendenceState >= attendenceAtHash), in which case it's
-  /// kept regardless of the stale RSVP.
-  bool _keepPastRun(RunDetailsAggregate a) {
-    if (a.extensions.attendenceState >= attendenceAtHash.value) return true;
-    final rsvp = a.extensions.rsvpState;
-    return rsvp != rsvpNo.value && rsvp != rsvpMaybe.value;
-  }
-
   /// Applies the active chip filters (Events, Map, My) to [runs], reusing the
   /// existing per-view predicates for Events/Map. Map is skipped while the map
   /// bounds aren't known yet (nothing to filter against — the View Map button
@@ -808,11 +798,11 @@ class FutureRunListPageController extends GetxController {
     // list (Events / Map / My), then search, then sort oldest -> newest so the
     // most recent sits just above the divider.
     if (showsInlinePast) {
-      // Drop past runs the user declined / was unsure about (RSVP No/Maybe,
-      // unless attended), then apply the active chips.
-      final base = (allPastRuns ?? <RunDetailsAggregate>[])
-          .where(_keepPastRun)
-          .toList();
+      // No RSVP-based trimming here: past runs already come pre-scoped to
+      // followed kennels / attended hashes (SQL), and hiding declined runs
+      // read as a bug — "my kennel ran today, I couldn't come" is still the
+      // user's history (James, 2026-08-22, hunting for a run he'd RSVP-No'd).
+      final base = (allPastRuns ?? <RunDetailsAggregate>[]).toList();
       final chipFiltered = _applyChipFilters(base);
       final past = QueryRuns.doRunsSearchTextFilter(
         searchRunsText.value,
