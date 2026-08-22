@@ -35,6 +35,25 @@ roughly by recommended sequence.
 
 ### Features and debt
 
+- [ ] **Apple Watch — staged approach** (scoped 2026-08-23). Flutter does not
+  run on watchOS, so anything on the wrist is native SwiftUI — zero Dart
+  reuse. Tiers, cheapest first; do Tier 1 and let tester demand justify the
+  rest:
+  1. **Live Activity for tracking sessions** (days, no watch target):
+     elapsed/distance/pack-nearby on the iPhone lock screen + Dynamic
+     Island, auto-mirrored to the watch Smart Stack; App-Intent buttons
+     (Stop/Check, executed on the phone) if wanted. Good iPhone feature in
+     its own right.
+  2. **Companion watch app** (~2-3 wk): SwiftUI + WatchConnectivity remote
+     control — Start/Stop, marks grid, haptics; phone keeps GPS/upload.
+     Ongoing maintenance tax of a second UI — skippable if Tier 3 is the
+     real want.
+  3. **Standalone watch tracking** (~4-8 wk, the killer feature: phone
+     stays at the bag drop): HKWorkoutSession + watch GPS uploading
+     directly — StorePositions is unauthenticated, so the phone only hands
+     over eventId+userId at session start; no token gen on the wrist.
+     Battery tuning + on-trail testing are the real costs.
+
 - [ ] **Background boot sync — wire the other tabs** (see section below;
   deferred since 2026-06-20).
 - [ ] **Radar wedge easing**: under north-lock the centre wedge follows the
