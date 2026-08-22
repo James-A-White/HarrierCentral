@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1294 (2026-08-22)
+
+### Fixes
+- **Upgrade welcome actually fires**: the DB-upgrade rebuild erased its
+  own upgrade markers (and pre-2.2.9 upgraders never set them), so real
+  2.x→3.0 upgrades showed the generic dialog and no welcome splash.
+  Markers now write after the wipe; the "Welcome to Harrier Central 3.0"
+  dialog shows only when the MAJOR version changed — same-major rebuilds
+  keep the generic text, minor-version news stays with the splash system.
+
 ## 3.0.1+1293 (2026-08-22)
 
 ### Fixes
