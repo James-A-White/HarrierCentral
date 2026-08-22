@@ -5,6 +5,16 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <!-- Android 12+ requires coarse to be declared alongside fine -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- PackTrack background tracking: geolocator's GeolocatorLocationService
+         (foregroundServiceType="location", merged from the plugin manifest)
+         pins tracking alive with the "Tracking run in progress" notification
+         while the screen is locked or another app is in front. NO
+         ACCESS_BACKGROUND_LOCATION — sessions are user-started, while-in-use. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!-- Android 14+: per-type foreground service permission -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <!-- LocationService enableWakeLock: keep CPU delivering fixes screen-off -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!-- firebase_messaging: runtime notification permission on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- photo_manager: read device photos (API 33+) -->
