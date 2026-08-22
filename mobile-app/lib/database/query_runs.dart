@@ -691,8 +691,16 @@ class QueryRuns {
         timeFilterWhereClause =
             '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-3 hours')''';
       } else if (runsTimeScope == RunsTimeScope.past) {
+        // Past runs are personal history, not discovery: only kennels the
+        // user FOLLOWS (following=1 — no HKM row / 0 means never followed,
+        // 2 means unfollowed) or runs they ATTENDED (>= at-hash). Without
+        // this, the common domain's global last-10-days events put every
+        // stranger kennel's recent runs in the Past list. The future list
+        // deliberately stays global (that IS discovery).
         timeFilterWhereClause =
-            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-3 hours')''';
+            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-3 hours')
+            AND ( hkm.${tableModel.hasherKennelMapTableHelper.colFollowing} = 1
+                  OR coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= ${attendenceAtHash.value} )''';
       } // 'all' is also an option, but we don't want to apply a where clause in that case
     }
 
