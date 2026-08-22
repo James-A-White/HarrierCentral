@@ -1,5 +1,24 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1293 (2026-08-22)
+
+### Fixes
+- **3.0 welcome sequence shows on upgrade**: the upgrade boot wiped the
+  stored version before the splash check ran, so the welcome screens
+  (uploaded 2026-08-07) never fired; the version is now re-stamped
+  after the wipe.
+
+### Improvements
+- **Trail mark undo on the popup**: marking a slot shows only the
+  central card (no toast), which now carries the Undo button and stays
+  up 8s. The mark is captured at tap but only committed when the card
+  is dismissed without Undo — undo is instant and works offline.
+- **Power Saver distance is marked approximate**: the live-run distance
+  shows as "~4.76" on Power Saver, whose 20m sampling under-reads.
+- **Rebuild dialogs say why**: a DB-upgrade rebuild greets you with
+  "Welcome to Harrier Central 3.0"; the Reload Data button now confirms
+  with "Data Reload Complete".
+
 ## 3.0.1+1292 (2026-08-18)
 
 ### Fixes
