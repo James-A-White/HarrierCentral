@@ -49,6 +49,19 @@ class AppBootService {
       if (recoveryCode != null && recoveryCode.isNotEmpty) {
         final bool reauthorized = await _autoReauthorize(recoveryCode);
         if (reauthorized) {
+          // A user-requested Reload Data lands here (resetAndReboot marks it);
+          // silent self-healing recovery carries no marker and stays silent.
+          if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_RELOAD_DATA) {
+            await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
+            final String userName =
+                getStringPref(StringPrefsEnum.displayName) ?? 'Hasher';
+            await Utilities.showAlert(
+              'Data Reload Complete',
+              'Your local data has been cleared, $userName, and is being '
+              'reloaded fresh from the Harrier Central servers.',
+              'OK',
+            );
+          }
           await Get.off(() => MainNavigationPage(), routeName: '/main');
           return;
         }
@@ -233,6 +246,14 @@ class AppBootService {
     // Restore only the recovery key, into the keychain, so boot can self-heal.
     if (keepResetCode && recoveryCode != null && recoveryCode.isNotEmpty) {
       await saveResetCode(recoveryCode);
+    }
+
+    // Keeping the reset code == this is a user-requested data reload (the
+    // logout path passes false). Mark it so the next boot's completion dialog
+    // can say WHY the data was rebuilt — the marker is written after the wipe,
+    // so it survives into the reboot.
+    if (keepResetCode) {
+      await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_RELOAD_DATA);
     }
 
     await initServices();
@@ -489,10 +510,22 @@ class AppBootService {
     String dialogMessage =
         'The app has been successfully updated for $userName.';
 
-    if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_UPGRADE_1_2) {
+    final String bootType = getStringPref(StringPrefsEnum.bootType) ?? '';
+    if (bootType == BOOT_TYPE_UPGRADE_1_2) {
       dialogTitle = 'Upgrade to Harrier Central 2.0';
       dialogMessage =
           'Congratulations $userName. You have just received the long awaited 2.0 version upgrade of Harrier Central!\r\n\r\nWe hope you enjoy the many new features and improvements.';
+    } else if (bootType == BOOT_TYPE_UPGRADE_DB) {
+      // The DB rebuild happened because the app was upgraded across a
+      // significant database change — say so, with the version the user just
+      // received (major.minor: "3.0", not "3.0.1").
+      final PackageInfo pkg = await PackageInfo.fromPlatform();
+      final String majorMinor = pkg.version.split('.').take(2).join('.');
+      dialogTitle = 'Welcome to Harrier Central $majorMinor';
+      dialogMessage =
+          'Congratulations $userName — your app has been upgraded to Harrier '
+          'Central $majorMinor!\r\n\r\nYour Hash data is being refreshed for '
+          'the new version. We hope you enjoy the new features and improvements.';
     }
 
     await Utilities.showAlert(dialogTitle, dialogMessage, 'OK');
