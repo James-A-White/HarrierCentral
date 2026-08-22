@@ -1002,7 +1002,12 @@ class LiveRunGeneralPage extends StatelessWidget {
             valueBuilder: () {
               final dist = controller.distanceKm.value;
               if (dist <= 0) return '--';
-              return dist.toStringAsFixed(2);
+              // Power Saver's 20m sampling systematically under-reads distance
+              // (15-20% on a twisty trail — CH3 2026-08-18 analysis), so mark
+              // the number as approximate rather than let it read as exact.
+              final powerSaver =
+                  (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0;
+              return '${powerSaver ? '~' : ''}${dist.toStringAsFixed(2)}';
             },
           ),
         ),
