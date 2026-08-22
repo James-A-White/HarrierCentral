@@ -1286,7 +1286,11 @@ class LostCompassDialog extends StatelessWidget {
           distance: followMe
               ? 'On trail'
               : lookAround
-              ? 'Look around'
+              // At the tip of the pack's trail you're not lost — you're
+              // leading. Own-track fallback keeps the neutral wording.
+              ? (controller.usingOwnTrack.value
+                    ? 'Look around'
+                    : 'Look for trail')
               : controller.distanceLabel,
           // Off trail: the wedge ("go that way"). On trail: a shaft with an
           // arrowhead — a "follow this line" glyph aimed along the trail's
@@ -1307,7 +1311,10 @@ class LostCompassDialog extends StatelessWidget {
           caption: followMe
               ? 'Follow the trail — it runs this way'
               : lookAround
-              ? 'Within ${controller.distanceLabel} — check for marks'
+              ? (controller.usingOwnTrack.value
+                    ? 'Within ${controller.distanceLabel} — check for marks'
+                    : "You're one of the front-most hashers on PackTrack "
+                          '— check around for marks')
               : controller.usingOwnTrack.value
               ? 'Back to your own earlier track'
               : controller.nearestRunnerName.value != null
