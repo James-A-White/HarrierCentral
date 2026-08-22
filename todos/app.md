@@ -519,6 +519,16 @@ Screen: run admin → check in.
 
 ## Device test — pending next build: steering slide + carousel guard (2026-08-05)
 
+- [ ] **Splash sequence asset rule** (learned 2026-08-22, black-box bug): the
+  loader layers `<root>_background.avif` UNDER the transparent numbered
+  frames. OMIT the background blob to get the app's jungle wallpaper behind
+  the frames (what every `version_*` set before 3.0 did — the loader 404s
+  and falls through); only upload one if it is genuine full-screen art
+  (like `CountryStats_background`). The 3.0 set shipped an opaque
+  near-black `_background` → black box on every frame, both platforms;
+  fixed by deleting the blob (backup: `backup_version_3.0_background.avif`).
+  Frame alpha + flutter_avif are healthy — don't debug those first.
+
 - [ ] **3.0 splash sequence** (server images, no app code): the
   `version_3.0_*.avif` images (7 frames + background) ARE uploaded to the
   `splash-sequences` blob container (2026-08-07 — list the FULL container
