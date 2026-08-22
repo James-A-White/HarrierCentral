@@ -109,6 +109,23 @@ roughly by recommended sequence.
 
 ---
 
+## Device test — 3.0.1+1293 (mark undo card, ~distance, dialogs, splash fix)
+
+- [ ] **Mark a Check** → central card only (no bottom toast), Undo button on
+  the card, stays up ~8s, tap-away dismisses early.
+- [ ] **Let the card time out** → mark appears on a freshly opened map at the
+  TAP position/time (commit is deferred but stamped at capture).
+- [ ] **Tap Undo fast** (within ~1s, before the GPS fix lands) → cleanly
+  discarded, nothing on the map.
+- [ ] **Undo in airplane mode** → instant, no error (nothing was uploaded).
+- [ ] **Power Saver user's distance** shows "~" prefix on the live run page;
+  Best/Balanced users show plain number.
+- [ ] **Reload Data** (support page) → after restart, "Data Reload Complete"
+  dialog (not "Profile Load Successful").
+- [ ] **3.0 splash**: James's cold relaunch shows the 7-frame welcome once;
+  Done lands in the app; next boot does NOT re-show. (Fresh 2.x→3.0
+  upgraders on 1293 see it on the upgrade boot itself — wipe-race fixed.)
+
 ## Device test — lost compass own-track merge (2026-08-15, not yet released)
 
 The "Where is the trail?" dialog now merges the server's view of your own
