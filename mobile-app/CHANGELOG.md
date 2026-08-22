@@ -1,5 +1,24 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1295 (2026-08-22)
+
+### New Features
+- **Android: PackTrack tracks in the background.** Run tracking now runs
+  as a notification-pinned foreground location service — screen locked
+  or another app in front, points keep recording (verified end-to-end
+  on emulator: backgrounded app uploaded points to the server). No
+  "background location" permission involved; sessions are user-started.
+
+### Fixes
+- **Runs no longer vanish 3-6h after start**: the future/past boundary
+  (3h) and the display flags (still 6h) disagreed, so a run aged 3-6h
+  was excluded from BOTH list tabs (caught live: LH3 #2848).
+- **Early-boot errors can no longer hang the splash**: an HTTP/SP error
+  during service init tried to show a dialog before the UI existed and
+  killed the boot (found on Android with stale credentials; same hazard
+  on iOS). Alerts now log-and-skip pre-UI; the boot badge fetch is
+  silent.
+
 ## 3.0.1+1294 (2026-08-22)
 
 ### Fixes
