@@ -240,13 +240,24 @@ class RunTrackerMapController extends GetxController
   /// north or when the track is too short to have a direction.
   double? get roseHeading {
     if (_trueNorthLock.value) return null;
-    // Use the rotation actually APPLIED to the map rather than the raw heading:
+    // LIVE and centred on the viewer: rotate with the live COMPASS — the same
+    // source the north-locked wedge uses (which is why locked felt smooth and
+    // unlocked didn't). The map's slewed track-fit heading below only moves
+    // when the track gains distance, so an on-the-spot turn left the rose
+    // stuck, then jumping a lump per new GPS fix (James, radar test
+    // 2026-08-22).
+    final focus = roseFocusRunner;
+    if (focus != null && focus.id == _currentUserId && !_isStaleEvent) {
+      final compass = deviceHeading.value;
+      if (compass != null) return compass;
+    }
+    // Replay / focused on another runner: no compass exists for them — use the
+    // rotation actually APPLIED to the map rather than the raw track heading:
     // it's the same value, already slew-limited, so the rose turns at the same
     // pace as the map and the two can never disagree about which way is ahead.
     final applied = _lastRotationDeg;
     if (applied != null) return _normalizeDegrees(-applied);
 
-    final focus = roseFocusRunner;
     if (focus == null) return null;
     return _runnerHeadingDegrees(
       focus,
