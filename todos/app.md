@@ -502,12 +502,15 @@ Screen: run admin → check in.
 
 ## Device test — pending next build: steering slide + carousel guard (2026-08-05)
 
-- [ ] **3.0 splash sequence** (server images, no app code): once
-  `version_3.0_*.avif` images are uploaded to the `splash-sequences` blob
-  container, any device upgrading across the 2.15→3.0 minor-version boundary
-  shows them once via the existing MainNavigationPage splash system. Verify
-  on the first 3.0.x build: sequence shows once, Done lands in the app,
-  3.0.0→3.0.1 does NOT re-show.
+- [ ] **3.0 splash sequence** (server images, no app code): the
+  `version_3.0_*.avif` images (7 frames + background) ARE uploaded to the
+  `splash-sequences` blob container (2026-08-07 — list the FULL container
+  before concluding otherwise). The sequence did NOT show on James's 2.x→3.0
+  upgrade because the DB-upgrade wipe erased `harrierCentralVersion` before
+  the MainNavigationPage check ('' == '' → skip); fixed on dev `fbb5cc80`
+  (re-stamp after wipe), in the next build. Still to verify on device:
+  sequence shows once (a cold relaunch shows it even without the fix — the
+  next boot re-stamps), Done lands in the app, 3.0.0→3.0.1 does NOT re-show.
 
 - [ ] **Lost-compass steering slide** (live run → I'm Lost, within 40 m of a
   trail): the arrow sits off-centre toward the trail's side and glides to
