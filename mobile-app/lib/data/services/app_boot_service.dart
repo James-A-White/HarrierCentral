@@ -8,6 +8,13 @@ import 'package:harrier_central/services/metrickit_service.dart';
 /// is responsible for all startup navigation. Nothing in AppEntryPage needs to
 /// know which path was taken.
 class AppBootService {
+  /// The app version the PREVIOUS run stamped — i.e., what the user upgraded
+  /// FROM when this boot follows an app update. Captured in
+  /// [_prepareDeviceContext] before the stamp overwrites it; being in-memory
+  /// it survives the DB-upgrade GetStorage wipe within the same boot. Empty
+  /// when the old build predates the version stamp (ancient) or on first run.
+  static String previousInstalledVersion = '';
+
   // ---------------------------------------------------------------------------
   // Main entry point
   // ---------------------------------------------------------------------------
@@ -531,16 +538,22 @@ class AppBootService {
       dialogMessage =
           'Congratulations $userName. You have just received the long awaited 2.0 version upgrade of Harrier Central!\r\n\r\nWe hope you enjoy the many new features and improvements.';
     } else if (bootType == BOOT_TYPE_UPGRADE_DB) {
-      // The DB rebuild happened because the app was upgraded across a
-      // significant database change — say so, with the version the user just
-      // received (major.minor: "3.0", not "3.0.1").
       final PackageInfo pkg = await PackageInfo.fromPlatform();
-      final String majorMinor = pkg.version.split('.').take(2).join('.');
-      dialogTitle = 'Welcome to Harrier Central $majorMinor';
-      dialogMessage =
-          'Congratulations $userName — your app has been upgraded to Harrier '
-          'Central $majorMinor!\r\n\r\nYour Hash data is being refreshed for '
-          'the new version. We hope you enjoy the new features and improvements.';
+      final String oldMajor = previousInstalledVersion.split('.').first;
+      final String newMajor = pkg.version.split('.').first;
+      // The welcome dialog is for MAJOR upgrades only (2.x → 3.x). A rebuild
+      // within the same major — a bug-fix release whose DB_VERSION jump forced
+      // a wipe — keeps the generic 'Profile Load Successful' text; announcing
+      // minor versions is the splash system's job. Empty oldMajor = the old
+      // build predates the version stamp = ancient = major upgrade.
+      if (oldMajor.isEmpty || oldMajor != newMajor) {
+        final String majorMinor = pkg.version.split('.').take(2).join('.');
+        dialogTitle = 'Welcome to Harrier Central $majorMinor';
+        dialogMessage =
+            'Congratulations $userName — your app has been upgraded to Harrier '
+            'Central $majorMinor!\r\n\r\nYour Hash data is being refreshed for '
+            'the new version. We hope you enjoy the new features and improvements.';
+      }
     }
 
     await Utilities.showAlert(dialogTitle, dialogMessage, 'OK');
@@ -605,6 +618,10 @@ class AppBootService {
       StringPrefsEnum.harrierCentralVersionAndBuild,
       'HC Ver: ${p.version}, Bld: ${p.buildNumber}',
     );
+    // Capture what the last run stamped BEFORE overwriting — the upgraded-FROM
+    // version, used to decide whether a DB rebuild crossed a major version.
+    previousInstalledVersion =
+        getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '';
     await setStringPref(StringPrefsEnum.harrierCentralVersion, p.version);
 
     appModel.appStartTime = DateTime.now();
