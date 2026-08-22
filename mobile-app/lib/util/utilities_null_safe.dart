@@ -659,6 +659,19 @@ class Utilities {
     String cancelButtonText = 'Cancel',
     TextAlign textAlign = TextAlign.left,
   }) async {
+    // Early boot: initServices runs before GetMaterialApp mounts, so there is
+    // no overlay yet — Get.dialog would null-check crash, and an unhandled
+    // throw there kills main() and leaves the app on the splash forever
+    // (observed on Android with stale credentials, 2026-08-22). Log the
+    // alert's content to the harvest and skip showing it.
+    if (Get.context == null || Get.overlayContext == null) {
+      BootLogger.logError(
+        '[showAlert] suppressed — no overlay yet',
+        '$title: $body',
+        null,
+      );
+      return null;
+    }
     return Get.dialog<bool?>(
       AlertDialog(
         title: Text(title, style: ts_alertDialogTitle),

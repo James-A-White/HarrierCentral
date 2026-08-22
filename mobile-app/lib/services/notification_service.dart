@@ -89,6 +89,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       'deviceId': deviceId,
     };
 
+    // Background badge fetch during boot — never show an error dialog for it
+    // (initServices runs pre-overlay; and a badge count is not worth an alert).
     String responseBody = await ServiceCommon.sendHttpPost(() {
       body['accessToken'] = Utilities.generateToken(
         userId!,
@@ -96,7 +98,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         paramString: deviceSecret,
       );
       return jsonEncode(body);
-    });
+    }, errorCallback: (_) async => true);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       final decoded = json.decode(responseBody) as List;
