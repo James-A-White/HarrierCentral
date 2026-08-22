@@ -475,12 +475,14 @@ class RunAndKennelMapController extends GetxController {
                   longitude: lon,
                   evtLat: lat,
                   evtLon: lon,
-                  // Current/future until 6h after start (diff = startGmt − now);
-                  // mirrors the SQL flags in QueryRuns (julianday 'now','-6 hours').
-                  // The old form compared against +4h, which also misclassified
-                  // runs starting within the next 4 hours as past.
-                  showAsFutureEvent: diff >= const Duration(hours: -6) ? 1 : 0,
-                  showAsPastEvent: diff < const Duration(hours: -6) ? 1 : 0,
+                  // Current/future until 3h after start (diff = startGmt − now);
+                  // mirrors the SQL flags AND the row-filter boundary in
+                  // QueryRuns (julianday 'now','-3 hours'). These three must
+                  // agree: when the flags said 6h but the row filter said 3h,
+                  // runs aged 3-6h after start vanished from BOTH tabs
+                  // (LH3 #2848, 2026-08-22).
+                  showAsFutureEvent: diff >= const Duration(hours: -3) ? 1 : 0,
+                  showAsPastEvent: diff < const Duration(hours: -3) ? 1 : 0,
                   isMapAndDistanceValid: results[i]['isMapAndDistanceValid'],
                   rsvpState: results[i]['rsvpState'],
                   attendenceState: results[i]['attendenceState'],
