@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1300 (2026-08-23) — Android
+
+- Identical content to 1298; end-to-end validation of the automated Play
+  upload after the foreground-service declaration (video) was completed.
+
 ## 3.0.1+1299 (2026-08-23) — Android
 
 - Identical content to 1298; validates the automated Play Store upload
