@@ -920,7 +920,14 @@ class RunTrackerMapController extends GetxController
     // without the boost the idle stream reports lowest-accuracy fixes only
     // every 100 m and the blue dot appears frozen.
     if (Get.isRegistered<LocationService>()) {
-      Get.find<LocationService>().requestPreciseStream();
+      final loc = Get.find<LocationService>();
+      loc.requestPreciseStream();
+      // Local mark echo: marks placed on THIS device (phone or watch) draw
+      // immediately instead of waiting for the next server poll.
+      loc.typedPointListeners[this] = (String evId, TrackPoint point) {
+        if (normalizeUuid(evId) != normalizeUuid(event.eventId)) return;
+        addLocalMark(point);
+      };
     }
     _startAutoUpdateTimer();
     _startCompass();
@@ -964,7 +971,9 @@ class RunTrackerMapController extends GetxController
     BootLogger.logBreadcrumb('PackTrack map CLOSED');
     WidgetsBinding.instance.removeObserver(this);
     if (Get.isRegistered<LocationService>()) {
-      Get.find<LocationService>().releasePreciseStream();
+      final loc = Get.find<LocationService>();
+      loc.releasePreciseStream();
+      loc.typedPointListeners.remove(this);
     }
     _stopAutoUpdateTimer();
     _stalenessTimer?.cancel();
@@ -1124,6 +1133,9 @@ class RunTrackerMapController extends GetxController
       }).toList();
 
       userPositions.assignAll(cleanedUsers);
+      // Re-apply local echoes the replace just wiped; retire the ones the
+      // server data now carries.
+      _applyLocalEchoes(retireConfirmed: true);
       lastServerUpdateAt.value = DateTime.now();
       _assignRunnerColors(cleanedUsers);
       _refreshTrailFilter();
@@ -1138,6 +1150,81 @@ class RunTrackerMapController extends GetxController
         s,
       );
     }
+  }
+
+  // ── Local mark echo ───────────────────────────────────────────────────────
+  // Marks placed on this device draw the moment they're queued for upload
+  // instead of waiting for the next server poll. Because loadPositions()
+  // REPLACES userPositions wholesale, echoes are kept aside and re-applied
+  // after every fetch, then retired once the server track carries the same
+  // point (same capture timestamp + type — the server stores client
+  // timestamps, so they match exactly).
+
+  final List<TrackPoint> _localEchoes = [];
+
+  /// Injects a just-committed local mark into the viewer's own track and
+  /// extends the live timeline so the mark isn't hidden beyond a playhead
+  /// parked at the previous fetch's end.
+  void addLocalMark(TrackPoint point) {
+    _localEchoes.add(point);
+    _applyLocalEchoes();
+
+    final double ts = point.timestampMs.toDouble();
+    final double? oldMax = maxTimestampMs.value;
+    if (oldMax == null || ts > oldMax) {
+      final bool parkedAtEnd = !isPlaying.value &&
+          (currentTimestampMs.value == null ||
+              currentTimestampMs.value == oldMax);
+      maxTimestampMs.value = ts;
+      minTimestampMs.value ??= ts;
+      if (parkedAtEnd) currentTimestampMs.value = ts;
+    }
+    update();
+  }
+
+  /// Merges outstanding echoes into the viewer's track in timestamp order.
+  /// [retireConfirmed] is set only right after a fetch, when the track is
+  /// pure server data — retiring against a track that already contains the
+  /// echoes themselves would prune them prematurely.
+  void _applyLocalEchoes({bool retireConfirmed = false}) {
+    if (_localEchoes.isEmpty) return;
+    final String? selfId = getStringPref(StringPrefsEnum.userId);
+    if (selfId == null || selfId.isEmpty) return;
+    final String normSelf = normalizeUuid(selfId);
+
+    final int idx =
+        userPositions.indexWhere((u) => normalizeUuid(u.id) == normSelf);
+    final List<TrackPoint> positions = idx >= 0
+        ? List<TrackPoint>.from(userPositions[idx].positions)
+        : <TrackPoint>[];
+
+    if (retireConfirmed) {
+      _localEchoes.removeWhere((e) => positions.any(
+          (p) => p.timestampMs == e.timestampMs && p.type == e.type));
+      if (_localEchoes.isEmpty) return;
+    }
+
+    bool changed = false;
+    for (final e in _localEchoes) {
+      final bool present = positions
+          .any((p) => p.timestampMs == e.timestampMs && p.type == e.type);
+      if (present) continue;
+      // Echoes are recent — walk back from the end to keep ts order.
+      int i = positions.length;
+      while (i > 0 && positions[i - 1].timestampMs > e.timestampMs) {
+        i--;
+      }
+      positions.insert(i, e);
+      changed = true;
+    }
+    if (!changed) return;
+
+    if (idx >= 0) {
+      userPositions[idx] = userPositions[idx].copyWith(positions: positions);
+    } else {
+      userPositions.add(UserTrack(id: selfId, positions: positions));
+    }
+    userPositions.refresh();
   }
 
   // ── Trail-type filtering ──────────────────────────────────────────────────

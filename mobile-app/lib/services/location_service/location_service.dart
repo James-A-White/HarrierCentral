@@ -686,6 +686,9 @@ class LocationService extends GetxService {
       alt: double.parse(position.altitude.toStringAsFixed(2)),
       type: pointStr,
     );
+    // Live echo + session stats: photo (PHO) and distress marks placed via
+    // this path must reach the same listeners as ordinary slot marks.
+    _notifyTypedPointListeners(point, timestampMs, overrideEventId);
 
     if (immediate) {
       final buf = RunPointBuffer(
@@ -763,6 +766,33 @@ class LocationService extends GetxService {
   // Private method to handle location updates from the stream/one-time fetch.
   // Returns the epoch-ms timestamp of the point it recorded to the tracking
   // buffer (the undo handle for marks), or null when nothing was recorded.
+  /// Live-echo listeners keyed by owner (a map controller registers itself
+  /// on open, removes itself on close). Fired the moment a typed mark is
+  /// queued for upload so an open map draws it immediately instead of
+  /// waiting for the next server poll.
+  final Map<Object, void Function(String eventId, TrackPoint point)>
+      typedPointListeners = {};
+
+  void _notifyTypedPointListeners(UserEventLocation p, int tsMs, String? evId) {
+    if (typedPointListeners.isEmpty) return;
+    if (evId == null) return;
+    final tp = TrackPoint(
+      lat: p.lat,
+      lng: p.lng,
+      acc: p.acc,
+      alt: p.alt,
+      timestampMs: tsMs,
+      type: p.type,
+    );
+    for (final listener in List.of(typedPointListeners.values)) {
+      try {
+        listener(evId, tp);
+      } catch (e) {
+        BootLogger.logError('[LocationService] typed-point listener', e, null);
+      }
+    }
+  }
+
   Future<int?> updateDeviceLocation(
     Position position, {
     bool forceFlush = false,
@@ -897,6 +927,7 @@ class LocationService extends GetxService {
       _runBuffer?.enqueue(point);
       recordedTsMs = tsMs;
       locationUpdateCount.value++;
+      if (pointStr != null) _notifyTypedPointListeners(point, tsMs, eventId);
 
       // Append to the local session track and recompute filtered distance.
       // Uses the same TrackPointFilter as the map view so both displays agree.
