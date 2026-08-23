@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1302 (2026-08-23) — iOS
+
+### Fixes
+- **Apple Watch**: the end-of-run summary now stays on the wrist until
+  you tap Done or start a new run (it could previously vanish moments
+  after appearing).
+- **Apple Watch**: the idle screen shows the Harrier Central hash foot.
+
 ## 3.0.1+1301 (2026-08-23) — iOS + Android
 
 ### New Features
