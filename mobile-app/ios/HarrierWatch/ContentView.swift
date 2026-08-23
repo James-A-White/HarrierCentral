@@ -101,9 +101,10 @@ struct ContentView: View {
 
     private var idleView: some View {
         VStack(spacing: 10) {
-            Image(systemName: "figure.run")
-                .font(.system(size: 40))
-                .foregroundStyle(.orange)
+            Image("HashFoot")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 46)
             Text("Harrier Central")
                 .font(.headline)
             Text(connectivity.isReachable

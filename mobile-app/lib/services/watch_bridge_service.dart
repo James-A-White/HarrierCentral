@@ -53,6 +53,11 @@ class WatchBridgeService extends GetxService {
   static const Duration _slotCooldown = Duration(seconds: 8);
   final Map<String, DateTime> _lastServiceMarkAt = {};
 
+  // The summary is STICKY: once pushed, no idle broadcast may replace it —
+  // only the wrist's Done (dismissSummary) or the next tracking session.
+  // Guards against any raced idle push wiping the stats off the wrist.
+  bool _summaryOnWrist = false;
+
   @override
   void onInit() {
     super.onInit();
@@ -88,7 +93,14 @@ class WatchBridgeService extends GetxService {
     _startedAt = startedAt;
     _locationService?.typedPointListeners[this] = _onTypedPoint;
     _pushTimer ??= Timer.periodic(const Duration(seconds: 1), (_) => _tick());
-    _tick();
+    // Only tick immediately when tracking is already on. The start flow
+    // announces the session BEFORE flipping joinRunTracking (the resume
+    // check runs first), and an immediate tick then would see "not
+    // tracking" and finish the session it just started. The armed timer's
+    // first fire (1s) catches the fresh session either way.
+    if (_locationService?.joinRunTracking.value == true) {
+      _tick();
+    }
   }
 
   /// Classifies each mark placed this session for the summary counts.
@@ -135,6 +147,7 @@ class WatchBridgeService extends GetxService {
       return;
     }
     _sessionSawTracking = true;
+    _summaryOnWrist = false; // live session replaces any lingering summary
     _lastDistanceKm = loc.filteredSessionDistanceMeters.value / 1000.0;
     _lastElapsedSec = _startedAt == null
         ? 0
@@ -171,6 +184,7 @@ class WatchBridgeService extends GetxService {
     _startedAt = null;
     if (_sessionSawTracking) {
       _sessionSawTracking = false;
+      _summaryOnWrist = true;
       unawaited(_send(<String, Object?>{
         'phase': 'summary',
         'tracking': false,
@@ -205,9 +219,14 @@ class WatchBridgeService extends GetxService {
     }
   }
 
-  /// Clears the wrist back to the idle screen.
-  Future<void> pushIdle() =>
-      _send(const {'phase': 'idle', 'tracking': false});
+  /// Clears the wrist back to the idle screen. No-op while an undismissed
+  /// summary is showing unless [force] (the wrist's own Done button) — the
+  /// stats must never vanish on their own.
+  Future<void> pushIdle({bool force = false}) {
+    if (_summaryOnWrist && !force) return Future.value();
+    _summaryOnWrist = false;
+    return _send(const {'phase': 'idle', 'tracking': false});
+  }
 
   // -------------------------------------------------------------- inbound
 
@@ -223,7 +242,7 @@ class WatchBridgeService extends GetxService {
         case 'lostQuery':
           return await _handleLostQuery();
         case 'dismissSummary':
-          await pushIdle();
+          await pushIdle(force: true);
           return {'ok': true};
         default:
           return {'ok': false, 'why': 'unknown-cmd'};

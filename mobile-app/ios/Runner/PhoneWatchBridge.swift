@@ -40,6 +40,10 @@ final class PhoneWatchBridge: NSObject {
                 result(false)
                 return
             }
+            // Phase trail in the system log — makes any raced/unexpected
+            // broadcast (e.g. an idle overwriting a summary) observable.
+            NSLog("[PhoneWatchBridge] push phase=%@",
+                  (args["phase"] as? String) ?? "?")
             do {
                 try WCSession.default.updateApplicationContext(args)
                 result(true)
