@@ -707,7 +707,41 @@ class LiveRunGeneralController extends GetxController {
       _startElapsedTicker();
     } else {
       _stopElapsedTicker();
+      _pushWatchState();
     }
+  }
+
+  /// Immediate-commit mark from the Apple Watch companion. Wrist taps are
+  /// deliberate — no flash card, no Undo — so the mark goes straight to the
+  /// track buffer. Deliberately bypasses [_pendingCapture] so a flash card
+  /// open on the phone at the same moment keeps its own pending mark.
+  /// Shares the same-slot cooldown with phone taps.
+  Future<bool> markFromWatch(TrailSlot slot) async {
+    if (!isTracking.value) return false;
+    if (slotCooldownActive(slot)) return false;
+    _lastSlotMarkAt[slot.trackType()] = DateTime.now();
+    try {
+      final mark = await _locationService.captureSlotMark(slot);
+      await _locationService.commitSlotMark(mark);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Mirrors the session onto the paired Apple Watch. Rides the 1-second
+  /// elapsed ticker while tracking; the stop path sends the final
+  /// tracking-false broadcast that returns the wrist to its idle screen.
+  void _pushWatchState() {
+    if (!Get.isRegistered<WatchBridgeService>()) return;
+    unawaited(WatchBridgeService.to.pushState(
+      tracking: isTracking.value,
+      paused: isPaused.value,
+      distanceKm: isTracking.value ? distanceKm.value : null,
+      elapsedSec: elapsed.value.inSeconds,
+      eventName: run.event.eventName,
+      powerSaver: (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0,
+    ));
   }
 
   void _handlePosition(Position? position) {
@@ -722,8 +756,10 @@ class LiveRunGeneralController extends GetxController {
   void _startElapsedTicker() {
     _elapsedTicker ??= Timer.periodic(const Duration(seconds: 1), (_) {
       _updateElapsed();
+      _pushWatchState();
     });
     _updateElapsed();
+    _pushWatchState();
   }
 
   void _stopElapsedTicker() {

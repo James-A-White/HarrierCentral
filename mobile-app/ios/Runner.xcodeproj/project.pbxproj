@@ -10,15 +10,43 @@
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		24330CF022B2D00F00FFB7E1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 24330CEF22B2D00F00FFB7E1 /* GoogleService-Info.plist */; };
 		2482437726B8887C0001B02F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2482437626B8887C0001B02F /* StoreKit.framework */; };
+		29EBCEDF6375C0BCD375FA1B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383857D31006AB8D91AC7ED8 /* ContentView.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		3E5580E95957A3310E2CD288 /* HarrierWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B698E8662335F95116AC6301 /* HarrierWatchApp.swift */; };
+		4E0F8FC1175228B72408D675 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18A6C137FA285D515A26B4A0 /* Assets.xcassets */; };
+		5FFAD9947220E5E488C5627D /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE8A5D726118E206C2A7DF /* WatchConnectivityManager.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		C430D99427BBC12D9CB1D7BB /* PhoneWatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183E1A203AD135154ABAA020 /* PhoneWatchBridge.swift */; };
+		D81696638C5941C9511B621D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6FD59D884FE65A5D4B85388A /* Foundation.framework */; };
+		FDE721EAA581FBB07B52605C /* HarrierWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = FE52D8D73F081E28FAB708B2 /* HarrierWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FE279C6FC32EACBDD942B8FB /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3067386E8EB00A3B527754E5 /* Pods_Runner.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		9D9A56EB734E89AC8A43F99E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A24DE86607D835B09D160967;
+			remoteInfo = HarrierWatch;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
+		82527C2F02C3F20A4F541830 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				FDE721EAA581FBB07B52605C /* HarrierWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -34,13 +62,17 @@
 /* Begin PBXFileReference section */
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		183E1A203AD135154ABAA020 /* PhoneWatchBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PhoneWatchBridge.swift; sourceTree = "<group>"; };
+		18A6C137FA285D515A26B4A0 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		24330CEE22B2C90000FFB7E1 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		24330CEF22B2D00F00FFB7E1 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2482437626B8887C0001B02F /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		3067386E8EB00A3B527754E5 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		383857D31006AB8D91AC7ED8 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		3B543A8E2B5A880025CD6798 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		52955867D46EEECBDB62D16A /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
+		6FD59D884FE65A5D4B85388A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
@@ -51,6 +83,9 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B698E8662335F95116AC6301 /* HarrierWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HarrierWatchApp.swift; sourceTree = "<group>"; };
+		BFEE8A5D726118E206C2A7DF /* WatchConnectivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchConnectivityManager.swift; sourceTree = "<group>"; };
+		FE52D8D73F081E28FAB708B2 /* HarrierWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HarrierWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,9 +98,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C24531DAC5D040AEBDDD4D9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D81696638C5941C9511B621D /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3D38C7569E602842E4DD46E0 /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				6FD59D884FE65A5D4B85388A /* Foundation.framework */,
+			);
+			name = watchOS;
+			sourceTree = "<group>";
+		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
 			isa = PBXGroup;
 			children = (
@@ -85,6 +136,7 @@
 				97C146EF1CF9000F007C117D /* Products */,
 				CDB4C5820B0B9DB35101AB07 /* Pods */,
 				ECEFF1611A0369E04407CD16 /* Frameworks */,
+				BB77ECE56010A5FC775C319D /* HarrierWatch */,
 			);
 			sourceTree = "<group>";
 		};
@@ -92,6 +144,7 @@
 			isa = PBXGroup;
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
+				FE52D8D73F081E28FAB708B2 /* HarrierWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -110,6 +163,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				183E1A203AD135154ABAA020 /* PhoneWatchBridge.swift */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -119,6 +173,18 @@
 			children = (
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		BB77ECE56010A5FC775C319D /* HarrierWatch */ = {
+			isa = PBXGroup;
+			children = (
+				B698E8662335F95116AC6301 /* HarrierWatchApp.swift */,
+				383857D31006AB8D91AC7ED8 /* ContentView.swift */,
+				BFEE8A5D726118E206C2A7DF /* WatchConnectivityManager.swift */,
+				18A6C137FA285D515A26B4A0 /* Assets.xcassets */,
+			);
+			name = HarrierWatch;
+			path = HarrierWatch;
 			sourceTree = "<group>";
 		};
 		CDB4C5820B0B9DB35101AB07 /* Pods */ = {
@@ -135,6 +201,7 @@
 			children = (
 				2482437626B8887C0001B02F /* StoreKit.framework */,
 				3067386E8EB00A3B527754E5 /* Pods_Runner.framework */,
+				3D38C7569E602842E4DD46E0 /* watchOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -151,6 +218,7 @@
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
+				82527C2F02C3F20A4F541830 /* Embed Watch Content */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				F822E7C80612568E6F2205B0 /* [CP] Embed Pods Frameworks */,
@@ -159,10 +227,28 @@
 			buildRules = (
 			);
 			dependencies = (
+				818351488EB49DE8F694C1D8 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A24DE86607D835B09D160967 /* HarrierWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BE7D3966EC467DA981A46711 /* Build configuration list for PBXNativeTarget "HarrierWatch" */;
+			buildPhases = (
+				5C2EDA66B9153FAB30497E4C /* Sources */,
+				C24531DAC5D040AEBDDD4D9A /* Frameworks */,
+				48850BDA5428B8E575DF2EE5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HarrierWatch;
+			productName = HarrierWatch;
+			productReference = FE52D8D73F081E28FAB708B2 /* HarrierWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -203,11 +289,20 @@
 			projectRoot = "";
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
+				A24DE86607D835B09D160967 /* HarrierWatch */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		48850BDA5428B8E575DF2EE5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4E0F8FC1175228B72408D675 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EC1CF9000F007C117D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -391,16 +486,36 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5C2EDA66B9153FAB30497E4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E5580E95957A3310E2CD288 /* HarrierWatchApp.swift in Sources */,
+				29EBCEDF6375C0BCD375FA1B /* ContentView.swift in Sources */,
+				5FFAD9947220E5E488C5627D /* WatchConnectivityManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EA1CF9000F007C117D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				C430D99427BBC12D9CB1D7BB /* PhoneWatchBridge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		818351488EB49DE8F694C1D8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = HarrierWatch;
+			target = A24DE86607D835B09D160967 /* HarrierWatch */;
+			targetProxy = 9D9A56EB734E89AC8A43F99E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		97C146FA1CF9000F007C117D /* Main.storyboard */ = {
@@ -422,6 +537,34 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		172859F36897BFEE9B0D0138 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = XKZ5B2J6V4;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Harrier Central";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.harriercentral.app;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.harriercentral.app.watchkitapp;
+				PRODUCT_NAME = HarrierWatch;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 9.0;
+			};
+			name = Debug;
+		};
 		97C147031CF9000F007C117D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -607,6 +750,35 @@
 			};
 			name = Release;
 		};
+		DA8FB7D2925882BB49F6E409 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = XKZ5B2J6V4;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Harrier Central";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.harriercentral.app;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.harriercentral.app.watchkitapp;
+				PRODUCT_NAME = HarrierWatch;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 9.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -624,6 +796,15 @@
 			buildConfigurations = (
 				97C147061CF9000F007C117D /* Debug */,
 				97C147071CF9000F007C117D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BE7D3966EC467DA981A46711 /* Build configuration list for PBXNativeTarget "HarrierWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA8FB7D2925882BB49F6E409 /* Release */,
+				172859F36897BFEE9B0D0138 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

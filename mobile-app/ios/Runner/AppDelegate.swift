@@ -12,6 +12,12 @@ import MetricKit
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
 
+    // Apple Watch companion bridge — mirrors PackTrack session state to the
+    // watch and executes mark commands sent from it. No-op when unsupported.
+    if let controller = window?.rootViewController as? FlutterViewController {
+      PhoneWatchBridge.shared.start(messenger: controller.binaryMessenger)
+    }
+
     // MetricKit: capture crash / hang / CPU-disk exception diagnostics AND the
     // daily app-exit metrics (including memory-pressure / memory-limit "OOM"
     // terminations) that Xcode Organizer frequently does not surface. Payloads

@@ -273,6 +273,7 @@ export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 export 'package:harrier_central/services/connectivity_service.dart';
 export 'package:harrier_central/services/data_change_service.dart';
 export 'package:harrier_central/services/location_service/location_service.dart';
+export 'package:harrier_central/services/watch_bridge_service.dart';
 export 'package:harrier_central/services/notification_service.dart';
 export 'package:harrier_central/services/services_init.dart';
 

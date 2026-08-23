@@ -117,4 +117,11 @@ Future<void> initServices() async {
   PermissionMatrix.setGlobalJson(
     getStringPref(StringPrefsEnum.permissionMatrixJson),
   );
+
+  // Apple Watch companion bridge (iOS-only internally; no-op elsewhere).
+  // Permanent: the method-call handler must stay alive across restarts so
+  // watch commands always have a receiver.
+  if (!Get.isRegistered<WatchBridgeService>()) {
+    Get.put<WatchBridgeService>(WatchBridgeService(), permanent: true);
+  }
 }

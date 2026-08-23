@@ -112,7 +112,32 @@ roughly by recommended sequence.
   commit + haptic; no flash card on wrist). Parallel track — NOT gating
   3.0; realistic size ~4-8 focused sessions (SwiftUI target + WCSession
   bridge + Flutter platform channel + sim/device testing; TestFlight
-  ships it embedded automatically). Original tier analysis for reference:
+  ships it embedded automatically).
+  - [x] **Scaffold (2026-08-23)**: `HarrierWatch` watchOS target added to
+    Runner.xcodeproj (xcodeproj gem; bundle id
+    `com.harriercentral.app.watchkitapp`, versions track
+    `$(FLUTTER_BUILD_NAME/NUMBER)` via Generated.xcconfig, SKIP_INSTALL,
+    embedded via Embed Watch Content). SwiftUI app: stats header
+    (~-prefix for Power Saver), Check/False/I'm Lost/On Inn(confirm)
+    buttons, LostView polling shell. Phone side: `PhoneWatchBridge.swift`
+    (WCSession ↔ `harrier_central/watch` channel) + Dart
+    `WatchBridgeService` (permanent, services_init): 1s state push from
+    LiveRunGeneralController ticker; `markFromWatch` = immediate
+    capture+commit sharing the 8s slot cooldown, bypassing the flash-card
+    pending state; On Inn = `endRun(markOnInn: true)`.
+  - [ ] Phase 2: real lost-compass vectors in the `lostQuery` reply
+    (currently a "use your phone" message); move the state broadcast into
+    LocationService so the wrist doesn't freeze if the live-run page is
+    closed mid-session while tracking continues; Start-tracking from the
+    wrist (deliberately omitted — start needs the phone's pre-run checks).
+  - [ ] Phase 2: pair watch sim + phone sim and test end-to-end; then
+    on-wrist device test. Requires Xcode watchOS platform (downloaded
+    2026-08-23 — any Mac building the app now needs it since Runner
+    depends on the watch target).
+  - [ ] Next iOS dance: first archive containing the watch app — expect
+    `-allowProvisioningUpdates` to mint the new watchkitapp profile;
+    verify both bundles' versions in the IPA before altool upload.
+  Original tier analysis for reference:
   1. **Live Activity for tracking sessions** (days, no watch target):
      elapsed/distance/pack-nearby on the iPhone lock screen + Dynamic
      Island, auto-mirrored to the watch Smart Stack; App-Intent buttons
