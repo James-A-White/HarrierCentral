@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.20 — 2026-08-23
+
+- **Viewer-local run times on cards and lists**: when a visitor's clock
+  differs from the kennel's, run cards, the Upcoming Runs list, and the
+  Featured Run card now show "JST · 12:00 your time" alongside the kennel
+  time (the run detail page already had this). Computed client-side after
+  hydration; invisible for kennel-local visitors.
+
 ## 0.21.19 — 2026-08-18
 
 - PackTrack photo lightbox: new Download button saves the photo to the viewer's device (streamed same-origin so it works on phones)
