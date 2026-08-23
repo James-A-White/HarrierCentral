@@ -623,6 +623,7 @@ class QueryRuns {
           COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
           COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
+          c.${tableModel.citiesTableHelper.colIanaTimeZone} as ianaTimeZone,
           julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) as eventJulian,
           julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) as eventJulianLocal,
           julianday('now') as nowJulian,
@@ -662,12 +663,13 @@ class QueryRuns {
           COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
           COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
+          c.${tableModel.citiesTableHelper.colIanaTimeZone} as ianaTimeZone,
           julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) as eventJulian,
           julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) as eventJulianLocal,
           julianday('now') as nowJulian,
           julianday('now','$offsetFromGmtToLocal') as nowJulianLocal,
-          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-3 hours') then 1 else 0 end as showAsFutureEvent,
-          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-3 hours') then 1 else 0 end as showAsPastEvent,
+          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-6 hours') then 1 else 0 end as showAsFutureEvent,
+          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-6 hours') then 1 else 0 end as showAsPastEvent,
           $searchRunsField
           FROM ${EnumDataTables.events.commonTableName} evt
           INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.kennelId = evt.kennelId
@@ -683,13 +685,19 @@ class QueryRuns {
     var timeFilterWhereClause = '';
 
     if (runsToDisplay.showFuturePastToggle) {
-      // Single boundary: a run is FUTURE until 3 hours after its start, then
-      // PAST. The two predicates are exact complements — a run can never
-      // appear in both lists (the old ±4h window double-listed anything
-      // starting within 4 hours of now).
+      // Single boundary, PRODUCT RULE (James, 2026-08-23): a run stays
+      // FUTURE/current until SIX real hours after its start, then flips to
+      // PAST. Measured GMT-instant vs GMT-instant (EventStartDatetimeGmt vs
+      // SQLite UTC 'now') so it's independent of the viewer's timezone. The
+      // two predicates are exact complements — a run can never appear in
+      // both lists, and (critically) the row scopes and the showAsFuture/
+      // showAsPast flag columns MUST use the identical expression: when the
+      // flags said 6h but the row filter said 3h, runs aged 3-6h vanished
+      // from BOTH tabs (LH3 #2848, 2026-08-22). run_locations_controller
+      // mirrors this boundary in Dart — change all sites together.
       if (runsTimeScope == RunsTimeScope.future) {
         timeFilterWhereClause =
-            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-3 hours')''';
+            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-6 hours')''';
       } else if (runsTimeScope == RunsTimeScope.past) {
         // Past runs are personal history, not discovery: only kennels the
         // user FOLLOWS (following=1 — no HKM row / 0 means never followed,
@@ -698,7 +706,7 @@ class QueryRuns {
         // stranger kennel's recent runs in the Past list. The future list
         // deliberately stays global (that IS discovery).
         timeFilterWhereClause =
-            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-3 hours')
+            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-6 hours')
             AND ( hkm.${tableModel.hasherKennelMapTableHelper.colFollowing} = 1
                   OR coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= ${attendenceAtHash.value} )''';
       } // 'all' is also an option, but we don't want to apply a where clause in that case
@@ -725,7 +733,7 @@ class QueryRuns {
     final String whereClauseForKennelDetailsPage = kennelId == null
         ? ''
         : '''
-            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-3 hours') 
+            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-6 hours') 
             AND evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
