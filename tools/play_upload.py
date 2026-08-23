@@ -93,13 +93,36 @@ def upload(aab: str, track: str, notes: str | None) -> int:
         body={"track": track, "releases": [release]},
     ).execute()
 
-    committed = (
-        svc.edits().commit(packageName=PACKAGE, editId=edit_id).execute()
-    )
-    print(
-        f"COMMITTED — versionCode {version_code} live on the '{track}' "
-        f"track (edit {committed['id']})."
-    )
+    try:
+        committed = (
+            svc.edits().commit(packageName=PACKAGE, editId=edit_id).execute()
+        )
+        print(
+            f"COMMITTED — versionCode {version_code} live on the '{track}' "
+            f"track (edit {committed['id']})."
+        )
+    except HttpError as e:
+        # Play refuses auto-submission while the app has an outstanding
+        # console task (e.g. missing privacy policy). Commit WITHOUT sending
+        # for review — the release then waits in the Console for a manual
+        # "send for review" once the task is cleared. Without this retry the
+        # edit is abandoned and the upload silently lands nowhere.
+        if "changesNotSentForReview" not in str(e):
+            raise
+        committed = (
+            svc.edits()
+            .commit(
+                packageName=PACKAGE,
+                editId=edit_id,
+                changesNotSentForReview=True,
+            )
+            .execute()
+        )
+        print(
+            f"COMMITTED (not sent for review) — versionCode {version_code} "
+            f"staged on the '{track}' track (edit {committed['id']}). "
+            f"Send for review manually in the Play Console."
+        )
     return 0
 
 
