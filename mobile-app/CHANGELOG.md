@@ -1,5 +1,25 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1301 (2026-08-23) — iOS + Android
+
+### New Features
+- **Apple Watch companion (iOS)**: live distance and elapsed time on the
+  wrist while PackTrack runs on your phone, with Check, False Trail,
+  I'm Lost, and On Inn buttons — plus an end-of-run summary showing
+  distance, time, and mark counts. First build to embed the watch app.
+- **Instant marks on the map**: marks you place (phone, watch, or photos)
+  appear on the PackTrack map immediately instead of waiting for the next
+  server refresh.
+- **Viewer-local run times**: when your clock differs from the kennel's,
+  run times show the kennel zone ("2:45 PM BST") with "10:45 AM your
+  time" beneath, on list tiles and the run detail page.
+
+### Fixes
+- **Past/future boundary**: runs stay in Current/Future for six hours
+  after their start again (a previous fix had tightened this to three).
+- **Run editor**: the address Lookup button is a proper pill with visible
+  text (was red-on-red), enabled once the description has 4+ characters.
+
 ## 3.0.1+1300 (2026-08-23) — Android
 
 - Identical content to 1298; end-to-end validation of the automated Play
