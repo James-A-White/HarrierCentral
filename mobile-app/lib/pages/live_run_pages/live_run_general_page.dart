@@ -487,6 +487,52 @@ class LiveRunGeneralController extends GetxController {
     }
   }
 
+  /// Multi Photo cap. Multiple shots should be a deliberate choice, not the
+  /// default — an uncapped loop drowns the Hash Flash in near-duplicates.
+  static const int _multiPhotoLimit = 6;
+
+  /// Multi Photo: reopens the camera after each saved shot so a trail
+  /// photographer can shoot a burst without renavigating. Each photo still
+  /// passes the normal review page (Discard / Edit / Save) — the loop only
+  /// removes the between-shots navigation. Ends when the camera is
+  /// cancelled, a step fails, or [_multiPhotoLimit] photos are taken.
+  Future<void> takePhotoSession() async {
+    int taken = 0;
+    var stop = false;
+    while (!stop && taken < _multiPhotoLimit) {
+      var outcome = KennelPhotoCaptureOutcome.failed;
+      await KennelPhotoService().captureAndUpload(
+        eventId: run.event.eventId,
+        kennelId: run.kennel.kennelId,
+        kennelSlug: run.kennel.kennelUniqueShortName,
+        eventNumber: run.event.eventNumber,
+        markerTimestampMs: _photoMarkerTimestampMs,
+        skipMapMarker: _trackingStartedAt == null || _trackingEndedAt != null,
+        onOutcome: (o) => outcome = o,
+      );
+      if (outcome == KennelPhotoCaptureOutcome.uploaded ||
+          outcome == KennelPhotoCaptureOutcome.queuedOffline) {
+        taken++;
+      } else if (outcome != KennelPhotoCaptureOutcome.discarded) {
+        // cancelledAtCamera or failed — end the session. A discarded photo
+        // just reopens the camera (they binned one shot, not the session).
+        stop = true;
+      }
+    }
+    if (taken == 0) return;
+    final bool hitLimit = taken >= _multiPhotoLimit;
+    Get.snackbar(
+      hitLimit ? "That's plenty!" : 'Photos added',
+      hitLimit
+          ? '$_multiPhotoLimit photos added to the run — the Hash Flash '
+                'thanks you 🍺'
+          : '$taken photo${taken == 1 ? '' : 's'} added to the run.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: hc_blue,
+      colorText: Colors.white,
+    );
+  }
+
   /// Stamps a DDN (gavel) GPS marker at the current location if tracking is
   /// active. Called by the Make a Charge button before navigating to the form.
   Future<void> markChargeLocation() async {
@@ -924,29 +970,92 @@ class LiveRunGeneralPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // The photo tile is split: single shot on top, Multi Photo
+            // (camera reopens after each save, capped at 6) below.
             Expanded(
               flex: 2,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: hc_blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () => unawaited(controller.takePhoto()),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.camera_alt, size: 36),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Take\nPhoto',
-                      textAlign: TextAlign.center,
-                      style: ts_button.copyWith(fontSize: 13),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: hc_blue,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.zero,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                        ),
+                      ),
+                      onPressed: () => unawaited(controller.takePhoto()),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.camera_alt, size: 24),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Take Photo',
+                            textAlign: TextAlign.center,
+                            style: ts_button.copyWith(fontSize: 12),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 2),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: hc_blue,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.zero,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            bottom: Radius.circular(12),
+                          ),
+                        ),
+                      ),
+                      onPressed: () =>
+                          unawaited(controller.takePhotoSession()),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Two stacked cameras = burst.
+                          SizedBox(
+                            width: 32,
+                            height: 26,
+                            child: Stack(
+                              children: const [
+                                Positioned(
+                                  left: 0,
+                                  top: 0,
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    size: 19,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Icon(Icons.camera_alt, size: 19),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Multi Photo',
+                            textAlign: TextAlign.center,
+                            style: ts_button.copyWith(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 8),

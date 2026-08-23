@@ -22,6 +22,18 @@ const int photoActionUnfeature = 7; // clear Featured flag
 /// hours.
 const double _maxPhotoDistanceMiles = 30.0;
 
+/// How a [KennelPhotoService.captureAndUpload] attempt ended — reported via
+/// its `onOutcome` callback. The return value alone can't tell a camera
+/// cancel from a queued-offline photo (both return null), and a multi-shot
+/// session needs that difference to decide whether to reopen the camera.
+enum KennelPhotoCaptureOutcome {
+  uploaded,
+  queuedOffline,
+  discarded,
+  cancelledAtCamera,
+  failed,
+}
+
 class KennelPhotoService {
   /// Orchestrates the full capture → upload → record flow.
   ///
@@ -40,6 +52,8 @@ class KennelPhotoService {
     // Use for photos taken before/after the run, or for charge attachments
     // where a separate marker type already marks the location.
     bool skipMapMarker = false,
+    // Reports how the attempt ended (see [KennelPhotoCaptureOutcome]).
+    void Function(KennelPhotoCaptureOutcome outcome)? onOutcome,
   }) async {
     // Run folder: "<kennelSlug>-<runNumber>" when there is a run number,
     // otherwise "other". Nested under the kennel slug in blob storage.
@@ -49,12 +63,18 @@ class KennelPhotoService {
     //    Compression for blob upload happens separately in step 5.
     //    Simulator uses a bundled placeholder.
     final rawFile = await _pickImage();
-    if (rawFile == null) return null; // user cancelled
+    if (rawFile == null) {
+      onOutcome?.call(KennelPhotoCaptureOutcome.cancelledAtCamera);
+      return null; // user cancelled
+    }
 
     // 2. Show review page: Discard / Edit / Save privately / Save and share.
     //    Edit opens the cropper at full quality; result carries the final file + intent.
     final result = await _showSharePage(rawFile);
-    if (result == null) return null;
+    if (result == null) {
+      onOutcome?.call(KennelPhotoCaptureOutcome.discarded);
+      return null;
+    }
     final imageFile = result.file; // full-quality, possibly cropped
     final sharingOverride = result.intent == _PhotoShareIntent.saveAndShare
         ? 1
@@ -113,6 +133,7 @@ class KennelPhotoService {
               markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
         );
       }
+      onOutcome?.call(KennelPhotoCaptureOutcome.queuedOffline);
       return null;
     }
 
@@ -124,6 +145,7 @@ class KennelPhotoService {
       photoGuid: photoGuid,
     );
     if (tokenResult == null) {
+      onOutcome?.call(KennelPhotoCaptureOutcome.queuedOffline);
       await _queueForOfflineUpload(
         imageFile: uploadFile,
         photoGuid: photoGuid,
@@ -150,6 +172,7 @@ class KennelPhotoService {
     final sasUrl = tokenResult['sasUrl'];
     final blobUrl = tokenResult['blobUrl'];
     if (sasUrl == null || blobUrl == null) {
+      onOutcome?.call(KennelPhotoCaptureOutcome.failed);
       Get.snackbar(
         'Upload failed',
         'Upload token was missing required fields. Please try again.',
@@ -163,6 +186,7 @@ class KennelPhotoService {
     final sasUri = Uri.tryParse(sasUrl);
     if (sasUri == null ||
         sasUri.host != 'harriercentral.blob.core.windows.net') {
+      onOutcome?.call(KennelPhotoCaptureOutcome.failed);
       Get.snackbar(
         'Upload failed',
         'Invalid upload token. Please try again.',
@@ -176,6 +200,7 @@ class KennelPhotoService {
     // 7. Upload compressed bytes directly to blob storage via the SAS URL
     final uploaded = await _uploadToBlob(sasUrl: sasUrl, imageFile: uploadFile);
     if (!uploaded) {
+      onOutcome?.call(KennelPhotoCaptureOutcome.queuedOffline);
       await _queueForOfflineUpload(
         imageFile: uploadFile,
         photoGuid: photoGuid,
@@ -219,6 +244,7 @@ class KennelPhotoService {
         colorText: Colors.white,
       );
       // Still return blobUrl — photo is in storage even if the DB call failed
+      onOutcome?.call(KennelPhotoCaptureOutcome.uploaded);
       return blobUrl;
     }
 
@@ -231,6 +257,7 @@ class KennelPhotoService {
       );
     }
 
+    onOutcome?.call(KennelPhotoCaptureOutcome.uploaded);
     return blobUrl;
   }
 
