@@ -4,6 +4,74 @@ Items flagged during development that need follow-up.
 
 ---
 
+## 🎯 3.0 RELEASE RUNWAY (consolidated burn-down, 2026-08-23)
+
+App Store live = 2.1.2 (Oct 2025). iOS beta = 1297, Android internal = 1300,
+feature-identical. The detailed per-feature checklists further down hold the
+step-by-step cases — this is the ordered index of what actually gates 3.0.
+
+### P0 — gates submission (one or two hash runs + a bench evening)
+
+- [ ] **Money block** (one run-admin session covers all): payment package
+  (footer totals, chips, pending card, zero-price⇒FREE, combined
+  membership+run button, atomicity smoke), membership charge paths,
+  check-in membership/haberdashery buttons, membership expiry badge.
+  → sections "payment package", "membership payments", "check-in
+  membership/haberdashery", "membership expiry badge".
+- [ ] **util_rewriteZeroCashRunPaymentsAsFree** — James runs @dryRun 1,
+  reviews, then @dryRun 0. Before or with the money block.
+- [ ] **PackTrack live block** (needs a real/moving run, 2 phones where
+  noted): deferred-commit mark undo card (NEW semantics — capture at tap,
+  commit on dismissal; supersedes the 1293 "mark undo" items), auto-stop
+  steps ①–④ incl. admin stop-everyone, live-viewer GPS boost, map
+  pending-tail + freshness pill, radar UNLOCKED on-the-spot spin (compass
+  fix 2026-08-23), Multi Photo session to the 6-cap, mark-multiplication
+  moving taps (closes the last open PackTrack investigation).
+- [ ] **Upgrade path bench test** (iOS phone, 2.1.2 → current): "Welcome to
+  Harrier Central 3.0" dialog → jungle splash → Done → normal boot; kill
+  and relaunch → nothing re-shows. (Android equivalent verified on
+  emulator 2026-08-22/23.)
+- [ ] **Boot/sync bench**: sync-serializer no-duplicate checks (kennel
+  admin pull-to-refresh races), fresh-install boot with no/stale
+  credentials (regression on the 2026-08-22 early-boot alert fix).
+- [ ] **App Store submission pack** (no code): fresh screenshots, What's-New
+  text, listing copy, privacy questionnaire refresh (camera/photos/
+  location/notifications answers are 2.1.2-era), decide version name
+  (lift the 3.0.x pin), submit for full review.
+
+### P1 — should pass before/while review runs (bench + one run)
+
+- [ ] Lost compass block: own-track merge cases (airplane mode, solo,
+  different-run guard), steering slide feel, "front-most hasher" copy
+  (NEW), bullseye vs follow-me states.
+- [ ] Run editor single-save block + GetX editor regression items
+  (2.15.54/55 checklists — still fully untested on device).
+- [ ] Photo review page block (2.15.21 checklist) + Hash Flash cover/
+  featured regression.
+- [ ] On Inn removal + On Inn confirmation checklists (partially witnessed
+  on Android emulator 2026-08-22).
+- [ ] Past Runs NEW behaviour eyeball: followed/attended-only list, RSVP-No
+  runs visible again, 3-6h boundary gone (LH3 case).
+- [ ] **MetricKit soak**: ≥1 week of 1292+ builds in the field, then review
+  HC.ClientErrorLog for intact [METRICKIT] payloads — specifically Tuna's
+  892MB RSS question.
+- [ ] Splash verification leftovers: iOS Done→no-reshow (Android ✓).
+
+### P2 — fine to trail the release
+
+- Radar wedge easing feel, playhead-clock replay case, fullscreen map
+  safe-area on notched phones, editor open/close ×10 perf, chat badge
+  optimistic-clear regression, "Caution guaranteed?" taste call.
+
+### Build-items still open (small, none gating)
+
+- [ ] Strip any remaining TEMP mark-multiplication instrumentation once the
+  moving-tap test closes the investigation.
+- [ ] Apple Watch companion (see Watch entry below) — parallel track,
+  NOT gating 3.0.
+
+---
+
 ## Post-3.0 — do AFTER the App Store release ships
 
 Deliberately parked during the 3.0 stabilization push (2026-08). Ordered
@@ -35,10 +103,16 @@ roughly by recommended sequence.
 
 ### Features and debt
 
-- [ ] **Apple Watch — staged approach** (scoped 2026-08-23). Flutter does not
-  run on watchOS, so anything on the wrist is native SwiftUI — zero Dart
-  reuse. Tiers, cheapest first; do Tier 1 and let tester demand justify the
-  rest:
+- [ ] **Apple Watch companion — James-approved direction (2026-08-23)**:
+  a remote-control watch app while the phone app runs the session. Wrist
+  shows live distance/elapsed; buttons: **Check, False Trail, On Inn
+  (confirm first), I'm Lost** (opens a vector-back-to-trail view fed by
+  the phone's lost-compass bearings + the watch's own compass). Marks ride
+  WCSession → the phone's capture/commit flow (watch tap = immediate
+  commit + haptic; no flash card on wrist). Parallel track — NOT gating
+  3.0; realistic size ~4-8 focused sessions (SwiftUI target + WCSession
+  bridge + Flutter platform channel + sim/device testing; TestFlight
+  ships it embedded automatically). Original tier analysis for reference:
   1. **Live Activity for tracking sessions** (days, no watch target):
      elapsed/distance/pack-nearby on the iPhone lock screen + Dynamic
      Island, auto-mirrored to the watch Smart Stack; App-Intent buttons
