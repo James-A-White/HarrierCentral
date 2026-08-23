@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { MapPin, Clock, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EnrichedRun, DisplayOptions } from "./RunListBlock";
+import ViewerLocalTime from "@/components/ViewerLocalTime";
 
 const LOGO_PX: Record<string, number> = { sm: 16, md: 24, lg: 36, xl: 52 };
 
@@ -132,6 +133,11 @@ export function RunCardView({ runs, slug, display, flat = false }: RunCardViewPr
                 >
                   <Clock className="h-3 w-3 shrink-0" />
                   <span>{time}</span>
+                  <ViewerLocalTime
+                    gmt={run.EventStartDatetimeGmt}
+                    kennelTz={entry.kennel.ianaTimezone ?? run.KennelIANATimezone}
+                    className="italic opacity-70"
+                  />
                 </div>
               )}
 

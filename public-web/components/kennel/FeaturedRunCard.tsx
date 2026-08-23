@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { MapPin, Clock, Users, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { RunEvent } from "@/lib/api";
+import ViewerLocalTime from "@/components/ViewerLocalTime";
 
 const FeaturedRunMap = dynamic(() => import("./FeaturedRunMap"), { ssr: false });
 
@@ -118,6 +119,11 @@ export function FeaturedRunCard({ run, href, display: displayProp }: FeaturedRun
               >
                 <Clock className="h-4 w-4 shrink-0" style={{ color: "var(--kennel-accent, var(--kennel-primary))" }} />
                 <span className="min-w-0 truncate">{datetimeParts.join(" · ")}</span>
+                <ViewerLocalTime
+                  gmt={run.EventStartDatetimeGmt}
+                  kennelTz={run.KennelIANATimezone}
+                  className="shrink-0 text-sm italic opacity-70"
+                />
               </div>
             )}
 

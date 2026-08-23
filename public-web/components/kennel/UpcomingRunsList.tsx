@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { MapPin, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { RunEvent } from "@/lib/api";
+import ViewerLocalTime from "@/components/ViewerLocalTime";
 
 interface UpcomingRunsListProps {
   runs: RunEvent[];
@@ -77,6 +78,11 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
                         <Clock className="h-3 w-3" />
                         {dayTime}
                       </span>
+                      <ViewerLocalTime
+                        gmt={run.EventStartDatetimeGmt}
+                        kennelTz={run.KennelIANATimezone}
+                        className="text-base italic opacity-70"
+                      />
                       {(run.LocationOneLineDesc ?? run.LocationCity) && (
                         <span className="flex min-w-0 max-w-full items-center gap-1">
                           <MapPin className="h-3 w-3 shrink-0" />
