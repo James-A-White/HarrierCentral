@@ -350,6 +350,9 @@ class EditRunDetailsPage extends StatelessWidget {
                         valueListenable: c.locationOneLineDescController,
                         builder: (_, TextEditingValue value, _) {
                           final String desc = value.text.trim();
+                          // Same rule as the Details-tab pill: a lookup needs
+                          // at least 4 characters to be a useful query.
+                          final bool enabled = desc.length >= 4;
                           return ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(double.infinity, 40),
@@ -364,7 +367,7 @@ class EditRunDetailsPage extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            onPressed: c.openLocationLookup,
+                            onPressed: enabled ? c.openLocationLookup : null,
                           );
                         },
                       ),
@@ -581,14 +584,49 @@ class EditRunDetailsPage extends StatelessWidget {
                           hintText: 'Location description',
                           hintStyle: ts_hint,
                           suffixIcon: Padding(
-                            padding: const EdgeInsets.only(right: 6.0),
-                            child: TextButton.icon(
-                              style: TextButton.styleFrom(
-                                foregroundColor: hc_red,
+                            padding: const EdgeInsets.only(right: 8.0),
+                            // Hug the pill's natural size instead of the
+                            // 48x48 suffix slot, and keep it centred.
+                            child: Center(
+                              widthFactor: 1.0,
+                              child: ValueListenableBuilder<TextEditingValue>(
+                                valueListenable:
+                                    c.locationOneLineDescController,
+                                builder: (_, TextEditingValue value, _) {
+                                  // Too little text makes a useless gazetteer
+                                  // query — require 4 real characters.
+                                  final bool enabled =
+                                      value.text.trim().length >= 4;
+                                  return TextButton(
+                                    // Explicit colours on purpose: the themed
+                                    // TextButton is red-on-red here, which
+                                    // rendered the label invisible.
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: hc_red,
+                                      foregroundColor: Colors.white,
+                                      disabledBackgroundColor:
+                                          Colors.grey.shade400,
+                                      disabledForegroundColor: Colors.white70,
+                                      shape: const StadiumBorder(),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14.0,
+                                      ),
+                                      minimumSize: const Size(0, 30),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      visualDensity: VisualDensity.compact,
+                                      textStyle: const TextStyle(
+                                        fontSize: 13.0,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    onPressed: enabled
+                                        ? c.openLocationLookup
+                                        : null,
+                                    child: const Text('Lookup'),
+                                  );
+                                },
                               ),
-                              icon: const Icon(Icons.search, size: 18),
-                              label: const Text('Look up'),
-                              onPressed: c.openLocationLookup,
                             ),
                           ),
                         ),
