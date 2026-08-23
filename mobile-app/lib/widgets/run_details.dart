@@ -59,6 +59,7 @@ class RunDetails extends StatelessWidget {
     this.processPayment,
     this.eventUrlWithKennelBackup,
     this.bottomExtension,
+    this.ianaTimeZone,
   });
 
   final EventModel event;
@@ -76,6 +77,11 @@ class RunDetails extends StatelessWidget {
   final Function? processPayment;
   final String? eventUrlWithKennelBackup;
   final Widget? bottomExtension;
+
+  /// Kennel's IANA timezone (from extensions.ianaTimeZone) — lets the Time
+  /// row carry the kennel's zone abbreviation when the viewer's clock
+  /// differs. Null falls back to a UTC±X label.
+  final String? ianaTimeZone;
 
   static const int _flexLeft = 30;
   static const int _flexRight = 70;
@@ -310,12 +316,35 @@ class RunDetails extends StatelessWidget {
                     ),
                     Expanded(
                       flex: _flexRight,
-                      child: Text(
-                        DateFormat('h:mm a').format(event.eventStartDatetime),
-                        style: ts_listValueStyle,
-                        textAlign: TextAlign.left,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            '${DateFormat('h:mm a').format(event.eventStartDatetime)}'
+                            '${kennelTzSuffix(event.eventStartDatetime, event.eventStartDatetimeGmt, ianaTimeZone)}',
+                            style: ts_listValueStyle,
+                            textAlign: TextAlign.left,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          // Viewer in a different timezone than the kennel —
+                          // show what the start means on their own clock.
+                          if (viewerLocalStartLabel(
+                                event.eventStartDatetime,
+                                event.eventStartDatetimeGmt,
+                              )
+                              case final String viewerTime)
+                            Text(
+                              viewerTime,
+                              style: ts_listValueStyle.copyWith(
+                                color: Colors.white70,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
                       ),
                     ),
                   ],

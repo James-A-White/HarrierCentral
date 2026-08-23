@@ -527,29 +527,35 @@ class RunListItem extends StatelessWidget {
                                     futureRun.event.eventStartDatetime.year ==
                                             DateTime.now().year
                                         ? Text(
-                                            DateFormat(
-                                              "E, MMM d 'at' h:mm a",
-                                            ).format(
-                                              futureRun
-                                                  .event
-                                                  .eventStartDatetime,
-                                            ),
+                                            '${DateFormat("E, MMM d 'at' h:mm a").format(futureRun.event.eventStartDatetime)}'
+                                            '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}',
                                             style: ts_regularMediumBlack,
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                           )
                                         : Text(
-                                            DateFormat(
-                                              "E, MMM d yyyy 'at' h:mm a",
-                                            ).format(
-                                              futureRun
-                                                  .event
-                                                  .eventStartDatetime,
-                                            ),
+                                            '${DateFormat("E, MMM d yyyy 'at' h:mm a").format(futureRun.event.eventStartDatetime)}'
+                                            '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}',
                                             style: ts_regularMediumBlack,
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                           ),
+                                    // Viewer in a different timezone than the
+                                    // kennel — show their own clock too.
+                                    if (viewerLocalStartLabel(
+                                          futureRun.event.eventStartDatetime,
+                                          futureRun.event.eventStartDatetimeGmt,
+                                        )
+                                        case final String viewerTime)
+                                      Text(
+                                        viewerTime,
+                                        style: ts_regularMediumBlack.copyWith(
+                                          color: Colors.grey.shade600,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        textAlign: TextAlign.left,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     Obx(() => _getHaresWidget()),
                                     Obx(() => _getLocationWidget()),
                                     if ((futureRun.extensions.evtLat != null &&

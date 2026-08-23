@@ -274,6 +274,7 @@ export 'package:harrier_central/services/connectivity_service.dart';
 export 'package:harrier_central/services/data_change_service.dart';
 export 'package:harrier_central/services/location_service/location_service.dart';
 export 'package:harrier_central/services/watch_bridge_service.dart';
+export 'package:harrier_central/util/viewer_local_time.dart';
 export 'package:harrier_central/services/notification_service.dart';
 export 'package:harrier_central/services/services_init.dart';
 
