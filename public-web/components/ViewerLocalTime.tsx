@@ -52,9 +52,33 @@ export default function ViewerLocalTime({
     const day = sameDate
       ? ""
       : d.toLocaleDateString("en-GB", { weekday: "short" }) + " ";
-    setLabel(`${day}${time} your time`);
+    // Label the kennel time with its zone too ("JST · ...") — same
+    // abbreviation technique as RunDetail: Intl short name, falling back to
+    // the long name's initials when Intl only offers "GMT+9".
+    const abbr = kennelAbbr(d, kennelTz);
+    const prefix = abbr ? `${abbr} · ` : "";
+    setLabel(`${prefix}${day}${time} your time`);
   }, [gmt, kennelTz]);
 
   if (!label) return null;
   return <span className={className}>{label}</span>;
+}
+
+function kennelAbbr(date: Date, timeZone: string): string {
+  const short =
+    new Intl.DateTimeFormat("en", { timeZoneName: "short", timeZone })
+      .formatToParts(date)
+      .find((p) => p.type === "timeZoneName")?.value ?? "";
+  if (/^GMT[+-]/.test(short)) {
+    const long =
+      new Intl.DateTimeFormat("en", { timeZoneName: "long", timeZone })
+        .formatToParts(date)
+        .find((p) => p.type === "timeZoneName")?.value ?? "";
+    const abbr = long
+      .split(/\s+/)
+      .map((w) => w[0])
+      .join("");
+    if (abbr) return abbr;
+  }
+  return short;
 }
