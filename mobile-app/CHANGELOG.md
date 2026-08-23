@@ -1,5 +1,24 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1297 (2026-08-23) — iOS
+
+### New Features
+- **Multi Photo**: the photo tile is now two buttons — single shot, or a
+  Multi Photo session that reopens the camera after each save (max 6,
+  every shot still passes the review page).
+
+### Fixes
+- **Radar (unlocked) turns smoothly** with your compass instead of
+  sticking and jumping — it was following your GPS track, which doesn't
+  move when you turn on the spot.
+- **Past Runs shows runs you RSVP'd No to** — declining no longer hides
+  a run from your history.
+
+### Improvements
+- **Lost compass**: at the front of the tracked pack it now says so —
+  "You're one of the front-most hashers on PackTrack — check around for
+  marks."
+
 ## 3.0.1+1296 (2026-08-22) — iOS
 
 ### Improvements
