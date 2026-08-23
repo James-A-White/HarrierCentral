@@ -137,6 +137,16 @@ roughly by recommended sequence.
   - [ ] Next iOS dance: first archive containing the watch app — expect
     `-allowProvisioningUpdates` to mint the new watchkitapp profile;
     verify both bundles' versions in the IPA before altool upload.
+  - [ ] **Wear OS port (post-3.0, after Apple Watch proves adoption)**: the
+    Dart `WatchBridgeService` + channel protocol are transport-neutral —
+    reuse as-is. New work: Kotlin bridge implementing the same
+    `harrier_central/watch` channel over the Wearable Data Layer
+    (MessageClient=sendMessage, DataClient=applicationContext), a small
+    Compose watch UI mirroring ContentView, and Play distribution (Wear OS
+    apps ship as a SEPARATE AAB under the same package — wear form-factor
+    track + wear screenshots + wear quality review; NOT embedded like iOS).
+    ~2-4 sessions since the protocol/design is done. Garmin = separate
+    Connect IQ ecosystem, out of scope.
   Original tier analysis for reference:
   1. **Live Activity for tracking sessions** (days, no watch target):
      elapsed/distance/pack-nearby on the iPhone lock screen + Dynamic

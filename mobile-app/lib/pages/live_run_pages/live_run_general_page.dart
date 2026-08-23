@@ -148,6 +148,7 @@ class LiveRunGeneralController extends GetxController {
     if (isTracking.value) {
       _trackingStartedAt ??= DateTime.now();
       _startElapsedTicker();
+      _notifyWatchSessionStart();
     }
   }
 
@@ -308,6 +309,8 @@ class LiveRunGeneralController extends GetxController {
           .reduce((a, b) => a < b ? a : b);
       _trackingStartedAt = DateTime.fromMillisecondsSinceEpoch(firstTs);
       elapsed.value = DateTime.now().difference(_trackingStartedAt!);
+      // Refresh the watch bridge with the re-based start time.
+      _notifyWatchSessionStart();
 
       // Strip any terminator(s) so the resumed portion isn't cut off. OIN (On
       // Inn) stops the drawn polyline at the first occurrence, so a stale one
@@ -705,9 +708,11 @@ class LiveRunGeneralController extends GetxController {
     if (value) {
       _trackingStartedAt ??= DateTime.now();
       _startElapsedTicker();
+      _notifyWatchSessionStart();
     } else {
       _stopElapsedTicker();
-      _pushWatchState();
+      // The watch bridge's own broadcast loop notices joinRunTracking
+      // dropping and idles the wrist — nothing to do here.
     }
   }
 
@@ -716,32 +721,35 @@ class LiveRunGeneralController extends GetxController {
   /// track buffer. Deliberately bypasses [_pendingCapture] so a flash card
   /// open on the phone at the same moment keeps its own pending mark.
   /// Shares the same-slot cooldown with phone taps.
-  Future<bool> markFromWatch(TrailSlot slot) async {
-    if (!isTracking.value) return false;
-    if (slotCooldownActive(slot)) return false;
+  ///
+  /// Returns null on success, or a short reason string on refusal/failure —
+  /// relayed to the watch reply and the wrist-side logs so a silent failure
+  /// haptic is never the only evidence.
+  Future<String?> markFromWatch(TrailSlot slot) async {
+    if (!isTracking.value) return 'not-tracking';
+    if (slotCooldownActive(slot)) return 'cooldown';
     _lastSlotMarkAt[slot.trackType()] = DateTime.now();
     try {
       final mark = await _locationService.captureSlotMark(slot);
       await _locationService.commitSlotMark(mark);
-      return true;
-    } catch (_) {
-      return false;
+      return null;
+    } catch (e) {
+      BootLogger.logError('[markFromWatch] capture/commit failed', e, null);
+      return 'gps: $e';
     }
   }
 
-  /// Mirrors the session onto the paired Apple Watch. Rides the 1-second
-  /// elapsed ticker while tracking; the stop path sends the final
-  /// tracking-false broadcast that returns the wrist to its idle screen.
-  void _pushWatchState() {
+  /// Hands the session to the watch bridge, which runs its own broadcast
+  /// loop from LocationService state — the wrist stays live and can mark
+  /// even after this page (and controller) are disposed. Idempotent; called
+  /// again after a track resume re-bases [_trackingStartedAt].
+  void _notifyWatchSessionStart() {
     if (!Get.isRegistered<WatchBridgeService>()) return;
-    unawaited(WatchBridgeService.to.pushState(
-      tracking: isTracking.value,
-      paused: isPaused.value,
-      distanceKm: isTracking.value ? distanceKm.value : null,
-      elapsedSec: elapsed.value.inSeconds,
+    WatchBridgeService.to.startSession(
       eventName: run.event.eventName,
-      powerSaver: (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0,
-    ));
+      slots: run.kennel.trailSlots,
+      startedAt: _trackingStartedAt ?? DateTime.now(),
+    );
   }
 
   void _handlePosition(Position? position) {
@@ -756,10 +764,8 @@ class LiveRunGeneralController extends GetxController {
   void _startElapsedTicker() {
     _elapsedTicker ??= Timer.periodic(const Duration(seconds: 1), (_) {
       _updateElapsed();
-      _pushWatchState();
     });
     _updateElapsed();
-    _pushWatchState();
   }
 
   void _stopElapsedTicker() {

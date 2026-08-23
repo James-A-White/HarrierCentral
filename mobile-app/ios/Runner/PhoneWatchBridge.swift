@@ -69,6 +69,11 @@ extension PhoneWatchBridge: WCSessionDelegate {
                 return
             }
             channel.invokeMethod("watchCommand", arguments: message) { response in
+                // NSLog (not print) so failures are visible in the device /
+                // simulator system log — the wrist haptic is easy to miss.
+                NSLog("[PhoneWatchBridge] cmd=%@ -> %@",
+                      String(describing: message["cmd"] ?? "?"),
+                      String(describing: response))
                 if let dict = response as? [String: Any] {
                     replyHandler(dict)
                 } else if let anyDict = response as? [AnyHashable: Any] {

@@ -3,22 +3,47 @@ import SwiftUI
 /// Single-screen watch UI: session stats up top, mark buttons below.
 /// Everything is driven by `WatchConnectivityManager`'s mirrored state —
 /// if the phone isn't tracking, the buttons aren't shown.
+///
+/// LAYOUT IS A `List` ON PURPOSE. Plain ScrollView + Button on watchOS
+/// mis-maps tap coordinates when content is partially scrolled (taps at the
+/// rest position landed one row below their visual target — Check triggered
+/// I'm Lost; a NavigationStack wrapper did NOT cure it). List is the native
+/// watch scroll container with correct hit-testing at every offset, and one
+/// full-width button per row means a tap can never be ambiguous. New
+/// buttons = new rows; the screen scrolls, so the field can grow freely.
 struct ContentView: View {
     @EnvironmentObject var connectivity: WatchConnectivityManager
     @State private var showOnInnConfirm = false
     @State private var showLostView = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 8) {
+        NavigationStack {
+            List {
                 if connectivity.isTracking {
                     statsHeader
-                    markButtons
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 4, trailing: 0))
+                    // Two buttons per row is fine INSIDE List rows: each
+                    // Button carries an explicit style, so they hit-test
+                    // individually — the old ScrollView bug was about row
+                    // positioning, which List owns correctly.
+                    buttonRow(
+                        ("Check", "circle.circle", .orange, { connectivity.sendMark("check") }),
+                        ("False", "xmark.circle", .red, { connectivity.sendMark("falseTrail") })
+                    )
+                    buttonRow(
+                        ("I'm Lost", "location.north.line", .blue, { showLostView = true }),
+                        ("On Inn", "flag.checkered", .green, { showOnInnConfirm = true })
+                    )
+                } else if connectivity.phase == "summary" {
+                    summaryView
+                        .listRowBackground(Color.clear)
                 } else {
                     idleView
+                        .listRowBackground(Color.clear)
                 }
             }
-            .padding(.horizontal, 4)
+            .listStyle(.plain)
         }
         .confirmationDialog(
             "On Inn?",
@@ -38,6 +63,40 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - Rows
+
+    private typealias ActionSpec = (
+        label: String, icon: String, tint: Color, action: () -> Void
+    )
+
+    /// A List row holding two side-by-side mark buttons — the 2×2 grid look,
+    /// with List doing the scrolling.
+    private func buttonRow(_ left: ActionSpec, _ right: ActionSpec) -> some View {
+        HStack(spacing: 6) {
+            gridButton(left)
+            gridButton(right)
+        }
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
+    }
+
+    private func gridButton(_ spec: ActionSpec) -> some View {
+        Button(action: spec.action) {
+            VStack(spacing: 2) {
+                Image(systemName: spec.icon)
+                    .font(.title3)
+                Text(spec.label)
+                    .font(.footnote)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+        }
+        .buttonStyle(.bordered)
+        .tint(spec.tint)
+    }
+
     // MARK: - Idle
 
     private var idleView: some View {
@@ -54,6 +113,7 @@ struct ContentView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
         .padding(.top, 12)
     }
 
@@ -75,16 +135,19 @@ struct ContentView: View {
                     .font(.headline)
                     .foregroundStyle(.secondary)
             }
-            Text(elapsedText)
-                .font(.body)
-                .monospacedDigit()
-                .foregroundStyle(connectivity.isPaused ? .yellow : .secondary)
-            if connectivity.isPaused {
-                Text("Paused")
-                    .font(.footnote)
-                    .foregroundStyle(.yellow)
+            HStack(spacing: 5) {
+                Text(elapsedText)
+                    .font(.body)
+                    .monospacedDigit()
+                    .foregroundStyle(connectivity.isPaused ? .yellow : .secondary)
+                if connectivity.isPaused {
+                    Text("Paused")
+                        .font(.footnote)
+                        .foregroundStyle(.yellow)
+                }
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var distanceText: String {
@@ -101,49 +164,63 @@ struct ContentView: View {
             : String(format: "%02d:%02d", m, sec)
     }
 
-    // MARK: - Buttons
+    // MARK: - Summary (end of run)
 
-    private var markButtons: some View {
+    private var summaryView: some View {
         VStack(spacing: 6) {
-            HStack(spacing: 6) {
-                markButton("Check", systemImage: "circle.circle", tint: .orange) {
-                    connectivity.sendMark("check")
+            Text("On Inn! 🍺")
+                .font(.headline)
+            if !connectivity.eventName.isEmpty {
+                Text(connectivity.eventName)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(distanceText)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                Text("km")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+            }
+            Text(elapsedText)
+                .font(.body)
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+            VStack(spacing: 3) {
+                summaryRow("Checks", connectivity.sumChecks)
+                summaryRow("False trails", connectivity.sumFalses)
+                if connectivity.sumOtherMarks > 0 {
+                    summaryRow("Other marks", connectivity.sumOtherMarks)
                 }
-                markButton("False", systemImage: "xmark.circle", tint: .red) {
-                    connectivity.sendMark("falseTrail")
+                if connectivity.sumPhotos > 0 {
+                    summaryRow("Photos", connectivity.sumPhotos)
                 }
             }
-            HStack(spacing: 6) {
-                markButton("I'm Lost", systemImage: "location.north.line", tint: .blue) {
-                    showLostView = true
-                }
-                markButton("On Inn", systemImage: "flag.checkered", tint: .green) {
-                    showOnInnConfirm = true
-                }
+            .padding(.top, 2)
+            Button("Done") {
+                connectivity.dismissSummary()
             }
+            .buttonStyle(.borderedProminent)
+            .tint(.green)
+            .padding(.top, 4)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 4)
     }
 
-    private func markButton(
-        _ label: String,
-        systemImage: String,
-        tint: Color,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            VStack(spacing: 2) {
-                Image(systemName: systemImage)
-                    .font(.title3)
-                Text(label)
-                    .font(.footnote)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
+    private func summaryRow(_ label: String, _ count: Int) -> some View {
+        HStack {
+            Text(label)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text("\(count)")
+                .font(.footnote.weight(.semibold))
+                .monospacedDigit()
         }
-        .buttonStyle(.bordered)
-        .tint(tint)
+        .padding(.horizontal, 8)
     }
 }
 

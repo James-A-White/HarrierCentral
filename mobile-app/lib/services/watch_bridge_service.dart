@@ -3,15 +3,21 @@ import 'package:harrier_central/pages/live_run_pages/live_run_general_page.dart'
 
 /// Dart side of the Apple Watch companion bridge (iOS only).
 ///
-/// Outbound: [pushState] mirrors the live-run session onto the wrist via the
-/// native `updateApplicationContext` broadcast — called once a second from
-/// `LiveRunGeneralController`'s elapsed ticker while a session is active, and
-/// once with `tracking: false` when it ends.
+/// Outbound: while a tracking session runs, the bridge broadcasts state to
+/// the wrist once a second via the native `updateApplicationContext` call.
+/// The broadcast loop lives HERE (a permanent service), not in the live-run
+/// page controller — tracking is service-scoped and survives navigation, so
+/// the wrist must too. `LiveRunGeneralController` only announces the session
+/// via [startSession]; after that the bridge reads `LocationService` directly
+/// and notices the session ending on its own.
 ///
 /// Inbound: watch button taps arrive as `watchCommand` calls. The returned
 /// map is relayed verbatim to the watch as the tap's reply (`ok` drives the
-/// success/failure haptic). Watch taps are deliberate — marks commit to the
-/// track buffer immediately, with no flash card or Undo.
+/// success/failure haptic; `why` names the refusal in logs). Watch taps are
+/// deliberate — marks commit to the track buffer immediately, with no flash
+/// card or Undo. When the live-run page is open its controller handles the
+/// mark (sharing the phone-tap cooldown); when it's closed the bridge marks
+/// directly through `LocationService`.
 class WatchBridgeService extends GetxService {
   static const MethodChannel _channel = MethodChannel('harrier_central/watch');
 
@@ -23,6 +29,30 @@ class WatchBridgeService extends GetxService {
   // (no watch paired, plugin missing) would otherwise spam the harvest log.
   bool _pushFailureLogged = false;
 
+  // Session context captured at startSession so marks and broadcasts keep
+  // working after the live-run page (and its controller) are gone.
+  Timer? _pushTimer;
+  String _eventName = '';
+  List<TrailSlot> _sessionSlots = const [];
+  DateTime? _startedAt;
+
+  // Totals for the end-of-run summary screen. Distance/elapsed are the last
+  // values seen while tracking (the source resets on stop); mark counts come
+  // from LocationService's typed-point listener, so phone taps, wrist taps,
+  // and photos are all counted no matter which page placed them.
+  bool _sessionSawTracking = false;
+  double _lastDistanceKm = 0;
+  int _lastElapsedSec = 0;
+  int _cntChecks = 0;
+  int _cntFalses = 0;
+  int _cntOtherMarks = 0;
+  int _cntPhotos = 0;
+
+  // Cooldown for service-level marks (page closed). The controller path has
+  // its own map shared with phone taps; this one only guards wrist repeats.
+  static const Duration _slotCooldown = Duration(seconds: 8);
+  final Map<String, DateTime> _lastServiceMarkAt = {};
+
   @override
   void onInit() {
     super.onInit();
@@ -30,69 +60,216 @@ class WatchBridgeService extends GetxService {
     _channel.setMethodCallHandler(_handleNativeCall);
   }
 
-  // ---------------------------------------------------------------- outbound
+  // ------------------------------------------------------------- session
 
-  /// Broadcasts session state to the watch. Safe to call unconditionally —
-  /// no-ops on Android and swallows channel errors (no paired watch, etc.).
-  Future<void> pushState({
-    required bool tracking,
-    bool paused = false,
-    double? distanceKm,
-    int elapsedSec = 0,
-    String eventName = '',
-    bool powerSaver = false,
-  }) async {
+  /// Announces a live tracking session to the bridge. Called by
+  /// `LiveRunGeneralController` when tracking starts, when it finds a session
+  /// already running, and again after it re-bases the elapsed clock on a
+  /// resumed track (idempotent — later calls just refresh the context).
+  void startSession({
+    required String eventName,
+    required List<TrailSlot> slots,
+    required DateTime startedAt,
+  }) {
     if (!_supported) return;
-    try {
-      await _channel.invokeMethod<bool>('updateState', <String, Object?>{
-        'tracking': tracking,
-        'paused': paused,
-        'distanceKm': distanceKm,
-        'elapsedSec': elapsedSec,
-        'eventName': eventName,
-        'powerSaver': powerSaver,
-      });
-    } catch (e) {
-      // Missing plugin / no watch — never let the wrist break the run.
-      if (!_pushFailureLogged) {
-        _pushFailureLogged = true;
-        BootLogger.logError('[WatchBridge] pushState failed (logged once)', e, null);
-      }
+    // A live timer means this call is a mid-session refresh (page reopened,
+    // elapsed re-based) — keep the accumulated totals in that case.
+    if (_pushTimer == null) {
+      _sessionSawTracking = false;
+      _lastDistanceKm = 0;
+      _lastElapsedSec = 0;
+      _cntChecks = 0;
+      _cntFalses = 0;
+      _cntOtherMarks = 0;
+      _cntPhotos = 0;
     }
+    _eventName = eventName;
+    _sessionSlots = slots;
+    _startedAt = startedAt;
+    _locationService?.typedPointListeners[this] = _onTypedPoint;
+    _pushTimer ??= Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    _tick();
   }
 
-  /// Clears the wrist back to the idle screen.
-  Future<void> pushIdle() => pushState(tracking: false);
-
-  // ----------------------------------------------------------------- inbound
-
-  Future<dynamic> _handleNativeCall(MethodCall call) async {
-    if (call.method != 'watchCommand') return null;
-    final args = Map<String, dynamic>.from(call.arguments as Map);
-    switch (args['cmd'] as String?) {
-      case 'mark':
-        return _handleMark(args['type'] as String?);
-      case 'onInn':
-        return _handleOnInn();
-      case 'lostQuery':
-        return _handleLostQuery();
+  /// Classifies each mark placed this session for the summary counts.
+  /// Metadata points (lane declarations, admin boundaries) and the On-Inn
+  /// terminator are not user "marks" and are skipped.
+  void _onTypedPoint(String evId, TrackPoint point) {
+    final segs = (point.type ?? '').split('::');
+    final head = segs.isEmpty ? '' : segs.first.trim();
+    switch (head) {
+      case '':
+      case 'TRL':
+      case 'AST':
+      case 'AEN':
+      case 'OIN':
+        break;
+      case 'PHO':
+        _cntPhotos++;
+      case 'GLY':
+        (segs.length > 1 && segs[1] == 'check') ? _cntChecks++ : _cntOtherMarks++;
+      case 'TXT':
+        (segs.length > 1 && segs[1] == 'FT') ? _cntFalses++ : _cntOtherMarks++;
+      case 'CHK':
+        _cntChecks++;
+      case 'FT':
+        _cntFalses++;
       default:
-        return {'ok': false};
+        // Legacy keyed marks (DRK, RG, CAU, LAB, ...).
+        _cntOtherMarks++;
     }
   }
+
+  LocationService? get _locationService =>
+      Get.isRegistered<LocationService>() ? Get.find<LocationService>() : null;
 
   LiveRunGeneralController? get _liveController =>
       Get.isRegistered<LiveRunGeneralController>()
           ? Get.find<LiveRunGeneralController>()
           : null;
 
+  void _tick() {
+    final loc = _locationService;
+    if (loc == null || !loc.joinRunTracking.value) {
+      _finishSession();
+      return;
+    }
+    _sessionSawTracking = true;
+    _lastDistanceKm = loc.filteredSessionDistanceMeters.value / 1000.0;
+    _lastElapsedSec = _startedAt == null
+        ? 0
+        : DateTime.now().difference(_startedAt!).inSeconds;
+    unawaited(_send(<String, Object?>{
+      'phase': 'tracking',
+      'tracking': true,
+      'paused': loc.isPaused.value,
+      'distanceKm': _lastDistanceKm,
+      'elapsedSec': _lastElapsedSec,
+      'eventName': _eventName,
+      'powerSaver': (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0,
+    }));
+  }
+
+  /// Ends the broadcast loop. A session that actually tracked gets a totals
+  /// summary on the wrist (dismissed by its Done button → `dismissSummary`);
+  /// otherwise the watch just returns to idle.
+  void _finishSession() {
+    _pushTimer?.cancel();
+    _pushTimer = null;
+    _locationService?.typedPointListeners.remove(this);
+    // Catch the final second: distance never shrinks within a session, so a
+    // larger current reading is fresher than the last tick's.
+    final loc = _locationService;
+    if (loc != null) {
+      final cur = loc.filteredSessionDistanceMeters.value / 1000.0;
+      if (cur > _lastDistanceKm) _lastDistanceKm = cur;
+    }
+    if (_startedAt != null) {
+      final sec = DateTime.now().difference(_startedAt!).inSeconds;
+      if (sec > _lastElapsedSec) _lastElapsedSec = sec;
+    }
+    _startedAt = null;
+    if (_sessionSawTracking) {
+      _sessionSawTracking = false;
+      unawaited(_send(<String, Object?>{
+        'phase': 'summary',
+        'tracking': false,
+        'eventName': _eventName,
+        'distanceKm': _lastDistanceKm,
+        'elapsedSec': _lastElapsedSec,
+        'checks': _cntChecks,
+        'falses': _cntFalses,
+        'otherMarks': _cntOtherMarks,
+        'photos': _cntPhotos,
+      }));
+    } else {
+      unawaited(pushIdle());
+    }
+  }
+
+  // ------------------------------------------------------------- outbound
+
+  /// Broadcasts a state map to the watch. Safe to call unconditionally —
+  /// no-ops on Android and swallows channel errors (no paired watch, etc.).
+  Future<void> _send(Map<String, Object?> state) async {
+    if (!_supported) return;
+    try {
+      await _channel.invokeMethod<bool>('updateState', state);
+    } catch (e) {
+      // Missing plugin / no watch — never let the wrist break the run.
+      if (!_pushFailureLogged) {
+        _pushFailureLogged = true;
+        BootLogger.logError(
+            '[WatchBridge] pushState failed (logged once)', e, null);
+      }
+    }
+  }
+
+  /// Clears the wrist back to the idle screen.
+  Future<void> pushIdle() =>
+      _send(const {'phase': 'idle', 'tracking': false});
+
+  // -------------------------------------------------------------- inbound
+
+  Future<dynamic> _handleNativeCall(MethodCall call) async {
+    if (call.method != 'watchCommand') return null;
+    try {
+      final args = Map<String, dynamic>.from(call.arguments as Map);
+      switch (args['cmd'] as String?) {
+        case 'mark':
+          return await _handleMark(args['type'] as String?);
+        case 'onInn':
+          return await _handleOnInn();
+        case 'lostQuery':
+          return await _handleLostQuery();
+        case 'dismissSummary':
+          await pushIdle();
+          return {'ok': true};
+        default:
+          return {'ok': false, 'why': 'unknown-cmd'};
+      }
+    } catch (e, st) {
+      // A thrown handler becomes a bare channel error on the native side —
+      // log it here where the reason is still visible.
+      BootLogger.logError('[WatchBridge] command failed', e, st);
+      return {'ok': false, 'why': 'exception: $e'};
+    }
+  }
+
   Future<Map<String, Object?>> _handleMark(String? type) async {
+    if (type == null) return {'ok': false, 'why': 'no-type'};
+
     final controller = _liveController;
-    if (controller == null || type == null) return {'ok': false};
-    final slot = _resolveSlot(controller.run.kennel.trailSlots, type);
-    if (slot == null) return {'ok': false};
-    final ok = await controller.markFromWatch(slot);
-    return {'ok': ok};
+    final slots = controller?.run.kennel.trailSlots ??
+        (_sessionSlots.isNotEmpty ? _sessionSlots : TrailSlot.defaults);
+    final slot = _resolveSlot(slots, type);
+    if (slot == null) return {'ok': false, 'why': 'no-slot'};
+
+    // Page open — the controller marks (shares its cooldown with phone taps).
+    if (controller != null) {
+      final why = await controller.markFromWatch(slot);
+      return {'ok': why == null, 'why': why};
+    }
+
+    // Page closed — mark directly at service level.
+    final loc = _locationService;
+    if (loc == null || !loc.joinRunTracking.value) {
+      return {'ok': false, 'why': 'not-tracking'};
+    }
+    final key = slot.trackType();
+    final last = _lastServiceMarkAt[key];
+    if (last != null && DateTime.now().difference(last) < _slotCooldown) {
+      return {'ok': false, 'why': 'cooldown'};
+    }
+    _lastServiceMarkAt[key] = DateTime.now();
+    try {
+      final mark = await loc.captureSlotMark(slot);
+      await loc.commitSlotMark(mark);
+      return {'ok': true};
+    } catch (e) {
+      BootLogger.logError('[WatchBridge] service-level mark failed', e, null);
+      return {'ok': false, 'why': 'gps: $e'};
+    }
   }
 
   /// Maps the watch's fixed buttons onto the kennel's configured trail slots
@@ -125,16 +302,34 @@ class WatchBridgeService extends GetxService {
   }
 
   Future<Map<String, Object?>> _handleOnInn() async {
+    // Page open — use the controller's full end-run path (bookkeeping + UI).
     final controller = _liveController;
-    if (controller == null || !controller.isTracking.value) {
-      return {'ok': false};
+    if (controller != null) {
+      if (!controller.isTracking.value) {
+        return {'ok': false, 'why': 'not-tracking'};
+      }
+      await controller.endRun(markOnInn: true);
+      _finishSession();
+      return {'ok': true};
     }
-    await controller.endRun(markOnInn: true);
-    await pushIdle();
+
+    // Page closed — mirror endRun at service level: best-effort On-Inn
+    // terminator, then stop tracking.
+    final loc = _locationService;
+    if (loc == null || !loc.joinRunTracking.value) {
+      return {'ok': false, 'why': 'not-tracking'};
+    }
+    try {
+      await loc.markPoint(HashRunPointTypes.onInn);
+    } catch (_) {
+      // Best-effort: a failed one-shot fix must never block the stop.
+    }
+    await loc.stopTracking();
+    _finishSession();
     return {'ok': true};
   }
 
-  /// Phase 1: the wrist vector view isn't fed real bearings yet — reply with
+  /// Phase 2: the wrist vector view isn't fed real bearings yet — reply with
   /// a pointer to the phone's I'm Lost compass. Wiring the lost-compass
   /// nearest-trail math into this reply is the next watch milestone.
   Future<Map<String, Object?>> _handleLostQuery() async {
