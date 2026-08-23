@@ -1,3 +1,6 @@
+0.21.20
+    • Run cards & lists: viewer-local time ("JST · 12:00 your time") when the visitor's clock differs from the kennel's — run detail page already had it
+
 0.21.19
     • PackTrack photo lightbox: Download button (same-origin streaming so phone downloads work)
     • PackTrack photo lightbox: kennel website background (jungle default) behind photos instead of black; bigger next/back buttons
