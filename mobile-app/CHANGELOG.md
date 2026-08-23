@@ -1,5 +1,11 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1299 (2026-08-23) — Android
+
+- Identical content to 1298; validates the automated Play Store upload
+  pipeline (tools/play_upload.py) end-to-end after the foreground-service
+  declaration.
+
 ## 3.0.1+1298 (2026-08-23) — Android
 
 Everything from 1296-1297 (this is Android's first build since 1295):
