@@ -45,6 +45,22 @@ class AppEntryPageState extends State<AppEntryPage>
         ? 'images/init/splash_screen.jpg'
         : 'images/init/launcher_background.png';
 
-    return Image.asset(imagePath, fit: BoxFit.cover);
+    // Phone-shaped screens: fill edge-to-edge as always. Wide screens
+    // (unfolded Fold, tablets): BoxFit.cover would crop the top/bottom of
+    // the art, so contain it on black letterbox bars instead.
+    final Size screen = MediaQuery.sizeOf(context);
+    final bool isWideScreen = screen.width / screen.height > 0.65;
+
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: Image.asset(
+          imagePath,
+          fit: isWideScreen ? BoxFit.contain : BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        ),
+      ),
+    );
   }
 }

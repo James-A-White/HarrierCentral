@@ -60,6 +60,15 @@ class MainNavigationController extends GetxController
 
   Image? splashBackground;
   var splashImages = <Image>[];
+  final RxInt splashPageIndex = 0.obs;
+
+  /// Set when the splash-sequence download is taking too long (or produced
+  /// nothing) so the UI can offer a Continue escape hatch.
+  final RxBool splashLoadStalled = false.obs;
+
+  /// Root name of the sequence currently loading/showing — lets the loading
+  /// view decide whether the bundled 3.0 slide matches the incoming deck.
+  String? currentSplashRootName;
   var isLoadingImages = false.obs;
   var isLoadingData = true;
 
@@ -147,13 +156,15 @@ class MainNavigationController extends GetxController
       // always display version change splash sequences if they exist on the server
       if (hcCurrentVersion != hcPreviousVersion) {
         debugPrint('[BOOT] MainNavController: version changed $hcPreviousVersion→$hcCurrentVersion, preloading images: ${DateTime.now().millisecondsSinceEpoch}ms');
+        // Show the splash state BEFORE the download so the bundled first
+        // slide + "Please wait" appear instantly instead of bare jungle.
+        currentSplashRootName = 'version_$hcCurrentVersion';
+        mainScreenContent.value = MainPageContent.splashSequence;
         final imgCount = await _preloadImages('version_$hcCurrentVersion');
         debugPrint('[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms');
         if (imgCount == 0) {
           // don't show any splah images if none have been loaded
           mainScreenContent.value = waitingContent;
-        } else {
-          mainScreenContent.value = MainPageContent.splashSequence;
         }
       } else if (splashSequenceRootName != null) {
         var timeSinceLastView = DateTime.now().difference(
@@ -165,13 +176,15 @@ class MainNavigationController extends GetxController
         // since the last time a splash screen was displayed
         if (timeSinceLastView.inHours > splashType.delayInHours) {
           debugPrint('[BOOT] MainNavController: splashSequence preloading ($splashSequenceRootName): ${DateTime.now().millisecondsSinceEpoch}ms');
+          // Show the splash state BEFORE the download (bundled slide or
+          // wait bar) instead of leaving the bare app background up.
+          currentSplashRootName = splashSequenceRootName;
+          mainScreenContent.value = MainPageContent.splashSequence;
           final imgCount = await _preloadImages(splashSequenceRootName);
           debugPrint('[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms');
           if (imgCount == 0) {
             // don't show any splah images if none have been loaded
             mainScreenContent.value = MainPageContent.appContent;
-          } else {
-            mainScreenContent.value = MainPageContent.splashSequence;
           }
           await removePref(StringPrefsEnum.splashSequenceRootName);
           await setStringPref(
@@ -329,61 +342,85 @@ class MainNavigationController extends GetxController
 
   Future<int> _preloadImages(String splashSequenceRootName) async {
     isLoadingImages.value = true;
-    int maxImages = 20;
-    for (var i = 0; i <= maxImages; i++) {
-      var url = '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_$i.avif';
+    splashLoadStalled.value = false;
+    Timer(const Duration(seconds: 12), () {
+      if (isLoadingImages.value) splashLoadStalled.value = true;
+    });
 
-      if (i == 0) {
-        url =
-            '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_background.avif';
-      }
+    const int maxImages = 20;
 
+    Future<Image?> resolveOne(String url) {
       final provider = NetworkAvifImage(url);
-      final config = const ImageConfiguration(); // no context needed
-      final stream = provider.resolve(config);
-
-      final completer = Completer<void>();
+      final completer = Completer<Image?>();
+      final stream = provider.resolve(const ImageConfiguration());
       late final ImageStreamListener listener;
-
       listener = ImageStreamListener(
         (info, _) {
-          // success: add the widget
-          if (i == 0) {
-            splashBackground = Image(image: provider);
-          } else {
-            splashImages.add(Image(image: provider));
-          }
-
-          completer.complete();
+          stream.removeListener(listener);
+          if (!completer.isCompleted) completer.complete(Image(image: provider));
         },
         onError: (error, stack) {
-          // stop on first failure (e.g. 404)
-          if (i != 0) {
-            completer.completeError(error);
-          } else {
-            completer.complete();
-          }
+          stream.removeListener(listener);
+          if (!completer.isCompleted) completer.complete(null);
         },
       );
-
       stream.addListener(listener);
+      return completer.future;
+    }
 
-      try {
-        await completer.future;
-      } catch (_) {
-        // stop loading further images
-        if (i != 0) {
-          stream.removeListener(listener);
-          break;
-        }
-      }
+    // All fetches run CONCURRENTLY — the old sequential loop took 15-20s to
+    // pull seven slides, which blew through the stall timer on every single
+    // launch. Slides are numbered contiguously from 1, so the deck is the
+    // unbroken prefix of successful loads.
+    final Future<Image?> backgroundFuture = resolveOne(
+      '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_background.avif',
+    );
+    final List<Future<Image?>> slideFutures = <Future<Image?>>[
+      for (var i = 1; i <= maxImages; i++)
+        resolveOne('$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_$i.avif'),
+    ];
 
-      // clean up the listener after success
-      stream.removeListener(listener);
+    final Image? background = await backgroundFuture;
+    if (background != null) splashBackground = background;
+
+    final List<Image?> results = await Future.wait(slideFutures);
+    for (final Image? img in results) {
+      if (img == null) break; // first gap ends the contiguous deck
+      splashImages.add(img);
     }
 
     isLoadingImages.value = false;
+    // Nothing arrived (offline / 404s) — let the user escape the promo.
+    if (splashImages.isEmpty) splashLoadStalled.value = true;
     return splashImages.length;
+  }
+
+  /// Escape hatch for a stalled promo download: proceed into the app WITHOUT
+  /// marking the sequence viewed, so it gets another chance next launch.
+  Future<void> abandonSplashSequence() async {
+    await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
+    if (isLoadingData) {
+      mainScreenContent.value = MainPageContent.loading;
+    } else {
+      mainScreenContent.value = MainPageContent.appContent;
+    }
+    update([UpdateIds.appScaffold]);
+  }
+
+  /// Shared completion for the version-promo splash sequence — the slider's
+  /// Done button. Marks the sequence viewed (via resetNewVersionPromoScreen).
+  Future<void> completeSplashSequence() async {
+    // once dismissed, we now consider this a normal boot
+    await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
+
+    if (Get.isRegistered<NotificationService>()) {
+      await Get.delete<NotificationService>();
+    }
+
+    // Initialize and wait for the notification service
+    await Get.putAsync(() => NotificationService().init());
+
+    await resetNewVersionPromoScreen();
   }
 
   void informUser(String message) {

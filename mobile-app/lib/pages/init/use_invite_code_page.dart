@@ -367,7 +367,11 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                       _isLoading
                           ? Text(
                               'Please wait...',
-                              style: localHeadingStyle,
+                              // Dark on the pale-yellow card — the page's
+                              // yellow heading style is invisible here.
+                              style: localHeadingStyle.copyWith(
+                                color: themeAppBarBackground,
+                              ),
                               textAlign: TextAlign.center,
                             )
                           : SizedBox(

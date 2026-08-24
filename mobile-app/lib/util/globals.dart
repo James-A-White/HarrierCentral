@@ -385,8 +385,15 @@ class DeviceInfo extends GetxService {
     deviceWidth = width.toDouble();
     deviceHeight = height.toDouble();
 
-    deviceWidthScaleFactor = deviceWidth / BASE_DEVICE_WIDTH;
-    deviceHeightScaleFactor = deviceHeight / BASE_DEVICE_HEIGHT;
+    // Clamped: these factors were designed for phone widths (320–430dp,
+    // factors 1.0–1.35). On foldables/tablets the raw ratio explodes
+    // (unfolded Fold ≈ 750dp → 2.34×) and every text style multiplied by
+    // it becomes huge (oversized buttons/tabs on wide screens). The caps
+    // preserve every real phone's sizing exactly and stop the runaway
+    // growth beyond phablet dimensions.
+    deviceWidthScaleFactor = (deviceWidth / BASE_DEVICE_WIDTH).clamp(0.0, 1.35);
+    deviceHeightScaleFactor =
+        (deviceHeight / BASE_DEVICE_HEIGHT).clamp(0.0, 1.65);
     deviceMaxScaleFactor = max(deviceWidthScaleFactor, deviceHeightScaleFactor);
     deviceMinScaleFactor = min(deviceWidthScaleFactor, deviceHeightScaleFactor);
     deviceTextScaleFactor = textScaleFactor;

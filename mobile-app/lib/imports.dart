@@ -58,7 +58,6 @@ export 'package:http/http.dart' hide MultipartFile;
 export 'package:image_cropper/image_cropper.dart';
 export 'package:image_picker/image_picker.dart';
 export 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-export 'package:intro_slider/intro_slider.dart';
 export 'package:json_annotation/json_annotation.dart';
 export 'package:just_audio/just_audio.dart';
 export 'package:keyboard_actions/keyboard_actions.dart';
@@ -97,6 +96,7 @@ export 'package:ive_flutter_core_mobile/util/connection.dart';
 export 'package:harrier_central/bindings/initial_bindings.dart';
 
 // controllers
+export 'package:harrier_central/controllers/onboarding_flow_controller.dart';
 export 'package:harrier_central/controllers/run_tracker_map_controller.dart';
 
 // data/hc3_services
@@ -201,9 +201,8 @@ export 'package:harrier_central/pages/init/create_new_account.dart';
 export 'package:harrier_central/pages/init/email_not_received_page.dart';
 export 'package:harrier_central/pages/init/find_my_account_page.dart';
 export 'package:harrier_central/pages/init/hasher_search_results_page.dart';
-export 'package:harrier_central/pages/init/intro_slider.dart';
+export 'package:harrier_central/pages/init/onboarding_flow_page.dart';
 export 'package:harrier_central/pages/init/new_account.dart';
-export 'package:harrier_central/pages/init/permissions_slider.dart';
 export 'package:harrier_central/pages/init/third_party_login.dart';
 export 'package:harrier_central/pages/init/use_invite_code_page.dart';
 

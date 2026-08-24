@@ -73,6 +73,7 @@ enum NumPrefsEnum {
 
 enum BoolPrefsEnum {
   automaticallySetNotifiationPrefs,
+  introSliderSeen,
   fcmTokenSavedToServer,
   notificationPreferencesRequested,
   debugHarvestEnabled,

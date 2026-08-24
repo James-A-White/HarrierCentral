@@ -79,9 +79,9 @@ class AppBootService {
           'in with your QR code or reset code to continue.',
           'Continue',
         );
-        await Navigator.of(
-          navigatorKey.currentContext!,
-        ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+        await OnboardingFlowController.start(
+          OnboardingDestination.accountQuestion,
+        );
         return;
       }
       await Get.off(
@@ -104,9 +104,9 @@ class AppBootService {
         'This device has stale or incomplete login credentials. Please re-authorise to continue.',
         'Continue',
       );
-      await Navigator.of(
-        navigatorKey.currentContext!,
-      ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+      await OnboardingFlowController.start(
+        OnboardingDestination.accountQuestion,
+      );
       return;
     }
 
@@ -354,9 +354,9 @@ class AppBootService {
     final bool isFirstRun = normalizedId.isEmpty || normalizedId == GUID_EMPTY;
 
     if (isFirstRun) {
-      await Navigator.of(
-        navigatorKey.currentContext!,
-      ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+      await OnboardingFlowController.start(
+        OnboardingDestination.accountQuestion,
+      );
       return;
     }
 
@@ -822,9 +822,9 @@ class AppBootService {
     await _clearStaleDeviceAuthPrefs();
 
     if (resetCode.isEmpty) {
-      await Navigator.of(
-        navigatorKey.currentContext!,
-      ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+      await OnboardingFlowController.start(
+        OnboardingDestination.accountQuestion,
+      );
       return;
     }
 
@@ -842,9 +842,9 @@ class AppBootService {
         'Unable to reconnect this device automatically. Please restart the app and use your QR code or reset code to log in.',
         'Continue',
       );
-      await Navigator.of(
-        navigatorKey.currentContext!,
-      ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+      await OnboardingFlowController.start(
+        OnboardingDestination.accountQuestion,
+      );
       return;
     }
 

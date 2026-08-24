@@ -336,79 +336,10 @@ class MainNavigationPage extends StatelessWidget {
 
                       case MainPageContent.splashSequence:
                         return Obx(() {
-                          return controller.isLoadingImages.value
-                              ? Center(child: CircularProgressIndicator())
-                              : IntroSlider(
-                                  isShowSkipBtn: false,
-                                  isShowPrevBtn: true,
-
-                                  indicatorConfig: IndicatorConfig(
-                                    sizeIndicator: 10,
-                                    indicatorWidget: Container(
-                                      width: 10,
-                                      height: 10,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(4),
-                                        color: const Color.fromARGB(
-                                          255,
-                                          120,
-                                          72,
-                                          0,
-                                        ),
-                                      ),
-                                    ),
-                                    activeIndicatorWidget: Container(
-                                      width: 10,
-                                      height: 10,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(4),
-                                        color: Colors.orange,
-                                      ),
-                                    ),
-                                    spaceBetweenIndicator: 10,
-                                    typeIndicatorAnimation:
-                                        TypeIndicatorAnimation.sliding,
-                                  ),
-
-                                  // wrap each Image in a full-screen box, with BoxFit.cover
-                                  listCustomTabs: controller.splashImages.map((
-                                    img,
-                                  ) {
-                                    return Stack(
-                                      children: [
-                                        controller.splashBackground ??
-                                            SizedBox(),
-                                        SizedBox.expand(
-                                          child: FittedBox(
-                                            fit: BoxFit.cover,
-                                            child:
-                                                img, // your pre-cached Image widget
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }).toList(),
-                                  onDonePress: () async {
-                                    // once the Done button is pressed, we now consider this a normal boot
-                                    await setStringPref(
-                                      StringPrefsEnum.bootType,
-                                      BOOT_TYPE_NORMAL,
-                                    );
-
-                                    if (Get.isRegistered<
-                                      NotificationService
-                                    >()) {
-                                      await Get.delete<NotificationService>();
-                                    }
-
-                                    await Get.putAsync(
-                                      () => NotificationService().init(),
-                                    ); // Initialize and wait for the notification service
-
-                                    await controller
-                                        .resetNewVersionPromoScreen();
-                                  },
-                                );
+                          return controller.isLoadingImages.value ||
+                                  controller.splashImages.isEmpty
+                              ? _SplashLoadingView(controller: controller)
+                              : _SplashSequenceSlider(controller: controller);
                         });
                       case MainPageContent.loading:
                         return _getGenericLoadingScreen(controller);
@@ -586,6 +517,183 @@ class MainNavigationPage extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Hand-rolled replacement for the retired `intro_slider` package's
+/// "what's new" splash sequence: full-bleed promo images in a PageView
+/// with indicator dots and a Prev/Next/Done row inside the existing
+/// AndroidSafeArea (edge-to-edge safe by construction).
+class _SplashSequenceSlider extends StatelessWidget {
+  _SplashSequenceSlider({required this.controller});
+
+  final MainNavigationController controller;
+  final PageController _pageController = PageController();
+
+  TextStyle get _navStyle => TextStyle(
+        // White on the theme's red buttons (see CLAUDE.md button rule).
+        color: Colors.white,
+        // Clamped: the raw width factor balloons text on wide screens
+        // (Fold) until it wraps inside the buttons.
+        fontSize: 18.0 * deviceInfo.deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextDemiBold',
+      );
+
+  Future<void> _onDonePress() => controller.completeSplashSequence();
+
+  Future<void> _goTo(int page) async {
+    await _pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final int count = controller.splashImages.length;
+    return Obx(() {
+      final int page = controller.splashPageIndex.value;
+      final bool isLast = page >= count - 1;
+      return Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: count,
+            onPageChanged: (int i) => controller.splashPageIndex.value = i,
+            itemBuilder: (BuildContext context, int i) => Stack(
+              children: [
+                controller.splashBackground ?? const SizedBox(),
+                // BoxFit.contain: the promo art has transparent
+                // backgrounds, so letterboxing is invisible and the full
+                // height always fits — no cropping on wide screens (Fold).
+                SizedBox.expand(
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: controller.splashImages[i],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            left: 8,
+            right: 8,
+            bottom: 10,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: page > 0
+                        ? TextButton(
+                            onPressed: () => _goTo(page - 1),
+                            child: Text('Prev', style: _navStyle),
+                          )
+                        : const SizedBox(),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List<Widget>.generate(
+                      count,
+                      (int i) => Container(
+                        width: 10,
+                        height: 10,
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          color: i == page
+                              ? Colors.orange
+                              : const Color.fromARGB(255, 120, 72, 0),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () async =>
+                          isLast ? _onDonePress() : _goTo(page + 1),
+                      child: Text(isLast ? 'Done' : 'Next', style: _navStyle),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    });
+  }
+}
+
+/// Shown while the version-promo slides download: the bundled copy of the
+/// first slide appears instantly (identical art, so the swap to the live
+/// deck is seamless) with a wait message — or a Continue escape hatch if
+/// the download stalls or fails.
+class _SplashLoadingView extends StatelessWidget {
+  const _SplashLoadingView({required this.controller});
+
+  final MainNavigationController controller;
+
+  TextStyle get _navStyle => TextStyle(
+        // White on the theme's red buttons (see CLAUDE.md button rule).
+        color: Colors.white,
+        fontSize: 18.0 * deviceInfo.deviceWidthScaleFactor,
+        fontFamily: 'AvenirNextDemiBold',
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // The bundled slide is only correct art for the 3.0 promo deck;
+        // other sequences load over the standard background instead.
+        if (controller.currentSplashRootName == 'version_3.0')
+          SizedBox.expand(
+            child: AvifImage.asset(
+              'images/promo/version_3.0_1.avif',
+              fit: BoxFit.contain,
+            ),
+          ),
+        Positioned(
+          left: 8,
+          right: 8,
+          bottom: 10,
+          child: Obx(
+            () => controller.splashLoadStalled.value
+                ? Center(
+                    child: TextButton(
+                      // Abandon, not complete: a stalled download must not
+                      // mark the promo viewed — it retries next launch.
+                      onPressed: controller.abandonSplashSequence,
+                      child: Text('Continue', style: _navStyle),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text('Please wait while loading…', style: _navStyle),
+                    ],
+                  ),
           ),
         ),
       ],

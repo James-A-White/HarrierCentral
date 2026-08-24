@@ -63,7 +63,6 @@ dependencies:
   image_picker: ^1.2.1
   internet_connection_checker_plus: ^3.0.0
   intl: ^0.20.2
-  intro_slider: ^4.2.0
   ive_flutter_core:
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core.git
@@ -177,6 +176,7 @@ flutter:
     - images/backgrounds/
     - images/flags/
     - images/generic_logos/
+    - images/promo/
     - images/icons/
     - images/init/
     - images/init/intro/

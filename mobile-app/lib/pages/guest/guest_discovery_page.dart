@@ -458,7 +458,15 @@ class _GuestRunCard extends StatelessWidget {
             ),
             Container(height: 1.0, color: Colors.grey[300]),
             if (run.eventImage != null && run.eventImage!.isNotEmpty) ...<Widget>[
-              CachedNetworkImage(imageUrl: run.eventImage!, memCacheWidth: 900),
+              // Fill the card width on all screen shapes — without this the
+              // image renders at natural size and leaves a gutter on wide
+              // screens (Fold).
+              CachedNetworkImage(
+                imageUrl: run.eventImage!,
+                memCacheWidth: 900,
+                width: double.infinity,
+                fit: BoxFit.fitWidth,
+              ),
               Container(height: 1.0, color: Colors.grey[300]),
             ],
             Padding(

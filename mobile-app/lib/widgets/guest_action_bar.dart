@@ -19,11 +19,10 @@ class GuestActionBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          onPressed: () => Navigator.push<void>(
-            context,
-            MaterialPageRoute<void>(
-              builder: (_) => const FindMyAccountPage(),
-            ),
+          // Intro + permission slides run first (each shown only when
+          // needed), then hand off to the account search.
+          onPressed: () => OnboardingFlowController.start(
+            OnboardingDestination.findMyAccount,
           ),
           child: Text(
             'Create your free account or Log In',

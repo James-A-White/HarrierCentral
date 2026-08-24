@@ -411,6 +411,17 @@ splitting the list. Use `STRING_SPLIT(@param, '|')` on the SQL side and
   is staying as-is and SP parameters that map to it should use `SMALLINT` (SQL
   Server converts implicitly).
 
+**Button text on red buttons (Flutter/Dart):**
+
+The app's `TextButton`/`ElevatedButton` themes render default buttons with a
+red background. Any text placed on a red (or other saturated/dark) button
+must be **white** — never `themeAppBarBackground` or another dark color.
+This mistake recurs whenever new views are built with copied nav styles:
+the old transparent-button styles used dark text, but on today's themed red
+buttons dark-on-red is unreadable. When creating any new button or button
+text style, check what background the theme actually paints and default to
+white text on red buttons, every time.
+
 **UUID normalisation (Flutter/Dart):**
 
 All UUID strings in this project must be lowercase. SQL Server returns
