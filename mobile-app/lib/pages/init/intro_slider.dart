@@ -211,6 +211,14 @@ class IntroSliderPageState extends State<IntroSliderPage> {
       addSlides();
     }
     return IntroSlider(
+      // Android 15/16 edge-to-edge: lift the Skip/Next/OK row above the
+      // system navigation area, keeping the slide background full-bleed.
+      navigationBarConfig: NavigationBarConfig(
+        padding: EdgeInsets.only(
+          top: 10,
+          bottom: 10 + MediaQuery.of(context).viewPadding.bottom,
+        ),
+      ),
       // Indicator
       indicatorConfig: IndicatorConfig(
         sizeIndicator: 10,

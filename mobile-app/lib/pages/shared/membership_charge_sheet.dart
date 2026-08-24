@@ -421,7 +421,12 @@ class MembershipChargeSheetBody extends StatelessWidget {
         left: 20,
         right: 20,
         top: 16,
-        bottom: 20 + MediaQuery.of(context).viewInsets.bottom,
+        // padding.bottom keeps the action buttons above the Android 15/16
+        // edge-to-edge system navigation bar (it collapses to 0 while the
+        // keyboard is up, so the two insets never double-pad).
+        bottom: 20 +
+            MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).padding.bottom,
       ),
       child: Obx(() {
         if (c.isLoading.value) {

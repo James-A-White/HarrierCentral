@@ -324,6 +324,14 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
   @override
   Widget build(BuildContext context) {
     return IntroSlider(
+      // Android 15/16 edge-to-edge: lift the nav row above the system
+      // navigation area, keeping the slide background full-bleed.
+      navigationBarConfig: NavigationBarConfig(
+        padding: EdgeInsets.only(
+          top: 10,
+          bottom: 10 + MediaQuery.of(context).viewPadding.bottom,
+        ),
+      ),
       // List slides
       listContentConfig: slides,
 

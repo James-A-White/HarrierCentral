@@ -90,6 +90,10 @@ class GazetteerBottomSheetState extends State<GazetteerBottomSheet> {
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
+        // Android 15/16 edge-to-edge: keep the last result rows tappable
+        // above the system navigation area.
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             _buildHandle(),

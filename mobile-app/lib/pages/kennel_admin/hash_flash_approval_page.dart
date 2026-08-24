@@ -1889,7 +1889,12 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
         left: 16,
         right: 16,
         top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        // padding.bottom covers the Android 15/16 edge-to-edge system nav
+        // bar once the keyboard is dismissed (it is 0 while the keyboard
+        // is up, so the two insets never double-pad).
+        bottom: MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).padding.bottom +
+            16,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

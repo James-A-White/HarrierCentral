@@ -107,7 +107,10 @@ class LiveRunShell extends StatelessWidget {
           ],
         ),
         body: pages[controller.tabIndex.value],
-        bottomNavigationBar: CurvedNavigationBar(
+        // Android 15/16 edge-to-edge: keep the tab bar above the system
+        // navigation area (same wrap as main_navigation_page).
+        bottomNavigationBar: AndroidSafeArea(
+          child: CurvedNavigationBar(
           index: controller.tabIndex.value,
           backgroundColor: Colors.transparent,
           color: Colors.white,
@@ -150,6 +153,7 @@ class LiveRunShell extends StatelessWidget {
             ),
           ],
           onTap: controller.setTab,
+          ),
         ),
       ),
     );
