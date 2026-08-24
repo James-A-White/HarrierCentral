@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1304 (2026-08-24) — iOS + Android
+
+### Fixes
+- **Android 15/16 edge-to-edge**: buttons and tab bars no longer sit
+  under the system navigation area on newer Android devices. Fixed on
+  seven screens: the intro and permissions sliders (the OK/Next row),
+  the Live Run tab bar, the membership charge and haberdashery sale
+  sheets, the location lookup sheet, and the Hash Flash caption editor.
+
 ## 3.0.1+1303 (2026-08-24) — Android
 
 ### Improvements
