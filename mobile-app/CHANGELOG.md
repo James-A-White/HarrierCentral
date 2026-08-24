@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1303 (2026-08-24) — Android
+
+### Improvements
+- **Play Store resubmission**: fresh internal-track build following the
+  privacy-policy restoration at harriercentral.com. No Android-facing
+  code changes since 1301 (the 1302 fixes were Apple Watch only).
+
 ## 3.0.1+1302 (2026-08-23) — iOS
 
 ### Fixes
