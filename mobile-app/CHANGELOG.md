@@ -1,5 +1,23 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1305 (2026-08-25) — Android
+
+### Improvements
+- **New onboarding flow**: the intro and permission screens are rebuilt
+  in-house (third-party slider package removed). They now appear before
+  account creation/login, the intro shows only once per device, and
+  permission screens are skipped automatically when already granted.
+- **3.0 welcome sequence**: appears immediately on launch (first slide
+  ships with the app) with a loading indicator while the remaining
+  slides download — now in parallel, many times faster. Artwork is
+  never cropped on wide screens.
+- **Foldable / wide-screen fixes**: text sizing capped so buttons and
+  tabs render correctly on unfolded foldables and tablets; run photos
+  fill the card width in the free viewer; startup screen letterboxed
+  instead of cropped on wide displays.
+- **Readability**: white text on red buttons throughout; invite-code
+  "Please wait" message now legible.
+
 ## 3.0.1+1304 (2026-08-24) — iOS + Android
 
 ### Fixes
