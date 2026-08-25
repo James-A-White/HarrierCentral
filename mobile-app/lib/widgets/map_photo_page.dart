@@ -1,5 +1,4 @@
 import 'package:harrier_central/imports.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:intl/intl.dart';
 

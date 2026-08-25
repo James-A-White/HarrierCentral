@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart' as badges;
+import 'package:harrier_central/widgets/hc_badges.dart' as badges;
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 

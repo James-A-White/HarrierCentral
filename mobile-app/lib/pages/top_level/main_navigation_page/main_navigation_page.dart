@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart' as badges;
+import 'package:harrier_central/widgets/hc_badges.dart' as badges;
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:harrier_central/imports.dart';

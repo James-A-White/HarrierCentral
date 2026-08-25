@@ -5,7 +5,7 @@
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/run_photo_gallery.dart';
-import 'package:badges/badges.dart' as badges;
+import 'package:harrier_central/widgets/hc_badges.dart' as badges;
 import 'package:eventide/eventide.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/export/gpx_export_service.dart';
@@ -1285,32 +1285,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                             bottom: 8.0,
                                                           ),
                                                           child:
-                                                              StaggeredGrid.count(
+                                                              GridView.count(
+                                                            // Was StaggeredGrid.count with uniform 2x2 tiles
+                                                            // in a 4-cell row — identical layout as a plain
+                                                            // 2-column grid (package removed).
+                                                            crossAxisCount: 2,
                                                             mainAxisSpacing: 8.0,
                                                             crossAxisSpacing: 8.0,
-                                                            crossAxisCount: 4,
-                                                            axisDirection:
-                                                                AxisDirection
-                                                                    .down,
-                                                            children: hares
-                                                                .map(
-                                                                  (
-                                                                    PackListAggregate
-                                                                        e,
-                                                                  ) =>
-                                                                      StaggeredGridTile
-                                                                          .count(
-                                                                    crossAxisCellCount:
-                                                                        2,
-                                                                    mainAxisCellCount:
-                                                                        2,
-                                                                    child:
-                                                                        _packTile(
-                                                                      e,
-                                                                    ),
-                                                                  ),
-                                                                )
-                                                                .toList(),
+                                                            shrinkWrap: true,
+                                                            physics: const NeverScrollableScrollPhysics(),
+                                                            children: hares .map( ( PackListAggregate e, ) => _packTile(e), ) .toList(),
                                                           ),
                                                         ),
                                                       ),
