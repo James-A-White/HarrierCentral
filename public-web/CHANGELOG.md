@@ -1,5 +1,10 @@
 # public-web Changelog
 
+## 0.21.24 (2026-08-25)
+- **Trail-TV**: runner name chips on head dots (live map + front-runner
+  cam) plus a colored-dot legend; photo carousel now measures real
+  overflow so photos never vanish on narrow screens.
+
 ## 0.21.23 (2026-08-25)
 - **Trail-TV**: carousel photos fit the panel width uncropped (no more
   cut-off heads); front-runner cam ~3x tighter zoom.

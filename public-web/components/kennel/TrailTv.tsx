@@ -18,7 +18,7 @@
  */
 
 import { Fragment, useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
 import QRCode from "react-qr-code";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn,
@@ -173,7 +173,7 @@ function headsAt(tracks: PreparedTrack[], cutoff: number) {
 
 // ── Map panels ─────────────────────────────────────────────────────────────────
 
-function trackPolyline(t: PreparedTrack, cutoff: number | null) {
+function trackPolyline(t: PreparedTrack, cutoff: number | null, name?: string | null) {
   const pts = cutoff == null ? t.positions : trackUpTo(t.positions, cutoff);
   if (pts.length < 2) return null;
   const head = pts[pts.length - 1];
@@ -187,13 +187,37 @@ function trackPolyline(t: PreparedTrack, cutoff: number | null) {
         center={[head.lat, head.lng]}
         radius={7}
         pathOptions={{ color: "#ffffff", weight: 2, fillColor: t.color, fillOpacity: 1 }}
-      />
+      >
+        {name && (
+          <Tooltip permanent direction="right" offset={[10, 0]} className="tv-name-chip">
+            {name}
+          </Tooltip>
+        )}
+      </CircleMarker>
     </Fragment>
   );
 }
 
+/** Colored-dot → runner-name legend, overlaid on a map panel. */
+function RunnerLegend({ tracks, names }: { tracks: PreparedTrack[]; names: Record<string, string> }) {
+  const rows = tracks
+    .map((t) => ({ color: t.color, name: names[t.id] }))
+    .filter((r): r is { color: string; name: string } => !!r.name);
+  if (rows.length === 0) return null;
+  return (
+    <div className="tv-legend">
+      {rows.map((r) => (
+        <div key={r.name + r.color} className="tv-legend-row">
+          <span className="tv-legend-dot" style={{ background: r.color }} />
+          {r.name}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function TvMapPanel({
-  tracks, cutoff, center, label, sublabel, style,
+  tracks, cutoff, center, label, sublabel, style, names, showLegend = false,
 }: {
   tracks: PreparedTrack[];
   cutoff: number | null;
@@ -201,6 +225,9 @@ function TvMapPanel({
   label: string;
   sublabel?: string | null;
   style?: React.CSSProperties;
+  /** When provided, head dots get permanent name-chip labels. */
+  names?: Record<string, string>;
+  showLegend?: boolean;
 }) {
   return (
     <div className="tv-panel" style={style}>
@@ -208,6 +235,7 @@ function TvMapPanel({
         {label}
         {sublabel ? <span className="tv-panel-sublabel">{sublabel}</span> : null}
       </div>
+      {showLegend && names && <RunnerLegend tracks={tracks} names={names} />}
       <MapContainer
         center={center}
         zoom={15}
@@ -220,7 +248,7 @@ function TvMapPanel({
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <AutoFit points={boundsOf(tracks, center)} />
-        {tracks.map((t) => trackPolyline(t, cutoff))}
+        {tracks.map((t) => trackPolyline(t, cutoff, names?.[t.id]))}
       </MapContainer>
     </div>
   );
@@ -428,6 +456,27 @@ export default function TrailTv({
     return { total, active, finished, elapsed };
   }, [tracks, nowTick, eventStartMs]);
 
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const marqueeRef = useRef<HTMLDivElement | null>(null);
+  const [marqueeAnimated, setMarqueeAnimated] = useState(false);
+  const [imgLoadTick, setImgLoadTick] = useState(0);
+
+  // Animate the carousel only when the single photo list truly overflows the
+  // panel. scrollHeight counts the duplicated list when animating, so halve it
+  // in that case before comparing.
+  useEffect(() => {
+    const measure = () => {
+      const c = carouselRef.current, m = marqueeRef.current;
+      if (!c || !m) return;
+      const single = marqueeAnimated ? m.scrollHeight / 2 : m.scrollHeight;
+      const should = single > c.clientHeight + 20;
+      if (should !== marqueeAnimated) setMarqueeAnimated(should);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [photos, imgLoadTick, marqueeAnimated]);
+
   // Front runner at the replay clock — most distance covered so far.
   const frontRunner = useMemo(() => {
     if (mode !== "replay" || replayClock == null || tracks.length === 0) return null;
@@ -441,10 +490,9 @@ export default function TrailTv({
 
   const carouselPhotos = photos.length > 0 ? photos : [];
   // The -50% translate marquee only works when content genuinely overflows;
-  // with a handful of photos it scrolls the short column out of view and the
-  // panel goes blank ("all images went away"). Estimate overflow from photo
-  // count vs viewport, and only then duplicate + animate.
-  const marqueeAnimated = carouselPhotos.length >= 4;
+  // otherwise it scrolls the short column out of view and the panel goes
+  // blank. MEASURE the rendered single-list height against the container
+  // (re-checked as images load and on resize) instead of guessing by count.
   const marqueeList = marqueeAnimated
     ? [...carouselPhotos, ...carouselPhotos]
     : carouselPhotos;
@@ -478,6 +526,11 @@ export default function TrailTv({
         .tv-callout { background: #B71C1C; color: #fff; font-weight: 900; padding: 10px 34px; border-radius: 999px; font-size: 26px; letter-spacing: .08em; box-shadow: 0 8px 30px rgba(0,0,0,.6); animation: tvslide .4s ease-out; }
         .tv-callout.big { font-size: 40px; background: #e0a51e; color: #1a1a00; padding: 16px 48px; }
         @keyframes tvslide { from { transform: translateY(-60px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+        .tv-name-chip { background: rgba(12,42,14,.88) !important; color: #fff !important; border: 1px solid rgba(255,255,255,.4) !important; border-radius: 999px !important; padding: 2px 9px !important; font-weight: 700; font-size: 12px; box-shadow: none !important; }
+        .tv-name-chip::before { display: none !important; }
+        .tv-legend { position: absolute; z-index: 1000; top: 10px; right: 10px; background: rgba(12,42,14,.85); border: 1px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 14px; display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; }
+        .tv-legend-row { display: flex; align-items: center; gap: 8px; }
+        .tv-legend-dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; }
         .tv-mode { position: fixed; bottom: 66px; left: 16px; z-index: 3000; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: 999px; padding: 5px 16px; font-size: 13px; cursor: pointer; opacity: .35; }
         .tv-mode:hover { opacity: 1; }
       `}</style>
@@ -492,6 +545,8 @@ export default function TrailTv({
             center={center}
             label="LIVE"
             sublabel={`${stats.active} on trail`}
+            names={names}
+            showLegend
           />
           <TvMapPanel
             tracks={tracks}
@@ -511,6 +566,7 @@ export default function TrailTv({
                 </span>
               )}
             </div>
+            <RunnerLegend tracks={tracks} names={names} />
             <MapContainer
               center={center}
               zoom={17.5}
@@ -524,7 +580,7 @@ export default function TrailTv({
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <FollowCenter center={frontRunner ? [frontRunner.head.lat, frontRunner.head.lng] : null} />
-              {tracks.map((t) => trackPolyline(t, replayClock))}
+              {tracks.map((t) => trackPolyline(t, replayClock, names[t.id]))}
             </MapContainer>
           </div>
           <TvMapPanel
@@ -538,7 +594,7 @@ export default function TrailTv({
       )}
 
       {/* ── Right column: photo carousel ── */}
-      <div className="tv-carousel">
+      <div className="tv-carousel" ref={carouselRef}>
         {marqueeList.length === 0 ? (
           <div className="tv-empty">
             <div style={{ fontSize: 44 }}>📸</div>
@@ -549,13 +605,19 @@ export default function TrailTv({
           </div>
         ) : (
           <div
+            ref={marqueeRef}
             className="tv-marquee"
             style={marqueeAnimated ? { animationDuration: `${marqueeSeconds}s` } : { animation: "none" }}
           >
             {marqueeList.map((p, i) => (
               <div key={`${p.photoId}-${i}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="tv-photo" src={p.url} alt={p.title ?? "run photo"} />
+                <img
+                  className="tv-photo"
+                  src={p.url}
+                  alt={p.title ?? "run photo"}
+                  onLoad={() => setImgLoadTick((n) => n + 1)}
+                />
                 {(p.title || p.uploader) && (
                   <div className="tv-photo-cap">
                     {p.title ?? ""}{p.title && p.uploader ? " — " : ""}{p.uploader ? `📷 ${p.uploader}` : ""}

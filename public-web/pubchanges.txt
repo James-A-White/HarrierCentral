@@ -1,3 +1,7 @@
+0.21.24
+    • Trail-TV: hasher name labels on the map dots + colored-dot legend
+    • Trail-TV: photos no longer disappear on narrow screens
+
 0.21.23
     • Trail-TV: photos shown uncropped at full width
     • Trail-TV: front-runner cam zoomed ~3x tighter
