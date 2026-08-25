@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1307 (2026-08-25) — iOS
+
+### Improvements
+- All 1305/1306 improvements land on iOS: new in-house onboarding flow
+  (intro once per device, permission screens skip granted ones), instant
+  3.0 welcome sequence with parallel loading, wide-screen layout fixes,
+  and readability fixes.
+- **Leaner app**: 13 third-party packages removed — 7 unused, 6 replaced
+  with small in-house widgets (spinner, link text, photo zoom/gallery,
+  FAB menu, badges, grid).
+
 ## 3.0.1+1306 (2026-08-25) — Android
 
 ### Improvements
