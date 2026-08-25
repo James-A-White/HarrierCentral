@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.23 (2026-08-25)
+- **Trail-TV**: carousel photos fit the panel width uncropped (no more
+  cut-off heads); front-runner cam ~3x tighter zoom.
+
 ## 0.21.22 (2026-08-25)
 - **Trail-TV replay**: two maps — a front-runner cam that follows the
   leader (with the pack in frame) above the whole-run progress view.

@@ -1,3 +1,7 @@
+0.21.23
+    • Trail-TV: photos shown uncropped at full width
+    • Trail-TV: front-runner cam zoomed ~3x tighter
+
 0.21.22
     • Trail-TV replay: front-runner cam + whole-run progress maps
     • Trail-TV: photo carousel no longer disappears with few photos

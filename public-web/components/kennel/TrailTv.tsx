@@ -154,7 +154,7 @@ function FollowCenter({ center }: { center: [number, number] | null }) {
   }, [map]);
   useEffect(() => {
     if (!center) return;
-    map.setView(center, 16, { animate: true, duration: 0.4 });
+    map.setView(center, 17.5, { animate: true, duration: 0.4 });
   }, [center, map]);
   return null;
 }
@@ -462,7 +462,7 @@ export default function TrailTv({
         .tv-carousel { grid-column: 2; grid-row: 1 / span 2; position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.18); background: rgba(0,0,0,.45); }
         .tv-marquee { display: flex; flex-direction: column; gap: 10px; padding: 10px; animation: tvscroll linear infinite; }
         @keyframes tvscroll { from { transform: translateY(0) } to { transform: translateY(-50%) } }
-        .tv-photo { width: 100%; border-radius: 10px; object-fit: cover; max-height: 44vh; box-shadow: 0 4px 18px rgba(0,0,0,.6); }
+        .tv-photo { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.6); }
         .tv-photo-cap { font-size: 13px; opacity: .85; margin: -4px 2px 6px; }
         .tv-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; opacity:.75; font-size:20px; text-align:center; padding:30px; }
         .tv-ticker { grid-column: 1 / -1; display: flex; align-items: center; gap: 28px; background: rgba(12,42,14,.9); border: 1px solid rgba(255,255,255,.18); border-radius: 14px; padding: 0 22px; font-size: 17px; overflow: hidden; white-space: nowrap; }
@@ -513,7 +513,8 @@ export default function TrailTv({
             </div>
             <MapContainer
               center={center}
-              zoom={16}
+              zoom={17.5}
+              zoomSnap={0.5}
               zoomControl={false}
               attributionControl={false}
               dragging={false}
