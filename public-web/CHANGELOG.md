@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.21 (2026-08-25)
+- **Trail-TV** (`/[slug]/[runNumber]/trail-tv`): big-screen event wall.
+  Live mode: live tracks, 10-second run loop, scrolling approved-photo
+  carousel, trail-mark callouts, stats ticker, follow-along QR. Replay
+  mode (auto after 24h): full-run replay at 1 min/km of the first
+  finisher's trail with photo takeovers synced to capture times. New
+  approved photos take over the screen ("Fresh from trail").
+
 ## 0.21.20 — 2026-08-23
 
 - **Viewer-local run times on cards and lists**: when a visitor's clock
