@@ -1,3 +1,6 @@
+0.21.27
+    • Photos set back to private now drop off open Trail-TV screens promptly
+
 0.21.26
     • Trail-TV: carousel eases to a pause while a photo is showing
 

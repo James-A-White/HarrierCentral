@@ -37,7 +37,10 @@ export async function GET(req: NextRequest) {
       { photos },
       // Short cache — Hash Flash approves photos DURING a live run, so new
       // approvals should surface within roughly one track-refresh cycle.
-      { headers: { "Cache-Control": "public, s-maxage=30" } },
+      // max-age=0: browsers must revalidate every poll — an un-approved
+      // (re-privated) photo must drop from an already-open Trail-TV within
+      // one poll cycle, not linger in the browser cache.
+      { headers: { "Cache-Control": "public, s-maxage=30, max-age=0" } },
     );
   } catch (err) {
     console.error("[run-photos] fetch error:", err);

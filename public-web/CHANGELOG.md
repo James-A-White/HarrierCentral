@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.27 (2026-08-25)
+- **Trail-TV / PackTrack photos**: photo list fetches now bypass the
+  browser cache, so a photo set back to private drops off an open
+  Trail-TV screen within one poll cycle. (Server-side permission
+  filtering was verified correct — private photos were never served.)
+
 ## 0.21.26 (2026-08-25)
 - **Trail-TV**: the photo carousel eases to a stop while a photo takeover
   is showing and eases back up afterwards.

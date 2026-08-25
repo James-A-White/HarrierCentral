@@ -497,7 +497,7 @@ export async function fetchRunPhotos(
 ): Promise<Record<string, RunPhoto>> {
   if (!publicEventId) return {};
   try {
-    const res = await fetch(`/api/run-photos?publicEventId=${encodeURIComponent(publicEventId)}`);
+    const res = await fetch(`/api/run-photos?publicEventId=${encodeURIComponent(publicEventId)}`, { cache: "no-store" });
     if (!res.ok) return {};
     const data = (await res.json()) as {
       photos?: {
