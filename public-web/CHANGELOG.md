@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.26 (2026-08-25)
+- **Trail-TV**: the photo carousel eases to a stop while a photo takeover
+  is showing and eases back up afterwards.
+
 ## 0.21.25 (2026-08-25)
 - **Trail-TV**: replay playback pauses while a photo takeover is on
   screen, resuming where it left off.

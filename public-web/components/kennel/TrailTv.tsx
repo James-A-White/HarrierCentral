@@ -490,6 +490,49 @@ export default function TrailTv({
     return () => window.removeEventListener("resize", measure);
   }, [photos, imgLoadTick, marqueeAnimated]);
 
+  const carouselPhotos = photos.length > 0 ? photos : [];
+  // The -50% translate marquee only works when content genuinely overflows;
+  // otherwise it scrolls the short column out of view and the panel goes
+  // blank. MEASURE the rendered single-list height against the container
+  // (re-checked as images load and on resize) instead of guessing by count.
+  const marqueeList = marqueeAnimated
+    ? [...carouselPhotos, ...carouselPhotos]
+    : carouselPhotos;
+  const marqueeSeconds = Math.max(30, carouselPhotos.length * 8);
+
+  // Carousel scroll is JS-driven so the speed can EASE to a stop while a
+  // photo takeover is showing and ease back up afterwards (a CSS keyframe
+  // can only hard-pause). Exponential approach, ~0.6s time constant.
+  useEffect(() => {
+    const el = marqueeRef.current;
+    if (!marqueeAnimated) {
+      if (el) el.style.transform = "";
+      return;
+    }
+    let raf = 0;
+    let last = performance.now();
+    let offset = 0;
+    let speed = 1;
+    const tick = (now: number) => {
+      const dt = Math.min(100, now - last);
+      last = now;
+      const target = takeoverActiveRef.current ? 0 : 1;
+      speed += (target - speed) * Math.min(1, dt / 600);
+      const m = marqueeRef.current;
+      if (m) {
+        const half = m.scrollHeight / 2;
+        if (half > 0) {
+          const pxPerMs = half / (marqueeSeconds * 1000);
+          offset = (offset + pxPerMs * dt * speed) % half;
+          m.style.transform = `translateY(-${offset.toFixed(2)}px)`;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [marqueeAnimated, marqueeSeconds]);
+
   // Front runner at the replay clock — most distance covered so far.
   const frontRunner = useMemo(() => {
     if (mode !== "replay" || replayClock == null || tracks.length === 0) return null;
@@ -501,15 +544,6 @@ export default function TrailTv({
   const center: [number, number] = [lat, lon];
   const followUrl = `https://www.hashruns.org/${slug}/${runNumber}`;
 
-  const carouselPhotos = photos.length > 0 ? photos : [];
-  // The -50% translate marquee only works when content genuinely overflows;
-  // otherwise it scrolls the short column out of view and the panel goes
-  // blank. MEASURE the rendered single-list height against the container
-  // (re-checked as images load and on resize) instead of guessing by count.
-  const marqueeList = marqueeAnimated
-    ? [...carouselPhotos, ...carouselPhotos]
-    : carouselPhotos;
-  const marqueeSeconds = Math.max(30, carouselPhotos.length * 8);
 
   return (
     <div className="tv-root">
@@ -521,8 +555,7 @@ export default function TrailTv({
         .tv-live-dot { display:inline-block; width:9px; height:9px; border-radius:50%; background:#ef4444; margin-right:8px; animation: tvpulse 1.4s infinite; }
         @keyframes tvpulse { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
         .tv-carousel { grid-column: 2; grid-row: 1 / span 2; position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.18); background: rgba(0,0,0,.45); }
-        .tv-marquee { display: flex; flex-direction: column; gap: 10px; padding: 10px; animation: tvscroll linear infinite; }
-        @keyframes tvscroll { from { transform: translateY(0) } to { transform: translateY(-50%) } }
+        .tv-marquee { display: flex; flex-direction: column; gap: 10px; padding: 10px; will-change: transform; }
         .tv-photo { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.6); }
         .tv-photo-cap { font-size: 13px; opacity: .85; margin: -4px 2px 6px; }
         .tv-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; opacity:.75; font-size:20px; text-align:center; padding:30px; }
@@ -617,11 +650,7 @@ export default function TrailTv({
             </div>
           </div>
         ) : (
-          <div
-            ref={marqueeRef}
-            className="tv-marquee"
-            style={marqueeAnimated ? { animationDuration: `${marqueeSeconds}s` } : { animation: "none" }}
-          >
+          <div ref={marqueeRef} className="tv-marquee">
             {marqueeList.map((p, i) => (
               <div key={`${p.photoId}-${i}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
