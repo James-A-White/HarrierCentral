@@ -47,6 +47,9 @@ AS
 --   On error  (rowset 1): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-05-20
+-- Updated: 2026-08-25 — shared photos from photo-review role holders
+--   (Hash Flash/GM/VGM/RA via 'editPhoto' permission) are auto-approved
+--   (Status=3) instead of entering the review queue (Status=1).
 -- HC5 Source: None — new for HC6 KennelPhotos
 -- Quota: v2 — quota enforcement stub is present but not activated.
 --   When paid tiers are designed, replace the NULL stub with a real limit.
@@ -189,8 +192,21 @@ BEGIN
     END
 END
 
-DECLARE @status TINYINT = CASE WHEN @effectiveSharingPref > 0 THEN 1 ELSE 0 END;
--- status 0 = private, 1 = pending_review
+-- status 0 = private, 1 = pending_review, 3 = public.
+-- Auto-approval: photo-review role holders (Hash Flash / GM / VGM / RA —
+-- feature key 'editPhoto', same gate as hcapp_updatePhotoStatus) skip the
+-- review queue for their own shared photos: they could approve them anyway.
+DECLARE @status TINYINT = 0;
+IF (@effectiveSharingPref > 0)
+BEGIN
+    DECLARE @autoApprove SMALLINT = 0;
+    EXEC HC6.CheckKennelPermission
+        @userId      = @userId,
+        @kennelId    = @kennelId,
+        @functionKey = 'editPhoto',
+        @allowed     = @autoApprove OUTPUT;
+    SET @status = CASE WHEN @autoApprove = 1 THEN 3 ELSE 1 END;
+END
 
 BEGIN TRY
     BEGIN TRANSACTION;

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_addKennelPhoto",
-  "version": "1.0.0",
-  "description": "Records a kennel photo after the app has uploaded the image blob directly to Azure Storage. Resolves the effective sharing preference (per-run override → per-kennel HasherKennelMap.PhotoSharingPreference → global Hasher.Preferences bit 0x40) and sets the initial status accordingly: 0=private or 1=pending_review. No sync delegation — photos are fetched on-demand via hcapp_getRunPhotos.",
+  "version": "1.1.0",
+  "description": "Records a kennel photo after the app has uploaded the image blob directly to Azure Storage. Resolves the effective sharing preference (per-run override \u2192 per-kennel HasherKennelMap.PhotoSharingPreference \u2192 global Hasher.Preferences bit 0x40) and sets the initial status accordingly: 0=private or 1=pending_review. No sync delegation \u2014 photos are fetched on-demand via hcapp_getRunPhotos.",
   "parameters": [
     {
       "name": "deviceId",
@@ -79,7 +79,7 @@
       "type": "NVARCHAR(500)",
       "nullable": true,
       "mapsToColumn": "KennelPhotos.AssetId",
-      "description": "Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI). NULL when the user had 'save to camera roll' disabled or permission denied. Device-specific — only valid on the device that uploaded the photo. Defaults to NULL."
+      "description": "Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI). NULL when the user had 'save to camera roll' disabled or permission denied. Device-specific \u2014 only valid on the device that uploaded the photo. Defaults to NULL."
     },
     {
       "name": "perRunSharingOverride",
@@ -95,9 +95,24 @@
       "name": "Envelope",
       "description": "Standard success/failure envelope. On auth failure or validation error: success=0, errorCode and errorType set. On DB error: success=0, errorCode=1931, errorType=19. On success: success=1, errorCode=NULL, errorType=NULL. Mutually exclusive position with error detail rowset at index 1.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any failure." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. NULL on success." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Numeric error code. NULL on success."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Error classification code. NULL on success."
+        }
       ]
     },
     {
@@ -105,8 +120,18 @@
       "name": "PhotoResult",
       "description": "On success: the inserted photo ID and resolved initial status. On error: standard HC6 error detail rowset. These two shapes are mutually exclusive at index 1.",
       "columns": [
-        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The photo's UUID (echoed back from @photoId)." },
-        { "name": "status", "type": "TINYINT", "nullable": false, "description": "Resolved initial status. 0=private, 1=pending_review. Derived from effective sharing preference." }
+        {
+          "name": "photoId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The photo's UUID (echoed back from @photoId)."
+        },
+        {
+          "name": "status",
+          "type": "TINYINT",
+          "nullable": false,
+          "description": "Resolved initial status. 0=private, 1=pending_review, 3=public. Derived from effective sharing preference; shared photos from holders of the 'editPhoto' kennel permission (Hash Flash/GM/VGM/RA) are auto-approved straight to 3."
+        }
       ]
     }
   ],
@@ -133,6 +158,6 @@
     }
   ],
   "breakingChanges": [
-    "New SP — no HC5 predecessor. No breaking changes from migration."
+    "New SP \u2014 no HC5 predecessor. No breaking changes from migration."
   ]
 }
