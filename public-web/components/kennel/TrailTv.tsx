@@ -280,6 +280,7 @@ export default function TrailTv({
   const photoMarkTs = useRef<Map<string, number>>(new Map());
   const calloutKey = useRef(0);
   const replayFiredPhotos = useRef<Set<string>>(new Set());
+  const takeoverActiveRef = useRef(false);
 
   // ── Track polling ────────────────────────────────────────────────────────────
   const loadTracks = useCallback(async () => {
@@ -415,13 +416,25 @@ export default function TrailTv({
     return () => cancelAnimationFrame(raf);
   }, [timeline]);
 
+  // Mirror the takeover state into a ref so the replay interval can consult
+  // it without restarting (and resetting) the clock.
+  useEffect(() => {
+    takeoverActiveRef.current = takeover != null;
+  }, [takeover]);
+
   // Paced replay clock + photo sync. 200ms steps: per-tick track math is
   // too heavy for requestAnimationFrame and 5Hz is smooth enough on a wall.
+  // While a photo takeover is on screen the clock FREEZES (start shifts
+  // forward by each skipped step) so the replay pauses behind the photo.
   useEffect(() => {
     if (mode !== "replay" || !timeline) return;
-    const start = performance.now();
+    let start = performance.now();
     replayFiredPhotos.current = new Set();
     const t = setInterval(() => {
+      if (takeoverActiveRef.current) {
+        start += 200; // hold the replay while the photo shows
+        return;
+      }
       const cycle = replayDurationMs + REPLAY_HOLD_MS;
       const el = (performance.now() - start) % cycle;
       if (el < 250) replayFiredPhotos.current = new Set(); // new cycle — re-arm takeovers

@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.25 (2026-08-25)
+- **Trail-TV**: replay playback pauses while a photo takeover is on
+  screen, resuming where it left off.
+
 ## 0.21.24 (2026-08-25)
 - **Trail-TV**: runner name chips on head dots (live map + front-runner
   cam) plus a colored-dot legend; photo carousel now measures real

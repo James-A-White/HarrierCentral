@@ -1,3 +1,6 @@
+0.21.25
+    • Trail-TV: replay pauses while a photo is showing
+
 0.21.24
     • Trail-TV: hasher name labels on the map dots + colored-dot legend
     • Trail-TV: photos no longer disappear on narrow screens
