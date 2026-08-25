@@ -1,5 +1,11 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1306 (2026-08-25) — Android
+
+### Improvements
+- **Maintenance release**: no functional changes vs 1305; rebuilt to
+  verify Play review submission after the privacy-policy URL restoration.
+
 ## 3.0.1+1305 (2026-08-25) — Android
 
 ### Improvements
