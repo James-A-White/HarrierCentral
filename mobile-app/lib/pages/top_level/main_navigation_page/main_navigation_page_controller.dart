@@ -137,9 +137,13 @@ class MainNavigationController extends GetxController
     final MainPageContent waitingContent =
         hasCachedData ? MainPageContent.initial : MainPageContent.loading;
     if (Utilities.isConnected()) {
-      hcCurrentVersion = _trimToMinorVersionString(
-        getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
-      );
+      // Read the version from the platform, NOT the pref: the signup flow
+      // (invite code → photo confirm) pushes MainNavigationPage directly
+      // without the boot pass that stamps the pref, so a brand-new account's
+      // first boot compared '' == '' and skipped the welcome sequence
+      // (showing the pouring-beer sync screen instead).
+      final PackageInfo pkg = await PackageInfo.fromPlatform();
+      hcCurrentVersion = _trimToMinorVersionString(pkg.version);
       hcPreviousVersion = _trimToMinorVersionString(
         getStringPref(StringPrefsEnum.harrierCentralPreviousVersion) ?? '',
       );
