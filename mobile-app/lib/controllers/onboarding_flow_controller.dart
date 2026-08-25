@@ -127,13 +127,24 @@ class OnboardingFlowController extends GetxController {
     }
   }
 
-  /// Left-hand button: skips the current page. Permission pages first warn
-  /// (matching the retired slider's behavior), then advance regardless —
-  /// onboarding is never gated on a permission.
+  /// Left-hand button: on intro slides, Skip jumps to the LAST intro slide
+  /// (classic intro-slider behavior) rather than advancing one page.
+  /// Permission pages first warn (matching the retired slider's behavior),
+  /// then advance regardless — onboarding is never gated on a permission.
   Future<void> onSkipPressed() async {
     final OnboardingSlide slide = activeSlide;
     if (!slide.isPermissionPage) {
-      await _advance();
+      final int lastIntroIndex =
+          slides.lastIndexWhere((OnboardingSlide s) => !s.isPermissionPage);
+      if (lastIntroIndex > currentPage.value) {
+        await pageController.animateToPage(
+          lastIntroIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        await _advance();
+      }
       return;
     }
     final bool? allow = await Utilities.showAlert(

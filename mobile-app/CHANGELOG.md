@@ -1,5 +1,18 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1308 (2026-08-25) — iOS + Android
+
+### Fixes / Improvements
+- **Welcome sequence timing**: new accounts now see the Welcome to 3.0
+  sequence immediately after signup (it previously appeared only on the
+  second launch, with the loading animation shown instead).
+- **Intro slides**: the Skip button now jumps to the last intro slide
+  instead of advancing one page.
+- **Storage**: preferences migrated to the platform-native store
+  (shared_preferences) with a seamless one-time migration — no visible
+  change, applies to all users including 2.1.2 upgraders.
+- **Leaner app**: 14th legacy package removed (get_storage).
+
 ## 3.0.1+1307 (2026-08-25) — iOS
 
 ### Improvements
