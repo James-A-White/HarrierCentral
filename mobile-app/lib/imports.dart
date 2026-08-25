@@ -49,7 +49,6 @@ export 'package:flutter_map_marker_cluster_plus/flutter_map_marker_cluster_plus.
 export 'package:flutter_vector_icons/flutter_vector_icons.dart';
 export 'package:freezed_annotation/freezed_annotation.dart';
 export 'package:get/get.dart' hide HeaderValue, IterableExtensions, Response;
-export 'package:get_storage/get_storage.dart';
 export 'package:http/http.dart' hide MultipartFile;
 export 'package:image_cropper/image_cropper.dart';
 export 'package:image_picker/image_picker.dart';

@@ -79,7 +79,7 @@ class KennelPhotoUploadQueue {
   static const String _storageKey = 'hc_pendingPhotoUploads';
 
   static List<PendingPhotoUpload> load() {
-    final raw = GetStorage().read<String>(_storageKey);
+    final raw = getRawPref(_storageKey);
     if (raw == null || raw.isEmpty) return [];
     try {
       final decoded = jsonDecode(raw) as List<dynamic>;
@@ -108,7 +108,7 @@ class KennelPhotoUploadQueue {
   static int get count => load().length;
 
   static Future<void> _save(List<PendingPhotoUpload> entries) async {
-    await GetStorage().write(
+    await setRawPref(
       _storageKey,
       jsonEncode(entries.map((e) => e.toJson()).toList()),
     );

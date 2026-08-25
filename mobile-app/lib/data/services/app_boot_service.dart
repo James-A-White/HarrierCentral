@@ -450,7 +450,7 @@ class AppBootService {
     }
 
     // ── Step 2: Wipe ALL local storage ───────────────────────────────────────
-    await GetStorage().erase();
+    await clearPrefs();
     await deleteAllSecure();
 
     // ── Step 3: Write resetCode to secure storage ────────────────────────────
@@ -596,16 +596,10 @@ class AppBootService {
   // Helpers
   // ---------------------------------------------------------------------------
 
-  /// Get userId from GetStorage; fall back to legacy SharedPreferences for
-  /// apps migrating from 1.x where GetStorage wasn't yet in use.
+  /// Get userId from prefs. (The 1.x-era SharedPreferences legacy fallback
+  /// was removed 2026-08-25 — no users remain on pre-2.0 builds.)
   Future<String?> _resolveUserId() async {
-    final String? userId = getStringPref(StringPrefsEnum.userId);
-    final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
-
-    if (userId == null && deviceId == null) {
-      return getStringPrefLegacy(StringPrefsEnum.userId);
-    }
-    return userId;
+    return getStringPref(StringPrefsEnum.userId);
   }
 
   /// Store app version in prefs and collect location — everything ApproveLoginService
