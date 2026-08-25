@@ -22,7 +22,7 @@ import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from "react-l
 import QRCode from "react-qr-code";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn,
-  trackUpTo, sumDistanceMeters, filterAndInterpolate, formatDistanceLabel,
+  trackUpTo, filterAndInterpolate, formatDistanceLabel, haversineMeters,
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
 
@@ -59,6 +59,8 @@ interface PreparedTrack {
   id: string;
   color: string;
   positions: TrackPoint[]; // filtered + interpolated
+  /** Cumulative meters at each position index (for front-runner lookup). */
+  cumDist: number[];
   distanceMeters: number;
   finishTs: number | null; // terminal On-Inn timestamp
   lastTs: number;
@@ -89,11 +91,19 @@ function prepareTracks(users: UserTrack[]): PreparedTrack[] {
     );
     const upTo = oin ? trackUpTo(filtered, oin.timestampMs) : filtered;
     if (upTo.length < 2) return;
+    const cumDist: number[] = [0];
+    for (let k = 1; k < upTo.length; k++) {
+      cumDist.push(
+        cumDist[k - 1] +
+          haversineMeters(upTo[k - 1].lat, upTo[k - 1].lng, upTo[k].lat, upTo[k].lng),
+      );
+    }
     out.push({
       id: u.id.toLowerCase(),
       color: TRACK_COLORS[i % TRACK_COLORS.length],
       positions: upTo,
-      distanceMeters: sumDistanceMeters(upTo),
+      cumDist,
+      distanceMeters: cumDist[cumDist.length - 1],
       finishTs: oin ? oin.timestampMs : null,
       lastTs: upTo[upTo.length - 1].timestampMs,
     });
@@ -134,6 +144,31 @@ function AutoFit({ points }: { points: [number, number][] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, map]);
   return null;
+}
+
+/** Keeps the map centered on a moving target at a fixed zoom (follow-cam). */
+function FollowCenter({ center }: { center: [number, number] | null }) {
+  const map = useMap();
+  useEffect(() => {
+    map.invalidateSize();
+  }, [map]);
+  useEffect(() => {
+    if (!center) return;
+    map.setView(center, 16, { animate: true, duration: 0.4 });
+  }, [center, map]);
+  return null;
+}
+
+/** Head position + covered distance of each runner at the given cutoff. */
+function headsAt(tracks: PreparedTrack[], cutoff: number) {
+  return tracks
+    .map((t) => {
+      const pts = trackUpTo(t.positions, cutoff);
+      if (pts.length === 0) return null;
+      const idx = pts.length - 1;
+      return { track: t, head: pts[idx], distance: t.cumDist[Math.min(idx, t.cumDist.length - 1)] };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null);
 }
 
 // ── Map panels ─────────────────────────────────────────────────────────────────
@@ -352,28 +387,26 @@ export default function TrailTv({
     return () => cancelAnimationFrame(raf);
   }, [timeline]);
 
-  // Paced replay clock (replay mode main panel) + photo sync.
+  // Paced replay clock + photo sync. 200ms steps: per-tick track math is
+  // too heavy for requestAnimationFrame and 5Hz is smooth enough on a wall.
   useEffect(() => {
     if (mode !== "replay" || !timeline) return;
-    let raf = 0;
     const start = performance.now();
     replayFiredPhotos.current = new Set();
-    const tick = (now: number) => {
+    const t = setInterval(() => {
       const cycle = replayDurationMs + REPLAY_HOLD_MS;
-      const t = (now - start) % cycle;
-      if (t < 50) replayFiredPhotos.current = new Set(); // new cycle — re-arm photo takeovers
-      const frac = Math.min(1, t / replayDurationMs);
-      const clock = timeline.min + frac * (timeline.max - timeline.min);
-      setReplayClock(clock);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+      const el = (performance.now() - start) % cycle;
+      if (el < 250) replayFiredPhotos.current = new Set(); // new cycle — re-arm takeovers
+      const frac = Math.min(1, el / replayDurationMs);
+      setReplayClock(timeline.min + frac * (timeline.max - timeline.min));
+    }, 200);
+    return () => clearInterval(t);
   }, [mode, timeline, replayDurationMs]);
 
   // Replay photo takeovers: fire as the replay clock passes each capture time.
   useEffect(() => {
     if (mode !== "replay" || replayClock == null) return;
+    if (takeover != null) return; // let the current takeover finish first
     for (const p of photos) {
       if (p.markTs != null && p.markTs <= replayClock && !replayFiredPhotos.current.has(p.photoId)) {
         replayFiredPhotos.current.add(p.photoId);
@@ -395,13 +428,26 @@ export default function TrailTv({
     return { total, active, finished, elapsed };
   }, [tracks, nowTick, eventStartMs]);
 
+  // Front runner at the replay clock — most distance covered so far.
+  const frontRunner = useMemo(() => {
+    if (mode !== "replay" || replayClock == null || tracks.length === 0) return null;
+    const heads = headsAt(tracks, replayClock);
+    if (heads.length === 0) return null;
+    return heads.reduce((a, b) => (a.distance >= b.distance ? a : b));
+  }, [mode, replayClock, tracks]);
+
   const center: [number, number] = [lat, lon];
   const followUrl = `https://www.hashruns.org/${slug}/${runNumber}`;
 
   const carouselPhotos = photos.length > 0 ? photos : [];
-  // Duplicate the list so the marquee wraps seamlessly.
-  const marqueeList = carouselPhotos.length > 0
-    ? [...carouselPhotos, ...carouselPhotos] : [];
+  // The -50% translate marquee only works when content genuinely overflows;
+  // with a handful of photos it scrolls the short column out of view and the
+  // panel goes blank ("all images went away"). Estimate overflow from photo
+  // count vs viewport, and only then duplicate + animate.
+  const marqueeAnimated = carouselPhotos.length >= 4;
+  const marqueeList = marqueeAnimated
+    ? [...carouselPhotos, ...carouselPhotos]
+    : carouselPhotos;
   const marqueeSeconds = Math.max(30, carouselPhotos.length * 8);
 
   return (
@@ -455,14 +501,39 @@ export default function TrailTv({
           />
         </>
       ) : (
-        <TvMapPanel
-          tracks={tracks}
-          cutoff={replayClock}
-          center={center}
-          label="RUN REPLAY"
-          sublabel={`1 min / km · ${formatDistanceLabel(tracks.reduce((m, t) => Math.max(m, t.distanceMeters), 0))} trail`}
-          style={{ gridRow: "1 / span 2" }}
-        />
+        <>
+          <div className="tv-panel">
+            <div className="tv-panel-label">
+              FRONT RUNNER CAM
+              {frontRunner && (
+                <span className="tv-panel-sublabel">
+                  {names[frontRunner.track.id] ?? "leading"} · {formatDistanceLabel(frontRunner.distance)}
+                </span>
+              )}
+            </div>
+            <MapContainer
+              center={center}
+              zoom={16}
+              zoomControl={false}
+              attributionControl={false}
+              dragging={false}
+              scrollWheelZoom={false}
+              doubleClickZoom={false}
+              style={{ width: "100%", height: "100%", background: "#0c2a0e" }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <FollowCenter center={frontRunner ? [frontRunner.head.lat, frontRunner.head.lng] : null} />
+              {tracks.map((t) => trackPolyline(t, replayClock))}
+            </MapContainer>
+          </div>
+          <TvMapPanel
+            tracks={tracks}
+            cutoff={replayClock}
+            center={center}
+            label="RUN REPLAY"
+            sublabel={`1 min / km · ${formatDistanceLabel(tracks.reduce((m, t) => Math.max(m, t.distanceMeters), 0))} trail`}
+          />
+        </>
       )}
 
       {/* ── Right column: photo carousel ── */}
@@ -476,7 +547,10 @@ export default function TrailTv({
             </div>
           </div>
         ) : (
-          <div className="tv-marquee" style={{ animationDuration: `${marqueeSeconds}s` }}>
+          <div
+            className="tv-marquee"
+            style={marqueeAnimated ? { animationDuration: `${marqueeSeconds}s` } : { animation: "none" }}
+          >
             {marqueeList.map((p, i) => (
               <div key={`${p.photoId}-${i}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}

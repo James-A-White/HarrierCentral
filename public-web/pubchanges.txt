@@ -1,3 +1,8 @@
+0.21.22
+    • Trail-TV replay: front-runner cam + whole-run progress maps
+    • Trail-TV: photo carousel no longer disappears with few photos
+    • Trail-TV: photo takeovers play one at a time
+
 0.21.21
     • Trail-TV big-screen event wall at /<kennel>/<run>/trail-tv
     • Live mode: live tracks, 10-second loop, photo carousel, mark callouts, stats ticker, QR

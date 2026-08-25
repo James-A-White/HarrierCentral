@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.22 (2026-08-25)
+- **Trail-TV replay**: two maps — a front-runner cam that follows the
+  leader (with the pack in frame) above the whole-run progress view.
+- **Trail-TV fixes**: photo carousel no longer goes blank with few
+  photos; photo takeovers finish before the next one fires.
+
 ## 0.21.21 (2026-08-25)
 - **Trail-TV** (`/[slug]/[runNumber]/trail-tv`): big-screen event wall.
   Live mode: live tracks, 10-second run loop, scrolling approved-photo
