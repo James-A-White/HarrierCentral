@@ -1,3 +1,6 @@
+0.21.28
+    • Trail-TV: front-runner cam glides smoothly (eased spring camera, steadier leader switching)
+
 0.21.27
     • Photos set back to private now drop off open Trail-TV screens promptly
 

@@ -40,6 +40,9 @@ const REPLAY_HOLD_MS = 6_000;
 const TAKEOVER_MS = 12_000;
 const CALLOUT_MS = 6_000;
 const ACTIVE_WINDOW_MS = 10 * 60_000; // "on trail" = a point in the last 10 min
+const FOLLOW_ZOOM = 17.5;
+const FOLLOW_SPRING_OMEGA = 3; // rad/s — camera spring stiffness; lower = floatier follow-cam
+const LEAD_HYSTERESIS_METERS = 15; // new leader must be this far ahead to steal the cam
 
 interface TrailTvProps {
   slug: string;
@@ -146,16 +149,58 @@ function AutoFit({ points }: { points: [number, number][] }) {
   return null;
 }
 
-/** Keeps the map centered on a moving target at a fixed zoom (follow-cam). */
+/**
+ * Keeps the map centered on a moving target at a fixed zoom (follow-cam).
+ * The replay clock steps at 5Hz; a setView({animate:true}) per tick restarts
+ * Leaflet's pan animation each time, so the camera visibly stutters. Instead
+ * a critically-damped spring (position + velocity per axis) chases the latest
+ * target inside an rAF loop: the camera accelerates smoothly into motion and
+ * decelerates into a stop — 5Hz stepping, lead swaps, and takeover pauses all
+ * become eased glides. The map is moved with panBy({animate:false}), a raw
+ * CSS pan — per-frame setView goes through _resetView, which churns the tile
+ * queue and leaves blank tiles behind a moving camera.
+ */
 function FollowCenter({ center }: { center: [number, number] | null }) {
   const map = useMap();
+  const target = useRef<[number, number] | null>(null);
+  const cam = useRef<{ lat: number; lng: number; vLat: number; vLng: number } | null>(null);
+  useEffect(() => {
+    target.current = center;
+  }, [center]);
   useEffect(() => {
     map.invalidateSize();
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      const dt = Math.min(100, now - last) / 1000;
+      last = now;
+      const tgt = target.current;
+      if (!tgt) return;
+      if (!cam.current) {
+        // First fix: jump straight there rather than glide in from afar.
+        cam.current = { lat: tgt[0], lng: tgt[1], vLat: 0, vLng: 0 };
+        map.setView(tgt, FOLLOW_ZOOM, { animate: false });
+        return;
+      }
+      const c = cam.current;
+      const w = FOLLOW_SPRING_OMEGA;
+      // accel = ω²·(target − pos) − 2ω·vel (critical damping — no overshoot)
+      c.vLat += ((tgt[0] - c.lat) * w * w - 2 * w * c.vLat) * dt;
+      c.vLng += ((tgt[1] - c.lng) * w * w - 2 * w * c.vLng) * dt;
+      c.lat += c.vLat * dt;
+      c.lng += c.vLng * dt;
+      const offset = map
+        .latLngToContainerPoint([c.lat, c.lng])
+        .subtract(map.getSize().divideBy(2))
+        .round();
+      if (offset.x !== 0 || offset.y !== 0) {
+        map.panBy(offset, { animate: false, noMoveStart: true });
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [map]);
-  useEffect(() => {
-    if (!center) return;
-    map.setView(center, 17.5, { animate: true, duration: 0.4 });
-  }, [center, map]);
   return null;
 }
 
@@ -533,12 +578,26 @@ export default function TrailTv({
     return () => cancelAnimationFrame(raf);
   }, [marqueeAnimated, marqueeSeconds]);
 
-  // Front runner at the replay clock — most distance covered so far.
+  // Front runner at the replay clock — most distance covered so far. The cam
+  // sticks with the current leader until someone is genuinely ahead
+  // (LEAD_HYSTERESIS_METERS), so neck-and-neck runners don't yank the camera
+  // back and forth every tick.
+  const leaderIdRef = useRef<string | null>(null);
   const frontRunner = useMemo(() => {
-    if (mode !== "replay" || replayClock == null || tracks.length === 0) return null;
+    if (mode !== "replay" || replayClock == null || tracks.length === 0) {
+      leaderIdRef.current = null;
+      return null;
+    }
     const heads = headsAt(tracks, replayClock);
-    if (heads.length === 0) return null;
-    return heads.reduce((a, b) => (a.distance >= b.distance ? a : b));
+    if (heads.length === 0) {
+      leaderIdRef.current = null;
+      return null;
+    }
+    const best = heads.reduce((a, b) => (a.distance >= b.distance ? a : b));
+    const cur = heads.find((h) => h.track.id === leaderIdRef.current);
+    const chosen = cur && best.distance - cur.distance < LEAD_HYSTERESIS_METERS ? cur : best;
+    leaderIdRef.current = chosen.track.id;
+    return chosen;
   }, [mode, replayClock, tracks]);
 
   const center: [number, number] = [lat, lon];
@@ -615,7 +674,7 @@ export default function TrailTv({
             <RunnerLegend tracks={tracks} names={names} />
             <MapContainer
               center={center}
-              zoom={17.5}
+              zoom={FOLLOW_ZOOM}
               zoomSnap={0.5}
               zoomControl={false}
               attributionControl={false}

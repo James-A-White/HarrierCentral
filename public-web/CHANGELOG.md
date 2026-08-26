@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.28 (2026-08-25)
+- **Trail-TV**: front-runner cam motion smoothing — a critically-damped
+  spring camera eases in and out of motion (no more per-tick jumps),
+  the map pans without churning tiles, and the cam only switches
+  leaders when a runner is 15m clear (no ping-pong between
+  neck-and-neck runners).
+
 ## 0.21.27 (2026-08-25)
 - **Trail-TV / PackTrack photos**: photo list fetches now bypass the
   browser cache, so a photo set back to private drops off an open
