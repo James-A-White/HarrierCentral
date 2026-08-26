@@ -151,11 +151,31 @@ class LiveRunRoseController extends GetxController {
     _tracks = byId.values.toList(growable: false);
   }
 
+  /// Per-runner track colours, assigned by order of first appearance in the
+  /// loaded set — the same rule (and the same palette) as
+  /// RunTrackerMapController and public-web, so a hasher keeps one colour on
+  /// the map, the radar and the list. Assigned over the FULL track list
+  /// (including the viewer's own) so skipping self below can't shift anyone
+  /// else's colour relative to the map.
+  final Map<String, Color> _colorById = <String, Color>{};
+
+  void _assignColors() {
+    for (final t in _tracks) {
+      _colorById.putIfAbsent(
+        t.id,
+        () =>
+            RunTrackerMapController.trackColors[_colorById.length %
+                RunTrackerMapController.trackColors.length],
+      );
+    }
+  }
+
   void _rebuildBlips(Position me) {
     final String myId = currentUserId;
     final latlong.LatLng myPoint = latlong.LatLng(me.latitude, me.longitude);
     final int nowMs = DateTime.now().millisecondsSinceEpoch;
     final next = <RoseBlip>[];
+    _assignColors();
 
     for (final track in _tracks) {
       if (normalizeUuid(track.id) == normalizeUuid(myId)) continue;
@@ -178,6 +198,8 @@ class LiveRunRoseController extends GetxController {
           distanceMeters: _distance.as(latlong.LengthUnit.Meter, myPoint, at),
           isLost: _hasDistressMark(track),
           isStale: nowMs - latest.timestampMs > _staleAfter.inMilliseconds,
+          color:
+              _colorById[track.id] ?? RunTrackerMapController.trackColors.first,
         ),
       );
 
@@ -245,6 +267,7 @@ class LiveRunRoseController extends GetxController {
           distanceMeters: b.distanceMeters,
           isLost: b.isLost,
           isStale: b.isStale,
+          color: b.color,
         );
       }
     } catch (e) {

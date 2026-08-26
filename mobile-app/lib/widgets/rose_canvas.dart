@@ -12,6 +12,7 @@ class RoseBlip {
     required this.distanceMeters,
     required this.isLost,
     required this.isStale,
+    required this.color,
   });
 
   final String userId;
@@ -26,6 +27,11 @@ class RoseBlip {
 
   /// Their last position is old enough that the blip may be wrong.
   final bool isStale;
+
+  /// The runner's track colour — the same per-runner palette the map trails
+  /// and the runner list use, so a hasher keeps one colour across all three
+  /// canvases. Lost/stale rendering still overrides it (see RosePainter).
+  final Color color;
 }
 
 /// Shared rose canvas. Used live (blips from the viewer's own GPS, heading from
@@ -169,11 +175,14 @@ class RosePainter extends CustomPainter {
       final at =
           center + Offset(math.cos(a) * R * frac, math.sin(a) * R * frac);
 
+      // Per-runner track colour (shared with the map and list). Lost keeps its
+      // hard orange — it's an alarm, not an identity — and stale fades the
+      // runner's own colour rather than going anonymous grey.
       final Color colour = b.isLost
           ? const Color(0xFFE6510A)
           : b.isStale
-          ? Colors.white38
-          : Colors.yellow;
+          ? b.color.withValues(alpha: 0.38)
+          : b.color;
 
       if (beyond) {
         // Pinned to the rim: hollow chevron, so "further than the ring" reads
@@ -193,6 +202,16 @@ class RosePainter extends CustomPainter {
         canvas.restore();
       } else {
         canvas.drawCircle(at, b.isLost ? 8.0 : 6.0, Paint()..color = colour);
+        // Thin white ring so darker palette colours stay visible on the
+        // near-black rose (matches the map/list dot treatment).
+        canvas.drawCircle(
+          at,
+          b.isLost ? 8.0 : 6.0,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.4
+            ..color = Colors.white.withValues(alpha: b.isStale ? 0.35 : 0.85),
+        );
         if (b.isLost) {
           canvas.drawCircle(
             at,

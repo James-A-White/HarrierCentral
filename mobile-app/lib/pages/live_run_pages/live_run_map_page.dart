@@ -25,20 +25,28 @@ class LiveRunMapController extends GetxController {
 
   latlng.LatLng? get mapCenter => eventLocation ?? kennelLocation;
 
-  /// The shared PackTrack map controller, if the map has been built. The rose
-  /// flag lives there (it's the map's alternate canvas); this page only hosts
-  /// it, so reach it by the same tag RunTrackerMap registers under.
+  /// The shared PackTrack map controller, if the map has been built. The
+  /// canvas mode lives there (rose and list are the map's alternate
+  /// canvases); this page only hosts it, so reach it by the same tag
+  /// RunTrackerMap registers under.
   RunTrackerMapController? get _mapCtrl =>
       Get.isRegistered<RunTrackerMapController>(tag: run.event.eventId)
       ? Get.find<RunTrackerMapController>(tag: run.event.eventId)
       : null;
 
-  /// True while the radar canvas is showing. Reading `.value` inside the page's
-  /// Obx registers the dependency, so the overlay rebuilds when it flips.
-  bool get roseActive => _mapCtrl?.roseView.value ?? false;
+  /// True while an alternate canvas (radar or list) is showing. Reading
+  /// `.value` inside the page's Obx registers the dependency, so the overlay
+  /// rebuilds when it flips.
+  bool get altCanvasActive =>
+      (_mapCtrl?.canvasView.value ?? PackTrackCanvas.map) !=
+      PackTrackCanvas.map;
 
-  /// Back out of the radar to the map rather than out of the whole run.
-  void exitRose() => _mapCtrl?.roseView.value = false;
+  /// Back out of the radar/list to the map rather than out of the whole run.
+  void exitToMap() => _mapCtrl?.canvasView.value = PackTrackCanvas.map;
+
+  /// True while the list canvas is showing — it has no orientation, so the
+  /// north-lock control is hidden there (it stays for map AND radar).
+  bool get listActive => _mapCtrl?.canvasView.value == PackTrackCanvas.list;
 }
 
 class LiveRunMapPage extends StatelessWidget {
@@ -73,13 +81,13 @@ class LiveRunMapPage extends StatelessWidget {
           );
         }
 
-        // Radar is a canvas swap, not a route, so the system back button would
-        // otherwise pop the whole live run — the most likely way someone tries
-        // to leave the radar. Intercept it and return to the map instead.
+        // Radar and list are canvas swaps, not routes, so the system back
+        // button would otherwise pop the whole live run — the most likely way
+        // someone tries to leave them. Intercept it and return to the map.
         return PopScope(
-          canPop: !controller.roseActive,
+          canPop: !controller.altCanvasActive,
           onPopInvokedWithResult: (didPop, _) {
-            if (!didPop) controller.exitRose();
+            if (!didPop) controller.exitToMap();
           },
           child: Stack(
             children: [
@@ -98,27 +106,29 @@ class LiveRunMapPage extends StatelessWidget {
                 ),
               ),
               // North-lock still applies in radar view (it decides north-up vs
-              // heading-up), so it stays on both.
-              Positioned(
-                top: 12,
-                right: 12,
-                child: MapOverlayButton(
-                  icon: controller.trueNorthLock.value
-                      ? Icons.explore_off
-                      : Icons.explore,
-                  tooltip: controller.trueNorthLock.value
-                      ? 'Unlock rotation'
-                      : 'Lock to North',
-                  onTap: () {
-                    controller.trueNorthLock.value =
-                        !controller.trueNorthLock.value;
-                  },
+              // heading-up), so it stays on both — but not on the list, which
+              // has no orientation to lock.
+              if (!controller.listActive)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: MapOverlayButton(
+                    icon: controller.trueNorthLock.value
+                        ? Icons.explore_off
+                        : Icons.explore,
+                    tooltip: controller.trueNorthLock.value
+                        ? 'Unlock rotation'
+                        : 'Lock to North',
+                    onTap: () {
+                      controller.trueNorthLock.value =
+                          !controller.trueNorthLock.value;
+                    },
+                  ),
                 ),
-              ),
               // Open the map full-screen.
-              // Hidden in radar view: "full screen" opens a full-screen MAP,
-              // which from the radar reads as a second, wrong way out.
-              if (!controller.roseActive)
+              // Hidden in radar/list view: "full screen" opens a full-screen
+              // MAP, which from those reads as a second, wrong way out.
+              if (!controller.altCanvasActive)
                 Positioned(
                   top: 12,
                   left: 12,

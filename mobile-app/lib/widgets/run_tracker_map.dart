@@ -79,14 +79,55 @@ class RunTrackerMap extends StatelessWidget {
         final double topInset = MediaQuery.paddingOf(context).top;
         return Obx(() {
           final bool controllerLock = controller.trueNorthLock;
-          // Rose view swaps ONLY the canvas — the timeline, playback controls
-          // and lane filters below are shared, so scrubbing works identically
-          // in either rendering.
-          // Rose needs track data: on a future run (or any untracked run)
-          // there is nothing to draw, and rendering it anyway produced a
+          // Rose and list views swap ONLY the canvas — the timeline, playback
+          // controls and lane filters below are shared, so scrubbing works
+          // identically in every rendering.
+          // Both need track data: on a future run (or any untracked run)
+          // there is nothing to draw, and rendering them anyway produced a
           // blank screen. With no data the map renders instead, and the
-          // Map/Radar switch is hidden (see _viewSwitch).
-          if (controller.roseView.value && controller.hasAnyTrackData) {
+          // Map/Radar/List switch is hidden (see _viewSwitch).
+          final PackTrackCanvas canvas = controller.canvasView.value;
+          if (canvas == PackTrackCanvas.list && controller.hasAnyTrackData) {
+            return Stack(
+              children: <Widget>[
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.72),
+                    // Top padding clears the view switch pinned over the
+                    // canvas; the list's own bottom padding clears the
+                    // playback panel.
+                    padding: EdgeInsets.fromLTRB(12, 62 + topInset, 12, 0),
+                    child: RunnerListCanvas(
+                      entries: controller.runnerListEntries,
+                      selectedRunnerId: controller.selectedRunnerId.value,
+                      sortByProximity: controller.listSortByProximity.value,
+                      viewerFixAvailable: controller.viewerLatLng != null,
+                      onSortChanged: (prox) =>
+                          controller.listSortByProximity.value = prox,
+                      // Selection only — no recenter: the map isn't showing,
+                      // and yanking its camera under the list would fight the
+                      // user when they switch back.
+                      onTapRunner: (id) => controller.selectRunner(
+                        id,
+                        recenter: false,
+                        syncPicker: true,
+                      ),
+                    ),
+                  ),
+                ),
+                _buildTimelineSlider(context, controller),
+                // Same slot as over the map and rose, so changing view never
+                // moves the control out from under your thumb.
+                Positioned(
+                  top: 12 + topInset,
+                  left: 0,
+                  right: 0,
+                  child: Center(child: _viewSwitch(controller)),
+                ),
+              ],
+            );
+          }
+          if (canvas == PackTrackCanvas.rose && controller.hasAnyTrackData) {
             final blips = controller.roseBlips;
             final range = controller.roseRangeMetres(blips);
             return Stack(
@@ -594,15 +635,15 @@ class RunTrackerMap extends StatelessWidget {
     );
   }
 
-  /// Switches the canvas between the map and the rose. Long-press while in the
-  /// rose resets the pinch range back to the auto 90% fit. Hidden entirely
-  /// when the run has no track points (future / untracked runs) — the rose
-  /// would have nothing to draw, and a lone "Map" pill is just furniture.
+  /// Switches the canvas between the map, the rose and the runner list.
+  /// Hidden entirely when the run has no track points (future / untracked
+  /// runs) — the rose and list would have nothing to draw, and a lone "Map"
+  /// pill is just furniture.
   Widget _viewSwitch(RunTrackerMapController controller) {
     if (!controller.hasAnyTrackData) return const SizedBox.shrink();
     return MapViewSwitch(
-      roseSelected: controller.roseView.value,
-      onSelect: (rose) => controller.roseView.value = rose,
+      selected: controller.canvasView.value,
+      onSelect: (canvas) => controller.canvasView.value = canvas,
     );
   }
 

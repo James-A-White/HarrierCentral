@@ -7,6 +7,12 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:harrier_central/widgets/camera_photo_marker.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
+/// Which canvas the PackTrack screen is showing. Map is the base rendering;
+/// rose (radar) and the runner list swap ONLY the canvas — the timeline,
+/// playback controls and trail filters are shared, so scrubbing works
+/// identically in all three.
+enum PackTrackCanvas { map, rose, list }
+
 // TODO(S4): This controller mixes UI layout state (map rendering, playback
 // animation, marker building) with domain logic (position loading, track
 // filtering, distance calculation). Extract PlaybackState and TrackDataState
@@ -54,7 +60,7 @@ class RunTrackerMapController extends GetxController
   // runner reads the same colour on app and web. Assigned by order of appearance
   // in the loaded set (see [_assignRunnerColors]) and keyed by id, so filtering
   // trail lanes never reshuffles the colours.
-  static const List<Color> _trackColors = <Color>[
+  static const List<Color> trackColors = <Color>[
     Color(0xFFEF4444),
     Color(0xFF3B82F6),
     Color(0xFF22C55E),
@@ -207,8 +213,8 @@ class RunTrackerMapController extends GetxController
   // distance AT THE SCRUB POSITION. Shares the timeline, playback and filters —
   // only the canvas changes.
 
-  /// Rose replaces the map canvas while true.
-  final RxBool roseView = false.obs;
+  /// The canvas currently replacing (or being) the map: map, rose or list.
+  final Rx<PackTrackCanvas> canvasView = PackTrackCanvas.map.obs;
 
   /// Outer-ring range in metres; null = auto-fit to the nearest 90% of the pack.
   final RxnDouble roseRange = RxnDouble();
@@ -320,10 +326,83 @@ class RunTrackerMapController extends GetxController
           // Staleness is a live-mode idea; during replay every blip is
           // definitionally "as of" the scrub position.
           isStale: false,
+          color: _colorForUser(user.id),
         ),
       );
     }
     out.sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
+    return out;
+  }
+
+  // ── List view ───────────────────────────────────────────────────────────────
+  // The third canvas: every visible runner as a sortable row — trail distance
+  // covered at the playhead, and straight-line separation from the viewer.
+
+  /// Runner-list sort: false = longest trail first (default), true = nearest
+  /// to the viewer first.
+  final RxBool listSortByProximity = false.obs;
+
+  /// The viewer's live position — same source chain as the map's blue dot
+  /// (precise stream fix, falling back to the last idle device fix). Null when
+  /// permissions are missing or no fix has ever landed.
+  latlng.LatLng? get viewerLatLng {
+    if (!Get.isRegistered<LocationService>()) return null;
+    if (!appModel.hasLocationPermissions) return null;
+    final pos = Get.find<LocationService>().lastKnownPosition.value;
+    final double? lat = pos?.latitude ?? deviceInfo.deviceLat;
+    final double? lon = pos?.longitude ?? deviceInfo.deviceLon;
+    if (lat == null || lon == null) return null;
+    return latlng.LatLng(lat, lon);
+  }
+
+  /// Rows for the list canvas, sorted per [listSortByProximity]. Distances are
+  /// taken AT THE SCRUB POSITION (same interpolation as the map and rose), so
+  /// scrubbing the replay reorders the leaderboard live. Proximity is measured
+  /// from the viewer's own position and is null without a fix — those rows
+  /// sort to the bottom under proximity ordering.
+  List<RunnerListEntry> get runnerListEntries {
+    final cutoff = timelineAvailable ? currentTimestampMs.value : null;
+    final latlng.LatLng? me = viewerLatLng;
+    final out = <RunnerListEntry>[];
+    for (final user in visibleRunners) {
+      final at = _interpolatedPosition(user, cutoff);
+      final name = (userNames[user.id] ?? '').trim();
+      out.add(
+        RunnerListEntry(
+          userId: user.id,
+          name: name.isEmpty ? 'Hasher' : name,
+          color: _colorForUser(user.id),
+          distanceMeters: _sumInterpolatedDistance(
+            _interpolatedTrackPoints(user, cutoff),
+          ),
+          metersFromMe: (me == null || at == null)
+              ? null
+              : _distanceCalculator.as(
+                  latlng.LengthUnit.Meter,
+                  me,
+                  latlng.LatLng(at.lat, at.lng),
+                ),
+          isSelf:
+              _currentUserId != null &&
+              normalizeUuid(user.id) == normalizeUuid(_currentUserId),
+          isLost: _hasDistressMark(user),
+        ),
+      );
+    }
+    if (listSortByProximity.value) {
+      out.sort((a, b) {
+        final am = a.metersFromMe;
+        final bm = b.metersFromMe;
+        if (am == null && bm == null) {
+          return b.distanceMeters.compareTo(a.distanceMeters);
+        }
+        if (am == null) return 1;
+        if (bm == null) return -1;
+        return am.compareTo(bm);
+      });
+    } else {
+      out.sort((a, b) => b.distanceMeters.compareTo(a.distanceMeters));
+    }
     return out;
   }
 
@@ -1172,7 +1251,8 @@ class RunTrackerMapController extends GetxController
     final double ts = point.timestampMs.toDouble();
     final double? oldMax = maxTimestampMs.value;
     if (oldMax == null || ts > oldMax) {
-      final bool parkedAtEnd = !isPlaying.value &&
+      final bool parkedAtEnd =
+          !isPlaying.value &&
           (currentTimestampMs.value == null ||
               currentTimestampMs.value == oldMax);
       maxTimestampMs.value = ts;
@@ -1192,22 +1272,27 @@ class RunTrackerMapController extends GetxController
     if (selfId == null || selfId.isEmpty) return;
     final String normSelf = normalizeUuid(selfId);
 
-    final int idx =
-        userPositions.indexWhere((u) => normalizeUuid(u.id) == normSelf);
+    final int idx = userPositions.indexWhere(
+      (u) => normalizeUuid(u.id) == normSelf,
+    );
     final List<TrackPoint> positions = idx >= 0
         ? List<TrackPoint>.from(userPositions[idx].positions)
         : <TrackPoint>[];
 
     if (retireConfirmed) {
-      _localEchoes.removeWhere((e) => positions.any(
-          (p) => p.timestampMs == e.timestampMs && p.type == e.type));
+      _localEchoes.removeWhere(
+        (e) => positions.any(
+          (p) => p.timestampMs == e.timestampMs && p.type == e.type,
+        ),
+      );
       if (_localEchoes.isEmpty) return;
     }
 
     bool changed = false;
     for (final e in _localEchoes) {
-      final bool present = positions
-          .any((p) => p.timestampMs == e.timestampMs && p.type == e.type);
+      final bool present = positions.any(
+        (p) => p.timestampMs == e.timestampMs && p.type == e.type,
+      );
       if (present) continue;
       // Echoes are recent — walk back from the end to keep ts order.
       int i = positions.length;
@@ -1884,7 +1969,7 @@ class RunTrackerMapController extends GetxController
     }
   }
 
-  Color _colorForUser(String id) => _colorById[id] ?? _trackColors.first;
+  Color _colorForUser(String id) => _colorById[id] ?? trackColors.first;
 
   /// Assigns each runner a stable palette colour by order of appearance in the
   /// loaded set, keyed by id — mirrors public-web (`users.forEach((u,i) => …)`)
@@ -1893,7 +1978,7 @@ class RunTrackerMapController extends GetxController
   void _assignRunnerColors(List<UserTrack> users) {
     _colorById.clear();
     for (var i = 0; i < users.length; i++) {
-      _colorById[users[i].id] = _trackColors[i % _trackColors.length];
+      _colorById[users[i].id] = trackColors[i % trackColors.length];
     }
   }
 
@@ -2534,8 +2619,7 @@ class RunTrackerMapController extends GetxController
   /// True when at least one runner has track points. Future runs (and any
   /// run nobody tracked) have none — the Radar has nothing to draw then, so
   /// the Map/Radar switch is hidden and the rose canvas never renders.
-  bool get hasAnyTrackData =>
-      userPositions.any((u) => u.positions.isNotEmpty);
+  bool get hasAnyTrackData => userPositions.any((u) => u.positions.isNotEmpty);
 
   /// The viewer's own locally-recorded points that have NOT yet appeared in
   /// the server track — the un-uploaded tail, drawn dotted so the runner can
@@ -2550,8 +2634,9 @@ class RunTrackerMapController extends GetxController
     if (isPlaying.value) return null;
     if (!isLiveWindow) return null;
     if (!Get.isRegistered<LocationService>()) return null;
-    final List<TrackPoint> local = Get.find<LocationService>()
-        .sessionTrackFor(event.eventId);
+    final List<TrackPoint> local = Get.find<LocationService>().sessionTrackFor(
+      event.eventId,
+    );
     if (local.isEmpty) return null;
 
     int newestServerTs = 0;
@@ -3202,8 +3287,7 @@ class RunTrackerMapController extends GetxController
   bool _isTerminalOnInn(UserTrack runner, TrackPoint pos) {
     if (!_isOnInn(pos.type)) return false;
     if (runner.positions.isEmpty) return true;
-    return runner.positions.last.timestampMs - pos.timestampMs <=
-        _onInnGraceMs;
+    return runner.positions.last.timestampMs - pos.timestampMs <= _onInnGraceMs;
   }
 
   void _applyPlaybackDurationFromZoom({double? zoomOverride}) {

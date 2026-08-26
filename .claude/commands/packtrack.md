@@ -25,6 +25,9 @@ id returns nothing). Azure Table partition keys are case-sensitive.
 | Outgoing point model | `lib/data/models/user_event_location/user_event_location.dart` |
 | Incoming track models | `lib/data/models/user_positions/user_positions.dart` |
 | Map display controller | `lib/controllers/run_tracker_map_controller.dart` |
+| Map/rose/list canvas host + switch | `lib/widgets/run_tracker_map.dart` (canvas mode = `PackTrackCanvas` enum on the controller: map / rose / list) |
+| Radar (rose) canvas + `RoseBlip` | `lib/widgets/rose_canvas.dart` |
+| Runner list canvas + `RunnerListEntry` | `lib/widgets/runner_list_canvas.dart` (sortable: longest trail / closest to me) |
 | Live run shell + pages | `lib/pages/live_run_pages/` |
 | Point type enum | `lib/util/enums.dart:600` (`HashRunPointTypes`) |
 | API URL constants | `lib/util/constants.dart:95-96` |

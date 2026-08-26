@@ -7,9 +7,9 @@ import 'package:harrier_central/imports.dart';
 /// vanished. Dark ground + hairline outline holds up over tiles, satellite
 /// imagery and the near-black rose canvas alike, which matters because the same
 /// buttons sit on all three.
-/// Map ⇄ Radar switch for the run map.
+/// Map / Radar / List switch for the run map.
 ///
-/// A segmented control rather than a toggle icon: it names both views and
+/// A segmented control rather than a toggle icon: it names every view and
 /// highlights the one you're in, so "which view am I looking at" and "how do I
 /// get back" are answered by the same control without decoding an icon. The
 /// previous icon-only toggle sat among identically-styled overlay buttons with
@@ -17,12 +17,12 @@ import 'package:harrier_central/imports.dart';
 class MapViewSwitch extends StatelessWidget {
   const MapViewSwitch({
     super.key,
-    required this.roseSelected,
+    required this.selected,
     required this.onSelect,
   });
 
-  final bool roseSelected;
-  final void Function(bool rose) onSelect;
+  final PackTrackCanvas selected;
+  final void Function(PackTrackCanvas canvas) onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -44,14 +44,20 @@ class MapViewSwitch extends StatelessWidget {
             _segment(
               label: 'Map',
               icon: Icons.map,
-              selected: !roseSelected,
-              onTap: () => onSelect(false),
+              selected: selected == PackTrackCanvas.map,
+              onTap: () => onSelect(PackTrackCanvas.map),
             ),
             _segment(
               label: 'Radar',
               icon: Icons.radar,
-              selected: roseSelected,
-              onTap: () => onSelect(true),
+              selected: selected == PackTrackCanvas.rose,
+              onTap: () => onSelect(PackTrackCanvas.rose),
+            ),
+            _segment(
+              label: 'List',
+              icon: Icons.format_list_numbered,
+              selected: selected == PackTrackCanvas.list,
+              onTap: () => onSelect(PackTrackCanvas.list),
             ),
           ],
         ),

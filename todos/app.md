@@ -691,6 +691,35 @@ Released with `flutter analyze` only. Screens: live run → map → Radar.
 - [ ] **Wedge steppiness**: the wedge follows the raw compass in 2° ticks — if
   it looks steppy on device, route it through the same easing.
 
+## Device test — PackTrack runner list canvas (2026-08-26, not yet released)
+
+Third canvas on the PackTrack screen: Map / Radar / **List** segmented switch.
+The list is a sortable leaderboard (longest trail first, or closest to me)
+sharing the same timeline/playback/filters as the other two — scrubbing the
+replay reorders rows live. Runner dots use the per-runner track palette;
+the radar blips were ALSO recoloured from uniform yellow to the same
+per-runner palette (lost stays orange, stale = faded own colour) so map,
+radar and list all agree. Shipped with `flutter analyze` only.
+
+- [ ] **Switch shows three segments** on a run with tracks (map, radar, list);
+  still hidden entirely on a future/untracked run.
+- [ ] **List rows**: rank number, coloured dot matching that runner's map
+  trail colour, name ("(you)" suffix on own row), trail distance in mi/km,
+  "N m from you" second line (own row reads "that's you").
+- [ ] **Sort pills**: "Longest trail" default; "Closest to me" reorders by
+  separation; without a GPS fix it shows the explanatory snackbar.
+- [ ] **Replay scrub reorders**: scrub the timeline in list view — distances
+  and ranking change with the playhead.
+- [ ] **Tap a row** → runner selected (bold + highlight); switch to Map →
+  same runner selected/highlighted there, carousel synced.
+- [ ] **Back gesture from list** returns to Map (not out of the live run);
+  fullscreen button and north-lock hidden while the list shows.
+- [ ] **Radar recolour**: blips now use per-runner colours with a white ring —
+  confirm a lost runner still reads hard orange, and colours match the map
+  trails for the same runners.
+- [ ] **Live standalone radar page** (live_run_rose_page): same per-runner
+  colours there too.
+
 ## PackTrack
 
 - [x] **Stop⇒On-Inn & auto-stop** (IMPLEMENTED 2026-08-16, shipped blind —
