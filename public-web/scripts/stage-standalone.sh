@@ -29,18 +29,39 @@ cp -r .next/static "$STANDALONE/.next/static"
 
 # sharp version must match what the app depends on so the loader accepts it.
 SHARP_VERSION=$(node -p "require('./node_modules/sharp/package.json').version")
-echo "==> Injecting Linux x64 sharp $SHARP_VERSION binaries for the image optimizer"
+echo "==> Injecting Linux x64 sharp $SHARP_VERSION for the image optimizer"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 npm install --prefix "$TMP" --force --no-save --no-audit --no-fund \
   --os=linux --cpu=x64 --libc=glibc "sharp@$SHARP_VERSION" >/dev/null 2>&1
-mkdir -p "$STANDALONE/node_modules/@img"
-cp -r "$TMP/node_modules/@img/sharp-linux-x64" \
-      "$TMP/node_modules/@img/sharp-libvips-linux-x64" \
-      "$STANDALONE/node_modules/@img/"
 
-for pkg in sharp-linux-x64 sharp-libvips-linux-x64; do
-  [ -d "$STANDALONE/node_modules/@img/$pkg" ] || { echo "ERROR: @img/$pkg missing from bundle" >&2; exit 1; }
+# Next's file tracing copies sharp INCOMPLETELY (the traced top-level copy is
+# missing its dist/ main entry) and Node resolves next's own NESTED copy
+# (next/node_modules/sharp, darwin-only binaries) first — either way sharp
+# fails to load on Azure and Next silently serves unoptimized originals
+# (observed in prod 2026-08-26). Replace BOTH copies with the complete
+# freshly-installed package, including its runtime deps (detect-libc etc.),
+# platform binaries under @img/ alongside each copy.
+inject_sharp() {
+  local dest="$1"
+  mkdir -p "$dest"
+  for pkg in "$TMP"/node_modules/*/; do
+    local name; name=$(basename "$pkg")
+    [ "$name" = ".bin" ] && continue
+    rm -rf "${dest:?}/$name"
+    cp -r "$TMP/node_modules/$name" "$dest/$name"
+  done
+}
+inject_sharp "$STANDALONE/node_modules"
+[ -d "$STANDALONE/node_modules/next/node_modules" ] && inject_sharp "$STANDALONE/node_modules/next/node_modules"
+
+for dest in "$STANDALONE/node_modules" "$STANDALONE/node_modules/next/node_modules"; do
+  [ -d "$dest" ] || continue
+  for f in "@img/sharp-linux-x64/package.json" "@img/sharp-libvips-linux-x64/package.json"; do
+    [ -f "$dest/$f" ] || { echo "ERROR: $f missing from $dest" >&2; exit 1; }
+  done
+  MAIN=$(cd "$dest/sharp" && node -p "require('./package.json').main")
+  [ -f "$dest/sharp/$MAIN" ] || { echo "ERROR: sharp main entry ($MAIN) missing in $dest" >&2; exit 1; }
 done
 
 echo "==> Zipping to deploy.zip"
