@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1310 (2026-08-26) — iOS + Android
+
+### Improvements
+- **Reliable payments**: charges are now saved on the phone and sent with
+  a server-side duplicate guard — a payment can no longer be lost or
+  double-recorded on poor venue signal. Offline charges queue and send
+  automatically when the connection returns. (Requires processPayment
+  1.5.0 server-side, deployed with this release.)
+
 ## 3.0.1+1309 (2026-08-26)
 
 ### New Features
