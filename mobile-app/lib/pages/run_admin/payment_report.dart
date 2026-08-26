@@ -341,22 +341,35 @@ SELECT
     double amount, {
     EnumPayForExtras doPayForExtras = payForRunOnly,
     OtherPaymentPopupResult? otherPaymentPopupResult,
-  }) {
-    final PaymentsService paySrv = PaymentsService();
-    return paySrv.payForEvent(
-      widget.eventAggregate.event.eventId,
-      GUID_EMPTY,
-      item.extensions.pkHemId,
-      paymentType,
-      amount,
-      attendenceAtHash.value,
-      doPayForExtras,
-      AppDomainType.event,
-      specialRunPrice: otherPaymentPopupResult?.specialPriceAmount,
-      specialRunPriceReason: otherPaymentPopupResult?.specialPriceReason,
-      useSpecialPriceAsDefault:
-          otherPaymentPopupResult?.useSpecialPriceAsDefault ?? false,
-    );
+  }) async {
+    // Through the outbox: captured before sending, retried idempotently
+    // until the server acknowledges (covers corrections, confirms and
+    // cancels made from this report too).
+    final PaymentSubmitOutcome outcome = await Get.find<PaymentOutboxService>()
+        .submit(
+          PaymentsService.buildPending(
+            eventId: widget.eventAggregate.event.eventId,
+            hasherId: GUID_EMPTY,
+            hasherEventMapId: item.extensions.pkHemId,
+            paymentType: paymentType,
+            paymentAmount: amount,
+            minimumAttendenceValue: attendenceAtHash.value,
+            doPayForExtras: doPayForExtras,
+            appDomainType: AppDomainType.event,
+            specialRunPrice: otherPaymentPopupResult?.specialPriceAmount,
+            specialRunPriceReason: otherPaymentPopupResult?.specialPriceReason,
+            useSpecialPriceAsDefault:
+                otherPaymentPopupResult?.useSpecialPriceAsDefault ?? false,
+            displayLabel: 'Payment update — ${item.extensions.paidByName}',
+          ),
+        );
+    if (outcome.queued) {
+      showHcSnackbar(
+        'No connection — the change for ${item.extensions.paidByName} '
+        'is saved on this phone and will send automatically.',
+      );
+    }
+    return outcome.results;
   }
 
   void _applyFilter() {
@@ -1052,7 +1065,8 @@ SELECT
 
   /// Human label for a payment's product type, shown in the detail popup.
   String _productLabel(int productType) {
-    if (productType == productTypeMembership.value) return 'Annual subscription';
+    if (productType == productTypeMembership.value)
+      return 'Annual subscription';
     if (productType == productTypeHaberdashery.value) return 'Haberdashery';
     return 'Run fee';
   }

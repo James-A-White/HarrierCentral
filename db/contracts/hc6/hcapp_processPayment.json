@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_processPayment",
-  "version": "1.4.0",
-  "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Uses a standard device-secret access token (@param = NULL — ValidateAppAuth uses the stored DeviceSecret as the token context). paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType.",
+  "version": "1.5.0",
+  "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Uses a standard device-secret access token (@param = NULL \u2014 ValidateAppAuth uses the stored DeviceSecret as the token context). paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType.",
   "parameters": [
     {
       "name": "deviceId",
@@ -51,22 +51,22 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Payment.ProductType",
-      "description": "1=event, 2=membership, 3=haberdashery. productType=2 records a credit-neutral membership payment (debit = fee) and advances HKM.MembershipExpirationDate per Kennel.MembershipRenewalMode (1=rolling +MembershipDurationInMonths from max(expiry, now); 2=fixed year (RECURRING annual window: only the month/day of Kennel.MembershipPeriodEndDate matter, its year is a sentinel; expiry = day after the NEXT occurrence of that month/day; refused errorType 2 only if the end month/day is unconfigured); 3=lifetime, expiry = sentinel 2999-12-31, refused if already lifetime). eventId is required (anchor). The HEM is anchor-only: no attendance/RSVP is set. The exists/cancel-existing logic is ProductType-scoped: each product keeps its own single-active-payment-per-HEM invariant. productType=3 (haberdashery, 1.2.0): debit = sale amount (@specialRunPrice override, else @paymentAmount); no event pricing/discounts/extras; HEM is anchor-only; MULTIPLE sales per HEM co-exist (no cancel-existing); paymentType=1 is refused (errorType 2) — individual sale cancellation is future work."
+      "description": "1=event, 2=membership, 3=haberdashery. productType=2 records a credit-neutral membership payment (debit = fee) and advances HKM.MembershipExpirationDate per Kennel.MembershipRenewalMode (1=rolling +MembershipDurationInMonths from max(expiry, now); 2=fixed year (RECURRING annual window: only the month/day of Kennel.MembershipPeriodEndDate matter, its year is a sentinel; expiry = day after the NEXT occurrence of that month/day; refused errorType 2 only if the end month/day is unconfigured); 3=lifetime, expiry = sentinel 2999-12-31, refused if already lifetime). eventId is required (anchor). The HEM is anchor-only: no attendance/RSVP is set. The exists/cancel-existing logic is ProductType-scoped: each product keeps its own single-active-payment-per-HEM invariant. productType=3 (haberdashery, 1.2.0): debit = sale amount (@specialRunPrice override, else @paymentAmount); no event pricing/discounts/extras; HEM is anchor-only; MULTIPLE sales per HEM co-exist (no cancel-existing); paymentType=1 is refused (errorType 2) \u2014 individual sale cancellation is future work."
     },
     {
       "name": "paymentAmount",
       "type": "DECIMAL(12,6)",
       "nullable": true,
       "mapsToColumn": "Payment.CreditAmount",
-      "description": "Amount paid or owed. Required when paymentType < 100 (a param-validation error is returned if NULL or < 0). Cast to INT for token derivation — payments with fractional cents lose precision in the token.",
-      "typeMismatch": "DECIMAL(12,6) in SP; Payment.CreditAmount and DebitAmount are SMALLMONEY in the table. Intermediate SP variables are MONEY — project standard is DECIMAL(10,4) for monetary values."
+      "description": "Amount paid or owed. Required when paymentType < 100 (a param-validation error is returned if NULL or < 0). Cast to INT for token derivation \u2014 payments with fractional cents lose precision in the token.",
+      "typeMismatch": "DECIMAL(12,6) in SP; Payment.CreditAmount and DebitAmount are SMALLMONEY in the table. Intermediate SP variables are MONEY \u2014 project standard is DECIMAL(10,4) for monetary values."
     },
     {
       "name": "minimumAttendenceValue",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "HasherEventMap.AttendenceState",
-      "description": "Minimum attendance state to set on the HEM row when paying. Negative values (sentinel -1) are normalised to NULL before use, which causes the AttendenceState CASE expression to compare against NULL and never raise the state — effectively a no-op minimum."
+      "description": "Minimum attendance state to set on the HEM row when paying. Negative values (sentinel -1) are normalised to NULL before use, which causes the AttendenceState CASE expression to compare against NULL and never raise the state \u2014 effectively a no-op minimum."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
@@ -108,7 +108,7 @@
       "type": "DECIMAL(10,4)",
       "nullable": true,
       "mapsToColumn": "Payment.Surcharge",
-      "description": "Optional surcharge. Stored as COALESCE(surcharge, 0). Payment.Surcharge column is SMALLMONEY — implicit narrowing conversion on insert.",
+      "description": "Optional surcharge. Stored as COALESCE(surcharge, 0). Payment.Surcharge column is SMALLMONEY \u2014 implicit narrowing conversion on insert.",
       "typeMismatch": "DECIMAL(10,4) in SP parameter; Payment.Surcharge is SMALLMONEY in the table."
     },
     {
@@ -123,7 +123,7 @@
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Controls which sync SP is called after the write. 'AppDomainType.event' (default) → HC6.hcapp_syncEventAdminData; any other value → HC6.hcapp_syncUserData."
+      "description": "Controls which sync SP is called after the write. 'AppDomainType.event' (default) \u2192 HC6.hcapp_syncEventAdminData; any other value \u2192 HC6.hcapp_syncUserData."
     },
     {
       "name": "paymentReference",
@@ -137,7 +137,7 @@
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": "Payment.PaidDate",
-      "description": "Client-supplied payment timestamp as a string. The SP casts LEFT(@transactionTimestamp, 23) AS DATETIME — truncates to 23 chars, loses any timezone offset, and implicitly widens to DATETIMEOFFSET on insert. An invalid date string will throw an unhandled exception before reaching the TRY block.",
+      "description": "Client-supplied payment timestamp as a string. The SP casts LEFT(@transactionTimestamp, 23) AS DATETIME \u2014 truncates to 23 chars, loses any timezone offset, and implicitly widens to DATETIMEOFFSET on insert. An invalid date string will throw an unhandled exception before reaching the TRY block.",
       "typeMismatch": "NVARCHAR(50) in SP; Payment.PaidDate is DATETIMEOFFSET(7). The intermediate CAST is to DATETIME (not DATETIMEOFFSET), losing timezone."
     },
     {
@@ -173,7 +173,14 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "productType 2 only: 1 = also record the run fee at MEMBER pricing (zero price => FREE with 'member' Notes tag, other-amount methods map to base types, extras never included) and check the payer in (attendance floor minimumAttendenceValue, default 20) — atomically with the membership charge. Ignored (forced 0) for other product types. Added 1.4.0."
+      "description": "productType 2 only: 1 = also record the run fee at MEMBER pricing (zero price => FREE with 'member' Notes tag, other-amount methods map to base types, extras never included) and check the payer in (attendance floor minimumAttendenceValue, default 20) \u2014 atomically with the membership charge. Ignored (forced 0) for other product types. Added 1.4.0."
+    },
+    {
+      "name": "clientPaymentId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Payment.id",
+      "description": "Idempotency key (1.5.0): the client generates the Payment row's id and retries the same request with the same id until acknowledged. If a Payment with this id already exists (any state, cancelled included) the call is a replay: success is returned with adHocData.alreadyProcessed = 1 and nothing is written. NULL (old clients) preserves server-side NEWID()."
     }
   ],
   "rowsets": [
@@ -351,6 +358,12 @@
           "type": "SMALLINT",
           "nullable": true,
           "description": "Combined membership+run only: how the run leg was recorded (2=free member run, else the base method type). NULL otherwise. Additive, 1.4.0."
+        },
+        {
+          "name": "alreadyProcessed",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when this call was an idempotent replay of an already-recorded payment (nothing was written); 0 otherwise. Additive in 1.5.0."
         }
       ]
     },
@@ -361,33 +374,33 @@
     }
   ],
   "sideEffects": [
-    "INSERT HC.HasherEventMap — if no existing HEM row exists for @userIdWhoPaid + @eventId when @hasherEventMapId is NULL",
-    "UPDATE HC.Payment SET IsCancelled=1, CancelledDate, CancelledBy_UserId — cancels any existing active payment for the HEM row before inserting a replacement (paymentType 2-8)",
-    "UPDATE HC.Payment SET IsCancelled=1, CancelledDate, CancelledBy_UserId — cancels active payment for paymentType=1 (mark not paid) if one exists",
-    "UPDATE HC.Payment SET ConfirmedDate, ConfirmedBy_UserId — for paymentType=100 (confirm bank transfer)",
-    "UPDATE HC.Event SET DoTrackHashCash=1 — on first payment (paymentType 2-8) if not already set",
-    "INSERT HC.Payment — inserts new payment row for paymentType 2-8",
-    "UPDATE HC.HasherEventMap SET UserStartEvent, RsvpState=3, AttendenceState — updated after payment (paymentType 2-8)",
-    "UPDATE HC.HasherKennelMap SET DiscountAmount, DiscountPercent=0, DiscountDescription — when @useSpecialPriceAsDefault is non-zero and @specialRunPrice is set",
-    "EXEC HC.nonApi_updateKennelCreditByUser — recalculates kennel credit balance for the payer",
-    "EXEC HC.nonApi_updateRunCountsByUser — recalculates run totals for @userIdWhoPaid (skipped if NULL)",
-    "INSERT HC.ErrorLog — on param validation failures and CATCH"
+    "INSERT HC.HasherEventMap \u2014 if no existing HEM row exists for @userIdWhoPaid + @eventId when @hasherEventMapId is NULL",
+    "UPDATE HC.Payment SET IsCancelled=1, CancelledDate, CancelledBy_UserId \u2014 cancels any existing active payment for the HEM row before inserting a replacement (paymentType 2-8)",
+    "UPDATE HC.Payment SET IsCancelled=1, CancelledDate, CancelledBy_UserId \u2014 cancels active payment for paymentType=1 (mark not paid) if one exists",
+    "UPDATE HC.Payment SET ConfirmedDate, ConfirmedBy_UserId \u2014 for paymentType=100 (confirm bank transfer)",
+    "UPDATE HC.Event SET DoTrackHashCash=1 \u2014 on first payment (paymentType 2-8) if not already set",
+    "INSERT HC.Payment \u2014 inserts new payment row for paymentType 2-8",
+    "UPDATE HC.HasherEventMap SET UserStartEvent, RsvpState=3, AttendenceState \u2014 updated after payment (paymentType 2-8)",
+    "UPDATE HC.HasherKennelMap SET DiscountAmount, DiscountPercent=0, DiscountDescription \u2014 when @useSpecialPriceAsDefault is non-zero and @specialRunPrice is set",
+    "EXEC HC.nonApi_updateKennelCreditByUser \u2014 recalculates kennel credit balance for the payer",
+    "EXEC HC.nonApi_updateRunCountsByUser \u2014 recalculates run totals for @userIdWhoPaid (skipped if NULL)",
+    "INSERT HC.ErrorLog \u2014 on param validation failures and CATCH"
   ],
   "codeSmells": [
     {
       "severity": "high",
-      "issue": "@paymentAmount cast to INT in token derivation — truncates fractional cents",
+      "issue": "@paymentAmount cast to INT in token derivation \u2014 truncates fractional cents",
       "detail": "The compound token suffix includes CAST(CAST(COALESCE(@paymentAmount, 0) AS INT) AS NVARCHAR(50)). A payment of $5.75 builds a token against $5. Any client that signs with the full decimal amount will fail authentication. This is inherited from HC5 and persists in HC6."
     },
     {
       "severity": "high",
-      "issue": "@transactionTimestamp CAST to DATETIME outside TRY/CATCH — brittle, loses timezone",
+      "issue": "@transactionTimestamp CAST to DATETIME outside TRY/CATCH \u2014 brittle, loses timezone",
       "detail": "Line ~362: COALESCE(CAST(LEFT(@transactionTimestamp, 23) AS DATETIME), GETDATE()). The CAST to DATETIME occurs inside BEGIN TRY, so it will roll back the transaction on an invalid date string. However, DATETIME does not carry timezone; Payment.PaidDate is DATETIMEOFFSET(7). The implicit widening from DATETIME to DATETIMEOFFSET on insert assumes UTC+0, silently losing the caller's timezone."
     },
     {
       "severity": "medium",
       "issue": "Monetary intermediate variables are MONEY, not DECIMAL(10,4)",
-      "detail": "@eventPrice, @creditAmount, @debitAmount, @originalEventPrice, @extrasPrice are declared as MONEY. Project standard for monetary values is DECIMAL(10,4). Payment.CreditAmount and Payment.DebitAmount are SMALLMONEY — narrowing implicit conversion on INSERT. Mixed money types increase the risk of rounding surprises in discount/percentage calculations."
+      "detail": "@eventPrice, @creditAmount, @debitAmount, @originalEventPrice, @extrasPrice are declared as MONEY. Project standard for monetary values is DECIMAL(10,4). Payment.CreditAmount and Payment.DebitAmount are SMALLMONEY \u2014 narrowing implicit conversion on INSERT. Mixed money types increase the risk of rounding surprises in discount/percentage calculations."
     },
     {
       "severity": "medium",
@@ -402,12 +415,12 @@
     {
       "severity": "medium",
       "issue": "HEM INSERT for new attendee sets AttendenceState from @minimumAttendenceValue without applying NULL normalisation first",
-      "detail": "Line ~219: the new HEM row is inserted with AttendenceState = COALESCE(@minimumAttendenceValue, 0) — COALESCE here correctly handles the NULL case. However, @minimumAttendenceValue has already been normalised to NULL if negative (line 82), so negative values passed by the caller always result in AttendenceState=0 for a newly created HEM. Callers expecting AttendenceState to reflect a negative sentinel will be surprised."
+      "detail": "Line ~219: the new HEM row is inserted with AttendenceState = COALESCE(@minimumAttendenceValue, 0) \u2014 COALESCE here correctly handles the NULL case. However, @minimumAttendenceValue has already been normalised to NULL if negative (line 82), so negative values passed by the caller always result in AttendenceState=0 for a newly created HEM. Callers expecting AttendenceState to reflect a negative sentinel will be surprised."
     },
     {
       "severity": "low",
       "issue": "Post-commit side effects run outside any transaction",
-      "detail": "Lines ~399-404: EXEC HC.nonApi_updateKennelCreditByUser and EXEC HC.nonApi_updateRunCountsByUser are called after COMMIT TRANSACTION. A failure in either leaves the kennel credit or run counts stale — the payment itself is committed but the derived aggregates are not updated. This is a pre-existing HC5 pattern carried into HC6."
+      "detail": "Lines ~399-404: EXEC HC.nonApi_updateKennelCreditByUser and EXEC HC.nonApi_updateRunCountsByUser are called after COMMIT TRANSACTION. A failure in either leaves the kennel credit or run counts stale \u2014 the payment itself is committed but the derived aggregates are not updated. This is a pre-existing HC5 pattern carried into HC6."
     },
     {
       "severity": "low",
@@ -417,7 +430,7 @@
     {
       "severity": "low",
       "issue": "paymentType=100 path commits inside BEGIN TRY but then falls through to the post-commit side effects via GOTO SyncAndReturn",
-      "detail": "The paymentType=100 branch at line ~163 commits and emits its result rows, then executes GOTO SyncAndReturn (line ~191), which skips the post-commit credit/run-count updates but still calls the sync SP. This is intentional but subtle — the credit balance is not refreshed after a bank transfer confirmation, so the PaymentResult creditAvailable will be NULL (not stale, but callers may expect it to be populated)."
+      "detail": "The paymentType=100 branch at line ~163 commits and emits its result rows, then executes GOTO SyncAndReturn (line ~191), which skips the post-commit credit/run-count updates but still calls the sync SP. This is intentional but subtle \u2014 the credit balance is not refreshed after a bank transfer confirmation, so the PaymentResult creditAvailable will be NULL (not stale, but callers may expect it to be populated)."
     },
     {
       "severity": "low",
@@ -426,11 +439,11 @@
     }
   ],
   "breakingChanges": [
-    "TRY/CATCH and BEGIN TRANSACTION added — HC5 had no error handling or transaction. Error paths now roll back all writes atomically.",
-    "Success envelope rowset added as rowset 0 — HC5 returned PaymentResult directly as the first rowset. Callers must now read rowset 0 (success/errorCode/errorType) before consuming the PaymentResult at rowset 1.",
-    "ErrorDetail rowset introduced — HC5 had no structured error rowset. Failure paths now return two rowsets (Envelope + ErrorDetail).",
-    "Delegation targets updated to HC6 SPs — HC5 called HC5.hcapp_syncEventAdminData and HC5.hcapp_syncUserData; HC6 calls HC6.hcapp_syncEventAdminData and HC6.hcapp_syncUserData.",
-    "HC6 schema — all objects are in the HC6 schema; no HC5 schema objects are referenced."
+    "TRY/CATCH and BEGIN TRANSACTION added \u2014 HC5 had no error handling or transaction. Error paths now roll back all writes atomically.",
+    "Success envelope rowset added as rowset 0 \u2014 HC5 returned PaymentResult directly as the first rowset. Callers must now read rowset 0 (success/errorCode/errorType) before consuming the PaymentResult at rowset 1.",
+    "ErrorDetail rowset introduced \u2014 HC5 had no structured error rowset. Failure paths now return two rowsets (Envelope + ErrorDetail).",
+    "Delegation targets updated to HC6 SPs \u2014 HC5 called HC5.hcapp_syncEventAdminData and HC5.hcapp_syncUserData; HC6 calls HC6.hcapp_syncEventAdminData and HC6.hcapp_syncUserData.",
+    "HC6 schema \u2014 all objects are in the HC6 schema; no HC5 schema objects are referenced."
   ],
   "behaviorNotes": [
     "1.4.0 zero-price => FREE: for productType 1, paymentType 3/4/6 with computed run price (before extras) <= 0, the payment is recorded as PaymentType 2 with Notes 'member'/'non-member' (by the payer's membership status). Other-amount types 5/7/8 are never coerced. adHocData paymentType reflects the coerced value."

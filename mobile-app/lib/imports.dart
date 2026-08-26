@@ -136,6 +136,7 @@ export 'package:harrier_central/data/models/run_history/run_history_model.dart';
 export 'package:harrier_central/data/models/run_history/run_history_queries.dart';
 export 'package:harrier_central/data/models/run_photo_model.dart';
 export 'package:harrier_central/data/models/run_query_extensions/run_query_extensions_model.dart';
+export 'package:harrier_central/data/models/pending_payment.dart';
 export 'package:harrier_central/data/models/service_result.dart';
 export 'package:harrier_central/data/models/single_result/single_result_model.dart';
 export 'package:harrier_central/data/models/trail_slot/trail_slot.dart';
@@ -266,6 +267,7 @@ export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 
 // services
 export 'package:harrier_central/services/connectivity_service.dart';
+export 'package:harrier_central/services/payment_outbox_service.dart';
 export 'package:harrier_central/services/data_change_service.dart';
 export 'package:harrier_central/services/location_service/location_service.dart';
 export 'package:harrier_central/services/watch_bridge_service.dart';

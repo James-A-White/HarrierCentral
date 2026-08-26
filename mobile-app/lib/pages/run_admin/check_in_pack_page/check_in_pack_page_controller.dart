@@ -889,22 +889,43 @@ class CheckInPackController extends GetxController
 
     paymentReference = 'HC:$randomString';
 
-    final PaymentsService paySrv = PaymentsService();
-    final List<dynamic> result = await paySrv.payForEvent(
-      eventAggregate.event.eventId,
-      ((hasherId?.length != GUID_EMPTY.length)) ? GUID_EMPTY : hasherId,
-      (((hemId?.length ?? 0) != GUID_EMPTY.length)) ? GUID_EMPTY : hemId,
-      paymentType,
-      amount,
-      attendenceAtHash.value,
-      doPayForExtras,
-      AppDomainType.event,
-      paymentReference: paymentReference,
-      specialRunPrice: specialRunPrice,
-      specialRunPriceReason: specialRunPriceReason,
-      useSpecialPriceAsDefault: useSpecialPriceAsDefault,
-    );
+    // Through the outbox: captured on the phone before the first send and
+    // retried (same clientPaymentId — idempotent server-side) until the
+    // server acknowledges, so a dropped response at the venue can neither
+    // lose the charge nor double-record it.
+    final PaymentSubmitOutcome outcome = await Get.find<PaymentOutboxService>()
+        .submit(
+          PaymentsService.buildPending(
+            eventId: eventAggregate.event.eventId,
+            hasherId: ((hasherId?.length != GUID_EMPTY.length))
+                ? GUID_EMPTY
+                : hasherId,
+            hasherEventMapId: (((hemId?.length ?? 0) != GUID_EMPTY.length))
+                ? GUID_EMPTY
+                : hemId,
+            paymentType: paymentType,
+            paymentAmount: amount,
+            minimumAttendenceValue: attendenceAtHash.value,
+            doPayForExtras: doPayForExtras,
+            appDomainType: AppDomainType.event,
+            paymentReference: paymentReference,
+            specialRunPrice: specialRunPrice,
+            specialRunPriceReason: specialRunPriceReason,
+            useSpecialPriceAsDefault: useSpecialPriceAsDefault,
+            displayLabel: 'Run fee — ${filteredList[index].nameForDisplay}',
+          ),
+        );
 
+    if (outcome.queued) {
+      showHcSnackbar(
+        'No connection — the payment for '
+        '${filteredList[index].nameForDisplay} is saved on this phone and '
+        'will send automatically. The list will update when it lands.',
+      );
+      return null;
+    }
+
+    final List<dynamic> result = outcome.results;
     if (result.isNotEmpty) {
       final Map<String, dynamic> m = result[0];
       m.addAll(<String, dynamic>{

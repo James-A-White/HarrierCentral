@@ -189,18 +189,31 @@ class CheckInScannerController extends GetxController {
     int paymentType,
     double amount,
   ) async {
-    final PaymentsService paySrv = PaymentsService();
-    final List<dynamic> paymentResult = await paySrv.payForEvent(
-      eventAggregate.event.eventId,
-      GUID_EMPTY,
-      hemId,
-      paymentType,
-      amount,
-      attendenceAtHash.value,
-      payForRunOnly,
-      AppDomainType.event,
-    );
+    // Through the outbox: captured before sending, retried idempotently
+    // until the server acknowledges.
+    final PaymentSubmitOutcome outcome = await Get.find<PaymentOutboxService>()
+        .submit(
+          PaymentsService.buildPending(
+            eventId: eventAggregate.event.eventId,
+            hasherId: GUID_EMPTY,
+            hasherEventMapId: hemId,
+            paymentType: paymentType,
+            paymentAmount: amount,
+            minimumAttendenceValue: attendenceAtHash.value,
+            doPayForExtras: payForRunOnly,
+            appDomainType: AppDomainType.event,
+            displayLabel: 'Run fee — scanned check-in',
+          ),
+        );
 
+    if (outcome.queued) {
+      onScreenMessage.value =
+          'No connection — payment saved on this phone; it will send '
+          'automatically.';
+      return;
+    }
+
+    final List<dynamic> paymentResult = outcome.results;
     if (paymentResult.isNotEmpty) {
       final int paidType = paymentResult[0]['paymentType'] as int;
       final String amountPaid = IveCoreUtilities.getFormattedMoney(

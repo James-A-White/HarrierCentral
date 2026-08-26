@@ -112,21 +112,36 @@ class HaberdasherySaleController extends GetxController {
     isSaving.value = true;
 
     try {
-      final PaymentsService paySrv = PaymentsService();
-      final List<dynamic> results = await paySrv.payForEvent(
-        eventId,
-        userId,
-        hasherEventMapId,
-        paymentMethod.value,
-        amount,
-        -1, // never touch attendance
-        payForRunOnly,
-        appDomainType,
-        specialRunPrice: amount, // sale price = the debit
-        productType: productTypeHaberdashery,
-        notes: description,
-      );
+      // Through the outbox: captured before sending, retried until the
+      // server acknowledges (idempotent — same clientPaymentId per retry).
+      final PaymentSubmitOutcome outcome =
+          await Get.find<PaymentOutboxService>().submit(
+            PaymentsService.buildPending(
+              eventId: eventId,
+              hasherId: userId,
+              hasherEventMapId: hasherEventMapId,
+              paymentType: paymentMethod.value,
+              paymentAmount: amount,
+              minimumAttendenceValue: -1, // never touch attendance
+              doPayForExtras: payForRunOnly,
+              appDomainType: appDomainType,
+              specialRunPrice: amount, // sale price = the debit
+              productType: productTypeHaberdashery,
+              notes: description,
+              displayLabel: 'Haberdashery — $displayName ($description)',
+            ),
+          );
 
+      if (outcome.queued) {
+        showHcSnackbar(
+          'No connection — the sale to $displayName is saved on this phone '
+          'and will send automatically.',
+        );
+        if (context.mounted) Navigator.of(context).pop();
+        isSaving.value = false;
+        return;
+      }
+      final List<dynamic> results = outcome.results;
       if (results.isEmpty) {
         isSaving.value = false;
         return;
@@ -180,7 +195,8 @@ class HaberdasherySaleSheetBody extends StatelessWidget {
         // padding.bottom keeps the action buttons above the Android 15/16
         // edge-to-edge system navigation bar (it collapses to 0 while the
         // keyboard is up, so the two insets never double-pad).
-        bottom: 20 +
+        bottom:
+            20 +
             MediaQuery.of(context).viewInsets.bottom +
             MediaQuery.of(context).padding.bottom,
       ),

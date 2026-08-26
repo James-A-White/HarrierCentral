@@ -28,7 +28,14 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_processPayment]
     -- productType 2 only: 1 = also record the run fee (member pricing) and
     -- check the payer in, atomically with the membership charge. Ignored for
     -- other product types. See "Combined membership + run" in the header.
-    @alsoPayRunFee          SMALLINT            = 0
+    @alsoPayRunFee          SMALLINT            = 0,
+    -- Idempotency key (2026-08-26): the client generates the Payment row's id
+    -- up front and retries the SAME request with the SAME id until it gets an
+    -- acknowledgement. If a Payment with this id already exists — in any
+    -- state, cancelled included — the request is a replay whose original
+    -- response was lost: acknowledge success WITHOUT writing anything (see
+    -- the replay check below). NULL (old clients) preserves NEWID() behaviour.
+    @clientPaymentId        UNIQUEIDENTIFIER    = NULL
 
 AS
 -- =====================================================================
@@ -86,6 +93,14 @@ AS
 -- Modified: 2026-07-25 — added UPDLOCK/HOLDLOCK serialization on the HEM row
 --   before the check-then-cancel-then-insert, preventing a concurrent
 --   double-tap from inserting two non-cancelled payments for the same HEM.
+-- Modified: 2026-08-26 — idempotent replays (@clientPaymentId): the client
+--   supplies the Payment id it intends to create; if that id already exists
+--   the call is acknowledged as success with adHocData.alreadyProcessed = 1
+--   and NO writes occur. Cancelled rows count as processed — a replay must
+--   never resurrect a payment that a NEWER intentional charge has since
+--   replaced. The check sits inside the HEM UPDLOCK serialization so a
+--   concurrent duplicate blocks, then sees the committed row. Enables the
+--   phone-side payment outbox (retry-until-acknowledged).
 -- Modified: 2026-08-16 — two additions (docs/membership_payments_plan.md):
 --   (1) Zero-price ⇒ FREE: a cash/transfer/credit tap (types 3/4/6) on a run
 --       whose computed price is zero records PaymentType 2 with a provenance
@@ -275,7 +290,8 @@ BEGIN TRY
                 ''                 AS discountDescription,
                 NULL               AS newMembershipExpiry,
                 NULL               AS runFeeAmount,
-                NULL               AS runFeePaymentType;
+                NULL               AS runFeePaymentType,
+                0                  AS alreadyProcessed;
 
             GOTO SyncAndReturn;
         END
@@ -364,6 +380,45 @@ BEGIN TRY
         SELECT @serialiseHemId = hem.id
         FROM HC.HasherEventMap hem WITH (UPDLOCK, HOLDLOCK)
         WHERE hem.id = @hasherEventMapId;
+
+        -- ---------------------------------------------------------------
+        -- Idempotent replay check (AFTER the HEM lock, so a concurrent
+        -- retry of the same request blocks above and then finds the row
+        -- the first attempt committed). The id existing — cancelled or
+        -- not — means this exact request has already been processed and
+        -- only the acknowledgement was lost. Return success + sync
+        -- rowsets (so the client's local DB converges on the payment
+        -- that DID land) and write nothing.
+        -- ---------------------------------------------------------------
+        IF (@clientPaymentId IS NOT NULL)
+            AND EXISTS (SELECT 1 FROM HC.Payment WHERE id = @clientPaymentId)
+        BEGIN
+            COMMIT TRANSACTION;
+
+            SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
+
+            SELECT
+                1                  AS adHocDataId,
+                NULL               AS hasherWhoPaid,
+                NULL               AS attendenceState,
+                NULL               AS rsvpState,
+                @paymentType       AS paymentType,
+                @productType       AS productType,
+                NULL               AS debitAmount,
+                NULL               AS creditAmount,
+                @paymentAmount     AS paymentAmount,
+                NULL               AS creditAvailable,
+                @paymentReference  AS paymentReference,
+                0                  AS discountAmount,
+                0                  AS discountPercent,
+                ''                 AS discountDescription,
+                NULL               AS newMembershipExpiry,
+                NULL               AS runFeeAmount,
+                NULL               AS runFeePaymentType,
+                1                  AS alreadyProcessed;
+
+            GOTO SyncAndReturn;
+        END
 
         -- ProductType-scoped: a membership charge on a check-in HEM must not
         -- count (or later cancel) the run payment sharing that HEM, and vice
@@ -652,8 +707,13 @@ BEGIN TRY
                   AND ProductType = @productType;
             END
 
+            -- [id] is the client's idempotency key when supplied (see the
+            -- replay check above); old clients fall back to NEWID(). The
+            -- combined-run leg below keeps its own NEWID() — it commits
+            -- atomically with this row, so replay detection on this id
+            -- covers both.
             INSERT HC.Payment
-                ([KennelId], [UserId], [EventId], [HasherEventMapId],
+                ([id], [KennelId], [UserId], [EventId], [HasherEventMapId],
                  [CreditAmount], [DebitAmount], [CreditAvailable],
                  [PaymentProcessedBy_userId], [PaidDate],
                  [PaymentType], [ProductType], [PaymentReference],
@@ -662,7 +722,8 @@ BEGIN TRY
                  [SpecialRunPriceReason], [Surcharge],
                  [PreviousMembershipExpiry], [Notes], [updatedAt])
             VALUES
-                (@kennelId, @payer_userIdGuid, @eventId, @hasherEventMapId,
+                (COALESCE(@clientPaymentId, NEWID()),
+                 @kennelId, @payer_userIdGuid, @eventId, @hasherEventMapId,
                  @creditAmount, @debitAmount, 0,
                  @userId,
                  COALESCE(TRY_CAST(LEFT(@transactionTimestamp, 23) AS DATETIME), GETDATE()),
@@ -893,7 +954,9 @@ SELECT
     -- charged and how it was recorded (2 = free run). NULL otherwise
     -- (additive columns — see contract).
     @runFeeCharged       AS runFeeAmount,
-    @runFeePaymentType   AS runFeePaymentType;
+    @runFeePaymentType   AS runFeePaymentType,
+    -- 1 only on the idempotent-replay path (additive column — see contract).
+    0                    AS alreadyProcessed;
 
 SyncAndReturn:
 

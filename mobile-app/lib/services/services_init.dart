@@ -124,4 +124,12 @@ Future<void> initServices() async {
   if (!Get.isRegistered<WatchBridgeService>()) {
     Get.put<WatchBridgeService>(WatchBridgeService(), permanent: true);
   }
+
+  // Payment outbox: persists charges until the server acknowledges them and
+  // retries them across sessions. Permanent — queued payments from a
+  // previous session must get their boot-time retry even if no payment UI
+  // is ever opened.
+  if (!Get.isRegistered<PaymentOutboxService>()) {
+    Get.put<PaymentOutboxService>(PaymentOutboxService(), permanent: true);
+  }
 }

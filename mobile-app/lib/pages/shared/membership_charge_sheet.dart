@@ -168,10 +168,10 @@ class MembershipChargeController extends GetxController {
       renewalMode.value = (kr[k.colMembershipRenewalMode] as int?) ?? 1;
       durationMonths.value =
           (kr[k.colMembershipDurationInMonths] as int?) ?? 12;
-      defaultFee.value =
-          ((kr[k.colMembershipPrice] as num?) ?? 0).toDouble();
+      defaultFee.value = ((kr[k.colMembershipPrice] as num?) ?? 0).toDouble();
       currencySymbol.value = kr[k.colCurrencySymbol] as String?;
-      digitsAfterDecimal.value = (kr[k.colDigitsAfterDecimal] as num?)?.toInt() ?? 2;
+      digitsAfterDecimal.value =
+          (kr[k.colDigitsAfterDecimal] as num?)?.toInt() ?? 2;
       final String? endText = kr[k.colMembershipPeriodEndDate] as String?;
       periodEndDate.value = endText == null ? null : DateTime.tryParse(endText);
 
@@ -297,10 +297,13 @@ class MembershipChargeController extends GetxController {
             : 'Membership until ${formatDate(_nextAnniversary(end))}';
       default:
         final DateTime now = DateTime.now();
-        final DateTime base =
-            (isCurrentMember && !isLifetimeMember) ? currentExpiry.value! : now;
+        final DateTime base = (isCurrentMember && !isLifetimeMember)
+            ? currentExpiry.value!
+            : now;
         final DateTime next = DateTime(
-          base.year, base.month + durationMonths.value, base.day,
+          base.year,
+          base.month + durationMonths.value,
+          base.day,
         );
         return 'Membership until ${formatDate(next)}';
     }
@@ -331,25 +334,43 @@ class MembershipChargeController extends GetxController {
       // A fee differing from the kennel default rides @specialRunPrice,
       // which the SP treats as the membership-fee override.
       final bool overridden = (fee - defaultFee.value).abs() > 0.0001;
-      final PaymentsService paySrv = PaymentsService();
-      final List<dynamic> results = await paySrv.payForEvent(
-        anchorEventId!,
-        userId,
-        hasherEventMapId,
-        paymentMethod.value,
-        fee,
-        // Combined path checks the payer in; membership-only never touches
-        // attendance.
-        alsoPayRun ? attendenceAtHash.value : -1,
-        payForRunOnly,
-        appDomainType,
-        specialRunPrice: overridden ? fee : null,
-        productType: productTypeMembership,
-        alsoPayRunFee: alsoPayRun,
+      // Through the outbox: captured on the phone before the first send and
+      // retried until the server acknowledges — a lost response can no
+      // longer lose (or double-record) the charge.
+      final PaymentSubmitOutcome
+      outcome = await Get.find<PaymentOutboxService>().submit(
+        PaymentsService.buildPending(
+          eventId: anchorEventId!,
+          hasherId: userId,
+          hasherEventMapId: hasherEventMapId,
+          paymentType: paymentMethod.value,
+          paymentAmount: fee,
+          // Combined path checks the payer in; membership-only never touches
+          // attendance.
+          minimumAttendenceValue: alsoPayRun ? attendenceAtHash.value : -1,
+          doPayForExtras: payForRunOnly,
+          appDomainType: appDomainType,
+          specialRunPrice: overridden ? fee : null,
+          productType: productTypeMembership,
+          alsoPayRunFee: alsoPayRun,
+          displayLabel: 'Membership — $displayName (${formatMoney(fee)})',
+        ),
       );
 
+      if (outcome.queued) {
+        // Couldn't reach the server: the charge is safe on this phone and
+        // will send itself. The expiry/report will update when it lands.
+        showHcSnackbar(
+          'No connection — membership charge for $displayName is saved on '
+          'this phone and will send automatically.',
+        );
+        if (context.mounted) Navigator.of(context).pop();
+        isCharging.value = false;
+        return;
+      }
+      final List<dynamic> results = outcome.results;
       if (results.isEmpty) {
-        // Error path already surfaced by the service's error dialog.
+        // Rejected: the error dialog has already been shown.
         isCharging.value = false;
         return;
       }
@@ -424,7 +445,8 @@ class MembershipChargeSheetBody extends StatelessWidget {
         // padding.bottom keeps the action buttons above the Android 15/16
         // edge-to-edge system navigation bar (it collapses to 0 while the
         // keyboard is up, so the two insets never double-pad).
-        bottom: 20 +
+        bottom:
+            20 +
             MediaQuery.of(context).viewInsets.bottom +
             MediaQuery.of(context).padding.bottom,
       ),

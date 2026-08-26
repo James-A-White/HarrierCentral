@@ -39,6 +39,7 @@ enum StringPrefsEnum {
   lastSessionErrorLog,
   leaderboardJson,
   mapPreference,
+  paymentOutboxJson,
   paymentTerminalAccountKey,
   permissionMatrixJson,
   permissionMatrixWatermark,

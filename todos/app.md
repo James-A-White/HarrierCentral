@@ -694,6 +694,45 @@ Released with `flutter analyze` only. Screens: live run → map → Radar.
 - [ ] **Wedge steppiness**: the wedge follows the raw compass in 2° ticks — if
   it looks steppy on device, route it through the same easing.
 
+## Device test — payment outbox + idempotent payments (2026-08-26, not yet released)
+
+⚠️ DEPLOY ORDER: processPayment 1.5.0 (SP) must be deployed BEFORE any app
+build carrying the outbox ships — the new build always sends
+@clientPaymentId, which the 1.4.0 SP does not accept.
+
+Every single-payment path (check-in charge, scanner, membership,
+haberdashery, report corrections/confirms/cancels) now goes through
+PaymentOutboxService: captured to persistent storage BEFORE the first send,
+retried with the SAME clientPaymentId (= server Payment.id) until the server
+acknowledges. Retries fire on app resume, connectivity return, and a 60s
+sweep; queued captures survive app restarts. Server rejections are NOT
+retried (dead-lettered with a loud snackbar). Bulk payment
+(processBulkPayment) is NOT yet idempotent/queued — follow-up.
+
+- [ ] **Normal charge online**: cash-tap at check-in behaves exactly as
+  before (snackbar, list updates, report correct) — one Payment row.
+- [ ] **Airplane mode charge**: enable airplane mode, cash-tap a hasher →
+  "saved on this phone / will send automatically" snackbar; signal back →
+  within ~60s (or on app resume) "Payment sent" snackbar; list/report then
+  show the payment; server has ONE row with the client-generated id.
+- [ ] **Kill mid-queue**: charge in airplane mode, force-kill the app,
+  relaunch with signal → boot log shows "loaded 1 queued payment(s)";
+  payment arrives without touching any payment UI.
+- [ ] **Replay safety (the original bug)**: with a proxy/timeout or by
+  toggling airplane mode DURING the request (send happens, response lost) →
+  outbox keeps it queued, retry gets acknowledged via the idempotent replay
+  path → exactly ONE payment row on the server, no duplicate.
+- [ ] **Double-tap safety**: rapid double charge attempts on the same hasher
+  → still exactly one live payment (existing UPDLOCK + new PK id).
+- [ ] **Membership offline**: membership charge in airplane mode → queued
+  snackbar, sheet closes; when it lands, expiry advances (verify in members
+  list after sync).
+- [ ] **Server rejection not retried**: force a validation failure (e.g.
+  charge on a kennel where perms were revoked) → red "Payment NOT recorded"
+  snackbar, outbox empty afterwards, no repeating dialogs.
+- [ ] **Replayed PaidDate**: an offline charge delivered later records
+  PaidDate ≈ when the admin tapped (capture time), not delivery time.
+
 ## Device test — PackTrack runner list canvas (2026-08-26, not yet released)
 
 Third canvas on the PackTrack screen: Map / Radar / **List** segmented switch.

@@ -210,53 +210,71 @@ class PaymentsService {
     return results;
   }
 
-  Future<List<dynamic>> payForEvent(
-    String eventId,
-    String? hasherId,
-    String? hasherEventMapId,
-    int paymentType,
-    double paymentAmount,
-    int minimumAttendenceValue,
-    EnumPayForExtras doPayForExtras,
-    AppDomainType appDomainType, {
+  /// Builds a [PendingPayment] capture for the given charge. The
+  /// clientPaymentId minted here is the server-side Payment row's id — the
+  /// idempotency key that makes resending this exact request safe.
+  static PendingPayment buildPending({
+    required String eventId,
+    required String? hasherId,
+    required String? hasherEventMapId,
+    required int paymentType,
+    required double paymentAmount,
+    required int minimumAttendenceValue,
+    required EnumPayForExtras doPayForExtras,
+    required AppDomainType appDomainType,
+    required String displayLabel,
     double? surcharge,
     String? paymentProvider,
     String? paymentReference,
     double? specialRunPrice,
     String? specialRunPriceReason,
     bool? useSpecialPriceAsDefault,
-    // productTypeMembership charges the kennel's membership fee (or
-    // specialRunPrice as an override) and advances the member's expiry —
-    // see docs/membership_payments_plan.md. productTypeHaberdashery sells
-    // an item for @paymentAmount with [notes] as the description. Default
-    // keeps every existing caller an event payment.
     EnumProductType productType = productTypeEvent,
     String? notes,
-    // Combined membership+run (productType 2 only): the SP atomically records
-    // the run fee at member pricing and checks the payer in. Only sent when
-    // true, so membership-only calls stay compatible with a pre-1.4.0 SP.
     bool alsoPayRunFee = false,
+  }) {
+    return PendingPayment(
+      clientPaymentId: const Uuid().v4(),
+      createdAtMs: DateTime.now().millisecondsSinceEpoch,
+      eventId: eventId,
+      hasherId: (hasherId ?? '').isEmpty ? GUID_EMPTY : hasherId,
+      hasherEventMapId: (hasherEventMapId ?? '').isEmpty
+          ? GUID_EMPTY
+          : hasherEventMapId,
+      paymentType: paymentType,
+      paymentAmount: paymentAmount,
+      minimumAttendenceValue: minimumAttendenceValue,
+      doPayForExtrasValue: doPayForExtras.value,
+      appDomainTypeStr: appDomainType.toString(),
+      productTypeValue: productType.value,
+      surcharge: surcharge,
+      paymentProvider: paymentProvider,
+      paymentReference: paymentReference,
+      specialRunPrice: specialRunPrice,
+      specialRunPriceReason: specialRunPriceReason,
+      useSpecialPriceAsDefault: useSpecialPriceAsDefault,
+      notes: notes,
+      alsoPayRunFee: alsoPayRunFee,
+      displayLabel: displayLabel,
+    );
+  }
+
+  /// Sends one captured payment to the server. Called for the initial
+  /// attempt AND for every outbox retry — the request body is rebuilt from
+  /// the capture each time (fresh access token, fresh sync watermarks), but
+  /// the clientPaymentId never changes, so the server can deduplicate.
+  ///
+  /// [errorCallback] follows sendHttpPost semantics: pass one to suppress
+  /// the default server-error dialog (background retries do).
+  Future<PaymentSendResult> sendPending(
+    PendingPayment p, {
+    Function? errorCallback,
   }) async {
-    List<dynamic> results = <dynamic>[];
-
-    if (Utilities.isNotConnected()) {
-      return results;
-      // TODO(James): fix this so we can return a bool
-      //return false;
-    }
-
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
-
-    if ((hasherEventMapId ?? '').isEmpty) {
-      hasherEventMapId = GUID_EMPTY;
-    }
-
-    if ((hasherId ?? '').isEmpty) {
-      hasherId = GUID_EMPTY;
-    }
+    final AppDomainType appDomainType = p.appDomainType;
 
     final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
@@ -289,53 +307,64 @@ class PaymentsService {
       paymentsLastUpdated + 1,
     );
 
-    final String appDomainStr = appDomainType.toString();
-
     final Map<String, String?> payBody = <String, String?>{
       'queryType': 'processPayment',
       'deviceId': deviceId,
-      'userIdWhoPaid': hasherId,
-      'eventId': eventId,
-      'hasherEventMapId': hasherEventMapId,
-      'paymentType': paymentType.toString(),
-      'productType': productType.value.toString(),
-      'paymentAmount': paymentAmount.toString(),
-      'minimumAttendenceValue': minimumAttendenceValue.toString(),
+      'userIdWhoPaid': p.hasherId,
+      'eventId': p.eventId,
+      'hasherEventMapId': p.hasherEventMapId,
+      'paymentType': p.paymentType.toString(),
+      'productType': p.productTypeValue.toString(),
+      'paymentAmount': p.paymentAmount.toString(),
+      'minimumAttendenceValue': p.minimumAttendenceValue.toString(),
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
       //'kennelCreditsUpdatedAfter': 'ignore',
-      'doPayForExtras': doPayForExtras.value.toString(),
-      'surcharge': surcharge?.toString(),
-      'paymentProvider': paymentProvider ?? '',
-      'appDomainType': appDomainStr,
-      'paymentReference': paymentReference,
-      'transactionTimestamp': DateTime.now().toString(),
-      if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
-      if (alsoPayRunFee) 'alsoPayRunFee': '1',
+      'doPayForExtras': p.doPayForExtrasValue.toString(),
+      'surcharge': p.surcharge?.toString(),
+      'paymentProvider': p.paymentProvider ?? '',
+      'appDomainType': p.appDomainTypeStr,
+      'paymentReference': p.paymentReference,
+      // The ORIGINAL capture instant, not "now": on a replayed send the
+      // recorded PaidDate should be when the admin took the money.
+      'transactionTimestamp': DateTime.fromMillisecondsSinceEpoch(
+        p.createdAtMs,
+      ).toString(),
+      // Idempotency key — requires processPayment >= 1.5.0 server-side.
+      'clientPaymentId': p.clientPaymentId,
+      if (p.notes != null && p.notes!.trim().isNotEmpty)
+        'notes': p.notes!.trim(),
+      if (p.alsoPayRunFee) 'alsoPayRunFee': '1',
     };
 
-    if (specialRunPrice != null) {
+    if (p.specialRunPrice != null) {
       payBody.addAll(<String, String>{
-        'specialRunPrice': specialRunPrice.toString(),
-        'specialRunPriceReason': specialRunPriceReason ?? '',
+        'specialRunPrice': p.specialRunPrice.toString(),
+        'specialRunPriceReason': p.specialRunPriceReason ?? '',
         'useSpecialPriceAsDefault':
-            ((useSpecialPriceAsDefault ?? false) ? 1 : 0).toString(),
+            ((p.useSpecialPriceAsDefault ?? false) ? 1 : 0).toString(),
       });
     }
 
-    // Compound token includes hasherEventMapId and paymentAmount — both captured
-    // by the closure so they stay consistent with the body across retries.
-    final String hemId = hasherEventMapId ?? GUID_EMPTY;
-    final String responseBody = await ServiceCommon.sendHttpPost(() {
-      payBody['accessToken'] = Utilities.generateToken(
-        userId,
-        'hcapp_processPayment',
-        paramString: '$deviceSecret$hemId#${paymentAmount.toInt()}',
-      );
-      return jsonEncode(payBody);
-    }, noRetries: true);
+    // Compound token includes hasherEventMapId and paymentAmount — both come
+    // from the persisted capture, so a retry hours later builds the same
+    // compound param; the token itself is minted fresh per attempt.
+    final String hemId = p.hasherEventMapId ?? GUID_EMPTY;
+    final String responseBody = await ServiceCommon.sendHttpPost(
+      () {
+        payBody['accessToken'] = Utilities.generateToken(
+          userId,
+          'hcapp_processPayment',
+          paramString: '$deviceSecret$hemId#${p.paymentAmount.toInt()}',
+        );
+        return jsonEncode(payBody);
+      },
+      noRetries: true,
+      errorCallback: errorCallback,
+    );
 
+    List<dynamic> results = <dynamic>[];
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
         results = await tableModel.syncEventAdminService
@@ -345,7 +374,57 @@ class PaymentsService {
             .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       }
     }
-    return results;
+    return PaymentSendResult(responseBody, results);
+  }
+
+  /// Direct, non-queued send — the pre-outbox behaviour. Prefer
+  /// PaymentOutboxService.submit for anything that charges money: it keeps
+  /// the capture on the phone until the server acknowledges it.
+  Future<List<dynamic>> payForEvent(
+    String eventId,
+    String? hasherId,
+    String? hasherEventMapId,
+    int paymentType,
+    double paymentAmount,
+    int minimumAttendenceValue,
+    EnumPayForExtras doPayForExtras,
+    AppDomainType appDomainType, {
+    double? surcharge,
+    String? paymentProvider,
+    String? paymentReference,
+    double? specialRunPrice,
+    String? specialRunPriceReason,
+    bool? useSpecialPriceAsDefault,
+    EnumProductType productType = productTypeEvent,
+    String? notes,
+    bool alsoPayRunFee = false,
+  }) async {
+    if (Utilities.isNotConnected()) {
+      return <dynamic>[];
+    }
+    final PaymentSendResult result = await sendPending(
+      buildPending(
+        eventId: eventId,
+        hasherId: hasherId,
+        hasherEventMapId: hasherEventMapId,
+        paymentType: paymentType,
+        paymentAmount: paymentAmount,
+        minimumAttendenceValue: minimumAttendenceValue,
+        doPayForExtras: doPayForExtras,
+        appDomainType: appDomainType,
+        displayLabel: 'payment',
+        surcharge: surcharge,
+        paymentProvider: paymentProvider,
+        paymentReference: paymentReference,
+        specialRunPrice: specialRunPrice,
+        specialRunPriceReason: specialRunPriceReason,
+        useSpecialPriceAsDefault: useSpecialPriceAsDefault,
+        productType: productType,
+        notes: notes,
+        alsoPayRunFee: alsoPayRunFee,
+      ),
+    );
+    return result.results;
   }
 
   Future<Map<String, String?>> sendPaymentReportByEmail({
@@ -382,15 +461,17 @@ class PaymentsService {
 
       final Response response =
           await post(
-            Uri.parse(EMAIL_PAYMENT_API_URL),
-            headers: <String, String>{'content-type': 'application/json'},
-            body: body,
-          ).timeout(
-            const Duration(seconds: 30),
-            onTimeout: () => Response('timeout', 408),
-          ).catchError((dynamic error) {
-            return Future<Response>.value(Response('', 500));
-          });
+                Uri.parse(EMAIL_PAYMENT_API_URL),
+                headers: <String, String>{'content-type': 'application/json'},
+                body: body,
+              )
+              .timeout(
+                const Duration(seconds: 30),
+                onTimeout: () => Response('timeout', 408),
+              )
+              .catchError((dynamic error) {
+                return Future<Response>.value(Response('', 500));
+              });
 
       return <String, String?>{'result': response.body, 'email': emailAddress};
     }
