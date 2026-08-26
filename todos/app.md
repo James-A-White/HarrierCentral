@@ -134,9 +134,12 @@ roughly by recommended sequence.
     on-wrist device test. Requires Xcode watchOS platform (downloaded
     2026-08-23 — any Mac building the app now needs it since Runner
     depends on the watch target).
-  - [ ] Next iOS dance: first archive containing the watch app — expect
+  - [x] Next iOS dance: first archive containing the watch app — expect
     `-allowProvisioningUpdates` to mint the new watchkitapp profile;
     verify both bundles' versions in the IPA before altool upload.
+    *(DONE 2026-08-26, build 3.0.1+1309: watchkitapp profile minted
+    cleanly, Runner + HarrierWatch.app both verified at 1309 and
+    Distribution-signed before upload; delivery 61873e3e.)*
   - [ ] **Wear OS port (post-3.0, after Apple Watch proves adoption)**: the
     Dart `WatchBridgeService` + channel protocol are transport-neutral —
     reuse as-is. New work: Kotlin bridge implementing the same
