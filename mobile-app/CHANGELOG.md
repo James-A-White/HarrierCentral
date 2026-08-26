@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1309 (2026-08-26)
+
+### New Features
+- **PackTrack runner list**: third view on the PackTrack screen (Map /
+  Radar / List) — a sortable pack leaderboard showing each runner's trail
+  distance and separation from you, sortable by longest trail or closest
+  to me. Shares the replay timeline, so scrubbing reorders the list live.
+- **Radar colours**: radar blips now use each runner's track colour
+  (matching the map trails and the new list) instead of uniform yellow;
+  lost runners still flash orange.
+
 ## 3.0.1+1308 (2026-08-25) — iOS + Android
 
 ### Fixes / Improvements
