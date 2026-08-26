@@ -1,5 +1,15 @@
 # public-web Changelog
 
+## 0.21.29 (2026-08-26)
+- **Photos resized + compressed before serving**: Trail-TV carousel and
+  takeovers, PackTrack map markers, callouts, and lightbox now load
+  server-resized WebP renditions via the Next image optimizer (256 /
+  1080 / 1920px tiers) instead of multi-MB originals — a ~1.4MB photo
+  becomes ~19KB as a map marker. Falls back to the original blob if the
+  optimizer is unavailable; downloads still serve the full-res original.
+  Deploys must now stage with `scripts/stage-standalone.sh`, which
+  injects the Linux x64 sharp binaries into the standalone bundle.
+
 ## 0.21.28 (2026-08-25)
 - **Trail-TV**: front-runner cam motion smoothing — a critically-damped
   spring camera eases in and out of motion (no more per-tick jumps),

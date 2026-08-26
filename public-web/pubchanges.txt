@@ -1,3 +1,6 @@
+0.21.29
+    • Photos are resized and compressed before serving (much faster on slow networks)
+
 0.21.28
     • Trail-TV: front-runner cam glides smoothly (eased spring camera, steadier leader switching)
 

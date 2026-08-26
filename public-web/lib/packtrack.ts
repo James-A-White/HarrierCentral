@@ -483,6 +483,20 @@ export async function fetchRunnerNames(
   }
 }
 
+/**
+ * Route a photo through Next's image optimizer (/_next/image) so the browser
+ * downloads a resized, WebP-compressed rendition instead of the multi-MB
+ * original (the optimizer resizes server-side with sharp and caches the
+ * result on disk). `width` must be one of Next's configured device/image
+ * sizes and the photo's host must be allowed by images.remotePatterns in
+ * next.config.ts, or the optimizer returns 400 — callers should fall back
+ * to the raw URL on error. Downloads should keep the original URL.
+ */
+export type PhotoWidth = 256 | 640 | 1080 | 1920;
+export function photoSrc(url: string, width: PhotoWidth): string {
+  return `/_next/image?url=${encodeURIComponent(url)}&w=${width}&q=75`;
+}
+
 /** A Hash Flash-approved public photo, keyed off PHO::<photoId> track marks. */
 export interface RunPhoto {
   url: string;

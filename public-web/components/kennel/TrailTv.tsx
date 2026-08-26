@@ -22,7 +22,7 @@ import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from
 import QRCode from "react-qr-code";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn,
-  trackUpTo, filterAndInterpolate, formatDistanceLabel, haversineMeters,
+  trackUpTo, filterAndInterpolate, formatDistanceLabel, haversineMeters, photoSrc,
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
 
@@ -715,9 +715,13 @@ export default function TrailTv({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   className="tv-photo"
-                  src={p.url}
+                  src={photoSrc(p.url, 1080)}
                   alt={p.title ?? "run photo"}
                   onLoad={() => setImgLoadTick((n) => n + 1)}
+                  onError={(e) => {
+                    // Optimizer unavailable → fall back to the original blob.
+                    if (e.currentTarget.src !== p.url) e.currentTarget.src = p.url;
+                  }}
                 />
                 {(p.title || p.uploader) && (
                   <div className="tv-photo-cap">
@@ -763,7 +767,13 @@ export default function TrailTv({
         <div className="tv-takeover" onClick={() => setTakeover(null)}>
           <div className="tv-takeover-badge">📸 FRESH FROM TRAIL</div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={takeover.url} alt={takeover.title ?? "new run photo"} />
+          <img
+            src={photoSrc(takeover.url, 1920)}
+            alt={takeover.title ?? "new run photo"}
+            onError={(e) => {
+              if (e.currentTarget.src !== takeover.url) e.currentTarget.src = takeover.url;
+            }}
+          />
           {(takeover.title || takeover.uploader) && (
             <div style={{ fontSize: 20 }}>
               {takeover.title ?? ""}{takeover.title && takeover.uploader ? " — " : ""}

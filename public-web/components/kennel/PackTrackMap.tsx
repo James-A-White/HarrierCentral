@@ -8,7 +8,7 @@ import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera, Download }
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn, trackUpTo, sumDistanceMeters,
   haversineMeters, formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
-  MARK_DEDUPE_METERS, resolveTrailTypeMap, trailValueForTrack,
+  MARK_DEDUPE_METERS, resolveTrailTypeMap, trailValueForTrack, photoSrc,
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
 import { AdventureTitle } from "./AdventureTitle";
@@ -214,7 +214,9 @@ function runPhotoIcon(url: string): L.DivIcon {
   const icon = L.divIcon({
     html: `<div style="width:${size}px;height:${size}px;border-radius:9px;background:#fff;padding:3px;` +
       `box-shadow:0 2px 8px rgba(0,0,0,0.55)">` +
-      `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;display:block"/></div>`,
+      `<img src="${escapeHtml(photoSrc(url, 256))}" ` +
+      `onerror="this.onerror=null;this.src='${escapeHtml(url)}'" ` +
+      `style="width:100%;height:100%;object-fit:cover;border-radius:6px;display:block"/></div>`,
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -455,8 +457,11 @@ function PhotoZoomOverlay({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={entry.photo.url}
+          src={photoSrc(entry.photo.url, 1080)}
           alt={entry.photo.title ?? "Run photo"}
+          onError={(e) => {
+            if (e.currentTarget.src !== entry.photo.url) e.currentTarget.src = entry.photo.url;
+          }}
           style={{
             display: "block",
             width: "100%",
@@ -1605,10 +1610,14 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
           </a>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={photoMarks[lightboxIdx].photo.url}
+            src={photoSrc(photoMarks[lightboxIdx].photo.url, 1920)}
             alt={photoMarks[lightboxIdx].photo.title ?? "Run photo"}
             className="relative flex-1 min-h-0 w-full object-contain"
             onClick={(e) => e.stopPropagation()}
+            onError={(e) => {
+              const raw = photoMarks[lightboxIdx].photo.url;
+              if (e.currentTarget.src !== raw) e.currentTarget.src = raw;
+            }}
           />
           <div
             className="relative shrink-0 px-4 pt-3 text-center"
