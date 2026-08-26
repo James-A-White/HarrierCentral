@@ -6,8 +6,9 @@ Items flagged during development that need follow-up.
 
 ## 🎯 3.0 RELEASE RUNWAY (consolidated burn-down, 2026-08-23)
 
-App Store live = 2.1.2 (Oct 2025). iOS beta = 1309 (first watch-bearing
-build), Android internal = 1300. The detailed per-feature checklists further down hold the
+App Store live = 2.1.2 (Oct 2025). iOS beta = 1310 (payment outbox;
+watch app since 1309). Android internal = 1300 on Play; 1310 AAB built +
+verified, awaiting James's manual Play Console upload. The detailed per-feature checklists further down hold the
 step-by-step cases — this is the ordered index of what actually gates 3.0.
 
 ### P0 — gates submission (one or two hash runs + a bench evening)
