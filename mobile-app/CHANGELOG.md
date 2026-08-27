@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1311 (2026-08-27) — iOS + Android
+
+### Improvements
+- **Offline check-in**: run admin now works without a connection for any
+  run previously opened online — check-in and payments run from saved
+  data and sync automatically when signal returns.
+- **Queued payments visible**: an amber banner on check-in, run admin and
+  the payment report shows how many payments are waiting to send, with a
+  viewer to inspect, send now, or discard them. A hasher charged offline
+  shows a semi-transparent payment icon with a clock badge on their row,
+  turning solid green the moment it reaches the server.
+- **Faster send-on-reconnect**: queued payments now send within seconds
+  of the connection returning (previously could require an app restart).
+
 ## 3.0.1+1310 (2026-08-26) — iOS + Android
 
 ### Improvements
