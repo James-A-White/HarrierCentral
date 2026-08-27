@@ -6,9 +6,10 @@ Items flagged during development that need follow-up.
 
 ## 🎯 3.0 RELEASE RUNWAY (consolidated burn-down, 2026-08-23)
 
-App Store live = 2.1.2 (Oct 2025). iOS beta = 1310 (payment outbox;
-watch app since 1309). Android internal = 1300 on Play; 1310 AAB built +
-verified, awaiting James's manual Play Console upload. The detailed per-feature checklists further down hold the
+App Store live = 2.1.2 (Oct 2025). iOS beta = 1311 (offline check-in +
+outbox UI; payment outbox since 1310, watch app since 1309). Android
+internal = 1300 on Play; 1311 AAB built + verified, awaiting James's
+manual Play Console upload (supersedes the un-uploaded 1310 AAB). The detailed per-feature checklists further down hold the
 step-by-step cases — this is the ordered index of what actually gates 3.0.
 
 ### P0 — gates submission (one or two hash runs + a bench evening)
