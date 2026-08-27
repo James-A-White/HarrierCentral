@@ -1208,13 +1208,29 @@ class CheckInPackController extends GetxController
     } else {
       isPaid = null;
     }
-    return Obx(
-      () => Stack(
+    return Obx(() {
+      // A charge captured offline sits in the outbox until the server
+      // acknowledges it — the local tables don't know about it yet, so
+      // without this branch the row still reads "not paid" and the tap
+      // looks like it did nothing. Render the payment-method icon
+      // semi-transparent with an amber clock: noted on this phone,
+      // waiting to send. Reading queuedFor inside the Obx re-paints the
+      // row both when the charge queues and when it delivers.
+      final PendingPayment? queued = Get.isRegistered<PaymentOutboxService>()
+          ? Get.find<PaymentOutboxService>().queuedFor(
+              eventId: eventAggregate.event.eventId,
+              hasherId: hasher.hasherId,
+              hemId: hasher.hemId,
+            )
+          : null;
+      final bool showQueued =
+          queued != null && index != paymentIndexUpdating.value;
+      return Stack(
         alignment: AlignmentDirectional.center,
         children: <Widget>[
           Container(height: 30, width: 30, color: Colors.transparent),
           CircleAvatar(
-            backgroundColor: paymentIndexUpdating.value == index
+            backgroundColor: paymentIndexUpdating.value == index || showQueued
                 ? Colors.white
                 : ((isPaid == null))
                 ? Colors.grey[350]
@@ -1223,6 +1239,21 @@ class CheckInPackController extends GetxController
           ),
           index == paymentIndexUpdating.value
               ? Icon(delayIcon, color: hc_blue)
+              : showQueued
+              ? Opacity(
+                  opacity: 0.5,
+                  child: Image.asset(
+                    'images/icons/payment_type_${queued.paymentType}.png',
+                    height: 24.0,
+                    width: 24.0,
+                    color: Colors.green,
+                    errorBuilder: (_, _, _) => const Icon(
+                      Icons.schedule_send,
+                      color: Colors.green,
+                      size: 24.0,
+                    ),
+                  ),
+                )
               : (isPaid == null)
               ? Container()
               : isPaid == isPaidNo.value
@@ -1240,9 +1271,23 @@ class CheckInPackController extends GetxController
                   color: Colors.green,
                 )
               : Container(),
+          // Amber clock badge = queued (same signal as the report's pending
+          // card). Sits outside the Opacity so it stays fully visible.
+          if (showQueued)
+            const Positioned(
+              right: 0,
+              bottom: 0,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.schedule, color: Colors.amber, size: 13.0),
+              ),
+            ),
         ],
-      ),
-    );
+      );
+    });
   }
 
   Widget buildRsvpIcon(

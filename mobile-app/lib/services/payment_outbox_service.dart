@@ -254,6 +254,39 @@ class PaymentOutboxService extends GetxService with WidgetsBindingObserver {
     }
   }
 
+  /// The queued capture for a specific hasher/HEM on an event, or null.
+  /// Lets list rows render a "payment noted, waiting to send" state for
+  /// exactly the person who was charged offline. Matches by HEM id when
+  /// both sides have one, else by hasher id (captures carry GUID_EMPTY for
+  /// whichever of the two the call site didn't know). Reading this inside
+  /// an Obx subscribes the row to [pending], so queueing and delivery both
+  /// repaint it.
+  PendingPayment? queuedFor({
+    required String eventId,
+    String? hasherId,
+    String? hemId,
+  }) {
+    bool realId(String? v) =>
+        v != null &&
+        v.isNotEmpty &&
+        v.length == GUID_EMPTY.length &&
+        v != GUID_EMPTY;
+    for (final PendingPayment e in pending) {
+      if (normalizeUuid(e.eventId) != normalizeUuid(eventId)) continue;
+      if (realId(e.hasherEventMapId) &&
+          realId(hemId) &&
+          normalizeUuid(e.hasherEventMapId!) == normalizeUuid(hemId!)) {
+        return e;
+      }
+      if (realId(e.hasherId) &&
+          realId(hasherId) &&
+          normalizeUuid(e.hasherId!) == normalizeUuid(hasherId!)) {
+        return e;
+      }
+    }
+    return null;
+  }
+
   /// Discards a queued capture WITHOUT sending it — the payment was never
   /// recorded on the server. Only for the outbox sheet's explicit,
   /// confirmed "discard" action (a mis-tap the admin doesn't want sent).

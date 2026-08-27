@@ -759,6 +759,12 @@ access + outbox visibility + faster reconnect):
 - [ ] **Restart-proof triggers**: queue a payment, log out/in or Reload Data
   (in-app restart), reconnect → still delivers (poll-based trigger fix for
   the recreated NetworkService).
+- [ ] **Per-row queued icon**: charge a hasher in airplane mode → THEIR row's
+  payment circle immediately shows the payment-method icon at half opacity
+  with a small amber clock badge (not the red $, not blank); other rows
+  unchanged. When the queue delivers, the badge drops and the icon goes
+  solid green by itself. Kill + relaunch offline → queued style still shows
+  (outbox reloaded from disk).
 
 ## Device test — PackTrack runner list canvas (2026-08-26, not yet released)
 
