@@ -774,6 +774,15 @@ class CheckInPackPage extends StatelessWidget {
                         ),
                       ),
                     ),
+                    // Queued-payment banner: floats over the bottom of the
+                    // list while the outbox holds unsent charges; disappears
+                    // once everything has reached the server.
+                    const Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: SafeArea(top: false, child: PaymentOutboxBanner()),
+                    ),
                   ],
                 ),
         );

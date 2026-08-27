@@ -10,6 +10,12 @@ enum DataChangeType {
   /// returning-user background boot sync. Signals every top-level tab to
   /// re-read from its tables, not just the runs tab. Carries no id.
   fullSyncCompleted,
+
+  /// A queued payment from the outbox reached the server (id = eventId).
+  /// The local payment tables have already been updated from the response —
+  /// open check-in/report screens should re-read so the delivery is visible
+  /// the moment it lands.
+  paymentDelivered,
 }
 
 class DataChangeEvent {

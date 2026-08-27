@@ -47,9 +47,10 @@ class PaymentOutboxService extends GetxService with WidgetsBindingObserver {
   final RxList<PendingPayment> pending = <PendingPayment>[].obs;
 
   final PaymentsService _paySrv = PaymentsService();
-  Timer? _sweepTimer;
-  Worker? _reachableWorker;
+  Timer? _pollTimer;
   bool _flushing = false;
+  bool _wasOnline = false;
+  int _ticksSinceFlush = 0;
 
   /// Entries currently mid-send. A flush skips these so a foreground submit
   /// and a background sweep never race the same capture (the server-side
@@ -57,7 +58,10 @@ class PaymentOutboxService extends GetxService with WidgetsBindingObserver {
   /// notifications).
   final Set<String> _inFlight = <String>{};
 
-  static const Duration _sweepInterval = Duration(seconds: 60);
+  static const Duration _pollInterval = Duration(seconds: 10);
+  // A full-interval retry every _fullSweepTicks polls (≈ 60 s) even without
+  // a connectivity edge, so a flush that failed mid-way gets another shot.
+  static const int _fullSweepTicks = 6;
 
   int get pendingCount => pending.length;
 
@@ -66,11 +70,15 @@ class PaymentOutboxService extends GetxService with WidgetsBindingObserver {
     super.onInit();
     _load();
     WidgetsBinding.instance.addObserver(this);
-    // Connectivity coming back is the best retry moment there is.
-    _reachableWorker = ever<bool>(networkService.backendReachable, (bool up) {
-      if (up) unawaited(flush());
-    });
-    _sweepTimer = Timer.periodic(_sweepInterval, (_) => unawaited(flush()));
+    // Retry triggers are POLLED, not event-bound: a 10 s tick that looks up
+    // the CURRENT NetworkService and fires on the offline→online edge (plus
+    // a periodic full sweep). An `ever()` worker bound to
+    // networkService.backendReachable went deaf after in-app restarts —
+    // services_init deletes and recreates NetworkService (lazyPut+fenix), so
+    // the worker kept listening to the dead instance's Rx and reconnects
+    // never triggered a flush.
+    _pollTimer = Timer.periodic(_pollInterval, (_) => _pollTick());
+    _wasOnline = _isOnlineNow();
     // Anything left over from a previous session gets a shot at boot.
     unawaited(flush());
   }
@@ -78,9 +86,23 @@ class PaymentOutboxService extends GetxService with WidgetsBindingObserver {
   @override
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
-    _sweepTimer?.cancel();
-    _reachableWorker?.dispose();
+    _pollTimer?.cancel();
     super.onClose();
+  }
+
+  bool _isOnlineNow() =>
+      Get.isRegistered<NetworkService>() &&
+      Get.find<NetworkService>().isOnline();
+
+  void _pollTick() {
+    final bool online = _isOnlineNow();
+    final bool cameOnline = online && !_wasOnline;
+    _wasOnline = online;
+    if (pending.isEmpty || !online) return;
+    _ticksSinceFlush++;
+    if (cameOnline || _ticksSinceFlush >= _fullSweepTicks) {
+      unawaited(flush());
+    }
   }
 
   @override
@@ -147,6 +169,7 @@ class PaymentOutboxService extends GetxService with WidgetsBindingObserver {
     if (_flushing || pending.isEmpty) return;
     if (Utilities.isNotConnected()) return;
     _flushing = true;
+    _ticksSinceFlush = 0;
     try {
       final List<PendingPayment> snapshot = List<PendingPayment>.of(pending)
         ..sort(
@@ -182,6 +205,17 @@ class PaymentOutboxService extends GetxService with WidgetsBindingObserver {
             'PaymentOutbox: delivered ${entry.displayLabel} '
             '(attempt ${entry.attempts})',
           );
+          // The response's sync rowsets updated the local payment tables —
+          // tell open check-in/report screens to re-read so the delivery is
+          // visible immediately.
+          if (Get.isRegistered<DataChangeService>()) {
+            Get.find<DataChangeService>().notify(
+              DataChangeEvent(
+                type: DataChangeType.paymentDelivered,
+                id: entry.eventId,
+              ),
+            );
+          }
           _notify(
             'Payment sent',
             '${entry.displayLabel} has reached the server.',
@@ -218,6 +252,24 @@ class PaymentOutboxService extends GetxService with WidgetsBindingObserver {
     } finally {
       _flushing = false;
     }
+  }
+
+  /// Discards a queued capture WITHOUT sending it — the payment was never
+  /// recorded on the server. Only for the outbox sheet's explicit,
+  /// confirmed "discard" action (a mis-tap the admin doesn't want sent).
+  Future<void> discard(String clientPaymentId) async {
+    final PendingPayment? entry = pending.firstWhereOrNull(
+      (PendingPayment e) => e.clientPaymentId == clientPaymentId,
+    );
+    if (entry == null) return;
+    pending.removeWhere(
+      (PendingPayment e) => e.clientPaymentId == clientPaymentId,
+    );
+    await _persist();
+    BootLogger.logBreadcrumb(
+      'PaymentOutbox: DISCARDED ${entry.displayLabel} ($clientPaymentId) '
+      'by user — never sent',
+    );
   }
 
   void _notify(String title, String message, {required bool isError}) {

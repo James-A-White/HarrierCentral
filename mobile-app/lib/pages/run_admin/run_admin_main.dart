@@ -103,91 +103,133 @@ class RunAdminPage extends StatelessWidget {
         width: MediaQuery.sizeOf(context).width,
         padding: const EdgeInsets.only(left: 20, right: 20),
         child: AndroidSafeArea(
-          child: ConnectedWidget(
-            refreshFunction: controller.getRunDetails,
-            showConnectButton: true,
-            disconnectedChild: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Center(
-                child: Text(
-                  'Run admin functions require a connection to the Internet',
-                  style: ts_headingLarge,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const HcAppCircularProgressIndicator(
-                  key: Key('16093026'),
-                );
-              }
-              final aggregate = controller.eventAggregate.value;
-              if (aggregate == null) return Container();
-              return SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20, bottom: 20),
-                      child: AutoSizeText(
-                        aggregate.event.eventName,
-                        style: ts_titleLarge,
+          // Offline-capable since the payment outbox (2026-08-27): when the
+          // event-admin cache already holds THIS run (one earlier online
+          // visit), run admin renders from it and payments queue through the
+          // outbox. The connection-required message shows only when there is
+          // genuinely nothing to render (offline AND no cached aggregate).
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return const HcAppCircularProgressIndicator(key: Key('16093026'));
+            }
+            final aggregate = controller.eventAggregate.value;
+            if (aggregate == null) {
+              final bool offline = Utilities.isNotConnected();
+              return Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        offline
+                            ? 'No connection, and this run\'s admin data is '
+                                  'not saved on this phone yet.\n\nOpen run '
+                                  'admin once while online and it will work '
+                                  'offline afterwards.'
+                            : 'Could not load run admin data.',
+                        style: ts_headingLarge,
                         textAlign: TextAlign.center,
-                        maxLines: 2,
                       ),
-                    ),
-                    const FancyDivider(
-                      key: Key('66103920'),
-                      innerColor: Colors.white,
-                      topMargin: 20.0,
-                      bottomMargin: 5.0,
-                    ),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        const double spacing = 12.0;
-                        final double btnSize =
-                            (constraints.maxWidth - 2 * spacing) / 3;
-                        return TextScaleFactorClamper(
-                          textScaleFactor: deviceInfo.textClamp15,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: _buildSections(
-                              context,
-                              controller,
-                              aggregate,
-                              btnSize,
-                              spacing,
-                              isHare,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const FancyDivider(
-                      key: Key('669190022'),
-                      innerColor: Colors.white,
-                      topMargin: 35.0,
-                      bottomMargin: 5.0,
-                    ),
-                    RunDetails(
-                      aggregate.event,
-                      aggregate.kennel,
-                      aggregate.extensions.digAfterDec,
-                      aggregate.extensions.curSym,
-                      aggregate.extensions.distancePreference ?? 0,
-                      aggregate.extensions.distToEvent,
-                      aggregate.extensions.paymentUrl ?? '',
-                      false,
-                      aggregate.extensions.isMapAndDistanceValid ?? false,
-                      eventUrlWithKennelBackup:
-                          aggregate.event.eventUrl ??
-                          aggregate.kennel.kennelEventsUrl,
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await controller.getRunDetails();
+                        },
+                        child: Text('Try again', style: ts_button),
+                      ),
+                    ],
+                  ),
                 ),
               );
-            }),
-          ),
+            }
+            return SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  const PaymentOutboxBanner(),
+                  if (Utilities.isNotConnected())
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Offline — showing saved data. Check-in and '
+                        'payments still work; they sync when a connection '
+                        'returns.',
+                        style: TextStyle(
+                          color: Colors.amber,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20, bottom: 20),
+                    child: AutoSizeText(
+                      aggregate.event.eventName,
+                      style: ts_titleLarge,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                    ),
+                  ),
+                  const FancyDivider(
+                    key: Key('66103920'),
+                    innerColor: Colors.white,
+                    topMargin: 20.0,
+                    bottomMargin: 5.0,
+                  ),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      const double spacing = 12.0;
+                      final double btnSize =
+                          (constraints.maxWidth - 2 * spacing) / 3;
+                      return TextScaleFactorClamper(
+                        textScaleFactor: deviceInfo.textClamp15,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: _buildSections(
+                            context,
+                            controller,
+                            aggregate,
+                            btnSize,
+                            spacing,
+                            isHare,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const FancyDivider(
+                    key: Key('669190022'),
+                    innerColor: Colors.white,
+                    topMargin: 35.0,
+                    bottomMargin: 5.0,
+                  ),
+                  RunDetails(
+                    aggregate.event,
+                    aggregate.kennel,
+                    aggregate.extensions.digAfterDec,
+                    aggregate.extensions.curSym,
+                    aggregate.extensions.distancePreference ?? 0,
+                    aggregate.extensions.distToEvent,
+                    aggregate.extensions.paymentUrl ?? '',
+                    false,
+                    aggregate.extensions.isMapAndDistanceValid ?? false,
+                    eventUrlWithKennelBackup:
+                        aggregate.event.eventUrl ??
+                        aggregate.kennel.kennelEventsUrl,
+                  ),
+                ],
+              ),
+            );
+          }),
         ),
       ),
     );

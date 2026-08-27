@@ -95,11 +95,32 @@ class CheckInPackController extends GetxController
 
     searchTypeText.value = searchKennel;
 
+    // A queued payment delivering in the background updates the local
+    // payment tables — re-read so the row flips to paid while the admin
+    // watches, instead of looking like the upload never happened.
+    if (Get.isRegistered<DataChangeService>()) {
+      _paymentDeliveredSub = Get.find<DataChangeService>().stream.listen((
+        DataChangeEvent event,
+      ) {
+        if (event.type == DataChangeType.paymentDelivered &&
+            event.id.toLowerCase() ==
+                eventAggregate.event.eventId.toLowerCase()) {
+          unawaited(() async {
+            await refreshPackListFromTables(false);
+            await _refreshCounters(forceRefresh: true);
+          }());
+        }
+      });
+    }
+
     unawaited(initStateAsync());
   }
 
+  StreamSubscription<DataChangeEvent>? _paymentDeliveredSub;
+
   @override
   void onClose() {
+    _paymentDeliveredSub?.cancel();
     animationController.dispose();
     scrollController.dispose();
     searchController.dispose();

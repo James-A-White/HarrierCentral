@@ -734,6 +734,32 @@ retried (dead-lettered with a loud snackbar). Bulk payment
 - [ ] **Replayed PaidDate**: an offline charge delivered later records
   PaidDate ≈ when the admin tapped (capture time), not delivery time.
 
+Round 2 (2026-08-27, from James's airplane-mode test of 1310 — offline
+access + outbox visibility + faster reconnect):
+
+- [ ] **Offline run-admin entry (cached run)**: visit run admin online once,
+  go offline, re-enter → page renders from cache with the amber "Offline —
+  showing saved data" note; Manual check-in opens and shows the pack list.
+- [ ] **Offline run-admin entry (uncached run)**: offline, open admin for a
+  run never visited → "not saved on this phone yet" message + Try again
+  (NOT the old blanket "requires Internet" gate).
+- [ ] **Queued banner**: charge in airplane mode → amber "1 payment saved on
+  this phone, waiting to send" banner on check-in (bottom), payment report
+  (top) and run admin; VIEW opens the queue sheet with the entry (label,
+  time, amount, attempts).
+- [ ] **Queue sheet actions**: "Send now" offline → honest snackbar; online
+  → queue drains, sheet empties live. Discard → confirmation dialog warns
+  money will not be recorded; entry removed; breadcrumb logged.
+- [ ] **Reconnect speed**: airplane off with queued payments → they deliver
+  within ~10 s (connectivity-edge poll) WITHOUT app restart or resume;
+  "Payment sent" snackbars appear.
+- [ ] **Live row refresh**: stay on the check-in page while a queued payment
+  delivers → the hasher's row flips to paid by itself (paymentDelivered
+  DataChange); same on an open payment report (rows + totals).
+- [ ] **Restart-proof triggers**: queue a payment, log out/in or Reload Data
+  (in-app restart), reconnect → still delivers (poll-based trigger fix for
+  the recreated NetworkService).
+
 ## Device test — PackTrack runner list canvas (2026-08-26, not yet released)
 
 Third canvas on the PackTrack screen: Map / Radar / **List** segmented switch.

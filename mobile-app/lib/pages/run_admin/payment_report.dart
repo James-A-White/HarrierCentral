@@ -41,10 +41,36 @@ class PaymentReportState extends State<PaymentReportPage> {
 
   int _filterValue = ALL_PAYMENTS_FILTER_VALUE;
 
+  StreamSubscription<DataChangeEvent>? _paymentDeliveredSub;
+
   @override
   void initState() {
     super.initState();
+    // A queued payment delivering while this report is open updates the
+    // local tables — re-read them (no backend round trip needed) so the
+    // rows and totals include it immediately.
+    if (Get.isRegistered<DataChangeService>()) {
+      _paymentDeliveredSub = Get.find<DataChangeService>().stream.listen((
+        DataChangeEvent event,
+      ) {
+        if (event.type == DataChangeType.paymentDelivered &&
+            event.id.toLowerCase() ==
+                widget.eventAggregate.event.eventId.toLowerCase()) {
+          unawaited(() async {
+            await _refreshListsFromTable();
+            await refreshTotals();
+            setStateIfMounted(() {});
+          }());
+        }
+      });
+    }
     unawaited(initStateAsync());
+  }
+
+  @override
+  void dispose() {
+    _paymentDeliveredSub?.cancel();
+    super.dispose();
   }
 
   Future<void> initStateAsync() async {
@@ -499,6 +525,9 @@ SELECT
           : Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
+                // Queued charges are NOT in the totals below — the banner
+                // says so and opens the outbox viewer.
+                const PaymentOutboxBanner(),
                 Container(
                   padding: const EdgeInsets.only(top: 10),
                   decoration: const BoxDecoration(
