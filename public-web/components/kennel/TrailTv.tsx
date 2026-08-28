@@ -14,7 +14,9 @@
  *  - replay — one fetch; the main panel replays the whole run paced at
  *             1 minute per km of the first finisher's trail, with photos
  *             taking over as the replay clock passes their capture time.
- * Auto-selects live within 24h of the run start, replay after.
+ * Auto-selects live within 24h of the run start, replay after — and flips
+ * live → replay once tracks exist but nobody is on trail (the pack is home),
+ * unless the mode was pinned by ?mode= or the on-screen toggle.
  */
 
 import { Fragment, useState, useEffect, useRef, useMemo, useCallback } from "react";
@@ -37,7 +39,8 @@ const LOOP_DURATION_MS = 10_000;
 const LOOP_HOLD_MS = 1_500;
 const REPLAY_MS_PER_KM = 60_000; // 1 minute of wall time per km of trail
 const REPLAY_HOLD_MS = 6_000;
-const TAKEOVER_MS = 12_000;
+const TAKEOVER_LIVE_MS = 10_000;  // fresh-from-trail photo, live mode
+const TAKEOVER_REPLAY_MS = 4_000;  // synced photo on the replay timeline
 const CALLOUT_MS = 6_000;
 const ACTIVE_WINDOW_MS = 10 * 60_000; // "on trail" = a point in the last 10 min
 const FOLLOW_ZOOM = 17.5;
@@ -308,6 +311,9 @@ export default function TrailTv({
   const autoMode: "live" | "replay" =
     eventStartMs != null && Date.now() - eventStartMs > 24 * 3600_000 ? "replay" : "live";
   const [mode, setMode] = useState<"live" | "replay">(initialMode ?? autoMode);
+  // A ?mode= override or a manual toggle pins the mode; auto-switching only
+  // applies while the page is still on its own automatic choice.
+  const modePinned = useRef(initialMode != null);
 
   const [tracks, setTracks] = useState<PreparedTrack[]>([]);
   const [markCount, setMarkCount] = useState(0);
@@ -409,7 +415,7 @@ export default function TrailTv({
           if (!knownPhotoIds.current.has(e.photoId)) {
             knownPhotoIds.current.add(e.photoId);
             setTakeover(e);
-            setTimeout(() => setTakeover((cur) => (cur?.photoId === e.photoId ? null : cur)), TAKEOVER_MS);
+            setTimeout(() => setTakeover((cur) => (cur?.photoId === e.photoId ? null : cur)), TAKEOVER_LIVE_MS);
           }
         }
       } else {
@@ -497,7 +503,7 @@ export default function TrailTv({
       if (p.markTs != null && p.markTs <= replayClock && !replayFiredPhotos.current.has(p.photoId)) {
         replayFiredPhotos.current.add(p.photoId);
         setTakeover(p);
-        setTimeout(() => setTakeover((cur) => (cur?.photoId === p.photoId ? null : cur)), TAKEOVER_MS);
+        setTimeout(() => setTakeover((cur) => (cur?.photoId === p.photoId ? null : cur)), TAKEOVER_REPLAY_MS);
         break; // one at a time
       }
     }
@@ -513,6 +519,15 @@ export default function TrailTv({
       ? Math.floor((nowTick - eventStartMs) / 60000) : null;
     return { total, active, finished, elapsed };
   }, [tracks, nowTick, eventStartMs]);
+
+  // Live → replay once the run is over: tracks exist but nobody has reported
+  // a position in the last ACTIVE_WINDOW_MS. The 24h-after-start rule alone
+  // left the morning-after screen in live mode (no front-runner cam, no
+  // photo takeovers) until the following evening.
+  useEffect(() => {
+    if (modePinned.current || mode !== "live" || tracks.length === 0) return;
+    if (stats.active === 0) setMode("replay");
+  }, [mode, tracks.length, stats.active]);
 
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const marqueeRef = useRef<HTMLDivElement | null>(null);
@@ -753,7 +768,13 @@ export default function TrailTv({
       </div>
 
       {/* ── Overlays ── */}
-      <button className="tv-mode" onClick={() => setMode(mode === "live" ? "replay" : "live")}>
+      <button
+        className="tv-mode"
+        onClick={() => {
+          modePinned.current = true;
+          setMode(mode === "live" ? "replay" : "live");
+        }}
+      >
         {mode === "live" ? "switch to replay" : "switch to live"}
       </button>
 

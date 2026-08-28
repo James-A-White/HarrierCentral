@@ -1,5 +1,15 @@
 # public-web Changelog
 
+## 0.21.30 (2026-08-28)
+- **Trail-TV auto-switches to replay once the pack is home**: a screen
+  opened the morning after a run stayed in live mode (whole-run map, no
+  front-runner cam, no photo takeovers) until 24h after the start. Now
+  live mode flips to replay as soon as tracks exist but nobody has
+  reported a position in the last 10 minutes. `?mode=` and the on-screen
+  toggle still pin the mode.
+- **Trail-TV photo takeovers shortened**: 4s in replay (was 12s), 10s in
+  live mode.
+
 ## 0.21.29 (2026-08-26)
 - **Photos resized + compressed before serving**: Trail-TV carousel and
   takeovers, PackTrack map markers, callouts, and lightbox now load
