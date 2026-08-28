@@ -209,6 +209,14 @@ class CheckInPackController extends GetxController
 
   Future<void> refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
     if (Utilities.isNotConnected()) {
+      // Offline: skip the backend sync but STILL read from the local
+      // tables. This early-return used to skip the read too, which left
+      // the check-in list empty on offline entry (the data was there —
+      // toggling a filter, which re-reads, made everyone appear). Before
+      // run admin became offline-capable this path was unreachable, so
+      // the gap never showed.
+      await refreshPackListFromTables(false);
+      await _refreshCounters(forceRefresh: true);
       if (showLoadingIndicator && isLoading) {
         isLoading = false;
         update([UpdateIds.appScaffold]);
