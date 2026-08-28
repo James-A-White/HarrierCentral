@@ -282,7 +282,7 @@ class RunListItem extends StatelessWidget {
           // recolours the container instead of rebuilding every visible card.
           // (Reading flashingRunIds.contains() subscribes to the whole shared
           // collection, so a flash notifies every card at once.)
-          final Widget cardBody = Column(
+          final Widget cardColumn = Column(
               crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Row(
@@ -632,6 +632,27 @@ class RunListItem extends StatelessWidget {
             Obx(() => _getPaymentIconnsWidget()),
           ],
         );
+          // The RSVP icon is a 24px image — well under the 44pt minimum — and
+          // the GestureDetector around it defers to the child, so even its own
+          // padding wasn't tappable. Overlay an invisible 56×56 target on the
+          // card's top-left corner (topmost in the Stack, so it wins over the
+          // header row and the image's long-press) without changing the icon
+          // or the layout.
+          final Widget cardBody = Stack(
+            children: <Widget>[
+              cardColumn,
+              Positioned(
+                left: 0,
+                top: 0,
+                width: 56,
+                height: 56,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _showRsvpOptionsPopup,
+                ),
+              ),
+            ],
+          );
           return Obx(() {
             final isFlashing = Get.isRegistered<FutureRunListPageController>()
                 ? Get.find<FutureRunListPageController>()

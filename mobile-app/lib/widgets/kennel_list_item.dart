@@ -70,271 +70,305 @@ class KennelListItemState extends State<KennelListItem> {
       // Clip content to the rounded corners so edge-to-edge child content
       // doesn't square them off — consistent slight rounding with the run cards.
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.max,
+      child: Stack(
         children: <Widget>[
-          Row(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
             children: <Widget>[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  InkWell(
+                    onTap: () {
+                      widget.kennelSelected();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: GestureDetector(
+                        onTap: () async {
+                          await _showFollowingPopup();
+                        },
+                        child: Column(
+                          children: <Widget>[
+                            if (widget
+                                    .kennelItem
+                                    .extensions
+                                    .followingRequested !=
+                                -1)
+                              Image.asset(delayIconAsset, width: 24, height: 24)
+                            else if (widget.kennelItem.hkm?.following == 1)
+                              Image.asset(
+                                'images/icons/checkbox_yes.png',
+                                width: 24,
+                                height: 24,
+                              )
+                            else if (widget.kennelItem.hkm?.following == 2)
+                              Image.asset(
+                                'images/icons/checkbox_no.png',
+                                width: 24,
+                                height: 24,
+                              )
+                            else
+                              Image.asset(
+                                'images/icons/checkbox_empty.png',
+                                width: 24,
+                                height: 24,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  !widget.kennelItem.isHomeKennel
+                      ? Container()
+                      : Container(
+                          alignment: Alignment.topLeft,
+                          padding: const EdgeInsets.only(
+                            right: 5.0,
+                            bottom: 2.0,
+                          ),
+                          child:
+                              widget.kennelItem.extensions.followingRequested !=
+                                  -1
+                              ? Icon(delayIcon, size: 35, color: hc_blue)
+                              : Icon(FontAwesome.home, size: 35, color: hc_red),
+                        ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        widget.kennelSelected();
+                      },
+                      child: Container(
+                        width: MediaQuery.sizeOf(context).width - 70,
+                        padding: const EdgeInsets.only(
+                          top: 7.0,
+                          left: 5.0,
+                          bottom: 2.0,
+                          right: 5.0,
+                        ),
+                        child: AutoSizeText(
+                          widget.kennelItem.kennel.kennelName,
+                          style: ts_titleCondensedBlack,
+                          textAlign: TextAlign.left,
+                          maxLines: 1,
+                          minFontSize: 18,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: GestureDetector(
+                      onTap: () async {
+                        await _showEmailPopup(context);
+                      },
+                      child:
+                          widget.kennelItem.extensions.emailAlertRequested != -1
+                          ? Icon(delayIcon, color: hc_blue, size: 24.0)
+                          : Image(
+                              width: 24.0,
+                              height: 24.0,
+                              fit: BoxFit.fill,
+                              image:
+                                  widget
+                                          .kennelItem
+                                          .hkm
+                                          ?.kennelEmailAlertPreference ==
+                                      1
+                                  ? const AssetImage(
+                                      'images/icons/envelope_gold_50px.png',
+                                    )
+                                  : const AssetImage(
+                                      'images/icons/envelope_silver_strike_out_50px.png',
+                                    ),
+                            ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: GestureDetector(
+                      onTap: () async {
+                        await _showNotificationPopup(context);
+                      },
+                      child:
+                          widget.kennelItem.extensions.notificationsRequested !=
+                              -1
+                          ? Icon(delayIcon, color: hc_blue, size: 24.0)
+                          : Image(
+                              width: 24.0,
+                              height: 24.0,
+                              fit: BoxFit.fill,
+                              image: AssetImage(path),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                margin: const EdgeInsets.only(bottom: 0.0),
+                height: 1.0,
+                color: Colors.grey[300],
+              ),
               InkWell(
                 onTap: () {
                   widget.kennelSelected();
                 },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: GestureDetector(
-                    onTap: () async {
-                      await _showFollowingPopup();
-                    },
-                    child: Column(
-                      children: <Widget>[
-                        if (widget.kennelItem.extensions.followingRequested !=
-                            -1)
-                          Image.asset(delayIconAsset, width: 24, height: 24)
-                        else if (widget.kennelItem.hkm?.following == 1)
-                          Image.asset(
-                            'images/icons/checkbox_yes.png',
-                            width: 24,
-                            height: 24,
-                          )
-                        else if (widget.kennelItem.hkm?.following == 2)
-                          Image.asset(
-                            'images/icons/checkbox_no.png',
-                            width: 24,
-                            height: 24,
-                          )
-                        else
-                          Image.asset(
-                            'images/icons/checkbox_empty.png',
-                            width: 24,
-                            height: 24,
-                          ),
-                      ],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    const SizedBox(width: 5.0, height: 85.0),
+                    KennelLogo(
+                      kennelId: widget.kennelItem.kennel.kennelId,
+                      kennelLogoUrl: widget.kennelItem.kennel.kennelLogo,
+                      kennelShortName: widget.kennelItem.kennel.kennelShortName,
+                      logoHeight: 70.0,
+                      leftPadding: 0.0,
+                      rightPadding: 10.0,
                     ),
-                  ),
-                ),
-              ),
-              !widget.kennelItem.isHomeKennel
-                  ? Container()
-                  : Container(
-                      alignment: Alignment.topLeft,
-                      padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
-                      child:
-                          widget.kennelItem.extensions.followingRequested != -1
-                          ? Icon(delayIcon, size: 35, color: hc_blue)
-                          : Icon(FontAwesome.home, size: 35, color: hc_red),
-                    ),
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    widget.kennelSelected();
-                  },
-                  child: Container(
-                    width: MediaQuery.sizeOf(context).width - 70,
-                    padding: const EdgeInsets.only(
-                      top: 7.0,
-                      left: 5.0,
-                      bottom: 2.0,
-                      right: 5.0,
-                    ),
-                    child: AutoSizeText(
-                      widget.kennelItem.kennel.kennelName,
-                      style: ts_titleCondensedBlack,
-                      textAlign: TextAlign.left,
-                      maxLines: 1,
-                      minFontSize: 18,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(right: 10),
-                child: GestureDetector(
-                  onTap: () async {
-                    await _showEmailPopup(context);
-                  },
-                  child: widget.kennelItem.extensions.emailAlertRequested != -1
-                      ? Icon(delayIcon, color: hc_blue, size: 24.0)
-                      : Image(
-                          width: 24.0,
-                          height: 24.0,
-                          fit: BoxFit.fill,
-                          image:
-                              widget
-                                      .kennelItem
-                                      .hkm
-                                      ?.kennelEmailAlertPreference ==
-                                  1
-                              ? const AssetImage(
-                                  'images/icons/envelope_gold_50px.png',
-                                )
-                              : const AssetImage(
-                                  'images/icons/envelope_silver_strike_out_50px.png',
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const SizedBox(width: 10.0, height: 10.0),
+                            if (widget.kennelItem.extensions.location !=
+                                null) ...<Widget>[
+                              Text(
+                                widget.kennelItem.extensions.location!,
+                                style: ts_regularMediumBlack,
+                              ),
+                            ],
+                            if ((appModel.hasLocationPermissions) &&
+                                (widget.kennelItem.extensions.distToKennel !=
+                                    null)) ...<Widget>[
+                              Text(
+                                '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, isMetric: _distancePreference == 2)} from here',
+                                style: ts_regularMediumBlack,
+                              ),
+                            ],
+                            if ((widget.kennelItem.hkm != null) &&
+                                (widget.kennelItem.hkm!.hcTotalRunCount !=
+                                    0)) ...<Widget>[
+                              Text(
+                                'Runs: ${widget.kennelItem.hkm!.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm!.hcTotalRunCount + widget.kennelItem.hkm!.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm!.hcHaringCount + widget.kennelItem.hkm!.historicalHaringCount}',
+                                style: ts_titleMedium.copyWith(color: hc_blue),
+                              ),
+                            ],
+                            if (widget.kennelItem.hkm?.dateOfLastRun !=
+                                null) ...<Widget>[
+                              Text(
+                                'Last run: ${widget.kennelItem.hkm!.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm!.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm!.dateOfLastRun!)}',
+                                style: ts_titleMedium.copyWith(color: hc_blue),
+                              ),
+                            ],
+                            if ((widget.kennelItem.hkm != null) &&
+                                (widget.kennelItem.hkm!.kennelCredit !=
+                                    0)) ...<Widget>[
+                              Text(
+                                (widget.kennelItem.hkm!.kennelCredit >= 0
+                                        ? 'Credit available: '
+                                        : 'Funds owed: ') +
+                                    IveCoreUtilities.getFormattedMoney(
+                                      widget.kennelItem.hkm!.kennelCredit.abs(),
+                                      widget
+                                              .kennelItem
+                                              .kennel
+                                              .digitsAfterDecimal ??
+                                          2,
+                                      widget.kennelItem.kennel.currencySymbol ??
+                                          r'$^',
+                                    ),
+                                style: TextStyle(
+                                  fontFamily: 'AvenirNextDemiBold',
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 16.0,
+                                  height: 1.0,
+                                  color:
+                                      widget.kennelItem.hkm!.kennelCredit >= 0
+                                      ? Colors.green.shade900
+                                      : hc_red,
                                 ),
+                              ),
+                            ],
+                          ],
                         ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(right: 10),
-                child: GestureDetector(
-                  onTap: () async {
-                    await _showNotificationPopup(context);
-                  },
-                  child:
-                      widget.kennelItem.extensions.notificationsRequested != -1
-                      ? Icon(delayIcon, color: hc_blue, size: 24.0)
-                      : Image(
-                          width: 24.0,
-                          height: 24.0,
-                          fit: BoxFit.fill,
-                          image: AssetImage(path),
-                        ),
+                      ),
+                    ),
+                    if (Utilities.isConnected())
+                      // Chat bubble stacked ABOVE the three dots so the pair
+                      // occupies a single icon-width column on the right edge
+                      // instead of eating into the kennel info text. Compact
+                      // constraints keep two buttons inside the 85px logo row.
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          // Kennel-level chat (not bound to a run). Available to
+                          // followers — the SP enforces the HKM requirement.
+                          if (widget.kennelItem.hkm != null)
+                            IconButton(
+                              icon: HcChatBubble(
+                                threadId:
+                                    widget.kennelItem.kennel.publicKennelId,
+                                isKennelThread: true,
+                              ),
+                              iconSize: Theme.of(context).iconTheme.size,
+                              splashColor: Theme.of(context).highlightColor,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 40,
+                                minHeight: 40,
+                              ),
+                              onPressed: () async {
+                                final k = widget.kennelItem.kennel;
+                                await openChatThread(
+                                  title: '${k.kennelShortName} Kennel Chat',
+                                  threadId: k.kennelId,
+                                  publicThreadId: k.publicKennelId,
+                                  isKennelThread: true,
+                                );
+                              },
+                            ),
+                          IconButton(
+                            icon: const Icon(
+                              MaterialCommunityIcons.dots_vertical,
+                            ),
+                            iconSize: Theme.of(context).iconTheme.size,
+                            color: Colors.black54,
+                            splashColor: Theme.of(context).highlightColor,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
+                            onPressed: () async {
+                              await _showFollowingPopup();
+                            },
+                          ),
+                        ],
+                      ),
+                  ],
                 ),
               ),
             ],
           ),
-          Container(
-            margin: const EdgeInsets.only(bottom: 0.0),
-            height: 1.0,
-            color: Colors.grey[300],
-          ),
-          InkWell(
-            onTap: () {
-              widget.kennelSelected();
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                const SizedBox(width: 5.0, height: 85.0),
-                KennelLogo(
-                  kennelId: widget.kennelItem.kennel.kennelId,
-                  kennelLogoUrl: widget.kennelItem.kennel.kennelLogo,
-                  kennelShortName: widget.kennelItem.kennel.kennelShortName,
-                  logoHeight: 70.0,
-                  leftPadding: 0.0,
-                  rightPadding: 10.0,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        const SizedBox(width: 10.0, height: 10.0),
-                        if (widget.kennelItem.extensions.location !=
-                            null) ...<Widget>[
-                          Text(
-                            widget.kennelItem.extensions.location!,
-                            style: ts_regularMediumBlack,
-                          ),
-                        ],
-                        if ((appModel.hasLocationPermissions) &&
-                            (widget.kennelItem.extensions.distToKennel !=
-                                null)) ...<Widget>[
-                          Text(
-                            '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, isMetric: _distancePreference == 2)} from here',
-                            style: ts_regularMediumBlack,
-                          ),
-                        ],
-                        if ((widget.kennelItem.hkm != null) &&
-                            (widget.kennelItem.hkm!.hcTotalRunCount !=
-                                0)) ...<Widget>[
-                          Text(
-                            'Runs: ${widget.kennelItem.hkm!.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm!.hcTotalRunCount + widget.kennelItem.hkm!.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm!.hcHaringCount + widget.kennelItem.hkm!.historicalHaringCount}',
-                            style: ts_titleMedium.copyWith(color: hc_blue),
-                          ),
-                        ],
-                        if (widget.kennelItem.hkm?.dateOfLastRun !=
-                            null) ...<Widget>[
-                          Text(
-                            'Last run: ${widget.kennelItem.hkm!.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm!.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm!.dateOfLastRun!)}',
-                            style: ts_titleMedium.copyWith(color: hc_blue),
-                          ),
-                        ],
-                        if ((widget.kennelItem.hkm != null) &&
-                            (widget.kennelItem.hkm!.kennelCredit !=
-                                0)) ...<Widget>[
-                          Text(
-                            (widget.kennelItem.hkm!.kennelCredit >= 0
-                                    ? 'Credit available: '
-                                    : 'Funds owed: ') +
-                                IveCoreUtilities.getFormattedMoney(
-                                  widget.kennelItem.hkm!.kennelCredit.abs(),
-                                  widget.kennelItem.kennel.digitsAfterDecimal ??
-                                      2,
-                                  widget.kennelItem.kennel.currencySymbol ??
-                                      r'$^',
-                                ),
-                            style: TextStyle(
-                              fontFamily: 'AvenirNextDemiBold',
-                              fontStyle: FontStyle.normal,
-                              fontSize: 16.0,
-                              height: 1.0,
-                              color: widget.kennelItem.hkm!.kennelCredit >= 0
-                                  ? Colors.green.shade900
-                                  : hc_red,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                if (Utilities.isConnected())
-                  // Chat bubble stacked ABOVE the three dots so the pair
-                  // occupies a single icon-width column on the right edge
-                  // instead of eating into the kennel info text. Compact
-                  // constraints keep two buttons inside the 85px logo row.
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      // Kennel-level chat (not bound to a run). Available to
-                      // followers — the SP enforces the HKM requirement.
-                      if (widget.kennelItem.hkm != null)
-                        IconButton(
-                          icon: HcChatBubble(
-                            threadId: widget.kennelItem.kennel.publicKennelId,
-                            isKennelThread: true,
-                          ),
-                          iconSize: Theme.of(context).iconTheme.size,
-                          splashColor: Theme.of(context).highlightColor,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 40,
-                            minHeight: 40,
-                          ),
-                          onPressed: () async {
-                            final k = widget.kennelItem.kennel;
-                            await openChatThread(
-                              title: '${k.kennelShortName} Kennel Chat',
-                              threadId: k.kennelId,
-                              publicThreadId: k.publicKennelId,
-                              isKennelThread: true,
-                            );
-                          },
-                        ),
-                      IconButton(
-                        icon: const Icon(MaterialCommunityIcons.dots_vertical),
-                        iconSize: Theme.of(context).iconTheme.size,
-                        color: Colors.black54,
-                        splashColor: Theme.of(context).highlightColor,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 40,
-                          minHeight: 40,
-                        ),
-                        onPressed: () async {
-                          await _showFollowingPopup();
-                        },
-                      ),
-                    ],
-                  ),
-              ],
+          // The follow checkbox is a 24px image inside an InkWell that opens
+          // the kennel, so taps that miss the image by a few px navigate away
+          // instead. Overlay an invisible 56×56 target on the card's top-left
+          // corner (topmost in the Stack) without changing the icon or layout.
+          Positioned(
+            left: 0,
+            top: 0,
+            width: 56,
+            height: 56,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _showFollowingPopup,
             ),
           ),
         ],
