@@ -6,12 +6,15 @@ Items flagged during development that need follow-up.
 
 ## 🎯 3.0 RELEASE RUNWAY (consolidated burn-down, 2026-08-23)
 
-App Store live = 2.1.2 (Oct 2025). iOS beta = 1311 (offline check-in +
-outbox UI; payment outbox since 1310, watch app since 1309). Android:
-1311 STAGED on internal track 2026-08-27 (API upload, commit succeeded
-"not sent for review") — James presses "send for review" in the Play
-Console. Supersedes the never-uploaded 1310 AAB. The detailed per-feature checklists further down hold the
-step-by-step cases — this is the ordered index of what actually gates 3.0.
+App Store live = 2.1.2 (Oct 2025). iOS beta = 1312 on TestFlight
+(2026-08-28: card chat bubbles + SP badge 1.1.0, run share sheet
+map/Trail TV, bigger RSVP/follow tap targets, spinner restored; 1311 =
+offline check-in + outbox UI, payment outbox since 1310, watch app since
+1309). Android: 1312 uploaded to the internal track via the Play API and
+SENT FOR REVIEW by James 2026-08-28 (first Android build to go through
+review since 2.1.2). iOS and Android build numbers are back in lockstep.
+The detailed per-feature checklists further down hold the step-by-step
+cases — this is the ordered index of what actually gates 3.0.
 
 ### P0 — gates submission (one or two hash runs + a bench evening)
 
@@ -59,6 +62,9 @@ step-by-step cases — this is the ordered index of what actually gates 3.0.
   HC.ClientErrorLog for intact [METRICKIT] payloads — specifically Tuna's
   892MB RSS question.
 - [ ] Splash verification leftovers: iOS Done→no-reshow (Android ✓).
+- [ ] **1312 eyeball block** (bench): see "Device test — 3.0.1+1312" below —
+  chat bubble states + one-time badge jump, share sheet on all three
+  entry points, corner tap targets, spinner centred with diamonds.
 
 ### P2 — fine to trail the release
 
@@ -242,6 +248,42 @@ roughly by recommended sequence.
   dialog, not a screenshot.
 
 ---
+
+## Device test — 3.0.1+1312 (chat bubbles, share sheet, tap targets, spinner)
+
+Shipped 2026-08-28 to TestFlight + Play internal (sent for review). SP
+`hcapp_getEventBadgeCount` 1.1.0 is already live, so 1311 users also see
+the new unread semantics via the old header badge.
+
+- [ ] **First launch badge jump**: global chat badge and card bubbles light
+  up for every chatty run (last 90 days / future) and kennel thread not yet
+  opened — expected once. "Clear all chats" (Unseen Chats mode) zeroes
+  everything AND it stays zero after a pull-to-refresh / relaunch (Mode 1
+  now inserts caught-up rows for run threads too).
+- [ ] **Bubble states**: run card + kennel card — red solid + count when
+  unread; open the chat → grey solid instantly (no refetch wait); a run/
+  kennel with no messages → grey outline. Post the first message in an
+  empty thread → outline turns solid on return.
+- [ ] **Notification gating**: set a kennel's bell to Off → its kennel bubble
+  and its runs' bubbles never go red (still grey solid if messages exist);
+  Silver Bell (muted) DOES still badge. Set a single run's bell to Off →
+  only that run stops badging.
+- [ ] **Bubble placement**: kennel card bubble above the three dots, no
+  longer crowding the info column; run card same, old free-floating red
+  header badge gone; blue admin pending-photos badge unchanged.
+- [ ] **Share sheet** from all three places — run map button under the
+  compass, full-screen map share, Run Tools "Share My Run": bottom sheet
+  with Interactive map / Trail TV rows; each hands the right link + copy to
+  the OS share sheet. Uncounted run → no sheet, straight to the map share
+  (legacy #/RID link). Sheet title style looks right on the white sheet.
+- [ ] **Tap targets**: tap ~10px outside the RSVP icon (run card) → RSVP
+  popup, not run details; same outside the follow checkbox (kennel card) →
+  follow popup, NOT the kennel page (was navigating away on a near-miss).
+  Photo long-press still works away from the top-left corner.
+- [ ] **Spinner**: loading gates show the spinner centred with the background
+  filling the screen (not tucked top-left on white); items are diamonds.
+- [ ] **Android review outcome**: Play Console — 1312 approved/rejected;
+  if rejected, capture the reason here.
 
 ## Device test — 3.0.1+1293 (mark undo card, ~distance, dialogs, splash fix)
 
@@ -761,6 +803,11 @@ access + outbox visibility + faster reconnect):
 - [ ] **Restart-proof triggers**: queue a payment, log out/in or Reload Data
   (in-app restart), reconnect → still delivers (poll-based trigger fix for
   the recreated NetworkService).
+- [ ] **Offline check-in list populated on entry** (fix for James's
+  2026-08-28 screenshot, post-1311): airplane mode → run admin → Manual
+  check in → the pack list shows immediately (previously blank until a
+  filter was toggled); counters populated; pull-to-refresh offline
+  re-reads local tables without wiping the list.
 - [ ] **Per-row queued icon**: charge a hasher in airplane mode → THEIR row's
   payment circle immediately shows the payment-method icon at half opacity
   with a small amber clock badge (not the red $, not blank); other rows
