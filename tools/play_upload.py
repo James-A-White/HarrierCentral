@@ -126,19 +126,77 @@ def upload(aab: str, track: str, notes: str | None) -> int:
     return 0
 
 
+def send_for_review(track: str, version_code: int | None) -> int:
+    """Submit a previously staged ("not sent for review") release for review.
+
+    Play has no "submit" call — review submission is a side effect of
+    committing an edit WITHOUT changesNotSentForReview. An empty edit can't be
+    committed, so re-apply the track's current release (optionally pinned to
+    one versionCode) and commit normally. If the Console still has an
+    outstanding task, Play refuses with the same error the upload path sees;
+    the message names the task and the release stays staged.
+    """
+    svc = service()
+    edit_id = svc.edits().insert(packageName=PACKAGE, body={}).execute()["id"]
+    current = (
+        svc.edits()
+        .tracks()
+        .get(packageName=PACKAGE, editId=edit_id, track=track)
+        .execute()
+    )
+    releases = current.get("releases", [])
+    if version_code is not None:
+        releases = [
+            r for r in releases if str(version_code) in r.get("versionCodes", [])
+        ]
+    if not releases:
+        svc.edits().delete(packageName=PACKAGE, editId=edit_id).execute()
+        print(
+            f"nothing to submit — no release on '{track}' "
+            f"{'for versionCode ' + str(version_code) if version_code else ''}",
+            file=sys.stderr,
+        )
+        return 1
+    codes = [c for r in releases for c in r.get("versionCodes", [])]
+    svc.edits().tracks().update(
+        packageName=PACKAGE,
+        editId=edit_id,
+        track=track,
+        body={"track": track, "releases": releases},
+    ).execute()
+    committed = svc.edits().commit(packageName=PACKAGE, editId=edit_id).execute()
+    print(
+        f"SENT FOR REVIEW — versionCode(s) {codes} on the '{track}' track "
+        f"(edit {committed['id']})."
+    )
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--validate", action="store_true")
     p.add_argument("--aab")
     p.add_argument("--track", default="internal")
     p.add_argument("--notes")
+    p.add_argument(
+        "--send-for-review",
+        action="store_true",
+        help="Submit the track's staged release for review (no upload).",
+    )
+    p.add_argument(
+        "--version-code",
+        type=int,
+        help="With --send-for-review: only this versionCode's release.",
+    )
     args = p.parse_args()
 
     try:
         if args.validate:
             return validate()
+        if args.send_for_review:
+            return send_for_review(args.track, args.version_code)
         if not args.aab:
-            p.error("--aab required unless --validate")
+            p.error("--aab required unless --validate/--send-for-review")
         return upload(args.aab, args.track, args.notes)
     except HttpError as e:
         print(f"Play API error: {e.status_code} — {e.reason}", file=sys.stderr)

@@ -11,8 +11,12 @@ App Store live = 2.1.2 (Oct 2025). iOS beta = 1312 on TestFlight
 map/Trail TV, bigger RSVP/follow tap targets, spinner restored; 1311 =
 offline check-in + outbox UI, payment outbox since 1310, watch app since
 1309). Android: 1312 uploaded to the internal track via the Play API and
-SENT FOR REVIEW by James 2026-08-28 (first Android build to go through
-review since 2.1.2). iOS and Android build numbers are back in lockstep.
+STAGED "not sent for review" 2026-08-28 — **James: Play Console →
+Publishing overview → "Send changes for review"** (the API refuses to
+submit for this app: HTTP 400 "Changes cannot be sent for review
+automatically", Console-only; `tools/play_upload.py --send-for-review`
+confirms it each time). First Android build to go through review since
+2.1.2. iOS and Android build numbers are back in lockstep.
 The detailed per-feature checklists further down hold the step-by-step
 cases — this is the ordered index of what actually gates 3.0.
 
@@ -251,7 +255,8 @@ roughly by recommended sequence.
 
 ## Device test — 3.0.1+1312 (chat bubbles, share sheet, tap targets, spinner)
 
-Shipped 2026-08-28 to TestFlight + Play internal (sent for review). SP
+Shipped 2026-08-28 to TestFlight + Play internal (staged; James sends
+for review in the Console). SP
 `hcapp_getEventBadgeCount` 1.1.0 is already live, so 1311 users also see
 the new unread semantics via the old header badge.
 
