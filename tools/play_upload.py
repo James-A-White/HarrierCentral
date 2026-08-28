@@ -15,6 +15,14 @@ Usage:
         Uploads the bundle, assigns it to the track as a completed rollout,
         and commits. Prints the versionCode Play extracted from the bundle.
 
+    tools/play_upload.py --send-for-review [--track internal] [--version-code N]
+        Submits a staged ("not sent for review") release for review by
+        re-applying the track release and committing normally. As of
+        2026-08-28 Play REFUSES this for Harrier Central (400 "Changes
+        cannot be sent for review automatically") — submission is
+        Console-only: Publishing overview → "Send changes for review".
+        Kept as the cheap way to re-check whether that ever changes.
+
 Credentials: ~/.playstore/play-publisher.json (chmod 600, never in git).
 Interpreter: the shebang pins the venv at ~/.playstore/venv, which holds
 google-api-python-client — run the script directly, not via bare python3.
