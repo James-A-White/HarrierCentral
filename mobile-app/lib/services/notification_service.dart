@@ -17,6 +17,13 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   // Derived RxInt for the *Global* App Icon Badge Count (sum of all events)
   final RxInt globalTotalBadgeCount = 0.obs;
 
+  /// Threads that contain at least one message, keyed by **lowercase**
+  /// publicEventId (run threads) / publicKennelId (kennel threads). Populated
+  /// from the Mode 3 badge fetch (SP v1.1.0 returns every visible thread with
+  /// messages, read or not). Drives the card chat bubbles: unread → read →
+  /// no chats.
+  final RxSet<String> threadsWithMessages = <String>{}.obs;
+
   // --- Core Dependencies ---
 
   FirebaseMessaging? _messaging;
@@ -119,18 +126,32 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       // });
 
       // Populate unreadEventCounts with RxInt values derived from clientChatCounts.
+      final Set<String> withMessages = <String>{};
       unreadEventCounts.value = {
         for (final summary in serverChatSummary)
           if (summary.publicEventId.isNotEmpty)
             summary.publicEventId: summary.badgeCount.obs,
       };
+      for (final summary in serverChatSummary) {
+        if (summary.publicEventId.isNotEmpty &&
+            (summary.messageCount ?? 0) > 0) {
+          withMessages.add(summary.publicEventId.asUuid);
+        }
+      }
 
       // Kennel-thread rows contribute to the global badge separately.
       for (final summary in serverChatSummary) {
         if (summary.isKennelThread && (summary.publicKennelId ?? '').isNotEmpty) {
           unreadEventCounts[summary.publicKennelId!] = summary.badgeCount.obs;
+          if ((summary.messageCount ?? 0) > 0) {
+            withMessages.add(summary.publicKennelId!.asUuid);
+          }
         }
       }
+      // Which threads have any content at all (read or not).
+      threadsWithMessages
+        ..clear()
+        ..addAll(withMessages);
 
       // Keep the display-bearing rows (those that carry event data) for the
       // Unseen Chats list, newest-first.
@@ -563,6 +584,32 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
   }
 
+  /// Unread count for one thread ([threadId] = publicEventId or
+  /// publicKennelId). UUID-normalised — the badge map keys arrive from the
+  /// server uppercase while callers may pass a lowercased id.
+  int unreadCountFor(String threadId) {
+    if (threadId.isEmpty) return 0;
+    final String id = threadId.asUuid;
+    for (final key in unreadEventCounts.keys) {
+      if (key.asUuid == id) return unreadEventCounts[key]?.value ?? 0;
+    }
+    return 0;
+  }
+
+  /// Three-state summary of a chat thread for the card bubbles. Kennel and
+  /// run threads share the same key space (publicKennelId / publicEventId);
+  /// [isKennelThread] is kept on the signature for call-site clarity.
+  ChatThreadState chatThreadState(
+    String threadId, {
+    required bool isKennelThread,
+  }) {
+    if (threadId.isEmpty) return ChatThreadState.none;
+    if (unreadCountFor(threadId) > 0) return ChatThreadState.unread;
+    return threadsWithMessages.contains(threadId.asUuid)
+        ? ChatThreadState.read
+        : ChatThreadState.none;
+  }
+
   Future<int> _getAndResetBadgeCount({
     String? publicEventId,
     bool? resetBadgeCount,
@@ -761,4 +808,16 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       body: SongsPage(eventId: eventId),
     ));
   }
+}
+
+/// State of a chat thread (run or kennel) as seen by the current user.
+enum ChatThreadState {
+  /// The thread has no messages yet.
+  none,
+
+  /// The thread has messages and the user has seen them all.
+  read,
+
+  /// The thread has messages the user hasn't seen.
+  unread,
 }

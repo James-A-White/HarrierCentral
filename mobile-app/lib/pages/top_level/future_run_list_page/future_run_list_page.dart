@@ -1495,6 +1495,11 @@ class EventChatSummary {
   final String? kennelShortName;
   final String? kennelLogo;
 
+  /// Kennel-thread rows only (SP v1.1.0+): total non-removed messages in the
+  /// thread. Lets the kennel card tell "read" (has chats, 0 unread) apart
+  /// from "no chats yet" (no row at all). Null for event rows.
+  final int? messageCount;
+
   EventChatSummary({
     required this.publicEventId,
     required this.badgeCount,
@@ -1507,6 +1512,7 @@ class EventChatSummary {
     this.publicKennelId,
     this.kennelShortName,
     this.kennelLogo,
+    this.messageCount,
   });
 
   /// Kennel-thread rows (kennel-level chat) carry kennelId/publicKennelId and
@@ -1526,6 +1532,7 @@ class EventChatSummary {
       publicKennelId: json['PublicKennelId'] as String?,
       kennelShortName: json['KennelShortName'] as String?,
       kennelLogo: json['KennelLogo'] as String?,
+      messageCount: (json['MessageCount'] as num?)?.toInt(),
     );
   }
 

@@ -324,6 +324,7 @@ export 'package:harrier_central/widgets/hc_linkify.dart';
 export 'package:harrier_central/widgets/hc_photo_view.dart';
 export 'package:harrier_central/widgets/hc_speed_dial.dart';
 export 'package:harrier_central/widgets/kennel_filter_cell.dart';
+export 'package:harrier_central/widgets/hc_chat_bubble.dart';
 export 'package:harrier_central/widgets/kennel_list_item.dart';
 export 'package:harrier_central/widgets/kennel_logo.dart';
 export 'package:harrier_central/widgets/kennel_member_list_item.dart';

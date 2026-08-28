@@ -339,51 +339,6 @@ class RunListItem extends StatelessWidget {
                           child: Obx(() => _getNotificationWidget()),
                         ),
                       ),
-                if (Get.isRegistered<NotificationService>())
-                  Obx(() {
-                    // Re-check inside the Obx: this closure re-runs on later
-                    // rebuilds, when the service may no longer be registered.
-                    final ns = notificationServiceOrNull;
-                    if (ns == null) return const SizedBox();
-                    if ((!ns.unreadEventCounts.containsKey(
-                          futureRun.event.publicEventId,
-                        )) ||
-                        (ns
-                                .unreadEventCounts[futureRun
-                                    .event
-                                    .publicEventId]
-                                ?.value ==
-                            0)) {
-                      return const SizedBox();
-                    } else {
-                      return badges.Badge(
-                        position: badges.BadgePosition.topEnd(top: -5, end: 0),
-                        badgeContent: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 2),
-                          width: 30,
-                          height: 13,
-                          child: AutoSizeText(
-                            ns
-                                    .unreadEventCounts[futureRun
-                                        .event
-                                        .publicEventId]
-                                    ?.value
-                                    .toString() ??
-                                '0',
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            minFontSize: 10,
-                            maxFontSize: 13,
-                            style: ts_badge,
-                          ),
-                        ),
-                        badgeStyle: badges.BadgeStyle(
-                          badgeColor: Colors.red.shade800,
-                          padding: const EdgeInsets.all(6),
-                        ),
-                      );
-                    }
-                  }),
                 if (AppAccess(futureRun.extensions.appAccessFlags).isAdmin)
                   Obx(() {
                     final count = KennelPhotoService.pendingPhotosByEvent[
@@ -598,19 +553,57 @@ class RunListItem extends StatelessWidget {
                               ),
                             ),
 
-                            if (Utilities.isConnected()) ...<Widget>[
-                              IconButton(
-                                icon: const Icon(
-                                  MaterialCommunityIcons.dots_vertical,
-                                ),
-                                iconSize: Theme.of(context).iconTheme.size,
-                                color: Colors.black54,
-                                splashColor: Theme.of(context).highlightColor,
-                                onPressed: () async {
-                                  await _showAllOptionsPopup();
-                                },
+                            if (Utilities.isConnected())
+                              // Chat bubble stacked ABOVE the three dots —
+                              // same column treatment as the kennel card, so
+                              // the pair takes one icon-width on the right
+                              // edge instead of eating into the run info.
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  IconButton(
+                                    icon: HcChatBubble(
+                                      threadId: futureRun.event.publicEventId,
+                                      isKennelThread: false,
+                                    ),
+                                    iconSize: Theme.of(context).iconTheme.size,
+                                    splashColor:
+                                        Theme.of(context).highlightColor,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(
+                                      minWidth: 40,
+                                      minHeight: 40,
+                                    ),
+                                    onPressed: () async {
+                                      await openChatThread(
+                                        title: futureRun.event.eventName,
+                                        threadId: futureRun.event.eventId,
+                                        publicThreadId:
+                                            futureRun.event.publicEventId,
+                                        isKennelThread: false,
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      MaterialCommunityIcons.dots_vertical,
+                                    ),
+                                    iconSize: Theme.of(context).iconTheme.size,
+                                    color: Colors.black54,
+                                    splashColor:
+                                        Theme.of(context).highlightColor,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(
+                                      minWidth: 40,
+                                      minHeight: 40,
+                                    ),
+                                    onPressed: () async {
+                                      await _showAllOptionsPopup();
+                                    },
+                                  ),
+                                ],
                               ),
-                            ],
 
                             // (futureRun.event.hares ?? '') == '' ? Container(
                             //   padding: const EdgeInsets.only(top:15),

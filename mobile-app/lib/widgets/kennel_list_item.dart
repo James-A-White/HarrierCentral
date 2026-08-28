@@ -284,47 +284,56 @@ class KennelListItemState extends State<KennelListItem> {
                     ),
                   ),
                 ),
-                if (Utilities.isConnected()) ...<Widget>[
-                  // Kennel-level chat (not bound to a run). Available to
-                  // followers — the SP enforces the HKM requirement.
-                  if (widget.kennelItem.hkm != null)
-                    IconButton(
-                      icon: const Icon(MaterialCommunityIcons.chat_outline),
-                      iconSize: Theme.of(context).iconTheme.size,
-                      color: Colors.black54,
-                      splashColor: Theme.of(context).highlightColor,
-                      onPressed: () async {
-                        final k = widget.kennelItem.kennel;
-                        await Get.to(
-                          () => Scaffold(
-                            appBar: AppBar(
-                              title: Text('${k.kennelShortName} Kennel Chat'),
-                              backgroundColor: themeButtonColors,
-                              foregroundColor: Colors.white,
-                            ),
-                            body: ChatPage(
-                              eventId: k.kennelId,
-                              publicEventId: k.publicKennelId,
-                              isKennelThread: true,
-                            ),
+                if (Utilities.isConnected())
+                  // Chat bubble stacked ABOVE the three dots so the pair
+                  // occupies a single icon-width column on the right edge
+                  // instead of eating into the kennel info text. Compact
+                  // constraints keep two buttons inside the 85px logo row.
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      // Kennel-level chat (not bound to a run). Available to
+                      // followers — the SP enforces the HKM requirement.
+                      if (widget.kennelItem.hkm != null)
+                        IconButton(
+                          icon: HcChatBubble(
+                            threadId: widget.kennelItem.kennel.publicKennelId,
+                            isKennelThread: true,
                           ),
-                        );
-                        if (Get.isRegistered<NotificationService>()) {
-                          unawaited(Get.find<NotificationService>()
-                              .getEventChatMessageCounts());
-                        }
-                      },
-                    ),
-                  IconButton(
-                    icon: const Icon(MaterialCommunityIcons.dots_vertical),
-                    iconSize: Theme.of(context).iconTheme.size,
-                    color: Colors.black54,
-                    splashColor: Theme.of(context).highlightColor,
-                    onPressed: () async {
-                      await _showFollowingPopup();
-                    },
+                          iconSize: Theme.of(context).iconTheme.size,
+                          splashColor: Theme.of(context).highlightColor,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 40,
+                            minHeight: 40,
+                          ),
+                          onPressed: () async {
+                            final k = widget.kennelItem.kennel;
+                            await openChatThread(
+                              title: '${k.kennelShortName} Kennel Chat',
+                              threadId: k.kennelId,
+                              publicThreadId: k.publicKennelId,
+                              isKennelThread: true,
+                            );
+                          },
+                        ),
+                      IconButton(
+                        icon: const Icon(MaterialCommunityIcons.dots_vertical),
+                        iconSize: Theme.of(context).iconTheme.size,
+                        color: Colors.black54,
+                        splashColor: Theme.of(context).highlightColor,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 40,
+                          minHeight: 40,
+                        ),
+                        onPressed: () async {
+                          await _showFollowingPopup();
+                        },
+                      ),
+                    ],
                   ),
-                ],
               ],
             ),
           ),
