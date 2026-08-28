@@ -1,3 +1,7 @@
+0.21.30
+    • Trail-TV auto-switches live → replay once tracks exist but no runner has reported for 30 min (?mode= and the toggle pin the mode)
+    • Trail-TV photo takeovers: 4s in replay, 10s in live
+
 0.21.29
     • Photos are resized and compressed before serving (much faster on slow networks)
 
