@@ -75,6 +75,14 @@ cases — this is the ordered index of what actually gates 3.0.
 - Radar wedge easing feel, playhead-clock replay case, fullscreen map
   safe-area on notched phones, editor open/close ×10 perf, chat badge
   optimistic-clear regression, "Caution guaranteed?" taste call.
+- **Play Console recommendations (reviewed 2026-08-28)**: resizability
+  opt-out DONE on dev for 1313 (manifest
+  `PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY`; one-release only —
+  needs real landscape/large-screen layouts before targetSdk 37). The other
+  four are post-3.0: edge-to-edge tidy (drop `windowFullscreen` in
+  LaunchTheme + nav-bar colour in main.dart), bitmap decode caps (ongoing),
+  **R8/minify — only with a full Android device pass** (release-only
+  reflection crashes in plugins are the risk; gain is small for Flutter).
 
 ### Build-items still open (small, none gating)
 
