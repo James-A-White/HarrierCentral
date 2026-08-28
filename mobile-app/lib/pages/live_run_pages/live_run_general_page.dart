@@ -4,7 +4,6 @@ import 'package:harrier_central/pages/live_run_pages/lost_compass_dialog.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:torch_light/torch_light.dart';
 
 // Trail-mark control tiles. A marker is a glyph or a short text on a yellow
@@ -196,26 +195,16 @@ class LiveRunGeneralController extends GetxController {
     }
   }
 
-  /// Opens the OS share sheet with the full-screen PackTrack page for this run
-  /// — the live map, no app needed. The dedicated /packtrack route requires a
-  /// numeric run number (it 404s otherwise), so uncounted runs, which have
-  /// none, fall back to the legacy run-detail link; its in-page map still
-  /// shows the live track.
+  /// "Share My Run": interactive-map / Trail TV chooser, then the OS share
+  /// sheet. URL patterns and wording live in [RunShareLinks] so this reads
+  /// the same as the map share buttons.
   Future<void> shareRun() async {
-    final String url = run.event.isCountedRun != 0
-        ? '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}/${run.event.eventNumber}/packtrack'
-        : '$BASE_HASHRUNS_DOT_ORG_URL#/RID?publicEventId=${run.event.publicEventId}';
-    final String name = run.event.eventName.isEmpty
-        ? '${run.kennel.kennelShortName} run'
-        : run.event.eventName;
-    await SharePlus.instance.share(
-      ShareParams(
-        text:
-            "I'm running $name with ${run.kennel.kennelShortName} — "
-            'follow me live: $url',
-        subject: 'Follow my hash live',
-      ),
-    );
+    final BuildContext? context = Get.context;
+    if (context == null) {
+      await RunShareLinks(run).shareMap();
+      return;
+    }
+    await RunShareLinks(run).showShareSheet(context);
   }
 
   bool _checkCanStart() {

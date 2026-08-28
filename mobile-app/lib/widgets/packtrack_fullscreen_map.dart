@@ -1,6 +1,5 @@
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
-import 'package:share_plus/share_plus.dart';
 
 /// Full-screen PackTrack map for a run, opened from the run's map view. Fills
 /// the whole screen with an overlaid close button (top-left).
@@ -18,33 +17,6 @@ class PackTrackFullScreenMap extends StatelessWidget {
   /// When provided (e.g. opened from a run photo), the map opens centered and
   /// zoomed on this coordinate instead of the run's default center.
   final latlng.LatLng? focusPoint;
-
-  /// Public PackTrack (live-tracking) webpage URL for this run — shareable so
-  /// spectators can follow along in a browser. Mirrors the run URL used for the
-  /// QR codes, with the `/packtrack` sub-page appended.
-  String get _packTrackUrl {
-    if (run.event.isCountedRun != 0) {
-      return '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}'
-          '/${run.event.eventNumber}/packtrack';
-    }
-    return '$BASE_HASHRUNS_DOT_ORG_URL#/RID?publicEventId=${run.event.publicEventId}';
-  }
-
-  /// Same wording as the Run Tools share button, so a run shared from either
-  /// place reads the same to whoever receives it.
-  Future<void> _shareRunLink() async {
-    final String name = run.event.eventName.isEmpty
-        ? '${run.kennel.kennelShortName} run'
-        : run.event.eventName;
-    await SharePlus.instance.share(
-      ShareParams(
-        text:
-            "I'm running $name with ${run.kennel.kennelShortName} — "
-            'follow me live: $_packTrackUrl',
-        subject: 'Follow my hash live',
-      ),
-    );
-  }
 
   Widget _overlayButton({
     required String tooltip,
@@ -159,12 +131,14 @@ class PackTrackFullScreenMap extends StatelessWidget {
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
                 const SizedBox(height: 10),
-                // Hands the public PackTrack link to the OS share sheet so
-                // spectators can watch in a browser without the app.
+                // Interactive-map / Trail TV chooser, then the OS share
+                // sheet — so spectators can watch in a browser without the
+                // app. Same flow as Run Tools and the run-detail map.
                 _overlayButton(
-                  tooltip: 'Share live-tracking link',
+                  tooltip: 'Share this run',
                   icon: Icons.ios_share,
-                  onPressed: _shareRunLink,
+                  onPressed: () =>
+                      unawaited(RunShareLinks(run).showShareSheet(context)),
                 ),
               ],
             ),

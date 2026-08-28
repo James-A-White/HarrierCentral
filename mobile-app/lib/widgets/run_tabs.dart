@@ -1725,6 +1725,26 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
+                      // Share (interactive map / Trail TV chooser), tucked
+                      // under the north-lock compass so it stays clear of the
+                      // map's own mode selector and status pill.
+                      Positioned(
+                        left: 10.0,
+                        top: 68.0,
+                        child: Material(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          child: IconButton(
+                            tooltip: 'Share this run',
+                            icon: Icon(Icons.ios_share, color: hc_blue),
+                            onPressed: () => unawaited(
+                              RunShareLinks(
+                                widget.futureRun,
+                              ).showShareSheet(context),
+                            ),
+                          ),
+                        ),
+                      ),
                       if (widget.futureRun.extensions.isMapAndDistanceValid ==
                           0) ...<Widget>[
                         Positioned(
