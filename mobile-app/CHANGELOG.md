@@ -1,5 +1,26 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1312 (2026-08-28) — iOS + Android
+
+### New Features
+- **Chat bubbles on run and kennel cards**: a solid red bubble with an unread
+  count when there are messages you haven't seen, solid grey when you've
+  read them all, and a grey outline when the chat is still empty. Tap it to
+  open the chat. Run chats now show as unread before you've opened them, for
+  any run or kennel whose notifications aren't set to Off.
+- **Share the run map or Trail TV**: a share button on the run's map (under
+  the compass) offers the interactive map link for friends following on a
+  phone, or the Trail TV link for a big screen at the On-Inn. Run Tools'
+  "Share My Run" and the full-screen map share offer the same choice.
+
+### Improvements
+- **Easier to tap**: the RSVP icon on run cards and the follow checkbox on
+  kennel cards now respond to taps well outside the small icon.
+- **Loading spinner** back to its original look — centred on the screen,
+  rotating diamonds.
+- Kennel card chat bubble sits above the three-dots menu so it no longer
+  crowds the kennel details.
+
 ## 3.0.1+1311 (2026-08-27) — iOS + Android
 
 ### Improvements
