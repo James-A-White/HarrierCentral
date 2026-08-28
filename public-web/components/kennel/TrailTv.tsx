@@ -15,7 +15,7 @@
  *             1 minute per km of the first finisher's trail, with photos
  *             taking over as the replay clock passes their capture time.
  * Auto-selects live within 24h of the run start, replay after — and flips
- * live → replay once tracks exist but nobody is on trail (the pack is home),
+ * live → replay once tracks exist but nobody has reported for 30 min,
  * unless the mode was pinned by ?mode= or the on-screen toggle.
  */
 
@@ -43,6 +43,7 @@ const TAKEOVER_LIVE_MS = 10_000;  // fresh-from-trail photo, live mode
 const TAKEOVER_REPLAY_MS = 4_000;  // synced photo on the replay timeline
 const CALLOUT_MS = 6_000;
 const ACTIVE_WINDOW_MS = 10 * 60_000; // "on trail" = a point in the last 10 min
+const REPLAY_IDLE_MS = 30 * 60_000; // live → replay once no runner has reported for 30 min
 const FOLLOW_ZOOM = 17.5;
 const FOLLOW_SPRING_OMEGA = 3; // rad/s — camera spring stiffness; lower = floatier follow-cam
 const LEAD_HYSTERESIS_METERS = 15; // new leader must be this far ahead to steal the cam
@@ -521,13 +522,16 @@ export default function TrailTv({
   }, [tracks, nowTick, eventStartMs]);
 
   // Live → replay once the run is over: tracks exist but nobody has reported
-  // a position in the last ACTIVE_WINDOW_MS. The 24h-after-start rule alone
+  // a position in the last REPLAY_IDLE_MS. The 24h-after-start rule alone
   // left the morning-after screen in live mode (no front-runner cam, no
-  // photo takeovers) until the following evening.
+  // photo takeovers) until the following evening. Deliberately longer than
+  // the 10-min "on trail" window so a pack-wide drink-stop lull mid-run
+  // doesn't flip a live wall into replay.
+  const newestPositionTs = tracks.reduce((m, t) => Math.max(m, t.lastTs), 0);
   useEffect(() => {
     if (modePinned.current || mode !== "live" || tracks.length === 0) return;
-    if (stats.active === 0) setMode("replay");
-  }, [mode, tracks.length, stats.active]);
+    if (nowTick - newestPositionTs > REPLAY_IDLE_MS) setMode("replay");
+  }, [mode, tracks.length, newestPositionTs, nowTick]);
 
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const marqueeRef = useRef<HTMLDivElement | null>(null);

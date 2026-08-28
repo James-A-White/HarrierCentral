@@ -5,7 +5,7 @@
   opened the morning after a run stayed in live mode (whole-run map, no
   front-runner cam, no photo takeovers) until 24h after the start. Now
   live mode flips to replay as soon as tracks exist but nobody has
-  reported a position in the last 10 minutes. `?mode=` and the on-screen
+  reported a position in the last 30 minutes. `?mode=` and the on-screen
   toggle still pin the mode.
 - **Trail-TV photo takeovers shortened**: 4s in replay (was 12s), 10s in
   live mode.
