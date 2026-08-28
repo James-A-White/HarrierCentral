@@ -20,8 +20,9 @@
  */
 
 import { Fragment, useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, CircleMarker, Marker, Tooltip, useMap } from "react-leaflet";
 import QRCode from "react-qr-code";
+import { checkpointIcon, visibleMarks } from "./trackMarks";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn,
   trackUpTo, filterAndInterpolate, formatDistanceLabel, haversineMeters, photoSrc,
@@ -41,12 +42,15 @@ const REPLAY_MS_PER_KM = 60_000; // 1 minute of wall time per km of trail
 const REPLAY_HOLD_MS = 6_000;
 const TAKEOVER_LIVE_MS = 10_000;  // fresh-from-trail photo, live mode
 const TAKEOVER_REPLAY_MS = 4_000;  // synced photo on the replay timeline
+const TAKEOVER_OUT_MS = 450;       // zoom-back-out exit animation (matches .closing CSS)
 const CALLOUT_MS = 6_000;
 const ACTIVE_WINDOW_MS = 10 * 60_000; // "on trail" = a point in the last 10 min
 const REPLAY_IDLE_MS = 30 * 60_000; // live → replay once no runner has reported for 30 min
 const FOLLOW_ZOOM = 17.5;
 const FOLLOW_SPRING_OMEGA = 3; // rad/s — camera spring stiffness; lower = floatier follow-cam
 const LEAD_HYSTERESIS_METERS = 15; // new leader must be this far ahead to steal the cam
+const MARK_PX_OVERVIEW = 36; // trail-mark tile on the whole-run panels
+const MARK_PX_CAM = 56;      // trail-mark tile on the zoomed front-runner cam
 
 interface TrailTvProps {
   slug: string;
@@ -220,6 +224,23 @@ function headsAt(tracks: PreparedTrack[], cutoff: number) {
     .filter((x): x is NonNullable<typeof x> => x != null);
 }
 
+/** Trail marks (checks, drink stops, on-inn, text tiles) visible at the cutoff. */
+function TvMarks({ users, cutoff, size }: { users: UserTrack[]; cutoff: number | null; size: number }) {
+  const marks = useMemo(() => visibleMarks(users, cutoff ?? Infinity), [users, cutoff]);
+  return (
+    <>
+      {marks.map((m, i) => (
+        <Marker
+          key={`mark-${i}-${m.rawType}`}
+          position={[m.point.lat, m.point.lng]}
+          icon={checkpointIcon(m, size)}
+          zIndexOffset={500}
+        />
+      ))}
+    </>
+  );
+}
+
 // ── Map panels ─────────────────────────────────────────────────────────────────
 
 function trackPolyline(t: PreparedTrack, cutoff: number | null, name?: string | null) {
@@ -266,9 +287,11 @@ function RunnerLegend({ tracks, names }: { tracks: PreparedTrack[]; names: Recor
 }
 
 function TvMapPanel({
-  tracks, cutoff, center, label, sublabel, style, names, showLegend = false,
+  tracks, users, cutoff, center, label, sublabel, style, names, showLegend = false,
 }: {
   tracks: PreparedTrack[];
+  /** Raw payload users — the source of trail marks (PreparedTrack holds GPS only). */
+  users: UserTrack[];
   cutoff: number | null;
   center: [number, number];
   label: string;
@@ -297,6 +320,7 @@ function TvMapPanel({
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <AutoFit points={boundsOf(tracks, center)} />
+        <TvMarks users={users} cutoff={cutoff} size={MARK_PX_OVERVIEW} />
         {tracks.map((t) => trackPolyline(t, cutoff, names?.[t.id]))}
       </MapContainer>
     </div>
@@ -315,12 +339,16 @@ export default function TrailTv({
   // A ?mode= override or a manual toggle pins the mode; auto-switching only
   // applies while the page is still on its own automatic choice.
   const modePinned = useRef(initialMode != null);
+  const modeRef = useRef(mode);
+  useEffect(() => { modeRef.current = mode; }, [mode]);
 
   const [tracks, setTracks] = useState<PreparedTrack[]>([]);
+  const [rawUsers, setRawUsers] = useState<UserTrack[]>([]);
   const [markCount, setMarkCount] = useState(0);
   const [names, setNames] = useState<Record<string, string>>({});
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [takeover, setTakeover] = useState<PhotoEntry | null>(null);
+  const [takeoverClosing, setTakeoverClosing] = useState(false);
   const [callouts, setCallouts] = useState<Callout[]>([]);
   const [nowTick, setNowTick] = useState(Date.now());
   const [loopClock, setLoopClock] = useState<number | null>(null);
@@ -333,6 +361,27 @@ export default function TrailTv({
   const calloutKey = useRef(0);
   const replayFiredPhotos = useRef<Set<string>>(new Set());
   const takeoverActiveRef = useRef(false);
+  const takeoverIdRef = useRef<string | null>(null);
+
+  // A takeover zooms IN on entry (CSS animation) and must zoom back OUT on
+  // exit rather than vanish: dismiss flips a "closing" class for the exit
+  // animation, then unmounts. A newer takeover arriving mid-exit replaces it
+  // (the stale timeout sees a different id and does nothing).
+  const dismissTakeover = useCallback((photoId: string) => {
+    if (takeoverIdRef.current !== photoId) return;
+    setTakeoverClosing(true);
+    setTimeout(() => {
+      if (takeoverIdRef.current !== photoId) return;
+      setTakeover(null);
+      setTakeoverClosing(false);
+    }, TAKEOVER_OUT_MS);
+  }, []);
+  const showTakeover = useCallback((e: PhotoEntry, holdMs: number) => {
+    takeoverIdRef.current = e.photoId;
+    setTakeoverClosing(false);
+    setTakeover(e);
+    setTimeout(() => dismissTakeover(e.photoId), holdMs);
+  }, [dismissTakeover]);
 
   // ── Track polling ────────────────────────────────────────────────────────────
   const loadTracks = useCallback(async () => {
@@ -380,7 +429,16 @@ export default function TrailTv({
     }
 
     const prepared = prepareTracks(payload.users);
+    // Decide live → replay HERE, in the same state batch as the track load,
+    // so the live maps never receive tracks they'd animate a fitBounds for
+    // right before being unmounted (Leaflet's zoom-end timer then fires on
+    // the removed map: "Cannot read properties of undefined (_leaflet_pos)").
+    if (!modePinned.current && modeRef.current === "live" && prepared.length > 0) {
+      const newest = prepared.reduce((m, t) => Math.max(m, t.lastTs), 0);
+      if (Date.now() - newest > REPLAY_IDLE_MS) setMode("replay");
+    }
     setTracks(prepared);
+    setRawUsers(payload.users);
 
     const missing = prepared.map((t) => t.id).filter((id) => !(id in names));
     if (missing.length > 0) {
@@ -415,8 +473,7 @@ export default function TrailTv({
         for (const e of entries) {
           if (!knownPhotoIds.current.has(e.photoId)) {
             knownPhotoIds.current.add(e.photoId);
-            setTakeover(e);
-            setTimeout(() => setTakeover((cur) => (cur?.photoId === e.photoId ? null : cur)), TAKEOVER_LIVE_MS);
+            showTakeover(e, TAKEOVER_LIVE_MS);
           }
         }
       } else {
@@ -426,7 +483,7 @@ export default function TrailTv({
     load();
     const t = setInterval(load, mode === "live" ? PHOTO_POLL_MS : 3 * PHOTO_POLL_MS);
     return () => { cancelled = true; clearInterval(t); };
-  }, [publicEventId, mode]);
+  }, [publicEventId, mode, showTakeover]);
 
   // ── Clocks ───────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -472,6 +529,7 @@ export default function TrailTv({
   // it without restarting (and resetting) the clock.
   useEffect(() => {
     takeoverActiveRef.current = takeover != null;
+    takeoverIdRef.current = takeover?.photoId ?? null;
   }, [takeover]);
 
   // Paced replay clock + photo sync. 200ms steps: per-tick track math is
@@ -503,13 +561,12 @@ export default function TrailTv({
     for (const p of photos) {
       if (p.markTs != null && p.markTs <= replayClock && !replayFiredPhotos.current.has(p.photoId)) {
         replayFiredPhotos.current.add(p.photoId);
-        setTakeover(p);
-        setTimeout(() => setTakeover((cur) => (cur?.photoId === p.photoId ? null : cur)), TAKEOVER_REPLAY_MS);
+        showTakeover(p, TAKEOVER_REPLAY_MS);
         break; // one at a time
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [replayClock, mode]);
+  }, [replayClock, mode, showTakeover]);
 
   // ── Ticker stats ─────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -526,7 +583,8 @@ export default function TrailTv({
   // left the morning-after screen in live mode (no front-runner cam, no
   // photo takeovers) until the following evening. Deliberately longer than
   // the 10-min "on trail" window so a pack-wide drink-stop lull mid-run
-  // doesn't flip a live wall into replay.
+  // doesn't flip a live wall into replay. (The first-load case is decided
+  // inside loadTracks; this covers a live wall whose pack goes home later.)
   const newestPositionTs = tracks.reduce((m, t) => Math.max(m, t.lastTs), 0);
   useEffect(() => {
     if (modePinned.current || mode !== "live" || tracks.length === 0) return;
@@ -644,6 +702,8 @@ export default function TrailTv({
         .tv-qr-caption { font-size: 13px; opacity:.9; }
         .tv-takeover { position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,.88); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; animation: tvzoom .5s ease-out; }
         @keyframes tvzoom { from { transform: scale(.6); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+        .tv-takeover.closing { animation: tvzoomout .45s ease-in forwards; }
+        @keyframes tvzoomout { from { transform: scale(1); opacity: 1 } to { transform: scale(.6); opacity: 0 } }
         .tv-takeover img { max-width: 92vw; max-height: 84vh; border-radius: 16px; box-shadow: 0 0 80px rgba(224,165,30,.4); }
         .tv-takeover-badge { background: #B71C1C; color: #fff; font-weight: 800; padding: 8px 26px; border-radius: 999px; font-size: 22px; letter-spacing: .04em; }
         .tv-callouts { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 4000; display: flex; flex-direction: column; gap: 10px; align-items: center; }
@@ -665,6 +725,7 @@ export default function TrailTv({
         <>
           <TvMapPanel
             tracks={tracks}
+            users={rawUsers}
             cutoff={null}
             center={center}
             label="LIVE"
@@ -674,6 +735,7 @@ export default function TrailTv({
           />
           <TvMapPanel
             tracks={tracks}
+            users={rawUsers}
             cutoff={loopClock}
             center={center}
             label="THE RUN IN 10 SECONDS"
@@ -704,11 +766,13 @@ export default function TrailTv({
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <FollowCenter center={frontRunner ? [frontRunner.head.lat, frontRunner.head.lng] : null} />
+              <TvMarks users={rawUsers} cutoff={replayClock} size={MARK_PX_CAM} />
               {tracks.map((t) => trackPolyline(t, replayClock, names[t.id]))}
             </MapContainer>
           </div>
           <TvMapPanel
             tracks={tracks}
+            users={rawUsers}
             cutoff={replayClock}
             center={center}
             label="RUN REPLAY"
@@ -789,7 +853,10 @@ export default function TrailTv({
       </div>
 
       {takeover && (
-        <div className="tv-takeover" onClick={() => setTakeover(null)}>
+        <div
+          className={`tv-takeover${takeoverClosing ? " closing" : ""}`}
+          onClick={() => dismissTakeover(takeover.photoId)}
+        >
           <div className="tv-takeover-badge">📸 FRESH FROM TRAIL</div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

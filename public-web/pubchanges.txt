@@ -1,3 +1,7 @@
+0.21.31
+    • Trail-TV: trail marks (checks, drink stops, on-inn, text) now show on all maps
+    • Trail-TV: photo takeovers zoom back out instead of vanishing
+
 0.21.30
     • Trail-TV auto-switches live → replay once tracks exist but no runner has reported for 30 min (?mode= and the toggle pin the mode)
     • Trail-TV photo takeovers: 4s in replay, 10s in live

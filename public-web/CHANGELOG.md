@@ -1,5 +1,18 @@
 # public-web Changelog
 
+## 0.21.31 (2026-08-28)
+- **Trail-TV shows trail marks**: checks, drink stops, on-inn and text
+  tiles now draw on all three Trail-TV maps (larger on the front-runner
+  cam), revealed as the replay clock passes them. The mark renderer and
+  visibility collector moved out of PackTrackMap into a shared
+  `trackMarks.ts` so both maps draw identical tiles.
+- **Photo takeovers zoom back out**: a takeover now eases back out (450ms)
+  instead of vanishing.
+- **Fix**: the first-load live → replay switch is decided in the same state
+  batch as the track load, so the live maps no longer start an animated
+  fit right before being unmounted (orphaned Leaflet zoom timer threw
+  `_leaflet_pos` on a removed map).
+
 ## 0.21.30 (2026-08-28)
 - **Trail-TV auto-switches to replay once the pack is home**: a screen
   opened the morning after a run stayed in live mode (whole-run map, no
