@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getEventBadgeCount",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Returns unread event message badge counts for the authenticated user. Three modes controlled by parameters: (1) reset all badge counts across all events and return a zero sentinel row; (2) query (and optionally reset) the badge count for a specific event; (3) return badge counts for all events where the user has a badge count row. Read SP — no success envelope; always returns a data or error rowset.",
   "parameters": [
     {
@@ -37,7 +37,7 @@
       "type": "INT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "When non-zero, updates LastSequenceCount to the current MAX for all of the user's badge count rows (marks all events as read), then returns a zero-sentinel row. Takes precedence over @publicEventId. Default 0."
+      "description": "When non-zero, updates LastSequenceCount to the current MAX for all of the user's badge count rows AND inserts caught-up rows for every in-scope kennel/run thread that has messages but no badge row yet (both kinds surface unread without a row), then returns a zero-sentinel row. Takes precedence over @publicEventId. Default 0."
     }
   ],
   "rowsets": [
@@ -75,32 +75,30 @@
     {
       "index": 0,
       "name": "AllEventBadgeCounts",
-      "description": "Returned when @publicEventId is NULL and @resetAllBadgeCounts=0. One row per event that has UNREAD messages (BadgeCount > 0), joined to HC.Event and HC.Kennel for display. Carries enough fields for the app to render the Unseen Chats list even when the event isn't locally synced. First two columns (BadgeCount, PublicEventId) unchanged for back-compat.",
+      "description": "Returned when @publicEventId is NULL and @resetAllBadgeCounts=0. v1.1.0 (2026-08-28): one row per RUN thread with ANY messages that the user can see — any event they hold a badge row for (posted/read, not time-bounded) OR an event in a kennel they have an HKM row for / an event they have an HEM row for, starting within the last 90 days or in the future — UNION one row per followed kennel-level thread with ANY messages. BadgeCount may be 0. Both thread kinds surface as unread BEFORE first read (no badge row => every message unread). BadgeCount is forced to 0 when the user's effective notification preference for the thread is ignore (2): runs use COALESCE(NULLIF(hem.EventNotificationPreference,0), hkm.KennelNotificationPreference, 0), kennels use hkm.KennelNotificationPreference. Silver Bell (mute=3) still badges. Kennel-thread rows have EventId/PublicEventId NULL and carry PublicKennelId. MessageCount lets the run/kennel cards distinguish unread / read / no-chats. Carries enough fields for the app to render the Unseen Chats list even when the event isn't locally synced (the app filters that list on BadgeCount > 0). First two columns (BadgeCount, PublicEventId) unchanged for back-compat. Previously (v1.0.0) only rows with BadgeCount > 0 were returned.",
       "columns": [
-        { "name": "BadgeCount",            "type": "INT",                 "nullable": false, "description": "Computed as MAX(MessageSequenceCount) - LastSequenceCount. Only rows > 0 are returned." },
-        { "name": "PublicEventId",         "type": "UNIQUEIDENTIFIER",    "nullable": false, "description": "The event's public UUID." },
-        { "name": "EventId",               "type": "UNIQUEIDENTIFIER",    "nullable": false, "description": "HC.Event.id — used to open the chat (ChatPage needs eventId + publicEventId)." },
+        { "name": "BadgeCount",            "type": "INT",                 "nullable": false, "description": "MAX(MessageSequenceCount) - COALESCE(LastSequenceCount, 0), or 0 when the effective notification preference for the thread is ignore (2). 0 = fully read or notifications ignored." },
+        { "name": "PublicEventId",         "type": "UNIQUEIDENTIFIER",    "nullable": true,  "description": "The event's public UUID. NULL for kennel-thread rows." },
+        { "name": "EventId",               "type": "UNIQUEIDENTIFIER",    "nullable": true,  "description": "HC.Event.id — used to open the chat (ChatPage needs eventId + publicEventId). NULL for kennel-thread rows." },
         { "name": "EventName",             "type": "NVARCHAR(250)",       "nullable": false, "description": "HC.Event.EventName." },
         { "name": "EventNumber",           "type": "SMALLINT",            "nullable": false, "description": "HC.Event.EventNumber." },
         { "name": "EventStartDatetimeGmt", "type": "DATETIMEOFFSET(7)",   "nullable": false, "description": "HC.Event.EventStartDatetimeGmt — reliable instant for display/sort." },
         { "name": "EventImage",            "type": "NVARCHAR(500)",       "nullable": true,  "description": "HC.Event.EventImage (event artwork)." },
-        { "name": "KennelId",              "type": "UNIQUEIDENTIFIER",    "nullable": false, "description": "HC.Event.KennelId." },
+        { "name": "KennelId",              "type": "UNIQUEIDENTIFIER",    "nullable": false, "description": "HC.Event.KennelId (event rows) / HC.Kennel.id (kennel-thread rows)." },
+        { "name": "PublicKennelId",        "type": "UNIQUEIDENTIFIER",    "nullable": true,  "description": "HC.Kennel.PublicKennelId for kennel-thread rows; NULL for event rows." },
         { "name": "KennelShortName",       "type": "NVARCHAR(25)",        "nullable": false, "description": "HC.Kennel.KennelShortName." },
-        { "name": "KennelLogo",            "type": "NVARCHAR(500)",       "nullable": false, "description": "HC.Kennel.KennelLogo (may be 'bundle://defaultKennelLogo')." }
+        { "name": "KennelLogo",            "type": "NVARCHAR(500)",       "nullable": false, "description": "HC.Kennel.KennelLogo (may be 'bundle://defaultKennelLogo')." },
+        { "name": "MessageCount",          "type": "INT",                 "nullable": true,  "description": "Total non-removed messages in the thread (always > 0 — threads with no messages produce no row). Added v1.1.0." }
       ]
     }
   ],
   "sideEffects": [
     "UPDATE HC.EventMessageBadgeCounts SET LastSequenceCount — when @resetAllBadgeCounts != 0 (all user rows, outside a transaction)",
+    "INSERT HC.EventMessageBadgeCounts (caught-up rows for in-scope kennel and run threads with no badge row) — when @resetAllBadgeCounts != 0",
     "MERGE HC.EventMessageBadgeCounts (upsert LastSequenceCount) — when @publicEventId is provided and @resetBadgeCount != 0 (outside a transaction)",
     "INSERT HC.ErrorLog (via ValidateAppAuth) — on auth failure"
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "No TRY/CATCH block",
-      "detail": "The HC6 SP has no TRY/CATCH around the main body. An unexpected runtime error (e.g. deadlock on MERGE, constraint violation) will bubble up as an unhandled SQL exception with no ErrorLog entry and no structured error rowset."
-    },
     {
       "severity": "high",
       "issue": "MERGE and UPDATE run outside a transaction",

@@ -30,11 +30,26 @@ AS
 -- Returns:
 --   Read SP (no success envelope — always returns a count row).
 --   Modes 1 & 2 (rowset 0): { BadgeCount, PublicEventId }
---   Mode 3 all-events (rowset 0): one row per event with unread messages —
+--   Mode 3 all-events (rowset 0): one row per run thread the user can see
+--     that has ANY messages, PLUS one row per followed kennel thread that
+--     has ANY messages —
 --     { BadgeCount, PublicEventId, EventId, EventName, EventNumber,
---       EventStartDatetimeGmt, EventImage, KennelId, KennelShortName,
---       KennelLogo }. Extra columns let the app render the Unseen Chats list
---     for events that aren't locally synced. First two columns unchanged.
+--       EventStartDatetimeGmt, EventImage, KennelId, PublicKennelId,
+--       KennelShortName, KennelLogo, MessageCount }. Extra columns let the
+--     app render the Unseen Chats list for events that aren't locally
+--     synced. First two columns unchanged. Rows may carry BadgeCount = 0
+--     (fully read, or notifications set to ignore for that thread) —
+--     MessageCount tells the run/kennel card whether the thread has content
+--     at all (2026-08-28).
+--   Unread rules (both thread kinds, 2026-08-28):
+--     * A thread surfaces as unread BEFORE the user first opens it — no
+--       badge row ⇒ every message is unread.
+--     * BadgeCount is forced to 0 when the user's effective notification
+--       preference for the thread is ignore (2). Effective preference uses
+--       the same NULLIF/COALESCE rule as the push-dispatch SPs:
+--       COALESCE(NULLIF(hem.EventNotificationPreference, 0),
+--                hkm.KennelNotificationPreference, 0). Silver Bell (mute=3)
+--       still badges — in-app only is exactly what a badge is.
 --   On error (rowset 0): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-05-10
@@ -142,6 +157,30 @@ BEGIN
           AND embc.KennelId = t.KennelId
           AND embc.EventId IS NULL);
 
+    -- Run threads surface unread before first read too (since 2026-08-28), so
+    -- the same caught-up-row insert is needed for every run thread in the
+    -- Mode 3 scope (kennel followed / attendance row, start >= -90 days) that
+    -- has messages but no badge row yet.
+    INSERT HC.EventMessageBadgeCounts (UserId, EventId, LastSequenceCount, LastReadAt)
+    SELECT @userId, t.EventId, t.MaxSeq, GETUTCDATE()
+    FROM (
+        SELECT em.EventId, MAX(em.MessageSequenceCount) AS MaxSeq
+        FROM HC.EventMessage em
+        WHERE em.EventId IS NOT NULL AND em.Removed = 0
+        GROUP BY em.EventId
+    ) AS t
+    INNER JOIN HC.Event e ON e.id = t.EventId
+    WHERE e.EventStartDatetimeGmt >= DATEADD(DAY, -90, SYSUTCDATETIME())
+      AND (
+            EXISTS (SELECT 1 FROM HC.HasherKennelMap hkm
+                    WHERE hkm.KennelId = e.KennelId AND hkm.UserId = @userId)
+            OR EXISTS (SELECT 1 FROM HC.HasherEventMap hem
+                       WHERE hem.EventId = e.id AND hem.UserId = @userId)
+          )
+      AND NOT EXISTS (
+        SELECT 1 FROM HC.EventMessageBadgeCounts embc
+        WHERE embc.UserId = @userId AND embc.EventId = t.EventId);
+
     SELECT 0 AS BadgeCount, '00000000-0000-0000-0000-000000000000' AS PublicEventId;
     RETURN;
 END
@@ -191,16 +230,28 @@ BEGIN
 END
 
 -- ---------------------------------------------------------------
--- Mode 3: all events (no specific event, no reset)
--- Returns one row per event that has unread messages (BadgeCount > 0),
+-- Mode 3: all threads (no specific event, no reset)
+-- Returns one row per RUN thread with messages that the user can plausibly
+-- see on a run card, and one row per followed KENNEL thread with messages,
 -- with enough event/kennel display fields for the app to render the
--- "Unseen Chats" list WITHOUT the event being locally synced — so a run
--- with an unread chat always appears even if the user doesn't follow the
--- kennel and hasn't attended. BadgeCount/PublicEventId stay first for
+-- "Unseen Chats" list WITHOUT the event being locally synced. The app
+-- filters that list on BadgeCount > 0 itself; rows with BadgeCount = 0 are
+-- there so the cards can draw a solid "has chats" bubble vs an outline
+-- "no chats yet" bubble. BadgeCount/PublicEventId stay first for
 -- back-compat with callers that only read those two columns.
 -- ---------------------------------------------------------------
+
+-- Run threads. Scope: any event the user holds a badge row for (has posted
+-- or read — not time-bounded), OR an event in a kennel they follow / have an
+-- attendance row for, starting within the last 90 days or in the future.
+-- No badge row ⇒ every message is unread (surfaces before first read, same
+-- as kennel threads). BadgeCount is forced to 0 when the effective
+-- notification preference for the run is ignore (2) — see header.
 SELECT
-    unread.BadgeCount,
+    CASE WHEN COALESCE(NULLIF(hem.EventNotificationPreference, 0),
+                       hkm.KennelNotificationPreference, 0) <> 2
+         THEN t.MaxSeq - COALESCE(embc.LastSequenceCount, 0)
+         ELSE 0 END          AS BadgeCount,
     e.PublicEventId,
     e.id                    AS EventId,
     e.EventName,
@@ -210,29 +261,62 @@ SELECT
     e.KennelId,
     CAST(NULL AS UNIQUEIDENTIFIER) AS PublicKennelId,   -- run threads: no kennel-thread identity
     k.KennelShortName,
-    k.KennelLogo
+    k.KennelLogo,
+    t.MsgCount              AS MessageCount
 FROM (
-    SELECT
-        embc.EventId                                          AS EventId,
-        MAX(em.MessageSequenceCount) - embc.LastSequenceCount AS BadgeCount
-    FROM HC.EventMessageBadgeCounts embc
-    INNER JOIN HC.EventMessage em ON em.EventId = embc.EventId
-    WHERE embc.UserId = @userId AND embc.EventId IS NOT NULL
-    GROUP BY embc.EventId, embc.LastSequenceCount
-) AS unread
-INNER JOIN HC.Event  e ON e.id = unread.EventId
+    SELECT em.EventId,
+           MAX(em.MessageSequenceCount) AS MaxSeq,
+           COUNT(*)                     AS MsgCount
+    FROM HC.EventMessage em
+    WHERE em.EventId IS NOT NULL AND em.Removed = 0
+    GROUP BY em.EventId
+) AS t
+INNER JOIN HC.Event  e ON e.id = t.EventId
 INNER JOIN HC.Kennel k ON k.id = e.KennelId
-WHERE unread.BadgeCount > 0
-  AND e.deleted = 0
+-- OUTER APPLY + TOP 1 everywhere below: none of HasherKennelMap,
+-- HasherEventMap or EventMessageBadgeCounts is guaranteed unique per
+-- (user, thread), so a plain LEFT JOIN could fan out into duplicate rows.
+-- `Found` is the existence flag — HasherEventMap.EventNotificationPreference
+-- is nullable, so the preference column itself can't stand in for "row
+-- exists".
+OUTER APPLY (
+    SELECT TOP 1 1 AS Found, h.KennelNotificationPreference
+    FROM HC.HasherKennelMap h
+    WHERE h.KennelId = e.KennelId AND h.UserId = @userId
+) AS hkm
+OUTER APPLY (
+    SELECT TOP 1 1 AS Found, h.EventNotificationPreference
+    FROM HC.HasherEventMap h
+    WHERE h.EventId = e.id AND h.UserId = @userId
+) AS hem
+OUTER APPLY (
+    SELECT TOP 1 b.LastSequenceCount
+    FROM HC.EventMessageBadgeCounts b
+    WHERE b.EventId = t.EventId AND b.UserId = @userId
+    ORDER BY b.Removed, b.LastSequenceCount DESC
+) AS embc
+WHERE e.deleted = 0
   AND e.IsVisible <> 0
+  AND (
+        embc.LastSequenceCount IS NOT NULL
+        OR (
+            e.EventStartDatetimeGmt >= DATEADD(DAY, -90, SYSUTCDATETIME())
+            AND (hkm.Found = 1 OR hem.Found = 1)
+        )
+      )
 
 UNION ALL
 
--- Kennel-level chat threads the user follows that have messages they haven't
--- seen. A user with NO badge row yet sees the full thread count (unlike run
--- threads, kennel threads must surface before first read).
+-- Kennel-level chat threads the user follows that have ANY messages. A user
+-- with NO badge row yet sees the full thread count as unread. Fully-read
+-- threads are returned too (BadgeCount = 0) so the kennel card can draw a
+-- solid "has chats" icon vs an outline "no chats yet" icon — the app's
+-- Unseen Chats list filters on BadgeCount > 0 itself. BadgeCount is forced
+-- to 0 when the kennel notification preference is ignore (2).
 SELECT
-    t.MaxSeq - COALESCE(embc.LastSequenceCount, 0) AS BadgeCount,
+    CASE WHEN hkm.KennelNotificationPreference <> 2
+         THEN t.MaxSeq - COALESCE(embc.LastSequenceCount, 0)
+         ELSE 0 END                                AS BadgeCount,
     CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicEventId,
     CAST(NULL AS UNIQUEIDENTIFIER)                 AS EventId,
     k.KennelName                                   AS EventName,
@@ -242,18 +326,31 @@ SELECT
     k.id                                           AS KennelId,
     k.PublicKennelId                               AS PublicKennelId,
     k.KennelShortName,
-    k.KennelLogo
+    k.KennelLogo,
+    t.MsgCount                                     AS MessageCount
 FROM (
-    SELECT em.KennelId, MAX(em.MessageSequenceCount) AS MaxSeq
+    SELECT em.KennelId,
+           MAX(em.MessageSequenceCount) AS MaxSeq,
+           COUNT(*)                     AS MsgCount
     FROM HC.EventMessage em
     WHERE em.KennelId IS NOT NULL AND em.EventId IS NULL AND em.Removed = 0
     GROUP BY em.KennelId
 ) AS t
 INNER JOIN HC.Kennel k ON k.id = t.KennelId
-INNER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = t.KennelId AND hkm.UserId = @userId
-LEFT JOIN HC.EventMessageBadgeCounts embc
-    ON embc.KennelId = t.KennelId AND embc.UserId = @userId AND embc.EventId IS NULL
-WHERE t.MaxSeq - COALESCE(embc.LastSequenceCount, 0) > 0;
+-- CROSS APPLY + TOP 1 (not JOIN) so a duplicate HasherKennelMap row can't
+-- fan out into duplicate rows for the same kennel thread; it also filters
+-- to followed kennels (no HKM row ⇒ no row).
+CROSS APPLY (
+    SELECT TOP 1 h.KennelNotificationPreference
+    FROM HC.HasherKennelMap h
+    WHERE h.KennelId = t.KennelId AND h.UserId = @userId
+) AS hkm
+OUTER APPLY (
+    SELECT TOP 1 b.LastSequenceCount
+    FROM HC.EventMessageBadgeCounts b
+    WHERE b.KennelId = t.KennelId AND b.UserId = @userId AND b.EventId IS NULL
+    ORDER BY b.Removed, b.LastSequenceCount DESC
+) AS embc;
 
 END TRY
 BEGIN CATCH
