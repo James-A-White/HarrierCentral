@@ -115,6 +115,10 @@ cases — this is the ordered index of what actually gates 3.0.
   Split View at phone width).
 - [ ] Android tablet / foldable emulator pass before the opt-out removal
   ships (layouts are shared, but untested on Android large screens).
+- [x] App Store listing copy pushed 2026-08-29 (description 1058 chars,
+  What's New 1130) — kept in `docs/app_store_listing_3.0.md`.
+- [x] Apple Watch screenshot DONE 2026-08-29 (368x448, APP_WATCH_SERIES_4,
+  Watch SE 3 44mm) — required because the build embeds HarrierWatch.app.
 - [x] App Store Connect screenshots DONE 2026-08-29: 8 iPhone (1320×2868)
   + 8 iPad (2064×2752) uploaded to the 3.0 version via
   `store/asc_upload.py --apply`; the stale 2023 iPhone SE and 2025 16 Pro Max

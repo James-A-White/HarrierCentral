@@ -35,7 +35,10 @@ EDITABLE = {"PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED",
             "METADATA_REJECTED", "INVALID_BINARY", "WAITING_FOR_REVIEW"}
 # (local glob prefix, display type, expected WxH)
 SETS = [("iphone69", "APP_IPHONE_67", (1320, 2868)),
-        ("ipad13", "APP_IPAD_PRO_3GEN_129", (2064, 2752))]
+        ("ipad13", "APP_IPAD_PRO_3GEN_129", (2064, 2752)),
+        # Required whenever the build embeds HarrierWatch.app. See README
+        # "Apple Watch screenshot" for how out/watch_01.png is produced.
+        ("watch", "APP_WATCH_SERIES_4", (368, 448))]
 
 
 def token():

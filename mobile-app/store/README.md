@@ -44,6 +44,33 @@ A localization holds at most ONE set per display type, so an occupied slot must 
 deleted before a set of that type can be created. To get the current valid list,
 POST a bogus `screenshotDisplayType` — the 409 body enumerates every accepted value.
 
+## Apple Watch screenshot
+Apple requires one whenever the build embeds `HarrierWatch.app` — it does since 1301.
+
+1. Boot **Apple Watch SE 3 (44mm)**: it renders **368×448**, an exact match for
+   `APP_WATCH_SERIES_4`. Ultra 3 (422×514) and Series 11 46mm (416×496) are NOT
+   accepted sizes — don't use them.
+2. Build the watch app:
+   `xcodebuild -project ios/Runner.xcodeproj -scheme HarrierWatch -configuration Debug -sdk watchsimulator -destination 'platform=watchOS Simulator,id=<UDID>' -derivedDataPath <dd> build`
+   **This reports BUILD FAILED and that is expected** — the scheme also builds the
+   Runner dependency, whose Flutter script phase cannot package for the watch SDK.
+   `HarrierWatch.app` is still produced in `<dd>/Build/Products/Debug-watchsimulator/`;
+   `simctl install` that directly.
+3. The interesting screen needs session state the watch only ever gets from the
+   phone. Temporarily seed it in `WatchConnectivityManager.init()` behind
+   `ProcessInfo.processInfo.environment["HC_WATCH_DEMO"] == "1"` (phase
+   "tracking", isTracking, eventName, distanceKm, elapsedSec), launch with
+   `SIMCTL_CHILD_HC_WATCH_DEMO=1 xcrun simctl launch <udid> com.harriercentral.app.watchkitapp`,
+   then **revert the Swift file**. Use the same run/figures as the phone
+   screenshots so the listing is consistent.
+4. Screenshot a few times in a row — the first seconds show a spinner.
+5. **Flatten it.** `simctl io … screenshot` on watchOS emits an alpha channel and
+   Apple rejects alpha. Render it onto an opaque black page with headless Chrome
+   (`sips` will not drop alpha), then confirm `sips -g hasAlpha` says `no`.
+
+`simctl status_bar override` is unsupported on watchOS, so the watch clock shows
+the real time rather than 9:41. Apple does not require 9:41.
+
 ## Simulator helpers (Quartz, no idb/cliclick needed)
 One-time: `python3 -m venv store/venv && store/venv/bin/pip install pyobjc-framework-Quartz`, and grant the
 terminal app (VS Code / Terminal) **Accessibility** in System Settings → Privacy & Security — without it the
