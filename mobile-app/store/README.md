@@ -2,6 +2,15 @@
 
 Raw simulator captures → branded, captioned store images at Apple's exact sizes.
 
+Two different products come out of this pipeline — don't mix them up:
+
+| | App Store (`out/`) | In-app version-promo deck (`out/splash/`) |
+|---|---|---|
+| Background | baked in, **flattened, no alpha** (Apple rejects alpha) | **transparent** — the app paints its own behind |
+| Size | 1320×2868 / 2064×2752 | 1170×2532 |
+| Format | PNG | AVIF (`sips -s format avif`, keeps alpha) |
+| Goes to | App Store Connect | `splash-sequences` blob container |
+
 ## Sizes Apple requires (2026)
 | Slot | Pixels | Simulator |
 |---|---|---|
@@ -17,7 +26,23 @@ Raw simulator captures → branded, captioned store images at Apple's exact size
    iPad captures go in `store/raw/ipad13/<same name>.png` — `compose.py` prefers a
    `raw/<device>/` file over the shared `raw/` one, so one `SLIDES` list serves both.
 5. Edit `SLIDES` in `compose.py`, then `python3 store/compose.py iphone69` / `ipad13`. Output lands in `store/out/`.
-6. Drag `store/out/*.png` into App Store Connect. `raw/`, `out/`, `html/` are git-ignored.
+6. Upload to App Store Connect: `python3 store/asc_upload.py` (dry run) then
+   `--apply`. It targets whichever version is in an editable state, DELETES the
+   existing screenshot sets on it and uploads `out/` in filename order. The live
+   version's screenshots are untouched — each appStoreVersion owns its own.
+   Dragging the files in by hand still works. `raw/`, `out/`, `html/` are git-ignored.
+
+### Display-type gotcha (a 409 the first time, 2026-08-29)
+There is **no** `APP_IPHONE_69` or `APP_IPAD_13` in the API enum:
+
+| Set | Pixels | API `screenshotDisplayType` |
+|---|---|---|
+| iPhone 6.9" | 1320 × 2868 | `APP_IPHONE_67` |
+| iPad 13" | 2064 × 2752 | `APP_IPAD_PRO_3GEN_129` |
+
+A localization holds at most ONE set per display type, so an occupied slot must be
+deleted before a set of that type can be created. To get the current valid list,
+POST a bogus `screenshotDisplayType` — the 409 body enumerates every accepted value.
 
 ## Simulator helpers (Quartz, no idb/cliclick needed)
 One-time: `python3 -m venv store/venv && store/venv/bin/pip install pyobjc-framework-Quartz`, and grant the
