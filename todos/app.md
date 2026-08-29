@@ -115,6 +115,10 @@ cases — this is the ordered index of what actually gates 3.0.
   Split View at phone width).
 - [ ] Android tablet / foldable emulator pass before the opt-out removal
   ships (layouts are shared, but untested on Android large screens).
+- [x] **3.0 SUBMITTED TO APPLE 2026-08-29** — state WAITING_FOR_REVIEW, build
+  3.0.1+1313 attached, releaseType AFTER_APPROVAL (goes live automatically on
+  approval — have the announcement ready; `docs/3.0_upgrade_note.md`).
+  First App Store release since 2.1.2 (Oct 2025).
 - [x] App Store listing copy pushed 2026-08-29 (description 1058 chars,
   What's New 1130) — kept in `docs/app_store_listing_3.0.md`.
 - [x] Apple Watch screenshot DONE 2026-08-29 (368x448, APP_WATCH_SERIES_4,
