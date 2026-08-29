@@ -113,15 +113,17 @@ class UserQrCodePageState extends State<UserQrCodePage>
                       ),
                     ),
                   ),
+                  // left/right pin the tab view to the body's actual width
+                  // (a MediaQuery width here would be the whole window on a
+                  // tablet, overflowing the centred content column).
                   Positioned(
                     top: 80,
                     bottom: 0,
-                    child: SizedBox(
-                      width: MediaQuery.sizeOf(context).width,
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: const <Widget>[QrScannerTab(), QrCodeTab()],
-                      ),
+                    left: 0,
+                    right: 0,
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: const <Widget>[QrScannerTab(), QrCodeTab()],
                     ),
                   ),
                 ],
@@ -321,14 +323,22 @@ class QrCodeTabState extends State<QrCodeTab>
                     alignment: AlignmentDirectional.center,
                     //height: min(constraints.maxHeight, constraints.maxWidth) * 0.65,
                     children: <Widget>[
-                      QrImageView(
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.all(10.0),
-                        data: BASE_HCWEB_MOBILE_URL + userQrCode,
-                        //data: 'testing123',
-                        version: 5,
-                        //size: 200.0,
-                        errorCorrectionLevel: QrErrorCorrectLevel.M,
+                      // A QR code fills whatever it is given; on a tablet
+                      // that would be ~1000pt, so cap it (see FormFactor).
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: FormFactor.maxQrSize,
+                          maxHeight: FormFactor.maxQrSize,
+                        ),
+                        child: QrImageView(
+                          backgroundColor: Colors.white,
+                          padding: const EdgeInsets.all(10.0),
+                          data: BASE_HCWEB_MOBILE_URL + userQrCode,
+                          //data: 'testing123',
+                          version: 5,
+                          //size: 200.0,
+                          errorCorrectionLevel: QrErrorCorrectLevel.M,
+                        ),
                       ),
                     ],
                   ),

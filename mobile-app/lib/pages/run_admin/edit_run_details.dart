@@ -241,10 +241,11 @@ class EditRunDetailsPage extends StatelessWidget {
               Positioned(
                 top: 46,
                 bottom: 0,
+                left: 0,
+                right: 0,
                 child: SizedBox(
                   //key: _tabKey,
                   //color: Colors.teal,
-                  width: MediaQuery.sizeOf(context).width,
                   child: TabBarView(
                     physics: const NeverScrollableScrollPhysics(),
                     controller: c.tabController,

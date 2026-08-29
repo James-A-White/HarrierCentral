@@ -397,8 +397,12 @@ class RunListItem extends StatelessWidget {
                 },
                 child: Hero(
                   tag: 'EventImage-${futureRun.event.eventId}',
+                  // Fit to width at the image's natural aspect ratio on every
+                  // form factor — never crop the run image (James, 2026-08-29).
                   child: CachedNetworkImage(
                     imageUrl: _listImageUrl!,
+                    width: double.infinity,
+                    fit: BoxFit.fitWidth,
                     // Decode the banner at ~display width, not source full-res
                     // (repeated for every row of the main run list).
                     memCacheWidth: 900,

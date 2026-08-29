@@ -69,13 +69,17 @@ Future<void> main() async {
     return false; // let the platform continue its default handling
   };
 
-  // One-time platform/bootstrap
-  await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-    DeviceOrientation.portraitUp,
-  ]);
+  // One-time platform/bootstrap. Phones are portrait-only; tablets (iPad,
+  // unfolded foldables) rotate freely — see FormFactor.
+  await SystemChrome.setPreferredOrientations(FormFactor.preferredOrientations);
 
   // ✅ Keep top status bar visible
   // 🚫 Hide the bottom navigation bar (Android only)
+  // iOS: Debug/Release-Info.plist now ship UIStatusBarHidden=false so the bar
+  // is visible from the first frame and this call is a no-op there. It used to
+  // be hidden for the splash and re-shown here — on iOS 26 that re-show does
+  // NOT update the safe-area inset (flutter/flutter#175520), so on iPad the
+  // status bar was drawn over the app bar until the first rotation.
   await SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.manual,
     overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],

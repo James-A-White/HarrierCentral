@@ -75,14 +75,50 @@ cases — this is the ordered index of what actually gates 3.0.
 - Radar wedge easing feel, playhead-clock replay case, fullscreen map
   safe-area on notched phones, editor open/close ×10 perf, chat badge
   optimistic-clear regression, "Caution guaranteed?" taste call.
-- **Play Console recommendations (reviewed 2026-08-28)**: resizability
-  opt-out DONE on dev for 1313 (manifest
-  `PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY`; one-release only —
-  needs real landscape/large-screen layouts before targetSdk 37). The other
+- **Play Console recommendations (reviewed 2026-08-28)**: resizability —
+  SUPERSEDED 2026-08-28 by native large-screen support (see "iPad /
+  large-screen" below): the manifest opt-out
+  `PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY` was removed again. The other
   four are post-3.0: edge-to-edge tidy (drop `windowFullscreen` in
   LaunchTheme + nav-bar colour in main.dart), bitmap decode caps (ongoing),
   **R8/minify — only with a full Android device pass** (release-only
   reflection crashes in plugins are the risk; gain is small for Flutter).
+
+### iPad / large-screen support (dev, 2026-08-28 — goes out in 1313)
+
+- [x] Runner target `TARGETED_DEVICE_FAMILY = "1,2"` — the app is a native
+  iPad app (was iPhone-only ⇒ phone-sized compatibility window on iPadOS 26).
+- [x] `FormFactor` (`lib/util/form_factor.dart`): tablets (shortest side
+  ≥ 600dp) rotate freely, phones stay portrait-only (main.dart +
+  choose_profile_image.dart). Android opt-out removed from the manifest.
+- [x] Full-width layouts kept (no letterboxing — James's call). Run images
+  always fit-to-width at natural aspect, never cropped (James, 2026-08-29 —
+  a tablet height cap was tried and removed). Tablet-only cap: QR codes max
+  520pt (`maxQrSize`); three `Positioned(width: MediaQuery…)` tab views
+  pinned with left/right; calendar dialog width capped.
+- [x] iOS 26 status-bar bug: `UIStatusBarHidden` true→false in
+  Debug-/Release-Info.plist (+ `fullscreen: false` in the native-splash
+  config) so the bar is never hidden-then-shown — the re-show leaves the
+  safe-area inset at 0 on iOS 26 (flutter/flutter#175520; on iPad the status
+  bar sat over the app bar until the first rotation). Splash now shows the
+  status bar on iPhone too — check it looks fine.
+- [ ] UIScene lifecycle migration (Flutter warns every build; Apple will
+  require it). Tried and reverted 2026-08-28: it did NOT fix the inset bug
+  and it moves plugin registration / watch bridge / MetricKit channel into
+  `didInitializeImplicitFlutterEngine` — needs a device pass for push,
+  background location and the watch before it ships. NB the live plists are
+  `Debug-Info.plist` / `Release-Info.plist`, not `Info.plist`.
+- [x] Walked every reachable screen on the iPad Pro 13" simulator
+  (portrait + landscape): tabs, drawer pages, run detail tabs, all run-admin
+  and kennel-admin pages, Live Run Tools tabs, rose, kennel links.
+- [ ] Verify on Melissa's physical iPad (rotation, windowed vs full-screen,
+  Split View at phone width).
+- [ ] Android tablet / foldable emulator pass before the opt-out removal
+  ships (layouts are shared, but untested on Android large screens).
+- [ ] App Store Connect now needs iPad screenshots (12.9" / 13") for the
+  3.0 submission.
+- [ ] Taste: 2-column kennel/run grids in landscape would be the next
+  iPad-native step; not started.
 
 ### Build-items still open (small, none gating)
 

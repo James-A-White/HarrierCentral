@@ -1,0 +1,50 @@
+# App Store screenshots
+
+Raw simulator captures → branded, captioned store images at Apple's exact sizes.
+
+## Sizes Apple requires (2026)
+| Slot | Pixels | Simulator |
+|---|---|---|
+| iPhone 6.9" (mandatory) | 1320 × 2868 | iPhone 17 Pro Max |
+| iPad 13" (mandatory — Runner targets iPad, and Apple never lets a universal app drop a device family) | 2064 × 2752 | iPad Pro 13-inch (M5) |
+
+## Workflow
+1. Boot the simulator, `flutter run -d <udid>` (debug is fine — the banner is off).
+2. Fake the status bar: `xcrun simctl status_bar booted override --time 9:41 --batteryState charged --batteryLevel 100 --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4`
+3. Put the sim in London so "nearby" makes sense: `xcrun simctl location booted set 51.5074,-0.1278` (relaunch the app — it reads location at boot).
+4. Drive the app with the helpers (see below) and capture each screen:
+   `xcrun simctl io booted screenshot store/raw/<name>.png` — native pixels, no scaling.
+   iPad captures go in `store/raw/ipad13/<same name>.png` — `compose.py` prefers a
+   `raw/<device>/` file over the shared `raw/` one, so one `SLIDES` list serves both.
+5. Edit `SLIDES` in `compose.py`, then `python3 store/compose.py iphone69` / `ipad13`. Output lands in `store/out/`.
+6. Drag `store/out/*.png` into App Store Connect. `raw/`, `out/`, `html/` are git-ignored.
+
+## Simulator helpers (Quartz, no idb/cliclick needed)
+One-time: `python3 -m venv store/venv && store/venv/bin/pip install pyobjc-framework-Quartz`, and grant the
+terminal app (VS Code / Terminal) **Accessibility** in System Settings → Privacy & Security — without it the
+synthetic events are silently dropped. Turn **Window → Show Device Bezels OFF** in Simulator, or set
+`SIM_INSETS=left,top,right,bottom` (points) to describe the bezel.
+
+| Helper | Does |
+|---|---|
+| `simtap.sh X Y` | Tap at screenshot-pixel coordinates (read them off a scaled-down capture). |
+| `simtype.sh "text"` | Type into the focused field (virtual keycodes; ASCII only). |
+| `simzoom.sh out 10` | Scroll-wheel zoom on a Google Map (iPhone sim). Does nothing on the iPad sim — use `simpinch.sh`. |
+| `simpinch.sh X Y 220 30` | Real pinch (Option-drag via a Swift CGEvent helper, compiled on first use). start>end zooms out. |
+
+Set `SIM_UDID` when more than one simulator is booted. Keep hands off the mouse while a helper runs —
+the cursor is shared.
+
+## iPad (2026-08-29)
+- Sim: iPad Pro 13-inch (M5). Put it in Settings → Multitasking & Gestures → **Full Screen Apps** first;
+  in the default windowed mode the app launches in a floating window and the `•••` control sits over the app bar.
+- Scroll-wheel zoom is ignored by the map on the iPad sim; `simpinch.sh` works.
+- Welcome deck: set `flutter.StringPrefsEnum.harrierCentralPreviousVersion` to an old version in the app's
+  Preferences plist (app terminated) and relaunch — the deck replays and re-stamps itself when dismissed.
+- Only `window 1` is used for geometry: shut down other simulators first.
+
+## Gotchas learned 2026-08-28
+- The Simulator drops Quartz events while another app is frontmost: `osascript -e 'tell application "Simulator" to activate'` first.
+- Enabling location adds a blue arrow to the status bar that `status_bar override` can't hide — capture map shots last, or crop.
+- `screencapture` needs Screen Recording permission; `simctl io screenshot` needs nothing.
+- Apple's 9:41 shows as `09:41` on an en_GB sim (24h clock). Cosmetic.

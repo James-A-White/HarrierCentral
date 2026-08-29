@@ -124,9 +124,10 @@ class EventQrCodePageState extends State<EventQrCodePage>
             Positioned(
               top: 80,
               bottom: 0,
+              left: 0,
+              right: 0,
               child: SizedBox(
                 key: tabKey,
-                width: MediaQuery.sizeOf(context).width,
                 child: TabBarView(
                   controller: _tabController,
                   children: <Widget>[
@@ -369,16 +370,24 @@ class QrTabState extends State<QrTab>
           SizedBox(width: spacer / 3, height: spacer / 3),
           Expanded(
             child: Stack(
+              alignment: Alignment.topCenter,
               children: <Widget>[
-                QrImageView(
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.all(15.0),
-                  data: widget.qrPrefix + widget.qrContent,
-                  // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
-                  //data: 'testing123',
-                  version: 5,
-                  //size: 200.0,
-                  errorCorrectionLevel: QrErrorCorrectLevel.M,
+                // Capped so a tablet doesn't render a ~1000pt QR (FormFactor).
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: FormFactor.maxQrSize,
+                    maxHeight: FormFactor.maxQrSize,
+                  ),
+                  child: QrImageView(
+                    backgroundColor: Colors.white,
+                    padding: const EdgeInsets.all(15.0),
+                    data: widget.qrPrefix + widget.qrContent,
+                    // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
+                    //data: 'testing123',
+                    version: 5,
+                    //size: 200.0,
+                    errorCorrectionLevel: QrErrorCorrectLevel.M,
+                  ),
                 ),
               ],
             ),

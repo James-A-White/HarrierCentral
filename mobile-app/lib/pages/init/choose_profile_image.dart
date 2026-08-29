@@ -62,9 +62,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     }
 
     unawaited(
-      SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-        DeviceOrientation.portraitUp,
-      ]),
+      SystemChrome.setPreferredOrientations(FormFactor.preferredOrientations),
     );
 
     setStateIfMounted(() {

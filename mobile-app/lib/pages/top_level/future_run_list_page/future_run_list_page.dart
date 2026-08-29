@@ -1406,7 +1406,7 @@ class FutureRunsListPage extends StatelessWidget {
           ),
           contentPadding: const EdgeInsets.all(16),
           content: SizedBox(
-            width: Get.width - 30,
+            width: (Get.width - 30).clamp(0.0, 560.0),
             height: Get.height - 200,
             child: Column(
               mainAxisSize: MainAxisSize.min,

@@ -483,9 +483,18 @@ class MainNavigationController extends GetxController
   }
 
   Future<void> resetNewVersionPromoScreen() async {
+    // Stamp the version the user has now SEEN the promo for. Read it from the
+    // platform, not the harrierCentralVersion pref: the signup flow (invite
+    // code → photo confirm) pushes MainNavigationPage without the boot pass
+    // that writes that pref, so a brand-new account stamped '' here and the
+    // next launch compared '' != '3.0' — replaying the whole Welcome deck a
+    // second time.
+    final PackageInfo pkg = await PackageInfo.fromPlatform();
     await setStringPref(
       StringPrefsEnum.harrierCentralPreviousVersion,
-      getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
+      pkg.version.isNotEmpty
+          ? pkg.version
+          : (getStringPref(StringPrefsEnum.harrierCentralVersion) ?? ''),
     );
 
     // if (isLoadingData ||

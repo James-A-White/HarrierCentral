@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""Render App Store screenshots from raw simulator captures.
+
+    python3 store/compose.py iphone69     # 1320x2868  (iPhone 6.9")
+    python3 store/compose.py ipad13       # 2064x2752  (iPad 13")
+
+Reads store/raw/<device>/<file>.png if present (device-specific captures, e.g.
+raw/ipad13/), else store/raw/<file>.png; writes store/out/<device>_NN.png via
+headless Chrome. Edit SLIDES below —
+(raw file, headline, sub) or (raw file, None, None) for a full-bleed slide.
+Only the standard library is needed; Chrome does the rendering.
+"""
+import os, subprocess, sys
+
+DEVICES = {"iphone69": (1320, 2868), "ipad13": (2064, 2752)}
+CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(HERE))
+FONT_HEAVY = os.path.join(REPO, "mobile-app/fonts/AvenirNext-Heavy.ttf")
+FONT_BOLD = os.path.join(REPO, "mobile-app/fonts/AvenirNext-Bold.ttf")
+BG = os.path.join(REPO, "public-web/public/images/jungle_background.jpg")
+
+SLIDES = [
+    ("01_welcome_3_0.png", None, None),
+    ("22_2108_list.png", "Watch the<br>pack live", "Hares lay trail live. Follow the pack on the map — and replay any trail after."),
+    ("23_2108_photo_lightbox.png", "Meet the<br>Hash Flash", "Snap photos on trail. The best ones land on the map for the whole pack."),
+    ("03_runs_list.png", "Every hash,<br>one app", "Runs near you, kennels you follow, and RSVP in a single tap."),
+    ("25_explore_world.png", "Hash anywhere<br>on Earth", "Find a run around the corner or across the globe — instantly."),
+    ("19_2108_rsvp.png", "Your run day,<br>sorted", "Check in as you arrive, see who's coming, chat with the pack."),
+    ("06_history.png", "Your run counts,<br>kept safe", "Every kennel, every hare, every run — stored securely in the cloud."),
+    ("07_songs.png", "Down downs,<br>digitised", "Songs picked for sinners. Charges made in the circle. Remembered forever."),
+]
+
+
+def raw_path(device, shot):
+    """Device-specific capture (raw/<device>/<shot>) wins over the shared raw/<shot>."""
+    specific = os.path.join(HERE, "raw", device, shot)
+    return specific if os.path.exists(specific) else os.path.join(HERE, "raw", shot)
+
+
+def page(device, shot, headline, sub):
+    W, H = DEVICES[device]
+    raw = raw_path(device, shot)
+    if headline is None:
+        return (f'<!doctype html><html><head><meta charset="utf-8"><style>html,body{{margin:0;width:{W}px;height:{H}px;'
+                f'overflow:hidden;background:#0c2a0e}}img{{width:{W}px;height:{H}px;display:block}}</style></head>'
+                f'<body><img src="file://{raw}"></body></html>')
+    # Scale every metric off the iPhone 6.9" design. Width-scaling alone
+    # overflows the headline block on the squarer iPad canvas (the sub-line
+    # ended up hidden behind the device frame), so cap by height too —
+    # iPhone stays exactly k=1.
+    k = min(W / 1320, H / 2868 * 1.25)
+    frame_w, frame_top = int(W * 0.864), int(H * 0.255)
+    # iPad corners are much tighter relative to the screen than an iPhone's.
+    r_outer, r_inner = (int(170 * k), int(146 * k)) if device == "iphone69" else (int(110 * k), int(90 * k))
+    return f"""<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{{font-family:AvH;src:url(file://{FONT_HEAVY})}} @font-face{{font-family:AvB;src:url(file://{FONT_BOLD})}}
+html,body{{margin:0;width:{W}px;height:{H}px;overflow:hidden}}
+body{{background:#0c2a0e url(file://{BG});background-size:{int(720*k)}px;position:relative;font-family:AvB,system-ui,sans-serif;color:#fff}}
+.shade{{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.30) 0%,rgba(0,0,0,0) 32%,rgba(0,0,0,0) 70%,rgba(0,0,0,.45) 100%)}}
+.head{{position:absolute;top:{int(150*k)}px;left:{int(80*k)}px;right:{int(80*k)}px;text-align:center}}
+.h1{{font-family:AvH;font-size:{int(122*k)}px;line-height:1.0;letter-spacing:-1px;text-transform:uppercase;
+  background:linear-gradient(180deg,#ffd76a 0%,#f5a623 55%,#e0651e 100%);-webkit-background-clip:text;color:transparent;
+  filter:drop-shadow(0 {int(8*k)}px 0 rgba(0,0,0,.55)) drop-shadow(0 {int(18*k)}px {int(30*k)}px rgba(0,0,0,.5));transform:rotate(-3deg);padding:10px 0}}
+.sub{{margin:{int(40*k)}px {int(40*k)}px 0;font-size:{int(50*k)}px;line-height:1.25;text-shadow:0 4px 14px rgba(0,0,0,.85)}}
+.phone{{position:absolute;left:50%;top:{frame_top}px;transform:translateX(-50%);width:{frame_w}px;height:{H}px;border-radius:{r_outer}px;
+  background:#111;padding:{int(26*k)}px;box-sizing:border-box;box-shadow:0 60px 120px rgba(0,0,0,.7),inset 0 0 0 4px #3a3a3a}}
+.screen{{width:100%;height:100%;border-radius:{r_inner}px;overflow:hidden;background:#000}}
+.screen img{{width:100%;height:auto;display:block}}
+</style></head><body><div class="shade"></div>
+<div class="head"><div class="h1">{headline}</div><div class="sub">{sub}</div></div>
+<div class="phone"><div class="screen"><img src="file://{raw}"></div></div>
+</body></html>"""
+
+
+def main():
+    device = sys.argv[1] if len(sys.argv) > 1 else "iphone69"
+    W, H = DEVICES[device]
+    os.makedirs(os.path.join(HERE, "html"), exist_ok=True); os.makedirs(os.path.join(HERE, "out"), exist_ok=True)
+    for i, (shot, h, s) in enumerate(SLIDES, 1):
+        if not os.path.exists(raw_path(device, shot)):
+            print(f"skip {i}: raw/{shot} missing"); continue
+        html = os.path.join(HERE, "html", f"{device}_{i:02d}.html"); open(html, "w").write(page(device, shot, h, s))
+        out = os.path.join(HERE, "out", f"{device}_{i:02d}.png")
+        subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
+                        f"--window-size={W},{H}", f"--screenshot={out}", f"file://{html}"], capture_output=True)
+        print("rendered", os.path.relpath(out, HERE))
+
+
+if __name__ == "__main__":
+    main()

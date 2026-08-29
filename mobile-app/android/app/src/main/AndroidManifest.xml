@@ -51,17 +51,13 @@
         android:label="Harrier Central"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        <!-- Android 16 ignores orientation/resize locks on screens >= 600dp
-             for apps targeting SDK 36, which would force this portrait-only
-             UI into landscape on tablets and unfolded foldables. This is
-             Google's one-release opt-out (honoured for targetSdk 36 only;
-             removed in the next Android release) — buys 3.0 identical
-             large-screen behaviour while landscape layouts get done properly.
-             Play Console will keep listing the "resizability" recommendation;
-             that's expected. -->
-        <property
-            android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
-            android:value="true" />
+        <!-- Large screens (tablets, unfolded foldables) are supported natively:
+             FormFactor.preferredOrientations (lib/util/form_factor.dart) lets
+             tablet-class devices rotate freely and the layouts handle any
+             width, so the Android 16 resizability opt-out
+             (PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY) is no longer set.
+             android:screenOrientation="portrait" below still applies to phones;
+             Flutter overrides it at runtime on tablets. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

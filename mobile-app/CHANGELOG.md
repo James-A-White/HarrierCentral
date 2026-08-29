@@ -1,5 +1,20 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.1+1313 (2026-08-29) — iOS + Android
+
+### New Features
+- **Harrier Central on iPad**: the app is now a proper iPad app. It fills the
+  whole screen instead of running in a phone-sized window, and rotates freely
+  between portrait and landscape. Android tablets and unfolded foldables get
+  the same. Phones are unchanged — still portrait only.
+
+### Fixes
+- **Status bar no longer overlaps the app bar** when the app opens on iPad.
+- **Run images are never cropped**: a run's photo always shows in full, scaled
+  to the width of the card. Cropping stays your choice, in the photo editor.
+- **Welcome deck no longer replays**: creating a brand-new account and then
+  reopening the app showed the whole "What's new in 3.0" deck a second time.
+
 ## 3.0.1+1312 (2026-08-28) — iOS + Android
 
 ### New Features
