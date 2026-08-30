@@ -1,3 +1,10 @@
+0.21.35
+    • Trail-TV: fixed the replay always running in 60 seconds regardless of trail length; it now follows the longest track and is paced at 1.5 min / km
+    • Trail-TV: the replay eases to a stop when a new photo appears, then eases back up
+    • Trail-TV: photos are sized to the panel instead of running off the bottom — newest large, previous few as thumbnails
+    • Trail-TV: fixed photo capture times being lost, which stopped photos appearing in step with the replay
+    • Trail-TV: front-runner cam zoom now follows how much ground the leader is covering
+
 0.21.34
     • Trail-TV: in replay, photos now appear in the side panel as the replay reaches them instead of taking over the whole screen
     • Trail-TV: the replay no longer pauses behind each photo

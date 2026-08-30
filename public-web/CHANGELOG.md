@@ -1,5 +1,30 @@
 # public-web Changelog
 
+## 0.21.35 (2026-08-30)
+
+- **The replay was always 60 seconds long, whatever the pace said.** Its length
+  was keyed to the *first finisher's* distance, and on BMPH3 #2060 two runners
+  marked On-Inn about 70 m in — so a 7.74 km trail replayed in one minute and
+  changing the pace constant did nothing. It now follows the longest track, the
+  same distance the panel advertises as the trail. Pace also eased to 1.5 min
+  per km, so the front-runner cam no longer outruns its own camera smoothing.
+- **A newly revealed photo pauses the replay.** The map eases to a standstill,
+  holds while the photo is read, then eases back up — otherwise photos taken at
+  one spot replaced each other before anyone could look.
+- **Photos no longer clip off the bottom of the panel.** With the marquee
+  stopped, a column of full-width photos simply ran past the panel edge. The
+  newest photo now fills the frame with the previous few beneath it as
+  thumbnails, sized to the space and never cropped.
+- **Photo capture times were being lost to a race.** The photo list and the
+  track payload are fetched in parallel and the photo list usually wins, so
+  every photo was stamped "no capture time" for the first minute — which
+  silently disabled reveal-as-reached and the photo pauses entirely. The two are
+  now joined at render time.
+- **Front-runner cam zoom is derived, not fixed.** It keeps the ground the
+  leader covered over the last few minutes of run time in frame, so a fast leg
+  pulls the view out and a stop at a check lets it back in, smoothed so the wall
+  drifts rather than jumps.
+
 ## 0.21.34 (2026-08-30)
 
 - **Replay photos appear in the side panel instead of taking over the screen.**
