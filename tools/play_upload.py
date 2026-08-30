@@ -93,7 +93,12 @@ def upload(aab: str, track: str, notes: str | None) -> int:
         "status": "completed",
     }
     if notes:
-        release["releaseNotes"] = [{"language": "en-GB", "text": notes}]
+        # Both locales: the Play LISTING is en-US, so an en-GB-only note leaves
+        # US users — most of the install base — with no release notes at all.
+        # 1318 shipped that way for a few minutes before it was spotted.
+        release["releaseNotes"] = [
+            {"language": lang, "text": notes} for lang in ("en-GB", "en-US")
+        ]
     svc.edits().tracks().update(
         packageName=PACKAGE,
         editId=edit_id,
