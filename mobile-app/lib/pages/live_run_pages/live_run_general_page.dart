@@ -40,16 +40,11 @@ Widget trailSlotTile(TrailSlot slot, {required double size}) {
         ),
       ],
     ),
-    child: _slotTileContent(slot, glyph, fixed, ink),
+    child: _slotTileContent(slot, ink),
   );
 }
 
-Widget _slotTileContent(
-  TrailSlot slot,
-  TrailGlyph? glyph,
-  bool fixed,
-  Color ink,
-) {
+Widget _slotTileContent(TrailSlot slot, Color ink) {
   if (slot.kind == 'text') {
     final t = (slot.text ?? '').trim();
     if (t.isEmpty) return const SizedBox.shrink();
@@ -72,14 +67,9 @@ Widget _slotTileContent(
       ),
     );
   }
-  if (glyph == null) return Icon(Icons.help_outline, color: ink);
-  return Image.asset(
-    glyph.assetPath,
-    fit: BoxFit.contain,
-    color: fixed ? null : ink, // mono → tint to ink; fixed → full colour
-    colorBlendMode: fixed ? null : BlendMode.srcIn,
-    errorBuilder: (_, _, _) => const Icon(Icons.place, color: customRed),
-  );
+  // Bundled asset when we know the id, blob storage when we don't — the same
+  // resolution the map markers use (TrailGlyphImage).
+  return TrailGlyphImage(glyphId: slot.glyphId, ink: ink);
 }
 
 class LiveRunGeneralController extends GetxController {

@@ -162,6 +162,13 @@ const String BASE_NEW_VERSION_IMAGES_URL =
 const String BASE_TRAIL_PHOTOS_URL =
     'https://harriercentral.blob.core.windows.net/trail-photos/';
 
+// Trail-marker glyphs, so a glyph added server-side renders on clients that
+// shipped before it existed. Bundled assets are always preferred; this is only
+// consulted when kTrailGlyphs has no entry for the id. Filenames follow the
+// registry convention '<id>.mono.png' / '<id>.fixed.png'.
+const String BASE_TRAIL_GLYPHS_URL =
+    'https://harriercentral.blob.core.windows.net/trail-glyphs/';
+
 // ── Storage / blob URLs ────────────────────────────────────────────────────
 
 // IP geolocation is performed server-side via the HC API shim.

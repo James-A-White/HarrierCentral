@@ -121,3 +121,34 @@ The portal greys out the invert control when a `fixed` glyph is selected.
    border, mono tint) + map markers + `markSlot` emits `GLY::`/`TXT::` + `A=endRun`.
 4. **Public-web** — `packtrack.ts` parser + `PackTrackMap.tsx` marker draw.
 5. Each app copies `glyphs/*.png` into its own asset tree.
+
+## 6. Adding a glyph without shipping an app (2026-08-30)
+
+Every renderer falls back to blob storage for a glyph id it does not know:
+
+    https://harriercentral.blob.core.windows.net/trail-glyphs/<id>.mono.png
+    https://harriercentral.blob.core.windows.net/trail-glyphs/<id>.fixed.png
+
+(container `trail-glyphs`, anonymous blob read). Bundled assets always win, so
+the normal path costs no network and works offline.
+
+- **Mobile** — `TrailGlyphImage`: `kTrailGlyphs` → asset; otherwise `<id>.mono.png`
+  tinted to ink, then `<id>.fixed.png` in full colour, then the "?" tile.
+  Fetches go through `CachedNetworkImage`, so each glyph downloads once and is
+  then served from disk, including offline.
+- **Public web** — `parseMark` returns the blob URL (assumed mono) for an id
+  missing from `GLYPHS`.
+
+**To add a glyph with no release:** draw it 300x300, transparent, ink #2D0000,
+32px stroke (see the existing set), name it `<id>.mono.png`, and upload:
+
+    az storage blob upload --account-name harriercentral --auth-mode key \
+      --container-name trail-glyphs --name <id>.mono.png --file <path> \
+      --content-type image/png --overwrite
+
+**LIMIT:** this makes an unknown glyph RENDER. For a kennel to *choose* one it
+must appear in the slot picker, which reads the bundled `kTrailGlyphs` — that
+still needs a release, or a future remote manifest. So the no-release path
+covers marks laid by newer clients, not new options for older ones. Keep adding
+new glyphs to `glyph_registry.json` and both asset trees as well, so they are
+bundled from the next build onward.

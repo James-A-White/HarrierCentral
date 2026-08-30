@@ -31,6 +31,10 @@ export interface PackTrackPayload {
 
 const ICON_BASE = "/images/live_run_map_markers";
 const GLYPH_BASE = "/images/trail_glyphs";
+// Glyphs added after this build shipped are served straight from blob
+// storage, so a new marker needs no deploy. Bundled files still win.
+const REMOTE_GLYPH_BASE =
+  "https://harriercentral.blob.core.windows.net/trail-glyphs";
 
 // Canonical glyph library — mirrors docs/trail_markers/glyph_registry.json.
 const GLYPHS: Record<string, { file: string; fixed: boolean }> = {
@@ -130,12 +134,20 @@ export function parseMark(rawType: string | null | undefined): ParsedMark | null
     if (key === "GLY") {
       const g = GLYPHS[primary];
       if (!g) {
-        // Unknown glyph id — a mark laid by a NEWER client than this build.
-        // Fall back to the same "?" tile the mobile app draws instead of
-        // dropping the mark. Returning null made it vanish silently, and
-        // because isOnInn() runs through parseMark it also stripped the
-        // endRun terminator from any unknown glyph that carried one.
-        return { ...EMPTY_MARK, text: "?", label, action, isOnInn: terminates };
+        // Unknown glyph id — added server-side after this build shipped. Serve
+        // it from blob storage instead of dropping the mark. (Returning null
+        // made it vanish silently, and because isOnInn() runs through
+        // parseMark it also stripped the endRun terminator off any unknown
+        // glyph that carried one.) Assumed mono, matching the mobile fallback;
+        // if the blob is genuinely absent the tile just renders empty.
+        return {
+          ...EMPTY_MARK,
+          glyphUrl: `${REMOTE_GLYPH_BASE}/${encodeURIComponent(primary)}.mono.png`,
+          glyphFixed: false,
+          label,
+          action,
+          isOnInn: terminates,
+        };
       }
       return {
         ...EMPTY_MARK,

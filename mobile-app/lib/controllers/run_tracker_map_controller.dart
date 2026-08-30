@@ -2299,17 +2299,9 @@ class RunTrackerMapController extends GetxController
         ),
       );
     } else {
-      final glyph = glyphById(glyphId);
-      content = glyph == null
-          ? const Icon(Icons.help_outline, color: ink)
-          : Image.asset(
-              glyph.assetPath,
-              fit: BoxFit.contain,
-              color: glyph.fixed ? null : ink,
-              colorBlendMode: glyph.fixed ? null : BlendMode.srcIn,
-              errorBuilder: (_, _, _) =>
-                  const Icon(Icons.place, color: customRed),
-            );
+      // Bundled asset when we know the id, blob storage when we don't, so a
+      // glyph added after this build shipped still draws. See TrailGlyphImage.
+      content = TrailGlyphImage(glyphId: glyphId, ink: ink);
     }
 
     return Container(

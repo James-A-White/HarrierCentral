@@ -311,6 +311,7 @@ export 'package:harrier_central/util/uuid_utils.dart';
 export 'package:harrier_central/widgets/add_virgin_visitor_popup.dart';
 export 'package:harrier_central/widgets/android_safe_area.dart';
 export 'package:harrier_central/widgets/app_scaffold.dart';
+export 'package:harrier_central/widgets/trail_glyph_image.dart';
 export 'package:harrier_central/widgets/chat_strip_widget.dart';
 export 'package:harrier_central/widgets/check_in_filter_cell.dart';
 export 'package:harrier_central/widgets/circular_progress_indicator.dart';
