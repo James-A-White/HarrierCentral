@@ -1,5 +1,18 @@
 # public-web Changelog
 
+## 0.21.32 (2026-08-30)
+
+- **Spectator map**: an imported photo no longer distorts the runner's track.
+  It carried the photographer's coordinates, so the polyline ran out to their
+  position and back, and the round trip inflated the distance readout. Photo
+  points are now excluded from the track, its distance and the map bounds.
+  (Trail TV was already immune — it filters typed points before drawing.)
+- **New trail marks**: Circle, X and Three Lines; Fish Hook redrawn.
+- **Unknown trail marks no longer vanish.** A mark using a glyph newer than the
+  deployed build used to be dropped silently, and an unknown glyph carrying the
+  endRun action also lost its track terminator. Unknown glyphs now load from
+  blob storage, so new marks render without a deploy.
+
 ## 0.21.31 (2026-08-28)
 - **Trail-TV shows trail marks**: checks, drink stops, on-inn and text
   tiles now draw on all three Trail-TV maps (larger on the front-runner
