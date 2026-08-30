@@ -1,5 +1,30 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.2+1315 (2026-08-30) — iOS
+
+Same changes as 3.0.1+1314, which shipped to Android. The version NAME had to
+move because 3.0 went live on the App Store overnight and Apple closes a
+marketing-version train once it ships — "The train version '3.0.1' is closed
+for new build submissions" — so iOS could not take another 3.0.1 build.
+iOS and Android version names are deliberately out of step until Android's
+next build picks up 3.0.2.
+
+### Fixes
+- **Photos from other hashers no longer bend your track**: importing a
+  geotagged photo taken by someone ahead of you used to pull your recorded
+  route out to where they were standing and back, which also overstated your
+  distance. The photo still appears on the map where it was taken; your track
+  and distance are now your own. Existing runs are corrected too.
+
+### New Features
+- **Three new trail marks** — a plain Circle, a plain X, and Three Lines — for
+  kennels that mark those separately from the combined Check.
+- **Fish Hook redrawn** as the trail mark it represents: the trail doubling
+  back on itself.
+
+### Improvements
+- Trail marks added in future will appear on this version without an update.
+
 ## 3.0.1+1314 (2026-08-30) — Android
 
 ### Fixes
