@@ -1,5 +1,23 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.3+1318 (2026-08-30) — iOS + Android PRODUCTION
+
+First production release on both stores since 3.0 (App Store) and 3.0.1+1314
+(Play). Store copy for this one tells the 3.0 story rather than these patch
+notes, because that is the jump most users are actually making.
+
+### Fixes
+- **A phone with a weak GPS signal keeps far more of its trail.** Fixes worse
+  than 50 m used to be thrown away outright, which on a struggling phone deleted
+  the run instead of cleaning it — one runner lost 29.7 minutes of trail, drawn
+  as a single straight line, and his distance read 5.26 km against the 7.2–7.7 km
+  the pack ran. Uncertain fixes are now nudged back into line rather than
+  discarded; an accurate fix is left exactly where it is.
+- **The check-in speed dial no longer clashes with the payment report.** Both
+  screens used the same internal animation tag, so opening one straight after
+  the other could throw during the transition.
+
+
 ## 3.0.2+1317 (2026-08-30) — iOS TestFlight + Android internal
 
 ### Fixes
