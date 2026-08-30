@@ -396,8 +396,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       return;
     }
 
-    MessageType messageType = MessageType.fromId(
-      int.tryParse(message.data['MessageType']) ?? 0,
+    // `?? 0` only guards a FAILED parse — it does not guard a null INPUT, and
+    // int.tryParse takes a String, so a push with no 'MessageType' key threw
+    // "type 'Null' is not a subtype of type 'String'" and aborted the whole
+    // dispatch (seen twice in production on 2026-08-30). Data-only pushes that
+    // are not song_selected reach here without the field. Stringify first so
+    // an absent key, a null, or a numeric value all fall back to 0.
+    final MessageType messageType = MessageType.fromId(
+      int.tryParse('${message.data['MessageType'] ?? ''}') ?? 0,
     );
 
     switch (messageType) {
