@@ -323,7 +323,16 @@ BEGIN TRY
 			SELECT
 				MAX(ll.LoginDate) AS updatedAt,
 				ll.UserId,
-				MAX(ll.idx) AS idx,
+				-- The latest login ON THIS VERSION, not the user's latest login
+				-- overall. Some launches record HcVersion '<no HC version>';
+				-- when one of those was a user's most recent row, MAX(idx)
+				-- picked it and the outer version filter then dropped the user
+				-- entirely, so the drill-down under-reported against the tile
+				-- (3 users on 1314, 1 listed — 2026-08-30). Users with no
+				-- matching row get idx NULL and fall out on the INNER JOIN.
+				MAX(CASE WHEN ll.HcVersion LIKE '%' + @hcVersion + '%'
+				          AND ll.HcVersion LIKE '%' + @hcBuild + '%'
+				         THEN ll.idx ELSE NULL END) AS idx,
 				COUNT(CASE WHEN ll.HcVersion LIKE '%' + @hcVersion + '%' AND ll.HcVersion LIKE '%' + @hcBuild + '%' THEN 1 ELSE NULL END) AS thisVersionCnt,
 				COUNT(*) AS twoWeekCnt
 			FROM HC.LaunchAndLogin ll WITH (NOLOCK)
@@ -339,9 +348,10 @@ BEGIN TRY
 			cte.thisVersionCnt AS thisVersionCount
 		FROM cte
 		INNER JOIN HC.Hasher h WITH (NOLOCK) ON cte.UserId = h.id
+		-- idx is already the newest row matching this version, so the old
+		-- WHERE on HcVersion here is redundant; keeping it would re-apply the
+		-- same predicate to the row we deliberately selected.
 		INNER JOIN HC.LaunchAndLogin ll WITH (NOLOCK) ON ll.idx = cte.idx
-		WHERE ll.HcVersion LIKE '%' + @hcVersion + '%'
-			AND ll.HcVersion LIKE '%' + @hcBuild + '%'
 		GROUP BY h.DisplayName, ll.HcVersion, cte.updatedAt, cte.thisVersionCnt, cte.twoWeekCnt, ll.SystemName
 		ORDER BY cte.twoWeekCnt DESC
 		OPTION (RECOMPILE)
