@@ -56,7 +56,13 @@ class CheckInPackPage extends StatelessWidget {
             },
             //onClose: () => //print('DIAL CLOSED'),
             tooltip: 'Speed Dial',
-            heroTag: 'speed-dial-hero-tag-62345',
+            // Must differ from every other speed dial that can be mounted at
+            // the same time. Payment Report used this exact tag, and both pages
+            // are pushed from Run Admin, so an overlapping route transition put
+            // two heroes with one tag in the same subtree — "There are multiple
+            // heroes that share the same tag within a subtree" in the client
+            // logs, 2026-08-29.
+            heroTag: 'speed-dial-hero-tag-checkin-pack',
             backgroundColor: hc_red,
             foregroundColor: Colors.white,
             elevation: 8.0,
