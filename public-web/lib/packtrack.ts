@@ -41,6 +41,9 @@ const GLYPHS: Record<string, { file: string; fixed: boolean }> = {
   hashview: { file: "hashview.mono.png", fixed: false },
   label: { file: "label.mono.png", fixed: false },
   drinkstop: { file: "drinkstop.mono.png", fixed: false },
+  circle: { file: "circle.mono.png", fixed: false },
+  cross: { file: "cross.mono.png", fixed: false },
+  threelines: { file: "threelines.mono.png", fixed: false },
   oninn: { file: "oninn.mono.png", fixed: false },
   caution: { file: "caution.fixed.png", fixed: true },
 };
@@ -126,7 +129,14 @@ export function parseMark(rawType: string | null | undefined): ParsedMark | null
     const terminates = action === "endRun";
     if (key === "GLY") {
       const g = GLYPHS[primary];
-      if (!g) return null; // unknown glyph id — nothing to draw
+      if (!g) {
+        // Unknown glyph id — a mark laid by a NEWER client than this build.
+        // Fall back to the same "?" tile the mobile app draws instead of
+        // dropping the mark. Returning null made it vanish silently, and
+        // because isOnInn() runs through parseMark it also stripped the
+        // endRun terminator from any unknown glyph that carried one.
+        return { ...EMPTY_MARK, text: "?", label, action, isOnInn: terminates };
+      }
       return {
         ...EMPTY_MARK,
         glyphUrl: `${GLYPH_BASE}/${g.file}`,

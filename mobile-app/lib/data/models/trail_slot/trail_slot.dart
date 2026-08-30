@@ -30,6 +30,11 @@ const kTrailGlyphs = <TrailGlyph>[
   TrailGlyph('hashview', 'hashview.mono.png', 'Hash View'),
   TrailGlyph('label', 'label.mono.png', 'Label'),
   TrailGlyph('drinkstop', 'drinkstop.mono.png', 'Drink Stop'),
+  // Plain circle and plain X — the two halves of the combined 'check'
+  // glyph, for kennels that mark them separately (added 2026-08-30).
+  TrailGlyph('circle', 'circle.mono.png', 'Circle'),
+  TrailGlyph('cross', 'cross.mono.png', 'X'),
+  TrailGlyph('threelines', 'threelines.mono.png', 'Three Lines'),
   // RENDER-ONLY: On Inn is no longer a placeable slot (2026-08-15), but the
   // glyph stays so the map can draw historical GLY::oninn marks
   // (run_tracker_map_controller resolves them via glyphById).
