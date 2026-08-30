@@ -45,13 +45,15 @@ enum KennelFeature {
   assignAppAccessFlags(0x00000000, 0, false, PermissionArea.kennelTools),
   // GM|VGM + super-admin
   assignMismanagementRoles(0x00000006, 0, false, PermissionArea.kennelTools),
-  // GM | VGM | HashFlash | WebMeister — RA removed 2026-08-30 (James), and the
-  // grant flag is now the dedicated Photo Approver rather than Manage Photos.
-  // Mirrors the HC.RolePermission rows for 'reviewPhotos'; the old 0x2E here
-  // had also drifted from the DB, which already granted WebMeister.
-  reviewPhotos(0x00001026, authCanApprovePhotos, false, PermissionArea.photos),
-  editPhoto(0x0000002E, authCanManagePhotos, false, PermissionArea.photos),
-  batchPhotos(0x0000102E, authCanManagePhotos, false, PermissionArea.photos),
+  // GM | VGM | HashFlash | WebMeister. RA dropped from all three photo
+  // functions 2026-08-30 (James) — approving is not a religious-advisor job.
+  // Mirrors the HC.RolePermission rows; reviewPhotos and editPhoto had also
+  // drifted (0x2E), so the UI was hiding photos from Web Meisters the server
+  // allowed. Manage Photos stays the single photo flag and can be granted to
+  // anyone regardless of role.
+  reviewPhotos(0x00001026, authCanManagePhotos, false, PermissionArea.photos),
+  editPhoto(0x00001026, authCanManagePhotos, false, PermissionArea.photos),
+  batchPhotos(0x00001026, authCanManagePhotos, false, PermissionArea.photos),
   writeHashTrash(0x00121806, authCanManagePublicWebContent, false, PermissionArea.web),
   viewHashTrashDrafts(0x00121806, authCanManagePublicWebContent, false, PermissionArea.web),
   manageKennelSettings(0x00000006, authCanManageKennel, false, PermissionArea.kennelTools),

@@ -110,13 +110,6 @@ class AppAccessPageState extends State<AppAccessPage> {
                         appAccess.setAppAccess(authCanManagePhotos, value);
                       },
                     ),
-                    getOption(
-                      'Photo Approver',
-                      appAccess.getAppAccess(authCanApprovePhotos),
-                      (bool value) {
-                        appAccess.setAppAccess(authCanApprovePhotos, value);
-                      },
-                    ),
 
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: hc_red),

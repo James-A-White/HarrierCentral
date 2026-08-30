@@ -20,16 +20,25 @@ class RunListItemController extends GetxController {
       hares = (futureRun.event.hares ?? '').obs,
       locationOneLineDesc = (futureRun.event.locationOneLineDesc ?? '').obs,
       liveRunState = LiveRunService.ensure() {
-    if (canAccessFeature(
+    canReviewPhotos = canAccessFeature(
       KennelFeature.reviewPhotos,
       appAccessFlags: futureRun.extensions.appAccessFlags,
       mismanagementRoles: futureRun.extensions.mismanagementRoles,
       kennelOverrideJson: futureRun.kennel.permissionOverrideJson,
-    )) {
+    );
+    if (canReviewPhotos) {
       unawaited(KennelPhotoService()
           .loadPendingPhotoSummary(futureRun.kennel.kennelId));
     }
   }
+
+  /// Whether this user may open the photo-approval queue for this run's kennel.
+  /// Computed once here rather than per rebuild, and used to gate the pending
+  /// badge as well as the summary fetch — the badge previously keyed off
+  /// AppAccess.isAdmin, the auto-derived umbrella bit that the editor sets on
+  /// anyone holding ANY functional flag, so (say) a Song Meister saw a photo
+  /// approval count they had no permission to act on.
+  late final bool canReviewPhotos;
 
   // One controller is kept per run (keyed by event id) and reused across list
   // rebuilds, instead of being rebuilt every time the list updates. Rebuilding
@@ -339,7 +348,7 @@ class RunListItem extends StatelessWidget {
                           child: Obx(() => _getNotificationWidget()),
                         ),
                       ),
-                if (AppAccess(futureRun.extensions.appAccessFlags).isAdmin)
+                if (rliController.canReviewPhotos)
                   Obx(() {
                     final count = KennelPhotoService.pendingPhotosByEvent[
                             futureRun.event.eventId.toLowerCase()] ??
