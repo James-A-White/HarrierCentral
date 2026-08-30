@@ -17,6 +17,16 @@ Two different products come out of this pipeline — don't mix them up:
 | iPhone 6.9" (mandatory) | 1320 × 2868 | iPhone 17 Pro Max |
 | iPad 13" (mandatory — Runner targets iPad, and Apple never lets a universal app drop a device family) | 2064 × 2752 | iPad Pro 13-inch (M5) |
 
+## Google Play
+Play will NOT take the App Store phone set: it caps screenshots at a **2:1**
+aspect ratio and the 6.9" images are 1320x2868 = 1:2.17, so they are refused.
+`python3 store/compose.py play` re-frames the SAME iPhone raws onto 1080x1920
+(9:16 — inside the cap, and the ratio Google recommends for featuring) and
+writes `out/play_01..08.png`. Play also requires no alpha channel (these have
+none) and allows at most 8 screenshots per form factor.
+The iPad set (1:1.33) and the watch shot (1:1.22) are already Play-legal and can
+be reused for the tablet form factors.
+
 ## Workflow
 1. Boot the simulator, `flutter run -d <udid>` (debug is fine — the banner is off).
 2. Fake the status bar: `xcrun simctl status_bar booted override --time 9:41 --batteryState charged --batteryLevel 100 --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4`

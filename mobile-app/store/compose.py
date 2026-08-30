@@ -32,6 +32,11 @@ DEVICES = {
     # would re-bake the background and the status bar. SLIDES[1:] therefore maps
     # to deck slides 2..N.
     "splash": (1170, 2532),
+    # Google Play phone. NOT the App Store size: Play rejects anything taller
+    # than 2:1 and the 6.9" set is 1:2.17, so it would be refused. 1080x1920 is
+    # 9:16 — inside the cap and the ratio Google recommends for featuring.
+    # Shares the iPhone raws; only the canvas is re-framed.
+    "play": (1080, 1920),
 }
 # Vertical composition, as a fraction of canvas height. Text starts at
 # SAFE_TOP_FRAC; the device frame starts at PHONE_TOP_FRAC and runs off the
@@ -58,9 +63,15 @@ SLIDES = [
 
 
 def raw_path(device, shot):
-    """Device-specific capture (raw/<device>/<shot>) wins over the shared raw/<shot>."""
-    specific = os.path.join(HERE, "raw", device, shot)
-    return specific if os.path.exists(specific) else os.path.join(HERE, "raw", shot)
+    """Device-specific capture (raw/<device>/<shot>) wins over the shared raw/<shot>.
+
+    'play' has no captures of its own — it re-frames the same iPhone raws at a
+    Play-legal aspect ratio."""
+    for d in ([device] if device != "play" else ["iphone69"]):
+        specific = os.path.join(HERE, "raw", d, shot)
+        if os.path.exists(specific):
+            return specific
+    return os.path.join(HERE, "raw", shot)
 
 
 def page(device, shot, headline, sub, transparent=False):
