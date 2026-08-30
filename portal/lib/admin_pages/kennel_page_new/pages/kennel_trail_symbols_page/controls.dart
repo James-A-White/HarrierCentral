@@ -141,6 +141,11 @@ const kTrailGlyphs = <TrailGlyph>[
   TrailGlyph('hashview', 'hashview.mono.png', 'Hash View'),
   TrailGlyph('label', 'label.mono.png', 'Label'),
   TrailGlyph('drinkstop', 'drinkstop.mono.png', 'Drink Stop'),
+  // Plain circle and plain X — the two halves of the combined 'check'
+  // glyph — plus three horizontal lines (added 2026-08-30).
+  TrailGlyph('circle', 'circle.mono.png', 'Circle'),
+  TrailGlyph('cross', 'cross.mono.png', 'X'),
+  TrailGlyph('threelines', 'threelines.mono.png', 'Three Lines'),
   // 'oninn' removed 2026-08-15: On Inn is no longer a placeable mark —
   // ending a run is the mobile End Run button's job. Existing configs
   // containing it are cleansed in _parseTrailSlots.
