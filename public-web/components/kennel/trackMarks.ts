@@ -112,6 +112,28 @@ export function checkpointIcon(
   return icon;
 }
 
+const photoPinCache = new Map<string, L.DivIcon>();
+export function photoPinIcon(num: number, px: number, current: boolean): L.DivIcon {
+  const key = `${num}|${px}|${current}`;
+  const hit = photoPinCache.get(key);
+  if (hit) return hit;
+  const bg = current ? "#e0a51e" : "rgba(12,42,14,.92)";
+  const fg = current ? "#1a1a00" : "#ffffff";
+  const icon = L.divIcon({
+    html:
+      `<div style="width:${px}px;height:${px}px;border-radius:50%;background:${bg};` +
+      `border:2px solid ${current ? "#fff" : "rgba(255,255,255,.75)"};color:${fg};` +
+      `display:flex;align-items:center;justify-content:center;box-sizing:border-box;` +
+      `font:800 ${(px * 0.52).toFixed(1)}px system-ui,sans-serif;` +
+      `box-shadow:0 1px 5px rgba(0,0,0,.55)">${num}</div>`,
+    className: "",
+    iconSize: [px, px],
+    iconAnchor: [px / 2, px / 2],
+  });
+  photoPinCache.set(key, icon);
+  return icon;
+}
+
 export interface MarkEntry {
   point: TrackPoint;
   rawType: string;

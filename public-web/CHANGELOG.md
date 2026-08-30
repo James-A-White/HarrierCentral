@@ -1,5 +1,23 @@
 # public-web Changelog
 
+## 0.21.36 (2026-08-30)
+
+- **The replay no longer stops for photos.** The pause added in 0.21.35 was
+  rejected on sight. The trail keeps running; instead each photo holds the panel
+  for at least 5 seconds, and photos reached while one is showing wait their
+  turn in a queue — so a burst shot at one spot plays out over the following
+  seconds rather than replacing itself unseen.
+- **Photos are numbered, and the number is pinned on the map where the photo was
+  taken.** Numbering follows capture order along the trail, so #4 beside the
+  picture is #4 on the map. The photo currently on screen is picked out in gold;
+  the rest sit back in dark green. Pins appear as the replay reaches them, on
+  the front-runner cam and the whole-run maps alike.
+- **Queued photos are tracked by id, not by object.** Capture times, positions
+  and numbers all arrive with the track payload, after the photo list — so a
+  photo captured at queue time could be a stale copy with none of them. Photos
+  are now resolved at render time, which is the same fix 0.21.35 applied
+  elsewhere and the reason nothing was numbered on the first attempt.
+
 ## 0.21.35 (2026-08-30)
 
 - **The replay was always 60 seconds long, whatever the pace said.** Its length

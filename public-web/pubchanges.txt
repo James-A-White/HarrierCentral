@@ -1,3 +1,8 @@
+0.21.36
+    • Trail-TV: the replay no longer pauses for photos — each photo simply holds the panel for at least 5 seconds, and a burst of photos queues up
+    • Trail-TV: photos are numbered, and the same number is pinned on the map where the photo was taken
+    • Trail-TV: the photo currently on screen is highlighted in gold on the map
+
 0.21.35
     • Trail-TV: fixed the replay always running in 60 seconds regardless of trail length; it now follows the longest track and is paced at 1.5 min / km
     • Trail-TV: the replay eases to a stop when a new photo appears, then eases back up
