@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.2+1316 (2026-08-30) — iOS TestFlight + Android internal
+
+### New Features
+- **Apple Watch shows your kennel's own marks.** The Check and False buttons on
+  the watch now display the symbols your kennel configured, instead of generic
+  icons. They already recorded the right mark — only the buttons looked wrong.
+- **Label and Hash View are permanent marks.** Every kennel now has a label
+  symbol and a hash view symbol as core marks, with six slots left for its own.
+
+
 ## 3.0.2+1315 (2026-08-30) — iOS
 
 Same changes as 3.0.1+1314, which shipped to Android. The version NAME had to

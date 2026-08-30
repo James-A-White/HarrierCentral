@@ -1,3 +1,8 @@
+2.0.64+699
+    • Label is now a permanent trail mark (slot 4) — every kennel has one
+    • Hash View is now permanent (slot 6); slots 7-12 remain configurable
+    • Fixed slot purposes and the defaults now agree (they had drifted apart)
+
 2.0.63+698
     • Kennel trail symbols: added Circle, X and Three Lines marks
     • Fish Hook redrawn as the U-turn trail mark (was a literal fishing hook)

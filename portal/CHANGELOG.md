@@ -2,6 +2,23 @@
 
 ---
 
+## 2.0.64+699 (2026-08-30)
+
+- **Label is now a permanent mark**, fixed at slot 4 — every kennel gets a
+  label symbol and it can no longer be dropped from the picker.
+- **Hash View is now permanent** at slot 6. Permanent marks are Check, False
+  Trail, Drink Stop, Label, Caution and Hash View, leaving **slots 7-12** for
+  each kennel's own symbols.
+- **Fixed purposes and defaults realigned.** The locked purposes said slots 3
+  and 5 were Drink Stop and Caution while the defaults put Short Cut and Whichy
+  Way there — drift dating from the On Inn removal. They now match.
+
+Existing kennel configurations were migrated, not reset: each permanent mark
+was promoted from wherever a kennel already had it, and anything displaced
+moved to a free slot, so no configured symbol or custom name was lost.
+
+---
+
 ## 2.0.63+698 (2026-08-30)
 
 - **Three new trail marks in the kennel symbols editor** — a plain **Circle**,

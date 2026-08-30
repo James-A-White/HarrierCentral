@@ -1,3 +1,12 @@
+0.21.33
+    • Trail-TV: upcoming photos are preloaded, so a takeover no longer shows an empty frame while it downloads
+    • Trail-TV: the "Fresh from trail" badge now only appears in live mode
+
+0.21.32
+    • Spectator map: an imported photo no longer bends the runner's track or inflates their distance
+    • New trail marks: Circle, X and Three Lines; Fish Hook redrawn
+    • Trail marks using a glyph newer than this build now load from blob storage instead of vanishing
+
 0.21.31
     • Trail-TV: trail marks (checks, drink stops, on-inn, text) now show on all maps
     • Trail-TV: photo takeovers zoom back out instead of vanishing

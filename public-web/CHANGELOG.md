@@ -1,5 +1,15 @@
 # public-web Changelog
 
+## 0.21.33 (2026-08-30)
+
+- **Trail TV photo takeovers no longer start empty.** The takeover only began
+  fetching its full-size image when it appeared, so on a slow link the screen
+  sat dark for much of the 4-second hold. The next few photos are now warmed
+  into the browser cache in advance.
+- **"Fresh from trail" is live-mode only.** In replay the photo is minutes or
+  hours old, so the badge was both wrong and the most prominent thing on a
+  still-loading frame.
+
 ## 0.21.32 (2026-08-30)
 
 - **Spectator map**: an imported photo no longer distorts the runner's track.
