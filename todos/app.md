@@ -4,6 +4,37 @@ Items flagged during development that need follow-up.
 
 ---
 
+## ⏰ REMINDER — TURN OFF GLOBAL ERROR LOGGING (check with James first)
+
+**Due on/after 2026-09-20** (≈3 weeks after 3.0 went live). Raise it with James
+BEFORE turning it off — he may want it left on longer.
+
+On 2026-08-30 debug-harvest logging was enabled for **ALL 7,108** active users
+(previously 6) so 3.0's rollout could be watched. `HC.Hasher.Preferences` bit
+0x100. Verified safe: every trigger on HC.Hasher is column-gated, so a
+Preferences-only UPDATE bumps no `updatedAt` and forces no client re-sync
+(confirmed: 0 rows re-stamped).
+
+It costs storage — every booting device uploads its previous session's log to
+`HC.ClientErrorLog` — which pulls against the Azure cost work in
+`docs/azure_cost_audit.md`.
+
+**Rollback (keeps the original 6 RunTracker testers on):**
+```sql
+UPDATE HC.Hasher SET Preferences = Preferences & ~256
+WHERE (Preferences & 256) = 256
+  AND id NOT IN (
+    '895cc3d2-ac67-482d-b449-0390d845e0d6',  -- Alina Peltea
+    '2b3ce666-bf2c-4565-9483-1e044cc152b2',  -- Old Squirty Bastard
+    'd0b7ef01-c6e3-4723-9d2f-2ae864a59f1a',  -- Tuna Melt
+    'ebd2cdb8-5731-4301-b14e-608874a9ea41',  -- Kilty as Charged
+    '081610fa-88d4-44fc-9048-c0f77a8f5ad2',  -- Rack of Lamb
+    '0cdbb109-215e-4b5f-a405-f6c9fbcb18ec'); -- Opee
+```
+Takes effect on each user's next login/boot. Logs arrive one boot LATE.
+
+---
+
 ## 🎯 3.0 RELEASE RUNWAY (consolidated burn-down, 2026-08-23)
 
 App Store live = 2.1.2 (Oct 2025). iOS beta = 1312 on TestFlight
