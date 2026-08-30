@@ -3139,6 +3139,23 @@ class RunTrackerMapController extends GetxController
     return runner.positions.length - 1;
   }
 
+  /// True for photo markers, which are the only points that can sit somewhere
+  /// the runner never stood.
+  ///
+  /// An IMPORTED photo carries the PHOTOGRAPHER's EXIF coordinates — another
+  /// hasher who may have been well ahead on trail. Including those in the
+  /// polyline dragged the track sideways to their position and back, and the
+  /// round trip inflated the runner's distance too, since
+  /// currentUserDistanceMeters() sums this same list (reported 2026-08-30).
+  ///
+  /// Every OTHER mark — Check, False Trail, On Inn — is dropped at the
+  /// runner's own location, so those remain legitimate track vertices, and the
+  /// On Inn mark is the track terminator. Only photos are excluded here.
+  /// (Trail TV takes the broader line and drops every typed point:
+  /// `positions.filter(p => !p.type)`.)
+  bool _isPhotoPoint(TrackPoint pos) =>
+      _parseCheckpointType(pos.type)?.type == HashRunPointTypes.photo;
+
   List<_InterpolatedPoint> _interpolatedTrackPoints(
     UserTrack runner,
     double? cutoff,
@@ -3147,7 +3164,8 @@ class RunTrackerMapController extends GetxController
     if (cutoff == null) {
       final capped = <TrackPoint>[];
       for (final pos in runner.positions) {
-        capped.add(pos);
+        // Still WALK photo points so a terminal On Inn after one is seen.
+        if (!_isPhotoPoint(pos)) capped.add(pos);
         if (_isTerminalOnInn(runner, pos)) break;
       }
       return capped
@@ -3167,15 +3185,21 @@ class RunTrackerMapController extends GetxController
       if (ts > cutoff) {
         break;
       }
-      results.add(
-        _InterpolatedPoint(lat: pos.lat, lng: pos.lng, timestampMs: ts),
-      );
+      if (!_isPhotoPoint(pos)) {
+        results.add(
+          _InterpolatedPoint(lat: pos.lat, lng: pos.lng, timestampMs: ts),
+        );
+      }
       if (_isTerminalOnInn(runner, pos)) {
         break;
       }
     }
     if (results.isEmpty) {
-      final first = runner.positions.first;
+      // Seed from the first point the runner actually stood at, not a photo.
+      final first = runner.positions.firstWhere(
+        (p) => !_isPhotoPoint(p),
+        orElse: () => runner.positions.first,
+      );
       results.add(
         _InterpolatedPoint(
           lat: first.lat,
@@ -3197,7 +3221,43 @@ class RunTrackerMapController extends GetxController
     return results;
   }
 
-  _InterpolatedPoint? _interpolatedPosition(UserTrack runner, double? cutoff) {
+  /// Photo-free positions for a runner, memoised per runner id and
+  /// invalidated when the track grows. Recomputing this per frame during
+  /// playback (every runner, every marker) would be needless work.
+  final Map<String, List<TrackPoint>> _photoFreeCache =
+      <String, List<TrackPoint>>{};
+  final Map<String, int> _photoFreeCacheLen = <String, int>{};
+
+  List<TrackPoint> _photoFreePositions(UserTrack runner) {
+    if (_photoFreeCacheLen[runner.id] == runner.positions.length) {
+      final cached = _photoFreeCache[runner.id];
+      if (cached != null) return cached;
+    }
+    final List<TrackPoint> filtered = runner.positions.any(_isPhotoPoint)
+        ? runner.positions
+              .where((p) => !_isPhotoPoint(p))
+              .toList(growable: false)
+        : runner.positions;
+    _photoFreeCache[runner.id] = filtered;
+    _photoFreeCacheLen[runner.id] = runner.positions.length;
+    return filtered;
+  }
+
+  /// Where the runner actually is at [cutoff].
+  ///
+  /// Photo points are stripped first: an imported photo sits at the
+  /// PHOTOGRAPHER's coordinates, so without this the runner's dot teleports to
+  /// whoever took the photo while the playhead is between that point and its
+  /// neighbour — and, because this result is appended to the polyline, the
+  /// track spike this fix removes would come straight back during replay.
+  _InterpolatedPoint? _interpolatedPosition(
+    UserTrack runnerRaw,
+    double? cutoff,
+  ) {
+    final UserTrack runner = runnerRaw.positions.length ==
+            _photoFreePositions(runnerRaw).length
+        ? runnerRaw
+        : runnerRaw.copyWith(positions: _photoFreePositions(runnerRaw));
     if (runner.positions.isEmpty) return null;
     if (cutoff == null) {
       final last = runner.positions.last;

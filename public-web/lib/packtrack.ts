@@ -405,6 +405,25 @@ export function formatDistanceLabel(meters: number): string {
  * On Inn, with a final interpolated point at exactly `cutoff` for smooth growth.
  * Mirrors _interpolatedTrackPoints. Pass cutoff = Infinity for the full track.
  */
+/**
+ * Track vertices only — drops photo markers.
+ *
+ * An IMPORTED photo carries the PHOTOGRAPHER's EXIF coordinates, which may be
+ * another hasher well ahead on trail. Feeding those into a polyline drags the
+ * track sideways to their position and straight back, and inflates the summed
+ * distance with the round trip (reported 2026-08-30). Every other mark is
+ * dropped at the runner's own location, so only photos are excluded; the On
+ * Inn mark in particular must survive, as trackUpTo terminates on it.
+ *
+ * Trail TV pre-filters more broadly (`positions.filter(p => !p.type)`) and is
+ * unaffected either way.
+ */
+export function withoutPhotoPoints(positions: TrackPoint[]): TrackPoint[] {
+  return positions.some((p) => parseMark(p.type)?.isPhoto)
+    ? positions.filter((p) => !parseMark(p.type)?.isPhoto)
+    : positions;
+}
+
 export function trackUpTo(positions: TrackPoint[], cutoff: number): TrackPoint[] {
   const out: TrackPoint[] = [];
   let idx = -1;

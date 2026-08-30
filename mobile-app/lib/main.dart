@@ -1,5 +1,8 @@
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/firebase_options.dart';
+import 'package:image_picker_android/image_picker_android.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 // this prevents exceptions being thrown on iOS when
 // the app is in the background and location services
@@ -73,6 +76,8 @@ Future<void> main() async {
   // unfolded foldables) rotate freely — see FormFactor.
   await SystemChrome.setPreferredOrientations(FormFactor.preferredOrientations);
 
+  await _configureAndroidMediaAccess();
+
   // ✅ Keep top status bar visible
   // 🚫 Hide the bottom navigation bar (Android only)
   // iOS: Debug/Release-Info.plist now ship UIStatusBarHidden=false so the bar
@@ -113,6 +118,32 @@ Future<void> main() async {
   await initServices(); // GetX DI registration (see services_init.dart)
 
   runApp(RestartWidget(key: restartKey, child: RootApp()));
+}
+
+/// Android media access, Play-policy compliant (rejection of 2026-08-29).
+///
+/// Google rejects apps that ask for READ_MEDIA_IMAGES when the system photo
+/// picker would do. It would for us: the only gallery reads we ever perform
+/// are of photos this app itself wrote, and every user-facing selection goes
+/// through image_picker. So READ_MEDIA_IMAGES is gone from the manifest and:
+///
+///  * image_picker is switched to the Android system picker — it is NOT the
+///    default (`useAndroidPhotoPicker` is false), which is what left us on the
+///    legacy gallery intent and triggered the rejection.
+///  * photo_manager is told to skip its permission check. It only ever calls
+///    editor.saveImage() and AssetEntity.fromId() on OUR OWN assets, which
+///    scoped storage allows without any permission — but its
+///    requestPermissionExtend() would now report "denied", and the guard in
+///    KennelPhotoService._saveToDeviceLibrary would then silently stop saving
+///    run photos to the camera roll. Nothing here enumerates the gallery; if
+///    that ever changes, this bypass has to be revisited.
+Future<void> _configureAndroidMediaAccess() async {
+  if (!Platform.isAndroid) return;
+  final ImagePickerPlatform picker = ImagePickerPlatform.instance;
+  if (picker is ImagePickerAndroid) {
+    picker.useAndroidPhotoPicker = true;
+  }
+  await PhotoManager.setIgnorePermissionCheck(true);
 }
 
 class RootApp extends StatelessWidget {

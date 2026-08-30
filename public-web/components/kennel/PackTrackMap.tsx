@@ -7,6 +7,7 @@ import L from "leaflet";
 import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera, Download } from "lucide-react";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, trackUpTo, sumDistanceMeters,
+  withoutPhotoPoints,
   formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
   resolveTrailTypeMap, trailValueForTrack, photoSrc,
 } from "@/lib/packtrack";
@@ -817,7 +818,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   const trailMeters = useMemo(() => {
     let max = 0;
     for (const u of users) {
-      const d = sumDistanceMeters(trackUpTo(u.positions, Infinity));
+      const d = sumDistanceMeters(trackUpTo(withoutPhotoPoints(u.positions), Infinity));
       if (d > max) max = d;
     }
     return max;
@@ -963,13 +964,13 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
 
   // ── Derived render data ────────────────────────────────────────────────────────
   const allPoints: [number, number][] = hasTrack
-    ? users.flatMap(u => u.positions.map(p => [p.lat, p.lng] as [number, number]))
+    ? users.flatMap(u => withoutPhotoPoints(u.positions).map(p => [p.lat, p.lng] as [number, number]))
     : [[lat, lon]];
 
   // Per-runner visible track (capped at On Inn), current position, colour.
   // Iterates the filtered set; colour is keyed by id so it stays stable.
   const runnerTracks = useMemo(() => visibleUsers.map((u) => {
-    const pts = trackUpTo(u.positions, currentTs);
+    const pts = trackUpTo(withoutPhotoPoints(u.positions), currentTs);
     const last = pts[pts.length - 1] ?? null;
     return { id: u.id, color: colorById.get(u.id) ?? TRACK_COLORS[0], pts, last };
   }), [visibleUsers, currentTs, colorById]);

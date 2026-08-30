@@ -52,6 +52,10 @@ dependencies:
   http: ^1.6.0
   image_cropper: ^12.2.1
   image_picker: ^1.2.1
+  # Direct dependency only so main.dart can reach ImagePickerAndroid and turn on
+  # the Android system photo picker (useAndroidPhotoPicker defaults to false).
+  image_picker_android: ^0.8.13
+  image_picker_platform_interface: ^2.10.1
   internet_connection_checker_plus: ^3.0.0
   intl: ^0.20.2
   ive_flutter_core:

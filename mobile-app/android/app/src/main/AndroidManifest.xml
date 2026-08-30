@@ -17,8 +17,12 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!-- firebase_messaging: runtime notification permission on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <!-- photo_manager: read device photos (API 33+) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- No READ_MEDIA_IMAGES / READ_MEDIA_VIDEO. Play rejected 1312 on
+         2026-08-29 for requesting broad media access where the system photo
+         picker suffices. It does: image_picker now uses the Android photo
+         picker (see _configureAndroidMediaAccess in main.dart), and
+         photo_manager only ever touches assets this app wrote itself, which
+         scoped storage permits with no permission at all. -->
     <!-- photo_manager: write to media store (API < 29) -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
