@@ -35,6 +35,53 @@ Takes effect on each user's next login/boot. Logs arrive one boot LATE.
 
 ---
 
+## 📸 NEXT UP — stop attaching imported photos to the importer's track
+
+**Target: first half of September 2026**, once Play has approved 1314 and the
+3.0 iOS rollout looks stable. Deliberately NOT in 1314: that build is blocked
+on a Play policy rejection and must not wait for a schema change.
+
+**Why.** An imported photo is written into the IMPORTER's GPS track
+(`_enqueuePhotoMarker` → `markPointAt(overrideUserId: currentUserId,
+atLat/atLng: <photographer's EXIF>)`). The visible damage — the track bending
+out to the photographer and the inflated distance — was fixed 2026-08-30 by
+excluding photo points from the polyline and distance on mobile and web. What
+remains is that the photo still WEARS the importer's identity:
+  * it inherits the importer's lane visibility, so hiding a trail (Normal/Long)
+    hides someone else's photo with it;
+  * anywhere marks are credited to a runner it reads as the importer's;
+  * it surfaces in replay at the PHOTOGRAPHER's capture time, which is right on
+    a shared timeline but reads oddly against your own dot.
+
+**The coupling that makes this more than a one-liner:** the map takes a photo's
+POSITION and TIME from the track point, so the `PHO::` write cannot stop until
+the renderers read from elsewhere.
+
+**What already exists** (checked 2026-08-30): `HC.KennelPhotos` already has
+`Latitude`/`Longitude`, and BOTH clients already fetch the photo list via
+`hcapp_getRunPhotos` to resolve blob URLs. The only missing datum is a capture
+time — it currently lives ONLY in the track point's `timestampMs`.
+
+**Plan**
+1. DB: `ALTER TABLE HC.KennelPhotos ADD TakenAtUtc DATETIME2 NULL`. No triggers
+   on the table and it is not a synced table, so no trigger dance is needed.
+   Consider a photographer credit at the same time — `UserId` is the UPLOADER.
+2. SPs: `hcapp_addKennelPhoto` stores TakenAtUtc; `hcapp_getRunPhotos` and
+   `hcapp_getRunAllPhotos` return it. Deploy SPs BEFORE the app build.
+3. Mobile: build photo markers from the photo list (position from Lat/Lng, time
+   from TakenAtUtc) instead of from track points; stop calling markPointAt for
+   imports. Keep reading legacy `PHO::` points so existing runs still show.
+4. Web: same in `PackTrackMap.tsx` and `TrailTv.tsx`.
+5. Optional later: migrate historical `PHO::` points out of the position store
+   (the label is the photoId, which maps straight to the KennelPhotos row).
+   They are inert now, so this is tidiness, not urgency.
+
+NOTE: the GPS track lives behind its own Azure Functions (`StorePositions` /
+`GetPositions` / `DeletePositions`), NOT in the SQL/SP layer — step 5 is a
+different service from steps 1–2.
+
+---
+
 ## 🎯 3.0 RELEASE RUNWAY (consolidated burn-down, 2026-08-23)
 
 App Store live = 2.1.2 (Oct 2025). iOS beta = 1312 on TestFlight
