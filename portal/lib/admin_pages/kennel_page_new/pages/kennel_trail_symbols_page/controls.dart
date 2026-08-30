@@ -174,6 +174,7 @@ const Map<int, String> kFixedSlotPurposes = {
   3: 'Drink Stop',
   4: 'Label',
   5: 'Caution',
+  6: 'Hash View',
 };
 
 /// Options for the purpose dropdown on slots 6–12.
@@ -184,7 +185,6 @@ const List<String> kVariableSlotPurposes = [
   'Whichy Way',
   'Fish Hook',
   'Regroup',
-  'Hash View',
   'Other',
 ];
 
@@ -194,21 +194,21 @@ const List<String> kVariableSlotPurposes = [
 // ---------------------------------------------------------------------------
 
 final kDefaultTrailSlots = [
-  // Slots 1-5 are the permanent marks and MUST match kFixedSlotPurposes —
-  // they drifted apart when On Inn was removed (2026-08-15) and were realigned
-  // 2026-08-30, when Label was made permanent at slot 4.
+  // Slots 1-6 are the permanent marks and MUST match kFixedSlotPurposes.
+  // They drifted apart when On Inn was removed (2026-08-15) and were realigned
+  // 2026-08-30, when Label (4) and Hash View (6) were made permanent.
   TrailSlotConfig(slot: 1,  kind: 'glyph', glyphId: 'check',     name: 'Check'),
   TrailSlotConfig(slot: 2,  kind: 'text',  text: 'FT',           name: 'False Trail'),
   TrailSlotConfig(slot: 3,  kind: 'glyph', glyphId: 'drinkstop', name: 'Drink Stop'),
   TrailSlotConfig(slot: 4,  kind: 'glyph', glyphId: 'label',     name: 'Label',      action: 'addText'),
   TrailSlotConfig(slot: 5,  kind: 'glyph', glyphId: 'caution',   name: 'Caution',    action: 'addText'),
-  // 6-12 are kennel-configurable (purpose dropdown).
-  TrailSlotConfig(slot: 6,  kind: 'text',  text: 'SC',           name: 'Short Cut',  purpose: 'Short Cut'),
-  TrailSlotConfig(slot: 7,  kind: 'text',  text: 'CB',           name: 'Checkback',  purpose: 'Checkback'),
-  TrailSlotConfig(slot: 8,  kind: 'glyph', glyphId: 'whichyway', name: 'Whichy Way', purpose: 'Whichy Way'),
-  TrailSlotConfig(slot: 9,  kind: 'glyph', glyphId: 'fishhook',  name: 'Fish Hook',  purpose: 'Fish Hook'),
-  TrailSlotConfig(slot: 10, kind: 'glyph', glyphId: 'regroup',   name: 'Regroup',    purpose: 'Regroup'),
-  TrailSlotConfig(slot: 11, kind: 'glyph', glyphId: 'hashview',  name: 'Hash View',  purpose: 'Hash View'),
+  TrailSlotConfig(slot: 6,  kind: 'glyph', glyphId: 'hashview',  name: 'Hash View'),
+  // 7-12 — the six kennel-configurable slots (purpose dropdown).
+  TrailSlotConfig(slot: 7,  kind: 'text',  text: 'SC',           name: 'Short Cut',  purpose: 'Short Cut'),
+  TrailSlotConfig(slot: 8,  kind: 'text',  text: 'CB',           name: 'Checkback',  purpose: 'Checkback'),
+  TrailSlotConfig(slot: 9,  kind: 'glyph', glyphId: 'whichyway', name: 'Whichy Way', purpose: 'Whichy Way'),
+  TrailSlotConfig(slot: 10, kind: 'glyph', glyphId: 'fishhook',  name: 'Fish Hook',  purpose: 'Fish Hook'),
+  TrailSlotConfig(slot: 11, kind: 'glyph', glyphId: 'regroup',   name: 'Regroup',    purpose: 'Regroup'),
   // 12 intentionally empty — a spare for kennels to fill.
 ];
 
