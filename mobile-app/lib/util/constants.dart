@@ -253,11 +253,18 @@ const int authCanManageAwards = 0x00000020;
 const int authCanManageSongs = 0x00000040;
 const int authCanManagePublicWebContent = 0x00000080;
 const int authCanManagePhotos = 0x00000100;
+
+/// Photo Approver — grants the photo APPROVAL queue (KennelFeature.reviewPhotos)
+/// on its own, to anyone, whether or not they hold a mismanagement role.
+/// Deliberately separate from [authCanManagePhotos]: approving what the whole
+/// kennel sees is a moderation decision, not the same as editing photos
+/// (James, 2026-08-30).
+const int authCanApprovePhotos = 0x00000200;
 const int authIsSuperAdmin = 0x40000000;
 // All assignable functional flags (everything except SuperAdmin). Widen this
 // whenever a new functional flag bit is added, or the new flag will be stripped
 // when app access is saved (app_access_page.dart masks with authAllFlags).
-const int authAllFlags = 0x000001ff;
+const int authAllFlags = 0x000003ff;
 
 const int selfPaymentNone = 0x00000000;
 const int selfPaymentAutoPayAfterBankTransfer = 0x00000001;
