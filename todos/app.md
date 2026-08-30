@@ -4,6 +4,32 @@ Items flagged during development that need follow-up.
 
 ---
 
+## ✅ SHIPPED 2026-08-30 — Play policy fix + imported-photo track fix
+
+- **Android 3.0.1+1314** → Play **production** (replacing the rejected 1312)
+  AND internal. Both COMMITTED, `changesNotSentForReview` — **James must press
+  Publishing overview → Send changes for review**; the API cannot.
+  Verified in the shipped bundle: zero READ_MEDIA_* elements, legacy storage
+  permissions capped at maxSdkVersion 28/32, original 2019 signing key.
+- **iOS 3.0.2+1315** → TestFlight (Delivery 666661a1-6fa0-40c1-90e3-3a559fc73845).
+  The name had to move: 3.0 went live, and Apple CLOSES a marketing-version
+  train once it ships, so 3.0.1 was refused. iOS and Android names now diverge
+  until Android's next build.
+- **public-web 0.21.32** deployed.
+
+### Still to verify after this release
+- [ ] **Camera-roll import on a real ANDROID device with geotagged photos.**
+  The system photo picker is now mandatory, but Android redacts EXIF location
+  without ACCESS_MEDIA_LOCATION (not declared), and image_picker_android never
+  calls setRequireOriginal. Import rejects photos with no GPS, so it may fail —
+  possibly it already did before this change. Untested either way.
+- [ ] Open the run with the imported photo and confirm the track and distance
+  now look right on a device (verified numerically, not visually).
+- [ ] Android tablet/foldable pass — the resizability opt-out was removed in
+  1313 and large-screen layouts remain untested on Android.
+
+---
+
 ## ⏰ REMINDER — TURN OFF GLOBAL ERROR LOGGING (check with James first)
 
 **Due on/after 2026-09-20** (≈3 weeks after 3.0 went live). Raise it with James
