@@ -2,6 +2,21 @@
 
 ---
 
+## 2.0.63+698 (2026-08-30)
+
+- **Three new trail marks in the kennel symbols editor** — a plain **Circle**,
+  a plain **X**, and **Three Lines** — for kennels that mark those separately
+  from the combined Check.
+- **Fish Hook redrawn** as the trail mark it represents (trail doubling back on
+  itself) rather than a literal fishing hook.
+
+The editor mirrors the glyph registry in its own code and assets, so it had
+kept the older set after mobile and public-web were updated on 2026-08-30.
+'On Inn' remains deliberately unselectable — its asset stays only so historical
+kennel configs still render.
+
+---
+
 ## 2.0.62+697 (2026-08-16)
 
 - **On Inn removed from the trail symbols editor** — no longer placeable in
