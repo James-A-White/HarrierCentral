@@ -1,3 +1,8 @@
+0.21.41
+    • Trail-TV: photos taken before or after the run now play at the END of the replay instead of delaying the on-trail photos
+    • Trail-TV: a photo with no trail mark is placed by its upload time, so mid-run photos appear at the right point
+    • Trail-TV: the replay speed slider now goes down to 3 minutes per km
+
 0.21.40
     • Spectator map: a phone with poor GPS no longer loses half its run — bad fixes are smoothed back onto the trail instead of being thrown away (one runner regained 29.7 minutes that had been drawn as a straight line)
 

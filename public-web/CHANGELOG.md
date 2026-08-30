@@ -1,5 +1,22 @@
 # public-web Changelog
 
+## 0.21.41 (2026-08-30)
+
+- **Photos taken before or after the run now play at the end of the replay.**
+  They used to lead the queue, so on the trail that exposed this the wall spent
+  its first 20 seconds on shots taken in a car park before the pack set off,
+  while the photos actually taken on trail waited their turn behind them.
+- **A photo with no trail mark is now placed by its upload time.** Two of the
+  four "unplaced" photos on that run were in fact taken mid-run — they simply
+  had no GPS mark attached — so they now appear at the right point on the trail
+  instead of being lumped in with the before-and-after ones. Only photos that
+  really do fall outside the run are held back.
+- **The end-of-replay pause now lasts long enough to show them.** It was a flat
+  6 seconds, which fitted one photo; it now allows 5 seconds each for the
+  before-and-after shots.
+- **Replay speed goes down to 3 minutes per km** (was 1 minute), for walls that
+  want the trail to unfold slowly across an evening.
+
 ## 0.21.40 (2026-08-30)
 
 - **A phone with poor GPS no longer loses half its run.** The noise filter used

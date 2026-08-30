@@ -49,7 +49,7 @@ const LOOP_HOLD_MS = 1_500;
 // value, so it can never advertise a pace the wall is not running at.
 const DEFAULT_PACE_S_PER_KM = 10;
 const PACE_MIN_S = 5;
-const PACE_MAX_S = 60;
+const PACE_MAX_S = 180; // slowest setting: 3 min of wall time per km of trail
 const PACE_STEP_S = 5;
 const PACE_STORAGE_KEY = "hc-trailtv-pace-s-per-km";
 const REPLAY_HOLD_MS = 6_000;
@@ -59,6 +59,8 @@ const REPLAY_HOLD_MS = 6_000;
 // at one spot therefore plays out over the following seconds while the pack
 // keeps moving.
 const MIN_PHOTO_MS = 5_000;
+/** Most out-of-run photos the end-of-cycle hold will wait for. */
+const TRAILING_PHOTOS_MAX = 6;
 const TAKEOVER_LIVE_MS = 10_000;  // fresh-from-trail photo, live mode
 const PRELOAD_AHEAD = 4;          // photos warmed into cache ahead of the takeover
 const TAKEOVER_OUT_MS = 450;       // zoom-back-out exit animation (matches .closing CSS)
@@ -159,6 +161,12 @@ interface PhotoEntry extends RunPhoto {
   lng: number | null;
   /** 1-based position along the trail, in capture order. Null when unplaced. */
   num: number | null;
+  /**
+   * True when the photo has no place inside the run: taken before the pack set
+   * off, after they were in, or with no known time at all. Held back to the end
+   * of the replay rather than shown before the trail has started.
+   */
+  outsideRun: boolean;
 }
 
 /** Where a photo was taken, harvested from the PHO:: marks in the track payload. */
@@ -641,6 +649,7 @@ export default function TrailTv({
       // always wins, so photoMarks is still empty at this point.
       const entries: PhotoEntry[] = Object.entries(map).map(([photoId, p]) => ({
         ...p, photoId, markTs: null, lat: null, lng: null, num: null,
+        outsideRun: false,
       }));
       setPhotos(entries);
 
@@ -662,6 +671,15 @@ export default function TrailTv({
     return () => { cancelled = true; clearInterval(t); };
   }, [publicEventId, mode, showTakeover]);
 
+  // Span of the whole run — needed before the photos, which are placed
+  // relative to it.
+  const timeline = useMemo(() => {
+    if (tracks.length === 0) return null;
+    const min = Math.min(...tracks.map((t) => t.positions[0].timestampMs));
+    const max = Math.max(...tracks.map((t) => t.lastTs));
+    return max > min ? { min, max } : null;
+  }, [tracks]);
+
   // When each photo was taken, resolved from the PHO:: marks in the track
   // payload. This is a RENDER-TIME join, not a fetch-time one: the photo list
   // and the track payload are fetched in parallel and the photo list normally
@@ -675,33 +693,39 @@ export default function TrailTv({
   const timedPhotos = useMemo(() => {
     const timed: PhotoEntry[] = photos.map((p) => {
       const mark = photoMarks.current.get(p.photoId);
+      // A PHO:: mark is the best answer — it is the runner's own position at the
+      // moment of the shot. Failing that, the upload's CreatedAt still puts the
+      // photo somewhere sensible on the timeline, which is far better than
+      // treating it as having no time and dumping it at the front of the queue.
+      const ts = mark?.ts ?? p.createdAtMs ?? null;
+      const outside =
+        ts == null ||
+        timeline == null ||
+        ts < timeline.min ||
+        ts > timeline.max;
       return {
         ...p,
-        markTs: mark?.ts ?? null,
+        markTs: ts,
         lat: mark?.lat ?? null,
         lng: mark?.lng ?? null,
         num: null,
+        outsideRun: outside,
       };
     });
     timed.sort((a, b) => (a.markTs ?? 0) - (b.markTs ?? 0));
+    // Only pinnable photos are numbered: the number's whole job is to let you
+    // find the shot on the map, and one without a mark has no position.
     let n = 0;
-    for (const p of timed) if (p.markTs != null) p.num = ++n;
+    for (const p of timed) if (p.lat != null) p.num = ++n;
     return timed;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos, tracks]);
+  }, [photos, tracks, timeline]);
 
   // ── Clocks ───────────────────────────────────────────────────────────────────
   useEffect(() => {
     const t = setInterval(() => setNowTick(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
-
-  const timeline = useMemo(() => {
-    if (tracks.length === 0) return null;
-    const min = Math.min(...tracks.map((t) => t.positions[0].timestampMs));
-    const max = Math.max(...tracks.map((t) => t.lastTs));
-    return max > min ? { min, max } : null;
-  }, [tracks]);
 
   // Replay speed, remembered per screen. Read in an effect rather than during
   // render so the server and the first client paint agree.
@@ -767,6 +791,14 @@ export default function TrailTv({
   // The clock ACCUMULATES elapsed time rather than reading the wall clock, so a
   // live takeover left on screen by a mid-run mode flip can still hold it. It
   // does NOT stop for photos: those are queued into the side panel instead.
+  // Photos held back to the end need time on screen before the cycle wraps —
+  // the bare 6s hold only fits one. A count, not an array, so polling for new
+  // photos doesn't restart the replay clock.
+  const trailingHoldMs = useMemo(() => {
+    const n = timedPhotos.filter((p) => p.outsideRun).length;
+    return REPLAY_HOLD_MS + Math.min(n, TRAILING_PHOTOS_MAX) * MIN_PHOTO_MS;
+  }, [timedPhotos]);
+
   const replayElapsedRef = useRef(0);
 
   // Start over when the run or the mode changes — but NOT when the pace slider
@@ -788,7 +820,7 @@ export default function TrailTv({
   useEffect(() => {
     if (mode !== "replay" || !timeline) return;
     const span = timeline.max - timeline.min;
-    const cycle = replayDurationMs + REPLAY_HOLD_MS;
+    const cycle = replayDurationMs + trailingHoldMs;
 
     const t = setInterval(() => {
       if (takeoverActiveRef.current) return;
@@ -798,7 +830,7 @@ export default function TrailTv({
       setReplayClock(timeline.min + Math.min(1, el / replayDurationMs) * span);
     }, 200);
     return () => clearInterval(t);
-  }, [mode, timeline, replayDurationMs]);
+  }, [mode, timeline, replayDurationMs, trailingHoldMs]);
 
   // ── Replay photo queue ───────────────────────────────────────────────────────
   // Reaching a photo's capture moment ENQUEUES it; the panel then shows each
@@ -831,15 +863,20 @@ export default function TrailTv({
       setDisplayedIds([]);
     }
     lastClockRef.current = replayClock;
+    const atEnd = timeline != null && replayClock >= timeline.max;
     for (const p of timedPhotos) {
-      // A photo with no PHO:: mark has no moment on the timeline, so it leads
-      // the queue rather than never being shown at all.
-      const reached = p.markTs == null || p.markTs <= replayClock;
+      // Photos taken before the pack set off or after they were in have no
+      // moment on the trail. They used to lead the queue, which cost 20 seconds
+      // of a BMPH3 wall before the first on-trail photo appeared (James,
+      // 2026-08-30); they now wait until the replay has finished.
+      const reached = p.outsideRun
+        ? atEnd
+        : p.markTs != null && p.markTs <= replayClock;
       if (!reached || enqueuedRef.current.has(p.photoId)) continue;
       enqueuedRef.current.add(p.photoId);
       queueRef.current.push(p.photoId);
     }
-  }, [mode, replayClock, timedPhotos, tracks.length]);
+  }, [mode, replayClock, timedPhotos, tracks.length, timeline]);
 
   useEffect(() => {
     if (mode !== "replay") return;

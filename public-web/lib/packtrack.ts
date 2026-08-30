@@ -644,9 +644,27 @@ export interface RunPhoto {
   title: string | null;
   description: string | null;
   uploader: string | null;
+  /**
+   * When the photo was taken, epoch ms, or null if the API didn't say.
+   * Fallback capture time for a photo with no PHO:: mark on the track — without
+   * it such a photo has no place on the replay timeline at all.
+   */
+  createdAtMs: number | null;
 }
 
 /** Fetch the run's approved PUBLIC photos as photoId (lowercase) -> RunPhoto. */
+/**
+ * SQL hands back datetime2 with no zone suffix ("2026-08-30T10:49:29.1733333")
+ * and the value IS UTC — the same clock the track timestamps use. Parsing it
+ * without the Z would shift it by the viewer's offset and drop photos into the
+ * wrong part of the replay.
+ */
+function parseSqlUtc(raw: string | null | undefined): number | null {
+  if (!raw) return null;
+  const ms = Date.parse(/[Zz]|[+-]\d\d:?\d\d$/.test(raw) ? raw : `${raw}Z`);
+  return Number.isFinite(ms) ? ms : null;
+}
+
 export async function fetchRunPhotos(
   publicEventId: string | null,
 ): Promise<Record<string, RunPhoto>> {
@@ -660,6 +678,7 @@ export async function fetchRunPhotos(
         BlobUrl?: string;
         Title?: string | null;
         Description?: string | null;
+        CreatedAt?: string | null;
         uploaderDisplayName?: string | null;
       }[];
     };
@@ -671,6 +690,7 @@ export async function fetchRunPhotos(
           title: p.Title ?? null,
           description: p.Description ?? null,
           uploader: p.uploaderDisplayName ?? null,
+          createdAtMs: parseSqlUtc(p.CreatedAt),
         };
       }
     }
