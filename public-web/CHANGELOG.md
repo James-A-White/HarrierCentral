@@ -1,5 +1,23 @@
 # public-web Changelog
 
+## 0.21.38 (2026-08-30)
+
+- **A photo no longer bends the track of the runner who posted it.** Excluding
+  photo points from the drawn line (0.21.32) was not enough, because the damage
+  was done earlier, inside the noise filter. A photo mark is typed, so it is
+  never dropped and it became the velocity reference; the next genuine GPS fixes
+  then measured their speed from the photo's location, blew past the 5 m/s limit
+  and were discarded; and their interpolated replacements were strung along a
+  line running out to the photo and back. Those replacements carry no photo
+  type, so they survived the exclusion and were drawn.
+
+  Photo marks are now held aside for the whole filter and merged back
+  afterwards, so they can neither anchor the velocity check nor anchor an
+  interpolation. On the run that exposed it, one photo 515 m off-trail had been
+  discarding 25 good fixes and adding **1.09 km of phantom trail** (8.83 km
+  reported against 7.74 km actually run). Runners with no photos are unaffected,
+  point for point.
+
 ## 0.21.37 (2026-08-30)
 
 - **The front-runner cam no longer flashes black.** Its zoom was recomputed

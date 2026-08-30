@@ -322,6 +322,10 @@ function pointIsTyped(p: TrackPoint): boolean {
   return !!(p.type && p.type.trim().length > 0);
 }
 
+function pointIsPhoto(p: TrackPoint): boolean {
+  return !!parseMark(p.type)?.isPhoto;
+}
+
 function evaluatePointQuality(points: TrackPoint[]): boolean[] {
   const quality = points.map(() => true);
 
@@ -361,6 +365,43 @@ function evaluatePointQuality(points: TrackPoint[]): boolean[] {
  * data than none).
  */
 export function filterAndInterpolate(points: TrackPoint[]): TrackPoint[] {
+  // Photo marks carry the PHOTO's coordinates, not the runner's — an imported
+  // shot sits wherever the photographer was standing. Hold them aside so they
+  // can neither anchor the velocity check nor anchor an interpolation, then
+  // merge them back so the markers still render.
+  //
+  // Without this a single off-trail photo poisons the track twice over. It is
+  // typed, so it is never dropped and becomes the velocity reference; the next
+  // GENUINE fixes then measure their speed from the photo's location, blow past
+  // 5 m/s and get dropped; and their interpolated replacements are strung along
+  // a line running out to the photo and back. Those replacements are not typed
+  // as photos, so withoutPhotoPoints cannot remove them and the phantom
+  // out-and-back is drawn anyway.
+  //
+  // Kilty, BMPH3 #2060 (reported 2026-08-30): GPS was clean — accuracy p50 8 m,
+  // max 17.6 m, nothing near the 50 m threshold — yet one photo 515 m off-trail
+  // caused 26 good fixes to be discarded and displaced a real fix by 491 m.
+  if (points.some(pointIsPhoto)) {
+    const photos = points.filter(pointIsPhoto);
+    return mergeByTimestamp(filterTrackPoints(points.filter((p) => !pointIsPhoto(p))), photos);
+  }
+  return filterTrackPoints(points);
+}
+
+/** Merge two timestamp-ordered point lists, preserving order. */
+function mergeByTimestamp(a: TrackPoint[], b: TrackPoint[]): TrackPoint[] {
+  const out: TrackPoint[] = [];
+  let i = 0;
+  let j = 0;
+  while (i < a.length && j < b.length) {
+    out.push(a[i].timestampMs <= b[j].timestampMs ? a[i++] : b[j++]);
+  }
+  while (i < a.length) out.push(a[i++]);
+  while (j < b.length) out.push(b[j++]);
+  return out;
+}
+
+function filterTrackPoints(points: TrackPoint[]): TrackPoint[] {
   if (points.length < 2) return points;
   const quality = evaluatePointQuality(points);
   if (quality.filter(Boolean).length < 2) return points;

@@ -53,7 +53,37 @@ class TrackPointFilter {
 
   /// Filters a list of track points, removing inaccurate points and
   /// interpolating between good points.
+  ///
+  /// Photo marks carry the PHOTO's coordinates, not the runner's — an imported
+  /// shot sits wherever the photographer was standing — so they are held aside
+  /// and merged back afterwards. They must not anchor the velocity check or an
+  /// interpolation.
+  ///
+  /// Without this a single off-trail photo poisons the track twice over. It is
+  /// typed, so it is never dropped and becomes the velocity reference; the next
+  /// GENUINE fixes then measure their speed from the photo's location, blow past
+  /// [maxVelocityMetersPerSecond] and get dropped; and their interpolated
+  /// replacements are strung along a line running out to the photo and back.
+  /// Those replacements carry no photo type, so callers that skip photo points
+  /// when drawing (see `_isPhotoPoint` in RunTrackerMapController) cannot remove
+  /// them and the phantom out-and-back is drawn anyway.
+  ///
+  /// Kilty, BMPH3 #2060 (2026-08-30): GPS was clean — accuracy p50 8 m, max
+  /// 17.6 m, nothing near the 50 m threshold — yet one photo 515 m off-trail
+  /// discarded 25 good fixes and added 1.09 km of phantom trail (8.83 vs
+  /// 7.74 km). Mirrored in public-web `lib/packtrack.ts`.
   List<TrackPoint> filterAndInterpolate(List<TrackPoint> points) {
+    if (points.length < 2) return points;
+    if (points.any(_isPhotoPoint)) {
+      final List<TrackPoint> photos = points.where(_isPhotoPoint).toList();
+      final List<TrackPoint> rest =
+          points.where((TrackPoint p) => !_isPhotoPoint(p)).toList();
+      return _mergeByTimestamp(_filterTrack(rest), photos);
+    }
+    return _filterTrack(points);
+  }
+
+  List<TrackPoint> _filterTrack(List<TrackPoint> points) {
     if (points.length < 2) return points;
 
     // Step 1: Mark bad points
@@ -61,6 +91,33 @@ class TrackPointFilter {
 
     // Step 2: Filter and interpolate
     return _filterAndInterpolatePoints(points, pointQuality);
+  }
+
+  static bool _isPhotoPoint(TrackPoint p) {
+    final String? t = p.type;
+    return t != null && t.toUpperCase().startsWith('PHO::');
+  }
+
+  /// Merges two timestamp-ordered lists, preserving order.
+  static List<TrackPoint> _mergeByTimestamp(
+    List<TrackPoint> a,
+    List<TrackPoint> b,
+  ) {
+    final List<TrackPoint> out = <TrackPoint>[];
+    int i = 0;
+    int j = 0;
+    while (i < a.length && j < b.length) {
+      out.add(
+        a[i].timestampMs <= b[j].timestampMs ? a[i++] : b[j++],
+      );
+    }
+    while (i < a.length) {
+      out.add(a[i++]);
+    }
+    while (j < b.length) {
+      out.add(b[j++]);
+    }
+    return out;
   }
 
   /// Evaluates each point and marks it as good (true) or bad (false).

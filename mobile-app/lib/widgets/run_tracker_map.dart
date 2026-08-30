@@ -238,6 +238,19 @@ class RunTrackerMap extends StatelessWidget {
                     subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3'],
                   ),
 
+                  // Trail marks go UNDER the tracks, matching the web wall: a
+                  // 72px mark tile sitting on top hid the very polyline it
+                  // annotates (James, 2026-08-30). flutter_map has no z-index —
+                  // paint order is child order — so they need their own layer
+                  // before the polylines rather than a property. Runner pins and
+                  // photo clusters stay above, further down this list.
+                  MarkerLayer(
+                    // Keep icons upright when the map rotates to a runner's
+                    // heading; see the note on the pin layer below.
+                    rotate: true,
+                    markers: controller.checkpointMarkers,
+                  ),
+
                   PolylineLayer(polylines: controller.dimmedPolylines),
                   if (controller.highlightedPolyline != null)
                     PolylineLayer(polylines: [controller.highlightedPolyline!]),
@@ -275,8 +288,6 @@ class RunTrackerMap extends StatelessWidget {
                           ),
                         ),
                       ],
-
-                      ...controller.checkpointMarkers,
                     ],
                   ),
                   MarkerClusterLayerWidget(

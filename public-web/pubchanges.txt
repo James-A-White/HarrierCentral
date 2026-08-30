@@ -1,3 +1,6 @@
+0.21.38
+    • Spectator map: a photo no longer bends the track of the runner who posted it, or inflates their distance — the fix in 0.21.32 missed points the noise filter had already moved
+
 0.21.37
     • Trail-TV: fixed the front-runner cam flashing black every few seconds
     • Trail-TV: trail marks are drawn underneath the tracks so they no longer cover the trail
