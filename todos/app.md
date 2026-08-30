@@ -30,6 +30,30 @@ Items flagged during development that need follow-up.
 
 ---
 
+## ✅ SHIPPED 2026-08-30 (second release of the day)
+
+- **SPs** — 150 deployed, 0 failed. Includes the monitor version drill-down fix
+  (it listed 1 user for 1314 while the tile counted 3: MAX(idx) picked each
+  user's newest login of ANY version, and rows logging '<no HC version>' then
+  failed the version filter). Verified live in the deployed definition.
+- **portal 2.0.64+699** — LIVE (verified version.json). Label permanent at slot
+  4, Hash View at 6; slots 7-12 configurable.
+- **public-web 0.21.33** — LIVE. Trail TV preloads upcoming photos; "Fresh from
+  trail" is live-mode only.
+- **mobile 3.0.2+1316** — iOS TestFlight (Delivery 3df395d3-d612-4413-bef4-6dd97b51e9a7)
+  and Play **internal only**. Watch Check/False buttons show the kennel's marks.
+- **Kennel configs migrated** (BMPH3, HCTEST-ABC) — nothing lost; backup at
+  ~/hc_trailslots_backup_20260830_110950.txt
+
+### ⚠️ Play production still holds 1314 — DELIBERATELY
+1316 went to the internal track ONLY. Production keeps **1314**, the build that
+clears the READ_MEDIA_IMAGES policy rejection, and it is still waiting on
+**James: Play Console → Publishing overview → Send changes for review**.
+Pushing 1316 to production would have superseded 1314 and restarted the review
+clock. James: no further production store build for a few days.
+
+---
+
 ## ⏰ REMINDER — TURN OFF GLOBAL ERROR LOGGING (check with James first)
 
 **Due on/after 2026-09-20** (≈3 weeks after 3.0 went live). Raise it with James
