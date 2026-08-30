@@ -1,3 +1,10 @@
+0.21.37
+    • Trail-TV: fixed the front-runner cam flashing black every few seconds
+    • Trail-TV: trail marks are drawn underneath the tracks so they no longer cover the trail
+    • Trail-TV: replay speed is now 10 seconds per km, with a speed slider on the wall (5-60 s/km) that is remembered per screen
+    • Trail-TV: the camera keeps up with the runner at fast playback speeds
+    • Trail-TV: photos no longer flash blank as they change
+
 0.21.36
     • Trail-TV: the replay no longer pauses for photos — each photo simply holds the panel for at least 5 seconds, and a burst of photos queues up
     • Trail-TV: photos are numbered, and the same number is pinned on the map where the photo was taken

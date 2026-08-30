@@ -1,5 +1,29 @@
 # public-web Changelog
 
+## 0.21.37 (2026-08-30)
+
+- **The front-runner cam no longer flashes black.** Its zoom was recomputed
+  continuously, and a drifting fractional zoom kept crossing a rounding
+  boundary — Leaflet then swaps tile levels and prunes the outgoing one before
+  the incoming one covers the panel. Measured at levels 16-15-16-17-16 in 100
+  seconds. The zoom is now derived **once per run**, from the ground that run's
+  leader typically covered: still adapted to the trail, rock steady during
+  playback. Measured after: zero level changes in 102 seconds.
+- **Trail marks are drawn beneath the tracks**, in their own map layer between
+  the tiles and the polylines, so a mark can no longer cover the trail it
+  annotates. Photo pins stay on top, where their numbers stay readable.
+- **Replay speed is now 10 seconds per km, and adjustable on the wall.** A
+  speed slider sits beside the mode toggle (5–60 s/km), and the setting is
+  remembered per screen. Moving it keeps the replay where it is rather than
+  starting it over.
+- **The camera keeps up at speed.** Its smoothing spring lags by a fixed time,
+  which at a fast pace is a long way in metres — the runner drifting off frame.
+  Stiffness now scales with the pace, holding the lag roughly constant on screen.
+- **Photos no longer flash blank between changes.** Preloading was keyed to the
+  replay clock, which at 10 s/km races past every photo long before the panel
+  has shown them, so the warm-up window went empty mid-replay. It now follows
+  the display queue.
+
 ## 0.21.36 (2026-08-30)
 
 - **The replay no longer stops for photos.** The pause added in 0.21.35 was
