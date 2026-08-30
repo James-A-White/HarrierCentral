@@ -45,12 +45,22 @@ Items flagged during development that need follow-up.
 - **Kennel configs migrated** (BMPH3, HCTEST-ABC) — nothing lost; backup at
   ~/hc_trailslots_backup_20260830_110950.txt
 
-### ⚠️ Play production still holds 1314 — DELIBERATELY
-1316 went to the internal track ONLY. Production keeps **1314**, the build that
-clears the READ_MEDIA_IMAGES policy rejection, and it is still waiting on
-**James: Play Console → Publishing overview → Send changes for review**.
-Pushing 1316 to production would have superseded 1314 and restarted the review
-clock. James: no further production store build for a few days.
+### ✅ Play production: 1314 APPROVED AND LIVE (2026-08-30)
+Google approved 3.0.1+1314 — the READ_MEDIA_IMAGES policy rejection is CLEARED
+and Android is on the Play Store at full rollout for the first time since 2.1.2
+(Oct 2025). Both stores are now shipping 3.0.
+
+1316 remains on the INTERNAL track only, by James's instruction to leave a few
+days before another production store build.
+
+**Before promoting 1316 to production, check on a real device:**
+- Camera-roll import with geotagged photos — the system photo picker is now
+  mandatory and ACCESS_MEDIA_LOCATION is NOT declared, so EXIF GPS may be
+  redacted and imports silently rejected. Untested; may already have been
+  broken before the picker change.
+- Marks on a kennel with a migrated config (BMPH3): 1316 renumbered the slots
+  and the DB already holds the new layout, so 1314/1315 clients render those
+  kennels with the OLD numbering until they update.
 
 ---
 
