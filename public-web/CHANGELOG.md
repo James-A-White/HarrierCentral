@@ -1,5 +1,21 @@
 # public-web Changelog
 
+## 0.21.34 (2026-08-30)
+
+- **Replay photos appear in the side panel instead of taking over the screen.**
+  A full-screen takeover every time the replay passed a photo was too
+  distracting on a wall that is meant to run unattended; the replay also froze
+  behind each one. Photos are now revealed in the right-hand panel at the
+  moment the replay reaches the point they were taken, newest at the top, and
+  the replay never pauses. Live mode is unchanged — a photo arriving from trail
+  still takes over the screen, which is the point of a live wall.
+- **Trail marks no longer bury the track on the whole-run maps.** The mark
+  tiles were a fixed 36px, which hid the polylines they were sitting on. On
+  the overview maps they are now sized from the window (so a 4K wall and a
+  laptop preview look the same), drawn without their label chips and slightly
+  translucent. The front-runner cam is zoomed in, so it keeps full-size
+  labelled marks.
+
 ## 0.21.33 (2026-08-30)
 
 - **Trail TV photo takeovers no longer start empty.** The takeover only began

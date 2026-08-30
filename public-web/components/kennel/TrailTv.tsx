@@ -41,7 +41,6 @@ const LOOP_HOLD_MS = 1_500;
 const REPLAY_MS_PER_KM = 60_000; // 1 minute of wall time per km of trail
 const REPLAY_HOLD_MS = 6_000;
 const TAKEOVER_LIVE_MS = 10_000;  // fresh-from-trail photo, live mode
-const TAKEOVER_REPLAY_MS = 4_000;  // synced photo on the replay timeline
 const PRELOAD_AHEAD = 4;          // photos warmed into cache ahead of the takeover
 const TAKEOVER_OUT_MS = 450;       // zoom-back-out exit animation (matches .closing CSS)
 const CALLOUT_MS = 6_000;
@@ -50,8 +49,17 @@ const REPLAY_IDLE_MS = 30 * 60_000; // live → replay once no runner has report
 const FOLLOW_ZOOM = 17.5;
 const FOLLOW_SPRING_OMEGA = 3; // rad/s — camera spring stiffness; lower = floatier follow-cam
 const LEAD_HYSTERESIS_METERS = 15; // new leader must be this far ahead to steal the cam
-const MARK_PX_OVERVIEW = 36; // trail-mark tile on the whole-run panels
 const MARK_PX_CAM = 56;      // trail-mark tile on the zoomed front-runner cam
+// Trail-mark tiles on the whole-run panels are sized from the viewport rather
+// than fixed: a 36px tile that looked fine on a 4K wall buried the track on a
+// laptop preview (James, 2026-08-30 — "the trail symbols hide the track on the
+// bottom view"). Small, unlabelled and slightly translucent there; the
+// front-runner cam is zoomed in, so it keeps full-size labelled marks.
+const OVERVIEW_MARK_FRACTION = 0.02; // of the map column's width
+const OVERVIEW_MARK_MIN = 12;
+const OVERVIEW_MARK_MAX = 34;
+const OVERVIEW_MARK_OPACITY = 0.8;
+const MAP_COLUMN_FRACTION = 0.55;    // matches grid-template-columns below
 
 interface TrailTvProps {
   slug: string;
@@ -226,15 +234,26 @@ function headsAt(tracks: PreparedTrack[], cutoff: number) {
 }
 
 /** Trail marks (checks, drink stops, on-inn, text tiles) visible at the cutoff. */
-function TvMarks({ users, cutoff, size }: { users: UserTrack[]; cutoff: number | null; size: number }) {
+function TvMarks({
+  users, cutoff, size, subdued = false,
+}: {
+  users: UserTrack[];
+  cutoff: number | null;
+  size: number;
+  /** Overview maps: no label chips, slightly see-through, so the track reads. */
+  subdued?: boolean;
+}) {
   const marks = useMemo(() => visibleMarks(users, cutoff ?? Infinity), [users, cutoff]);
+  const iconOpts = subdued
+    ? { hideLabel: true, opacity: OVERVIEW_MARK_OPACITY }
+    : undefined;
   return (
     <>
       {marks.map((m, i) => (
         <Marker
           key={`mark-${i}-${m.rawType}`}
           position={[m.point.lat, m.point.lng]}
-          icon={checkpointIcon(m, size)}
+          icon={checkpointIcon(m, size, iconOpts)}
           zIndexOffset={500}
         />
       ))}
@@ -288,7 +307,7 @@ function RunnerLegend({ tracks, names }: { tracks: PreparedTrack[]; names: Recor
 }
 
 function TvMapPanel({
-  tracks, users, cutoff, center, label, sublabel, style, names, showLegend = false,
+  tracks, users, cutoff, center, label, sublabel, style, names, markPx, showLegend = false,
 }: {
   tracks: PreparedTrack[];
   /** Raw payload users — the source of trail marks (PreparedTrack holds GPS only). */
@@ -300,6 +319,8 @@ function TvMapPanel({
   style?: React.CSSProperties;
   /** When provided, head dots get permanent name-chip labels. */
   names?: Record<string, string>;
+  /** Trail-mark tile size, scaled to the wall by the caller. */
+  markPx: number;
   showLegend?: boolean;
 }) {
   return (
@@ -321,7 +342,7 @@ function TvMapPanel({
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <AutoFit points={boundsOf(tracks, center)} />
-        <TvMarks users={users} cutoff={cutoff} size={MARK_PX_OVERVIEW} />
+        <TvMarks users={users} cutoff={cutoff} size={markPx} subdued />
         {tracks.map((t) => trackPolyline(t, cutoff, names?.[t.id]))}
       </MapContainer>
     </div>
@@ -360,7 +381,6 @@ export default function TrailTv({
   const firstTrackLoad = useRef(true);
   const photoMarkTs = useRef<Map<string, number>>(new Map());
   const calloutKey = useRef(0);
-  const replayFiredPhotos = useRef<Set<string>>(new Set());
   const takeoverActiveRef = useRef(false);
   const takeoverIdRef = useRef<string | null>(null);
 
@@ -540,7 +560,6 @@ export default function TrailTv({
   useEffect(() => {
     if (mode !== "replay" || !timeline) return;
     let start = performance.now();
-    replayFiredPhotos.current = new Set();
     const t = setInterval(() => {
       if (takeoverActiveRef.current) {
         start += 200; // hold the replay while the photo shows
@@ -548,32 +567,19 @@ export default function TrailTv({
       }
       const cycle = replayDurationMs + REPLAY_HOLD_MS;
       const el = (performance.now() - start) % cycle;
-      if (el < 250) replayFiredPhotos.current = new Set(); // new cycle — re-arm takeovers
       const frac = Math.min(1, el / replayDurationMs);
       setReplayClock(timeline.min + frac * (timeline.max - timeline.min));
     }, 200);
     return () => clearInterval(t);
   }, [mode, timeline, replayDurationMs]);
 
-  // Replay photo takeovers: fire as the replay clock passes each capture time.
-  useEffect(() => {
-    if (mode !== "replay" || replayClock == null) return;
-    if (takeover != null) return; // let the current takeover finish first
-    for (const p of photos) {
-      if (p.markTs != null && p.markTs <= replayClock && !replayFiredPhotos.current.has(p.photoId)) {
-        replayFiredPhotos.current.add(p.photoId);
-        showTakeover(p, TAKEOVER_REPLAY_MS);
-        break; // one at a time
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [replayClock, mode, showTakeover]);
-
   // ── Photo preloading ─────────────────────────────────────────────────────────
-  // The takeover <img> only began fetching its 1920px source when it mounted,
-  // so on a slow link the screen sat empty for much of a 4s replay hold — the
-  // photo often appeared just as it was dismissed. Warm the next few upcoming
-  // photos into the browser cache instead, so the takeover paints instantly.
+  // A photo's <img> only began fetching when it mounted, so on a slow link the
+  // slot sat empty right when the photo was meant to be seen. Warm the next few
+  // upcoming photos into the browser cache instead, so they paint instantly.
+  // Warm the width they will ACTUALLY be shown at — replay photos now land in
+  // the right panel at 1080px, live arrivals still take over the screen at
+  // 1920px, and caching the wrong one warms a file nothing requests.
   //
   // In replay the queue is ordered by markTs, so "upcoming" is simply the next
   // few past the clock; in live the newest arrivals are the ones about to fire.
@@ -584,19 +590,24 @@ export default function TrailTv({
     const clock = replayClock;
     const upcoming =
       mode === "replay" && clock != null
+        // Only timeline-placed photos are "upcoming". Unplaced ones (no PHO::
+        // point) sort to the front of `photos` and are on screen from the start
+        // of the cycle anyway, so letting them fill this window would starve
+        // the photos the replay is actually about to reach.
         ? photos
-            .filter((p) => p.markTs == null || p.markTs > clock)
+            .filter((p) => p.markTs != null && p.markTs > clock)
             .slice(0, PRELOAD_AHEAD)
         // Replay not started (or live): warm the front of the queue / the
         // newest arrivals, which are the ones about to take over.
         : mode === "replay"
           ? photos.slice(0, PRELOAD_AHEAD)
           : photos.slice(-PRELOAD_AHEAD);
+    const warmWidth = mode === "replay" ? 1080 : 1920;
     for (const p of upcoming) {
       if (preloadedRef.current.has(p.photoId)) continue;
       preloadedRef.current.add(p.photoId);
       const img = new window.Image();
-      img.src = photoSrc(p.url, 1920);
+      img.src = photoSrc(p.url, warmWidth);
     }
   }, [photos, replayClock, mode]);
 
@@ -623,6 +634,23 @@ export default function TrailTv({
     if (nowTick - newestPositionTs > REPLAY_IDLE_MS) setMode("replay");
   }, [mode, tracks.length, newestPositionTs, nowTick]);
 
+  // Overview trail-mark size follows the window so the wall looks the same on a
+  // laptop preview and a 4K screen. Seeded at the design width rather than read
+  // during render, so the server and first client paint agree.
+  const [viewportW, setViewportW] = useState(1920);
+  useEffect(() => {
+    const onResize = () => setViewportW(window.innerWidth);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  const overviewMarkPx = Math.round(
+    Math.min(
+      OVERVIEW_MARK_MAX,
+      Math.max(OVERVIEW_MARK_MIN, viewportW * MAP_COLUMN_FRACTION * OVERVIEW_MARK_FRACTION),
+    ),
+  );
+
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const marqueeRef = useRef<HTMLDivElement | null>(null);
   const [marqueeAnimated, setMarqueeAnimated] = useState(false);
@@ -632,6 +660,12 @@ export default function TrailTv({
   // panel. scrollHeight counts the duplicated list when animating, so halve it
   // in that case before comparing.
   useEffect(() => {
+    // Replay never scrolls: the panel is a reveal feed anchored to the top, so
+    // the photo the replay has just reached is always the one on screen.
+    if (mode === "replay") {
+      if (marqueeAnimated) setMarqueeAnimated(false);
+      return;
+    }
     const measure = () => {
       const c = carouselRef.current, m = marqueeRef.current;
       if (!c || !m) return;
@@ -642,9 +676,27 @@ export default function TrailTv({
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, [photos, imgLoadTick, marqueeAnimated]);
+  }, [photos, imgLoadTick, marqueeAnimated, mode]);
 
-  const carouselPhotos = photos.length > 0 ? photos : [];
+  // Right-panel photo feed.
+  //   live   — every approved photo, marquee-scrolled; a brand-new arrival ALSO
+  //            takes over the screen, which is the point of a live wall.
+  //   replay — photos are REVEALED as the replay clock reaches the moment they
+  //            were taken and stack newest-first at the top. James, 2026-08-30:
+  //            full-screen takeovers on a replay are "too distracting" — the
+  //            photo is hours old, so it belongs beside the map, not over it.
+  const carouselPhotos = useMemo(() => {
+    if (mode !== "replay") return photos;
+    const reached: PhotoEntry[] = [];
+    const unplaced: PhotoEntry[] = [];
+    for (const p of photos) {
+      // No PHO:: point means the photo has no place on the timeline. Show it
+      // below the revealed ones rather than never showing it at all.
+      if (p.markTs == null) unplaced.push(p);
+      else if (replayClock != null && p.markTs <= replayClock) reached.push(p);
+    }
+    return [...reached.reverse(), ...unplaced];
+  }, [photos, mode, replayClock]);
   // The -50% translate marquee only works when content genuinely overflows;
   // otherwise it scrolls the short column out of view and the panel goes
   // blank. MEASURE the rendered single-list height against the container
@@ -726,6 +778,8 @@ export default function TrailTv({
         .tv-marquee { display: flex; flex-direction: column; gap: 10px; padding: 10px; will-change: transform; }
         .tv-photo { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.6); }
         .tv-photo-cap { font-size: 13px; opacity: .85; margin: -4px 2px 6px; }
+        .tv-photo-reveal { animation: tvreveal .6s ease-out; }
+        @keyframes tvreveal { from { transform: scale(.88); opacity: 0 } to { transform: scale(1); opacity: 1 } }
         .tv-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; opacity:.75; font-size:20px; text-align:center; padding:30px; }
         .tv-ticker { grid-column: 1 / -1; display: flex; align-items: center; gap: 28px; background: rgba(12,42,14,.9); border: 1px solid rgba(255,255,255,.18); border-radius: 14px; padding: 0 22px; font-size: 17px; overflow: hidden; white-space: nowrap; }
         .tv-stat b { color: #e0a51e; font-size: 21px; margin-right: 6px; }
@@ -763,6 +817,7 @@ export default function TrailTv({
             label="LIVE"
             sublabel={`${stats.active} on trail`}
             names={names}
+            markPx={overviewMarkPx}
             showLegend
           />
           <TvMapPanel
@@ -771,6 +826,7 @@ export default function TrailTv({
             cutoff={loopClock}
             center={center}
             label="THE RUN IN 10 SECONDS"
+            markPx={overviewMarkPx}
           />
         </>
       ) : (
@@ -809,6 +865,7 @@ export default function TrailTv({
             center={center}
             label="RUN REPLAY"
             sublabel={`1 min / km · ${formatDistanceLabel(tracks.reduce((m, t) => Math.max(m, t.distanceMeters), 0))} trail`}
+            markPx={overviewMarkPx}
           />
         </>
       )}
@@ -818,15 +875,28 @@ export default function TrailTv({
         {marqueeList.length === 0 ? (
           <div className="tv-empty">
             <div style={{ fontSize: 44 }}>📸</div>
-            <div>Waiting for the first photo from trail…</div>
+            <div>
+              {mode === "replay"
+                ? "Photos appear as the replay reaches them…"
+                : "Waiting for the first photo from trail…"}
+            </div>
             <div style={{ fontSize: 14, opacity: 0.7 }}>
-              Hash Flash photos appear here moments after they&apos;re taken
+              {mode === "replay"
+                ? "Each shot pops in at the point on trail where it was taken"
+                : "Hash Flash photos appear here moments after they\u2019re taken"}
             </div>
           </div>
         ) : (
           <div ref={marqueeRef} className="tv-marquee">
+            {/* Key by photo, not by index: in replay a newly-reached photo is
+                PREPENDED, and index keys would remount (and re-animate, and
+                re-fetch) the whole column every time one arrived. The suffix
+                only distinguishes the duplicated marquee copy in live mode. */}
             {marqueeList.map((p, i) => (
-              <div key={`${p.photoId}-${i}`}>
+              <div
+                key={`${p.photoId}-${i < carouselPhotos.length ? 0 : 1}`}
+                className={mode === "replay" ? "tv-photo-reveal" : undefined}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   className="tv-photo"
