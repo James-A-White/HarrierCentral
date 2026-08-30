@@ -1,3 +1,8 @@
+0.21.34
+    • Trail-TV: in replay, photos now appear in the side panel as the replay reaches them instead of taking over the whole screen
+    • Trail-TV: the replay no longer pauses behind each photo
+    • Trail-TV: trail marks on the whole-run maps are smaller and see-through, so they no longer hide the track
+
 0.21.33
     • Trail-TV: upcoming photos are preloaded, so a takeover no longer shows an empty frame while it downloads
     • Trail-TV: the "Fresh from trail" badge now only appears in live mode
