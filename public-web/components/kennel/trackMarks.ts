@@ -9,6 +9,20 @@ import L from "leaflet";
 import { parseMark, isTerminalOnInn, haversineMeters, MARK_DEDUPE_METERS } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint } from "@/lib/packtrack";
 
+/**
+ * Map pane for trail marks, BELOW the polylines.
+ *
+ * Leaflet draws every marker in markerPane (z-index 600), which is above
+ * overlayPane (400) where the polylines live — so a mark always covered the
+ * track it annotates. Rendering the marks into this pane instead puts them
+ * between the tiles and the tracks (James, 2026-08-30). Shared by Trail-TV and
+ * the spectator map so the two can't drift; photo pins and runner pins stay in
+ * markerPane on purpose, since they are the things you're meant to read and
+ * click.
+ */
+export const MARK_PANE = "tvMarkPane";
+export const MARK_PANE_Z = 350; // tilePane 200 < here < overlayPane 400
+
 /** Checkpoint icon size (app uses 72; scaled down for the web embed). */
 export const DEFAULT_ICON_PX = 40;
 

@@ -1,3 +1,6 @@
+0.21.39
+    • Spectator map: trail marks are drawn beneath the tracks, so a mark no longer covers the trail it marks (Trail-TV got this in 0.21.37)
+
 0.21.38
     • Spectator map: a photo no longer bends the track of the runner who posted it, or inflates their distance — the fix in 0.21.32 missed points the noise filter had already moved
 

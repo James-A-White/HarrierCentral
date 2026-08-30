@@ -1,5 +1,14 @@
 # public-web Changelog
 
+## 0.21.39 (2026-08-30)
+
+- **Trail marks now sit beneath the tracks on the spectator map too.** 0.21.37
+  fixed this on the Trail-TV wall but not on the PackTrack map, which is the one
+  most people actually look at — a mark tile was still covering the trail it
+  annotates. Both maps now render marks into the same shared map layer, below
+  the trails, so they can't drift apart again. Photo pins and runner pins stay
+  on top, since those are the ones you read and tap.
+
 ## 0.21.38 (2026-08-30)
 
 - **A photo no longer bends the track of the runner who posted it.** Excluding

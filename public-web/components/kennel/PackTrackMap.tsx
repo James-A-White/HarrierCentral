@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { MapContainer, TileLayer, Polyline, Marker, Circle, useMap, useMapEvents } from "react-leaflet";
+import {
+  MapContainer, TileLayer, Polyline, Marker, Circle, Pane, useMap, useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
 import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera, Download } from "lucide-react";
 import {
@@ -13,7 +15,9 @@ import {
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
 import { AdventureTitle } from "./AdventureTitle";
-import { checkpointIcon, escapeHtml, visibleMarks } from "./trackMarks";
+import {
+  MARK_PANE, MARK_PANE_Z, checkpointIcon, escapeHtml, visibleMarks,
+} from "./trackMarks";
 
 // ── Constants matching the mobile app ─────────────────────────────────────────
 
@@ -1162,14 +1166,18 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
               ) : null;
             })}
 
-            {/* Checkpoint marks — dynamic icon collection */}
-            {marks.map((m, i) => (
-              <Marker
-                key={`mark-${i}-${m.rawType}`}
-                position={[m.point.lat, m.point.lng]}
-                icon={checkpointIcon(m)}
-              />
-            ))}
+            {/* Checkpoint marks — dynamic icon collection. In their own pane
+                UNDER the trails: a mark tile drawn on top hid the very track it
+                annotates. Photo and runner pins below stay in markerPane. */}
+            <Pane name={MARK_PANE} style={{ zIndex: MARK_PANE_Z }}>
+              {marks.map((m, i) => (
+                <Marker
+                  key={`mark-${i}-${m.rawType}`}
+                  position={[m.point.lat, m.point.lng]}
+                  icon={checkpointIcon(m)}
+                />
+              ))}
+            </Pane>
 
             {/* Hash Flash-approved public photos — tap to open the lightbox */}
             {photoMarks.map((m, i) => (

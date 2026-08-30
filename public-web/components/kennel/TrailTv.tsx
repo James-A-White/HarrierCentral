@@ -24,7 +24,9 @@ import {
   MapContainer, TileLayer, Polyline, CircleMarker, Marker, Pane, Tooltip, useMap,
 } from "react-leaflet";
 import QRCode from "react-qr-code";
-import { checkpointIcon, photoPinIcon, visibleMarks } from "./trackMarks";
+import {
+  MARK_PANE, MARK_PANE_Z, checkpointIcon, photoPinIcon, visibleMarks,
+} from "./trackMarks";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn,
   trackUpTo, filterAndInterpolate, formatDistanceLabel, haversineMeters, photoSrc,
@@ -378,15 +380,6 @@ function TvPhotoPins({
     </>
   );
 }
-
-/**
- * Leaflet draws every marker in markerPane (z-index 600), which is above
- * overlayPane (400) where the polylines live — so a mark always covered the
- * track it annotates. This pane sits between the tiles and the polylines, so
- * marks stay visible but the tracks are drawn over them (James, 2026-08-30).
- */
-const MARK_PANE = "tvMarkPane";
-const MARK_PANE_Z = 350; // tilePane 200 < here < overlayPane 400
 
 function TvMarks({
   users, cutoff, size, subdued = false,
