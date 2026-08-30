@@ -309,14 +309,34 @@ export const MARK_DEDUPE_METERS = 25;
 
 // ── GPS noise filter (ported from lib/util/track_point_filter.dart) ─────────────
 // Multi-stage clean-up applied to each runner's raw track before rendering:
-//   1. drop poor-accuracy points (> 50 m) and near-duplicate timestamps (< 1000 ms)
-//   2. drop unrealistic velocities (> 5 m/s) measured against the last good point
-//   3. interpolate replacements for dropped points at their original timestamps
-// Typed points (hash marks, photos) are intentional and never filtered.
-
-const FILTER_MAX_ACCURACY_M = 50;
+//   1. SMOOTH each point toward its neighbours, in proportion to its own
+//      uncertainty — an accurate fix is left exactly where it is
+//   2. drop near-duplicate timestamps (< 1000 ms)
+//   3. drop unrealistic velocities (> 5 m/s) measured against the last good point
+//   4. interpolate replacements for dropped points at their original timestamps
+// Typed points (hash marks, photos) are intentional and never filtered or moved.
+//
+// Step 1 REPLACED a hard "drop anything worse than 50 m" gate (2026-08-30). A
+// fixed gate assumes a quality of GPS the device may simply not be providing,
+// and when it isn't, the gate deletes the run rather than cleaning it: Pussy
+// Printer on BMPH3 #2060 reported a median accuracy of 67 m, so 209 of his 312
+// points were rejected and 101 CONSECUTIVE rejects — 29.7 minutes, over which he
+// actually covered 4.45 km — were replaced by a single straight line 733 m long.
+// His distance read 5.26 km against a pack that ran 7.2–7.7 km.
+//
+// Smoothing is the right tool because it degrades gracefully: at full blend a
+// point is replaced by its neighbours' accuracy-weighted mean, in which its own
+// weight (1/acc) is negligible, so a hopeless fix self-corrects instead of
+// punching a hole. Measured across that run: Pussy Printer 5.26 -> 7.80 km with
+// 308 of 312 points kept (was 100), and all four clean tracks byte-identical.
 const FILTER_MAX_VELOCITY_MPS = 5;
 const FILTER_MIN_TIME_DELTA_MS = 1000;
+/** At or below this accuracy a fix is trusted completely and never moved. */
+const SMOOTH_TRUST_M = 20;
+/** At or above this accuracy a fix is replaced by its neighbourhood entirely. */
+const SMOOTH_FULL_M = 80;
+/** Neighbours either side included in the weighted mean. */
+const SMOOTH_WINDOW = 4;
 
 function pointIsTyped(p: TrackPoint): boolean {
   return !!(p.type && p.type.trim().length > 0);
@@ -326,14 +346,49 @@ function pointIsPhoto(p: TrackPoint): boolean {
   return !!parseMark(p.type)?.isPhoto;
 }
 
+/**
+ * Pulls each fix toward its neighbours in proportion to how uncertain it is:
+ * untouched at SMOOTH_TRUST_M or better, fully replaced by the neighbourhood
+ * mean at SMOOTH_FULL_M or worse. The mean is weighted by 1/accuracy, so nearby
+ * good fixes dominate. Typed points are never moved — a mark belongs exactly
+ * where the hasher dropped it.
+ */
+function smoothByUncertainty(points: TrackPoint[]): TrackPoint[] {
+  return points.map((p, i) => {
+    if (pointIsTyped(p)) return p;
+    const blend = Math.max(
+      0,
+      Math.min(1, (p.acc - SMOOTH_TRUST_M) / (SMOOTH_FULL_M - SMOOTH_TRUST_M)),
+    );
+    if (blend <= 0) return p;
+    let sw = 0;
+    let sLat = 0;
+    let sLng = 0;
+    const from = Math.max(0, i - SMOOTH_WINDOW);
+    const to = Math.min(points.length - 1, i + SMOOTH_WINDOW);
+    for (let j = from; j <= to; j++) {
+      if (pointIsTyped(points[j])) continue;
+      const w = 1 / Math.max(5, points[j].acc);
+      sw += w;
+      sLat += points[j].lat * w;
+      sLng += points[j].lng * w;
+    }
+    if (sw === 0) return p;
+    return {
+      ...p,
+      lat: p.lat * (1 - blend) + (sLat / sw) * blend,
+      lng: p.lng * (1 - blend) + (sLng / sw) * blend,
+    };
+  });
+}
+
 function evaluatePointQuality(points: TrackPoint[]): boolean[] {
   const quality = points.map(() => true);
 
-  // Pass 1: accuracy + de-duplication by time delta against the raw previous point.
+  // Pass 1: de-duplication by time delta against the previous point.
   for (let i = 0; i < points.length; i++) {
     const p = points[i];
     if (pointIsTyped(p)) continue; // never filter intentional marks
-    if (p.acc > FILTER_MAX_ACCURACY_M) { quality[i] = false; continue; }
     if (i > 0 && p.timestampMs - points[i - 1].timestampMs < FILTER_MIN_TIME_DELTA_MS) {
       quality[i] = false;
     }
@@ -403,21 +458,25 @@ function mergeByTimestamp(a: TrackPoint[], b: TrackPoint[]): TrackPoint[] {
 
 function filterTrackPoints(points: TrackPoint[]): TrackPoint[] {
   if (points.length < 2) return points;
-  const quality = evaluatePointQuality(points);
+  // Velocity and interpolation both work on the SMOOTHED positions: a noisy fix
+  // that has been pulled back into line no longer reads as an impossible sprint,
+  // so it survives instead of being dropped and re-invented.
+  const smoothed = smoothByUncertainty(points);
+  const quality = evaluatePointQuality(smoothed);
   if (quality.filter(Boolean).length < 2) return points;
 
   const out: TrackPoint[] = [];
   let lastGood: number | null = null;
-  for (let i = 0; i < points.length; i++) {
+  for (let i = 0; i < smoothed.length; i++) {
     if (!quality[i]) continue;
     if (lastGood !== null && i > lastGood + 1) {
       // Replace the dropped points between two good ones with interpolated positions.
-      const start = points[lastGood];
-      const end = points[i];
+      const start = smoothed[lastGood];
+      const end = smoothed[i];
       const span = end.timestampMs - start.timestampMs;
       if (span > 0) {
         for (let j = lastGood + 1; j < i; j++) {
-          const bad = points[j];
+          const bad = smoothed[j];
           const ratio = Math.min(1, Math.max(0, (bad.timestampMs - start.timestampMs) / span));
           out.push({
             lat: start.lat + (end.lat - start.lat) * ratio,
@@ -429,7 +488,7 @@ function filterTrackPoints(points: TrackPoint[]): TrackPoint[] {
         }
       }
     }
-    out.push(points[i]);
+    out.push(smoothed[i]);
     lastGood = i;
   }
   return out;

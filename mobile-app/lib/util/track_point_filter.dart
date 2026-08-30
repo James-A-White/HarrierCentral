@@ -8,20 +8,19 @@ import 'package:latlong2/latlong.dart' as latlng;
 /// - Sudden velocity changes (detecting unrealistic jumps)
 /// - Time gaps between points (deduplication)
 ///
-/// Multi-stage filtering approach:
-/// 1. Pass 1: Filter poor accuracy AND duplicate timestamps
-///    - Removes GPS acquisition/loss artifacts (>15m accuracy)
-///    - Removes duplicate points (<1000ms apart) that cause velocity spikes
-/// 2. Pass 2: Filter unrealistic velocities (>5 m/s)
-///    - Checked only between consecutive GOOD points
-///    - Prevents cascading failures from already-filtered bad points
-/// 3. Interpolation: Replaces filtered points while preserving timestamps
-///    - Maintains track continuity
+/// Multi-stage approach:
+/// 1. Smooth each fix toward its neighbours in proportion to its own
+///    uncertainty — an accurate fix is left exactly where it is, a hopeless one
+///    is replaced by its neighbourhood's accuracy-weighted mean
+/// 2. Pass 1: drop near-duplicate timestamps (<1000ms) that cause velocity spikes
+/// 3. Pass 2: drop unrealistic velocities (>5 m/s), measured between consecutive
+///    GOOD points so one bad fix cannot cascade
+/// 4. Interpolate replacements for dropped points, preserving their timestamps
 ///
-/// Key improvements based on real-world data analysis:
-/// - Stricter accuracy threshold (15m vs 20m) filters GPS signal issues
-/// - Deduplication prevents timing bugs causing 100+ m/s calculations
-/// - Two-pass approach prevents one bad point from cascading failures
+/// Smoothing replaced a hard accuracy gate on 2026-08-30 — see
+/// [filterAndInterpolate] for the run that forced it. Photo marks are held aside
+/// for the whole pipeline; every other typed mark is left exactly where the
+/// hasher dropped it.
 class TrackPointFilter {
   TrackPointFilter({
     this.maxAccuracyMeters = 50.0,
@@ -29,14 +28,23 @@ class TrackPointFilter {
     this.minTimeDeltaMs = 1000,
   });
 
-  /// Maximum acceptable GPS accuracy in meters.
-  /// Points with accuracy > this value are considered unreliable.
-  /// Raised to 50m to admit low-power-mode GPS (typical iOS low-power
-  /// accuracy is 30–50m). The velocity filter (5 m/s) is the real guard
-  /// against bad jumps; a tight accuracy threshold was redundant and caused
-  /// near-total track loss for users on Low Power Mode.
+  /// DEPRECATED as a gate — retained so existing callers still compile.
+  ///
+  /// Dropping every fix worse than this was replaced by uncertainty-weighted
+  /// smoothing on 2026-08-30. A fixed gate assumes a quality of GPS the device
+  /// may simply not be providing, and when it isn't the gate deletes the run
+  /// rather than cleaning it. See [filterAndInterpolate].
   /// Good GPS: ~5m, Balanced: ~10-15m, Low Power: ~30-50m, Indoor/poor: >50m
   final double maxAccuracyMeters;
+
+  /// At or below this accuracy a fix is trusted completely and never moved.
+  static const double smoothTrustMeters = 20.0;
+
+  /// At or above this accuracy a fix is replaced by its neighbourhood entirely.
+  static const double smoothFullMeters = 80.0;
+
+  /// Neighbours either side included in the weighted mean.
+  static const int smoothWindow = 4;
 
   /// Maximum realistic velocity in meters per second.
   /// ~5 m/s = ~18 km/h = ~11 mph (fast running)
@@ -69,9 +77,22 @@ class TrackPointFilter {
   /// them and the phantom out-and-back is drawn anyway.
   ///
   /// Kilty, BMPH3 #2060 (2026-08-30): GPS was clean — accuracy p50 8 m, max
-  /// 17.6 m, nothing near the 50 m threshold — yet one photo 515 m off-trail
-  /// discarded 25 good fixes and added 1.09 km of phantom trail (8.83 vs
-  /// 7.74 km). Mirrored in public-web `lib/packtrack.ts`.
+  /// 17.6 m — yet one photo 515 m off-trail discarded 25 good fixes and added
+  /// 1.09 km of phantom trail (8.83 vs 7.74 km).
+  ///
+  /// Points are then SMOOTHED toward their neighbours in proportion to their own
+  /// uncertainty, replacing the old "drop anything worse than [maxAccuracyMeters]"
+  /// gate. Pussy Printer on the same run reported a median accuracy of 67 m, so
+  /// 209 of his 312 points were rejected and 101 CONSECUTIVE rejects — 29.7
+  /// minutes, over which he actually covered 4.45 km — became a single straight
+  /// line 733 m long; his distance read 5.26 km against a pack that ran
+  /// 7.2–7.7 km. Smoothing degrades gracefully instead: at full blend a fix is
+  /// replaced by its neighbours' accuracy-weighted mean, in which its own weight
+  /// (1/acc) is negligible, so a hopeless fix self-corrects rather than punching
+  /// a hole. Measured: 5.26 -> 7.80 km, 308 of 312 points kept (was 100), and
+  /// all four clean tracks on that run byte-identical.
+  ///
+  /// Mirrored in public-web `lib/packtrack.ts` — keep the two in step.
   List<TrackPoint> filterAndInterpolate(List<TrackPoint> points) {
     if (points.length < 2) return points;
     if (points.any(_isPhotoPoint)) {
@@ -86,11 +107,61 @@ class TrackPointFilter {
   List<TrackPoint> _filterTrack(List<TrackPoint> points) {
     if (points.length < 2) return points;
 
-    // Step 1: Mark bad points
-    final pointQuality = _evaluatePointQuality(points);
+    // Step 1: Smooth by uncertainty. Velocity and interpolation then work on the
+    // smoothed positions, so a noisy fix pulled back into line no longer reads
+    // as an impossible sprint and survives instead of being re-invented.
+    final smoothed = _smoothByUncertainty(points);
 
-    // Step 2: Filter and interpolate
-    return _filterAndInterpolatePoints(points, pointQuality);
+    // Step 2: Mark bad points
+    final pointQuality = _evaluatePointQuality(smoothed);
+
+    // Step 3: Filter and interpolate
+    return _filterAndInterpolatePoints(smoothed, pointQuality);
+  }
+
+  /// Pulls each fix toward its neighbours in proportion to how uncertain it is:
+  /// untouched at [smoothTrustMeters] or better, fully replaced by the
+  /// neighbourhood mean at [smoothFullMeters] or worse. The mean is weighted by
+  /// 1/accuracy so nearby good fixes dominate. Typed points are never moved — a
+  /// mark belongs exactly where the hasher dropped it.
+  List<TrackPoint> _smoothByUncertainty(List<TrackPoint> points) {
+    final List<TrackPoint> out = <TrackPoint>[];
+    for (int i = 0; i < points.length; i++) {
+      final TrackPoint p = points[i];
+      if (p.type != null && p.type!.isNotEmpty) {
+        out.add(p);
+        continue;
+      }
+      final double blend = ((p.acc - smoothTrustMeters) /
+              (smoothFullMeters - smoothTrustMeters))
+          .clamp(0.0, 1.0);
+      if (blend <= 0) {
+        out.add(p);
+        continue;
+      }
+      double sw = 0, sLat = 0, sLng = 0;
+      final int from = (i - smoothWindow) < 0 ? 0 : i - smoothWindow;
+      final int to = (i + smoothWindow) >= points.length
+          ? points.length - 1
+          : i + smoothWindow;
+      for (int j = from; j <= to; j++) {
+        final TrackPoint n = points[j];
+        if (n.type != null && n.type!.isNotEmpty) continue;
+        final double w = 1 / (n.acc < 5 ? 5 : n.acc);
+        sw += w;
+        sLat += n.lat * w;
+        sLng += n.lng * w;
+      }
+      if (sw == 0) {
+        out.add(p);
+        continue;
+      }
+      out.add(p.copyWith(
+        lat: p.lat * (1 - blend) + (sLat / sw) * blend,
+        lng: p.lng * (1 - blend) + (sLng / sw) * blend,
+      ));
+    }
+    return out;
   }
 
   static bool _isPhotoPoint(TrackPoint p) {
@@ -124,7 +195,7 @@ class TrackPointFilter {
   List<bool> _evaluatePointQuality(List<TrackPoint> points) {
     final quality = List<bool>.filled(points.length, true);
 
-    // First pass: check accuracy and time deltas
+    // First pass: de-duplicate near-identical timestamps.
     for (int i = 0; i < points.length; i++) {
       final point = points[i];
 
@@ -132,13 +203,7 @@ class TrackPointFilter {
       // actions — never filter them regardless of accuracy or timing.
       if (point.type != null && point.type!.isNotEmpty) continue;
 
-      // Check 1: GPS accuracy
-      if (point.acc > maxAccuracyMeters) {
-        quality[i] = false;
-        continue;
-      }
-
-      // Check 2: Time delta against previous point (deduplication)
+      // Time delta against previous point (deduplication)
       // Analysis showed timing bugs create 0ms, 1ms, 4ms deltas causing
       // extreme velocity calculations (e.g., 277 m/s from 4ms delta).
       // Filtering these prevents false velocity spikes in Pass 2.

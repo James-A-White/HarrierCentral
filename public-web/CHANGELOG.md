@@ -1,5 +1,23 @@
 # public-web Changelog
 
+## 0.21.40 (2026-08-30)
+
+- **A phone with poor GPS no longer loses half its run.** The noise filter used
+  to drop any fix worse than 50 m outright. That assumes a quality of GPS the
+  device may simply not be providing, and when it isn't, the filter deletes the
+  run instead of cleaning it: one runner on the trail that exposed this had a
+  median accuracy of 67 m, so two thirds of his points were rejected — including
+  **101 in a row covering 29.7 minutes, over which he had actually run 4.45 km**,
+  replaced by a single straight line 733 m long. His distance read 5.26 km
+  against a pack that ran 7.2–7.7 km.
+
+  Fixes are now nudged toward their neighbours in proportion to how uncertain
+  they are, rather than being thrown away: an accurate fix is left exactly where
+  it is, and a hopeless one is replaced by the accuracy-weighted average of the
+  fixes around it. His track came back at **7.80 km with 308 of 312 points kept**
+  (was 100), following the roads instead of cutting across them — and every
+  accurate track on the same run is byte-for-byte unchanged.
+
 ## 0.21.39 (2026-08-30)
 
 - **Trail marks now sit beneath the tracks on the spectator map too.** 0.21.37
