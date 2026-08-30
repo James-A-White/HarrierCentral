@@ -172,23 +172,28 @@ class TrailSlot {
   }
 
   static const List<TrailSlot> defaults = [
+    // Slots 1-5 are the permanent marks and mirror the portal's
+    // kFixedSlotPurposes (Check / False Trail / Drink Stop / Label / Caution).
+    // Label became permanent at slot 4 on 2026-08-30; the same change realigned
+    // 3 and 5, which had drifted from the fixed purposes when On Inn was
+    // removed. Keep this list and the portal's kDefaultTrailSlots identical.
     TrailSlot(slot: 1,  kind: 'glyph', glyphId: 'check',     name: 'Check'),
     TrailSlot(slot: 2,  kind: 'text',  text: 'FT',           name: 'False Trail'),
-    TrailSlot(slot: 3,  kind: 'text',  text: 'SC',           name: 'Short Cut'),
-    TrailSlot(slot: 4,  kind: 'text',  text: 'CB',           name: 'Checkback'),
-    TrailSlot(slot: 5,  kind: 'glyph', glyphId: 'whichyway', name: 'Whichy Way'),
-    TrailSlot(slot: 6,  kind: 'glyph', glyphId: 'fishhook',  name: 'Fish Hook'),
-    TrailSlot(slot: 7,  kind: 'glyph', glyphId: 'regroup',   name: 'Regroup'),
-    TrailSlot(slot: 8,  kind: 'glyph', glyphId: 'hashview',  name: 'Hash View'),
-    TrailSlot(slot: 9,  kind: 'glyph', glyphId: 'label',     name: 'Label',      action: 'addText'),
-    TrailSlot(slot: 10, kind: 'glyph', glyphId: 'drinkstop', name: 'Drink Stop'),
-    // Slot 11 was On Inn (action: endRun) — removed permanently 2026-08-15.
-    // Ending a run is the End Run button's job (which confirms first); a
-    // one-tap terminator in the marks grid cut live tracks by accident.
-    // The 'oninn' glyph stays in kTrailGlyphs so historical marks still
-    // render on maps.
-    TrailSlot(slot: 12, kind: 'glyph', glyphId: 'caution',   name: 'Caution',    action: 'addText'),
+    TrailSlot(slot: 3,  kind: 'glyph', glyphId: 'drinkstop', name: 'Drink Stop'),
+    TrailSlot(slot: 4,  kind: 'glyph', glyphId: 'label',     name: 'Label',      action: 'addText'),
+    TrailSlot(slot: 5,  kind: 'glyph', glyphId: 'caution',   name: 'Caution',    action: 'addText'),
+    // 6-12 are kennel-configurable.
+    TrailSlot(slot: 6,  kind: 'text',  text: 'SC',           name: 'Short Cut'),
+    TrailSlot(slot: 7,  kind: 'text',  text: 'CB',           name: 'Checkback'),
+    TrailSlot(slot: 8,  kind: 'glyph', glyphId: 'whichyway', name: 'Whichy Way'),
+    TrailSlot(slot: 9,  kind: 'glyph', glyphId: 'fishhook',  name: 'Fish Hook'),
+    TrailSlot(slot: 10, kind: 'glyph', glyphId: 'regroup',   name: 'Regroup'),
+    TrailSlot(slot: 11, kind: 'glyph', glyphId: 'hashview',  name: 'Hash View'),
+    // Slot 12 intentionally empty. Slot 11 was On Inn until 2026-08-15 —
+    // removed permanently; ending a run is the End Run button's job. The
+    // 'oninn' glyph stays in kTrailGlyphs so historical marks still render.
   ];
+
 }
 
 extension KennelsModelTrailSlots on KennelsModel {
