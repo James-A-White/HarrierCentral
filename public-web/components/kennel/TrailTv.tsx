@@ -42,6 +42,7 @@ const REPLAY_MS_PER_KM = 60_000; // 1 minute of wall time per km of trail
 const REPLAY_HOLD_MS = 6_000;
 const TAKEOVER_LIVE_MS = 10_000;  // fresh-from-trail photo, live mode
 const TAKEOVER_REPLAY_MS = 4_000;  // synced photo on the replay timeline
+const PRELOAD_AHEAD = 4;          // photos warmed into cache ahead of the takeover
 const TAKEOVER_OUT_MS = 450;       // zoom-back-out exit animation (matches .closing CSS)
 const CALLOUT_MS = 6_000;
 const ACTIVE_WINDOW_MS = 10 * 60_000; // "on trail" = a point in the last 10 min
@@ -568,6 +569,37 @@ export default function TrailTv({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [replayClock, mode, showTakeover]);
 
+  // ── Photo preloading ─────────────────────────────────────────────────────────
+  // The takeover <img> only began fetching its 1920px source when it mounted,
+  // so on a slow link the screen sat empty for much of a 4s replay hold — the
+  // photo often appeared just as it was dismissed. Warm the next few upcoming
+  // photos into the browser cache instead, so the takeover paints instantly.
+  //
+  // In replay the queue is ordered by markTs, so "upcoming" is simply the next
+  // few past the clock; in live the newest arrivals are the ones about to fire.
+  // The ref makes this idempotent, so re-running on every clock tick is cheap.
+  const preloadedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (photos.length === 0) return;
+    const clock = replayClock;
+    const upcoming =
+      mode === "replay" && clock != null
+        ? photos
+            .filter((p) => p.markTs == null || p.markTs > clock)
+            .slice(0, PRELOAD_AHEAD)
+        // Replay not started (or live): warm the front of the queue / the
+        // newest arrivals, which are the ones about to take over.
+        : mode === "replay"
+          ? photos.slice(0, PRELOAD_AHEAD)
+          : photos.slice(-PRELOAD_AHEAD);
+    for (const p of upcoming) {
+      if (preloadedRef.current.has(p.photoId)) continue;
+      preloadedRef.current.add(p.photoId);
+      const img = new window.Image();
+      img.src = photoSrc(p.url, 1920);
+    }
+  }, [photos, replayClock, mode]);
+
   // ── Ticker stats ─────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const total = tracks.reduce((s, t) => s + t.distanceMeters, 0);
@@ -857,7 +889,11 @@ export default function TrailTv({
           className={`tv-takeover${takeoverClosing ? " closing" : ""}`}
           onClick={() => dismissTakeover(takeover.photoId)}
         >
-          <div className="tv-takeover-badge">📸 FRESH FROM TRAIL</div>
+          {/* "Fresh from trail" only means something live — in replay the
+              photo is minutes or hours old, so the badge is just noise. */}
+          {mode === "live" && (
+            <div className="tv-takeover-badge">📸 FRESH FROM TRAIL</div>
+          )}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={photoSrc(takeover.url, 1920)}
