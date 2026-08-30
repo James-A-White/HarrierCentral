@@ -51,6 +51,32 @@ final class PhoneWatchBridge: NSObject {
                 // No paired watch / app not installed — not an error worth surfacing.
                 result(false)
             }
+        // Mark-button appearance (kennel glyph/text for Check and False).
+        // Sent ONCE per session, not on the 1 Hz state push: the PNGs are a
+        // few KB each and applicationContext is latest-wins, so bundling them
+        // with distance/elapsed would re-send them every second.
+        // transferUserInfo is queued and guaranteed, so it still arrives if
+        // the watch app is closed or out of range when the run starts.
+        case "updateMarkButtons":
+            guard WCSession.default.activationState == .activated,
+                  let args = call.arguments as? [String: Any] else {
+                result(false)
+                return
+            }
+            // Flutter hands byte arrays over as FlutterStandardTypedData;
+            // WCSession only accepts property-list types, so unwrap to Data.
+            var payload: [String: Any] = [:]
+            for (k, v) in args {
+                if let typed = v as? FlutterStandardTypedData {
+                    payload[k] = typed.data
+                } else {
+                    payload[k] = v
+                }
+            }
+            payload["kind"] = "markButtons"
+            WCSession.default.transferUserInfo(payload)
+            result(true)
+
         case "isPaired":
             result(WCSession.default.isPaired && WCSession.default.isWatchAppInstalled)
         default:

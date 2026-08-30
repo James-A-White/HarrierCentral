@@ -28,8 +28,12 @@ struct ContentView: View {
                     // individually — the old ScrollView bug was about row
                     // positioning, which List owns correctly.
                     buttonRow(
-                        ("Check", "circle.circle", .orange, { connectivity.sendMark("check") }),
-                        ("False", "xmark.circle", .red, { connectivity.sendMark("falseTrail") })
+                        (connectivity.checkLabel ?? "Check", "circle.circle", .orange,
+                         { connectivity.sendMark("check") }),
+                        (connectivity.falseLabel ?? "False", "xmark.circle", .red,
+                         { connectivity.sendMark("falseTrail") }),
+                        leftGlyph: connectivity.checkGlyph, leftText: connectivity.checkText,
+                        rightGlyph: connectivity.falseGlyph, rightText: connectivity.falseText
                     )
                     buttonRow(
                         ("I'm Lost", "location.north.line", .blue, { showLostView = true }),
@@ -71,20 +75,52 @@ struct ContentView: View {
 
     /// A List row holding two side-by-side mark buttons — the 2×2 grid look,
     /// with List doing the scrolling.
-    private func buttonRow(_ left: ActionSpec, _ right: ActionSpec) -> some View {
+    private func buttonRow(
+        _ left: ActionSpec,
+        _ right: ActionSpec,
+        leftGlyph: Data? = nil, leftText: String? = nil,
+        rightGlyph: Data? = nil, rightText: String? = nil
+    ) -> some View {
         HStack(spacing: 6) {
-            gridButton(left)
-            gridButton(right)
+            gridButton(left, glyph: leftGlyph, markText: leftText)
+            gridButton(right, glyph: rightGlyph, markText: rightText)
         }
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
     }
 
-    private func gridButton(_ spec: ActionSpec) -> some View {
+    /// [glyph]/[markText] carry the kennel's own mark for this button, sent by
+    /// the phone from its configured trail slots. A glyph wins, then a short
+    /// text mark (e.g. "FT"), and only then the built-in SF Symbol — so a
+    /// watch that has never received them, or is showing a kennel with no
+    /// matching slot, looks exactly as it did before.
+    private func gridButton(
+        _ spec: ActionSpec,
+        glyph: Data? = nil,
+        markText: String? = nil
+    ) -> some View {
         Button(action: spec.action) {
             VStack(spacing: 2) {
-                Image(systemName: spec.icon)
-                    .font(.title3)
+                Group {
+                    if let glyph, let img = UIImage(data: glyph) {
+                        // Mono glyphs are dark silhouettes with alpha, so
+                        // template rendering tints them to the button colour.
+                        Image(uiImage: img)
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 22)
+                    } else if let markText, !markText.trimmingCharacters(
+                        in: .whitespaces).isEmpty {
+                        Text(markText)
+                            .font(.system(size: 17, weight: .heavy))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                    } else {
+                        Image(systemName: spec.icon)
+                            .font(.title3)
+                    }
+                }
                 Text(spec.label)
                     .font(.footnote)
                     .lineLimit(1)

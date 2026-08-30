@@ -91,6 +91,7 @@ class WatchBridgeService extends GetxService {
     _eventName = eventName;
     _sessionSlots = slots;
     _startedAt = startedAt;
+    unawaited(_sendMarkButtons(slots));
     _locationService?.typedPointListeners[this] = _onTypedPoint;
     _pushTimer ??= Timer.periodic(const Duration(seconds: 1), (_) => _tick());
     // Only tick immediately when tracking is already on. The start flow
@@ -288,6 +289,51 @@ class WatchBridgeService extends GetxService {
     } catch (e) {
       BootLogger.logError('[WatchBridge] service-level mark failed', e, null);
       return {'ok': false, 'why': 'gps: $e'};
+    }
+  }
+
+  /// Tells the watch what its Check and False buttons should LOOK like, using
+  /// this kennel's configured slots — the same slots `_resolveSlot` already
+  /// uses when recording the mark, so wrist and phone agree.
+  ///
+  /// Sent once per session over `transferUserInfo`, never on the 1 Hz state
+  /// push: the glyph PNGs are a few KB each, and applicationContext is
+  /// latest-wins, so including them would re-send the images every second.
+  /// transferUserInfo is queued and guaranteed, so it still lands if the watch
+  /// app is shut or out of range when the run starts.
+  ///
+  /// A slot can be a glyph OR a short text (e.g. "FT"), so both are sent; the
+  /// watch prefers the glyph, falls back to the text, then to its built-in SF
+  /// Symbol. Only BUNDLED glyphs travel — an id resolved from blob storage has
+  /// no local asset, and the watch's own fallback covers it.
+  Future<void> _sendMarkButtons(List<TrailSlot> slots) async {
+    if (!_supported) return;
+    final payload = <String, Object?>{};
+    for (final entry in {'check': 'check', 'false': 'falseTrail'}.entries) {
+      final slot = _resolveSlot(slots, entry.value);
+      if (slot == null) continue;
+      payload['${entry.key}Label'] = slot.name;
+      if (slot.kind == 'text') {
+        payload['${entry.key}Text'] = slot.text;
+        continue;
+      }
+      final glyph = slot.glyph;
+      if (glyph == null) continue;
+      try {
+        final bytes = await rootBundle.load(glyph.assetPath);
+        payload['${entry.key}Glyph'] = bytes.buffer.asUint8List();
+        payload['${entry.key}Fixed'] = glyph.fixed;
+      } catch (e) {
+        // Missing asset is not worth failing the session over — the watch
+        // keeps its built-in symbol.
+        BootLogger.logError('[WatchBridge] glyph load failed', e, null);
+      }
+    }
+    if (payload.isEmpty) return;
+    try {
+      await _channel.invokeMethod<bool>('updateMarkButtons', payload);
+    } catch (e) {
+      BootLogger.logError('[WatchBridge] updateMarkButtons failed', e, null);
     }
   }
 

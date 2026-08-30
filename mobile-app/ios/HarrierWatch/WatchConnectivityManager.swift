@@ -39,18 +39,60 @@ final class WatchConnectivityManager: NSObject, ObservableObject {
     @Published var sumOtherMarks = 0
     @Published var sumPhotos = 0
 
+    // How the Check / False buttons should look, taken from the kennel's
+    // configured trail slots. Arrives once per session via transferUserInfo
+    // (PhoneWatchBridge "updateMarkButtons") rather than on the 1 Hz state
+    // push — the PNGs would otherwise be re-sent every second.
+    // Persisted so a watch app relaunched mid-run keeps the right marks
+    // instead of reverting to the built-in symbols until the next session.
+    @Published var checkGlyph: Data?
+    @Published var checkText: String?
+    @Published var checkLabel: String?
+    @Published var falseGlyph: Data?
+    @Published var falseText: String?
+    @Published var falseLabel: String?
+
     // Lost-compass vector (filled by lostQuery replies while LostView shows).
     @Published var lostBearing: Double?
     @Published var lostDistanceM: Double?
     @Published var lostName: String?
     @Published var lostMessage: String?
 
+    private static let kMarkButtonsKey = "hc.markButtons"
+
     private override init() {
         super.init()
+        restoreMarkButtons()
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         session.delegate = self
         session.activate()
+    }
+
+    // MARK: - Mark-button appearance
+
+    fileprivate func applyMarkButtons(_ info: [String: Any], persist: Bool) {
+        DispatchQueue.main.async {
+            self.checkGlyph = info["checkGlyph"] as? Data
+            self.checkText  = info["checkText"]  as? String
+            self.checkLabel = info["checkLabel"] as? String
+            self.falseGlyph = info["falseGlyph"] as? Data
+            self.falseText  = info["falseText"]  as? String
+            self.falseLabel = info["falseLabel"] as? String
+        }
+        guard persist else { return }
+        var store: [String: Any] = [:]
+        for k in ["checkGlyph", "checkText", "checkLabel",
+                  "falseGlyph", "falseText", "falseLabel"] {
+            if let v = info[k] { store[k] = v }
+        }
+        UserDefaults.standard.set(store, forKey: Self.kMarkButtonsKey)
+    }
+
+    private func restoreMarkButtons() {
+        guard let store = UserDefaults.standard
+            .dictionary(forKey: Self.kMarkButtonsKey) else { return }
+        applyMarkButtons(store, persist: false)
     }
 
     // MARK: - Commands
@@ -144,5 +186,15 @@ extension WatchConnectivityManager: WCSessionDelegate {
         didReceiveApplicationContext applicationContext: [String: Any]
     ) {
         apply(applicationContext)
+    }
+
+    /// Mark-button appearance (see PhoneWatchBridge "updateMarkButtons").
+    /// Queued and guaranteed, so this can land while the app is closed.
+    func session(
+        _ session: WCSession,
+        didReceiveUserInfo userInfo: [String: Any] = [:]
+    ) {
+        guard userInfo["kind"] as? String == "markButtons" else { return }
+        applyMarkButtons(userInfo, persist: true)
     }
 }
