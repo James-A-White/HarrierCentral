@@ -1,5 +1,27 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.2+1317 (2026-08-30) — iOS TestFlight + Android internal
+
+### Fixes
+- **A photo no longer bends your track or inflates your distance.** A photo
+  taken by someone else sits where THEY were standing, and the noise filter was
+  treating it as your last known position — so good GPS fixes just after it were
+  thrown away as impossibly fast and replaced with points strung out towards the
+  photo. On the run that exposed it this added 1.09 km of trail that was never
+  run.
+- **Trail marks no longer cover the track.** Marks are drawn beneath the trail
+  line on the run map, matching the big-screen Trail-TV wall.
+- **The live run list refreshes again on an incoming message.** A push arriving
+  while the app was open, without a message type, crashed the dispatcher before
+  it reached the run list. Badge counts still updated, which is why this looked
+  like it was working.
+
+### Changes
+- **Photo approval is its own permission.** Religious Advisors no longer approve
+  photos by default; the approval badge only appears for people who can actually
+  use it (GM, Vice GM, Hash Flash, Webmeister, or the Photo Approver grant).
+
+
 ## 3.0.2+1316 (2026-08-30) — iOS TestFlight + Android internal
 
 ### New Features
