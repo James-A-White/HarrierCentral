@@ -63,11 +63,22 @@ BEGIN
 
         -- -------------------------------------------------------------
         -- 1. LOG.GeneralLog
+        --
+        -- Resolve the id boundary ONCE, then delete by the clustered key.
+        -- Deleting on [Timestamp] directly seeks the nonclustered index and
+        -- then does a bookmark lookup per row - random IO that pegged DTU at
+        -- ~90-100% and ran at only ~10k rows/min. idx is IDENTITY so it rises
+        -- with insert time; ranging on it is a sequential clustered scan.
+        -- The [Timestamp] predicate is KEPT as a second filter so a
+        -- hypothetical backdated insert can never be deleted early.
         -- -------------------------------------------------------------
-        WHILE (@rows > 0 AND @batches < @MaxBatches)
+        DECLARE @maxIdx INT;
+        SELECT @maxIdx = MAX(idx) FROM LOG.GeneralLog WHERE [Timestamp] < @cutoff;
+
+        WHILE (@rows > 0 AND @batches < @MaxBatches AND @maxIdx IS NOT NULL)
         BEGIN
             DELETE TOP (@BatchSize) FROM LOG.GeneralLog
-            WHERE [Timestamp] < @cutoff;
+            WHERE idx <= @maxIdx AND [Timestamp] < @cutoff;
 
             SET @rows = @@ROWCOUNT;
             SET @glDeleted = @glDeleted + @rows;
@@ -98,10 +109,14 @@ BEGIN
         SET @rows = 1;
         SET @batches = 0;
 
-        WHILE (@rows > 0 AND @batches < @MaxBatches)
+        DECLARE @maxJobId INT;
+        SELECT @maxJobId = MAX(IntegrationJobId) FROM HC.IntegrationJob WHERE startedAt < @cutoff;
+
+        WHILE (@rows > 0 AND @batches < @MaxBatches AND @maxJobId IS NOT NULL)
         BEGIN
             DELETE TOP (@BatchSize) FROM HC.IntegrationJob
-            WHERE startedAt < @cutoff
+            WHERE IntegrationJobId <= @maxJobId
+              AND startedAt < @cutoff
               AND IntegrationJobId NOT IN (SELECT IntegrationJobId FROM #KeepJobs);
 
             SET @rows = @@ROWCOUNT;
