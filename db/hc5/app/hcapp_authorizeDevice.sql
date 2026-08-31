@@ -137,7 +137,7 @@ BEGIN
 			@errorId as errorId,
 			cast (5 as int) as errorType 
 			,'This user has been removed' as errorTitle
-			,'The user account associated with ('+REPLACE(@scanText,'URC:','')+') for "'+@hasherName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at connect@harriercentral.com for assistance.' as errorUserMessage
+			,'The user account associated with ('+REPLACE(@scanText,'URC:','')+') for "'+@hasherName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at harriercentral@gmail.com for assistance.' as errorUserMessage
 			,'This is a standard error that is anticipated and does not require debugging' as debugMessage
 			,OBJECT_NAME(@@PROCID) as errorProc
 			RETURN

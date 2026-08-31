@@ -50,7 +50,7 @@ BEGIN
 		cast (2 as int) as errorType 
 		,'Null or empty userId' as errorTitle
 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
-		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 		RETURN
 	END
@@ -81,7 +81,7 @@ BEGIN
 			cast (2 as int) as errorType 
 			,'Mismatched eventIds' as errorTitle
 			,'The HEM ID EventId and EventId parameters passed to ' + OBJECT_NAME(@@PROCID) + ' do not match' as errorUserMessage
-			,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+			,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 			,OBJECT_NAME(@@PROCID) as errorProc
 			RETURN
 		END
@@ -99,7 +99,7 @@ BEGIN
 		cast (2 as int) as errorType 
 		,'Null or empty eventId' as errorTitle
 		,'A null or empty value was passed as the eventId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
-		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 		RETURN
 	END
@@ -116,7 +116,7 @@ BEGIN
 		cast (3 as int) as errorType 
 		,'Invalid access token' as errorTitle
 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
-		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 		RETURN
 	END
@@ -262,7 +262,7 @@ BEGIN
 	ELSE 
 		BEGIN
 			SET @serverMessage = 'The RSVP status has not changed for ' + coalesce(@hasherName,'User')
-			--SET @serverMessage = 'Unknown status. Please contact us at connect@harriercentral.com'
+			--SET @serverMessage = 'Unknown status. Please contact us at harriercentral@gmail.com'
 		END
 
 	DECLARE @newHareState smallint

@@ -38,7 +38,7 @@ BEGIN
 		cast (2 as int) as errorType 
 		,'Null or empty userId' as errorTitle
 		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
-		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 		RETURN
 	END
@@ -54,7 +54,7 @@ BEGIN
 		@errorId as errorId,
 		cast (1 as int) as errorType 
 		,'Invalid access token' as errorTitle
-		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 		RETURN

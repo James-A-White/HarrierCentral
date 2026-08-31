@@ -35,7 +35,7 @@ BEGIN
 		cast (2 as int) as errorType 
 		,@errorTitle as errorTitle
 		,'Null or empty value was passed as the deviceId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
-		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 	END
 
@@ -61,7 +61,7 @@ BEGIN
 		cast (2 as int) as errorType 
 		,@errorTitle as errorTitle
 		,'@hasherId was not found by'+ OBJECT_NAME(@@PROCID) as errorUserMessage
-		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 	END
 
@@ -77,7 +77,7 @@ BEGIN
 		cast (3 as int) as errorType 
 		,@errorTitle as errorTitle
 		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
-		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 		SET @isError = 1
 	END

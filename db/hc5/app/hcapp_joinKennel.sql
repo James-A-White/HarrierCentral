@@ -57,7 +57,7 @@
  		cast (2 as int) as errorType 
  		,'Null or empty userId' as errorTitle
  		,'A null or empty value was passed as the userId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+ 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
  		,OBJECT_NAME(@@PROCID) as errorProc
  		RETURN
  	END
@@ -74,7 +74,7 @@
  		cast (2 as int) as errorType 
  		,'Null or empty kennelId' as errorTitle
  		,'A null or empty value was passed as the kennelId to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+ 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
  		,OBJECT_NAME(@@PROCID) as errorProc
  		RETURN
  	END
@@ -91,7 +91,7 @@
  		cast (3 as int) as errorType 
  		,'Invalid access token' as errorTitle
  		,'An invalid access token was passed to '+ OBJECT_NAME(@@PROCID) as errorUserMessage
- 		,'This error should not occur, please contact us at connect@harriercentral.com' as debugMessage
+ 		,'This error should not occur, please contact us at harriercentral@gmail.com' as debugMessage
  		,OBJECT_NAME(@@PROCID) as errorProc
  		RETURN
  	END

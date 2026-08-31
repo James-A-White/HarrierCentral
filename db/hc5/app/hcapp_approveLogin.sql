@@ -95,7 +95,7 @@ BEGIN
 		@errorId as errorId,
 		cast (5 as int) as errorType 
 		,'This user has been removed' as errorTitle
-		,'The user account for "'+@userName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at connect@harriercentral.com for assistance.' as errorUserMessage
+		,'The user account for "'+@userName+'" has been removed from our servers.~~Please attempt to have a new invite code emailed to you by pressing the ''Email me a new invite code'' text on this screen.~~You can also contact your Kennel''s Harrier Central admin for a new invite code or contact us at harriercentral@gmail.com for assistance.' as errorUserMessage
 		,'This is a standard error that is anticipated and does not require debugging' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 		RETURN
@@ -111,7 +111,7 @@ BEGIN
 		@errorId as errorId,
 		cast (1 as int) as errorType 
 		,'Invalid access token' as errorTitle
-		,'A security safety feature has been activated. Contact the Harrier Central support team at connect@harriercentral.com to resolve the issue.' as errorUserMessage
+		,'A security safety feature has been activated. Contact the Harrier Central support team at harriercentral@gmail.com to resolve the issue.' as errorUserMessage
 		,'This could be an indication that there is an error in the code. It can also be a sign of potential malicious activity.' as debugMessage
 		,OBJECT_NAME(@@PROCID) as errorProc
 		
