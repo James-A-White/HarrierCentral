@@ -109,6 +109,59 @@ naming — drop it if that project is dormant.
 
 ---
 
+---
+
+## Actions taken — 2026-08-31
+
+| # | Action | Status |
+|---|---|---|
+| 1 | `hcwebapi-app-service-plan` (empty B1) | **Gone.** Not deleted by us — it was present at the start of the session and absent an hour later. Azure auto-deletes App Service plans left with zero sites. Verified `ResourceNotFound`. |
+| 3 | `HCWeb` / `Harrier` plan **B1 → F1 Free** | **Done**, in place of deletion. Site kept, custom domain given up. |
+
+### What was changed on HCWeb, in order
+
+F1 Free does not support custom domains at all, so the binding and its cert had
+to come off before the plan would scale:
+
+1. `alwaysOn` **true → false** (unsupported on Free)
+2. Hostname binding `admin.harriercentral.com` **removed**
+3. App Service Managed Certificate `admin.harriercentral.com-HCWeb` (RG `harrier`) **deleted**
+4. `use32BitWorkerProcess` **false → true** — the scale-down was rejected until
+   this changed: *"Cannot update the site 'HCWeb' because it uses x64 worker
+   process which is not allowed in the target compute mode."* Free/Shared are
+   32-bit only.
+5. Plan `Harrier` **B1 Basic → F1 Free**
+
+### Verified after
+
+- `https://hcweb.azurewebsites.net/` → 302 → `/Account/Login` → **200**, renders
+  `<title>Login - HcWeb</title>`. Same behaviour as before the change.
+- `https://admin.harriercentral.com/` → TLS failure (curl exit 60). Expected:
+  the cert is gone.
+
+### Still outstanding
+
+- **The `admin.harriercentral.com` CNAME still points at `hcweb.azurewebsites.net`.**
+  Harmless while HCWeb exists, but it is a dangling-CNAME subdomain-takeover risk
+  the moment the site is deleted. Retire the DNS record when HCWeb goes.
+- Free tier caps CPU at 60 min/day and has no SLA. At 0 requests/30 days that is
+  academic, but it is why this is a holding position, not a permanent home.
+
+### Rollback (if the site is ever needed on a domain again)
+
+```bash
+az appservice plan update -n Harrier -g HarrierCentral --sku B1
+az webapp config set -n HCWeb -g HarrierCentral --use-32bit-worker-process false --always-on true
+az webapp config hostname add --webapp-name HCWeb -g HarrierCentral \
+  --hostname admin.harriercentral.com          # CNAME must still resolve
+az webapp config ssl create -g HarrierCentral --name HCWeb \
+  --hostname admin.harriercentral.com          # re-issue free managed cert
+```
+
+Remaining from the original three: **#2, SQL `HarrierCentralWebDb` S1 → S0.**
+
+---
+
 ## Bottom line
 
 ~**£33/month (~£400/year)** from the three actions at the top, none of which a
