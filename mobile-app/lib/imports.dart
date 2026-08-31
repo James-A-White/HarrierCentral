@@ -285,6 +285,7 @@ export 'package:harrier_central/util/boot_logger.dart';
 export 'package:harrier_central/util/constants.dart';
 export 'package:harrier_central/util/enums.dart';
 export 'package:harrier_central/util/form_factor.dart';
+export 'package:harrier_central/util/invite_code.dart';
 export 'package:harrier_central/util/get_positions.dart';
 export 'package:harrier_central/util/delete_positions.dart';
 export 'package:harrier_central/util/end_event_tracking.dart';

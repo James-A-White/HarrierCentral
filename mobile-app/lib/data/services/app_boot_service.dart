@@ -2,6 +2,14 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/metrickit_service.dart';
 
+/// Outcome of a silent re-authorisation attempt at boot.
+///
+/// [deadCode] is reserved for a positive rejection from the server — the code
+/// is not found, or names a removed account. Everything else is
+/// [transientFailure], because discarding a still-valid recovery key locks the
+/// user out far more thoroughly than one more failed retry ever could.
+enum ReauthorizeOutcome { success, deadCode, transientFailure }
+
 /// Owns all app startup logic — previously embedded in AppEntryPageState._handleStartup.
 ///
 /// Call [boot] once from AppEntryPage. The service handles every boot path and
@@ -54,8 +62,8 @@ class AppBootService {
     if (deviceId == null || deviceId.isEmpty) {
       final String? recoveryCode = await getResetCode();
       if (recoveryCode != null && recoveryCode.isNotEmpty) {
-        final bool reauthorized = await _autoReauthorize(recoveryCode);
-        if (reauthorized) {
+        final ReauthorizeOutcome outcome = await _autoReauthorize(recoveryCode);
+        if (outcome == ReauthorizeOutcome.success) {
           // A user-requested Reload Data lands here (resetAndReboot marks it);
           // silent self-healing recovery carries no marker and stays silent.
           if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_RELOAD_DATA) {
@@ -72,7 +80,34 @@ class AppBootService {
           await Get.off(() => MainNavigationPage(), routeName: '/main');
           return;
         }
-        // Never brick — fall back to a manual login.
+        if (outcome == ReauthorizeOutcome.deadCode) {
+          // The server has positively told us this code can never work again.
+          // Discard it: on iOS the keychain survives an app uninstall, so a
+          // dead code left in place is retried on every launch forever and
+          // reinstalling cannot clear it.
+          await clearStoredResetCode();
+
+          // Deliberately neutral copy. A removed code does NOT mean the person
+          // has no account — kennel admins create accounts on members' behalf,
+          // so they may well have a second, live one they don't know about.
+          // Send them to look themselves up rather than telling them anything
+          // about the account the dead code pointed at.
+          await Utilities.showAlert(
+            'Let\'s find your account',
+            'We couldn\'t sign you in automatically using the code saved on '
+            'this device.\r\n\r\nEnter your hash name or email address and '
+            'we\'ll find your account.',
+            'Continue',
+          );
+          await OnboardingFlowController.start(
+            OnboardingDestination.findMyAccount,
+          );
+          return;
+        }
+
+        // Transient failure (no network, timeout, 5xx, clock skew). KEEP the
+        // stored code — it is very probably still valid, and it is the only
+        // durable recovery key this device has.
         await Utilities.showAlert(
           'Reconnection Needed',
           'We couldn\'t reconnect this device automatically.\r\n\r\nPlease log '
@@ -272,20 +307,30 @@ class AppBootService {
   /// device bundle (new deviceId + device secret) and reload. Returns true on
   /// success; never throws, so callers can always fall back to a manual login and
   /// the app can't brick.
-  Future<bool> _autoReauthorize(String resetCode) async {
+  Future<ReauthorizeOutcome> _autoReauthorize(String resetCode) async {
     try {
-      await DBProvider.deleteDb(DB_NAME);
-      appModel.dbStatus = EdbStatus.uninitialized;
       final AuthorizeDeviceService srv = AuthorizeDeviceService();
       final Map<String, String> result =
-          await srv.authorizeDevice(scanText: resetCode.toUpperCase());
-      if (result['result'] != 'success') return false;
+          await srv.authorizeDevice(scanText: normalizeInviteCode(resetCode));
+
+      if (result['result'] != 'success') {
+        final int? errorCode = int.tryParse(result['errorCode'] ?? '');
+        return isDeadInviteCode(errorCode)
+            ? ReauthorizeOutcome.deadCode
+            : ReauthorizeOutcome.transientFailure;
+      }
+
+      // Wipe the local DB only once we know we can repopulate it. This used to
+      // run BEFORE the call, so every transient failure — a boot with no
+      // signal — destroyed the user's local data and forced a full re-sync.
+      await DBProvider.deleteDb(DB_NAME);
+      appModel.dbStatus = EdbStatus.uninitialized;
       // The empty DB is reloaded by the normal post-login sync; mark it current
       // so _handleExistingUser does a normal boot, not another upgrade/wipe.
       await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
-      return true;
+      return ReauthorizeOutcome.success;
     } catch (_) {
-      return false;
+      return ReauthorizeOutcome.transientFailure;
     }
   }
 

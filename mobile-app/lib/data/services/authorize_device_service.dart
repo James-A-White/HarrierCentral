@@ -89,6 +89,31 @@ class AuthorizeDeviceService {
             'result': 'failed',
             'message': 'Could not download profile. Check your QR code',
           };
+        } else if (!_envelopeSucceeded(result[0][0] as Map<String, dynamic>)) {
+          // The SP returned its error envelope. Surface errorCode so callers
+          // can tell a dead code (1302/1402) from a transient failure — the
+          // boot path must only discard a stored code on the former. Without
+          // this every outcome collapsed to one generic message and the
+          // caller could not tell them apart.
+          final Map<String, dynamic> envelope =
+              result[0][0] as Map<String, dynamic>;
+          final int? errorCode = (envelope['errorCode'] as num?)?.toInt();
+
+          String? userMessage;
+          if (result.length > 1 &&
+              result[1] is List &&
+              (result[1] as List).isNotEmpty) {
+            final Map<String, dynamic> detail =
+                (result[1] as List).first as Map<String, dynamic>;
+            userMessage = detail['errorUserMessage'] as String?;
+          }
+
+          resultMap = <String, String>{
+            'result': 'failed',
+            if (errorCode != null) 'errorCode': errorCode.toString(),
+            'message': userMessage ??
+                'We could not set up your device. Please try again.',
+          };
         } else {
           // HC6: rowset 0 is the write SP success envelope; profile data is at rowset 1.
           if (result.length < 2 || result[1] is! List || (result[1] as List).isEmpty) {
@@ -192,3 +217,9 @@ class AuthorizeDeviceService {
     return resultMap;
   }
 }
+
+/// The HC6 write-SP success envelope is rowset 0. `success` arrives as an int
+/// (`SELECT 0 AS success`), but tolerate a bool in case the column ever
+/// becomes BIT — the API shim serialises BIT as a JSON boolean.
+bool _envelopeSucceeded(Map<String, dynamic> envelope) =>
+    envelope['success'] == 1 || envelope['success'] == true;

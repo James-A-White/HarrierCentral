@@ -99,3 +99,21 @@ Future<void> ensureCredentialsEncrypted() async {
     }
   }
 }
+
+/// Discards the stored reset code and QR secret from BOTH the keychain and the
+/// legacy plain-prefs location.
+///
+/// Call this only when the server has positively told us the code can never
+/// work again (see [isDeadInviteCode]). On iOS the keychain survives an app
+/// uninstall, so a dead code left in place is retried on every launch forever
+/// and reinstalling cannot clear it.
+Future<void> clearStoredResetCode() async {
+  try {
+    await deleteAllSecure();
+  } catch (_) {
+    // Keep going: clearing the legacy plain copy still breaks the retry loop
+    // for anyone whose code never made it into the keychain.
+  }
+  await removePref(StringPrefsEnum.resetCode);
+  await removePref(StringPrefsEnum.qrSecretCode);
+}

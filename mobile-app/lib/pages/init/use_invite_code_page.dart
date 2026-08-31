@@ -69,6 +69,11 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
+  /// Failed "code not found" attempts. Mistyping a six-letter code is easy, so
+  /// there is no attempt limit — this only decides when to also *offer* a way
+  /// onward, for someone who has checked the code and knows it is right.
+  int _notFoundAttempts = 0;
+
   bool _showQrScanner = false;
 
   // bool _includeInGlobalHashDirectory = true;
@@ -391,10 +396,9 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               AuthorizeDeviceService();
                           final Map<String, String> result = await srv
                               .authorizeDevice(
-                                scanText:
-                                    QR_PREFIX_USER_RESET_CODE +
-                                    _inviteCodeTextController.text
-                                        .toUpperCase(),
+                                scanText: normalizeInviteCode(
+                                  _inviteCodeTextController.text,
+                                ),
                               );
 
                           setStateIfMounted(() {
@@ -437,6 +441,67 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               ),
                             );
                           } else {
+                            final int? errorCode = int.tryParse(
+                              result['errorCode'] ?? '',
+                            );
+
+                            if (errorCode == DB_ERROR_ACCOUNT_REMOVED) {
+                              // The code was entered CORRECTLY — it resolved to
+                              // a real account that has since been removed. Never
+                              // ask them to retype it; that is an endless loop.
+                              // They may still have a second, live account (a
+                              // kennel admin may have created one for them), so
+                              // send them to look themselves up.
+                              await Utilities.showAlert(
+                                'Let\'s find your account',
+                                'That invite code is no longer active.'
+                                '\r\n\r\nEnter your hash name or email address '
+                                'and we\'ll find your account.',
+                                'Continue',
+                              );
+                              if (!mounted) return;
+                              await OnboardingFlowController.start(
+                                OnboardingDestination.findMyAccount,
+                              );
+                              return;
+                            }
+
+                            if (errorCode == DB_ERROR_INVITE_CODE_NOT_FOUND) {
+                              _notFoundAttempts++;
+
+                              // After a couple of misses, also offer a way on —
+                              // by then it is more likely the code is stale than
+                              // mistyped. Retrying stays the default action.
+                              if (_notFoundAttempts >= 2) {
+                                final bool findAccount =
+                                    await Utilities.showAlert(
+                                      'Code not found',
+                                      'We couldn\'t find that invite code.'
+                                      '\r\n\r\nIf you\'re sure it\'s right it may '
+                                      'have expired — we can look up your '
+                                      'account instead.',
+                                      'Find my account',
+                                      showCancelButton: true,
+                                    ) ??
+                                    false;
+                                if (findAccount) {
+                                  if (!mounted) return;
+                                  await OnboardingFlowController.start(
+                                    OnboardingDestination.findMyAccount,
+                                  );
+                                  return;
+                                }
+                              } else {
+                                await Utilities.showAlert(
+                                  'Code not found',
+                                  'We couldn\'t find that invite code. Please '
+                                  'check it and try again.',
+                                  'OK',
+                                );
+                              }
+                              return;
+                            }
+
                             await Utilities.showAlert(
                               'Setup failed',
                               result['message'] ??
