@@ -1,5 +1,17 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.4+1319 (2026-08-31)
+
+### Fixes
+- **Signing up with an email that already has an account now works.** It emails
+  you a fresh invite code straight away and tells you to check your email,
+  instead of dead-ending on "Account not created — please delete the app". The
+  recovery flow existed but a server error-code mismatch meant it never once
+  fired.
+- **A deleted account no longer blocks re-registering the same email**, and an
+  invite code can no longer be issued against a deleted account instead of the
+  live one.
+
 ## 3.0.3+1318 (2026-08-30) — iOS + Android PRODUCTION
 
 First production release on both stores since 3.0 (App Store) and 3.0.1+1314
