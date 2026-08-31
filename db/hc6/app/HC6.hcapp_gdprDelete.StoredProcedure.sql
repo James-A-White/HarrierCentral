@@ -115,7 +115,7 @@ BEGIN TRY
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                    'Delete failed' AS errorTitle,
                    'Your account could not be deleted. It may have already been removed. '
-                   + 'Please contact connect@harriercentral.com for assistance.' AS errorUserMessage,
+                   + 'Please contact harriercentral@gmail.com for assistance.' AS errorUserMessage,
                    @procName AS errorProc;
             RETURN;
         END

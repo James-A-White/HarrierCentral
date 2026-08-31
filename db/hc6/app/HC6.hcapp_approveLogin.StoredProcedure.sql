@@ -161,7 +161,7 @@ BEGIN
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Account removed' AS errorTitle,
            'The account for "' + @userName + '" has been removed. '
-           + 'Contact your Kennel admin or connect@harriercentral.com for assistance.' AS errorUserMessage,
+           + 'Contact your Kennel admin or harriercentral@gmail.com for assistance.' AS errorUserMessage,
            @procName AS errorProc;
     RETURN;
 END

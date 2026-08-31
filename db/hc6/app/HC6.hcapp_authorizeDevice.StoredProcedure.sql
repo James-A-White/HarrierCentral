@@ -135,7 +135,7 @@ BEGIN TRY
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                'Account removed' AS errorTitle,
                'The account associated with this invite code has been removed. '
-               + 'Contact your Kennel admin or connect@harriercentral.com for a new invite code.' AS errorUserMessage,
+               + 'Contact your Kennel admin or harriercentral@gmail.com for a new invite code.' AS errorUserMessage,
                @procName AS errorProc;
         RETURN;
     END

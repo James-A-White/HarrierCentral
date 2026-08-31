@@ -78,7 +78,7 @@
           "name": "errorUserMessage",
           "type": "NVARCHAR",
           "nullable": false,
-          "description": "User-facing message. For 1511: 'Your account could not be deleted. It may have already been removed. Please contact connect@harriercentral.com for assistance.' For 1911: 'An unexpected error occurred. Please try again.'"
+          "description": "User-facing message. For 1511: 'Your account could not be deleted. It may have already been removed. Please contact harriercentral@gmail.com for assistance.' For 1911: 'An unexpected error occurred. Please try again.'"
         },
         {
           "name": "errorProc",

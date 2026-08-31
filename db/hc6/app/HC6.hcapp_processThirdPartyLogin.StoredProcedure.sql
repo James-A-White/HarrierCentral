@@ -229,7 +229,7 @@ BEGIN TRY
         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                'Account creation failed' AS errorTitle,
-               'There was a problem creating your account. Please contact connect@harriercentral.com.' AS errorUserMessage,
+               'There was a problem creating your account. Please contact harriercentral@gmail.com.' AS errorUserMessage,
                @procName AS errorProc;
         RETURN;
     END
