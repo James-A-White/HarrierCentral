@@ -171,3 +171,75 @@ production telemetry.
 
 Sequence: fix the App Insights workspace link first (#⚠️), then the three
 savings actions, then delete the chaff.
+
+---
+
+## Maintenance reschedule — 2026-08-31 (done)
+
+Prerequisite for the S0 downgrade. The old chain packed five jobs into 110
+minutes, and the 00:00 index rebuild was *already* saturating 20 DTU at
+00:25–00:30 — i.e. still running when the 00:30 backup started. Halving DTU
+would have made that overlap worse.
+
+| Job | Was (UTC) | Now (UTC) |
+|---|---|---|
+| `HC_rebiuld_indexes` | 00:00 | **00:00** (unchanged — heaviest, now has 90 min clear) |
+| `HC_backup_tables` | 00:30 | **01:30** |
+| `HC_clean_bad_characters` | 00:45 | **02:15** |
+| `HC_update_counts_credits` | 00:50 | **02:45** |
+| `HC_update_statistics` | 01:50 | **03:30** |
+| `HC_recompile_stored_procedures` (weekly) | 01:30 | **04:30** |
+
+Applied by ARM PUT (`api-version=2019-05-01`); original definitions backed up
+before the change. All six verified `Enabled` with the new recurrence. Traffic
+in 00:00–05:00 UTC is near zero — the daytime peak is 16:00–19:00 UTC.
+
+---
+
+## Where the database space actually is — 2026-08-31
+
+**7.06 GB used against a 10 GB max-size cap (66%).** The cap is set explicitly
+on the database, not by the tier — S0 and S1 both allow 250 GB. Hitting it makes
+writes fail, so this matters independently of the SKU decision.
+
+| Object | Data | Index | **Total** | Share of DB |
+|---|---|---|---|---|
+| `LOG.GeneralLog` | 1,787 MB | **2,165 MB** | **3,952 MB** | **56%** |
+| `HC.IntegrationJob` | 721 MB | 632 MB | **1,353 MB** | **19%** |
+| `HC_BACKUP` + `_7` + `_30` (16 tables each) | — | — | 525 MB | 7% |
+| Everything else | — | — | ~1.2 GB | 18% |
+
+### The backup schemas are not the problem
+
+All three rotate correctly (last written 08-31, 08-30, 08-01 respectively) and
+cost **175 MB each**. Dropping two of the three windows recovers ~350 MB — 5% of
+the database — and gives up the research value they exist for. Not worth it.
+
+### Age profile of the two big tables
+
+| Table | Range | Rows | Older than 90 days |
+|---|---|---|---|
+| `LOG.GeneralLog` | 2025-12-28 → today | 3,451,852 | **2,885,337 (84%)** |
+| `HC.IntegrationJob` | 2023-05-23 → today | 749,914 | **717,461 (96%)** |
+
+Nothing in `GeneralLog` is older than a year, so something already prunes at ~12
+months. Tightening that to 90 days would free roughly **3.3 GB** — about half
+the database.
+
+### Index worth watching, NOT yet worth dropping
+
+`IX_GeneralLog_Timestamp_LogSource` is **1,814 MB — larger than the table's own
+data** — with 0 reads and 13,167 writes recorded. But
+`sqlserver_start_time` is **2026-08-28**, so usage stats cover only 3 days, and
+today is month-end. Per [[project_sp_index_audit]] the rule is to confirm over a
+representative period (full sync + month-end + integration cycle) before any
+DROP. Re-check after ~a week. Row pruning shrinks it anyway.
+
+### Sequence if pruning goes ahead
+
+1. Prune in **batches** (e.g. 50k rows with a delay) — a 2.9M-row single delete
+   would itself saturate DTU and bloat the log.
+2. Do it **before** the S0 downgrade, while 20 DTU is available.
+3. Deleted space stays allocated to the file and still counts toward the 10 GB
+   cap. The nightly index rebuild reclaims most of it; a `DBCC SHRINKFILE` may be
+   needed to actually drop allocated size.
