@@ -10,6 +10,13 @@
 --              @MaxBatches    - upper bound for one run (default 200,
 --                               i.e. 1,000,000 rows) so a single
 --                               invocation can never run away
+--              @BatchDelaySeconds - pause between batches (default 0.5).
+--                               This is the throttle: the pause is dead time
+--                               for the database, so raising it lowers the
+--                               job's duty cycle and therefore its average
+--                               DTU, leaving headroom for real users. A big
+--                               catch-up should use a high value; there is
+--                               never any hurry to delete old log rows.
 -- Returns:     One summary rowset (GeneralLogDeleted, IntegrationJobDeleted)
 -- Author:      Harrier Central
 -- Created:     2026-08-31
@@ -40,7 +47,8 @@
 CREATE OR ALTER PROCEDURE [HC6].[nonApi_pruneLogs]
     @RetentionDays INT = 90,
     @BatchSize     INT = 5000,
-    @MaxBatches    INT = 200
+    @MaxBatches    INT = 200,
+    @BatchDelaySeconds DECIMAL(5,1) = 0.5
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -58,6 +66,11 @@ BEGIN
     IF (@RetentionDays < 30) SET @RetentionDays = 30;
     IF (@BatchSize < 100 OR @BatchSize > 50000) SET @BatchSize = 5000;
     IF (@MaxBatches < 1) SET @MaxBatches = 200;
+    IF (@BatchDelaySeconds < 0 OR @BatchDelaySeconds > 600) SET @BatchDelaySeconds = 0.5;
+
+    -- WAITFOR DELAY needs a time-typed value, not a number.
+    DECLARE @delay CHAR(12) = CONVERT(CHAR(12),
+        DATEADD(MILLISECOND, CAST(@BatchDelaySeconds * 1000 AS INT), CAST('00:00:00' AS TIME)), 114);
 
     BEGIN TRY
 
@@ -84,7 +97,7 @@ BEGIN
             SET @glDeleted = @glDeleted + @rows;
             SET @batches = @batches + 1;
 
-            IF (@rows > 0) WAITFOR DELAY '00:00:00.100';
+            IF (@rows > 0 AND @BatchDelaySeconds > 0) WAITFOR DELAY @delay;
         END
 
         -- -------------------------------------------------------------
@@ -123,7 +136,7 @@ BEGIN
             SET @ijDeleted = @ijDeleted + @rows;
             SET @batches = @batches + 1;
 
-            IF (@rows > 0) WAITFOR DELAY '00:00:00.100';
+            IF (@rows > 0 AND @BatchDelaySeconds > 0) WAITFOR DELAY @delay;
         END
 
         DROP TABLE #KeepJobs;
@@ -134,7 +147,7 @@ BEGIN
         INSERT INTO LOG.GeneralLog (LogSource, Message, [Timestamp])
         VALUES ('nonApi_pruneLogs',
                 CONCAT('Pruned to ', @RetentionDays, 'd: GeneralLog=', @glDeleted,
-                       ' IntegrationJob=', @ijDeleted,
+                       ' IntegrationJob=', @ijDeleted, ' delay=', @BatchDelaySeconds, 's',
                        ' in ', DATEDIFF(SECOND, @startedAt, SYSUTCDATETIME()), 's'),
                 SYSUTCDATETIME());
 
