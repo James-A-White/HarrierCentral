@@ -170,12 +170,31 @@ BEGIN TRY
         kw.CustomDomain                                                 AS KennelWebsiteDomain,
 
         -- Continent derived from the kennel's country — used for search/filter.
-        ctr.ContinentName                                               AS KennelContinent
+        ctr.ContinentName                                               AS KennelContinent,
+
+        -- SearchTags: free-text search keywords, flattened into one column for
+        -- the client-side filter on the global Runs list. Mirrors the searchText
+        -- haystack built by HC6.hcportal_getEvents and the mobile app's
+        -- searchKennelsField, so all three surfaces match on the same terms.
+        --
+        -- These exist because political geography does not match the geographic
+        -- hierarchy: "Scotland" is not a Country row (the country is the United
+        -- Kingdom) and not a Region row, so a kennel in Edinburgh is only
+        -- findable by "Scotland" via Kennel.KennelSearchTags. Commas are
+        -- replaced with spaces so a stored "Great beer, Canals" matches a
+        -- search for either term.
+        LTRIM(RTRIM(
+                  REPLACE(COALESCE(k.KennelSearchTags,   ''), ',', ' ')
+            + ' ' + REPLACE(COALESCE(c.CitySearchTags,      ''), ',', ' ')
+            + ' ' + REPLACE(COALESCE(rgn.RegionSearchTags,  ''), ',', ' ')
+            + ' ' + REPLACE(COALESCE(ctr.CountrySearchTags, ''), ',', ' ')
+        ))                                                              AS SearchTags
 
     FROM   HC.Event             e
     JOIN   HC.Kennel            k   ON k.id          = e.KennelId
     LEFT JOIN HC.KennelWebsite  kw  ON kw.KennelId   = k.id
     LEFT JOIN HC.Country        ctr ON ctr.id         = k.CountryId
+    LEFT JOIN HC.Region         rgn ON rgn.id         = k.ProvinceStateId
     LEFT JOIN DomainValues.EventThemeType ett ON ett.EventEnumId = e.ThemeRunType
     LEFT JOIN HC.City                  c   ON c.id    = k.CityId
     LEFT JOIN DomainValues.Timezone    tz  ON tz.id   = c.TimezoneId

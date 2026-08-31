@@ -27,6 +27,7 @@ extension KennelInfoControlsExtension on KennelPageFormController {
     _registerKennelDescriptionControl(tabKey, tabIndex);
     _registerAdminEmailListControl(tabKey, tabIndex);
     _registerWebsiteUrlControl(tabKey, tabIndex);
+    _registerKennelSearchTagsControl(tabKey, tabIndex);
   }
 
   // ---------------------------------------------------------------------------
@@ -232,6 +233,50 @@ extension KennelInfoControlsExtension on KennelPageFormController {
       tabIndex: tabIndex,
       updateEditedValue: (String? value) {
         editedData.value = editedData.value.copyWith(kennelWebsiteUrl: value!);
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+    );
+  }
+
+  /// Registers the kennel search tags control.
+  ///
+  /// Optional free text, so [minStringLength] is 0. [maxStringLength] is 500
+  /// rather than the column's 4000 — this is a keyword list, not prose, and a
+  /// lower ceiling discourages people pasting their description in here.
+  void _registerKennelSearchTagsControl(String tabKey, int tabIndex) {
+    final fieldKey = '${tabKey}_${KennelInfoField.kennelSearchTags.name}';
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.string,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Search Keywords',
+        FontAwesome.tags,
+        'A comma separated list of extra words that should find your Kennel '
+            'when someone searches Harrier Central or hashruns.org.\n\n'
+            'Use this for anything the address does not already cover. The '
+            'most common case is a home nation or informal area name — a '
+            'Kennel in Edinburgh sits in the country "United Kingdom", so it '
+            'will never be found by a search for "Scotland" unless you add '
+            'that word here.\n\n'
+            'It is also good for what your Kennel is known for, such as '
+            '"Great beer, Canals". You do not need to repeat your Kennel '
+            'name, city, region or country — those are already searchable.',
+      ),
+      editedFieldValue: editedData.value.kennelSearchTags,
+      originalFieldValue: originalData.kennelSearchTags,
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Search keywords',
+      maxStringLength: 500,
+      minStringLength: 0,
+      readonly: false,
+      maxLines: 2,
+      includeOverrideButton: false,
+      textController: textControllers[fieldKey] = TextEditingController(),
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        editedData.value = editedData.value.copyWith(kennelSearchTags: value);
         uiControls[fieldKey]?.editedFieldValue = value;
       },
     );

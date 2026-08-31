@@ -410,6 +410,10 @@ class KennelInfoTabContent extends StatelessWidget {
         // Website Section
         HelperWidgets().categoryLabelWidget('Website Address'),
         _buildTextField(KennelInfoField.kennelWebsiteUrl),
+
+        // Search Section
+        HelperWidgets().categoryLabelWidget('Search Keywords'),
+        _buildTextField(KennelInfoField.kennelSearchTags),
       ];
 
       final lockState = controller.tabLocked[KennelTabType.kennelInfo.index];

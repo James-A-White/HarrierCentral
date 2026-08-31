@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getGlobalRuns",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Returns one row per event across all kennels for the hashruns.org global [Runs] discovery tab. Unlike publicWeb_getGlobalCalendar (which collapses multiple events per day per kennel into one row), this SP returns individual events with full kennel and event detail so the client detail panel needs no second API call. Supports offset-based pagination for infinite scroll.",
   "parameters": [
     {
@@ -275,6 +275,18 @@
           "nullable": true,
           "mapsToColumn": "KennelWebsite.CustomDomain",
           "description": "The kennel's custom domain (e.g. 'www.cityhash.org'). NULL for kennels without a custom domain. Used for the 'Open Kennel website' button and fourth QR code — omit both when NULL."
+        },
+        {
+          "name": "KennelContinent",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Continent name from HC.Country via Kennel.CountryId. NULL when the kennel has no country set. Used for search/filter."
+        },
+        {
+          "name": "SearchTags",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Free-text search keywords for the run, flattened from Kennel.KennelSearchTags, City.CitySearchTags, Region.RegionSearchTags and Country.CountrySearchTags with commas replaced by spaces. Carries terms the geographic hierarchy cannot express - notably 'Scotland', which is neither a Country nor a Region row, so Scottish kennels are only findable by that word through this column. Empty string when nothing is tagged."
         }
       ]
     }

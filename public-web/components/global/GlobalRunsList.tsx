@@ -672,7 +672,11 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
         (r.LocationOneLineDesc?.toLowerCase().includes(q) ?? false) ||
         (r.Hares?.toLowerCase().includes(q) ?? false) ||
         (r.EventDescription?.toLowerCase().includes(q) ?? false) ||
-        (r.KennelContinent?.toLowerCase().includes(q) ?? false)
+        (r.KennelContinent?.toLowerCase().includes(q) ?? false) ||
+        // Kennel/city/region/country search tags — carries terms the geographic
+        // hierarchy can't express (e.g. "Scotland", which is neither a Country
+        // nor a Region row) as well as kennel-chosen keywords ("Great beer").
+        (r.SearchTags?.toLowerCase().includes(q) ?? false)
     );
   }, [runs, query]);
 

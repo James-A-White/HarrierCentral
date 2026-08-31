@@ -240,6 +240,15 @@ enum KennelInfoField {
 
   /// External website URL.
   kennelWebsiteUrl,
+
+  /// Extra free-text keywords that make this kennel findable in search.
+  ///
+  /// Fed into the search haystack by HC6.hcportal_getEvents,
+  /// HC6.publicWeb_getGlobalRuns and the mobile app's kennel/run queries.
+  /// Exists because political geography does not match the Country/Region
+  /// hierarchy — "Scotland" is neither, so a Scottish kennel is only
+  /// findable by that word if it is tagged here.
+  kennelSearchTags,
 }
 
 /// Fields available on the Kennel Location tab.

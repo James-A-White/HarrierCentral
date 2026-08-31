@@ -1,3 +1,7 @@
+0.21.42
+    • Global Runs search now matches kennel/city/region/country search keywords — searching "Scotland" previously returned nothing because it is neither a country nor a region row
+    • A kennel tagged "Great beer, Canals" is now found by either word
+
 0.21.41
     • Trail-TV: photos taken before or after the run now play at the END of the replay instead of delaying the on-trail photos
     • Trail-TV: a photo with no trail mark is placed by its upload time, so mid-run photos appear at the right point

@@ -1,5 +1,18 @@
 # public-web Changelog
 
+## 0.21.42 (2026-08-31)
+
+- **The global Runs search now matches a kennel's search keywords.** Searching
+  hashruns.org for "Scotland" returned nothing, because Scotland is neither a
+  country row (the country is the United Kingdom) nor a region row — the word
+  only exists as a kennel search tag, and those tags were never sent to the
+  browser. The search now also covers the city, region and country keyword
+  lists, so terms the geographic hierarchy cannot express resolve correctly.
+  Twenty-five upcoming runs across six Scottish kennels were previously
+  unfindable this way.
+- **Kennel keyword searches work too** — a kennel tagged "Great beer, Canals"
+  is now found by either word.
+
 ## 0.21.41 (2026-08-30)
 
 - **Photos taken before or after the run now play at the end of the replay.**

@@ -2,6 +2,19 @@
 
 ---
 
+## 2.0.65+700 (2026-08-31)
+
+- **Added the "Search keywords" field back to the Kennel editor**, on the
+  Description tab. The field existed in the old kennel form but was never
+  carried across when the editor was rewritten, so kennel search tags had
+  quietly become uneditable — the stored values still drove search everywhere
+  else, but nobody could change them.
+- **Why it matters:** the Country/Region hierarchy cannot express every place
+  name people search for. A kennel in Edinburgh sits in the country "United
+  Kingdom", so it is never found by a search for "Scotland" unless that word is
+  added here. The field is also good for what a kennel is known for, such as
+  "Great beer, Canals".
+
 ## 2.0.64+699 (2026-08-30)
 
 - **Label is now a permanent mark**, fixed at slot 4 — every kennel gets a

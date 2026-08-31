@@ -492,6 +492,16 @@ export interface GlobalRunRow {
   KennelWebsiteDomain: string | null;
   /** Continent name from HC.Country via Kennel.CountryId. NULL when kennel has no country set. */
   KennelContinent: string | null;
+  /**
+   * Free-text search keywords for this run, flattened from the kennel's,
+   * city's, region's and country's *SearchTags columns (commas → spaces).
+   *
+   * These carry terms that the geographic hierarchy cannot express — most
+   * notably "Scotland", which is neither a Country nor a Region row (the
+   * country is the United Kingdom), so Scottish kennels are only findable
+   * by that word through this field. Empty string when nothing is tagged.
+   */
+  SearchTags: string | null;
 }
 
 export interface GetGlobalRunsOptions {
