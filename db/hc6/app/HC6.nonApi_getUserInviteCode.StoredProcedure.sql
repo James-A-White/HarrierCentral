@@ -26,7 +26,11 @@ AS
 SET NOCOUNT ON;
 
 DECLARE @ResetCodeLastUpdated DATETIMEOFFSET(7);
-SELECT @ResetCodeLastUpdated = ResetCodeLastUpdated FROM HC.Hasher WHERE email = @email;
+-- Removed accounts are excluded throughout: a deleted account can still hold
+-- the address, and stamping a fresh code onto it would both miss the live
+-- account and leave a working code pointing at a dead one.
+SELECT @ResetCodeLastUpdated = ResetCodeLastUpdated
+FROM HC.Hasher WHERE email = @email AND Removed = 0;
 
 IF @ResetCodeLastUpdated IS NULL OR ABS(DATEDIFF(minute, @ResetCodeLastUpdated, GETDATE())) > 60
 BEGIN
@@ -54,7 +58,7 @@ BEGIN
             UPDATE HC.Hasher
             SET    ResetCode            = N'URC:' + @code,
                    ResetCodeLastUpdated = GETDATE()
-            WHERE  email = @email;
+            WHERE  email = @email AND Removed = 0;
             SET @stop = 10; -- exit loop
         END
     END

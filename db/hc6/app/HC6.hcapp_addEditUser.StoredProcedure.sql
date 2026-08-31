@@ -67,7 +67,11 @@ AS
 --   @photo widened NVARCHAR(500) -> NVARCHAR(1000).
 --   @historicalPackRunCount removed (deprecated Nov 2021, dead parameter).
 --   errorType 1 for auth failure (was non-standard 1 in HC5 — unchanged).
---   errorType 10005 for duplicate email replaced by errorType 5 / errorCode 1510.
+--   errorType 10005 for duplicate email is PRESERVED from HC5 -- the app's
+--     DB_ERROR_EMAIL_ALREADY_EXISTS constant is 10005 and an errorType is part
+--     of the published contract. errorCode 1510 is added alongside it.
+--   Duplicate-email check now ignores removed accounts, so someone whose old
+--     account was deleted can register the same address again.
 --   Success envelope added. TRY/CATCH added.
 -- =====================================================================
 SET NOCOUNT ON;
@@ -183,17 +187,22 @@ BEGIN TRY
                 SELECT 1 FROM HC.Hasher h
                 WHERE h.Email = TRIM(@email)
                   AND h.id <> COALESCE(@targetUserId, '00000000-0000-0000-0000-000000000000')
+                  AND h.Removed = 0
             )
             BEGIN
                 ROLLBACK TRANSACTION;
-                SET @errorCode = 1510; SET @errorType = 15; SET @errorId = NEWID();
+                -- errorType MUST stay 10005: it is what the mobile app's
+                -- DB_ERROR_EMAIL_ALREADY_EXISTS tests for to trigger the
+                -- "we have emailed you an invite code" flow. Changing it
+                -- silently disables that recovery path.
+                SET @errorCode = 1510; SET @errorType = 10005; SET @errorId = NEWID();
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
                 VALUES (@errorId, @hcVersion, 'Duplicate email',
                         'A user already exists with this email address.', @procName, @userId, @email);
                 SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
                 SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                        'Email address already exists' AS errorTitle,
-                       'A user already exists with this email address. Please use a different email.' AS errorUserMessage,
+                       'A user already exists with this email address. We can email an invite code so you can sign in to that account.' AS errorUserMessage,
                        @procName AS errorProc;
                 RETURN;
             END
