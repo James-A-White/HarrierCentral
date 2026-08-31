@@ -117,6 +117,14 @@ class RunEditPageController extends TabUiController
   /// Timer for auto-save interval.
   Timer? _autoSaveTimer;
 
+  /// In-flight save, if any. The auto-save timer and the Save button both call
+  /// [save], and `isAddMode` is only cleared once the round trip returns — so
+  /// two overlapping calls would both post without a publicEventId and create
+  /// TWO events. Overlapping callers await this future instead of starting a
+  /// second request. Awaiting (rather than dropping) matters: a dropped manual
+  /// save would silently discard whatever the user typed most recently.
+  Future<void>? _saveInFlight;
+
   // ---------------------------------------------------------------------------
   // State - Integration Flags
   // ---------------------------------------------------------------------------
@@ -811,8 +819,26 @@ class RunEditPageController extends TabUiController
   }
 
   /// Saves the current form state.
+  ///
+  /// Serialised via [_saveInFlight] so a manual save and an auto-save tick can
+  /// never overlap; see that field for why a duplicate event results.
   @override
   Future<void> save(bool showDialog) async {
+    final Future<void>? inFlight = _saveInFlight;
+    if (inFlight != null) {
+      await inFlight;
+      return;
+    }
+    final Future<void> pending = _save(showDialog);
+    _saveInFlight = pending;
+    try {
+      await pending;
+    } finally {
+      _saveInFlight = null;
+    }
+  }
+
+  Future<void> _save(bool showDialog) async {
     if (!isFormDirty.value) return;
 
     autoSaveCounter.value = -1; // Show "Saving..."
