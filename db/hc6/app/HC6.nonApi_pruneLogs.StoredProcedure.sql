@@ -1,0 +1,140 @@
+-- =====================================================================
+-- Procedure: HC6.nonApi_pruneLogs
+-- Description: Deletes aged rows from the two tables that dominate the
+--              database: LOG.GeneralLog and HC.IntegrationJob. Runs
+--              nightly from the HC_prune_logs Logic App, immediately
+--              before HC_rebiuld_indexes so the rebuild reclaims the
+--              freed pages the same night.
+-- Parameters:  @RetentionDays - keep rows newer than this (default 90)
+--              @BatchSize     - rows per DELETE (default 5000)
+--              @MaxBatches    - upper bound for one run (default 200,
+--                               i.e. 1,000,000 rows) so a single
+--                               invocation can never run away
+-- Returns:     One summary rowset (GeneralLogDeleted, IntegrationJobDeleted)
+-- Author:      Harrier Central
+-- Created:     2026-08-31
+-- HC5 Source:  None - new in HC6
+-- Breaking Changes: None
+--
+-- Naming note: the six sibling maintenance jobs call [HC3].[extApi_daily_*]
+-- SPs that exist only in the database and are not in source control. New
+-- work goes in HC6 so it is versioned and picked up by tools/deploy_hc6.sh
+-- (HC6.nonApi_* glob). The Logic App calls [HC6].[nonApi_pruneLogs].
+--
+-- Retention safety (verified 2026-08-31):
+--   LOG.GeneralLog     - only hcportal_getCategoryDetail(2) category 8 reads
+--                        it, and the portal offers at most "Last Month"
+--                        (30 days), so 90 days leaves 3x headroom.
+--   HC.IntegrationJob  - hcportal_getUsageData shows MAX(IntegrationJobId)
+--                        per integration. The most recent job for every
+--                        integration is therefore preserved regardless of
+--                        age, or a dormant integration would vanish from
+--                        the monitor.
+--   Neither table has a foreign key or a trigger pointing at it.
+--
+-- Transaction note: deliberately NOT wrapped in one outer transaction.
+-- Each batch autocommits, which is the entire point of batching - a single
+-- transaction over millions of rows would hold locks and bloat the log,
+-- the exact problem this SP exists to avoid.
+-- =====================================================================
+CREATE OR ALTER PROCEDURE [HC6].[nonApi_pruneLogs]
+    @RetentionDays INT = 90,
+    @BatchSize     INT = 5000,
+    @MaxBatches    INT = 200
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @procName    NVARCHAR(128) = OBJECT_NAME(@@PROCID);
+    DECLARE @cutoff      DATETIMEOFFSET(7) = DATEADD(DAY, -@RetentionDays, SYSUTCDATETIME());
+    DECLARE @glDeleted   BIGINT = 0;
+    DECLARE @ijDeleted   BIGINT = 0;
+    DECLARE @batches     INT = 0;
+    DECLARE @rows        INT = 1;
+    DECLARE @startedAt   DATETIME2(3) = SYSUTCDATETIME();
+
+    -- Guard against a caller passing something absurd.
+    IF (@RetentionDays < 30) SET @RetentionDays = 30;
+    IF (@BatchSize < 100 OR @BatchSize > 50000) SET @BatchSize = 5000;
+    IF (@MaxBatches < 1) SET @MaxBatches = 200;
+
+    BEGIN TRY
+
+        -- -------------------------------------------------------------
+        -- 1. LOG.GeneralLog
+        -- -------------------------------------------------------------
+        WHILE (@rows > 0 AND @batches < @MaxBatches)
+        BEGIN
+            DELETE TOP (@BatchSize) FROM LOG.GeneralLog
+            WHERE [Timestamp] < @cutoff;
+
+            SET @rows = @@ROWCOUNT;
+            SET @glDeleted = @glDeleted + @rows;
+            SET @batches = @batches + 1;
+
+            IF (@rows > 0) WAITFOR DELAY '00:00:00.100';
+        END
+
+        -- -------------------------------------------------------------
+        -- 2. HC.IntegrationJob - preserving the latest job per integration
+        -- -------------------------------------------------------------
+        CREATE TABLE #KeepJobs (IntegrationJobId INT PRIMARY KEY);
+
+        INSERT INTO #KeepJobs (IntegrationJobId)
+        SELECT MAX(IntegrationJobId)
+        FROM HC.IntegrationJob
+        GROUP BY IntegrationId;
+
+        -- Also keep the latest COMPLETED job per integration, which is what
+        -- the usage monitor actually joins on (endedAt IS NOT NULL).
+        INSERT INTO #KeepJobs (IntegrationJobId)
+        SELECT MAX(ij.IntegrationJobId)
+        FROM HC.IntegrationJob ij
+        WHERE ij.endedAt IS NOT NULL
+        GROUP BY ij.IntegrationId
+        HAVING MAX(ij.IntegrationJobId) NOT IN (SELECT IntegrationJobId FROM #KeepJobs);
+
+        SET @rows = 1;
+        SET @batches = 0;
+
+        WHILE (@rows > 0 AND @batches < @MaxBatches)
+        BEGIN
+            DELETE TOP (@BatchSize) FROM HC.IntegrationJob
+            WHERE startedAt < @cutoff
+              AND IntegrationJobId NOT IN (SELECT IntegrationJobId FROM #KeepJobs);
+
+            SET @rows = @@ROWCOUNT;
+            SET @ijDeleted = @ijDeleted + @rows;
+            SET @batches = @batches + 1;
+
+            IF (@rows > 0) WAITFOR DELAY '00:00:00.100';
+        END
+
+        DROP TABLE #KeepJobs;
+
+        -- -------------------------------------------------------------
+        -- 3. Summary (one row per night - this is not self-defeating)
+        -- -------------------------------------------------------------
+        INSERT INTO LOG.GeneralLog (LogSource, Message, [Timestamp])
+        VALUES ('nonApi_pruneLogs',
+                CONCAT('Pruned to ', @RetentionDays, 'd: GeneralLog=', @glDeleted,
+                       ' IntegrationJob=', @ijDeleted,
+                       ' in ', DATEDIFF(SECOND, @startedAt, SYSUTCDATETIME()), 's'),
+                SYSUTCDATETIME());
+
+        SELECT @glDeleted AS GeneralLogDeleted,
+               @ijDeleted AS IntegrationJobDeleted,
+               DATEDIFF(SECOND, @startedAt, SYSUTCDATETIME()) AS ElapsedSeconds;
+
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+        VALUES (NEWID(), '<unknown>', 'Unhandled error in nonApi_pruneLogs',
+                ERROR_MESSAGE(), @procName, NULL);
+
+        THROW;
+    END CATCH
+END
