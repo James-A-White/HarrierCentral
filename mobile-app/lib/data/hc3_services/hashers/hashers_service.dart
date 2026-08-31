@@ -238,24 +238,51 @@ class HashersService extends BaseService {
       },
       noRetries: true,
       errorCallback: (DbErrorModel dbError) async {
-        bool okButtonPressed = false;
-        if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
-          dbErrorIsDuplicateEmail = true;
-          okButtonPressed =
-              await Utilities.showAlert(
-                dbError.errorTitle ?? 'Error',
-                'This email address already exists in our server. Would you like an invite code sent to your email that you can use to install the app?',
-                'Send code',
-                showCancelButton: true,
-              ) ??
-              false;
-
-          if (okButtonPressed) {
-            final String userMessage = await sendInviteCodeByEmail(email!);
-            await Utilities.showAlert('Check your email', userMessage, 'OK');
-          }
+        if (dbError.errorType != DB_ERROR_EMAIL_ALREADY_EXISTS) {
+          return false;
         }
-        return okButtonPressed;
+
+        final String? existingEmail = email;
+        if ((existingEmail == null) || existingEmail.isEmpty) {
+          return false;
+        }
+
+        // The address is already registered, so this is an existing hasher
+        // setting up a device rather than a genuinely new account. Send a
+        // fresh invite code straight away rather than asking first: typing
+        // the address into the signup form is consent enough, and the extra
+        // confirmation step was one more place for people to get stuck.
+        final String response = await sendInviteCodeByEmail(existingEmail);
+        final bool codeWasSent = _looksLikeInviteCode(response);
+
+        if (codeWasSent) {
+          // Only set this when a code actually went out - it is what routes
+          // the caller on to UseInviteCodePage.
+          dbErrorIsDuplicateEmail = true;
+          await Utilities.showAlert(
+            'Check your email',
+            'That email address is already registered to a Harrier Central '
+                'account, so we have emailed a new invite code to '
+                '$existingEmail.\n\nEnter the code on the next screen to '
+                'finish setting up this device.',
+            'OK',
+          );
+        } else {
+          await Utilities.showAlert(
+            'We could not send your code',
+            response.startsWith(ERROR_PREFIX)
+                ? 'That email address is already registered, but we could not '
+                      'send your invite code just now. Please check your '
+                      'connection and try again.'
+                : response,
+            'OK',
+          );
+        }
+
+        // Report handled either way: the user has just been shown a specific
+        // message, so the generic failure dialog would only be a confusing
+        // second one on top of it.
+        return true;
       },
     );
 
@@ -304,6 +331,13 @@ class HashersService extends BaseService {
       debugText: 'addEditUser: sync new/edited hasher into common_hashers',
     );
   }
+
+  /// The EmailInviteCode function returns the bare six-letter code on
+  /// success, or a human-readable sentence when the address could not be
+  /// matched to a live account. There is no status field to test, so the
+  /// shape of the response is the only signal available.
+  static bool _looksLikeInviteCode(String response) =>
+      RegExp(r'^[A-Za-z]{6}$').hasMatch(response.trim());
 
   static Future<String> sendInviteCodeByEmail(String email) async {
     final String body = jsonEncode(<String, String>{'email': email});

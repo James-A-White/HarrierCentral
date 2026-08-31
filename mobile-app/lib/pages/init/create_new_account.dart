@@ -382,7 +382,12 @@ class CreateNewAccountPageContentState
                           }
                         }
 
-                        if (!isSuccessfulLoad) {
+                        // ERROR_HANDLED means the service layer already
+                        // showed a specific message (e.g. the duplicate-email
+                        // invite code flow). Telling them to delete the app on
+                        // top of that would be both wrong and alarming.
+                        if (!isSuccessfulLoad &&
+                            responseBody != ERROR_HANDLED) {
                           await Utilities.showAlert(
                             'Account not created',
                             'There was a problem creating your account. Please delete the app and try again later or contact us at harriercentral@gmail.com.\r\n\r\nSorry for the inconvenience!',
