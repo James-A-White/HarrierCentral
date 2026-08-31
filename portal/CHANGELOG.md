@@ -2,6 +2,15 @@
 
 ---
 
+## 2.0.66+701 (2026-08-31)
+
+### Fixes
+- **Adding a run can no longer create the run twice.** The 60-second auto-save
+  and the Save button could overlap while a brand-new run was still being
+  created, and both would insert it. Saves are now serialised.
+
+---
+
 ## 2.0.65+700 (2026-08-31)
 
 - **Added the "Search keywords" field back to the Kennel editor**, on the

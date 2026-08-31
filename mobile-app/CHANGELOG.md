@@ -1,5 +1,20 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.5+1320 (2026-08-31)
+
+### Fixes
+- **A device that can't sign itself in automatically now recovers.** If the
+  sign-in code saved on your device is no longer valid, the app clears it and
+  helps you find your account, instead of failing the same way on every launch
+  with no way out.
+- **Mistyped invite codes are far more forgiving.** Codes never contain digits,
+  so a typed 0, 1 or 5 is corrected to O, I or S automatically, and a pasted
+  code with extra spaces or a "URC:" prefix now works.
+- **An invite code that is no longer active no longer asks you to retype it** —
+  it takes you straight to finding your account.
+- Losing signal during an automatic sign-in no longer wipes your locally stored
+  data.
+
 ## 3.0.4+1319 (2026-08-31)
 
 ### Fixes
