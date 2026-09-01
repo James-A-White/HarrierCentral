@@ -1840,14 +1840,15 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    (DateTime.now().toUtc().isBefore(
-                              widget.futureRun.event.eventStartDatetimeGmt
-                                  .subtract(const Duration(hours: 15)),
+                    // Same window as the live-run page (start - 5 min). This
+                    // used to open FIFTEEN HOURS early, so a runner could start
+                    // a track most of a day before the run and show up on the
+                    // map for an event that had not begun.
+                    (!trackingHasOpened(
+                              widget.futureRun.event.eventStartDatetimeGmt,
                             ) ||
-                            DateTime.now().toUtc().isAfter(
-                              widget.futureRun.event.eventStartDatetimeGmt.add(
-                                const Duration(hours: 6),
-                              ),
+                            trackingHasClosed(
+                              widget.futureRun.event.eventStartDatetimeGmt,
                             ))
                         ? SizedBox()
                         : ElevatedButton(
@@ -1875,13 +1876,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                             ),
                             onPressed: () {
                               setStateIfMounted(() {
-                                locService.joinRunTracking.value =
-                                    !locService.joinRunTracking.value;
+                                // eventId/userId MUST be set before tracking is
+                                // enabled: RunPointBuffer initialises lazily on
+                                // the first location update, so flipping the
+                                // flag first can attribute a point to whatever
+                                // event was set previously.
                                 locService.eventId =
                                     widget.futureRun.event.eventId;
                                 locService.userId = getStringPref(
                                   StringPrefsEnum.userId,
                                 );
+                                locService.joinRunTracking.value =
+                                    !locService.joinRunTracking.value;
                               });
                             },
                           ),

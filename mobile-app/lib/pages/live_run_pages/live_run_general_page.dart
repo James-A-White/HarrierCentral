@@ -197,21 +197,12 @@ class LiveRunGeneralController extends GetxController {
     await RunShareLinks(run).showShareSheet(context);
   }
 
-  bool _checkCanStart() {
-    return DateTime.now().toUtc().isAfter(
-      run.event.eventStartDatetimeGmt.toUtc().subtract(
-        const Duration(minutes: 5),
-      ),
-    );
-  }
+  bool _checkCanStart() =>
+      trackingHasOpened(run.event.eventStartDatetimeGmt);
 
   // Local-time label shown on the disabled start button.
-  String get trackingOpensAt {
-    final opensAt = run.event.eventStartDatetimeGmt.toLocal().subtract(
-      const Duration(minutes: 5),
-    );
-    return DateFormat('h:mm a').format(opensAt);
-  }
+  String get trackingOpensAt =>
+      trackingOpensAtLabel(run.event.eventStartDatetimeGmt);
 
   Future<void> toggleTracking() async {
     final newValue = !_locationService.joinRunTracking.value;
