@@ -1,5 +1,41 @@
 # DB TODO
 
+## S1 → S0 performance comparison (set up 2026-09-01)
+
+Database scaled **S1 (20 DTU) → S0 (10 DTU)** at ~05:45 UTC 2026-09-01.
+
+- [x] Query Store fixed: it was at **8 MB of a 10 MB cap** and size-purging old
+      data, in AUTO capture mode. Now **200 MB, 30-day retention,
+      QUERY_CAPTURE_MODE = ALL**. (Consider reverting to AUTO once the
+      comparison is done — ALL costs a little overhead on 10 DTU.)
+- [x] Baselines snapshotted into `HC.PerfBaseline` via
+      `HC6.nonApi_capturePerfBaseline` so they survive retention.
+
+- [ ] **In a few days, capture the matching S0 window and compare:**
+      ```sql
+      EXEC HC6.nonApi_capturePerfBaseline 'S0-steady',
+           '2026-09-0X 01:00:00 +00:00', '2026-09-0X 05:00:00 +00:00';
+
+      SELECT ProcName, Label, StatementExecs, AvgStatementMs,
+             AvgLogicalReads, AvgPhysicalReads
+      FROM HC.PerfBaseline
+      WHERE Label IN ('S1-postPrune','S0-steady')
+      ORDER BY ProcName, Label;
+      ```
+      **Use the 01:00–05:00 UTC window specifically.** The only clean S1
+      baseline is `S1-postPrune` (2026-09-01 01:00–05:00): after the prune, so
+      the same data volume as now, and before the scale. Matching the hours
+      keeps time-of-day load out of the comparison.
+
+      Judge it on **AvgLogicalReads first** — if that differs, the two windows
+      did different work and the duration ratio is meaningless. Then
+      **AvgPhysicalReads**: still ~0 means the working set fits S0's smaller
+      buffer pool and there is no memory cliff.
+
+      ⚠️ `S1-prePrune` is nearly empty (only `nonApi_pruneLogs`). Query Store
+      was purging on size and running in AUTO mode, so most of the pre-scale
+      week is gone. Do not treat its absence as "nothing ran".
+
 ## Maintenance jobs — restored 2026-09-01
 
 - [x] **Re-enabled `HC_prune_logs` and `HC_rebiuld_indexes`** (2026-09-01
