@@ -14,15 +14,20 @@
       ```
       The other five maintenance workflows were left Enabled.
 
-- [ ] **Confirm the catch-up prune finished.** It was still running at the time
-      of writing (~27k rows/min, ETA ~23:50 UTC). Check:
-      `SELECT COUNT(*) FROM LOG.GeneralLog WHERE [Timestamp] < DATEADD(DAY,-90,SYSUTCDATETIME())`
-      — should be 0, likewise `HC.IntegrationJob.startedAt`. If not, re-run
-      the loop; every batch autocommits so it is safe to resume at any point.
+- [x] **Catch-up prune FINISHED** 2026-09-01 00:43:51, 100 micro-prune
+      iterations. Aged rows: GeneralLog 0, IntegrationJob 3 (the deliberately
+      retained latest-job-per-integration rows — this count floors at a handful
+      and never reaches zero by design). Oldest log row is now 2026-06-03,
+      exactly 90 days back. **Used space 5,812 MB → 2,801 MB: 3.0 GB freed**,
+      against a 10,240 MB cap. GeneralLog 3,077 → 675 MB (2.68M → 565k rows);
+      IntegrationJob 1,301 → 690 MB (430k → 32k rows).
 
-- [ ] **Run the index rebuild once the prune is done** — the deletes free a
-      large number of pages that stay allocated until a rebuild reclaims them.
-      This is the whole reason the prune was scheduled just before it.
+- [ ] **Run the index rebuild — now worth real space.** IntegrationJob still
+      occupies 690 MB for only 32k rows and GeneralLog 675 MB for 565k, so most
+      of what is left is index bloat the rebuild will reclaim. The data file is
+      still 8,192 MB allocated with 5,391 MB free inside it; that free space is
+      reusable and well under the 10,240 MB cap, so there is no need to shrink
+      the file — just rebuild.
 
 ## ⚠️ Every long maintenance Logic App reports Failed (pre-existing)
 
