@@ -1,33 +1,21 @@
 # DB TODO
 
-## ⚠️ FIRST THING: re-enable two Logic Apps (disabled 2026-08-31 ~21:40 UTC)
+## Maintenance jobs — restored 2026-09-01
 
-- [ ] **Re-enable `HC_prune_logs` and `HC_rebiuld_indexes`** — both were
-      DISABLED for one night only, so the 2.5M-row catch-up prune would not
-      collide with them on a 20 DTU database already at 100% Data IO.
-      ```bash
-      for W in HC_prune_logs HC_rebiuld_indexes; do
-        az resource update -g harrier -n $W \
-          --resource-type Microsoft.Logic/workflows \
-          --set properties.state=Enabled --query "properties.state" -o tsv
-      done
-      ```
-      The other five maintenance workflows were left Enabled.
-
+- [x] **Re-enabled `HC_prune_logs` and `HC_rebiuld_indexes`** (2026-09-01
+      05:40 UTC) and ran both manually. All seven workflows are Enabled.
 - [x] **Catch-up prune FINISHED** 2026-09-01 00:43:51, 100 micro-prune
-      iterations. Aged rows: GeneralLog 0, IntegrationJob 3 (the deliberately
-      retained latest-job-per-integration rows — this count floors at a handful
-      and never reaches zero by design). Oldest log row is now 2026-06-03,
-      exactly 90 days back. **Used space 5,812 MB → 2,801 MB: 3.0 GB freed**,
-      against a 10,240 MB cap. GeneralLog 3,077 → 675 MB (2.68M → 565k rows);
-      IntegrationJob 1,301 → 690 MB (430k → 32k rows).
-
-- [ ] **Run the index rebuild — now worth real space.** IntegrationJob still
-      occupies 690 MB for only 32k rows and GeneralLog 675 MB for 565k, so most
-      of what is left is index bloat the rebuild will reclaim. The data file is
-      still 8,192 MB allocated with 5,391 MB free inside it; that free space is
-      reusable and well under the 10,240 MB cap, so there is no need to shrink
-      the file — just rebuild.
+      iterations. Oldest log row is now exactly 90 days back. **Used space
+      5,812 MB → 2,801 MB of a 10,240 MB cap: 3.0 GB freed.**
+- [x] **`HC_prune_logs` Succeeded in 3.6s** — its first ever successful run.
+      Steady state fits inside the gateway window comfortably.
+- [x] **Index rebuild run — and it reclaimed ~9 MB, i.e. nothing.** The space
+      had already been released by the deletes themselves. The prune/rebuild
+      scheduling adjacency buys nothing; see the db-log-retention memory.
+- [ ] **Optional, not urgent:** `HC.IntegrationJob` is 681 MB for 32k rows
+      (~21 KB/row) because of five NVARCHAR(4000) columns, all in-row. A
+      rebuild or LOB compaction will NOT shrink it — only a shorter retention
+      for that table, or nulling those columns on old rows, would.
 
 ## ⚠️ Every long maintenance Logic App reports Failed (pre-existing)
 
