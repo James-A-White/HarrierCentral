@@ -1,40 +1,65 @@
 # DB TODO
 
-## S1 → S0 performance comparison (set up 2026-09-01)
+## Tier performance comparison — S0 / S1 / S0 (set up 2026-09-01)
 
-Database scaled **S1 (20 DTU) → S0 (10 DTU)** at ~05:45 UTC 2026-09-01.
+Scaled **S1 (20 DTU) → S0 (10 DTU)** at **2026-09-01 ~15:52 UTC** (from
+`master.sys.resource_stats`: last 20-DTU sample 15:46:49, first 10-DTU 15:58:16).
 
-- [x] Query Store fixed: it was at **8 MB of a 10 MB cap** and size-purging old
-      data, in AUTO capture mode. Now **200 MB, 30-day retention,
-      QUERY_CAPTURE_MODE = ALL**. (Consider reverting to AUTO once the
-      comparison is done — ALL costs a little overhead on 10 DTU.)
-- [x] Baselines snapshotted into `HC.PerfBaseline` via
-      `HC6.nonApi_capturePerfBaseline` so they survive retention.
+- [x] Query Store was at **8 MB of a 10 MB cap** and already size-purging the
+      pre-scale week. Now **200 MB / 30-day retention / QUERY_CAPTURE_MODE = ALL**.
+- [x] `HC6.nonApi_capturePerfBaseline` snapshots per-proc stats into
+      `HC.PerfBaseline`, stamped with the tier **actually in effect during the
+      window** — derived from `HC.TierLog`, not from the tier at capture time.
+      `HC.TierLog` is self-maintaining: every capture observes the live
+      `dtu_limit` and opens a new range when it changes.
+- [x] S1 baselines captured: **`S1-night`** (01:00–05:00) and **`S1-day`**
+      (07:00–15:00), both 2026-09-01, both post-prune so the data volume
+      matches today's.
 
-- [ ] **In a few days, capture the matching S0 window and compare:**
-      ```sql
-      EXEC HC6.nonApi_capturePerfBaseline 'S0-steady',
-           '2026-09-0X 01:00:00 +00:00', '2026-09-0X 05:00:00 +00:00';
+### The A/B/A plan
 
-      SELECT ProcName, Label, StatementExecs, AvgStatementMs,
-             AvgLogicalReads, AvgPhysicalReads
-      FROM HC.PerfBaseline
-      WHERE Label IN ('S1-postPrune','S0-steady')
-      ORDER BY ProcName, Label;
-      ```
-      **Use the 01:00–05:00 UTC window specifically.** The only clean S1
-      baseline is `S1-postPrune` (2026-09-01 01:00–05:00): after the prune, so
-      the same data volume as now, and before the scale. Matching the hours
-      keeps time-of-day load out of the comparison.
+Run a few days at S0, scale to S1 for a few days, then back to S0. Capturing
+S0 **twice** is what makes this clean — if the two S0 runs agree, any S1
+difference is really the tier; if they disagree, workload drifted and the
+whole comparison is suspect. A simple before/after cannot tell those apart.
 
-      Judge it on **AvgLogicalReads first** — if that differs, the two windows
-      did different work and the duration ratio is meaningless. Then
-      **AvgPhysicalReads**: still ~0 means the working set fits S0's smaller
-      buffer pool and there is no memory cliff.
+After each phase, capture BOTH a night and a day window:
 
-      ⚠️ `S1-prePrune` is nearly empty (only `nonApi_pruneLogs`). Query Store
-      was purging on size and running in AUTO mode, so most of the pre-scale
-      week is gone. Do not treat its absence as "nothing ran".
+```sql
+EXEC HC6.nonApi_capturePerfBaseline 'S0-run1-night', '<date> 01:00:00 +00:00', '<date> 05:00:00 +00:00';
+EXEC HC6.nonApi_capturePerfBaseline 'S0-run1-day',   '<date> 07:00:00 +00:00', '<date> 15:00:00 +00:00';
+-- then after scaling up: 'S1-run2-night' / 'S1-run2-day'
+-- then after scaling back: 'S0-run3-night' / 'S0-run3-day'
+```
+
+Compare like with like:
+
+```sql
+SELECT ProcName,
+       MAX(CASE WHEN Label LIKE 'S1-%night'      THEN AvgStatementMs END) AS S1_night,
+       MAX(CASE WHEN Label = 'S0-run1-night'     THEN AvgStatementMs END) AS S0_run1,
+       MAX(CASE WHEN Label = 'S0-run3-night'     THEN AvgStatementMs END) AS S0_run3,
+       MAX(CASE WHEN Label LIKE 'S1-%night'      THEN AvgLogicalReads END) AS S1_reads,
+       MAX(CASE WHEN Label = 'S0-run1-night'     THEN AvgLogicalReads END) AS S0_reads,
+       MAX(CASE WHEN Label = 'S0-run1-night'     THEN AvgPhysicalReads END) AS S0_physreads
+FROM HC.PerfBaseline
+WHERE Label LIKE '%night' GROUP BY ProcName ORDER BY ProcName;
+```
+
+Rules for reading it:
+1. **`TierChangedDuringWindow = 1` means the window spans a scale — discard it.**
+2. **Check `AvgLogicalReads` first.** If it differs between windows the two ran
+   different work and the duration ratio is meaningless.
+3. **`AvgPhysicalReads` is the real risk indicator.** Still ~0 at S0 means the
+   working set fits the smaller buffer pool. If it climbs, that is the memory
+   cliff and it hurts far more than linearly.
+4. **Match the time of day.** Proven necessary: `nonApi_checkReminders` ran
+   36.66 ms at night and 29.66 ms by day on the SAME tier with identical reads.
+   A night-vs-day comparison invents a 1.24x effect out of nothing.
+5. Skip the first hour after any scale — cold buffer pool.
+
+- [ ] When finished, consider setting `QUERY_CAPTURE_MODE` back to `AUTO`;
+      `ALL` costs a little overhead on 10 DTU.
 
 ## Maintenance jobs — restored 2026-09-01
 
