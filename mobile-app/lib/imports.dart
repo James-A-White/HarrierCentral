@@ -7,7 +7,7 @@
 // Organisation:
 //   1. Dart SDK
 //   2. Third-party packages
-//   3. Internal shared packages (ive_flutter_core / ive_flutter_core_mobile)
+//   3. Internal shared package (ive_flutter_core) + vendored core_mobile
 //   4. Local — package:harrier_central/... grouped by top-level folder
 //
 // Keep each section alphabetically sorted. When adding a new local file, drop
@@ -70,7 +70,8 @@ export 'package:url_launcher/url_launcher.dart';
 export 'package:uuid/uuid.dart';
 
 // -----------------------------------------------------------------------------
-// 3. Internal shared packages (ive_flutter_core / ive_flutter_core_mobile)
+// 3. Internal shared package (ive_flutter_core) + vendored core_mobile
+//    (core_mobile was vendored 2026-09-02 — see lib/core_mobile/ headers)
 // -----------------------------------------------------------------------------
 export 'package:ive_flutter_core/util/core_utilities.dart';
 export 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
@@ -78,10 +79,10 @@ export 'package:ive_flutter_core/widgets/fancy_divider.dart';
 export 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 export 'package:ive_flutter_core/widgets/qr_popup.dart';
 export 'package:ive_flutter_core/widgets/zoomable_image_page.dart';
-export 'package:ive_flutter_core_mobile/database/base_service.dart';
-export 'package:ive_flutter_core_mobile/database/database.dart';
-export 'package:ive_flutter_core_mobile/database/migrations.dart';
-export 'package:ive_flutter_core_mobile/util/connection.dart';
+export 'package:harrier_central/core_mobile/database/base_service.dart';
+export 'package:harrier_central/core_mobile/database/database.dart';
+export 'package:harrier_central/core_mobile/database/migrations.dart';
+export 'package:harrier_central/core_mobile/util/connection.dart';
 
 // -----------------------------------------------------------------------------
 // 4. Local — package:harrier_central/...
