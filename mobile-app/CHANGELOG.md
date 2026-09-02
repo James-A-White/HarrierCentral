@@ -1,5 +1,18 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.6+1321 (2026-09-02) — final 3.0 feature release
+
+Closes out the 3.0 track. Payment work continues on 3.1.
+
+### Fixes
+- **Run tracking can no longer be started hours before a run.** The "Track my
+  run" button on a run's map now appears 5 minutes before the start, matching
+  the live run screen — it used to appear up to 15 hours early, which put
+  runners on the map for runs that had not begun.
+- **A queued payment no longer fails to send after the app is suspended.** It
+  waits and retries, which is what the payment queue is for, instead of
+  erroring.
+
 ## 3.0.5+1320 (2026-08-31)
 
 ### Fixes
