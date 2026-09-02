@@ -1187,14 +1187,38 @@ class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
               final RunPhotoModel p = _featured[i];
               return GestureDetector(
                 onTap: () async {
+                  // MapPhotoPage, not ZoomableImagePage2: it takes the whole
+                  // set plus a starting index, so the viewer opens as a
+                  // carousel you can swipe through. ZoomableImagePage2 takes a
+                  // single imageUrl, which left the strip as a set of dead
+                  // ends — tap a photo, look, back out, tap the next.
+                  //
+                  // Edit fields are deliberately omitted: the strip only knows
+                  // the event, not the kennel slug/number the edit path needs,
+                  // and MapPhotoPage hides those affordances when they are
+                  // null. Run details is for looking, not editing.
+                  final List<MapPhotoItem> items = _featured
+                      .map(
+                        (RunPhotoModel photo) => MapPhotoItem(
+                          imageUrl: photo.effectiveUrl,
+                          caption: photo.displayCaption,
+                          uploaderName: photo.uploaderDisplayName ?? '',
+                          capturedAt: photo.createdAt.year > 1
+                              ? photo.createdAt
+                              : null,
+                          latitude: photo.latitude,
+                          longitude: photo.longitude,
+                        ),
+                      )
+                      .toList(growable: false);
                   await Navigator.push<void>(
                     context,
                     MaterialPageRoute<void>(
-                      builder: (BuildContext context) => ZoomableImagePage2(
+                      builder: (BuildContext context) => MapPhotoPage(
                         key: Key('featured-${widget.eventId}-$i'),
                         pageTitle: widget.eventName,
-                        imageUrl: p.effectiveUrl,
-                        appBarBackgroundColor: themeAppBarBackground,
+                        photos: items,
+                        initialIndex: i,
                         background: Backgrounds.defaultHcBackground(),
                       ),
                     ),
