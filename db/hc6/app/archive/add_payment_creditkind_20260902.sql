@@ -1,64 +1,62 @@
 -- =====================================================================
--- RUN-ONCE: HC.Payment.CreditKind — paid vs promotional credit
+-- RUN-ONCE: HC.Payment.CreditKind - paid vs promotional credit
 --
--- ⚠️ JAMES MUST RUN THIS. Not run autonomously: HC.Payment is a synced
---    table carrying trgUpdateModifiedOnDateForPayment, and the project rule
---    is that no ALTER TABLE ADD COLUMN goes near a synced table without the
---    trigger being disabled first. ~91,000 payment rows would otherwise risk
---    a fresh updatedAt each, and every client would re-sync the lot.
+-- HC.Payment is a synced table carrying trgUpdateModifiedOnDateForPayment.
+-- The project rule is that no ALTER TABLE ADD COLUMN goes near a synced
+-- table without the trigger being disabled first: ~91,000 rows would
+-- otherwise risk a fresh updatedAt each, and every client would re-sync
+-- the lot. James gave explicit approval to run this on 2026-09-02.
 --
---    (For what it is worth, adding a fixed-length NOT NULL column with a
---    DEFAULT should be metadata-only on Azure SQL — no row updates, and DML
---    triggers do not fire on DDL anyway. The disable/enable below is belt and
---    braces, and costs nothing.)
+-- (Adding a fixed-length NOT NULL column with a DEFAULT should be
+-- metadata-only on Azure SQL - no row updates - and DML triggers do not
+-- fire on DDL anyway. The disable/enable is belt and braces and costs
+-- nothing. The verification at the end proves whether anything churned.)
+--
+-- Batches are separated by GO so the ENABLE TRIGGER still runs even if the
+-- ALTER fails. Kept ASCII-only: non-ASCII in comments broke sqlcmd parsing
+-- on the first attempt.
 --
 -- WHY THE COLUMN IS NEEDED
 --   Credit is a running SUM(NetPayment) per (UserId, KennelId). To spend
---   promotional credit FIRST you must know, for every row, which bucket it
---   moves — and a spend cannot be inferred: paying a run fee from credit is
---   PaymentType 6 ('H', Hash Credit) whether it draws on cash or on a bonus.
---   With CreditKind the balance splits cleanly:
+--   promotional credit FIRST you must know which bucket every row moves,
+--   and a spend cannot be inferred: paying a run fee from credit is
+--   PaymentType 6 ('H', Hash Credit) whether it draws on cash or a bonus.
 --       promoBalance = SUM(NetPayment) WHERE CreditKind = 2
 --       paidBalance  = SUM(NetPayment) WHERE CreditKind = 1
---   and a spend that straddles the boundary is written as two rows.
+--   A spend straddling the boundary is written as two rows.
 --
 --   Existing rows default to 1 (paid), which is correct: no promotional
 --   credit has ever been issued.
 --
--- ALSO ALLOCATED BY THIS WORK (no schema change needed, values are free):
+-- ALSO ALLOCATED BY THIS WORK (values are free, no schema change needed):
 --   ProductType 4 = kennel credit purchase / grant
---       (1 = run fee, 90,899 rows; 2 = membership, 4; 3 = haberdashery, 1)
---   PaymentType 9 = 'P' / 'Promotional' — a grant, no tender taken
---       (existing: 0 ?, 1 X, 2 F Free, 3 C Cash, 4 B Bank Transfer,
+--       (1 = run fee 90,899 rows; 2 = membership 4; 3 = haberdashery 1)
+--   PaymentType 9 = 'P' / 'Promotional' - a grant, no tender taken
+--       (existing 0 ?, 1 X, 2 F Free, 3 C Cash, 4 B Bank Transfer,
 --        5 C?, 6 H Hash Credit, 7 B?, 8 H?)
 -- =====================================================================
-SET XACT_ABORT ON;
-
-IF EXISTS (SELECT 1 FROM sys.columns
-           WHERE object_id = OBJECT_ID('HC.Payment') AND name = 'CreditKind')
-BEGIN
-    PRINT 'CreditKind already present — nothing to do.';
-    RETURN;
-END
 
 DISABLE TRIGGER HC.trgUpdateModifiedOnDateForPayment ON HC.Payment;
+GO
 
-BEGIN TRY
+IF NOT EXISTS (SELECT 1 FROM sys.columns
+               WHERE object_id = OBJECT_ID('HC.Payment') AND name = 'CreditKind')
     ALTER TABLE HC.Payment
         ADD CreditKind SMALLINT NOT NULL
-            CONSTRAINT DF_Payment_CreditKind DEFAULT (1);   -- 1 = paid, 2 = promotional
-END TRY
-BEGIN CATCH
-    ENABLE TRIGGER HC.trgUpdateModifiedOnDateForPayment ON HC.Payment;
-    THROW;
-END CATCH
+            CONSTRAINT DF_Payment_CreditKind DEFAULT (1);
+GO
 
 ENABLE TRIGGER HC.trgUpdateModifiedOnDateForPayment ON HC.Payment;
+GO
 
--- Confirm nothing was churned: UpdatedAt should NOT have moved.
-SELECT COUNT(*) AS PaymentsTouchedInLastMinute
-FROM   HC.Payment WITH (NOLOCK)
-WHERE  updatedAt >= DATEADD(MINUTE, -1, SYSUTCDATETIME());
+SET NOCOUNT ON;
 
-SELECT CreditKind, COUNT(*) AS Rows_
-FROM   HC.Payment WITH (NOLOCK) GROUP BY CreditKind;
+SELECT (SELECT COUNT(*) FROM sys.columns
+        WHERE object_id = OBJECT_ID('HC.Payment') AND name = 'CreditKind') AS ColumnPresent,
+       (SELECT is_disabled FROM sys.triggers
+        WHERE parent_id = OBJECT_ID('HC.Payment')
+          AND name = 'trgUpdateModifiedOnDateForPayment')                  AS TriggerDisabled,
+       (SELECT COUNT(*) FROM HC.Payment WITH (NOLOCK)
+        WHERE updatedAt >= DATEADD(MINUTE, -5, SYSUTCDATETIME()))          AS RowsChurnedLast5Min;
+
+SELECT CreditKind, COUNT(*) AS Rows_ FROM HC.Payment WITH (NOLOCK) GROUP BY CreditKind;
