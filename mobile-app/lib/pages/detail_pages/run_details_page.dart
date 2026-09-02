@@ -20,6 +20,17 @@ class RunDetailsPage extends StatefulWidget {
 class RunDetailsPageState extends State<RunDetailsPage> {
   late RunDetailsAggregate _futureRun;
 
+  /// True once the run has actually begun.
+  ///
+  /// A run that has not happened yet cannot have photos, so the photo-review
+  /// doorway stays shut until the off. Compared as an INSTANT
+  /// (eventStartDatetimeGmt), never the local wall clock — see
+  /// /hc-event-datetimes; the raw EventStartDatetime carries a spurious
+  /// +00:00 on most rows and would put runs hours out.
+  bool get _runHasStarted => DateTime.now().toUtc().isAfter(
+    _futureRun.event.eventStartDatetimeGmt.toUtc(),
+  );
+
   @override
   void initState() {
     super.initState();
@@ -61,12 +72,14 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           // Photos doorway — its own entry (derived), so a photo-only role
           // (e.g. Hash Flash) reaches per-run photo review without needing run
           // admin. Shown to anyone who can act in the photos area.
-          (!canEnterArea(
-            PermissionArea.photos,
-            appAccessFlags: _futureRun.extensions.appAccessFlags,
-            mismanagementRoles: _futureRun.extensions.mismanagementRoles,
-            kennelOverrideJson: _futureRun.kennel.permissionOverrideJson,
-          ))
+          (!_runHasStarted ||
+                  !canEnterArea(
+                    PermissionArea.photos,
+                    appAccessFlags: _futureRun.extensions.appAccessFlags,
+                    mismanagementRoles: _futureRun.extensions.mismanagementRoles,
+                    kennelOverrideJson:
+                        _futureRun.kennel.permissionOverrideJson,
+                  ))
               ? const SizedBox.shrink()
               : IconButton(
                   icon: const Icon(Icons.photo_library, color: Colors.white),
