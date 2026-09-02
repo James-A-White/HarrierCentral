@@ -140,7 +140,13 @@ class RunTrackerMap extends StatelessWidget {
                       }
                     },
                     child: Container(
-                      color: Colors.black.withValues(alpha: 0.55),
+                      // The Harrier Central jungle, same as everywhere else.
+                      // This was a flat 55% black scrim — a sensible treatment
+                      // when the rose overlaid the map, but the rose REPLACES
+                      // the map rather than sitting on it, so in fullscreen
+                      // there was nothing behind it and the surround read as
+                      // bare page.
+                      decoration: Backgrounds.defaultHcBackground(),
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 92),
                       // Own Obx: under north-lock roseFacingDeg follows the
                       // compass, which ticks every ≥2°. Reading it here (not
@@ -580,7 +586,11 @@ class RunTrackerMap extends StatelessWidget {
     return Obx(() {
       controller.stalenessTick.value; // re-evaluate every 15 s
       final DateTime? at = controller.lastServerUpdateAt.value;
-      if (at == null || !controller.isLiveWindow) {
+      // A fetch landing is not the same as there being anything to show. On a
+      // run nobody has tracked, the poll still succeeds and this said "Tracks
+      // updated just now" over an empty map — implying tracks exist and are
+      // fresh. Freshness of nothing is not information.
+      if (at == null || !controller.isLiveWindow || !controller.hasAnyTrackData) {
         return const SizedBox.shrink();
       }
       final int secs = DateTime.now().difference(at).inSeconds;

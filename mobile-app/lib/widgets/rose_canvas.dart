@@ -100,10 +100,13 @@ class RosePainter extends CustomPainter {
     final rot = heading ?? 0.0; // heading-up when we have a compass
 
     // Face + range rings. The two inner rings are quarter and half range.
+    // Face kept dark and near-opaque so the rose still reads exactly as it
+    // did against the old flat scrim. At the previous 0.28 the jungle behind
+    // would show straight through the face and swamp the blips.
     canvas.drawCircle(
       center,
       R,
-      Paint()..color = Colors.black.withValues(alpha: 0.28),
+      Paint()..color = Colors.black.withValues(alpha: 0.82),
     );
     final ringPaint = Paint()
       ..style = PaintingStyle.stroke
