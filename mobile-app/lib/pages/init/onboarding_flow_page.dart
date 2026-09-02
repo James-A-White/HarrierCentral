@@ -14,7 +14,13 @@ class OnboardingFlowPage extends StatelessWidget {
     return Obx(
       () => Scaffold(
         backgroundColor: c.activeSlide.backgroundColor,
+        // minimum bottom inset, not just SafeArea: some Android models
+        // under-report the bottom inset under edge-to-edge, which left Skip /
+        // Next / OK sitting under the gesture bar and unreachable. A floor
+        // guarantees clearance even when the inset comes back as zero, and
+        // costs nothing on devices that report it correctly.
         body: SafeArea(
+          minimum: const EdgeInsets.only(bottom: 24),
           child: Column(
             children: <Widget>[
               Expanded(
@@ -95,7 +101,9 @@ class _BottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final OnboardingFlowController c = controller;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
+      // Lifted from 10 to 16: combined with the SafeArea floor above this
+      // moves the nav row ~30px clear of the bottom edge.
+      padding: const EdgeInsets.fromLTRB(8, 10, 8, 16),
       child: Row(
         children: <Widget>[
           Expanded(
