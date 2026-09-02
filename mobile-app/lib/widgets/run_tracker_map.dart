@@ -103,7 +103,6 @@ class RunTrackerMap extends StatelessWidget {
                       sortByProximity: controller.listSortByProximity.value,
                       viewerFixAvailable: controller.viewerLatLng != null,
                       originLabel: controller.roseFocusRunnerLabel,
-                      originIsViewer: controller.roseFocusIsViewer,
                       onSortChanged: (prox) =>
                           controller.listSortByProximity.value = prox,
                       // Selection only — no recenter: the map isn't showing,

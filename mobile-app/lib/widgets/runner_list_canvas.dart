@@ -42,7 +42,6 @@ class RunnerListCanvas extends StatelessWidget {
     required this.sortByProximity,
     required this.viewerFixAvailable,
     required this.originLabel,
-    required this.originIsViewer,
     required this.onSortChanged,
     required this.onTapRunner,
   });
@@ -57,16 +56,14 @@ class RunnerListCanvas extends StatelessWidget {
   final bool viewerFixAvailable;
 
   /// Who every row is measured FROM — 'you' when the viewer is the origin,
-  /// otherwise the selected runner's name. Separations follow the selection,
-  /// so the label has to as well or the numbers read as nonsense: select
-  /// somebody else and every row silently changed meaning while still
-  /// claiming "from you".
+  /// otherwise the selected runner's name. Shown once as a caption above the
+  /// list rather than repeated beside every distance. Separations follow the
+  /// selection, so this has to as well, or the numbers silently change meaning
+  /// when somebody is selected.
+  ///
+  /// The viewer's own row is still identifiable: the name column renders
+  /// "<name> (you)".
   final String originLabel;
-
-  /// Whether that origin is the viewer. Only then does the viewer's own row
-  /// collapse to "that's you" — when somebody ELSE is the origin the viewer
-  /// has a real, useful separation to show.
-  final bool originIsViewer;
 
   final void Function(bool sortByProximity) onSortChanged;
   final void Function(String userId) onTapRunner;
@@ -104,6 +101,21 @@ class RunnerListCanvas extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
+        // Said once here rather than on all N rows. Repeating "from Pussy
+        // Printer" beside every distance crowded the row and buried the
+        // number, which is the part people actually read.
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Text(
+            'Distances shown are from $originLabel',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.yellow.withValues(alpha: 0.9),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
         Expanded(
           child: ListView.builder(
             // Generous bottom padding so the last rows can scroll clear of the
@@ -233,11 +245,9 @@ class RunnerListCanvas extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    (e.isSelf && originIsViewer)
-                        ? 'that\'s you'
-                        : e.metersFromMe == null
-                        ? '— from $originLabel'
-                        : '${_separationLabel(e.metersFromMe!)} from $originLabel',
+                    e.metersFromMe == null
+                        ? '—'
+                        : _separationLabel(e.metersFromMe!),
                     style: TextStyle(
                       color: Colors.yellow.withValues(alpha: 0.9),
                       fontSize: 12,
