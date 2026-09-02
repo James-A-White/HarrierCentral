@@ -24,3 +24,20 @@ class AsyncSerializer {
     return result;
   }
 }
+
+/// The single queue every local sync write goes through.
+///
+/// The per-service serialisers guard each service against ITSELF, but the
+/// three domains do not own separate physical tables: SyncEventAdminService
+/// writes `_commonTables` with `AppDomainType.user` as well as its own event
+/// tables, and all three services write `common_hashers` (hashers exist only
+/// in the common domain). Three independent queues therefore never protected
+/// a shared table from a different service — a user sync and an event sync
+/// could still double-insert the same rows.
+///
+/// Nesting is safe and deliberate: this is a DIFFERENT instance from the
+/// per-service queues, and nothing inside a write calls back out to a
+/// service-level action, so there is no cycle to deadlock on.
+///
+/// SQLite is a single-writer store anyway, so serialising costs little.
+final AsyncSerializer localDbSyncWrites = AsyncSerializer();

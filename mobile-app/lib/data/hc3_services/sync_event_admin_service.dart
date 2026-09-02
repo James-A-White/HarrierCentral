@@ -308,24 +308,29 @@ class SyncEventAdminService {
     String jsonResults, {
     Function? informUser,
   }) async {
-    final String stripped = ServiceCommon.stripSuccessEnvelope(jsonResults);
+    // Both writes inside ONE queued action: this method writes the COMMON
+    // tables as well as the event ones, so splitting them would let another
+    // service interleave between the two halves.
+    return localDbSyncWrites.run(() async {
+      final String stripped = ServiceCommon.stripSuccessEnvelope(jsonResults);
 
-    List<dynamic> results = await tableModel.baseService
-        .updateSqlTablesFromJsonWithAdHocData(
+      List<dynamic> results = await tableModel.baseService
+          .updateSqlTablesFromJsonWithAdHocData(
+            stripped,
+            _commonTables,
+            database,
+            AppDomainType.user,
+          );
+
+      results.addAll(
+        await tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
           stripped,
-          _commonTables,
+          _eventTables,
           database,
-          AppDomainType.user,
-        );
-
-    results.addAll(
-      await tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
-        stripped,
-        _eventTables,
-        database,
-        AppDomainType.event,
-      ),
-    );
-    return results;
+          AppDomainType.event,
+        ),
+      );
+      return results;
+    });
   }
 }

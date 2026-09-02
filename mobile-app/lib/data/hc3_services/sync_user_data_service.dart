@@ -369,14 +369,19 @@ class SyncUserDataService {
     String? batchText,
     List<BaseTableHelper>? tables,
   }) async {
-    return tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
-      ServiceCommon.stripSuccessEnvelope(jsonResults),
-      tables ?? _userTables,
-      database,
-      AppDomainType.user,
-      informUser: informUser,
-      suppressDeletes: suppressDeletes,
-      batchText: batchText ?? '',
+    // Serialised: write SPs apply their sync rowsets straight through here,
+    // outside the updateFromBackend guard, which is how an RSVP landing during
+    // a background sync doubled rows.
+    return localDbSyncWrites.run(
+      () => tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
+        ServiceCommon.stripSuccessEnvelope(jsonResults),
+        tables ?? _userTables,
+        database,
+        AppDomainType.user,
+        informUser: informUser,
+        suppressDeletes: suppressDeletes,
+        batchText: batchText ?? '',
+      ),
     );
   }
 
@@ -387,14 +392,16 @@ class SyncUserDataService {
     String? batchText,
     List<BaseTableHelper>? tables,
   }) async {
-    return tableModel.baseService.updateSqlTablesFromJsonWithPaging(
-      jsonResults,
-      tables ?? _userTables,
-      database,
-      AppDomainType.user,
-      informUser: informUser,
-      suppressDeletes: suppressDeletes,
-      batchText: batchText ?? '',
+    return localDbSyncWrites.run(
+      () => tableModel.baseService.updateSqlTablesFromJsonWithPaging(
+        jsonResults,
+        tables ?? _userTables,
+        database,
+        AppDomainType.user,
+        informUser: informUser,
+        suppressDeletes: suppressDeletes,
+        batchText: batchText ?? '',
+      ),
     );
   }
 }
