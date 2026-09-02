@@ -355,24 +355,29 @@ class RunTrackerMapController extends GetxController
     return latlng.LatLng(lat, lon);
   }
 
-  /// Where "me" is for the list's separation column, at the playhead.
+  /// The point the list's separation column measures FROM, at the playhead.
   ///
-  /// The viewer's OWN track position, not wherever the phone happens to be
-  /// sitting. Reviewing yesterday's London run from Cologne otherwise reported
-  /// ~496 km for every runner — wrong, and useless twice over, because every
-  /// row got the same number so the proximity sort ranked nothing.
+  /// [roseFocusRunner]'s position, so the list and the rose always agree about
+  /// who the centre of the world is — select a runner and both re-centre on
+  /// them. Defaults to the viewer when nothing is selected.
   ///
-  /// Anchored on the viewer specifically, NOT on [roseFocusRunner]: the rose
-  /// re-centres when you select a runner, but this column answers "how far
-  /// from ME", so selecting somebody must not silently change what it means.
-  /// A consequence worth knowing: the viewer's own row is now always 0.
+  /// Taken from the TRACK, not from the live device fix: reviewing yesterday's
+  /// London run from Cologne otherwise reported ~496 km for every runner, which
+  /// is wrong and useless twice over, because every row got the same number so
+  /// the proximity sort ranked nothing.
   ///
-  /// Falls back to the live fix only for a viewer with no track of their own —
-  /// a spectator who did not run it has no historical position to measure from.
+  /// [_interpolatedPosition] gives the behaviour we want at both ends for free:
+  /// a null cutoff returns the latest point (live, playhead parked at the end),
+  /// a cutoff between two points interpolates, and a cutoff past the last point
+  /// clamps to it. So scrubbing mid-run does its best with what has arrived.
+  ///
+  /// Falls back to the live fix only when the focus runner has no usable
+  /// position — a spectator watching a run they did not run has no track of
+  /// their own to measure from.
   latlng.LatLng? _listOriginAt(double? cutoff) {
-    final mine = _runnerById(_currentUserId);
-    if (mine != null) {
-      final at = _interpolatedPosition(mine, cutoff);
+    final focus = roseFocusRunner;
+    if (focus != null) {
+      final at = _interpolatedPosition(focus, cutoff);
       if (at != null) return latlng.LatLng(at.lat, at.lng);
     }
     return viewerLatLng;
