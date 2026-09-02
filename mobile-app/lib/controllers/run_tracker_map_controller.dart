@@ -232,6 +232,16 @@ class RunTrackerMapController extends GetxController
     return visibleRunners.isEmpty ? null : visibleRunners.first;
   }
 
+  /// True when the rose/list origin is the viewer themselves — i.e. nothing is
+  /// selected, or they selected their own row. Drives whether the list says
+  /// "from you" or names the runner.
+  bool get roseFocusIsViewer {
+    final focus = roseFocusRunner;
+    return focus != null &&
+        _currentUserId != null &&
+        normalizeUuid(focus.id) == normalizeUuid(_currentUserId);
+  }
+
   /// Name of the runner the rose is centred on, for the readout.
   String get roseFocusRunnerLabel {
     final focus = roseFocusRunner;

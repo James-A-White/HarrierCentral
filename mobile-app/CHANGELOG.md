@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.8+1323 (2026-09-02)
+
+### Fixes
+- **The runner list now says who it is measuring from.** Select Hard On On and
+  his row reads "0 m from Hard On On" and yours reads "153 m from Hard On On" —
+  it used to say "from you" whoever was selected, and your own row hid its
+  distance behind "that's you" even when somebody else was the centre.
+
 ## 3.0.7+1322 (2026-09-02)
 
 ### Fixes

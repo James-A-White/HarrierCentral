@@ -41,6 +41,8 @@ class RunnerListCanvas extends StatelessWidget {
     required this.selectedRunnerId,
     required this.sortByProximity,
     required this.viewerFixAvailable,
+    required this.originLabel,
+    required this.originIsViewer,
     required this.onSortChanged,
     required this.onTapRunner,
   });
@@ -53,6 +55,18 @@ class RunnerListCanvas extends StatelessWidget {
   /// one the pill still shows (so the option is discoverable) but explains
   /// itself instead of silently sorting by nothing.
   final bool viewerFixAvailable;
+
+  /// Who every row is measured FROM — 'you' when the viewer is the origin,
+  /// otherwise the selected runner's name. Separations follow the selection,
+  /// so the label has to as well or the numbers read as nonsense: select
+  /// somebody else and every row silently changed meaning while still
+  /// claiming "from you".
+  final String originLabel;
+
+  /// Whether that origin is the viewer. Only then does the viewer's own row
+  /// collapse to "that's you" — when somebody ELSE is the origin the viewer
+  /// has a real, useful separation to show.
+  final bool originIsViewer;
 
   final void Function(bool sortByProximity) onSortChanged;
   final void Function(String userId) onTapRunner;
@@ -219,11 +233,11 @@ class RunnerListCanvas extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    e.isSelf
+                    (e.isSelf && originIsViewer)
                         ? 'that\'s you'
                         : e.metersFromMe == null
-                        ? '— from you'
-                        : '${_separationLabel(e.metersFromMe!)} from you',
+                        ? '— from $originLabel'
+                        : '${_separationLabel(e.metersFromMe!)} from $originLabel',
                     style: TextStyle(
                       color: Colors.yellow.withValues(alpha: 0.9),
                       fontSize: 12,
