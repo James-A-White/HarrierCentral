@@ -22,6 +22,15 @@ DeviceInfo? get deviceInfoOrNull =>
     Get.isRegistered<DeviceInfo>() ? Get.find<DeviceInfo>() : null;
 TableModel get tableModel => Get.find<TableModel>();
 Database get database => Get.find<Database>();
+
+/// Null-safe accessors for the two services background work touches after a
+/// GetX teardown. Same rationale as [deviceInfoOrNull]: a suspended app still
+/// runs timers, app-resume and connectivity callbacks, and an unguarded
+/// `Get.find` in one of those throws instead of simply deferring the work.
+Database? get databaseOrNull =>
+    Get.isRegistered<Database>() ? Get.find<Database>() : null;
+TableModel? get tableModelOrNull =>
+    Get.isRegistered<TableModel>() ? Get.find<TableModel>() : null;
 NetworkService get networkService => Get.find<NetworkService>();
 NotificationService get notificationService => Get.find<NotificationService>();
 

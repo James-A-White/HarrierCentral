@@ -168,6 +168,21 @@ class PaymentOutboxService extends GetxService with WidgetsBindingObserver {
   Future<void> flush() async {
     if (_flushing || pending.isEmpty) return;
     if (Utilities.isNotConnected()) return;
+
+    // The outbox flushes from a timer, app-resume and connectivity callbacks,
+    // any of which can fire while GetX is torn down (suspend, logout-restart).
+    // The send path reads `database` and `tableModel` through unguarded
+    // Get.find, so without this it THROWS rather than retrying later — and
+    // what fails to send is a queued PAYMENT. Observed 4x in the week to
+    // 2026-09-01: "Database not found" from PaymentsService.sendPending.
+    // Entries stay queued; the next trigger picks them up.
+    if (databaseOrNull == null || tableModelOrNull == null) {
+      BootLogger.logBreadcrumb(
+        'PaymentOutbox: flush deferred — GetX services not registered',
+      );
+      return;
+    }
+
     _flushing = true;
     _ticksSinceFlush = 0;
     try {
