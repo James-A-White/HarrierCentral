@@ -355,14 +355,38 @@ class RunTrackerMapController extends GetxController
     return latlng.LatLng(lat, lon);
   }
 
+  /// Where "me" is for the list's separation column, at the playhead.
+  ///
+  /// The viewer's OWN track position, not wherever the phone happens to be
+  /// sitting. Reviewing yesterday's London run from Cologne otherwise reported
+  /// ~496 km for every runner — wrong, and useless twice over, because every
+  /// row got the same number so the proximity sort ranked nothing.
+  ///
+  /// Anchored on the viewer specifically, NOT on [roseFocusRunner]: the rose
+  /// re-centres when you select a runner, but this column answers "how far
+  /// from ME", so selecting somebody must not silently change what it means.
+  /// A consequence worth knowing: the viewer's own row is now always 0.
+  ///
+  /// Falls back to the live fix only for a viewer with no track of their own —
+  /// a spectator who did not run it has no historical position to measure from.
+  latlng.LatLng? _listOriginAt(double? cutoff) {
+    final mine = _runnerById(_currentUserId);
+    if (mine != null) {
+      final at = _interpolatedPosition(mine, cutoff);
+      if (at != null) return latlng.LatLng(at.lat, at.lng);
+    }
+    return viewerLatLng;
+  }
+
   /// Rows for the list canvas, sorted per [listSortByProximity]. Distances are
   /// taken AT THE SCRUB POSITION (same interpolation as the map and rose), so
-  /// scrubbing the replay reorders the leaderboard live. Proximity is measured
-  /// from the viewer's own position and is null without a fix — those rows
-  /// sort to the bottom under proximity ordering.
+  /// scrubbing the replay reorders the leaderboard live. Separation is measured
+  /// from the viewer's own position AT THAT MOMENT (see [_listOriginAt]) and is
+  /// null when there is nothing to measure from — those rows sort to the bottom
+  /// under proximity ordering.
   List<RunnerListEntry> get runnerListEntries {
     final cutoff = timelineAvailable ? currentTimestampMs.value : null;
-    final latlng.LatLng? me = viewerLatLng;
+    final latlng.LatLng? me = _listOriginAt(cutoff);
     final out = <RunnerListEntry>[];
     for (final user in visibleRunners) {
       final at = _interpolatedPosition(user, cutoff);
