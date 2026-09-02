@@ -21,6 +21,7 @@ namespace HcWebApi.Endpoints
     {
         private readonly ILogger<AppApiHC6> log;
         private readonly TableClient _tableClient;
+        private bool _tokenTableEnsured;
 
         public AppApiHC6(ILogger<AppApiHC6> logger)
         {
@@ -30,21 +31,50 @@ namespace HcWebApi.Endpoints
             var tableName = "FcmTokensForAppApi";
             var serviceClient = new TableServiceClient(connectionString);
             _tableClient = serviceClient.GetTableClient(tableName);
-            _tableClient.CreateIfNotExists();
+            // CreateIfNotExists() used to run HERE. It is a Table Storage network
+            // call made on every construction, before the handler exists — so a
+            // cold start or a storage blip threw where nothing could catch it and
+            // the host returned a bare 500, for ANY queryType including the
+            // checkConnection ping. Ensured lazily now, only where the table is
+            // actually touched (the two FCM token paths).
+        }
+
+        /// Creates the FCM token table on first use. Only the token paths need it,
+        /// so no other request can be failed by Table Storage being unavailable.
+        private async Task EnsureTokenTableAsync()
+        {
+            if (_tokenTableEnsured) return;
+            await _tableClient.CreateIfNotExistsAsync();
+            _tokenTableEnsured = true;
         }
 
         [Function("AppApiHC6")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
 
-            string connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString")
-                ?? throw new InvalidOperationException("HcDbConnectionString is not set in the environment.");
+            // This prologue used to sit OUTSIDE the SP dispatcher's try/catch further
+            // down, so a failed body read, an unparseable payload or a missing
+            // connection string threw straight past the handler: the host returned a
+            // bare 500, LogError never ran, and no SP was reached so there was no
+            // HC.ErrorLog row either. Clients saw 500s that left no trace anywhere.
+            dynamic? data;
+            string requestBody;
+            try
+            {
+                requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                data = JsonConvert.DeserializeObject(requestBody);
+            }
+            catch (Exception ex)
+            {
+                log.LogError("AppApiHC6 could not read the request body: {Message}", ex.Message);
+                return new BadRequestObjectResult("Unreadable request body.");
+            }
 
-
-            // Parse the request body
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody)
-     ?? throw new InvalidOperationException("Failed to deserialize the request body.");
+            if (data == null)
+            {
+                log.LogInformation("Empty or unparseable request body.");
+                return new BadRequestObjectResult("Unreadable request body.");
+            }
 
             // Validate queryType first — required for all calls including checkConnection
             if (data.queryType == null)
@@ -54,10 +84,19 @@ namespace HcWebApi.Endpoints
             }
 
             // checkConnection is an unauthenticated ping — return immediately without
-            // touching the SP dispatcher or opening a DB connection.
+            // touching the SP dispatcher or opening a DB connection. Answered BEFORE
+            // the connection string is read: the ping does not need the database, so
+            // a misconfigured or missing connection string must never fail it.
             if ((string?)data.queryType == "checkConnection")
             {
                 return new OkObjectResult(new { connected = true });
+            }
+
+            string? connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString");
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                log.LogError("HcDbConnectionString is not set in the environment.");
+                return new StatusCodeResult(500);
             }
 
             // Pre-auth queries use the global shared token and have no device record yet.
@@ -421,6 +460,7 @@ namespace HcWebApi.Endpoints
             try
             {
                 // Try to retrieve the existing token entity
+                await EnsureTokenTableAsync();
                 var response = await _tableClient.GetEntityIfExistsAsync<DeviceTokenEntity>(partitionKey, rowKey);
 
                 if (response.HasValue)
@@ -468,6 +508,7 @@ namespace HcWebApi.Endpoints
                     LastUpdated = DateTimeOffset.UtcNow
                 };
 
+                await EnsureTokenTableAsync();
                 await _tableClient.UpsertEntityAsync(newEntity, TableUpdateMode.Replace);
 
                 return accessToken;
