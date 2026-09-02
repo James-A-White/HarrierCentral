@@ -1,3 +1,18 @@
+-- ============================ SUPERSEDED ============================
+-- RAN 2026-09-02, then BACKED OUT the same day by
+-- add_promotional_credit_columns_20260902.sql.
+--
+-- CreditKind marked which bucket a payment row moved. That was only
+-- needed while the plan was to SPLIT a payment straddling the promo/cash
+-- boundary across two rows. James's four-amount design puts both
+-- movements on ONE row, so the marker is redundant and the column is
+-- gone. No code ever used it.
+--
+-- The ProductType 4 / PaymentType 9 allocations noted below were never
+-- implemented anywhere and are not part of the final design.
+-- Kept for the record only. DO NOT RUN.
+-- ===================================================================
+
 -- =====================================================================
 -- RUN-ONCE: HC.Payment.CreditKind - paid vs promotional credit
 --
