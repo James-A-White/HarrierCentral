@@ -1,5 +1,28 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.7+1322 (2026-09-02)
+
+### Fixes
+- **The Radar sits on the Harrier Central background** instead of a bare page
+  when opened full screen.
+- **Runners who have gone quiet fade on the Radar again.** A runner out of
+  coverage for a few minutes looked exactly as current as everyone else, on the
+  one view whose job is finding the pack.
+- **Replay distances are measured from where the focused runner was at that
+  moment**, not from wherever your phone happens to be now. Reviewing a London
+  run from Cologne reported ~496 km for everybody, which also made "nearest
+  first" rank nothing.
+- **"Tracks updated just now" no longer appears on runs nobody tracked.** The
+  poll succeeded, so an empty map claimed fresh tracks.
+- **The photo review button is hidden on runs that have not happened yet** — a
+  future run cannot have photos.
+- **The intro slider's Skip / Next / OK buttons sit clear of the gesture bar**
+  on Android models that under-report their bottom inset.
+- **A duplicated run in the list is much less likely.** Every local database
+  write from a sync now runs on one queue; an RSVP or attendance change landing
+  during a background sync could previously insert the same row twice.
+  (Existing duplicates need a Reload Data to clear.)
+
 ## 3.0.6+1321 (2026-09-02) — final 3.0 feature release
 
 Closes out the 3.0 track. Payment work continues on 3.1.
