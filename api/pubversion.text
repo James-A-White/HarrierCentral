@@ -1,3 +1,7 @@
+1.0.35+33
+    • AppApiHC6: the handler prologue (body read, JSON parse, connection string) now runs inside a guard — it sat outside the try/catch, so a failure there returned a bare 500 with no log and no HC.ErrorLog row
+    • AppApiHC6: checkConnection is answered before the connection string is read, and the FCM table is created lazily instead of on every construction — a cold start or storage blip was 500ing unrelated calls, the ping included
+
 1.0.34+32
     • EndEventTracking: new endpoint — sets/clears/reads an event-level "tracking ended" flag (X-Api-Key guarded; admin stop-everyone)
     • StorePositions: echoes the tracking-ended flag in every response so phones still uploading stop their tracking loop within one flush
