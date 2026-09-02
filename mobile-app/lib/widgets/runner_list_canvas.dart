@@ -61,8 +61,8 @@ class RunnerListCanvas extends StatelessWidget {
   /// selection, so this has to as well, or the numbers silently change meaning
   /// when somebody is selected.
   ///
-  /// The viewer's own row is still identifiable: the name column renders
-  /// "<name> (you)".
+  /// The viewer's own row is still identifiable: the name column renders the
+  /// runner's name followed by `(you)`.
   final String originLabel;
 
   final void Function(bool sortByProximity) onSortChanged;
