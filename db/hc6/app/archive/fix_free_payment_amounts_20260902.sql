@@ -1,7 +1,8 @@
 -- =====================================================================
 -- RUN-ONCE: zero the amounts on historic "Free" payments
 --
--- NOT RUN YET - see the review note below.
+-- NOT RUN YET. Safe to run as-is: every affected row nets to zero both
+-- before and after, in whatever currency it is denominated.
 --
 -- A Free payment (PaymentType 2) should record no money in and nothing
 -- charged. Most already do: 9,601 of 9,629 live Free rows are already 0/0,
@@ -22,11 +23,15 @@
 --     2020  4 rows      20.00   (largest     5.00)
 --     2019  1 row        5.00
 --
--- ⚠️ REVIEW FIRST: one 2023 row carries 20,000.00 and is 97% of the total.
---    That is not a comped run fee, it is almost certainly a data-entry
---    error. Zeroing it silently would hide it. Look at it before running
---    this, and decide whether it wants correcting rather than erasing.
---    The SELECT below shows it.
+-- The 2023 row for 20,000.00 is NOT an error, despite looking like one: it is
+-- Osan Bulgogi H3 in South Korea, so that is 20,000 KRW, about GBP 12 - an
+-- ordinary run fee. Likewise Beijing at 60 CNY and Fengyuan at 50 TWD.
+--
+-- NOTE FOR ANY FUTURE MONEY REPORTING: the total above mixes currencies and is
+-- therefore meaningless. HC.Kennel.CurrencyCode exists but is unpopulated for
+-- 393 of 394 kennels, so the database offers no signal here - currency is
+-- implied only by where the kennel is. Money may be summed WITHIN a kennel and
+-- must never be summed ACROSS kennels.
 --
 -- Sync impact: unlike the CreditKind ALTER (metadata-only, zero churn), this
 -- is a real UPDATE and WILL fire trgUpdateModifiedOnDateForPayment, so these
