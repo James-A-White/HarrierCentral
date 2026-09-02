@@ -4,6 +4,30 @@ Items flagged during development that need follow-up.
 
 ---
 
+## 🎯 BEFORE THE NEXT APP STORE PUSH — promotional credit
+
+Agreed 2026-09-02. Design in memory `project_promotional_credit.md`.
+
+- [ ] **Promotional credit as a tracked component of kennel credit.** Credit
+      stays money and one currency; anything a kennel grants without taking
+      cash is recorded as a distinct promotional part of the same ledger.
+      Started as run packages (Brussels: pay €70, get 11 runs = €77 credit),
+      generalised to any grant — **rewarding hares**, comps, recruitment.
+- [ ] **Member-facing credit ledger screen.** People normally see only their
+      total balance; the ledger shows full history with promotional broken out.
+- [ ] **Portal:** per-kennel run packages — name, price paid, runs promised,
+      active flag, optional expiry. Organiser thinks in runs, system stores
+      money, and the run price assumed at purchase is stored alongside.
+
+Decide before building: does promotional credit expire; draw order when both
+kinds are held (promotional first); refund policy (refund *cash paid*
+pro-rata, never credit face value — otherwise it is an arbitrage).
+
+⚠️ `HC.KennelCredit` schema not yet inspected — check whether it already has a
+type/reason column before designing the split.
+
+---
+
 ## ✅ SHIPPED 2026-08-30 — Play policy fix + imported-photo track fix
 
 - **Android 3.0.1+1314** → Play **production** (replacing the rejected 1312)
