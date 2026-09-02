@@ -304,6 +304,19 @@ class RunTrackerMapController extends GetxController
     if (origin == null) return const <RoseBlip>[];
     final from = latlng.LatLng(origin.lat, origin.lng);
 
+    // Staleness only means something at the LIVE EDGE of a live run. Parked
+    // back in the replay there is nothing stale about showing where somebody
+    // was at that moment — which is why this used to be hardcoded false. But
+    // the same false also applied live, so a runner who dropped out of
+    // coverage ten minutes ago looked exactly as current as everyone else on
+    // the one view whose job is finding the pack.
+    stalenessTick.value; // re-evaluate every 15 s
+    final double nowMs = DateTime.now().millisecondsSinceEpoch.toDouble();
+    final bool atLiveEdge =
+        cutoff == null ||
+        (maxTimestampMs.value != null && cutoff >= maxTimestampMs.value! - 1);
+    final bool stalenessApplies = atLiveEdge && isLiveWindow;
+
     final out = <RoseBlip>[];
     for (final user in visibleRunners) {
       if (user.id == focus.id) continue;
@@ -323,9 +336,13 @@ class RunTrackerMapController extends GetxController
             to,
           ),
           isLost: _hasDistressMark(user),
-          // Staleness is a live-mode idea; during replay every blip is
-          // definitionally "as of" the scrub position.
-          isStale: false,
+          // Measured from the runner's last REAL point, not from the
+          // interpolated one: when scrubbing, _interpolatedPosition stamps the
+          // result with the cutoff, so it would always look fresh.
+          isStale:
+              stalenessApplies &&
+              user.positions.isNotEmpty &&
+              (nowMs - user.positions.last.timestampMs) > _roseStaleAfterMs,
           color: _colorForUser(user.id),
         ),
       );
@@ -2630,6 +2647,16 @@ class RunTrackerMapController extends GetxController
   /// changes — the auto-update timer stops in exactly the situations
   /// (offline, backgrounded, poll failures) where the pill matters most.
   final RxInt stalenessTick = 0.obs;
+
+  /// How old a runner's newest point may be before the rose fades them.
+  ///
+  /// 3 minutes, not the freshness pill's 120 s: that measures the whole feed,
+  /// whereas this is one runner's own upload cadence. The buffer flushes every
+  /// 60 s, so Best (5 m / 15 s) and Balanced (10 m / 1 min) trackers comfortably
+  /// clear it. Power Saver reports every 15 minutes by design and WILL read as
+  /// stale — arguably correct, since a quarter-hour-old position is not much
+  /// use for finding somebody, but it is the trade-off in this number.
+  static const double _roseStaleAfterMs = 180000;
   Timer? _stalenessTimer;
 
   /// True while the event is inside its live window — the pill (and the
