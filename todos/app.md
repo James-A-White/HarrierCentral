@@ -4,6 +4,134 @@ Items flagged during development that need follow-up.
 
 ---
 
+# 3.1 TRACK — event-free payments
+
+No branch exists; `dev`/`master` stay 3.0.x and 3.1 forks from `dev` when the
+work starts. Design in memory: `project_promotional_credit`,
+`project_31_track_payments`, `project_local_db_unique_constraints`.
+
+## Why this is a separate track
+
+Every payment today is bound to an event: `HC.Payment.EventId` and
+`HasherEventMapId` are both **NOT NULL with foreign keys**. But four things
+people pay for are not tied to a run at all:
+
+| Product | Today | ProductType |
+|---|---|---|
+| Membership | forced onto some event | 2 |
+| **Run packages** (buy 10, get 11) | cannot exist | new |
+| Haberdashery | forced onto some event | 3 |
+| **Promotions earned** (hare rewards, comps) | cannot exist | — |
+
+It cannot ship on 3.0.x: `payments_model_ns.dart` declares
+`required String eventId` and `required String hemId`, so a null would throw
+`type 'Null' is not a subtype of type 'String'` and break payment sync on
+every 2.1.2 and 3.0.x install in the field. No app release fixes a phone that
+has not updated.
+
+## Already live in production (dormant, safe on 3.0.x)
+
+- [x] `HC.Payment.PromotionalCredit`, `PromotionalDebit`, computed
+      `NetPromotional`; `HC.HasherKennelMap.PromotionalCredit`. Zero row churn.
+      Sync SPs use explicit column lists, so 3.0.x clients never see them.
+- [x] Balance recompute LEFT-joins `HC.Event` and orders by
+      `COALESCE(EventStartLocal, PaidDate)` — event-less payments already count
+      toward a balance. Verified neutral across all 7,011 live balances.
+- [x] Free payments record nothing paid and nothing charged (28 rows corrected).
+
+## 1. Server: let a payment exist without an event
+
+- [ ] Make `HC.Payment.EventId` and `HasherEventMapId` **nullable**. Foreign
+      keys tolerate NULL, so no constraint changes — but both are indexed, so
+      check `IX_CreditBalance` survives the ALTER.
+- [ ] **Version-gate the sync SPs.** Existing procs emit only payments that
+      HAVE an EventId and a HemId, so old clients can never receive a row they
+      cannot parse. 3.1 clients ask for the unbounded set.
+      **Verified necessary:** `hcapp_syncUserData` and
+      `hcapp_syncKennelAdminData` select straight `FROM HC.Payment` with NO
+      event join. `hcapp_syncEventAdminData` is already safe — it filters
+      `EventId = @eventId`.
+      *Open decision:* a defaulted `@includeUnboundPayments SMALLINT = 0`
+      parameter on the existing procs (Claude's preference — HC3 already
+      contains `syncUserData`, `_392`, `_668`, `_705`, `_800`, forked procs
+      that drifted) vs three parallel V2 procs (James's original sketch).
+- [ ] **Audit every consumer that INNER JOINs Payment to Event** — each one
+      silently drops event-less rows, no error, rows just missing:
+      `hcapp_getPaymentReport` (x2), `hcapp_processPayment`,
+      `hcapp_processBulkPayment`, `hcapp_setEventAttendence`,
+      `nonApi_rptKennelRunStats` (x3), `hcportal_getCategoryDetail` and `2`.
+      The two that hurt most are the payment report (the treasurer's money) and
+      syncUserData (the phone would disagree with the server about a balance).
+- [ ] `hcapp_processPayment` currently REQUIRES `@eventId` for productType 1
+      and 2. Make it optional for the event-free products.
+
+## 2. Run packages
+
+- [ ] Per-kennel package config: name, price paid, runs promised, active flag,
+      optional expiry. Organiser thinks in **runs**; the system stores **money**;
+      store the run price assumed at purchase so drift is visible later.
+- [ ] A purchase is ONE payment row with four amounts, e.g. pay 70 for 11 runs
+      at 7: `Credit 70 | Debit 0 | PromoCredit 7 | PromoDebit 0`.
+- [ ] Spending straddles buckets in ONE row:
+      `Credit 0 | Debit 5 | PromoCredit 0 | PromoDebit 2` for a 7 run with 2
+      promo left. **Promo floors at zero** — `PromotionalDebit = MIN(fee,
+      available)`, cash absorbs any overdraft (72 hashers are already in debit).
+
+## 3. Promotions earned
+
+- [ ] Grant promotional credit for any reason — **hare rewards**, comps,
+      recruitment. One row, `PromotionalCredit` set, `EventId` optionally
+      pointing at the run they hared.
+- [ ] Cash reconciliation must count cash rows ONLY. A grant is structurally
+      identical to an overpayment, so without the split it reads as money taken.
+- [ ] **Refunds pay cash paid, pro-rata — never credit face value**, or someone
+      pays 70, refunds 77 and walks away 7 up.
+
+## 4. Expiry — on RUN inactivity, not payment inactivity
+
+James's design. Kennels with zero run fees for members have NO payment rows,
+so payment inactivity would expire active members' credit.
+
+- [ ] Per-kennel configurable durations.
+- [ ] Default: promotional credit expires after **1 year of run inactivity**.
+- [ ] Default: the whole kennel credit expires after **3 years**.
+- [ ] Measured from `HC.HasherEventMap` attendance, not payments.
+- [ ] Expiry is just another row (a negative promotional movement) so the
+      ledger shows it. Idempotent and auditable.
+- [ ] *Open:* does 3-year expiry also write off the 72 hashers in DEBIT?
+      Symmetry says yes.
+
+## 5. Member-facing transaction screen
+
+- [ ] People see their **total** by default; a ledger screen shows full history
+      with promotional broken out. `HC.Payment` is already the ledger — every
+      row carries its movement (`NetPayment`) and running balance
+      (`CreditAvailable`), so no new table is needed.
+
+## 6. Kill the duplicate-row bug for good
+
+- [ ] **UNIQUE constraint on the server primary key in every synced local
+      table**, delivered by bumping `DB_VERSION` by 10 so `_handleDbUpgrade`
+      forces a wipe + reauth + full reload. Tables are recreated, so the
+      constraints land on fresh schema with no dedupe migration, and every
+      device is healed rather than only the one that reported it.
+- [ ] **FIRST: switch the bulk insert to `INSERT OR REPLACE`/`OR IGNORE`.** A
+      UNIQUE index turns silent duplication into a thrown constraint violation,
+      so without this sync starts failing loudly on exactly the race it is meant
+      to fix.
+- [ ] **Time the full re-sync before shipping** — every user reloads at once.
+- [x] All local sync writes serialised onto one queue (shipped 3.0.7).
+- [x] `ive_flutter_core_mobile` vendored to `lib/core_mobile/` (shipped 3.0.7),
+      so both halves of the fix are now in one repo.
+
+## ⚠️ Standing constraint
+
+**Money may be summed WITHIN a kennel, never ACROSS kennels.**
+`HC.Kennel.CurrencyCode` is unpopulated for 393 of 394 kennels, so a
+cross-kennel total silently adds won to pounds to yuan.
+
+---
+
 ## 3.1 TRACK — kill the duplicate-row class of bug for good
 
 James's call 2026-09-02. Design note in memory `project_local_db_unique_constraints.md`.
