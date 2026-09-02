@@ -17,7 +17,8 @@
 --                               DTU, leaving headroom for real users. A big
 --                               catch-up should use a high value; there is
 --                               never any hurry to delete old log rows.
--- Returns:     One summary rowset (GeneralLogDeleted, IntegrationJobDeleted)
+-- Returns:     One summary rowset (GeneralLogDeleted, IntegrationJobDeleted,
+--              ClientErrorLogDeleted)
 -- Author:      Harrier Central
 -- Created:     2026-08-31
 -- HC5 Source:  None - new in HC6
@@ -58,6 +59,7 @@ BEGIN
     DECLARE @cutoff      DATETIMEOFFSET(7) = DATEADD(DAY, -@RetentionDays, SYSUTCDATETIME());
     DECLARE @glDeleted   BIGINT = 0;
     DECLARE @ijDeleted   BIGINT = 0;
+DECLARE @celDeleted  BIGINT = 0;
     DECLARE @batches     INT = 0;
     DECLARE @rows        INT = 1;
     DECLARE @startedAt   DATETIME2(3) = SYSUTCDATETIME();
@@ -142,17 +144,42 @@ BEGIN
         DROP TABLE #KeepJobs;
 
         -- -------------------------------------------------------------
+        -- 3. HC.ClientErrorLog — the on-device diagnostics harvest.
+        --
+        -- Had NO retention at all until 2026-09-02: the only diagnostics
+        -- table not covered here. Small (a few thousand rows), so a plain
+        -- batched delete on LoggedAt is fine — no clustered-range trick
+        -- needed, and its PK is a GUID so that trick would not apply anyway.
+        -- -------------------------------------------------------------
+        SET @rows = 1;
+        SET @batches = 0;
+
+        WHILE (@rows > 0 AND @batches < @MaxBatches)
+        BEGIN
+            DELETE TOP (@BatchSize) FROM HC.ClientErrorLog
+            WHERE LoggedAt < @cutoff;
+
+            SET @rows = @@ROWCOUNT;
+            SET @celDeleted = @celDeleted + @rows;
+            SET @batches = @batches + 1;
+
+            IF (@rows > 0 AND @BatchDelaySeconds > 0) WAITFOR DELAY @delay;
+        END
+
+        -- -------------------------------------------------------------
         -- 3. Summary (one row per night - this is not self-defeating)
         -- -------------------------------------------------------------
         INSERT INTO LOG.GeneralLog (LogSource, Message, [Timestamp])
         VALUES ('nonApi_pruneLogs',
                 CONCAT('Pruned to ', @RetentionDays, 'd: GeneralLog=', @glDeleted,
-                       ' IntegrationJob=', @ijDeleted, ' delay=', @BatchDelaySeconds, 's',
+                       ' IntegrationJob=', @ijDeleted, ' ClientErrorLog=', @celDeleted,
+                       ' delay=', @BatchDelaySeconds, 's',
                        ' in ', DATEDIFF(SECOND, @startedAt, SYSUTCDATETIME()), 's'),
                 SYSUTCDATETIME());
 
         SELECT @glDeleted AS GeneralLogDeleted,
                @ijDeleted AS IntegrationJobDeleted,
+               @celDeleted AS ClientErrorLogDeleted,
                DATEDIFF(SECOND, @startedAt, SYSUTCDATETIME()) AS ElapsedSeconds;
 
     END TRY
