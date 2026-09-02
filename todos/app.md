@@ -4,6 +4,30 @@ Items flagged during development that need follow-up.
 
 ---
 
+## 3.1 TRACK — kill the duplicate-row class of bug for good
+
+James's call 2026-09-02. Design note in memory `project_local_db_unique_constraints.md`.
+
+- [ ] **UNIQUE constraint on the server primary key in every synced local
+      table**, delivered by bumping `DB_VERSION` by 10 so `_handleDbUpgrade`
+      forces a wipe + reauth + full reload. The tables are recreated, so the
+      constraints land on fresh schema with no dedupe migration, and every
+      device is healed rather than just the one that reported it.
+- [ ] **FIRST: switch the bulk insert to `INSERT OR REPLACE`/`OR IGNORE`.** A
+      UNIQUE index turns silent duplication into a thrown constraint
+      violation, so without this sync starts failing loudly on exactly the
+      race it is meant to fix.
+- [ ] **Also wrap the remaining apply paths in AsyncSerializer** —
+      `hasher_kennel_map_service.dart:213/216/316/319/322` call
+      `updateSqlTablesWithResultsFrom*` directly, outside the guard added on
+      2026-08-16. That is the hole that duplicated CH3 - Aldgate on James's
+      phone on 2026-09-01 while the server was clean.
+- [ ] **Time the full re-sync before shipping** — every user reloads at once
+      (~180 on 3.0.x plus 2.1.2), and it leans on the self-healing reauth path
+      that was only just hardened.
+
+---
+
 ## 🎯 BEFORE THE NEXT APP STORE PUSH — promotional credit
 
 Agreed 2026-09-02. Design in memory `project_promotional_credit.md`.
