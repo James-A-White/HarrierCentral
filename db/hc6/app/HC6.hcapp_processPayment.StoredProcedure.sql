@@ -676,6 +676,22 @@ BEGIN TRY
             -- Hash credits: credit amount = 0 (balance already tracked elsewhere)
             IF (@paymentType = 6 OR @paymentType = 8) SET @creditAmount = 0;
 
+            -- Free (paymentType 2): no money came in and nothing was charged,
+            -- so both sides are zero. This used to fall into the ELSE above and
+            -- record credit = debit = the event price, which nets to zero — the
+            -- BALANCE was always right — but it made a free run look like cash
+            -- received and revenue earned. CreditAmount therefore could not be
+            -- used as a proxy for money taken without also filtering on tender,
+            -- and that trap matters more now that promotional credit will add
+            -- other rows carrying CreditAmount with no cash behind them.
+            -- 9,629 historic rows still carry the old shape; they net to zero
+            -- too, so balances are unaffected either way.
+            IF (@paymentType = 2)
+            BEGIN
+                SET @creditAmount = 0;
+                SET @debitAmount  = 0;
+            END
+
             -- Cancel existing same-product payment before inserting new one.
             -- For a replaced MEMBERSHIP payment, first un-apply its extension
             -- (restore the pre-payment expiry it recorded) so re-charges and
