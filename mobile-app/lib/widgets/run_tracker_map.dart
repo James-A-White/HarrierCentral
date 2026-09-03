@@ -141,7 +141,7 @@ class RunTrackerMap extends StatelessWidget {
                         entries: controller.runnerListEntries,
                         selectedRunnerId: controller.selectedRunnerId.value,
                         sortByProximity: controller.listSortByProximity.value,
-                        viewerFixAvailable: controller.viewerLatLng != null,
+                        originAvailable: controller.listOriginAvailable,
                         originLabel: controller.roseFocusRunnerLabel,
                         onSortChanged: (prox) =>
                             controller.listSortByProximity.value = prox,

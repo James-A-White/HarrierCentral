@@ -7,7 +7,7 @@ class RunnerListEntry {
     required this.name,
     required this.color,
     required this.distanceMeters,
-    required this.metersFromMe,
+    required this.metersFromOrigin,
     required this.isSelf,
     required this.isLost,
   });
@@ -22,8 +22,9 @@ class RunnerListEntry {
   /// Trail distance covered at the playhead.
   final double distanceMeters;
 
-  /// Straight-line separation from the viewer; null without a viewer fix.
-  final double? metersFromMe;
+  /// Straight-line separation from the list's origin — the focused runner,
+  /// not necessarily the viewer. Null when there is nothing to measure from.
+  final double? metersFromOrigin;
 
   final bool isSelf;
 
@@ -40,7 +41,7 @@ class RunnerListCanvas extends StatelessWidget {
     required this.entries,
     required this.selectedRunnerId,
     required this.sortByProximity,
-    required this.viewerFixAvailable,
+    required this.originAvailable,
     required this.originLabel,
     required this.onSortChanged,
     required this.onTapRunner,
@@ -50,10 +51,10 @@ class RunnerListCanvas extends StatelessWidget {
   final String? selectedRunnerId;
   final bool sortByProximity;
 
-  /// Whether "Closest to me" has a viewer position to measure from. Without
-  /// one the pill still shows (so the option is discoverable) but explains
-  /// itself instead of silently sorting by nothing.
-  final bool viewerFixAvailable;
+  /// Whether the sort has an origin to measure from. Without one the pill
+  /// still shows (so the option is discoverable) but explains itself instead
+  /// of silently sorting by nothing.
+  final bool originAvailable;
 
   /// Who every row is measured FROM — 'you' when the viewer is the origin,
   /// otherwise the selected runner's name. Shown once as a caption above the
@@ -83,15 +84,19 @@ class RunnerListCanvas extends StatelessWidget {
               onTap: () => onSortChanged(false),
             ),
             const SizedBox(width: 8),
+            // NOT "Closest to me": rows are measured from the focused
+            // runner, so with Tuna Melt selected this sorts by closest to
+            // Tuna. The origin is named once in the caption below rather
+            // than in the pill, where a long hash name would not fit.
             _sortPill(
-              label: 'Closest to me',
+              label: 'Closest Hashers',
               icon: Icons.near_me,
               selected: sortByProximity,
               onTap: () {
-                if (!viewerFixAvailable) {
+                if (!originAvailable) {
                   Get.snackbar(
-                    'Closest to me',
-                    'Waiting for your GPS position — sorting stays by distance until a fix lands.',
+                    'Closest Hashers',
+                    'No position to measure from yet — sorting stays by trail distance until one lands.',
                     snackPosition: SnackPosition.BOTTOM,
                   );
                 }
@@ -265,9 +270,9 @@ class RunnerListCanvas extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      e.metersFromMe == null
+                      e.metersFromOrigin == null
                           ? '—'
-                          : _separationLabel(e.metersFromMe!),
+                          : _separationLabel(e.metersFromOrigin!),
                       style: TextStyle(
                         color: Colors.yellow.withValues(alpha: 0.9),
                         fontSize: 12,

@@ -372,7 +372,8 @@ class RunTrackerMapController extends GetxController
   // covered at the playhead, and straight-line separation from the viewer.
 
   /// Runner-list sort: false = longest trail first (default), true = nearest
-  /// to the viewer first.
+  /// to the list's origin first (see [_listOriginAt] — the focused runner, not
+  /// necessarily the viewer).
   final RxBool listSortByProximity = false.obs;
 
   /// The viewer's live position — same source chain as the map's blue dot
@@ -416,6 +417,14 @@ class RunTrackerMapController extends GetxController
     return viewerLatLng;
   }
 
+  /// Whether the list has anything to measure separations FROM at the
+  /// playhead. Not the same as "the viewer has a GPS fix": the origin is
+  /// normally the focused runner's own track position, which exists whether or
+  /// not the viewer has ever had a fix.
+  bool get listOriginAvailable =>
+      _listOriginAt(timelineAvailable ? currentTimestampMs.value : null) !=
+      null;
+
   /// Rows for the list canvas, sorted per [listSortByProximity]. Distances are
   /// taken AT THE SCRUB POSITION (same interpolation as the map and rose), so
   /// scrubbing the replay reorders the leaderboard live. Separation is measured
@@ -437,7 +446,7 @@ class RunTrackerMapController extends GetxController
           distanceMeters: _sumInterpolatedDistance(
             _interpolatedTrackPoints(user, cutoff),
           ),
-          metersFromMe: (me == null || at == null)
+          metersFromOrigin: (me == null || at == null)
               ? null
               : _distanceCalculator.as(
                   latlng.LengthUnit.Meter,
@@ -453,8 +462,8 @@ class RunTrackerMapController extends GetxController
     }
     if (listSortByProximity.value) {
       out.sort((a, b) {
-        final am = a.metersFromMe;
-        final bm = b.metersFromMe;
+        final am = a.metersFromOrigin;
+        final bm = b.metersFromOrigin;
         if (am == null && bm == null) {
           return b.distanceMeters.compareTo(a.distanceMeters);
         }
