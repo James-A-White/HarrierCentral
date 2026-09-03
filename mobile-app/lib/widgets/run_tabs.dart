@@ -1691,16 +1691,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       Positioned(
                         right: 10.0,
                         top: 10.0,
-                        child: Material(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(8),
-                          child: IconButton(
-                            tooltip: 'Full screen',
-                            icon: Icon(Icons.fullscreen, color: hc_blue),
-                            onPressed: () => Get.to<void>(
-                              () => PackTrackFullScreenMap(
-                                run: widget.futureRun,
-                              ),
+                        // MapOverlayButton, like the locate arrow: one style
+                        // for every control sitting on the map. These were
+                        // white-on-blue IconButtons at the default 48px, so
+                        // they neither matched the arrow nor each other.
+                        child: MapOverlayButton(
+                          icon: Icons.fullscreen,
+                          tooltip: 'Full screen',
+                          onTap: () => Get.to<void>(
+                            () => PackTrackFullScreenMap(
+                              run: widget.futureRun,
                             ),
                           ),
                         ),
@@ -1731,17 +1731,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       Positioned(
                         left: 10.0,
                         top: 68.0,
-                        child: Material(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(8),
-                          child: IconButton(
-                            tooltip: 'Share this run',
-                            icon: Icon(Icons.ios_share, color: hc_blue),
-                            onPressed: () => unawaited(
-                              RunShareLinks(
-                                widget.futureRun,
-                              ).showShareSheet(context),
-                            ),
+                        child: MapOverlayButton(
+                          icon: Icons.ios_share,
+                          tooltip: 'Share this run',
+                          onTap: () => unawaited(
+                            RunShareLinks(
+                              widget.futureRun,
+                            ).showShareSheet(context),
                           ),
                         ),
                       ),
