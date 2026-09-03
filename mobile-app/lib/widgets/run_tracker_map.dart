@@ -91,27 +91,37 @@ class RunTrackerMap extends StatelessWidget {
             return Stack(
               children: <Widget>[
                 Positioned.fill(
+                  // Jungle, like the rose and the rest of the app — this was a
+                  // flat black scrim, which read as bare page in fullscreen
+                  // where the list REPLACES the map rather than covering it.
                   child: Container(
-                    color: Colors.black.withValues(alpha: 0.72),
-                    // Top padding clears the view switch pinned over the
-                    // canvas; the list's own bottom padding clears the
-                    // playback panel.
-                    padding: EdgeInsets.fromLTRB(12, 62 + topInset, 12, 0),
-                    child: RunnerListCanvas(
-                      entries: controller.runnerListEntries,
-                      selectedRunnerId: controller.selectedRunnerId.value,
-                      sortByProximity: controller.listSortByProximity.value,
-                      viewerFixAvailable: controller.viewerLatLng != null,
-                      originLabel: controller.roseFocusRunnerLabel,
-                      onSortChanged: (prox) =>
-                          controller.listSortByProximity.value = prox,
-                      // Selection only — no recenter: the map isn't showing,
-                      // and yanking its camera under the list would fight the
-                      // user when they switch back.
-                      onTapRunner: (id) => controller.selectRunner(
-                        id,
-                        recenter: false,
-                        syncPicker: true,
+                    decoration: Backgrounds.defaultHcBackground(),
+                    child: Container(
+                      // Held over the background rather than dropped: the rows
+                      // are plain text straight onto the canvas, not cards, so
+                      // without a scrim white-on-leaves is a hard read. Lighter
+                      // than the old 0.72 so the jungle is actually visible.
+                      color: Colors.black.withValues(alpha: 0.5),
+                      // Top padding clears the view switch pinned over the
+                      // canvas; the list's own bottom padding clears the
+                      // playback panel.
+                      padding: EdgeInsets.fromLTRB(12, 62 + topInset, 12, 0),
+                      child: RunnerListCanvas(
+                        entries: controller.runnerListEntries,
+                        selectedRunnerId: controller.selectedRunnerId.value,
+                        sortByProximity: controller.listSortByProximity.value,
+                        viewerFixAvailable: controller.viewerLatLng != null,
+                        originLabel: controller.roseFocusRunnerLabel,
+                        onSortChanged: (prox) =>
+                            controller.listSortByProximity.value = prox,
+                        // Selection only — no recenter: the map isn't showing,
+                        // and yanking its camera under the list would fight the
+                        // user when they switch back.
+                        onTapRunner: (id) => controller.selectRunner(
+                          id,
+                          recenter: false,
+                          syncPicker: true,
+                        ),
                       ),
                     ),
                   ),
@@ -591,7 +601,9 @@ class RunTrackerMap extends StatelessWidget {
       // run nobody has tracked, the poll still succeeds and this said "Tracks
       // updated just now" over an empty map — implying tracks exist and are
       // fresh. Freshness of nothing is not information.
-      if (at == null || !controller.isLiveWindow || !controller.hasAnyTrackData) {
+      if (at == null ||
+          !controller.isLiveWindow ||
+          !controller.hasAnyTrackData) {
         return const SizedBox.shrink();
       }
       final int secs = DateTime.now().difference(at).inSeconds;
