@@ -218,6 +218,7 @@ class TrimEditorOverlay extends StatelessWidget {
     super.key,
     required this.trimController,
     this.wide = false,
+    this.showCollapsedPill = true,
   });
 
   final PackTrackTrimController trimController;
@@ -225,6 +226,11 @@ class TrimEditorOverlay extends StatelessWidget {
   /// Spread-out full-width bottom-bar layout for the fullscreen map (which has
   /// room). Compact scissors-card layout otherwise.
   final bool wide;
+
+  /// Whether the collapsed "Trim run" pill is drawn. The fullscreen route sets
+  /// false because it puts a scissors button in its own control column — the
+  /// bar still appears here once editing starts.
+  final bool showCollapsedPill;
 
   String _fmt(int? ms) => ms == null
       ? '—'
@@ -332,6 +338,7 @@ class TrimEditorOverlay extends StatelessWidget {
   /// spreading the controls across the bottom. Tapping the pill also enters
   /// edit mode (the map shows the full untrimmed track while trimming).
   Widget _buildWide({required bool editing, required bool busy}) {
+    if (!editing && !showCollapsedPill) return const SizedBox.shrink();
     if (!editing) {
       return Align(
         alignment: Alignment.centerLeft,

@@ -19,6 +19,7 @@ class RunTrackerMap extends StatelessWidget {
     this.overlayBottomPadding = -25.0,
     this.controllerTag,
     this.autoFollowOnLoad = true,
+    this.showLocateButton = true,
   });
 
   final EventModel event;
@@ -38,6 +39,11 @@ class RunTrackerMap extends StatelessWidget {
   /// coordinate (e.g. the spot a run photo was taken) so the load-time
   /// recenter doesn't drag the view to the run's end.
   final bool autoFollowOnLoad;
+
+  /// Whether this map draws its own locate button in the top-right. The
+  /// fullscreen route sets false and renders it in its own left-hand column
+  /// instead, so every control there is one style in one place.
+  final bool showLocateButton;
 
   /// Optional override for the GetX controller tag. Defaults to the event id so
   /// every map of a run shares one controller. The fullscreen map passes a
@@ -351,7 +357,8 @@ class RunTrackerMap extends StatelessWidget {
               // north-lock button. A Column (not separate Positioneds) so the
               // stack closes up when locate is unavailable instead of leaving
               // a hole.
-              if (appModel.hasLocationPermissions &&
+              if (showLocateButton &&
+                  appModel.hasLocationPermissions &&
                   deviceInfo.deviceLat != null &&
                   deviceInfo.deviceLon != null)
                 Positioned(

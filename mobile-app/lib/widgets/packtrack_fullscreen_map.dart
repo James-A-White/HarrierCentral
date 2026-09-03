@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/export/gpx_export_service.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 /// Full-screen PackTrack map for a run, opened from the run's map view. Fills
@@ -18,20 +19,86 @@ class PackTrackFullScreenMap extends StatelessWidget {
   /// zoomed on this coordinate instead of the run's default center.
   final latlng.LatLng? focusPoint;
 
+  /// One circular control. Every button on this route uses it, so they cannot
+  /// drift apart in style or size the way the run-detail map's did.
+  /// [label] renders short text instead of an icon (GPX), sized to fit the
+  /// same circle rather than pushing it wider.
   Widget _overlayButton({
     required String tooltip,
-    required IconData icon,
     required VoidCallback onPressed,
+    IconData? icon,
+    String? label,
   }) {
-    return Material(
-      color: Colors.black.withValues(alpha: 0.55),
-      shape: const CircleBorder(),
-      child: IconButton(
-        tooltip: tooltip,
-        icon: Icon(icon, color: Colors.white),
-        onPressed: onPressed,
+    assert(icon != null || label != null, 'needs an icon or a label');
+    const double size = 44;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.black.withValues(alpha: 0.55),
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onPressed,
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: Center(
+              child: icon != null
+                  ? Icon(icon, color: Colors.white, size: 22)
+                  : Text(
+                      label!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+            ),
+          ),
+        ),
       ),
     );
+  }
+
+  /// Exports the signed-in runner's own track. Looked up lazily at tap time:
+  /// the map controller is created by RunTrackerMap below, so it does not
+  /// exist yet while this widget is building.
+  Future<void> _exportGpx(BuildContext context, String mapTag) async {
+    if (!Get.isRegistered<RunTrackerMapController>(tag: mapTag)) return;
+    final controller = Get.find<RunTrackerMapController>(tag: mapTag);
+    final String? userId = getStringPref(StringPrefsEnum.userId);
+    UserTrack? mine;
+    if (userId != null && userId.isNotEmpty) {
+      for (final UserTrack t in controller.userPositions) {
+        if (t.id == userId && t.positions.isNotEmpty) mine = t;
+      }
+    }
+    if (mine == null) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No track data available yet.')),
+      );
+      return;
+    }
+    try {
+      await GpxExportService().exportTrack(
+        context: context,
+        track: mine,
+        trackName: run.event.eventName,
+      );
+    } catch (error, st) {
+      BootLogger.logError(
+        '[PackTrackFullScreenMap._exportGpx] eventId=${run.event.eventId}',
+        error,
+        st,
+      );
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Export failed: $error')));
+    }
   }
 
   @override
@@ -97,7 +164,12 @@ class PackTrackFullScreenMap extends StatelessWidget {
                 true, // north-up by default in fullscreen
                 controllerTag: mapTag,
                 // Lift the playback panel above the trim bar for admins.
-                overlayBottomPadding: isAdmin ? 96.0 : 50.0,
+                // The playback panel sits at the bottom now that nothing
+                // else is down there — the trim bar lifts itself above it
+                // while editing rather than the panel permanently reserving
+                // room for a pill that is no longer drawn.
+                overlayBottomPadding: 12.0,
+                showLocateButton: false,
                 // When focused on a photo location, don't let the load-time
                 // auto-follow drag the camera to the run's end — stay on the
                 // photo's coordinate.
@@ -115,10 +187,10 @@ class PackTrackFullScreenMap extends StatelessWidget {
                 ),
               ),
             ),
-          // Overlay controls run down the LEFT edge. RunTrackerMap owns the
-          // right-hand column — its locate/north-lock button sits at top 66,
-          // which is where a top-right button on this route lands once the
-          // status bar inset is added, so share used to cover it completely.
+          // EVERY control on this route lives in this one left-hand column,
+          // one style and one size. The locate button used to sit alone on the
+          // right and trim as a pill along the bottom, so three controls meant
+          // three shapes in three places.
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             left: 12,
@@ -140,19 +212,48 @@ class PackTrackFullScreenMap extends StatelessWidget {
                   onPressed: () =>
                       unawaited(RunShareLinks(run).showShareSheet(context)),
                 ),
+                const SizedBox(height: 10),
+                _overlayButton(
+                  tooltip: 'My location',
+                  icon: Icons.near_me,
+                  onPressed: () {
+                    if (Get.isRegistered<RunTrackerMapController>(tag: mapTag)) {
+                      Get.find<RunTrackerMapController>(
+                        tag: mapTag,
+                      ).recenterOnUser();
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
+                _overlayButton(
+                  tooltip: 'Export GPX',
+                  label: 'GPX',
+                  onPressed: () => unawaited(_exportGpx(context, mapTag)),
+                ),
+                if (isAdmin) ...<Widget>[
+                  const SizedBox(height: 10),
+                  _overlayButton(
+                    tooltip: 'Trim run',
+                    icon: Icons.content_cut,
+                    onPressed: trimController.toggleEditing,
+                  ),
+                ],
               ],
             ),
           ),
-          // Admin trim bar, spread across the bottom (renders nothing for
-          // non-admins). Sits below the lifted playback panel.
+          // Admin trim bar (renders nothing for non-admins, and nothing at
+          // all until editing starts — the scissors button in the column
+          // above is the trigger now). Sits ABOVE the playback panel so the
+          // panel can stay pinned to the bottom.
           if (canRender)
             Positioned(
               left: 12,
               right: 12,
-              bottom: MediaQuery.of(context).padding.bottom + 10,
+              bottom: MediaQuery.of(context).padding.bottom + 132,
               child: TrimEditorOverlay(
                 trimController: trimController,
                 wide: true,
+                showCollapsedPill: false,
               ),
             ),
         ],
