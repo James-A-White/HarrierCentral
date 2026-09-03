@@ -124,6 +124,46 @@ so payment inactivity would expire active members' credit.
 - [x] `ive_flutter_core_mobile` vendored to `lib/core_mobile/` (shipped 3.0.7),
       so both halves of the fix are now in one repo.
 
+## 7. PackTrack usage should be visible in the database
+
+Today the ONLY record that a run was tracked is Azure Table Storage. Answering
+"which runs used PackTrack" (asked 2026-09-03) needs a partition-key walk of
+`EventPositions` plus a join back to `HC.Event` by hand — there is no query
+that answers it, and no reporting, no adoption metric and no admin view can
+ask it either.
+
+- [ ] **Mark the HEM record when a hasher tracks a run.** A flag (or a first/
+      last-point timestamp pair) on `HC.HasherEventMap` set when
+      StorePositions accepts that hasher's first point for the event. Cheap:
+      one UPDATE per hasher per run, not per point. Makes "who tracked what"
+      a normal SQL question and gives run/kennel/hasher adoption reporting for
+      free.
+      - Column is on a **synced** table, so the ALTER needs the `UpdatedAt`
+        trigger disabled first (see CLAUDE.md) or every client re-syncs every
+        HEM row.
+      - Write it from `StorePositions`, not the app: the app can be killed
+        mid-run, and a phone that never regains signal would never report.
+      - Backfill from the 141 tracked events already in Table Storage.
+
+- [ ] **Store a compressed copy of each hasher's track on the HEM record.**
+      So the track survives independently of Table Storage, and a run's
+      history can be read without a second data store.
+      - Write it ONCE, when tracking ends (the On Inn mark, the auto-stop, or
+        a sweep over finished runs) — never per batch. The live path stays
+        Table Storage; this is the archive.
+      - Encode compactly rather than storing the JSON: delta-encoded
+        lat/lng/time (the app already thins points) then gzip, into a
+        `VARBINARY(MAX)`. A 3,000-point run is ~100 KB of JSON and roughly a
+        tenth of that encoded — but **measure before choosing the column**,
+        because the DB has a 10 GB cap and this grows per hasher per run,
+        which is exactly the shape that filled the log tables.
+      - Decide what wins if the two disagree. Suggest: Table Storage is
+        authoritative while the run is live and for the trim window; the HEM
+        copy is authoritative once written, and is what an export or a
+        long-past replay reads.
+      - Keep marks (`CHK`, `PHO::`, `OIN`, …) in the encoded form — a track
+        without its marks cannot redraw the run.
+
 ## ⚠️ Standing constraint
 
 **Money may be summed WITHIN a kennel, never ACROSS kennels.**
