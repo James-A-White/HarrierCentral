@@ -1,5 +1,37 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.9+1324 (2026-09-03)
+
+### Improvements
+- **Every button on the run map is now the same button.** One grey circle with
+  a white outline, in one column down the left-hand side — full screen, share,
+  centre on me, GPX export and (for run admins) trim. They used to be spread
+  across both top corners in three different shapes and sizes, with Export GPX
+  a red bar sitting below the map entirely.
+- **The column knows which view you are in.** North-lock disappears on the
+  list, which has no orientation to lock; centre-on-me disappears on the radar
+  and the list, which have no map camera to move. Share and GPX are about the
+  run, so they stay everywhere.
+- **Full screen opens on the view you were looking at.** From the radar it now
+  enlarges the radar instead of quietly switching you back to the map.
+- **GPX export is available full screen**, and is hidden on runs that have not
+  happened yet.
+- **Featured photos open as a swipeable carousel** — swipe left and right
+  through the whole collection instead of closing and reopening each one.
+
+### Fixes
+- **The background no longer changes when you switch views.** The list was
+  covering the jungle with a dark scrim the radar did not have, so switching
+  between them visibly dimmed and lifted the page. The rows carry their own
+  dark backing instead.
+- **"Closest to me" is now "Closest Hashers."** Distances are measured from
+  whoever is selected, so with Tuna Melt selected the sort ranks by closest to
+  Tuna — the old label named the wrong person. Spectators with no GPS fix are
+  no longer told to wait for one they do not need.
+- **The what's-new slides' Prev / Next / Done buttons sit clear of the bottom
+  of the screen** on both iPhone and Android, instead of under the home
+  indicator or the gesture bar.
+
 ## 3.0.8+1323 (2026-09-02)
 
 ### Fixes
