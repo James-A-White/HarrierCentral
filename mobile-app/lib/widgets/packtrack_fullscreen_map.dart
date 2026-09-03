@@ -19,49 +19,6 @@ class PackTrackFullScreenMap extends StatelessWidget {
   /// zoomed on this coordinate instead of the run's default center.
   final latlng.LatLng? focusPoint;
 
-  /// One circular control. Every button on this route uses it, so they cannot
-  /// drift apart in style or size the way the run-detail map's did.
-  /// [label] renders short text instead of an icon (GPX), sized to fit the
-  /// same circle rather than pushing it wider.
-  Widget _overlayButton({
-    required String tooltip,
-    required VoidCallback onPressed,
-    IconData? icon,
-    String? label,
-  }) {
-    assert(icon != null || label != null, 'needs an icon or a label');
-    const double size = 44;
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.black.withValues(alpha: 0.55),
-        shape: const CircleBorder(),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onPressed,
-          child: SizedBox(
-            width: size,
-            height: size,
-            child: Center(
-              child: icon != null
-                  ? Icon(icon, color: Colors.white, size: 22)
-                  : Text(
-                      label!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   /// Exports the signed-in runner's own track. Looked up lazily at tap time:
   /// the map controller is created by RunTrackerMap below, so it does not
   /// exist yet while this widget is building.
@@ -188,54 +145,62 @@ class PackTrackFullScreenMap extends StatelessWidget {
               ),
             ),
           // EVERY control on this route lives in this one left-hand column,
-          // one style and one size. The locate button used to sit alone on the
-          // right and trim as a pill along the bottom, so three controls meant
-          // three shapes in three places.
+          // one style and one size — MapOverlayButton, the same control the
+          // run-detail and live-run maps use, so the three maps cannot drift
+          // apart in style again.
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             left: 12,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                _overlayButton(
+                MapOverlayButton(
                   tooltip: 'Close',
                   icon: Icons.close,
-                  onPressed: () => Navigator.of(context).maybePop(),
+                  onTap: () => Navigator.of(context).maybePop(),
                 ),
                 const SizedBox(height: 10),
                 // Interactive-map / Trail TV chooser, then the OS share
                 // sheet — so spectators can watch in a browser without the
                 // app. Same flow as Run Tools and the run-detail map.
-                _overlayButton(
+                MapOverlayButton(
                   tooltip: 'Share this run',
                   icon: Icons.ios_share,
-                  onPressed: () =>
+                  onTap: () =>
                       unawaited(RunShareLinks(run).showShareSheet(context)),
                 ),
                 const SizedBox(height: 10),
-                _overlayButton(
+                MapOverlayButton(
                   tooltip: 'My location',
                   icon: Icons.near_me,
-                  onPressed: () {
-                    if (Get.isRegistered<RunTrackerMapController>(tag: mapTag)) {
+                  onTap: () {
+                    if (Get.isRegistered<RunTrackerMapController>(
+                      tag: mapTag,
+                    )) {
                       Get.find<RunTrackerMapController>(
                         tag: mapTag,
                       ).recenterOnUser();
                     }
                   },
                 ),
-                const SizedBox(height: 10),
-                _overlayButton(
-                  tooltip: 'Export GPX',
-                  label: 'GPX',
-                  onPressed: () => unawaited(_exportGpx(context, mapTag)),
-                ),
+                // Hidden before the run opens: there is nothing to export
+                // from a run that has not happened.
+                if (trackingHasOpened(
+                  run.event.eventStartDatetimeGmt,
+                )) ...<Widget>[
+                  const SizedBox(height: 10),
+                  MapOverlayButton(
+                    tooltip: 'Export GPX',
+                    label: 'GPX',
+                    onTap: () => unawaited(_exportGpx(context, mapTag)),
+                  ),
+                ],
                 if (isAdmin) ...<Widget>[
                   const SizedBox(height: 10),
-                  _overlayButton(
+                  MapOverlayButton(
                     tooltip: 'Trim run',
                     icon: Icons.content_cut,
-                    onPressed: trimController.toggleEditing,
+                    onTap: trimController.toggleEditing,
                   ),
                 ],
               ],

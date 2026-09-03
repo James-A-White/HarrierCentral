@@ -2,8 +2,8 @@ import 'package:harrier_central/imports.dart';
 
 /// A control that floats over the run map.
 ///
-/// Deliberately dark with a light outline rather than the translucent white it
-/// used to be: map tiles are mostly pale, so a white chip on a white street
+/// Deliberately a dark circle with a light outline rather than the translucent
+/// white chip it used to be: map tiles are mostly pale, so a white chip on a white street
 /// vanished. Dark ground + hairline outline holds up over tiles, satellite
 /// imagery and the near-black rose canvas alike, which matters because the same
 /// buttons sit on all three.
@@ -103,18 +103,24 @@ class MapViewSwitch extends StatelessWidget {
 class MapOverlayButton extends StatelessWidget {
   const MapOverlayButton({
     super.key,
-    required this.icon,
     required this.tooltip,
     required this.onTap,
+    this.icon,
+    this.label,
     this.onLongPress,
-  });
+  }) : assert(icon != null || label != null, 'needs an icon or a label');
 
-  final IconData icon;
+  final IconData? icon;
+
+  /// Short text instead of an icon (GPX). Sized to fit the same circle rather
+  /// than pushing it wider — every control on a map has to stay the same size
+  /// or the column stops reading as one set.
+  final String? label;
   final String tooltip;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
 
-  static const double _size = 42.0;
+  static const double _size = 44.0;
 
   @override
   Widget build(BuildContext context) {
@@ -122,22 +128,35 @@ class MapOverlayButton extends StatelessWidget {
       message: tooltip,
       child: Material(
         color: Colors.black.withValues(alpha: 0.62),
-        borderRadius: BorderRadius.circular(9),
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(9),
+          customBorder: const CircleBorder(),
           onTap: onTap,
           onLongPress: onLongPress,
           child: Container(
             width: _size,
             height: _size,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(9),
+              shape: BoxShape.circle,
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.88),
                 width: 1.5,
               ),
             ),
-            child: Icon(icon, color: Colors.white, size: 24),
+            child: Center(
+              child: icon != null
+                  ? Icon(icon, color: Colors.white, size: 22)
+                  : Text(
+                      label!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+            ),
           ),
         ),
       ),

@@ -1680,6 +1680,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         22.0,
                         14.0,
                         _trueNorthLock,
+                        // The host draws locate in its own control column
+                        // below, so the map must not draw a second one.
+                        showLocateButton: false,
                         mapMoved: (latlng.LatLng newPosition) {
                           _mapCenter = newPosition;
                         },
@@ -1687,58 +1690,82 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           await _launchMaps(widget.futureRun);
                         },
                       ),
-                      // Open the map full-screen.
-                      Positioned(
-                        right: 10.0,
-                        top: 10.0,
-                        // MapOverlayButton, like the locate arrow: one style
-                        // for every control sitting on the map. These were
-                        // white-on-blue IconButtons at the default 48px, so
-                        // they neither matched the arrow nor each other.
-                        child: MapOverlayButton(
-                          icon: Icons.fullscreen,
-                          tooltip: 'Full screen',
-                          onTap: () => Get.to<void>(
-                            () => PackTrackFullScreenMap(
-                              run: widget.futureRun,
-                            ),
-                          ),
-                        ),
-                      ),
+                      // EVERY control on this map lives in one left-hand
+                      // column of identical circles, the same MapOverlayButton
+                      // the full-screen route uses. These were spread across
+                      // both top corners in three different shapes and sizes:
+                      // a rounded square, a bare 50px image, and a red bar
+                      // button sitting below the map entirely.
                       Positioned(
                         left: 10.0,
                         top: 10.0,
-                        child: GestureDetector(
-                          onTap: () {
-                            setStateIfMounted(() {
-                              _trueNorthLock = !_trueNorthLock;
-                            });
-                          },
-                          child: SizedBox(
-                            height: 50.0,
-                            width: 50.0,
-                            child: Image.asset(
-                              _trueNorthLock
-                                  ? 'images/other/set_map_to_true_north_lock.png'
-                                  : 'images/other/set_map_rotation_enabled.png',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            // Keeps its own artwork: the compass reads as an
+                            // orientation control at a glance in a way a
+                            // generic icon does not.
+                            GestureDetector(
+                              onTap: () {
+                                setStateIfMounted(() {
+                                  _trueNorthLock = !_trueNorthLock;
+                                });
+                              },
+                              child: SizedBox(
+                                height: 44.0,
+                                width: 44.0,
+                                child: Image.asset(
+                                  _trueNorthLock
+                                      ? 'images/other/set_map_to_true_north_lock.png'
+                                      : 'images/other/set_map_rotation_enabled.png',
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                      // Share (interactive map / Trail TV chooser), tucked
-                      // under the north-lock compass so it stays clear of the
-                      // map's own mode selector and status pill.
-                      Positioned(
-                        left: 10.0,
-                        top: 68.0,
-                        child: MapOverlayButton(
-                          icon: Icons.ios_share,
-                          tooltip: 'Share this run',
-                          onTap: () => unawaited(
-                            RunShareLinks(
-                              widget.futureRun,
-                            ).showShareSheet(context),
-                          ),
+                            const SizedBox(height: 10.0),
+                            MapOverlayButton(
+                              icon: Icons.fullscreen,
+                              tooltip: 'Full screen',
+                              onTap: () => Get.to<void>(
+                                () => PackTrackFullScreenMap(
+                                  run: widget.futureRun,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10.0),
+                            MapOverlayButton(
+                              icon: Icons.ios_share,
+                              tooltip: 'Share this run',
+                              onTap: () => unawaited(
+                                RunShareLinks(
+                                  widget.futureRun,
+                                ).showShareSheet(context),
+                              ),
+                            ),
+                            // Same gate the map itself used: no point offering
+                            // to centre on a location we do not have.
+                            if (appModel.hasLocationPermissions &&
+                                deviceInfo.deviceLat != null &&
+                                deviceInfo.deviceLon != null) ...<Widget>[
+                              const SizedBox(height: 10.0),
+                              MapOverlayButton(
+                                icon: Icons.near_me,
+                                tooltip: 'My location',
+                                onTap: _recenterMapOnUser,
+                              ),
+                            ],
+                            // Hidden before the run opens — there is nothing
+                            // to export from a run that has not happened.
+                            if (trackingHasOpened(
+                              widget.futureRun.event.eventStartDatetimeGmt,
+                            )) ...<Widget>[
+                              const SizedBox(height: 10.0),
+                              MapOverlayButton(
+                                label: 'GPX',
+                                tooltip: 'Export GPX',
+                                onTap: () => unawaited(_exportOwnTrack()),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                       if (widget.futureRun.extensions.isMapAndDistanceValid ==
@@ -1820,18 +1847,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               padding: const EdgeInsets.only(top: 15, bottom: 15),
               child: Obx(() {
                 final bool isTracking = locService.joinRunTracking.value;
-                final controller =
-                    Get.isRegistered<RunTrackerMapController>(
-                      tag: widget.futureRun.event.eventId,
-                    )
-                    ? Get.find<RunTrackerMapController>(
-                        tag: widget.futureRun.event.eventId,
-                      )
-                    : null;
-                final hasTrack = controller != null
-                    ? _hasCurrentUserTrack(controller)
-                    : false;
-                final showExport = !isTracking && hasTrack;
 
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1887,10 +1902,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               });
                             },
                           ),
-                    if (showExport) ...[
-                      const SizedBox(width: 10),
-                      _buildExportButton(controller),
-                    ],
                   ],
                 );
               }),
@@ -1901,15 +1912,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
-  bool _hasCurrentUserTrack(RunTrackerMapController controller) {
-    final userId = getStringPref(StringPrefsEnum.userId);
-    if (userId == null || userId.isEmpty) return false;
-    for (final track in controller.userPositions) {
-      if (track.id == userId && track.positions.isNotEmpty) {
-        return true;
-      }
+  /// The run-detail map creates its controller BELOW this widget, so both of
+  /// these resolve it lazily at tap time rather than while the column builds.
+  void _recenterMapOnUser() {
+    final String tag = widget.futureRun.event.eventId;
+    if (!Get.isRegistered<RunTrackerMapController>(tag: tag)) return;
+    Get.find<RunTrackerMapController>(tag: tag).recenterOnUser();
+  }
+
+  Future<void> _exportOwnTrack() async {
+    if (_isExportingTrack) return;
+    final String tag = widget.futureRun.event.eventId;
+    if (!Get.isRegistered<RunTrackerMapController>(tag: tag)) {
+      _showExportMessage('No track data available yet.');
+      return;
     }
-    return false;
+    await _exportCurrentUserTrack(Get.find<RunTrackerMapController>(tag: tag));
   }
 
   UserTrack? _currentUserTrack(RunTrackerMapController controller) {
@@ -1921,23 +1939,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       }
     }
     return null;
-  }
-
-  Widget _buildExportButton(RunTrackerMapController controller) {
-    return ElevatedButton.icon(
-      icon: const Icon(Icons.ios_share),
-      label: Padding(
-        padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 3.0),
-        child: Text('Export GPX', style: ts_button),
-      ),
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
-        backgroundColor: _isExportingTrack ? Colors.grey.shade700 : null,
-      ),
-      onPressed: _isExportingTrack
-          ? null
-          : () => _exportCurrentUserTrack(controller),
-    );
   }
 
   Future<void> _exportCurrentUserTrack(
