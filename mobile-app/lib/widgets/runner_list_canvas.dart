@@ -113,6 +113,12 @@ class RunnerListCanvas extends StatelessWidget {
               color: Colors.yellow.withValues(alpha: 0.9),
               fontSize: 12,
               fontWeight: FontWeight.w600,
+              // Sits straight on the jungle now that the canvas scrim is
+              // gone, and yellow-on-leaves needs the separation.
+              shadows: const <Shadow>[
+                Shadow(blurRadius: 4, color: Colors.black),
+                Shadow(blurRadius: 8, color: Colors.black),
+              ],
             ),
           ),
         ),
@@ -177,86 +183,101 @@ class RunnerListCanvas extends StatelessWidget {
 
   Widget _row(RunnerListEntry e, {required int rank}) {
     final bool selected = e.userId == selectedRunnerId;
-    return Material(
-      color: selected
-          ? Colors.white.withValues(alpha: 0.16)
-          : Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
+    // Each row carries its own dark underlay. The canvas used to be covered by
+    // a single scrim instead, which darkened the whole jungle and made the
+    // background visibly change when you switched between radar and list — the
+    // background is supposed to be the one constant across the three views.
+    // Selection now reads as a white outline (the same "white = the one you're
+    // in" language as the view switch and the sort pills) rather than a lighter
+    // fill, which would have cost contrast under the white text.
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Material(
+        color: Colors.black.withValues(alpha: selected ? 0.72 : 0.55),
         borderRadius: BorderRadius.circular(10),
-        onTap: () => onTapRunner(e.userId),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-          child: Row(
-            children: <Widget>[
-              SizedBox(
-                width: 24,
-                child: Text(
-                  '$rank',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.65),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () => onTapRunner(e.userId),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: selected ? 0.9 : 0.0),
+                width: 1.5,
               ),
-              // The runner's dot — same colour as their trail on the map and
-              // their blip on the radar, white-ringed like both.
-              Container(
-                width: 15,
-                height: 15,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: e.color,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    width: 1.6,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  e.isSelf ? '${e.name} (you)' : e.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: selected || e.isSelf
-                        ? FontWeight.w800
-                        : FontWeight.w500,
-                  ),
-                ),
-              ),
-              if (e.isLost)
-                const Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: Text('🆘', style: TextStyle(fontSize: 14)),
-                ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: <Widget>[
-                  Text(
-                    _trailDistanceLabel(e.distanceMeters),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13.5,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            child: Row(
+              children: <Widget>[
+                SizedBox(
+                  width: 24,
+                  child: Text(
+                    '$rank',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.65),
+                      fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  Text(
-                    e.metersFromMe == null
-                        ? '—'
-                        : _separationLabel(e.metersFromMe!),
-                    style: TextStyle(
-                      color: Colors.yellow.withValues(alpha: 0.9),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                ),
+                // The runner's dot — same colour as their trail on the map and
+                // their blip on the radar, white-ringed like both.
+                Container(
+                  width: 15,
+                  height: 15,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: e.color,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      width: 1.6,
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    e.isSelf ? '${e.name} (you)' : e.name,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: selected || e.isSelf
+                          ? FontWeight.w800
+                          : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                if (e.isLost)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: Text('🆘', style: TextStyle(fontSize: 14)),
+                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    Text(
+                      _trailDistanceLabel(e.distanceMeters),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      e.metersFromMe == null
+                          ? '—'
+                          : _separationLabel(e.metersFromMe!),
+                      style: TextStyle(
+                        color: Colors.yellow.withValues(alpha: 0.9),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

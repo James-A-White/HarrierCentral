@@ -119,11 +119,11 @@ class RunTrackerMap extends StatelessWidget {
                   child: Container(
                     decoration: Backgrounds.defaultHcBackground(),
                     child: Container(
-                      // Held over the background rather than dropped: the rows
-                      // are plain text straight onto the canvas, not cards, so
-                      // without a scrim white-on-leaves is a hard read. Lighter
-                      // than the old 0.72 so the jungle is actually visible.
-                      color: Colors.black.withValues(alpha: 0.5),
+                      // NO scrim. The rose has none, so a canvas-wide one here
+                      // made the jungle visibly darken every time you switched
+                      // view — the background should not change at all. The
+                      // rows carry their own dark underlay instead, which is
+                      // where the legibility problem actually was.
                       // Top padding clears the view switch pinned over the
                       // canvas; the list's own bottom padding clears the
                       // playback panel. The LEFT padding clears the host's

@@ -524,6 +524,18 @@ class MainNavigationPage extends StatelessWidget {
   }
 }
 
+/// Bottom offset for the promo deck's controls (Prev / Next / Done, and the
+/// loading view's Continue).
+///
+/// These sat at a flat 10px. [AndroidSafeArea] is a PASS-THROUGH on iOS, so
+/// that 10 was measured from the raw screen edge and put the row on top of the
+/// home indicator; and on Android some models under-report the bottom inset
+/// under edge-to-edge, which leaves the row beneath the gesture bar and
+/// unreachable. Taking the reported inset with a floor under it covers both —
+/// same treatment as the onboarding slider's SafeArea minimum.
+double _splashControlsBottom(BuildContext context) =>
+    MediaQuery.paddingOf(context).bottom.clamp(24.0, double.infinity) + 16.0;
+
 /// Hand-rolled replacement for the retired `intro_slider` package's
 /// "what's new" splash sequence: full-bleed promo images in a PageView
 /// with indicator dots and a Prev/Next/Done row inside the existing
@@ -583,7 +595,7 @@ class _SplashSequenceSlider extends StatelessWidget {
           Positioned(
             left: 8,
             right: 8,
-            bottom: 10,
+            bottom: _splashControlsBottom(context),
             child: Row(
               children: [
                 Expanded(
@@ -668,7 +680,7 @@ class _SplashLoadingView extends StatelessWidget {
         Positioned(
           left: 8,
           right: 8,
-          bottom: 10,
+          bottom: _splashControlsBottom(context),
           child: Obx(
             () => controller.splashLoadStalled.value
                 ? Center(
