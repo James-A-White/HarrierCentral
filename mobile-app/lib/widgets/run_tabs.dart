@@ -1680,93 +1680,17 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         22.0,
                         14.0,
                         _trueNorthLock,
-                        // The host draws locate in its own control column
-                        // below, so the map must not draw a second one.
+                        // The map draws no controls of its own: they all
+                        // live in the one left-hand column below, which the
+                        // map positions over whichever canvas is showing.
                         showLocateButton: false,
+                        overlayControls: _mapControls,
                         mapMoved: (latlng.LatLng newPosition) {
                           _mapCenter = newPosition;
                         },
                         markerClicked: () async {
                           await _launchMaps(widget.futureRun);
                         },
-                      ),
-                      // EVERY control on this map lives in one left-hand
-                      // column of identical circles, the same MapOverlayButton
-                      // the full-screen route uses. These were spread across
-                      // both top corners in three different shapes and sizes:
-                      // a rounded square, a bare 50px image, and a red bar
-                      // button sitting below the map entirely.
-                      Positioned(
-                        left: 10.0,
-                        top: 10.0,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            // Keeps its own artwork: the compass reads as an
-                            // orientation control at a glance in a way a
-                            // generic icon does not.
-                            GestureDetector(
-                              onTap: () {
-                                setStateIfMounted(() {
-                                  _trueNorthLock = !_trueNorthLock;
-                                });
-                              },
-                              child: SizedBox(
-                                height: 44.0,
-                                width: 44.0,
-                                child: Image.asset(
-                                  _trueNorthLock
-                                      ? 'images/other/set_map_to_true_north_lock.png'
-                                      : 'images/other/set_map_rotation_enabled.png',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10.0),
-                            MapOverlayButton(
-                              icon: Icons.fullscreen,
-                              tooltip: 'Full screen',
-                              onTap: () => Get.to<void>(
-                                () => PackTrackFullScreenMap(
-                                  run: widget.futureRun,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10.0),
-                            MapOverlayButton(
-                              icon: Icons.ios_share,
-                              tooltip: 'Share this run',
-                              onTap: () => unawaited(
-                                RunShareLinks(
-                                  widget.futureRun,
-                                ).showShareSheet(context),
-                              ),
-                            ),
-                            // Same gate the map itself used: no point offering
-                            // to centre on a location we do not have.
-                            if (appModel.hasLocationPermissions &&
-                                deviceInfo.deviceLat != null &&
-                                deviceInfo.deviceLon != null) ...<Widget>[
-                              const SizedBox(height: 10.0),
-                              MapOverlayButton(
-                                icon: Icons.near_me,
-                                tooltip: 'My location',
-                                onTap: _recenterMapOnUser,
-                              ),
-                            ],
-                            // Hidden before the run opens — there is nothing
-                            // to export from a run that has not happened.
-                            if (trackingHasOpened(
-                              widget.futureRun.event.eventStartDatetimeGmt,
-                            )) ...<Widget>[
-                              const SizedBox(height: 10.0),
-                              MapOverlayButton(
-                                label: 'GPX',
-                                tooltip: 'Export GPX',
-                                onTap: () => unawaited(_exportOwnTrack()),
-                              ),
-                            ],
-                          ],
-                        ),
                       ),
                       if (widget.futureRun.extensions.isMapAndDistanceValid ==
                           0) ...<Widget>[
@@ -1909,6 +1833,91 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+
+  /// Every control that floats over the run map, in one left-hand column of
+  /// identical circles — the same set, in the same slot, as the full-screen
+  /// route. They used to be spread across both top corners in three different
+  /// shapes and sizes, plus a red bar button below the map.
+  ///
+  /// Built PER CANVAS: the radar and the list are not maps, and a control that
+  /// does nothing there is worse than no control. North-lock survives into the
+  /// radar (it decides north-up vs heading-up) but means nothing on the list;
+  /// locate moves a camera neither of them has. Share and GPX are about the
+  /// RUN, not the rendering, so they stay on all three.
+  Widget _mapControls(BuildContext _, PackTrackCanvas canvas) {
+    final bool isMap = canvas == PackTrackCanvas.map;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        if (canvas != PackTrackCanvas.list) ...<Widget>[
+          // Keeps its own artwork: the compass reads as an orientation
+          // control at a glance in a way a generic icon does not.
+          GestureDetector(
+            onTap: () {
+              setStateIfMounted(() {
+                _trueNorthLock = !_trueNorthLock;
+              });
+            },
+            child: SizedBox(
+              height: 44.0,
+              width: 44.0,
+              child: Image.asset(
+                _trueNorthLock
+                    ? 'images/other/set_map_to_true_north_lock.png'
+                    : 'images/other/set_map_rotation_enabled.png',
+              ),
+            ),
+          ),
+          const SizedBox(height: 10.0),
+        ],
+        // Opens on the canvas you were looking at, so this enlarges the
+        // radar or the list rather than quietly switching you to the map.
+        MapOverlayButton(
+          icon: Icons.fullscreen,
+          tooltip: 'Full screen',
+          onTap: () => Get.to<void>(
+            () => PackTrackFullScreenMap(
+              run: widget.futureRun,
+              initialCanvas: canvas,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10.0),
+        MapOverlayButton(
+          icon: Icons.ios_share,
+          tooltip: 'Share this run',
+          onTap: () => unawaited(
+            RunShareLinks(widget.futureRun).showShareSheet(context),
+          ),
+        ),
+        // Map only — it moves the map camera. Same gate the map itself used:
+        // no point offering to centre on a location we do not have.
+        if (isMap &&
+            appModel.hasLocationPermissions &&
+            deviceInfo.deviceLat != null &&
+            deviceInfo.deviceLon != null) ...<Widget>[
+          const SizedBox(height: 10.0),
+          MapOverlayButton(
+            icon: Icons.near_me,
+            tooltip: 'My location',
+            onTap: _recenterMapOnUser,
+          ),
+        ],
+        // Hidden before the run opens — there is nothing to export from a
+        // run that has not happened.
+        if (trackingHasOpened(
+          widget.futureRun.event.eventStartDatetimeGmt,
+        )) ...<Widget>[
+          const SizedBox(height: 10.0),
+          MapOverlayButton(
+            label: 'GPX',
+            tooltip: 'Export GPX',
+            onTap: () => unawaited(_exportOwnTrack()),
+          ),
+        ],
+      ],
     );
   }
 

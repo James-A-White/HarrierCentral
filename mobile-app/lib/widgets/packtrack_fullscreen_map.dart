@@ -11,13 +11,88 @@ import 'package:latlong2/latlong.dart' as latlng;
 /// The trade-off is a fresh view (re-fetch, playback at the live edge); trimming
 /// stays on the embedded map.
 class PackTrackFullScreenMap extends StatelessWidget {
-  const PackTrackFullScreenMap({super.key, required this.run, this.focusPoint});
+  const PackTrackFullScreenMap({
+    super.key,
+    required this.run,
+    this.focusPoint,
+    this.initialCanvas = PackTrackCanvas.map,
+  });
 
   final RunDetailsAggregate run;
+
+  /// The canvas the embedded map was showing when "Full screen" was tapped.
+  /// Opening on it means the button enlarges what you were looking at instead
+  /// of dropping you back on the map.
+  final PackTrackCanvas initialCanvas;
 
   /// When provided (e.g. opened from a run photo), the map opens centered and
   /// zoomed on this coordinate instead of the run's default center.
   final latlng.LatLng? focusPoint;
+
+  /// EVERY control on this route lives in this one left-hand column, one
+  /// style and one size — MapOverlayButton, the same control the run-detail
+  /// and live-run maps use, so the three maps cannot drift apart again.
+  ///
+  /// Built per canvas: locate moves the map camera, which the radar and the
+  /// list do not have. Close, share, GPX and trim are about the route or the
+  /// run rather than the rendering, so they stay on all three.
+  Widget _controls(
+    BuildContext context,
+    PackTrackCanvas canvas,
+    String mapTag,
+    PackTrackTrimController trimController,
+    bool isAdmin,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        MapOverlayButton(
+          tooltip: 'Close',
+          icon: Icons.close,
+          onTap: () => Navigator.of(context).maybePop(),
+        ),
+        const SizedBox(height: 10),
+        // Interactive-map / Trail TV chooser, then the OS share sheet — so
+        // spectators can watch in a browser without the app. Same flow as
+        // Run Tools and the run-detail map.
+        MapOverlayButton(
+          tooltip: 'Share this run',
+          icon: Icons.ios_share,
+          onTap: () => unawaited(RunShareLinks(run).showShareSheet(context)),
+        ),
+        if (canvas == PackTrackCanvas.map) ...<Widget>[
+          const SizedBox(height: 10),
+          MapOverlayButton(
+            tooltip: 'My location',
+            icon: Icons.near_me,
+            onTap: () {
+              if (Get.isRegistered<RunTrackerMapController>(tag: mapTag)) {
+                Get.find<RunTrackerMapController>(tag: mapTag).recenterOnUser();
+              }
+            },
+          ),
+        ],
+        // Hidden before the run opens: there is nothing to export from a run
+        // that has not happened.
+        if (trackingHasOpened(run.event.eventStartDatetimeGmt)) ...<Widget>[
+          const SizedBox(height: 10),
+          MapOverlayButton(
+            tooltip: 'Export GPX',
+            label: 'GPX',
+            onTap: () => unawaited(_exportGpx(context, mapTag)),
+          ),
+        ],
+        if (isAdmin) ...<Widget>[
+          const SizedBox(height: 10),
+          MapOverlayButton(
+            tooltip: 'Trim run',
+            icon: Icons.content_cut,
+            onTap: trimController.toggleEditing,
+          ),
+        ],
+      ],
+    );
+  }
 
   /// Exports the signed-in runner's own track. Looked up lazily at tap time:
   /// the map controller is created by RunTrackerMap below, so it does not
@@ -127,6 +202,9 @@ class PackTrackFullScreenMap extends StatelessWidget {
                 // room for a pill that is no longer drawn.
                 overlayBottomPadding: 12.0,
                 showLocateButton: false,
+                initialCanvas: initialCanvas,
+                overlayControls: (BuildContext _, PackTrackCanvas canvas) =>
+                    _controls(context, canvas, mapTag, trimController, isAdmin),
                 // When focused on a photo location, don't let the load-time
                 // auto-follow drag the camera to the run's end — stay on the
                 // photo's coordinate.
@@ -144,68 +222,19 @@ class PackTrackFullScreenMap extends StatelessWidget {
                 ),
               ),
             ),
-          // EVERY control on this route lives in this one left-hand column,
-          // one style and one size — MapOverlayButton, the same control the
-          // run-detail and live-run maps use, so the three maps cannot drift
-          // apart in style again.
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 12,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                MapOverlayButton(
-                  tooltip: 'Close',
-                  icon: Icons.close,
-                  onTap: () => Navigator.of(context).maybePop(),
-                ),
-                const SizedBox(height: 10),
-                // Interactive-map / Trail TV chooser, then the OS share
-                // sheet — so spectators can watch in a browser without the
-                // app. Same flow as Run Tools and the run-detail map.
-                MapOverlayButton(
-                  tooltip: 'Share this run',
-                  icon: Icons.ios_share,
-                  onTap: () =>
-                      unawaited(RunShareLinks(run).showShareSheet(context)),
-                ),
-                const SizedBox(height: 10),
-                MapOverlayButton(
-                  tooltip: 'My location',
-                  icon: Icons.near_me,
-                  onTap: () {
-                    if (Get.isRegistered<RunTrackerMapController>(
-                      tag: mapTag,
-                    )) {
-                      Get.find<RunTrackerMapController>(
-                        tag: mapTag,
-                      ).recenterOnUser();
-                    }
-                  },
-                ),
-                // Hidden before the run opens: there is nothing to export
-                // from a run that has not happened.
-                if (trackingHasOpened(
-                  run.event.eventStartDatetimeGmt,
-                )) ...<Widget>[
-                  const SizedBox(height: 10),
-                  MapOverlayButton(
-                    tooltip: 'Export GPX',
-                    label: 'GPX',
-                    onTap: () => unawaited(_exportGpx(context, mapTag)),
-                  ),
-                ],
-                if (isAdmin) ...<Widget>[
-                  const SizedBox(height: 10),
-                  MapOverlayButton(
-                    tooltip: 'Trim run',
-                    icon: Icons.content_cut,
-                    onTap: trimController.toggleEditing,
-                  ),
-                ],
-              ],
+          // The controls live inside RunTrackerMap (which is the only thing
+          // that knows the canvas), so when the map cannot render there is
+          // nothing on screen at all — including the way out.
+          if (!canRender)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 12,
+              child: MapOverlayButton(
+                tooltip: 'Close',
+                icon: Icons.close,
+                onTap: () => Navigator.of(context).maybePop(),
+              ),
             ),
-          ),
           // Admin trim bar (renders nothing for non-admins, and nothing at
           // all until editing starts — the scissors button in the column
           // above is the trigger now). Sits ABOVE the playback panel so the

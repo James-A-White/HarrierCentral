@@ -20,6 +20,8 @@ class RunTrackerMap extends StatelessWidget {
     this.controllerTag,
     this.autoFollowOnLoad = true,
     this.showLocateButton = true,
+    this.initialCanvas = PackTrackCanvas.map,
+    this.overlayControls,
   });
 
   final EventModel event;
@@ -40,10 +42,23 @@ class RunTrackerMap extends StatelessWidget {
   /// recenter doesn't drag the view to the run's end.
   final bool autoFollowOnLoad;
 
-  /// Whether this map draws its own locate button in the top-right. The
-  /// fullscreen route sets false and renders it in its own left-hand column
-  /// instead, so every control there is one style in one place.
+  /// Whether this map draws its own locate button in the top-right. Hosts that
+  /// supply [overlayControls] set false and put locate in that column instead,
+  /// so every control is one style in one place.
   final bool showLocateButton;
+
+  /// Which canvas to open on. The full-screen route passes the canvas the
+  /// embedded map was showing, so "Full screen" enlarges what you were looking
+  /// at rather than always landing on the map.
+  final PackTrackCanvas initialCanvas;
+
+  /// The host's control column, drawn top-left over whichever canvas is
+  /// showing. Built PER CANVAS — the host is handed the live canvas so it can
+  /// drop controls that mean nothing there (north-lock on the list, locate on
+  /// anything without a camera). It lives here rather than in the host's own
+  /// Stack because only this widget knows which canvas is up.
+  final Widget Function(BuildContext context, PackTrackCanvas canvas)?
+  overlayControls;
 
   /// Optional override for the GetX controller tag. Defaults to the event id so
   /// every map of a run shares one controller. The fullscreen map passes a
@@ -74,6 +89,7 @@ class RunTrackerMap extends StatelessWidget {
               initialZoom: zoom,
               trueNorthLock: trueNorthLock,
               autoFollowOnLoad: autoFollowOnLoad,
+              initialCanvas: initialCanvas,
             ),
       builder: (controller) {
         controller.updateTrueNorthLock(trueNorthLock);
@@ -110,8 +126,17 @@ class RunTrackerMap extends StatelessWidget {
                       color: Colors.black.withValues(alpha: 0.5),
                       // Top padding clears the view switch pinned over the
                       // canvas; the list's own bottom padding clears the
-                      // playback panel.
-                      padding: EdgeInsets.fromLTRB(12, 62 + topInset, 12, 0),
+                      // playback panel. The LEFT padding clears the host's
+                      // control column — unlike the map and rose, the list has
+                      // content (the sort pills, the rows) right where those
+                      // buttons sit, so here they have to be given room rather
+                      // than floated over.
+                      padding: EdgeInsets.fromLTRB(
+                        overlayControls == null ? 12 : 66,
+                        62 + topInset,
+                        12,
+                        0,
+                      ),
                       child: RunnerListCanvas(
                         entries: controller.runnerListEntries,
                         selectedRunnerId: controller.selectedRunnerId.value,
@@ -141,6 +166,7 @@ class RunTrackerMap extends StatelessWidget {
                   right: 0,
                   child: Center(child: _viewSwitch(controller)),
                 ),
+                _hostControls(context, topInset, PackTrackCanvas.list),
               ],
             );
           }
@@ -243,6 +269,7 @@ class RunTrackerMap extends StatelessWidget {
                     onTap: controller.resetRoseRange,
                   ),
                 ),
+                _hostControls(context, topInset, PackTrackCanvas.rose),
               ],
             );
           }
@@ -401,6 +428,9 @@ class RunTrackerMap extends StatelessWidget {
                       Obx(() => _buildPhotoShowcase(controller, cons)),
                 ),
               ),
+              // Last, so the showcase's full-bleed overlay can never sit on
+              // top of the buttons.
+              _hostControls(context, topInset, PackTrackCanvas.map),
             ],
           );
         });
@@ -638,6 +668,24 @@ class RunTrackerMap extends StatelessWidget {
         ),
       );
     });
+  }
+
+  /// The host's control column, in the same slot on every canvas so switching
+  /// view never moves a button. Nothing at all when the host supplies none —
+  /// the live-run map still draws its controls in its own Stack.
+  Widget _hostControls(
+    BuildContext context,
+    double topInset,
+    PackTrackCanvas canvas,
+  ) {
+    final Widget Function(BuildContext, PackTrackCanvas)? builder =
+        overlayControls;
+    if (builder == null) return const SizedBox.shrink();
+    return Positioned(
+      top: 12 + topInset,
+      left: 12,
+      child: builder(context, canvas),
+    );
   }
 
   Widget _locateButton(RunTrackerMapController controller) {

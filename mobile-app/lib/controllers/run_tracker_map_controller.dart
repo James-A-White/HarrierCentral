@@ -29,7 +29,9 @@ class RunTrackerMapController extends GetxController
     required this.initialZoom,
     required bool trueNorthLock,
     bool autoFollowOnLoad = true,
+    PackTrackCanvas initialCanvas = PackTrackCanvas.map,
   }) : _trueNorthLock = trueNorthLock.obs,
+       canvasView = initialCanvas.obs,
        followRunner = autoFollowOnLoad.obs,
        _mapCenterPoint =
            (mapCenter.latitude == CLEAR_LATLONG &&
@@ -214,7 +216,11 @@ class RunTrackerMapController extends GetxController
   // only the canvas changes.
 
   /// The canvas currently replacing (or being) the map: map, rose or list.
-  final Rx<PackTrackCanvas> canvasView = PackTrackCanvas.map.obs;
+  ///
+  /// Seeded from the constructor so the full-screen route can open on the
+  /// canvas you were already looking at — tapping "Full screen" from the radar
+  /// used to land you on the map, which is not what the button said.
+  final Rx<PackTrackCanvas> canvasView;
 
   /// Outer-ring range in metres; null = auto-fit to the nearest 90% of the pack.
   final RxnDouble roseRange = RxnDouble();
