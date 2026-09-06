@@ -1,16 +1,18 @@
 // Test helpers for widget golden tests.
-// Sets up minimal GetX + GetStorage environment without needing a real device.
+// Sets up a minimal GetX + prefs environment without needing a real device.
 
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:harrier_central/util/get_storage.dart';
 import 'package:harrier_central/util/globals.dart';
 import 'package:harrier_central/services/connectivity_service.dart';
 
-/// Mock path_provider so GetStorage can initialise without a real device.
+/// Mock path_provider so the prefs layer's one-time get_storage migration can
+/// look for (and not find) the legacy file without a real device.
 Future<void> _mockPathProvider() async {
   final tempDir = await Directory.systemTemp.createTemp('hc_test_');
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -20,16 +22,19 @@ Future<void> _mockPathProvider() async {
   );
 }
 
-/// Boot a minimal test environment: GetStorage (via mocked path_provider) + a stubbed DeviceInfo.
-/// Call this in setUp() before pumping any widget that uses deviceInfo or prefs.
+/// Boot a minimal test environment: shared_preferences (in-memory) + a stubbed
+/// DeviceInfo. Call this in setUp() before pumping any widget that uses
+/// deviceInfo or prefs.
 Future<void> setupTestEnvironment() async {
   // Ensure the Flutter binding is initialised before any platform channel or
-  // GetStorage call. This is a no-op when called inside testWidgets(), but is
+  // prefs call. This is a no-op when called inside testWidgets(), but is
   // required for plain test() functions.
   TestWidgetsFlutterBinding.ensureInitialized();
   await _mockPathProvider();
-  await GetStorage.init();       // default container — used by all app getStringPref/getDatePref calls
-  await GetStorage.init('test'); // named container — kept for backwards-compat
+  // The app reads prefs through initPrefs()/getStringPref(), which are backed
+  // by shared_preferences. setMockInitialValues gives that an in-memory store.
+  SharedPreferences.setMockInitialValues(<String, Object>{});
+  await initPrefs();
 
   // Suppress AVIF codec failures — the native AVIF decoder is unavailable in
   // the headless test environment. All other Flutter errors still propagate.
@@ -58,7 +63,7 @@ Future<void> setupTestEnvironment() async {
 Future<void> tearDownTestEnvironment() async {
   FlutterError.onError = FlutterError.dumpErrorToConsole;
   try {
-    await GetStorage().erase(); // clear default container so prefs don't bleed between tests
+    await clearPrefs(); // so prefs don't bleed between tests
   } catch (_) {}
   Get.reset();
 }

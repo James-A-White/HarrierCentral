@@ -1,5 +1,4 @@
-import 'package:sqflite_common_ffi/ffi.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Redirect sqflite to an in-memory FFI implementation for widget/unit tests.
 ///
