@@ -137,10 +137,10 @@ BEGIN TRY
         IF (@bulkAttAllowed = 0)
         BEGIN
             SET @errorCode = 1325; SET @errorType = 13; SET @errorId = NEWID();
+            ROLLBACK TRANSACTION;
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
             VALUES (@errorId, '<unknown>', 'Not authorised for bulk attendance',
                     'Caller does not hold required role for kennel', @procName, @userId);
-            ROLLBACK TRANSACTION;
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                    'Not authorised' AS errorTitle,

@@ -4,6 +4,49 @@ Items flagged during development that need follow-up.
 
 ---
 
+## 🔎 GNH 2026 weekend error-log review (2026-09-06)
+
+Fixed in this pass:
+- [x] `processPayment` self-service exemption — the `takePayment` gate had
+      blocked self check-in for every hasher who is not hash cash since
+      2026-07-19 (11 hashers hit it at GNH). **SPs must deploy before/with the
+      next app build.**
+- [x] `ROLLBACK` moved above every in-transaction `INSERT HC.ErrorLog`
+      (8 sites, 5 SPs) — the rollback was erasing the log row, which is why the
+      above went unnoticed for seven weeks. Rule added to CLAUDE.md.
+- [x] Zero run fee ⇒ no "pay" wording; the check-in dialog says **Check In**
+      and the PayPal-style payment icons no longer show on a free run.
+
+Still open, in rough priority order:
+
+- [ ] **PackTrack dropped 16,798 GPS points this weekend** (138 batches: 113 on
+      Saturday, 23 on Sunday). `run_point_buffer.dart:_sendBatch` gives up
+      after 5 attempts (~3s of backoff) and discards the batch — no
+      persistence, no re-queue, on exactly the bad signal a trail has. The
+      payment outbox already solves this shape (persist before send, retry
+      until acknowledged); apply it to position batches.
+- [ ] **Memory during tracking** — `peak=1015MB` on several devices, steady
+      state 415–470MB. That is jetsam range on iOS and a plausible cause of
+      tracks ending early.
+- [ ] **`"LocationService" not found`** ×5 (two devices, just after startup) —
+      `Get.find` in a widget build with the service not registered.
+- [ ] **`type 'Null' is not a subtype of type 'String'`** ×5 in
+      `_$HashersModelFromJson` via `RunTabs._refreshPackListFromTable` — a
+      non-null model field is null in the local DB; the pack list fails to
+      render for that run.
+- [ ] **`EnumFollowType` cast errors** — `run_list_item.dart:1717`
+      (→`EnumEmailAlertState`) and `user_event_list_item.dart:407` (→`int`).
+      Both crash the popup on tap.
+- [ ] **Avatar upload can write the DB row without the blob.** Flash Princess
+      uploaded a photo at 07:50 Sunday; `HC.Hasher.Photo` points at a blob that
+      404s (confirmed). Two older ones the same (Budgie Smuggler, Tore de
+      Pants, both January). 32 view failures over the weekend.
+- [ ] **Down-downs blocked** — 8 × `hcapp_addDownDown` "Caller did not attend
+      this run" on Saturday morning. Probably downstream of the check-in
+      failure above; re-check once the SP fix is live.
+- [ ] Android `PlatformException: Service.startForeground() not allowed`
+      (geolocator), once, immediately after a tracking STOP.
+
 # 3.1 TRACK — event-free payments
 
 No branch exists; `dev`/`master` stay 3.0.x and 3.1 forks from `dev` when the

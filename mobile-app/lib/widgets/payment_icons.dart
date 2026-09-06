@@ -282,11 +282,7 @@ class PaymentIcons extends StatelessWidget {
               num extrasPrice = event.eventPriceForExtras ?? 0;
               final double surcharge =
                   (isMember == 0 ? nonMemberSurcharge : memberSurcharge) ?? 0.0;
-              final double eventPrice = (isMember == 0.0
-                  ? event.eventPriceForNonMembers ??
-                        kennel.defaultPriceForNonMembers
-                  : event.eventPriceForMembers ??
-                        kennel.defaultPriceForMembers);
+              final double eventPrice = _applicableRunFee();
 
               if (extrasPrice > 0) {
                 // if there are extras, show the extras dialog
@@ -402,6 +398,12 @@ class PaymentIcons extends StatelessWidget {
           );
   }
 
+  /// The run fee this hasher would be charged: the event's own price when it
+  /// sets one, otherwise the kennel default, at member or non-member rate.
+  double _applicableRunFee() => isMember == 0
+      ? event.eventPriceForNonMembers ?? kennel.defaultPriceForNonMembers
+      : event.eventPriceForMembers ?? kennel.defaultPriceForMembers;
+
   bool showPaymentIcons() {
     if (isPaid == 1) {
       return false;
@@ -427,6 +429,14 @@ class PaymentIcons extends StatelessWidget {
     }
 
     if (isPaid != 0) {
+      return false;
+    }
+
+    // Nothing to pay ⇒ no payment surface at all. A zero-fee run with no
+    // priced extras was still offering "Pay for your run with... [PayPal]",
+    // which sends the hasher to a payment provider to hand over nothing. The
+    // run is free: checking in is the whole interaction.
+    if (_applicableRunFee() <= 0 && (event.eventPriceForExtras ?? 0) <= 0) {
       return false;
     }
 

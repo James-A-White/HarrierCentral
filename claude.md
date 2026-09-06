@@ -386,6 +386,37 @@ Rules for the wrapper:
   `@procName_self`, or `OBJECT_NAME(@@PROCID)` if none), and `@userId` or `NULL`.
 - **Every CATCH must log to `HC.ErrorLog`** so the failure is diagnosable server-side.
 
+### Never roll back an error log — `ROLLBACK` comes BEFORE the `INSERT HC.ErrorLog`
+
+An `INSERT HC.ErrorLog` written *inside* an open transaction that the same block
+then rolls back is **erased by that rollback**. The client still receives an
+`errorId`, so everything looks logged, but the row is gone and the failure is
+invisible to every log review. This is worse than not logging at all: it looks
+like the SP has no such error.
+
+Found 2026-09-06 in `hcapp_processPayment` and 4 other SPs (8 sites). It hid a
+broken self check-in payment path for seven weeks.
+
+**Rule:** in any error branch inside a transaction, `ROLLBACK TRANSACTION;`
+comes FIRST, then log, then return the envelope:
+
+```sql
+IF (@allowed = 0)
+BEGIN
+    SET @errorCode = 1340; SET @errorType = 13; SET @errorId = NEWID();
+    ROLLBACK TRANSACTION;                       -- ← FIRST: the log must survive
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Not authorised', '...', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, ... ;
+    RETURN;
+END
+```
+
+The same applies in a CATCH block: roll back, then log, then `THROW` or return
+the error envelope — never log first. Where a validation can be done *before*
+`BEGIN TRANSACTION`, prefer that: no rollback to get wrong.
+
 ---
 
 ## Code Quality Rules
@@ -484,6 +515,9 @@ trigger first, run the ALTER, then re-enable it. Do not run this autonomously.
 - **SP body not wrapped in TRY/CATCH** — any runtime error becomes an unlogged raw 500
   (see "TRY/CATCH is mandatory" above). Flag on sight for reads AND writes.
 - CATCH block that doesn't log to `HC.ErrorLog` (swallows the error with no server record)
+- **`INSERT HC.ErrorLog` before a `ROLLBACK TRANSACTION` in the same block** — the
+  rollback erases the log row it just wrote; the client gets an `errorId` for a row
+  that does not exist (see "Never roll back an error log" above). Flag on sight.
 - Check-then-`INSERT` on a UNIQUE key without `WITH (UPDLOCK, HOLDLOCK)` on the existence
   check (concurrent duplicate-key 500), or a non-idempotent insert on a client-supplied id
 

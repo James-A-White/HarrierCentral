@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_processPayment",
-  "version": "1.5.0",
-  "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Uses a standard device-secret access token (@param = NULL \u2014 ValidateAppAuth uses the stored DeviceSecret as the token context). paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType.",
+  "version": "1.6.0",
+  "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Uses a standard device-secret access token (@param = NULL \u2014 ValidateAppAuth uses the stored DeviceSecret as the token context). paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType. Authorization: the 'takePayment' kennel feature is required for every money path, with two exemptions \u2014 a hare of the event being paid for, and SELF-SERVICE (1.6.0): a hasher settling their OWN run fee (payer = caller, productType 1, paymentType 4 or 6, no @specialRunPrice). Self-service covers the run-start check-in prompt and the run detail payment icons; cash (3/5), other-amount (7/8), mark-not-paid (1) and confirm-transfer (100) remain admin-only.",
   "parameters": [
     {
       "name": "deviceId",

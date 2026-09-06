@@ -112,10 +112,10 @@ BEGIN TRY
         IF @fromKennelId IS NULL OR @toKennelId IS NULL OR @fromKennelId != @toKennelId
         BEGIN
             SET @errorCode = 1221; SET @errorType = 12; SET @errorId = NEWID();
+            ROLLBACK TRANSACTION;
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
             VALUES (@errorId, '<unknown>', 'Cross-kennel RSVP copy attempted',
                     'Source and target events must belong to the same kennel', @procName, @userId);
-            ROLLBACK TRANSACTION;
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                    'Invalid events' AS errorTitle,
@@ -129,10 +129,10 @@ BEGIN TRY
         IF (@copyAllowed = 0)
         BEGIN
             SET @errorCode = 1321; SET @errorType = 13; SET @errorId = NEWID();
+            ROLLBACK TRANSACTION;
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
             VALUES (@errorId, '<unknown>', 'Not authorised to copy RSVPs',
                     'Caller does not hold required role for kennel', @procName, @userId);
-            ROLLBACK TRANSACTION;
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                    'Not authorised' AS errorTitle,

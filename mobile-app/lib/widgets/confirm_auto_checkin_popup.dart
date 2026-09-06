@@ -50,6 +50,17 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
     // enough) credit the dialog is unchanged.
     final bool hasCredit = eventPrice <= widget.areWeAtRunData.kennelCredit;
 
+    // No money in the run fee ⇒ no payment language anywhere. The dialog used
+    // to say "This run is £0.00 / You have £0.00 of Hash Credit" over a "Pay
+    // with credit" button, which reads as a charge when nothing is being
+    // charged. It is just a check-in, so call it that.
+    //
+    // Only the FEE is free here — extras are priced separately and keep their
+    // own wording below. The action still goes through the payment path so a
+    // zero-priced run records its FREE payment row (processPayment coerces
+    // zero-price to PaymentType 2); only the words change.
+    final bool feeIsFree = eventPrice <= 0.0;
+
     return AlertDialog(
       //title: Text(widget.title),
       contentPadding: const EdgeInsets.fromLTRB(14, 20, 14, 10),
@@ -81,10 +92,11 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
           ),
 
           // pay for run only buttons
-          if ((eventPrice <= widget.areWeAtRunData.kennelCredit) ||
-              ((widget.areWeAtRunData.allowSelfPayment &
-                      selfPaymentShowBankButtonOnAutoCheckinDialog) !=
-                  0)) ...<Widget>[
+          if (!feeIsFree &&
+              ((eventPrice <= widget.areWeAtRunData.kennelCredit) ||
+                  ((widget.areWeAtRunData.allowSelfPayment &
+                          selfPaymentShowBankButtonOnAutoCheckinDialog) !=
+                      0))) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Column(
@@ -127,13 +139,16 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
             ),
           ],
 
-          // pay for extras buttons
-          if (((widget.areWeAtRunData.extrasCost > 0) &&
-                  ((eventPrice + widget.areWeAtRunData.extrasCost) <=
-                      widget.areWeAtRunData.kennelCredit)) ||
-              ((widget.areWeAtRunData.allowSelfPayment &
-                      selfPaymentShowBankButtonOnAutoCheckinDialog) !=
-                  0)) ...<Widget>[
+          // pay for extras buttons — only when the extras actually cost
+          // something. The bank-transfer branch used to show this block on its
+          // own, so a run with no extras offered "You can also pay an
+          // additional £0.00 for null".
+          if ((widget.areWeAtRunData.extrasCost > 0) &&
+              (((eventPrice + widget.areWeAtRunData.extrasCost) <=
+                      widget.areWeAtRunData.kennelCredit) ||
+                  ((widget.areWeAtRunData.allowSelfPayment &
+                          selfPaymentShowBankButtonOnAutoCheckinDialog) !=
+                      0))) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Column(
@@ -214,10 +229,15 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    // With credit this pays from credit; without credit it keeps
-                    // the original "check in without paying" behaviour.
+                    // Free run: it is a check-in, nothing more. With credit this
+                    // pays from credit; without credit it keeps the original
+                    // "check in without paying" behaviour.
                     child: Text(
-                      hasCredit ? 'Pay with credit' : widget.okButtonTitle,
+                      feeIsFree
+                          ? 'Check In'
+                          : (hasCredit
+                                ? 'Pay with credit'
+                                : widget.okButtonTitle),
                     ),
                   ),
                   onPressed: () {

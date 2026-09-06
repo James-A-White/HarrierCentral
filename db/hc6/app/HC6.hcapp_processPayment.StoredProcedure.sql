@@ -93,6 +93,16 @@ AS
 -- Modified: 2026-07-25 — added UPDLOCK/HOLDLOCK serialization on the HEM row
 --   before the check-then-cancel-then-insert, preventing a concurrent
 --   double-tap from inserting two non-cancelled payments for the same HEM.
+-- Modified: 2026-09-06 — two fixes found in the GNH 2026 error logs:
+--   (1) Self-service exemption on the takePayment gate: a hasher may settle
+--       their OWN run fee (payer = caller, productType 1, paymentType 4 or 6,
+--       no @specialRunPrice). Since 2026-07-19 the gate had blocked the
+--       run-start check-in prompt and the run-detail payment icons for every
+--       hasher who is not hash cash. See the block comment at the gate.
+--   (2) ROLLBACK now precedes every in-transaction ErrorLog INSERT. The
+--       rollback was undoing the log row it had just written, so each of
+--       these rejections returned the client an errorId for a row that never
+--       persisted — which is why (1) went unnoticed for seven weeks.
 -- Modified: 2026-08-26 — idempotent replays (@clientPaymentId): the client
 --   supplies the Payment id it intends to create; if that id already exists
 --   the call is acknowledged as success with adHocData.alreadyProcessed = 1
@@ -229,6 +239,29 @@ BEGIN TRY
         -- gated, leaving single-payment record/cancel open. Run-scoped: a hare
         -- of THIS event may also take payment for it (check-in flow, @eventId set;
         -- does not extend to confirm-only calls where @eventId is null).
+        --
+        -- SELF-SERVICE EXEMPTION (2026-09-06): a hasher may always settle their
+        -- OWN run fee. The two self-service surfaces — the run-start check-in
+        -- prompt ("Yes and pay by credit"/"...by bank transfer") and the run
+        -- detail payment icons — call this SP as an ordinary hasher, so gating
+        -- them behind takePayment blocked self check-in for everyone who is not
+        -- hash cash. Broken since 2026-07-19 and invisible until now because
+        -- the rejection's ErrorLog row was written INSIDE the transaction this
+        -- block then rolled back (fixed below). 11 hashers hit it at GNH 2026.
+        --
+        -- The exemption is deliberately narrow — it must not become a way to
+        -- self-certify money:
+        --   * the payer must BE the caller;
+        --   * event fee only (productType 1);
+        --   * hash credit (6), which spends the payer's own credit, or bank
+        --     transfer (4), which records an UNCONFIRMED claim the
+        --     WankerBanker still has to confirm (type 100, admin-gated);
+        --   * no price override (@specialRunPrice): for types 4 and 6 the
+        --     debit is the server-computed event price and @paymentAmount is
+        --     ignored, and this keeps it that way if the pricing branches move.
+        -- Cash (3/5) stays admin-only — nobody self-certifies handing money
+        -- over. 'Other amount' (7/8), mark-not-paid (1) and confirm-transfer
+        -- (100) stay admin-only too.
         -- ---------------------------------------------------------------
         DECLARE @payKennelId UNIQUEIDENTIFIER;
         IF (@eventId IS NOT NULL)
@@ -243,13 +276,28 @@ BEGIN TRY
                 SELECT 1 FROM HC.HasherEventMap
                 WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
         EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @payKennelId, @functionKey = 'takePayment', @isHareOfEvent = @payIsHare, @allowed = @payAllowed OUTPUT;
-        IF (@payAllowed = 0)
+
+        -- Who is being charged? @userIdWhoPaid on the self-service paths (they
+        -- send no HEM — the hasher is not checked in yet); resolved from the
+        -- HEM row when a caller supplies one instead.
+        DECLARE @payerUserId UNIQUEIDENTIFIER = @userIdWhoPaid;
+        IF (@payerUserId IS NULL AND @hasherEventMapId IS NOT NULL)
+            SELECT @payerUserId = UserId FROM HC.HasherEventMap WHERE id = @hasherEventMapId;
+
+        DECLARE @paySelfService SMALLINT =
+            CASE WHEN @payerUserId = @userId
+                  AND @productType = 1
+                  AND @paymentType IN (4, 6)
+                  AND @specialRunPrice IS NULL
+                 THEN 1 ELSE 0 END;
+
+        IF (@payAllowed = 0 AND @paySelfService = 0)
         BEGIN
             SET @errorCode = 1340; SET @errorType = 13; SET @errorId = NEWID();
+            ROLLBACK TRANSACTION;
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
             VALUES (@errorId, '<unknown>', 'Not authorised to take payment',
                     'Caller does not hold required role for kennel', @procName, @userId);
-            ROLLBACK TRANSACTION;
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                    'Not authorised' AS errorTitle,
@@ -487,10 +535,10 @@ BEGIN TRY
                 AND @membershipPeriodEnd IS NULL)
             BEGIN
                 SET @errorCode = 1245; SET @errorType = 2; SET @errorId = NEWID();
+                ROLLBACK TRANSACTION;
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
                 VALUES (@errorId, '<unknown>', 'Membership year not set',
                         'MembershipPeriodEndDate is not configured', @procName, @userId);
-                ROLLBACK TRANSACTION;
                 SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
                 SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                        'Membership year not set' AS errorTitle,
@@ -505,10 +553,10 @@ BEGIN TRY
 
             BEGIN
                 SET @errorCode = 1246; SET @errorType = 2; SET @errorId = NEWID();
+                ROLLBACK TRANSACTION;
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
                 VALUES (@errorId, '<unknown>', 'Already a lifetime member',
                         'Attempt to charge membership to a lifetime member', @procName, @userId);
-                ROLLBACK TRANSACTION;
                 SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
                 SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                        'Already a lifetime member' AS errorTitle,
@@ -530,10 +578,10 @@ BEGIN TRY
             IF (@paymentType = 1)
             BEGIN
                 SET @errorCode = 1247; SET @errorType = 2; SET @errorId = NEWID();
+                ROLLBACK TRANSACTION;
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
                 VALUES (@errorId, '<unknown>', 'Cannot bulk-cancel haberdashery',
                         'paymentType 1 is not supported for productType 3', @procName, @userId);
-                ROLLBACK TRANSACTION;
                 SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
                 SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                        'Not supported' AS errorTitle,
