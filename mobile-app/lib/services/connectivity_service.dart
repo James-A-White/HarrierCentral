@@ -1,7 +1,7 @@
 import 'package:harrier_central/imports.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-class NetworkService extends GetxService {
+class NetworkService extends GetxService with WidgetsBindingObserver {
   // Whether the device can reach the internet (Google/MSFT probe)
   final RxBool hasInternet = false.obs;
   // Whether the HC backend is fully reachable (API → hcapp_checkConnection SP → DB).
@@ -24,7 +24,24 @@ class NetworkService extends GetxService {
   // Boot retries: 3 × 10s = 30s max to handle Azure cold starts.
   static const int _bootMaxAttempts = 3;
   // Watchdog interval — Google/MSFT only, no HC backend traffic.
+  //
+  // This used to be a flat 30s forever: 2,880 network probes a day, each one
+  // waking the radio, whether or not anybody was looking at the app and whether
+  // or not anything had changed. Radio wake-ups are among the most expensive
+  // things an idle app can do, and this ran from launch to termination — a
+  // prime suspect in the "drains even when I'm not tracking" reports.
+  //
+  // Now: 30s to start, doubling up to a 5-minute ceiling for as long as the
+  // answer keeps coming back the same, and reset to 30s the moment the state
+  // changes or the app is brought back to the foreground. Nothing is lost —
+  // a real interface change is event-driven via onConnectivityChanged, and
+  // while offline the recovery watcher already detects restoration in ~5s.
+  // The watchdog only exists to catch "interface up but no actual internet"
+  // (captive portals, dead WiFi), which does not need 30s resolution.
   static const Duration _periodicCheckInterval = Duration(seconds: 30);
+  static const Duration _periodicCheckMaxInterval = Duration(minutes: 5);
+  Duration _currentCheckInterval = _periodicCheckInterval;
+  bool? _lastCheckResult;
 
   Future<void> init() async {
     _connectivity = Connectivity();
@@ -32,11 +49,10 @@ class NetworkService extends GetxService {
     // Boot: poll HC backend to trigger Azure cold start and wait for it to respond.
     await _bootCheck();
 
-    // 30s watchdog — Google/MSFT only.
-    _periodicCheckTimer = Timer.periodic(
-      _periodicCheckInterval,
-      (_) => _runInternetCheck(),
-    );
+    // Watchdog — Google/MSFT only. Paused while the app is in the background:
+    // there is no UI to update, and resume runs a check immediately.
+    WidgetsBinding.instance.addObserver(this);
+    _restartWatchdog(_periodicCheckInterval);
 
     // Interface gone → offline immediately, no network call needed.
     // Interface appeared → debounced Google/MSFT check.
@@ -87,11 +103,53 @@ class NetworkService extends GetxService {
   // Google/MSFT check — no HC backend traffic.
   // If internet is reachable, assumes the HC backend is also up (99.99% uptime).
   // If not, starts the recovery watcher so restoration is detected quickly.
+  /// (Re)arms the watchdog at [interval]. A null interval stops it.
+  void _restartWatchdog(Duration? interval) {
+    _periodicCheckTimer?.cancel();
+    _periodicCheckTimer = null;
+    if (interval == null) return;
+    _currentCheckInterval = interval;
+    _periodicCheckTimer = Timer.periodic(interval, (_) => _runInternetCheck());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        // Back on screen: check now, at full resolution, then let it back off
+        // again if nothing is changing.
+        _lastCheckResult = null;
+        _restartWatchdog(_periodicCheckInterval);
+        unawaited(_runInternetCheck());
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.inactive:
+        _restartWatchdog(null);
+        break;
+    }
+  }
+
   Future<void> _runInternetCheck() async {
     if (_isChecking) return;
     _isChecking = true;
     try {
       final internetOk = await Utilities.checkForInternetConnection();
+
+      // Steady state costs less to watch: keep doubling the gap while the
+      // answer is unchanged, snap back to full resolution when it moves.
+      if (_lastCheckResult == internetOk) {
+        final Duration next = _currentCheckInterval * 2;
+        if (next <= _periodicCheckMaxInterval &&
+            _periodicCheckTimer != null) {
+          _restartWatchdog(next);
+        }
+      } else if (_periodicCheckTimer != null) {
+        _restartWatchdog(_periodicCheckInterval);
+      }
+      _lastCheckResult = internetOk;
+
       hasInternet.value = internetOk;
       if (internetOk) {
         backendReachable.value = true;
@@ -169,6 +227,7 @@ class NetworkService extends GetxService {
 
   @override
   void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
     _debounceTimer?.cancel();
     _periodicCheckTimer?.cancel();
     _stopRecoveryWatcher();

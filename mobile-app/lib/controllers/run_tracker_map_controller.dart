@@ -1069,9 +1069,9 @@ class RunTrackerMapController extends GetxController
     // user is not run-tracking (sweepers, latecomers, post-run tracing) —
     // without the boost the idle stream reports lowest-accuracy fixes only
     // every 100 m and the blue dot appears frozen.
+    _acquirePreciseBoost();
     if (Get.isRegistered<LocationService>()) {
       final loc = LocationService.ensure();
-      loc.requestPreciseStream();
       // Local mark echo: marks placed on THIS device (phone or watch) draw
       // immediately instead of waiting for the next server poll.
       loc.typedPointListeners[this] = (String evId, TrackPoint point) {
@@ -1120,10 +1120,9 @@ class RunTrackerMapController extends GetxController
   void onClose() {
     BootLogger.logBreadcrumb('PackTrack map CLOSED');
     WidgetsBinding.instance.removeObserver(this);
+    _releasePreciseBoost();
     if (Get.isRegistered<LocationService>()) {
-      final loc = LocationService.ensure();
-      loc.releasePreciseStream();
-      loc.typedPointListeners.remove(this);
+      LocationService.ensure().typedPointListeners.remove(this);
     }
     _stopAutoUpdateTimer();
     _stalenessTimer?.cancel();
@@ -1468,14 +1467,41 @@ class RunTrackerMapController extends GetxController
     if (_isVisible == visible) return;
     _isVisible = visible;
     if (visible) {
+      _acquirePreciseBoost();
       _startAutoUpdateTimer();
       _startCompass();
       // Immediately refresh when becoming visible
       unawaited(loadPositions());
     } else {
+      // Nobody is looking at the blue dot, so stop paying for it. The boost
+      // reconfigures the shared location stream to 5m / LocationAccuracy.best
+      // / 15s; held across a backgrounding it kept high-accuracy GPS running
+      // for as long as the app sat in the background with this map open.
+      // MetricKit says high-accuracy location ran 4.8 min/day on days with no
+      // run tracking at all, against 6 min/day of foreground time.
+      _releasePreciseBoost();
       _stopAutoUpdateTimer();
       _stopCompass();
     }
+  }
+
+  /// Whether this controller currently holds a precise-stream boost. The
+  /// counter in LocationService is shared, so a double request or a double
+  /// release would corrupt it for every other surface.
+  bool _preciseBoostHeld = false;
+
+  void _acquirePreciseBoost() {
+    if (_preciseBoostHeld || isClosed) return;
+    if (!Get.isRegistered<LocationService>()) return;
+    LocationService.ensure().requestPreciseStream();
+    _preciseBoostHeld = true;
+  }
+
+  void _releasePreciseBoost() {
+    if (!_preciseBoostHeld) return;
+    _preciseBoostHeld = false;
+    if (!Get.isRegistered<LocationService>()) return;
+    LocationService.ensure().releasePreciseStream();
   }
 
   void _startAutoUpdateTimer() {

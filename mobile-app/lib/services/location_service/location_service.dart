@@ -302,6 +302,7 @@ class LocationService extends GetxService {
   void onClose() {
     _trackingWorker?.dispose();
     unawaited(_geoLocationStreamSubscription?.cancel());
+    _stopBoostHeartbeat();
     _runBuffer?.dispose();
     _runBuffer = null;
     super.onClose();
@@ -346,6 +347,8 @@ class LocationService extends GetxService {
       false, // allowBackgroundLocationUpdates
       true, // pauseLocationUpdatesAutomatically
     );
+
+    _logStreamMode('idle (boot)', 250, LocationAccuracy.lowest);
 
     _geoLocationStreamSubscription =
         Geolocator.getPositionStream(locationSettings: locationSettings).listen(
@@ -452,6 +455,10 @@ class LocationService extends GetxService {
   /// re-subscribes in the idle state.
   void requestPreciseStream() {
     _preciseStreamRequests++;
+    BootLogger.logBreadcrumb(
+      'Location: precise boost REQUESTED (holders=$_preciseStreamRequests)',
+    );
+    _startBoostHeartbeat();
     if (_preciseStreamRequests == 1 &&
         !joinRunTracking.value &&
         !isPaused.value) {
@@ -461,11 +468,69 @@ class LocationService extends GetxService {
 
   void releasePreciseStream() {
     if (_preciseStreamRequests > 0) _preciseStreamRequests--;
+    BootLogger.logBreadcrumb(
+      'Location: precise boost RELEASED (holders=$_preciseStreamRequests)',
+    );
+    if (_preciseStreamRequests == 0) _stopBoostHeartbeat();
     if (_preciseStreamRequests == 0 &&
         !joinRunTracking.value &&
         !isPaused.value) {
       unawaited(_subscribeIdleStream());
     }
+  }
+
+  // ── Battery instrumentation ───────────────────────────────────────────────
+  // The precise boost puts the shared stream on 5m / best accuracy, which is
+  // the most expensive thing this app does outside an actual run. It is meant
+  // to be held for seconds or minutes by a visible map or the lost compass. A
+  // boost still held after a long time means a surface leaked it, and the
+  // phone has been running navigation-grade GPS for nothing — the shape of the
+  // "drains even when I'm not tracking" reports. Two supporting facts from
+  // MetricKit over 126 non-tracking device-days: high-accuracy location
+  // averaged 4.8 min/day against 6.0 min/day of foreground time, and the
+  // weekend's logs held 153 "map OPENED" against 135 "map CLOSED".
+  //
+  // So: while a boost is held and no run is being tracked, leave a trail. It
+  // is silent in the normal case (a boost held briefly logs nothing extra) and
+  // unmistakable in the leaking one.
+  static const Duration _boostHeartbeatInterval = Duration(minutes: 5);
+  Timer? _boostHeartbeatTimer;
+  DateTime? _boostHeldSince;
+
+  void _startBoostHeartbeat() {
+    _boostHeldSince ??= DateTime.now();
+    _boostHeartbeatTimer ??= Timer.periodic(_boostHeartbeatInterval, (_) {
+      if (_preciseStreamRequests <= 0) {
+        _stopBoostHeartbeat();
+        return;
+      }
+      // While tracking, fine-grained GPS is the point — not worth a line.
+      if (joinRunTracking.value || isPaused.value) return;
+      final held = DateTime.now().difference(
+        _boostHeldSince ?? DateTime.now(),
+      );
+      BootLogger.logBreadcrumb(
+        'Location: precise boost still held after ${held.inMinutes}min with no '
+        'run tracking (holders=$_preciseStreamRequests) ${BootLogger.memInfo()}',
+      );
+    });
+  }
+
+  void _stopBoostHeartbeat() {
+    _boostHeartbeatTimer?.cancel();
+    _boostHeartbeatTimer = null;
+    _boostHeldSince = null;
+  }
+
+  /// One line describing what the shared location stream is currently costing.
+  /// Emitted on every reconfiguration, so a log shows exactly when the phone
+  /// moved between low-power and high-accuracy modes and why.
+  void _logStreamMode(String mode, int distanceFilter, LocationAccuracy acc) {
+    BootLogger.logBreadcrumb(
+      'Location: stream -> $mode (distanceFilter=${distanceFilter}m, '
+      'accuracy=${acc.name}, boostHolders=$_preciseStreamRequests, '
+      'background=${joinRunTracking.value || isPaused.value})',
+    );
   }
 
   /// (Re)subscribes the shared stream for the not-tracking state: precise
@@ -481,6 +546,11 @@ class LocationService extends GetxService {
             androidInterval: const Duration(seconds: 15),
           )
         : getLocSettings(100, LocationAccuracy.lowest, false, true);
+    _logStreamMode(
+      precise ? 'PRECISE-idle' : 'idle',
+      precise ? 5 : 100,
+      precise ? LocationAccuracy.best : LocationAccuracy.lowest,
+    );
     await _geoLocationStreamSubscription?.cancel();
     try {
       _geoLocationStreamSubscription =
