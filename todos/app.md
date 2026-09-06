@@ -6,46 +6,123 @@ Items flagged during development that need follow-up.
 
 ## 🔎 GNH 2026 weekend error-log review (2026-09-06)
 
-Fixed in this pass:
+All on `dev`, none deployed. **The SPs must deploy before or with the next app
+build** — self check-in stays broken in the field until they do.
+
 - [x] `processPayment` self-service exemption — the `takePayment` gate had
       blocked self check-in for every hasher who is not hash cash since
-      2026-07-19 (11 hashers hit it at GNH). **SPs must deploy before/with the
-      next app build.**
+      2026-07-19 (11 hashers hit it at GNH).
 - [x] `ROLLBACK` moved above every in-transaction `INSERT HC.ErrorLog`
-      (8 sites, 5 SPs) — the rollback was erasing the log row, which is why the
+      (8 sites, 5 SPs) — the rollback erased the log row, which is why the
       above went unnoticed for seven weeks. Rule added to CLAUDE.md.
 - [x] Zero run fee ⇒ no "pay" wording; the check-in dialog says **Check In**
-      and the PayPal-style payment icons no longer show on a free run.
+      and the payment-provider icons no longer show on a free run.
+- [x] Run Tools shows for anyone at the start in the run window, RSVP or not;
+      starting tracking marks the tracker At Hash (⇒ RSVP Yes server-side).
+- [x] PackTrack unsent points now survive the app being killed (persisted per
+      event, restored in order, capped at 10k, 48h keep window). **NB the 138
+      "ABANDONED" log lines were never 16,798 lost points** — a failed send
+      always kept its batch; the wording was wrong and now reads "RETAINED".
+- [x] `LocationService.ensure()` — no more `"LocationService" not found` out of
+      a build method during a resume.
+- [x] Pack list survives an attendee with no local hasher row (was killing the
+      whole list); logs the count as a sync-gap signal.
+- [x] Two dialogs crashed on Cancel (EnumFollowType into EnumEmailAlertState /
+      into int). Every other cancelButtonReturnValue checked — the rest are fine.
+- [x] Three uploads (profile photo, receipt, run image) discarded their HTTP
+      response and stored the URL anyway, so a failed upload wrote a row
+      pointing at a blob that does not exist. All three now fail loudly.
+- [x] Android foreground service + wake lock removed from the idle location
+      stream (also the Android 12+ `startForeground` refusal).
+- [x] Test suite runs again — it had not compiled since the get_storage →
+      shared_preferences migration. 48 tests pass.
 
-Still open, in rough priority order:
+Still open:
 
-- [ ] **PackTrack dropped 16,798 GPS points this weekend** (138 batches: 113 on
-      Saturday, 23 on Sunday). `run_point_buffer.dart:_sendBatch` gives up
-      after 5 attempts (~3s of backoff) and discards the batch — no
-      persistence, no re-queue, on exactly the bad signal a trail has. The
-      payment outbox already solves this shape (persist before send, retry
-      until acknowledged); apply it to position batches.
-- [ ] **Memory during tracking** — `peak=1015MB` on several devices, steady
-      state 415–470MB. That is jetsam range on iOS and a plausible cause of
-      tracks ending early.
-- [ ] **`"LocationService" not found`** ×5 (two devices, just after startup) —
-      `Get.find` in a widget build with the service not registered.
-- [ ] **`type 'Null' is not a subtype of type 'String'`** ×5 in
-      `_$HashersModelFromJson` via `RunTabs._refreshPackListFromTable` — a
-      non-null model field is null in the local DB; the pack list fails to
-      render for that run.
-- [ ] **`EnumFollowType` cast errors** — `run_list_item.dart:1717`
-      (→`EnumEmailAlertState`) and `user_event_list_item.dart:407` (→`int`).
-      Both crash the popup on tap.
-- [ ] **Avatar upload can write the DB row without the blob.** Flash Princess
-      uploaded a photo at 07:50 Sunday; `HC.Hasher.Photo` points at a blob that
-      404s (confirmed). Two older ones the same (Budgie Smuggler, Tore de
-      Pants, both January). 32 view failures over the weekend.
 - [ ] **Down-downs blocked** — 8 × `hcapp_addDownDown` "Caller did not attend
-      this run" on Saturday morning. Probably downstream of the check-in
-      failure above; re-check once the SP fix is live.
-- [ ] Android `PlatformException: Service.startForeground() not allowed`
-      (geolocator), once, immediately after a tracking STOP.
+      this run" on Saturday morning. The app only shows the button when it
+      thinks you attended, so client and server disagreed about attendance.
+      Probably downstream of the check-in failure; **re-check after the SP
+      deploy** and chase properly if it recurs.
+- [ ] The golden test is a text-metrics canary that breaks on every Flutter
+      bump and cannot really catch a layout regression. Decide whether it earns
+      its keep.
+- [ ] `HC.Hasher.Photo` rows already pointing at missing blobs need cleaning up
+      server-side: Flash Princess (2026-09-06), Budgie Smuggler and Tore de
+      Pants (January). The app fix stops new ones; it does not repair these.
+
+---
+
+## 🔋 Battery — findings and what is now instrumented (2026-09-06)
+
+Measured from 160 MetricKit daily payloads in `HC.ClientErrorLog` (August
+onwards), not guessed:
+
+- location services ran **41.6 hrs against 17.2 hrs of foreground time**;
+- on the **126 device-days with no run tracking at all**, high-accuracy
+  location averaged **4.8 min/day** against 6.0 min/day of foreground time;
+- the GNH weekend logged 153 `PackTrack map OPENED` against 135 `CLOSED`.
+
+Fixed (all on `dev`):
+- [x] The map's precise boost (5m / best / 15s) is released whenever the map
+      stops being visible, not only in `onClose` — backgrounding with the map
+      open used to keep navigation-grade GPS running indefinitely.
+- [x] Android idle streams no longer hold a foreground service + wake lock.
+- [x] The connectivity watchdog no longer probes the network every 30s for
+      ever (2,880 radio wake-ups/day): paused while backgrounded, backing off
+      to 5 min while the answer is unchanged, reset on any change or resume.
+
+Instrumented, so the next report is diagnosable:
+- every location-stream reconfiguration logs mode / distance filter / accuracy
+  / boost-holder count;
+- precise-boost request and release log the running count;
+- a boost held with no run tracking says so every 5 min with elapsed time — a
+  leak now reads as a repeating line instead of a flat battery.
+
+Checked and left alone: the payment outbox's 10s poll (no network, no wake
+lock, returns immediately when idle).
+
+- [ ] **Re-measure after a release.** The same MetricKit query should show
+      high-accuracy time on non-tracking days drop toward zero. If it does not,
+      the boost log lines will say who is holding it.
+- [ ] Consider whether the always-on idle location stream is needed at all when
+      no run is near — it exists to feed `isAtRunStart` and distance-to-event.
+
+---
+
+## ⬆️ Flutter / package upgrade — branch `flutter-upgrade` (2026-09-06)
+
+Not merged, not device-tested. `flutter upgrade` is machine-global, so **the
+installed toolchain is now 3.47.2 and dev was made green on it** (golden
+regenerated, no dependency changes).
+
+Done on the branch, each verified by analyze + 48 tests:
+- Flutter 3.41.9 → **3.47.2** (Dart 3.11.5 → 3.13.2), no source changes.
+- `pub upgrade` within existing constraints (firebase 4.14/16.6, flutter_map
+  8.3.2, dio 5.11.1, sqflite 2.4.3, photo_manager 3.12.0, …).
+- Majors with no source change: cached_network_image 3→4,
+  calendar_date_picker2 2→3, sensors_plus 6→7, torch_light 1→2.
+
+Blocked, with the reason:
+- [ ] **Language version stays at 3.11.** Raising the pubspec `sdk:` constraint
+      to 3.13 does not compile: freezed 3.2.5 emits `required final List<T> x`
+      in const constructors, which 3.13 rejects. Fix is freezed 4.x — forbidden
+      because **`ive_flutter_core` (git, pinned `6eb83f6`) depends on freezed
+      ^3.2.3**. That git dep has to move first, or be vendored the way
+      `ive_flutter_core_mobile` was for 3.0.7.
+- [ ] **flutter_secure_storage 9→11 + device_info_plus 13 + package_info_plus
+      10 + share_plus 13 are ONE coupled cluster** (the newer *_plus need
+      win32 ^6; secure_storage 9 pins win32 ^5). Gated on secure storage — the
+      device secret and keychain reset code — so it needs a device test
+      including upgrade-from-installed, not an analyzer.
+- [ ] **permission_handler 12→13** — location permission underpins PackTrack.
+      Device test, fresh install and previously-granted install.
+- [ ] **map_launcher 4→6** — a redesign (MapApp objects replace the enum,
+      discovery results changed), touching 5 files of "open in maps".
+- [ ] **keyboard_actions 4→5** — API break
+      (KeyboardActionsConfig/Item/Platform), UI-only.
+
+---
 
 # 3.1 TRACK — event-free payments
 
