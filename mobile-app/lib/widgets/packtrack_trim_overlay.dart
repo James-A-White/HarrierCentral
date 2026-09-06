@@ -148,7 +148,7 @@ class PackTrackTrimController extends GetxController {
     if (_userId.isEmpty) return;
     busy.value = true;
     try {
-      await Get.find<LocationService>().markBoundaryAt(
+      await LocationService.ensure().markBoundaryAt(
         boundaryType: type,
         timestampMs: ts.round(),
         overrideEventId: _eventId,

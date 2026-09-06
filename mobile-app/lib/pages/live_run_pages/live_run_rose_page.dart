@@ -89,7 +89,7 @@ class LiveRunRoseController extends GetxController {
   }
 
   Future<void> refreshBlips() async {
-    final Position? me = Get.find<LocationService>().lastKnownPosition.value;
+    final Position? me = LocationService.ensure().lastKnownPosition.value;
     if (me == null) {
       errorMessage.value =
           'Your location is not available yet. Make sure location is enabled.';

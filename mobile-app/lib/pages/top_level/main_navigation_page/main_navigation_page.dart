@@ -196,7 +196,7 @@ class MainNavigationPage extends StatelessWidget {
                                         HashRunPointTypes.values[result];
 
                                     final locationService =
-                                        Get.find<LocationService>();
+                                        LocationService.ensure();
                                     if (type == HashRunPointTypes.customLabel) {
                                       GetPointLabelPopup popup =
                                           GetPointLabelPopup();
@@ -260,7 +260,7 @@ class MainNavigationPage extends StatelessWidget {
                                   },
                                   child: Obx(() {
                                     final locationService =
-                                        Get.find<LocationService>();
+                                        LocationService.ensure();
 
                                     // 2. Use the reactive getter to determine the state
                                     final isFresh =

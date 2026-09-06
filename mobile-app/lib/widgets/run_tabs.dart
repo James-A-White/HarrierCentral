@@ -166,14 +166,30 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     try {
       final List<Map<String, dynamic>> results = await database.rawQuery(query);
+      int missingHasherRecords = 0;
 
       for (int i = 0; i < results.length; i++) {
         final HasherEventMapModel packItem = tableModel
             .hasherEventMapTableHelper
             .fromMap(results[i]);
 
-        final HashersModel hasherItem = HashersModel.fromJson(results[i]);
-        String displayName = hasherItem.dispName;
+        // The hashers join is a LEFT OUTER: a HEM row can name someone this
+        // device has no hasher record for — a virgin/visitor who was never
+        // given one, or somebody created since the last sync. Every h.* column
+        // is NULL then, and the generated fromJson throws on the first
+        // non-nullable cast (hasherId), which took the ENTIRE pack list down
+        // rather than one row. Seen five times over the GNH 2026 weekend.
+        final bool hasHasherRecord = results[i]['hasherId'] != null;
+        if (!hasHasherRecord) missingHasherRecords++;
+        final HashersModel hasherItem = hasHasherRecord
+            ? HashersModel.fromJson(results[i])
+            // Keep the real user id: several unknown hashers must not collapse
+            // onto one another (HashersModel.empty() is all-GUID_EMPTY).
+            : HashersModel.empty().copyWith(hasherId: packItem.userId);
+
+        String displayName = hasHasherRecord
+            ? hasherItem.dispName
+            : (packItem.displayName ?? 'Unknown hasher');
         if (packItem.virginVisitorType != 0) {
           displayName = packItem.displayName ?? 'Virgin / Visitor';
         }
@@ -187,6 +203,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ),
         );
         //}
+      }
+
+      // Not fatal any more, but still a sync gap worth seeing: the pack list
+      // is naming people this device holds no hasher row for.
+      if (missingHasherRecords > 0) {
+        BootLogger.logBreadcrumb(
+          'RunTabs: pack list has $missingHasherRecords of ${results.length} '
+          'attendees with no local hasher record '
+          '(eventId=${widget.futureRun.event.eventId})',
+        );
       }
     } catch (e, s) {
       BootLogger.logError('[RunTabs._refreshPackListFromTable] eventId=${widget.futureRun.event.eventId}', e, s);
@@ -1630,7 +1656,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       widget.futureRun.event.eventName,
     ]);
 
-    final locService = Get.find<LocationService>();
+    final locService = LocationService.ensure();
 
     return ConnectedWidget(
       refreshFunction: () {

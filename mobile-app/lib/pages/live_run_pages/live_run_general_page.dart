@@ -78,7 +78,7 @@ class LiveRunGeneralController extends GetxController {
   }
 
   final RunDetailsAggregate run;
-  final LocationService _locationService = Get.find<LocationService>();
+  final LocationService _locationService = LocationService.ensure();
 
   final RxBool isTracking = false.obs;
   final RxBool torchOn = false.obs;

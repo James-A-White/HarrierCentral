@@ -356,19 +356,38 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         break;
     }
 
+    // Only the two paths that actually upload can fail; picking a bundled
+    // avatar or keeping the existing photo has nothing to put anywhere.
+    bool uploadSucceeded = true;
+
     if (_imageTypeSelection != SelectedImageTypeEnum.fromNetwork) {
       if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
         final File? file = await _imageFromCamera;
-        await _upload(file, fileName);
+        uploadSucceeded = await _upload(file, fileName);
       } else if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
         final File? file = await _imageFromGallery;
-        await _upload(file, fileName);
+        uploadSucceeded = await _upload(file, fileName);
       }
 
       final int deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
       if (deltaTime < 1250) {
         await Future<dynamic>.delayed(Duration(milliseconds: 1500 - deltaTime));
       }
+    }
+
+    // Never point the hasher record at a blob that is not there. Stop here and
+    // let them try again — their existing photo is untouched.
+    if (!uploadSucceeded) {
+      setStateIfMounted(() {
+        _showCircularProgressIndicator = false;
+      });
+      await Utilities.showAlert(
+        'Photo not uploaded',
+        'Your photo could not be uploaded, so your profile picture has not '
+            'been changed. Please check your connection and try again.',
+        'OK',
+      );
+      return;
     }
 
     if (widget.popToCaller) {
@@ -398,28 +417,48 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     }
   }
 
-  Future<String> _upload(File? imageFile, String fileName) async {
-    if (imageFile != null) {
-      final Uri uri = Uri.parse(
-        'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D',
-      );
+  /// PUTs the image to blob storage. Returns whether the blob actually landed.
+  ///
+  /// This used to ignore the response completely
+  /// (`await request.send().then((response) {})`) and return the URL either
+  /// way. The caller then wrote that URL into HC.Hasher.Photo, so a failed
+  /// upload produced a hasher row pointing at a blob that does not exist — a
+  /// permanent 404 avatar for everyone who sees them, with nothing logged. It
+  /// happened to a hasher during GNH 2026 (32 failed views over the weekend)
+  /// and to two others in January.
+  Future<bool> _upload(File? imageFile, String fileName) async {
+    if (imageFile == null) return false;
 
+    // https, not http: the SAS token is a credential and sits in the query
+    // string. The SAS carries no `spr` restriction, so https is accepted.
+    final Uri uri = Uri.parse(
+      'https://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D',
+    );
+
+    try {
       final Request request = Request('PUT', uri);
-
-      final Map<String, String> headers = <String, String>{
+      request.headers.addAll(<String, String>{
         'content-type': 'image/jpeg',
         'x-ms-blob-type': 'BlockBlob',
-      };
+      });
+      request.bodyBytes = await imageFile.readAsBytes();
 
-      request.headers.addAll(headers);
+      final StreamedResponse response = await request.send().timeout(
+        const Duration(seconds: 60),
+      );
+      // Drain the body so the connection is released.
+      await response.stream.drain<void>();
 
-      request.bodyBytes = imageFile.readAsBytesSync();
-      await request.send().then((StreamedResponse response) {});
+      if (response.statusCode >= 200 && response.statusCode < 300) return true;
 
-      return uri.toString();
+      BootLogger.logBreadcrumb(
+        'Profile photo upload REFUSED (${response.statusCode}) for $fileName',
+      );
+      return false;
+    } catch (e, s) {
+      BootLogger.logError('[ChooseProfileImage._upload] $fileName', e, s);
+      return false;
     }
-
-    return '';
   }
 
   Widget _getPreviewImage() {

@@ -67,6 +67,22 @@ Duration _trackingAndroidInterval() {
 }
 
 class LocationService extends GetxService {
+  /// Returns the registered service, registering one if it has gone.
+  ///
+  /// This service is not permanent: it is deleted while the app is paused and
+  /// re-registered on resume (see AppLifecycleController). A widget that
+  /// rebuilds in the gap — which is most of a resume — would otherwise throw
+  /// `"LocationService" not found` out of its build method and take the page
+  /// down with it. Mirrors [LiveRunService.ensure]; use it instead of a bare
+  /// `Get.find<LocationService>()` anywhere a build or a lifecycle callback
+  /// can reach.
+  static LocationService ensure() {
+    if (Get.isRegistered<LocationService>()) {
+      return Get.find<LocationService>();
+    }
+    return Get.put(LocationService());
+  }
+
   // Rx variable to hold the latest position, making it reactive
   final Rx<Position?> lastKnownPosition = Rx<Position?>(null);
   final Rx<DateTime> lastKnownPositionRead = Rx<DateTime>(DateTime(2000));
@@ -372,16 +388,31 @@ class LocationService extends GetxService {
       // _trackingAndroidInterval() — Best 15s / Balanced 1min / Power Saver 15min;
       // the pause monitor passes 15s for responsive auto-resume; idle/stopped
       // streams use the 15-minute default to save battery.
+      //
+      // The foreground service is attached ONLY when this stream is meant to
+      // keep running in the background — i.e. run tracking and the auto-pause
+      // monitor. It used to be attached to EVERY stream, so from the moment the
+      // app launched the always-on idle stream ran as a foreground service
+      // holding a WAKE LOCK, with a notification claiming "Tracking run in
+      // progress" when no run was being tracked. Two consequences:
+      //   * battery burned continuously by a wake lock nobody asked for — the
+      //     prime suspect for "drains even when I'm not tracking";
+      //   * on Android 12+ a background app may not START a foreground service,
+      //     so re-subscribing the idle stream after tracking stopped threw
+      //     PlatformException("Service.startForeground() not allowed") and the
+      //     idle stream failed to come back at all.
       locationSettings = AndroidSettings(
         accuracy: accuracy,
         distanceFilter: distanceFilter,
         intervalDuration: androidInterval,
         forceLocationManager: false,
-        foregroundNotificationConfig: ForegroundNotificationConfig(
-          notificationTitle: 'Harrier Central',
-          notificationText: 'Tracking run in progress',
-          enableWakeLock: true,
-        ),
+        foregroundNotificationConfig: allowBackgroundLocationUpdates
+            ? const ForegroundNotificationConfig(
+                notificationTitle: 'Harrier Central',
+                notificationText: 'Tracking run in progress',
+                enableWakeLock: true,
+              )
+            : null,
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       locationSettings = AppleSettings(
@@ -451,17 +482,25 @@ class LocationService extends GetxService {
           )
         : getLocSettings(100, LocationAccuracy.lowest, false, true);
     await _geoLocationStreamSubscription?.cancel();
-    _geoLocationStreamSubscription =
-        Geolocator.getPositionStream(locationSettings: settings).listen(
-          updateDeviceLocation,
-          onError: (error) {
-            if (kDebugMode) debugPrint('LocationStream Error: $error');
-            BootLogger.logBreadcrumb(
-              'PackTrack: location stream error while '
-              '${precise ? 'PRECISE-idle' : 'STOPPED/idle'}: $error',
-            );
-          },
-        );
+    try {
+      _geoLocationStreamSubscription =
+          Geolocator.getPositionStream(locationSettings: settings).listen(
+            updateDeviceLocation,
+            onError: (error) {
+              if (kDebugMode) debugPrint('LocationStream Error: $error');
+              BootLogger.logBreadcrumb(
+                'PackTrack: location stream error while '
+                '${precise ? 'PRECISE-idle' : 'STOPPED/idle'}: $error',
+              );
+            },
+          );
+    } catch (e, s) {
+      // Subscribing can throw synchronously on Android (a platform refusal
+      // rather than a stream error). Losing the idle stream is a degradation,
+      // not a crash — the next start/resume re-subscribes.
+      _geoLocationStreamSubscription = null;
+      BootLogger.logError('[LocationService._subscribeIdleStream]', e, s);
+    }
   }
 
   // Pauses tracking: records the pause point, switches to low-power monitoring,

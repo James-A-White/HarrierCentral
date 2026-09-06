@@ -95,7 +95,7 @@ class KennelPhotoService {
       // image_picker (and ImageCropper on the Edit path) strip the original
       // EXIF, including GPS. Re-attach the location we already have so the
       // camera-roll copy keeps its lat/long.
-      final pos = Get.find<LocationService>().lastKnownPosition.value;
+      final pos = LocationService.ensure().lastKnownPosition.value;
       assetId = await _saveToDeviceLibrary(
         imageFile,
         latitude: pos?.latitude,
@@ -460,7 +460,7 @@ class KennelPhotoService {
     double resolvedLat = lat ?? 0.0;
     double resolvedLng = lng ?? 0.0;
     if (lat == null || lng == null) {
-      final pos = Get.find<LocationService>().lastKnownPosition.value;
+      final pos = LocationService.ensure().lastKnownPosition.value;
       resolvedLat = pos?.latitude ?? 0.0;
       resolvedLng = pos?.longitude ?? 0.0;
     }
@@ -771,7 +771,7 @@ class KennelPhotoService {
     // blob URL via hcapp_getRunPhotos so the URL is never stored in the
     // GPS track, preventing unauthenticated blob access from the label alone.
     unawaited(
-      Get.find<LocationService>().markPointAt(
+      LocationService.ensure().markPointAt(
         pointType: HashRunPointTypes.photo,
         timestampMs: timestampMs,
         overrideEventId: eventId,
@@ -1148,7 +1148,7 @@ class KennelPhotoService {
       final queuedPath = '${docsDir.path}/hc_pending_$photoGuid.jpg';
       await imageFile.copy(queuedPath);
 
-      final pos = Get.find<LocationService>().lastKnownPosition.value;
+      final pos = LocationService.ensure().lastKnownPosition.value;
 
       await KennelPhotoUploadQueue.enqueue(
         PendingPhotoUpload(

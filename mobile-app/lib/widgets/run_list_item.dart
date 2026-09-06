@@ -1710,7 +1710,14 @@ class RunListItem extends StatelessWidget {
       title: 'Email options for this run',
       buttons: buttons,
       cancelButtonTitle: 'Cancel',
-      cancelButtonReturnValue: followTypeCancel,
+      // Cancel has to answer in the same currency as the buttons. It used to
+      // hand back followTypeCancel — an EnumFollowType — straight into
+      // _setEmailAlertState(EnumEmailAlertState), so cancelling this dialog
+      // threw "type 'EnumFollowType' is not a subtype of type
+      // 'EnumEmailAlertState'". emailAlertsUnchanged is the no-op of the right
+      // type, and _setEmailAlertState already ignores anything that is not
+      // on/off/auto.
+      cancelButtonReturnValue: emailAlertsUnchanged,
     );
 
     dynamic retVal = await Get.dialog<dynamic>(
@@ -1718,6 +1725,7 @@ class RunListItem extends StatelessWidget {
       barrierDismissible: false, // user must tap button!
     );
 
+    if (retVal is! EnumEmailAlertState) return;
     await _setEmailAlertState(retVal);
   }
 }

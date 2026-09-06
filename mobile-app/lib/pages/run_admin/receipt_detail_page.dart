@@ -71,7 +71,12 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     );
   }
 
-  Future<String> _upload(File imageFile, String fileName) async {
+  /// Uploads the receipt image and returns its URL, or null if the blob did
+  /// not land. The response used to be discarded and the URL returned either
+  /// way, which stored a receipt row pointing at a missing image — the
+  /// treasurer's evidence, gone with nothing logged. Same bug as the profile
+  /// photo upload (fixed alongside).
+  Future<String?> _upload(File imageFile, String fileName) async {
     final Uri uri = Uri.parse(
       '$BASE_RECEIPTS_URL$fileName?st=2019-04-30T18%3A08%3A40Z&se=2050-05-01T18%3A08%3A00Z&sp=rw&sv=2018-03-28&sr=c&sig=8f8DFDrH7Eq2Jv1JLQ9%2Bh4igcvEZEqE1zcFvUAxsXwY%3D',
     );
@@ -93,9 +98,26 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       rotate: 0,
     );
 
-    if (compressed != null) {
-      request.bodyBytes = compressed;
-      await request.send();
+    if (compressed == null) {
+      BootLogger.logBreadcrumb('Receipt image compression failed for $fileName');
+      return null;
+    }
+
+    request.bodyBytes = compressed;
+    try {
+      final StreamedResponse response = await request.send().timeout(
+        const Duration(seconds: 60),
+      );
+      await response.stream.drain<void>();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        BootLogger.logBreadcrumb(
+          'Receipt upload REFUSED (${response.statusCode}) for $fileName',
+        );
+        return null;
+      }
+    } catch (e, st) {
+      BootLogger.logError('[ReceiptDetail._upload] $fileName', e, st);
+      return null;
     }
 
     return '$BASE_RECEIPTS_URL$fileName';
@@ -110,10 +132,22 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         String receiptImageUrl = '';
 
         if (_imageFromCamera != null) {
-          receiptImageUrl = await _upload(
+          final String? uploaded = await _upload(
             _imageFromCamera!,
             '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg',
           );
+          // Don't file a receipt that points at an image which is not there —
+          // it would look filed and be useless at reimbursement time.
+          if (uploaded == null) {
+            await Utilities.showAlert(
+              'Receipt image not uploaded',
+              'The receipt photo could not be uploaded, so nothing has been '
+                  'saved. Please check your connection and try again.',
+              'OK',
+            );
+            return;
+          }
+          receiptImageUrl = uploaded;
         }
 
         final String userId = currentUserId;

@@ -382,7 +382,7 @@ class RunTrackerMapController extends GetxController
   latlng.LatLng? get viewerLatLng {
     if (!Get.isRegistered<LocationService>()) return null;
     if (!appModel.hasLocationPermissions) return null;
-    final pos = Get.find<LocationService>().lastKnownPosition.value;
+    final pos = LocationService.ensure().lastKnownPosition.value;
     final double? lat = pos?.latitude ?? deviceInfo.deviceLat;
     final double? lon = pos?.longitude ?? deviceInfo.deviceLon;
     if (lat == null || lon == null) return null;
@@ -1070,7 +1070,7 @@ class RunTrackerMapController extends GetxController
     // without the boost the idle stream reports lowest-accuracy fixes only
     // every 100 m and the blue dot appears frozen.
     if (Get.isRegistered<LocationService>()) {
-      final loc = Get.find<LocationService>();
+      final loc = LocationService.ensure();
       loc.requestPreciseStream();
       // Local mark echo: marks placed on THIS device (phone or watch) draw
       // immediately instead of waiting for the next server poll.
@@ -1121,7 +1121,7 @@ class RunTrackerMapController extends GetxController
     BootLogger.logBreadcrumb('PackTrack map CLOSED');
     WidgetsBinding.instance.removeObserver(this);
     if (Get.isRegistered<LocationService>()) {
-      final loc = Get.find<LocationService>();
+      final loc = LocationService.ensure();
       loc.releasePreciseStream();
       loc.typedPointListeners.remove(this);
     }
@@ -2707,7 +2707,7 @@ class RunTrackerMapController extends GetxController
     if (isPlaying.value) return null;
     if (!isLiveWindow) return null;
     if (!Get.isRegistered<LocationService>()) return null;
-    final List<TrackPoint> local = Get.find<LocationService>().sessionTrackFor(
+    final List<TrackPoint> local = LocationService.ensure().sessionTrackFor(
       event.eventId,
     );
     if (local.isEmpty) return null;

@@ -857,10 +857,25 @@ class EditRunDetailsPage extends StatelessWidget {
                       c.mutate(() {
                         c.isUpdating.value = true;
                       });
-                      final String fileName = await c.upload(
+                      final String? fileName = await c.upload(
                         snapshot.data!,
                         c.eventAggregate.event.eventId,
                       );
+
+                      // Don't point the run at an image that never uploaded.
+                      if (fileName == null) {
+                        c.mutate(() {
+                          c.isUpdating.value = false;
+                        });
+                        await Utilities.showAlert(
+                          'Image not uploaded',
+                          'The run image could not be uploaded, so the run has '
+                              'not been changed. Please check your connection '
+                              'and try again.',
+                          'OK',
+                        );
+                        return;
+                      }
 
                       final EventsService nSvc = EventsService();
                       final String eventId = await nSvc.addEditEvent(

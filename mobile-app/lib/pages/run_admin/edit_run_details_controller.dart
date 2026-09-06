@@ -744,7 +744,10 @@ class EditRunDetailsController extends GetxController
     );
   }
 
-  Future<String> upload(File imageFile, String eventId) async {
+  /// Uploads the run image and returns its file name, or null if the blob did
+  /// not land. The response used to be discarded and the name returned either
+  /// way, so a failed upload still wrote an eventImageUrl pointing at nothing.
+  Future<String?> upload(File imageFile, String eventId) async {
     final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
     final String fileName = 'eventImage_${eventId}_$datetime.jpg';
     final Uri uri = Uri.parse(
@@ -760,9 +763,23 @@ class EditRunDetailsController extends GetxController
 
     request.headers.addAll(headers);
 
-    request.bodyBytes = imageFile.readAsBytesSync();
+    request.bodyBytes = await imageFile.readAsBytes();
 
-    await request.send();
+    try {
+      final StreamedResponse response = await request.send().timeout(
+        const Duration(seconds: 60),
+      );
+      await response.stream.drain<void>();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        BootLogger.logBreadcrumb(
+          'Run image upload REFUSED (${response.statusCode}) for $fileName',
+        );
+        return null;
+      }
+    } catch (e, st) {
+      BootLogger.logError('[EditRunDetails.upload] $fileName', e, st);
+      return null;
+    }
 
     return fileName;
   }

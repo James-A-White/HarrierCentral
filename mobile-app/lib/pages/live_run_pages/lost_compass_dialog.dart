@@ -276,7 +276,7 @@ class LostCompassController extends GetxController {
     // Distance/bearing to the held target cost nothing to recompute — no
     // network, just trigonometry — so the readout moves with each fix rather
     // than once per poll.
-    final LocationService locationService = Get.find<LocationService>();
+    final LocationService locationService = LocationService.ensure();
     locationService.requestPreciseStream();
     _lastPosition = locationService.lastKnownPosition.value;
     _positionWorker = ever<Position?>(locationService.lastKnownPosition, (
@@ -504,7 +504,7 @@ class LostCompassController extends GetxController {
   void onClose() {
     _positionWorker?.dispose();
     if (Get.isRegistered<LocationService>()) {
-      Get.find<LocationService>().releasePreciseStream();
+      LocationService.ensure().releasePreciseStream();
     }
     unawaited(_compassSub?.cancel());
     _refreshTimer?.cancel();
@@ -519,7 +519,7 @@ class LostCompassController extends GetxController {
   /// live data, and if the pack moves a trail closer, the arrow follows it.
   Future<void> refreshBearing() async {
     final Position? me =
-        _lastPosition ?? Get.find<LocationService>().lastKnownPosition.value;
+        _lastPosition ?? LocationService.ensure().lastKnownPosition.value;
     if (me == null) {
       errorMessage.value =
           'Your location is not available yet. Make sure location is enabled '
@@ -588,7 +588,7 @@ class LostCompassController extends GetxController {
   /// can lag minutes behind (failed flushes retry every 30s) or be empty
   /// (fully offline); this list is complete either way.
   List<TrackPoint> _localSessionTrack() =>
-      Get.find<LocationService>().sessionTrackFor(eventId);
+      LocationService.ensure().sessionTrackFor(eventId);
 
   /// Appends an incremental payload's points to the tracks already held.
   void _mergeTracks(List<UserTrack> incoming) {

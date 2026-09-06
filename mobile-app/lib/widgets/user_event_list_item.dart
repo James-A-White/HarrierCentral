@@ -404,13 +404,20 @@ class UserEventListItem extends StatelessWidget {
         cancelButtonReturnValue: followTypeCancel,
       );
 
-      final int retVal = await showDialog<dynamic>(
+      // The buttons answer with ints; Cancel answers with followTypeCancel, an
+      // EnumFollowType. Typing this as `int` meant cancelling threw "type
+      // 'EnumFollowType' is not a subtype of type 'int'" before the switch was
+      // ever reached. Take it as dynamic and treat anything that is not one of
+      // our ints — cancel, or a dismissal — as "do nothing".
+      final dynamic retVal = await showDialog<dynamic>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return popup;
         },
       );
+
+      if (retVal is! int) return;
 
       switch (retVal) {
         case 0:
