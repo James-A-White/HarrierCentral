@@ -22,14 +22,26 @@ class AppLifecycleController extends SuperController<void> {
     }
   }
 
+  /// Write unsent track points to storage before we lose the chance. A
+  /// backgrounded app holding a GPS stream and several hundred MB is first in
+  /// the queue to be killed, and anything only in RAM goes with it.
+  void _persistPendingTrackPoints() {
+    if (Get.isRegistered<LocationService>() &&
+        Get.find<LocationService>().joinRunTracking.value) {
+      unawaited(Get.find<LocationService>().persistPendingPoints());
+    }
+  }
+
   @override
   void onPaused() {
     _trackingLifecycleBreadcrumb('paused');
+    _persistPendingTrackPoints();
   }
 
   @override
   void onDetached() {
     _trackingLifecycleBreadcrumb('detached');
+    _persistPendingTrackPoints();
   }
 
   @override

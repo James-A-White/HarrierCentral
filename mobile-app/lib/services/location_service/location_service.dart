@@ -276,6 +276,12 @@ class LocationService extends GetxService {
     await subscribeToGeoLocationStream();
   }
 
+  /// Mirrors any unsent track points to storage so a kill while backgrounded
+  /// cannot take them with it. Called on the way to the background, which is
+  /// exactly when a GPS-holding app is most likely to be reclaimed.
+  Future<void> persistPendingPoints() async =>
+      _runBuffer?.persistPending() ?? Future<void>.value();
+
   @override
   void onClose() {
     _trackingWorker?.dispose();
@@ -882,12 +888,18 @@ class LocationService extends GetxService {
         return null;
       }
 
-      _runBuffer ??= RunPointBuffer(
-        apiUrl: STORE_POSITIONS_URL,
-        eventId: eventId!,
-        userId: userId!,
-        onRemoteTrackingEnded: _onRemoteTrackingEnded,
-      );
+      if (_runBuffer == null) {
+        _runBuffer = RunPointBuffer(
+          apiUrl: STORE_POSITIONS_URL,
+          eventId: eventId!,
+          userId: userId!,
+          onRemoteTrackingEnded: _onRemoteTrackingEnded,
+        );
+        // Points this device failed to send before it was last killed are read
+        // back now rather than at the first flush, so a phone that died
+        // mid-run starts catching up as soon as it is tracking again.
+        unawaited(_runBuffer!.restorePending());
+      }
       // Hand a pending resume-cleanup to the live buffer (it may be a
       // fresh instance or the pre-stop one — either carries the flag).
       if (_resumedCleanupPending) {
