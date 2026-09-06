@@ -230,9 +230,54 @@ class LiveRunGeneralController extends GetxController {
 
     _locationService.joinRunTracking.value = newValue;
 
+    // Tracking this run IS attending it. Someone who turned up without an RSVP
+    // (or who never got round to checking in) has just told us where they are
+    // for the next hour — asking them to also tap "check in" is bookkeeping.
+    // hcapp_setEventAttendence sets RsvpState = 3 whenever attendance reaches
+    // At Hash, and creates the HEM row when there isn't one, so this single
+    // call covers both.
+    unawaited(_checkInForTracking());
+
     // Tag the (new or continued) track with the declared lane so playback can
     // label/filter it. Fire-and-forget — joinRunTracking is true so it buffers.
     unawaited(_locationService.declareTrailType(selectedTrailValue.value));
+  }
+
+  /// Marks the tracker as At Hash on this run (⇒ RSVP Yes server-side).
+  ///
+  /// Best-effort and never blocks tracking: if it fails the track is still
+  /// being recorded, and the attendance can be set later by them or by a run
+  /// admin. Offline, [setEventAttendence] returns empty and nothing is written.
+  Future<void> _checkInForTracking() async {
+    if (run.extensions.attendenceState >= attendenceAtHash.value) return;
+    if (currentUserId.isEmpty) return;
+
+    try {
+      final List<dynamic> adHoc = await tableModel.hasherEventMapService
+          .setEventAttendence(
+            run.event.eventId,
+            currentUserId,
+            AppDomainType.user,
+            attendenceAtHash.value,
+          );
+      if (adHoc.isEmpty) {
+        BootLogger.logBreadcrumb(
+          'PackTrack: tracking started but check-in did not reach the server '
+          '(eventId=${run.event.eventId})',
+        );
+        return;
+      }
+      run.extensions = run.extensions.copyWith(
+        attendenceState: attendenceAtHash.value,
+        rsvpState: rsvpYes.value,
+      );
+    } catch (e, s) {
+      BootLogger.logError(
+        '[LiveRunGeneral._checkInForTracking] eventId=${run.event.eventId}',
+        e,
+        s,
+      );
+    }
   }
 
   /// Detects an already-stored track for this runner on this event and, if

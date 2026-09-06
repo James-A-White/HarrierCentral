@@ -171,12 +171,16 @@ class RunListItemController extends GetxController {
         return;
       }
 
-      if (!hasRsvpYes) {
-        liveRunButtonStatus.value = LiveRunButtonStatus.hidden;
-        return;
-      }
-
-      final results = await CommonQueries.isAtRunStart(eventId: eventId);
+      // Not RSVP'd is not the same as not here. Someone who never said they
+      // were coming — a visitor, or anyone who just turned up — is standing at
+      // the start in the run window like everybody else, and Run Tools is what
+      // they need. So being physically AT the start now qualifies on its own;
+      // an RSVP'd hasher keeps the old, laxer test (the run being live is
+      // enough, wherever they are).
+      final results = await CommonQueries.isAtRunStart(
+        eventId: eventId,
+        requireProximity: !hasRsvpYes,
+      );
       final bool atStart = results.any((item) => item.eventId == eventId);
       liveRunAtStart.value = atStart;
       liveRunButtonStatus.value = atStart

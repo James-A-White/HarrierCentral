@@ -85,8 +85,22 @@ class CommonQueries {
     return result;
   }
 
-  static Future<List<AreWeAtRunModel>> isAtRunStart({String? eventId}) async {
-    debugPrint('[BOOT] CommonQueries.isAtRunStart: start, eventId=${eventId ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
+  /// Runs the caller could check in to right now.
+  ///
+  /// [eventId] narrows the search to one run. Historically that also meant
+  /// "skip the distance check", because the only caller passing an id was a
+  /// notification tap, where being sent the notification IS the proof. Pass
+  /// [requireProximity] to keep the geofence for a specific run — the Live Run
+  /// Tools button uses it to answer "is this person actually AT the start?"
+  /// rather than merely "is this run on today?".
+  static Future<List<AreWeAtRunModel>> isAtRunStart({
+    String? eventId,
+    bool requireProximity = false,
+  }) async {
+    debugPrint('[BOOT] CommonQueries.isAtRunStart: start, eventId=${eventId ?? "null"}, requireProximity=$requireProximity: ${DateTime.now().millisecondsSinceEpoch}ms');
+    // Where the old code asked "is this the passive sweep?" it was really
+    // asking "does location matter here?" — which is now either.
+    final bool checkDistance = (eventId == null) || requireProximity;
     final List<AreWeAtRunModel> resultList = <AreWeAtRunModel>[];
 
     try {
@@ -152,10 +166,10 @@ class CommonQueries {
       if (queryResults.isNotEmpty) {
         bool hasValidPosition = false;
 
-        // A device position is only needed for the passive (eventId == null)
-        // path. A notification tap (eventId != null) checks in regardless of
-        // location, so skip all GPS work in that case.
-        if (eventId == null) {
+        // A device position is only needed when location actually gates the
+        // result. A notification tap checks in regardless of location, so skip
+        // all GPS work in that case.
+        if (checkDistance) {
           final DateTime? lastLocationUpdate = getDatePref(
             DatePrefsEnum.lastLocationUpdate,
           );
@@ -201,13 +215,11 @@ class CommonQueries {
         for (int i = 0; i < queryResults.length; i++) {
           double? dist;
 
-          // if an eventId has not been provided,
-          // check the distance and see if the user
-          // is close to the run. If an eventId has
-          // been provided because the user clicked
-          // on a notification, ignore the distance
+          // Check the distance and see if the user is close to the run. When
+          // an eventId was provided because the user tapped a notification,
+          // the distance is ignored (unless the caller asked for it).
           if (hasValidPosition &&
-              (eventId == null) &&
+              checkDistance &&
               (queryResults[i]['lat'] != null) &&
               (deviceInfo.deviceLat != null) &&
               (deviceInfo.deviceLon != null)) {
@@ -226,9 +238,10 @@ class CommonQueries {
             }
           }
 
-          // if there is not a specific event identified and there's no distance -
-          // meaning that the lat / long of the run is null, ignore the run
-          if ((eventId == null) && (dist == null)) {
+          // No distance — the run has no lat/lon, or the device has no usable
+          // fix — means proximity cannot be established, so a caller that
+          // asked for proximity must not get this run back.
+          if (checkDistance && (dist == null)) {
             continue;
           }
 

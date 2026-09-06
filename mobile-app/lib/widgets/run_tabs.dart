@@ -2753,12 +2753,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         return;
       }
 
-      if (!hasRsvpYes) {
-        _liveRunStatus = LiveRunButtonStatus.hidden;
-        return;
-      }
-
-      final results = await CommonQueries.isAtRunStart(eventId: eventId);
+      // Being AT the start qualifies on its own — see the matching comment in
+      // RunListItemController.refreshLiveRunButton. An RSVP'd hasher keeps the
+      // old, laxer test; anyone else has to actually be here.
+      final results = await CommonQueries.isAtRunStart(
+        eventId: eventId,
+        requireProximity: !hasRsvpYes,
+      );
       final bool atStart = results.any((item) => item.eventId == eventId);
       _liveRunStatus = atStart
           ? LiveRunButtonStatus.eligible
