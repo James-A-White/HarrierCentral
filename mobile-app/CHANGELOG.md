@@ -1,5 +1,40 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.11+1326 (2026-09-07)
+
+### Fixes
+- **Creating an account now finishes.** 3.0.10 fixed the button; this fixes what
+  happened after you pressed it. The app was reading the wrong part of the
+  server's reply, so the account was created and then the app just sat on the
+  form — no message, no next screen — and pressing the button again answered
+  "we have emailed you an invite code" to somebody who had in fact just signed
+  up. Walked end to end on a real device: form, account, profile photo, app.
+- **"Email me a new invite code" works again.** If your address was already
+  registered, the app always told you the code could not be sent — while
+  showing you the message that said it HAD been sent — and never took you to
+  the screen where you type it in. The code had gone out every time.
+- **A broken profile photo no longer shows you an error.** Where a photo failed
+  to upload, the setup screen displayed the raw technical error over your
+  avatar. It now falls back to the "add a photo" placeholder, and the accounts
+  that were affected have been repaired.
+- **"The access token is invalid" now tells you the actual cause.** It said
+  "please reinstall the app", which loses your data and fixes nothing — the
+  usual reason is a phone whose clock is wrong, so it now says so.
+- **Leaderboard run counts over 365 days were too low.** The count quietly
+  dropped your most recent runs — the ones you just did, which is exactly when
+  you look. Three runs at a weekend hash could show as one.
+
+### Improvements
+- **No RSVP buttons on a run that has already happened.** They took most of the
+  screen above the attendee list and could not do anything. The counts and the
+  list of who came stay.
+- **No GPX or trim buttons on a run nobody tracked.** They acted on a track, so
+  they now wait for one to exist, and the run map and the full-screen map offer
+  the same buttons under the same conditions.
+- **The trim toolbar fits on the screen.** Its last button used to run off the
+  right-hand edge; it now wraps onto a second row and sits clear of the
+  playback panel.
+
 ## 3.0.10+1325 (2026-09-07)
 
 ### Fixes
