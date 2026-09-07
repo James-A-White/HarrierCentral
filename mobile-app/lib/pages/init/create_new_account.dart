@@ -305,10 +305,35 @@ class CreateNewAccountPageContentState
                             final List<dynamic> jsonResultSets = json.decode(
                               responseBody,
                             );
-                            if (jsonResultSets.isNotEmpty) {
-                              final List<dynamic> subSet = jsonResultSets[0];
+                            // Rowset 0 is the SUCCESS ENVELOPE — [{"success":1}] —
+                            // never business data. The profile follows in rowset 1.
+                            // This read rowset 0, so `result['hasherId']` was null,
+                            // the `getStringPref(userId)!` below threw, and the
+                            // account was created on the server while the app just
+                            // sat on the form: no navigation, no error, and a second
+                            // tap answering "an invite code has been sent" to
+                            // somebody who had in fact just signed up successfully.
+                            //
+                            // Found by rowset shape rather than by index so this
+                            // survives the envelope being added to, or removed from,
+                            // any SP feeding this screen.
+                            final List<dynamic>? profileSet = jsonResultSets
+                                .cast<List<dynamic>?>()
+                                .firstWhere(
+                                  (List<dynamic>? rs) =>
+                                      rs != null &&
+                                      rs.isNotEmpty &&
+                                      rs.first is Map &&
+                                      (rs.first as Map).containsKey('hasherId'),
+                                  orElse: () => null,
+                                );
+                            if (profileSet != null) {
+                              final List<dynamic> subSet = profileSet;
                               if (subSet.isNotEmpty) {
-                                final Map<String, dynamic> result = subSet[0];
+                                final Map<String, dynamic> result =
+                                    Map<String, dynamic>.from(
+                                      subSet[0] as Map,
+                                    );
                                 if (result.isNotEmpty) {
                                   await setStringPref(
                                     StringPrefsEnum.profilePhotoUrl,
