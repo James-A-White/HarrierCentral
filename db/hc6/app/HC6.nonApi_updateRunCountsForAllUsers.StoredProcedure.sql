@@ -304,13 +304,22 @@ BEGIN
         FROM   rollingCounted
         GROUP  BY UserId, KennelId
     )
+    -- Drive from HKM, LEFT JOIN the aggregate — the same shape Stage 4 uses for
+    -- the totals. An INNER JOIN here could only ever CORRECT a count, never
+    -- clear one: a user whose qualifying runs all disappear (attendance
+    -- changed, event removed or hidden, IsCountedRun turned off, HEM row
+    -- deleted) produces no row in rollingAgg at all, so the UPDATE skipped
+    -- them and their old rolling count stood for ever. Found 42 such rows,
+    -- each holding rolling365 = 1 against an all-time total of 0 — impossible,
+    -- and invisible until the totals and the rolling figures were compared.
     UPDATE hkm
     SET    hkm.RollingYearTotalRunCount = ISNULL(ra.rollingYearTotal,  0),
            hkm.RollingYearHaringCount   = ISNULL(ra.rollingYearHaring, 0),
            hkm.updatedAt                = SYSDATETIMEOFFSET()
-    FROM   HC.HasherKennelMap hkm
-    JOIN   rollingAgg ra ON ra.UserId   = hkm.UserId
-                        AND ra.KennelId = hkm.KennelId
+    FROM   #affected af
+    JOIN   HC.HasherKennelMap hkm ON hkm.UserId = af.UserId
+    LEFT   JOIN rollingAgg ra ON ra.UserId   = hkm.UserId
+                             AND ra.KennelId = hkm.KennelId
     WHERE  (
                ISNULL(hkm.RollingYearTotalRunCount, -1) != ISNULL(ra.rollingYearTotal,  0) OR
                ISNULL(hkm.RollingYearHaringCount,   -1) != ISNULL(ra.rollingYearHaring, 0)
