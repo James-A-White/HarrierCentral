@@ -100,6 +100,7 @@ SELECT
     kp.Title,
     kp.Description,
     kp.CreatedAt,
+    kp.TakenAtUtc,
     kp.UpdatedAt
 FROM HC.KennelPhotos kp
 WHERE kp.EventId = @eventId
@@ -120,6 +121,7 @@ SELECT
     kp.Title,
     kp.Description,
     kp.CreatedAt,
+    kp.TakenAtUtc,
     kp.UpdatedAt,
     h.DisplayName   AS uploaderDisplayName
 FROM HC.KennelPhotos kp

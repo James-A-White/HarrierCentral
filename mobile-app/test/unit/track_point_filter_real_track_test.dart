@@ -132,4 +132,119 @@ void main() {
     // held position. If this ever grows, the pass is inventing movement.
     expect(_length(out), lessThanOrEqualTo(_length(raw) + 1.0));
   });
+
+  _packTests();
+}
+
+/// Every ordinary GPS track recorded on the GNH 2026 Sunday Hangover trail, as
+/// returned by GetPositions. Fifteen people walking the same ground is the only
+/// honest way to tell a filter change that cleans noise from one that quietly
+/// eats real distance.
+List<({String id, List<TrackPoint> points})> _loadSundayPack() {
+  final Map<String, dynamic> raw =
+      jsonDecode(File('test/fixtures/gnh_sunday_pack.json').readAsStringSync())
+          as Map<String, dynamic>;
+  return (raw['users'] as List<dynamic>)
+      .cast<Map<String, dynamic>>()
+      .map(
+        (Map<String, dynamic> u) => (
+          id: u['id'] as String,
+          points: (u['positions'] as List<dynamic>)
+              .cast<Map<String, dynamic>>()
+              .map(
+                (Map<String, dynamic> m) => TrackPoint(
+                  lat: (m['lat'] as num).toDouble(),
+                  lng: (m['lng'] as num).toDouble(),
+                  acc: (m['acc'] as num).toDouble(),
+                  alt: (m['alt'] as num?)?.toDouble(),
+                  timestampMs: (m['timestampMs'] as num).toInt(),
+                  type: m['type'] as String?,
+                ),
+              )
+              .toList(),
+        ),
+      )
+      .toList();
+}
+
+/// Counts places where the track leaves the line between its neighbours and
+/// comes straight back — the shape of a spike, and of a stall the collapse
+/// failed to recognise.
+int _spikes(List<TrackPoint> pts, double thresholdMetres) {
+  final List<TrackPoint> gps = pts
+      .where((TrackPoint p) => p.type == null || p.type!.isEmpty)
+      .toList();
+  int n = 0;
+  for (int i = 1; i < gps.length - 1; i++) {
+    final double detour = _metres(gps[i - 1], gps[i]) +
+        _metres(gps[i], gps[i + 1]) -
+        _metres(gps[i - 1], gps[i + 1]);
+    if (detour > thresholdMetres) n++;
+  }
+  return n;
+}
+
+void _packTests() {
+  test('a stall on poor GPS is recognised as standing still', () {
+    // f58ca3ae stood at a check for twenty minutes on fixes accurate to
+    // 60-116m. The readings ping-ponged between two spots 37m apart — inside
+    // their own error, but outside the old flat 25m radius, so the pause was
+    // never collapsed and half a kilometre of standing still was counted as
+    // running. The raw track has NO spike at all before filtering: this is a
+    // regression the filter used to introduce, not noise it failed to remove.
+    final track = _loadSundayPack().firstWhere(
+      (t) => t.id.startsWith('f58ca3ae'),
+    );
+    final List<TrackPoint> out = TrackPointFilter().filterAndInterpolate(
+      track.points,
+    );
+
+    expect(
+      _spikes(out, 100.0),
+      0,
+      reason: 'filtering introduced an out-and-back that was not in the raw track',
+    );
+    expect(
+      _length(out),
+      lessThan(_length(track.points) - 400),
+      reason: 'the twenty-minute stall is still being counted as distance',
+    );
+  });
+
+  test('clean tracks are left alone', () {
+    // The safety property that makes the accuracy-widened radius shippable:
+    // on good GPS it must change nothing. These five walked the same ~1.8km
+    // trail on 4-10m fixes; widening the radius from 25m to 90m moved not one
+    // of their measured lengths.
+    const List<String> cleanPrefixes = <String>[
+      '0cdbb109',
+      '395a59fe',
+      'b51eed92',
+      'd0b7ef01',
+      'ff2b511a',
+    ];
+    for (final t in _loadSundayPack()) {
+      if (!cleanPrefixes.any(t.id.startsWith)) continue;
+      final double before = _length(t.points);
+      final double after = _length(
+        TrackPointFilter().filterAndInterpolate(t.points),
+      );
+      expect(
+        after,
+        greaterThan(before * 0.9),
+        reason: '${t.id}: a clean track lost more than 10% of its distance',
+      );
+      expect(_spikes(TrackPointFilter().filterAndInterpolate(t.points), 100.0), 0);
+    }
+  });
+
+  test('the pack agrees on how long the trail was', () {
+    // Fifteen people, one trail. After filtering, no track may measure longer
+    // than 2.5km: the raw data has one at 6.41km, made entirely of jitter.
+    for (final t in _loadSundayPack()) {
+      final double km =
+          _length(TrackPointFilter().filterAndInterpolate(t.points)) / 1000;
+      expect(km, lessThan(2.5), reason: '${t.id} measured ${km.toStringAsFixed(2)}km');
+    }
+  });
 }

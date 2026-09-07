@@ -26,6 +26,7 @@ class PendingPhotoUpload {
     required this.lat,
     required this.lng,
     required this.savedAtMs,
+    this.takenAtMs,
     this.caption,
     this.assetId,
   });
@@ -40,6 +41,11 @@ class PendingPhotoUpload {
   final double lat;
   final double lng;
   final int savedAtMs;
+  /// When the photo was TAKEN, if known. Distinct from [savedAtMs], which is
+  /// when it was queued: an imported camera-roll shot can have been taken days
+  /// earlier. Null on entries queued before this field existed — the drain
+  /// falls back to [savedAtMs], which for a camera capture is the same instant.
+  final int? takenAtMs;
   final String? caption;
   final String? assetId;       // camera roll asset ID if saved there
 
@@ -54,6 +60,7 @@ class PendingPhotoUpload {
     'lat': lat,
     'lng': lng,
     'savedAtMs': savedAtMs,
+    if (takenAtMs != null) 'takenAtMs': takenAtMs,
     if (caption != null) 'caption': caption,
     if (assetId != null) 'assetId': assetId,
   };
@@ -70,6 +77,7 @@ class PendingPhotoUpload {
         lat: (j['lat'] as num).toDouble(),
         lng: (j['lng'] as num).toDouble(),
         savedAtMs: (j['savedAtMs'] as num).toInt(),
+        takenAtMs: (j['takenAtMs'] as num?)?.toInt(),
         caption: j['caption'] as String?,
         assetId: j['assetId'] as String?,
       );

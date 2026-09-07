@@ -1,4 +1,5 @@
 import 'package:exif/exif.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:photo_manager/photo_manager.dart';
@@ -233,6 +234,11 @@ class KennelPhotoService {
       assetId: assetId,
       perRunSharingOverride: sharingOverride,
       caption: caption,
+      // Taken right now — this path is the camera, not the library. The
+      // marker timestamp is deliberately NOT reused: it is sometimes shifted
+      // to the run's start so a pre-run photo lands on the track sensibly,
+      // and that shifted value is not when the shutter fired.
+      takenAtMs: DateTime.now().millisecondsSinceEpoch,
     );
     if (!recorded) {
       Get.snackbar(
@@ -456,11 +462,42 @@ class KennelPhotoService {
     // for live uploads so existing call sites remain unchanged.
     double? lat,
     double? lng,
+    // When the photo was TAKEN. Sent so the map can place its pin from the
+    // photo row alone instead of hunting for the PHO:: point on somebody's GPS
+    // track. Null is sent as no value at all: the SP stores NULL, meaning "we
+    // do not know", which is honest and lets the client fall back to the track.
+    int? takenAtMs,
   }) async {
     double resolvedLat = lat ?? 0.0;
     double resolvedLng = lng ?? 0.0;
     if (lat == null || lng == null) {
-      final pos = LocationService.ensure().lastKnownPosition.value;
+      // Take a fresh high-accuracy fix rather than reading
+      // lastKnownPosition. Outside a tracked run the location stream is in
+      // IDLE mode — 250m distance filter, `lowest` accuracy — so the last
+      // known position can be hundreds of metres stale, or (0,0) on a phone
+      // that has not moved far since launch. That is the coordinate stored on
+      // HC.KennelPhotos and used to place the photo on a map, and it is why
+      // photo pins sat away from where the photo was taken.
+      //
+      // This is the same one-shot LocationAccuracy.best fetch that
+      // markPointAt does for the PHO:: track marker, so the row and the
+      // marker now agree instead of describing two different places.
+      Position? fix;
+      try {
+        fix = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.best,
+          ),
+        );
+      } catch (e) {
+        // Services off, permission revoked, or a hardware timeout. Fall back
+        // to the stale fix — a rough position beats none, and the upload must
+        // not fail because the GPS was slow.
+        if (kDebugMode) {
+          debugPrint('[KennelPhotoService] no fresh fix for photo: $e');
+        }
+      }
+      final pos = fix ?? LocationService.ensure().lastKnownPosition.value;
       resolvedLat = pos?.latitude ?? 0.0;
       resolvedLng = pos?.longitude ?? 0.0;
     }
@@ -479,6 +516,15 @@ class KennelPhotoService {
       'latitude': resolvedLat,
       'longitude': resolvedLng,
     };
+
+    if (takenAtMs != null) {
+      // DATETIME2 has no zone, so send UTC and keep every stored capture time
+      // on one clock — a photo imported abroad must not read as local time.
+      body['takenAtUtc'] = DateTime.fromMillisecondsSinceEpoch(
+        takenAtMs,
+        isUtc: true,
+      ).toIso8601String();
+    }
 
     if (assetId != null && assetId.isNotEmpty) {
       body['assetId'] = assetId;
@@ -704,6 +750,9 @@ class KennelPhotoService {
         sharingOverride: 1,
         caption: null,
         assetId: assetId,
+        lat: latitude,
+        lng: longitude,
+        takenAtMs: takenAtMs,
       );
       _enqueuePhotoMarker(
         photoId: photoGuid,
@@ -746,6 +795,7 @@ class KennelPhotoService {
       perRunSharingOverride: 1,
       lat: latitude,
       lng: longitude,
+      takenAtMs: takenAtMs,
     );
     if (!recorded) return false;
 
@@ -1141,6 +1191,12 @@ class KennelPhotoService {
     required int sharingOverride,
     String? caption,
     String? assetId,
+    // Imported photos carry their own position and capture time; without
+    // these the entry would be stamped with wherever the phone is standing
+    // when it happens to be offline, which is not where the photo was taken.
+    double? lat,
+    double? lng,
+    int? takenAtMs,
     bool isOnlineFailure = false,
   }) async {
     try {
@@ -1159,9 +1215,10 @@ class KennelPhotoService {
           eventNumber: eventNumber,
           sharingOverride: sharingOverride,
           filePath: queuedPath,
-          lat: pos?.latitude ?? 0.0,
-          lng: pos?.longitude ?? 0.0,
+          lat: lat ?? pos?.latitude ?? 0.0,
+          lng: lng ?? pos?.longitude ?? 0.0,
           savedAtMs: DateTime.now().millisecondsSinceEpoch,
+          takenAtMs: takenAtMs,
           caption: caption,
           assetId: assetId,
         ),
@@ -1270,6 +1327,9 @@ class KennelPhotoService {
           caption: entry.caption,
           lat: entry.lat,
           lng: entry.lng,
+          // Older entries predate takenAtMs; for those savedAtMs is the best
+          // available answer and is exact for a camera capture.
+          takenAtMs: entry.takenAtMs ?? entry.savedAtMs,
         );
 
         await KennelPhotoUploadQueue.remove(entry.photoId);

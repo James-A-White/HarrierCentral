@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_addKennelPhoto",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Records a kennel photo after the app has uploaded the image blob directly to Azure Storage. Resolves the effective sharing preference (per-run override \u2192 per-kennel HasherKennelMap.PhotoSharingPreference \u2192 global Hasher.Preferences bit 0x40) and sets the initial status accordingly: 0=private or 1=pending_review. No sync delegation \u2014 photos are fetched on-demand via hcapp_getRunPhotos.",
   "parameters": [
     {
@@ -80,6 +80,13 @@
       "nullable": true,
       "mapsToColumn": "KennelPhotos.AssetId",
       "description": "Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI). NULL when the user had 'save to camera roll' disabled or permission denied. Device-specific \u2014 only valid on the device that uploaded the photo. Defaults to NULL."
+    },
+    {
+      "name": "takenAtUtc",
+      "type": "DATETIME2",
+      "nullable": true,
+      "mapsToColumn": "KennelPhotos.TakenAtUtc",
+      "description": "When the photo was taken (UTC), as distinct from CreatedAt which is when it was uploaded. NULL when the client cannot tell \u2014 never inferred from the upload time."
     },
     {
       "name": "perRunSharingOverride",

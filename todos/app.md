@@ -547,6 +547,63 @@ Takes effect on each user's next login/boot. Logs arrive one boot LATE.
 
 ---
 
+## ✅ 2026-09-07 — GPS filter: stationary radius now scales with accuracy
+
+**And the cross-track outlier idea was measured and dropped. See below.**
+
+**What changed.** `TrackPointFilter._collapseStationary` used a flat 25m radius
+to decide "this hasher is not moving". That assumes a quality of GPS the phone
+may not be providing. The radius is now the sum of the two fixes' accuracies —
+floored at 25m so confident fixes behave exactly as before, capped at 60m
+(`stationaryRadiusMaxMeters`) so a pair of hopeless fixes cannot swallow real
+movement. Two fixes describe the same place when their error circles overlap.
+Mirrored in `public-web/lib/packtrack.ts` (`stationaryRadius`).
+
+**The case that forced it** (GNH 2026 Sunday, hasher `f58ca3ae`): stood at a
+check for twenty minutes on fixes accurate to 60-116m. The readings ping-ponged
+between two spots 37m apart — well inside their own error, outside a flat 25m
+radius. The pause was never collapsed, so ~0.5 km of standing still was counted
+as running. Worse, the raw track had NO out-and-back spike before filtering and
+TWO after: the filter was introducing the artefact, not failing to remove one.
+
+**Measured on all 15 Sunday tracks** (`test/fixtures/gnh_sunday_pack.json`,
+2,650 points, covered by `test/unit/track_point_filter_real_track_test.dart`):
+
+| | before | after |
+|---|---|---|
+| out-and-back spikes >100m after filtering | 4 | 2 |
+| f58ca3ae | 1.95 km, 2 spikes | 1.68 km, 0 spikes |
+| every clean track (7 of 15) | unchanged | unchanged |
+
+The safety property that makes it shippable: sweeping the cap from 25m to 90m,
+**every clean track measured exactly the same length at every value.** Only
+noisy tracks move. 60 was chosen because the gains stop there and the losses
+do not.
+
+### ❌ Cross-track outlier detection — measured, not worth building
+
+The earlier claim that cross-track comparison would catch 137 points a
+per-track filter misses **does not survive contact with the data** — treat that
+number as withdrawn. Built the corridor properly (every confident fix, acc ≤
+20m, from every OTHER runner, on a 150m grid) and measured every point of every
+Sunday track against it:
+
+* median distance to the corridor **1.3m**, p99 66m, p99.9 97m, **max 192.7m**
+* of 2,650 points, exactly **one** sits more than 150m off the corridor — and
+  its accuracy is 157m, so the existing uncertainty smoothing already owns it
+* the 24 raw spikes are almost all **inside** the corridor (1.8m, 4.9m, 12.3m
+  from it) because they bounce between two places the pack genuinely went
+
+So the corridor cannot separate a spike from a real position, and everything it
+would flag is already flagged by `acc`. Building it would add a cross-track
+dependency (every track needed before any track can be filtered), a spatial
+index, and a real false-positive risk on a legitimate solo excursion — for one
+point that accuracy already catches. **Accuracy is the signal; proximity is
+not.** Do not revive this without new data showing a spike that lands off the
+corridor AND reports good accuracy.
+
+---
+
 ## 📸 NEXT UP — stop attaching imported photos to the importer's track
 
 **Target: first half of September 2026**, once Play has approved 1314 and the
@@ -575,18 +632,47 @@ the renderers read from elsewhere.
 time — it currently lives ONLY in the track point's `timestampMs`.
 
 **Plan**
-1. DB: `ALTER TABLE HC.KennelPhotos ADD TakenAtUtc DATETIME2 NULL`. No triggers
-   on the table and it is not a synced table, so no trigger dance is needed.
-   Consider a photographer credit at the same time — `UserId` is the UPLOADER.
-2. SPs: `hcapp_addKennelPhoto` stores TakenAtUtc; `hcapp_getRunPhotos` and
-   `hcapp_getRunAllPhotos` return it. Deploy SPs BEFORE the app build.
-3. Mobile: build photo markers from the photo list (position from Lat/Lng, time
-   from TakenAtUtc) instead of from track points; stop calling markPointAt for
-   imports. Keep reading legacy `PHO::` points so existing runs still show.
-4. Web: same in `PackTrackMap.tsx` and `TrailTv.tsx`.
-5. Optional later: migrate historical `PHO::` points out of the position store
-   (the label is the photoId, which maps straight to the KennelPhotos row).
-   They are inert now, so this is tidiness, not urgency.
+1. [x] DB: `ALTER TABLE HC.KennelPhotos ADD TakenAtUtc DATETIME2 NULL` — RUN in
+   production 2026-09-07. Script archived at
+   `db/hc6/app/archive/2026-09-07_add_KennelPhotos_TakenAtUtc.sql`. Nullable, no
+   backfill: for existing rows the true capture time is unknown and CreatedAt
+   would be a lie. (Photographer credit NOT done — `UserId` is still the
+   uploader.)
+2. [x] SPs (2026-09-07, **written and parse-checked, NOT YET DEPLOYED**):
+   `hcapp_addKennelPhoto` takes `@takenAtUtc DATETIME2 = NULL` and stores it;
+   `hcapp_getRunPhotos` (both rowsets) and `hcapp_getRunAllPhotos` return
+   `TakenAtUtc`. Contracts bumped: addKennelPhoto 1.2.0, getRunPhotos 1.1.0,
+   getRunAllPhotos 1.1.0.
+   ⚠️ **DEPLOY BLOCKER — the app now sends `takenAtUtc` on every photo upload.**
+   The shim forwards every JSON property as a named parameter, so until these
+   SPs are deployed EVERY photo upload fails with "has no parameter named
+   @takenAtUtc". Deploy the SPs BEFORE any build carrying this app change ships.
+   `publicWeb_getRunPhotos` deliberately untouched — it excludes position for
+   privacy and has no map to place pins on.
+3. [ ] Mobile: build photo markers from the photo list (position from Lat/Lng,
+   time from TakenAtUtc) instead of from track points; stop calling markPointAt
+   for imports. Keep reading legacy `PHO::` points so existing runs still show.
+   NOT ATTEMPTED — `_buildCheckpointMarkers` / `_visibleMarkCount` /
+   `_markerCacheKey` / `_selectedRunnerCues` all read the track point, and the
+   memo key means a half-done switch shows nothing at all. It needs a device to
+   verify, so it was not done blind overnight.
+4. [ ] Web: same in `PackTrackMap.tsx` and `TrailTv.tsx`.
+5. [ ] Optional later: migrate historical `PHO::` points out of the position
+   store (the label is the photoId, which maps straight to the KennelPhotos
+   row). They are inert now, so this is tidiness, not urgency.
+
+**Done separately 2026-09-07 — the photo PIN was in the wrong place for a
+different reason.** `_addKennelPhoto` stored `LocationService.lastKnownPosition`
+while the `PHO::` marker used a fresh `LocationAccuracy.best` fix. Outside a
+tracked run the location stream is in IDLE mode (250m distance filter, `lowest`
+accuracy), so the stored coordinate could be hundreds of metres stale — or
+(0,0) on a phone that had not moved since launch — and that is the coordinate
+the gallery and any list-sourced renderer use. Both now take the same one-shot
+high-accuracy fix, falling back to the stale one if the GPS times out. Also
+fixed on the way: an imported photo queued while offline was stamped with the
+phone's position and the queue time, not the photo's EXIF position and capture
+time (`_queueForOfflineUpload` now takes explicit lat/lng/takenAtMs, and
+`PendingPhotoUpload` carries `takenAtMs`).
 
 NOTE: the GPS track lives behind its own Azure Functions (`StorePositions` /
 `GetPositions` / `DeletePositions`), NOT in the SQL/SP layer — step 5 is a

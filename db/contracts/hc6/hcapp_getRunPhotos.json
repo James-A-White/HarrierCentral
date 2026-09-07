@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRunPhotos",
-  "version": "1.0.0",
-  "description": "Returns photos for a run in two rowsets. Rowset 1 — own photos (all statuses, always fully returned, includes AssetId for device-local display). Rowset 2 — others' public photos (status >= 2, soft-deleted excluded, filterable by @afterUpdatedAt for incremental updates). Call on-demand when the map or photo UI is active; do not poll.",
+  "version": "1.1.0",
+  "description": "Returns photos for a run in two rowsets. Rowset 1 \u2014 own photos (all statuses, always fully returned, includes AssetId for device-local display). Rowset 2 \u2014 others' public photos (status >= 2, soft-deleted excluded, filterable by @afterUpdatedAt for incremental updates). Call on-demand when the map or photo UI is active; do not poll.",
   "parameters": [
     {
       "name": "deviceId",
@@ -39,9 +39,24 @@
       "name": "AuthErrorEnvelope",
       "description": "Returned only on auth or validation failure. Contains {success, errorCode, errorType}. Not present on success.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0 on this error path." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on this error path."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
       ]
     },
     {
@@ -52,22 +67,98 @@
     {
       "index": 1,
       "name": "OwnPhotos",
-      "description": "On success: all photos uploaded by the authenticated user for this event, regardless of status (including private and soft-deleted). Always fully returned — @afterUpdatedAt does not apply. Includes AssetId for device-local display fallback. Zero rows if the user has no photos for this event. Mutually exclusive with StandardErrorResult at index 1.",
+      "description": "On success: all photos uploaded by the authenticated user for this event, regardless of status (including private and soft-deleted). Always fully returned \u2014 @afterUpdatedAt does not apply. Includes AssetId for device-local display fallback. Zero rows if the user has no photos for this event. Mutually exclusive with StandardErrorResult at index 1.",
       "columns": [
-        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.id." },
-        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.EventId." },
-        { "name": "KennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.KennelId." },
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.UserId — always the authenticated user's ID in this rowset." },
-        { "name": "BlobUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image." },
-        { "name": "EditedBlobUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.EditedBlobUrl — CDN URL of the edited version, if any." },
-        { "name": "AssetId", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.AssetId — device-library identifier (iOS/Android). Only valid on the device that took the photo. NULL if the user had camera roll saving disabled." },
-        { "name": "Latitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Latitude." },
-        { "name": "Longitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Longitude." },
-        { "name": "Status", "type": "TINYINT", "nullable": false, "description": "KennelPhotos.Status — 0=private, 1=pending_review, 2=public, 3=run_gallery, 4=home_gallery, 5=event_cover." },
-        { "name": "Title", "type": "NVARCHAR(250)", "nullable": true, "description": "KennelPhotos.Title." },
-        { "name": "Description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "KennelPhotos.Description." },
-        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.CreatedAt — UTC creation timestamp." },
-        { "name": "UpdatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.UpdatedAt — UTC last-modified timestamp." }
+        {
+          "name": "photoId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.id."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.EventId."
+        },
+        {
+          "name": "KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.KennelId."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.UserId \u2014 always the authenticated user's ID in this rowset."
+        },
+        {
+          "name": "BlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "KennelPhotos.BlobUrl \u2014 CDN URL of the original uploaded image."
+        },
+        {
+          "name": "EditedBlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "KennelPhotos.EditedBlobUrl \u2014 CDN URL of the edited version, if any."
+        },
+        {
+          "name": "AssetId",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "KennelPhotos.AssetId \u2014 device-library identifier (iOS/Android). Only valid on the device that took the photo. NULL if the user had camera roll saving disabled."
+        },
+        {
+          "name": "Latitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": false,
+          "description": "KennelPhotos.Latitude."
+        },
+        {
+          "name": "Longitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": false,
+          "description": "KennelPhotos.Longitude."
+        },
+        {
+          "name": "Status",
+          "type": "TINYINT",
+          "nullable": false,
+          "description": "KennelPhotos.Status \u2014 0=private, 1=pending_review, 2=public, 3=run_gallery, 4=home_gallery, 5=event_cover."
+        },
+        {
+          "name": "Title",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "KennelPhotos.Title."
+        },
+        {
+          "name": "Description",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "KennelPhotos.Description."
+        },
+        {
+          "name": "CreatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "KennelPhotos.CreatedAt \u2014 UTC creation timestamp."
+        },
+        {
+          "name": "TakenAtUtc",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "When the photo was taken (UTC). NULL for rows written before capture time was recorded \u2014 callers fall back to the PHO:: track point."
+        },
+        {
+          "name": "UpdatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "KennelPhotos.UpdatedAt \u2014 UTC last-modified timestamp."
+        }
       ]
     },
     {
@@ -75,20 +166,96 @@
       "name": "OthersPublicPhotos",
       "description": "On success: photos from other users where Status >= 2 and DeletedAt IS NULL, filtered by @afterUpdatedAt when non-null. Includes uploaderDisplayName for attribution. Zero rows if no qualifying others' photos exist (or none updated since @afterUpdatedAt). Not present on error paths.",
       "columns": [
-        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.id." },
-        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.EventId." },
-        { "name": "KennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.KennelId." },
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.UserId — the uploader's ID (never the authenticated user in this rowset)." },
-        { "name": "BlobUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image." },
-        { "name": "EditedBlobUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.EditedBlobUrl — CDN URL of the edited version, if any." },
-        { "name": "Latitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Latitude." },
-        { "name": "Longitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Longitude." },
-        { "name": "Status", "type": "TINYINT", "nullable": false, "description": "KennelPhotos.Status — always >= 2 in this rowset (filter predicate enforces it)." },
-        { "name": "Title", "type": "NVARCHAR(250)", "nullable": true, "description": "KennelPhotos.Title." },
-        { "name": "Description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "KennelPhotos.Description." },
-        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.CreatedAt — UTC creation timestamp." },
-        { "name": "UpdatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.UpdatedAt — UTC last-modified timestamp. Used as the incremental watermark on the next call." },
-        { "name": "uploaderDisplayName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Hasher.DisplayName (persisted computed column) — the display name of the uploader." }
+        {
+          "name": "photoId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.id."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.EventId."
+        },
+        {
+          "name": "KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.KennelId."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.UserId \u2014 the uploader's ID (never the authenticated user in this rowset)."
+        },
+        {
+          "name": "BlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "KennelPhotos.BlobUrl \u2014 CDN URL of the original uploaded image."
+        },
+        {
+          "name": "EditedBlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "KennelPhotos.EditedBlobUrl \u2014 CDN URL of the edited version, if any."
+        },
+        {
+          "name": "Latitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": false,
+          "description": "KennelPhotos.Latitude."
+        },
+        {
+          "name": "Longitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": false,
+          "description": "KennelPhotos.Longitude."
+        },
+        {
+          "name": "Status",
+          "type": "TINYINT",
+          "nullable": false,
+          "description": "KennelPhotos.Status \u2014 always >= 2 in this rowset (filter predicate enforces it)."
+        },
+        {
+          "name": "Title",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "KennelPhotos.Title."
+        },
+        {
+          "name": "Description",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "KennelPhotos.Description."
+        },
+        {
+          "name": "CreatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "KennelPhotos.CreatedAt \u2014 UTC creation timestamp."
+        },
+        {
+          "name": "TakenAtUtc",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "When the photo was taken (UTC). NULL for rows written before capture time was recorded \u2014 callers fall back to the PHO:: track point."
+        },
+        {
+          "name": "UpdatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "KennelPhotos.UpdatedAt \u2014 UTC last-modified timestamp. Used as the incremental watermark on the next call."
+        },
+        {
+          "name": "uploaderDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Hasher.DisplayName (persisted computed column) \u2014 the display name of the uploader."
+        }
       ]
     }
   ],
@@ -113,6 +280,6 @@
     }
   ],
   "breakingChanges": [
-    "New SP — no HC5 predecessor. No breaking changes from migration."
+    "New SP \u2014 no HC5 predecessor. No breaking changes from migration."
   ]
 }

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRunAllPhotos",
-  "version": "1.0.0",
-  "description": "Returns every photo for a specific event regardless of status — pending, approved at any level, private, and soft-deleted. Used to power the photo review screen (both Pending and Reviewed tabs) and the persistent status-count header. Caller must hold Hash Flash (0x20), GM (0x02), VGM (0x04), RA (0x08), or WebMeister (0x1000) for the kennel. Unlike hcapp_getKennelPendingPhotos, this SP shows all statuses for a single event rather than only pending across all events.",
+  "version": "1.1.0",
+  "description": "Returns every photo for a specific event regardless of status \u2014 pending, approved at any level, private, and soft-deleted. Used to power the photo review screen (both Pending and Reviewed tabs) and the persistent status-count header. Caller must hold Hash Flash (0x20), GM (0x02), VGM (0x04), RA (0x08), or WebMeister (0x1000) for the kennel. Unlike hcapp_getKennelPendingPhotos, this SP shows all statuses for a single event rather than only pending across all events.",
   "parameters": [
     {
       "name": "deviceId",
@@ -39,9 +39,24 @@
       "name": "ErrorEnvelope",
       "description": "Returned only on auth, validation, or role check failure. Contains {success, errorCode, errorType}. Mutually exclusive with AllPhotos rowset.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0 on this error path." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on this error path."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
       ]
     },
     {
@@ -54,18 +69,84 @@
       "name": "AllPhotos",
       "description": "On success: all photos for the event regardless of status (including soft-deleted where DeletedAt IS NOT NULL), joined to Hasher and Event for display context, ordered by CreatedAt DESC. Returns zero rows if the event has no photos. Mutually exclusive with ErrorEnvelope.",
       "columns": [
-        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.id — primary key of the photo." },
-        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.EventId — always equal to @eventId." },
-        { "name": "Status", "type": "TINYINT", "nullable": false, "description": "KennelPhotos.Status — 0=private, 1=pending_review, 2=public, 3=run_gallery, 4=home_gallery, 5=event_cover." },
-        { "name": "DeletedAt", "type": "DATETIME2", "nullable": true, "description": "KennelPhotos.DeletedAt — NULL if not soft-deleted; non-NULL timestamp if soft-deleted." },
-        { "name": "BlobUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image." },
-        { "name": "EditedBlobUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.EditedBlobUrl — CDN URL of the Hash Flash-edited version, if any." },
-        { "name": "Title", "type": "NVARCHAR(250)", "nullable": true, "description": "KennelPhotos.Title — optional short title." },
-        { "name": "Description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "KennelPhotos.Description — optional caption." },
-        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.CreatedAt — UTC timestamp when the photo was recorded." },
-        { "name": "uploaderDisplayName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Hasher.DisplayName (persisted computed column) — the display name of the uploader." },
-        { "name": "eventName", "type": "NVARCHAR(250)", "nullable": false, "description": "Event.EventName — name of the event." },
-        { "name": "eventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.AbsoluteEventNumber — cross-kennel run number. Nullable in the base table." }
+        {
+          "name": "photoId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.id \u2014 primary key of the photo."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.EventId \u2014 always equal to @eventId."
+        },
+        {
+          "name": "Status",
+          "type": "TINYINT",
+          "nullable": false,
+          "description": "KennelPhotos.Status \u2014 0=private, 1=pending_review, 2=public, 3=run_gallery, 4=home_gallery, 5=event_cover."
+        },
+        {
+          "name": "DeletedAt",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "KennelPhotos.DeletedAt \u2014 NULL if not soft-deleted; non-NULL timestamp if soft-deleted."
+        },
+        {
+          "name": "BlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "KennelPhotos.BlobUrl \u2014 CDN URL of the original uploaded image."
+        },
+        {
+          "name": "EditedBlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "KennelPhotos.EditedBlobUrl \u2014 CDN URL of the Hash Flash-edited version, if any."
+        },
+        {
+          "name": "Title",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "KennelPhotos.Title \u2014 optional short title."
+        },
+        {
+          "name": "Description",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "KennelPhotos.Description \u2014 optional caption."
+        },
+        {
+          "name": "CreatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "KennelPhotos.CreatedAt \u2014 UTC timestamp when the photo was recorded."
+        },
+        {
+          "name": "TakenAtUtc",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "When the photo was taken (UTC). NULL for rows written before capture time was recorded \u2014 callers fall back to the PHO:: track point."
+        },
+        {
+          "name": "uploaderDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Hasher.DisplayName (persisted computed column) \u2014 the display name of the uploader."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Event.EventName \u2014 name of the event."
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.AbsoluteEventNumber \u2014 cross-kennel run number. Nullable in the base table."
+        }
       ]
     }
   ],
@@ -90,6 +171,6 @@
     }
   ],
   "breakingChanges": [
-    "New SP — no HC5 predecessor. No breaking changes from migration."
+    "New SP \u2014 no HC5 predecessor. No breaking changes from migration."
   ]
 }

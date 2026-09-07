@@ -110,6 +110,7 @@ SELECT
     kp.Title,
     kp.Description,
     kp.CreatedAt,
+    kp.TakenAtUtc,
     h.DisplayName           AS uploaderDisplayName,
     e.EventName             AS eventName,
     e.AbsoluteEventNumber   AS eventNumber

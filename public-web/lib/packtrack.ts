@@ -494,10 +494,43 @@ function filterTrackPoints(points: TrackPoint[]): TrackPoint[] {
   return collapseStationary(out);
 }
 
-/** How far a fix may sit from the anchor and still count as "not moving". */
+/**
+ * How far a fix may sit from the anchor and still count as "not moving", when
+ * both fixes are confident. Poor fixes get a wider radius — see
+ * stationaryRadius.
+ */
 const STATIONARY_RADIUS_M = 25;
+/**
+ * Ceiling on the accuracy-widened radius. Without a cap a pair of hopeless
+ * fixes (acc 500 appears in real data) would swallow the whole trail. 60m is
+ * two fixes at 30m each — the edge of usable GPS.
+ */
+const STATIONARY_RADIUS_MAX_M = 60;
 /** How long inside that radius before the stretch counts as standing still. */
 const STATIONARY_MIN_MS = 90 * 1000;
+
+/**
+ * How far apart two fixes may be and still describe the same spot.
+ *
+ * A fixed 25m radius assumes a quality of GPS the phone may not be providing.
+ * On the GNH 2026 Sunday trail one hasher stood at a check for twenty minutes
+ * on fixes accurate to 60-116m; the readings ping-ponged between two spots 37m
+ * apart, well inside their own error but outside a flat 25m radius, so the
+ * pause was never collapsed and roughly half a kilometre of standing still was
+ * added to their distance.
+ *
+ * Two fixes describe the same place when their error circles overlap, so the
+ * radius is the sum of the two accuracies — floored at STATIONARY_RADIUS_M so
+ * confident fixes behave exactly as before, and capped so a pair of hopeless
+ * fixes cannot swallow real movement.
+ *
+ * Mirrors TrackPointFilter._stationaryRadius in the app.
+ */
+function stationaryRadius(a: TrackPoint, b: TrackPoint): number {
+  const accA = a.acc > 0 ? a.acc : STATIONARY_RADIUS_M;
+  const accB = b.acc > 0 ? b.acc : STATIONARY_RADIUS_M;
+  return Math.min(Math.max(STATIONARY_RADIUS_M, accA + accB), STATIONARY_RADIUS_MAX_M);
+}
 
 /**
  * Replaces each stretch where the runner stayed put with one position held for
@@ -535,7 +568,7 @@ function collapseStationary(points: TrackPoint[]): TrackPoint[] {
       j + 1 < points.length &&
       !pointIsTyped(points[j + 1]) &&
       haversineMeters(anchor.lat, anchor.lng, points[j + 1].lat, points[j + 1].lng) <=
-        STATIONARY_RADIUS_M
+        stationaryRadius(anchor, points[j + 1])
     ) {
       j++;
     }

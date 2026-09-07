@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:harrier_central/data/models/user_positions/user_positions.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
@@ -122,8 +124,18 @@ class TrackPointFilter {
     return _collapseStationary(filtered);
   }
 
-  /// How far a fix may sit from the anchor and still count as "not moving".
+  /// How far a fix may sit from the anchor and still count as "not moving",
+  /// when both fixes are confident. Poor fixes get a wider radius — see
+  /// [_stationaryRadius].
   static const double stationaryRadiusMeters = 25.0;
+
+  /// Ceiling on the accuracy-widened radius. Without a cap a pair of hopeless
+  /// fixes (acc 500 appears in real data) would swallow the whole trail. 60m is
+  /// two fixes at 30m each — the edge of usable GPS. Sweeping the GNH 2026
+  /// Sunday pack from 25m to 90m, every clean track measured EXACTLY the same
+  /// length at every cap; only the noisy tracks moved, and their improvement
+  /// stopped at 60.
+  static const double stationaryRadiusMaxMeters = 60.0;
 
   /// How long the runner must stay inside that radius before the stretch is
   /// treated as standing still rather than moving slowly.
@@ -171,7 +183,7 @@ class TrackPointFilter {
       while (j + 1 < points.length &&
           !_isMark(points[j + 1]) &&
           _calculateDistance(anchor, points[j + 1]) <=
-              stationaryRadiusMeters) {
+              _stationaryRadius(anchor, points[j + 1])) {
         j++;
       }
 
@@ -198,6 +210,29 @@ class TrackPointFilter {
       }
     }
     return out;
+  }
+
+  /// How far apart two fixes may be and still describe the same spot.
+  ///
+  /// A fixed 25m radius assumes a quality of GPS the phone may not be
+  /// providing. On the GNH 2026 Sunday trail one hasher stood at a check for
+  /// twenty minutes on fixes accurate to 60-116m; the readings ping-ponged
+  /// between two spots 37m apart, which is well inside their own error but
+  /// outside a flat 25m radius. The stretch was never recognised as a pause, so
+  /// roughly half a kilometre of standing still was added to their distance.
+  ///
+  /// Two fixes describe the same place when their error circles overlap, so the
+  /// radius is the sum of the two accuracies — floored at
+  /// [stationaryRadiusMeters] so confident fixes behave exactly as before, and
+  /// capped at [stationaryRadiusMaxMeters] so a pair of hopeless fixes cannot
+  /// swallow real movement.
+  double _stationaryRadius(TrackPoint a, TrackPoint b) {
+    final double accA = a.acc <= 0 ? stationaryRadiusMeters : a.acc;
+    final double accB = b.acc <= 0 ? stationaryRadiusMeters : b.acc;
+    return math.min(
+      math.max(stationaryRadiusMeters, accA + accB),
+      stationaryRadiusMaxMeters,
+    );
   }
 
   /// Pulls each fix toward its neighbours in proportion to how uncertain it is:

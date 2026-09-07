@@ -11,6 +11,12 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addKennelPhoto]
     @title                NVARCHAR(250)  = NULL,
     @description          NVARCHAR(MAX)  = NULL,
     @assetId              NVARCHAR(500)  = NULL,
+    -- When the photo was TAKEN, as distinct from when it was uploaded. The two
+    -- match for a photo shot in the app and can be days apart for one imported
+    -- from the camera roll. NULL when the client cannot tell (no EXIF, older
+    -- build) — never guessed from the upload time, because claiming a photo was
+    -- taken at upload is worse than admitting we do not know.
+    @takenAtUtc           DATETIME2      = NULL,
     -- Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI).
     -- NULL when the user had "save to camera roll" disabled or permission denied.
     -- Device-specific — only meaningful on the device that uploaded the photo.
@@ -218,9 +224,9 @@ BEGIN TRY
     -- on the @photoId key serializes a concurrent double-submit too; if the row
     -- already exists this inserts nothing and we still return @photoId below.
     INSERT INTO [HC].[KennelPhotos]
-        (id, EventId, KennelId, UserId, BlobUrl, AssetId, Latitude, Longitude, Status, Title, Description)
+        (id, EventId, KennelId, UserId, BlobUrl, AssetId, Latitude, Longitude, Status, Title, Description, TakenAtUtc)
     SELECT @photoId, @eventId, @kennelId, @userId, @blobUrl,
-           @assetId, @latitude, @longitude, @status, @title, @description
+           @assetId, @latitude, @longitude, @status, @title, @description, @takenAtUtc
     WHERE NOT EXISTS (
         SELECT 1 FROM HC.KennelPhotos WITH (UPDLOCK, HOLDLOCK) WHERE id = @photoId);
 
