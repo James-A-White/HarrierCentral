@@ -314,9 +314,15 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
           FocusScope.of(context).unfocus();
 
-          if (_fabIsVisible !=
-              (_tabs[_tabController.index].text == LABEL_RSVP)) {
-            _fabIsVisible = _tabs[_tabController.index].text == LABEL_RSVP;
+          // The speed dial IS the RSVP actions ("I'm coming" / "I might come" /
+          // "I'm not coming"), so it goes on a past run too — otherwise hiding
+          // the three buttons would just move the same dead choice into a
+          // floating button.
+          final bool showRsvpFab =
+              _tabs[_tabController.index].text == LABEL_RSVP &&
+              !isRunPast(widget.futureRun);
+          if (_fabIsVisible != showRsvpFab) {
+            _fabIsVisible = showRsvpFab;
           }
 
           if (_tabs[_tabController.index].text == LABEL_RSVP) {
@@ -2060,6 +2066,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   List<Widget> _getRsvpButtons() {
+    // A past run cannot be RSVP'd to. The three buttons were still offered on
+    // finished runs, where they say nothing useful and take most of the screen
+    // above the attendee list. The counts and the roster stay — those are the
+    // interesting part of a run that has happened.
+    if (isRunPast(widget.futureRun)) {
+      return const <Widget>[SizedBox(height: 12.0)];
+    }
+
     if (_rsvpRequested != rsvpUnknown) {
       return <Widget>[
         const HcAppCircularProgressIndicator(key: Key('3920394')),

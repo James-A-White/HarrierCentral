@@ -300,20 +300,24 @@ class RunListItem extends StatelessWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                GestureDetector(
-                  onTap: () {
-                    _showRsvpOptionsPopup();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 5.0,
-                      right: 5.0,
-                      top: 5.0,
-                      bottom: 5.0,
+                // No RSVP control once the run is past — there is nothing left
+                // to say you will attend. Gone entirely rather than disabled:
+                // a dead control that still looks tappable is worse than none.
+                if (!isRunPast(futureRun))
+                  GestureDetector(
+                    onTap: () {
+                      _showRsvpOptionsPopup();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 5.0,
+                        right: 5.0,
+                        top: 5.0,
+                        bottom: 5.0,
+                      ),
+                      child: Obx(() => _getRsvpWidget()),
                     ),
-                    child: Obx(() => _getRsvpWidget()),
                   ),
-                ),
                 Expanded(
                   child: Container(
                     width: MediaQuery.sizeOf(context).width,
@@ -658,16 +662,21 @@ class RunListItem extends StatelessWidget {
           final Widget cardBody = Stack(
             children: <Widget>[
               cardColumn,
-              Positioned(
-                left: 0,
-                top: 0,
-                width: 56,
-                height: 56,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _showRsvpOptionsPopup,
+              // Invisible 56x56 hit area that enlarges the RSVP control's tap
+              // target. It must go with the control: left behind on a past run
+              // it is a transparent widget over the card corner that silently
+              // opens the RSVP popup when someone means to open the run.
+              if (!isRunPast(futureRun))
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  width: 56,
+                  height: 56,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _showRsvpOptionsPopup,
+                  ),
                 ),
-              ),
             ],
           );
           return Obx(() {
