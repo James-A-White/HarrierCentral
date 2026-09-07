@@ -157,6 +157,32 @@ BEGIN
     SET @isNewUserMode = 1;  -- no device = new user creation, no token validation
 END
 
+-- ---------------------------------------------------------------
+-- New-user mode is CREATION ONLY.
+--
+-- With no device there is no secret and therefore no token to validate, so
+-- this branch is unauthenticated by construction. A caller supplying a
+-- @targetUserId here would skip the existence check above and fall straight
+-- into the UPDATE branch below — rewriting any hasher's name, email and photo
+-- without proving anything. Unreachable while the API shim refuses calls with
+-- no deviceId, but the shim is not the security boundary and the pre-auth
+-- allowance for addEditUser now makes this branch reachable on purpose.
+-- ---------------------------------------------------------------
+IF (@isNewUserMode = 1 AND @targetUserId IS NOT NULL)
+BEGIN
+    SET @errorCode = 1311; SET @errorType = 13; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
+    VALUES (@errorId, @hcVersion, 'Unauthenticated edit attempt',
+            'addEditUser called with a targetUserId but no device', @procName, NULL,
+            CAST(@targetUserId AS NVARCHAR(40)));
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'This device is not registered. Please restart the app.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 BEGIN TRY
     BEGIN TRANSACTION;
 

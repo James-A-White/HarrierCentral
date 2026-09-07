@@ -1,3 +1,6 @@
+1.0.36+34
+    • AppApiHC6: addEditUser is allowed through pre-auth when it is creating a new hasher (no targetUserId) — self-signup builds the user BEFORE registering the device, so a brand-new install has no deviceId and every from-scratch signup was rejected. An edit (targetUserId set) still requires a device token, and hcapp_addEditUser refuses the unauthenticated combination itself.
+
 1.0.35+33
     • AppApiHC6: the handler prologue (body read, JSON parse, connection string) now runs inside a guard — it sat outside the try/catch, so a failure there returned a bare 500 with no log and no HC.ErrorLog row
     • AppApiHC6: checkConnection is answered before the connection string is read, and the FCM table is created lazily instead of on every construction — a cold start or storage blip was 500ing unrelated calls, the ping included

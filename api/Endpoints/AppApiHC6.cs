@@ -100,7 +100,27 @@ namespace HcWebApi.Endpoints
             }
 
             // Pre-auth queries use the global shared token and have no device record yet.
-            bool isPreAuthQuery = (string?)data.queryType == "findHashersByHashName";
+            //
+            // addEditUser is here because self-signup creates the HASHER FIRST and
+            // registers the device afterwards ("NOTE This has to be done after the
+            // user is created" — create_new_account.dart). A brand-new install
+            // therefore has no deviceId at that moment, and the check below was
+            // rejecting the one call every new user has to make: an empty-string
+            // deviceId died converting to UNIQUEIDENTIFIER (bare 500, no ErrorLog
+            // row), and a null one was refused here with 400. Signing up from
+            // scratch was impossible; only admin-added members got through,
+            // because an admin's device is already registered.
+            //
+            // Creation only. A targetUserId means "edit hasher X", which must
+            // prove itself with a device token — hcapp_addEditUser refuses that
+            // combination too, and that refusal, not this line, is the boundary.
+            bool isNewUserCreation =
+                (string?)data.queryType == "addEditUser"
+                && (data.targetUserId == null
+                    || (string?)data.targetUserId == "00000000-0000-0000-0000-000000000000");
+
+            bool isPreAuthQuery = (string?)data.queryType == "findHashersByHashName"
+                                  || isNewUserCreation;
 
             // Validate required parameters for all authenticated calls
             if (!isPreAuthQuery && (data.deviceId == null || data.accessToken == null))

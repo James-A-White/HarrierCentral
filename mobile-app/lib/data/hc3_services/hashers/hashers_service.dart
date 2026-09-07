@@ -191,7 +191,14 @@ class HashersService extends BaseService {
 
     final Map<String, String?> addEditBody = <String, String?>{
       'queryType': 'addEditUser',
-      'deviceId': deviceId,
+      // NULL, not '' — hcapp_addEditUser keys its whole mode off this:
+      // "@deviceId IS NULL: creates a Hasher without a device record
+      // (first-app-launch flow)". On a fresh install there IS no device yet,
+      // so this was sending an empty string, which the API shim cannot convert
+      // to UNIQUEIDENTIFIER — a bare 500 with an empty body, thrown before the
+      // SP ever ran, which is why nothing appeared in HC.ErrorLog. Signing up
+      // was impossible on any device that had not already registered.
+      'deviceId': deviceId.isEmpty ? null : deviceId,
       'hcVersion': hcVersion,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
       'hasherEventMapUpdatedAfter':
@@ -220,8 +227,16 @@ class HashersService extends BaseService {
           ? '1'
           : '0',
       'followKennelOnAddNewUser': followKennelOnAddNewUser?.toString(),
-      'latitude': deviceInfo.deviceLat.toString(),
-      'longitude': deviceInfo.deviceLon.toString(),
+      // ?.toString(), NOT .toString(). deviceLat/deviceLon are double? and are
+      // null until the first GPS fix lands — which is exactly the state a
+      // brand-new install is in while somebody is signing up. `null.toString()`
+      // is the STRING "null", and the API shim then fails converting it to
+      // DECIMAL(18,15), returning a bare 500 with an empty body before the SP
+      // ever runs. That is why account creation failed with "Account not
+      // created" and left NO row in HC.ErrorLog to explain it. Every other
+      // nullable field in this body already used ?.toString().
+      'latitude': deviceInfo.deviceLat?.toString(),
+      'longitude': deviceInfo.deviceLon?.toString(),
       'nameDisplayPreference': nameDisplayPreference.toString(),
     };
 
@@ -489,8 +504,9 @@ class HashersService extends BaseService {
             ?.toString(),
         'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
         'hcVersion': hcVersion,
-        'latitude': deviceInfo.deviceLat.toString(),
-        'longitude': deviceInfo.deviceLon.toString(),
+        // See the note on the addEditUser body above — "null" is not a number.
+        'latitude': deviceInfo.deviceLat?.toString(),
+        'longitude': deviceInfo.deviceLon?.toString(),
         'thirdPartyEmail': loginData.thirdPartyEmail,
       }),
     );
