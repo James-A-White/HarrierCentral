@@ -110,6 +110,18 @@ class RunTrackerMapController extends GetxController
   final latlng.LatLng _mapCenterPoint;
   final RxBool _trueNorthLock;
   final RxList<UserTrack> userPositions = <UserTrack>[].obs;
+
+  /// Whether anything has actually been recorded for this run.
+  ///
+  /// The gate for GPX export and the trim editor: both act ON a track, so
+  /// offering them for a run nobody tracked gives the user a button that can
+  /// only disappoint. Time is not the test — a run can open, and finish, with
+  /// nobody having pressed start — so this asks the positions, not the clock.
+  ///
+  /// Reactive: read it inside an Obx and the control column rebuilds when the
+  /// first positions land.
+  bool get hasRecordedTrack =>
+      userPositions.any((UserTrack u) => u.positions.isNotEmpty);
   final RxMap<String, String> userLogos = <String, String>{}.obs;
   final RxMap<String, String> userNames = <String, String>{}.obs;
   final TrackPointFilter _trackFilter = TrackPointFilter();

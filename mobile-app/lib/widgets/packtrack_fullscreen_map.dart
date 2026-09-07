@@ -60,7 +60,13 @@ class PackTrackFullScreenMap extends StatelessWidget {
           icon: Icons.ios_share,
           onTap: () => unawaited(RunShareLinks(run).showShareSheet(context)),
         ),
-        if (canvas == PackTrackCanvas.map) ...<Widget>[
+        // Same gate as the run-detail map: no point offering to centre on a
+        // location we do not have. This used to appear unconditionally here
+        // and do nothing when tapped.
+        if (canvas == PackTrackCanvas.map &&
+            appModel.hasLocationPermissions &&
+            deviceInfo.deviceLat != null &&
+            deviceInfo.deviceLon != null) ...<Widget>[
           const SizedBox(height: 10),
           MapOverlayButton(
             tooltip: 'My location',
@@ -72,26 +78,52 @@ class PackTrackFullScreenMap extends StatelessWidget {
             },
           ),
         ],
-        // Hidden before the run opens: there is nothing to export from a run
-        // that has not happened.
-        if (trackingHasOpened(run.event.eventStartDatetimeGmt)) ...<Widget>[
+        // GPX and trim both act ON a track, so both wait for one to exist.
+        // The old gate was `trackingHasOpened`, a clock test — a run can open,
+        // and finish, with nobody pressing start, and GPX was offered anyway.
+        // Trim had no gate at all beyond being an admin.
+        _trackOnlyControls(context, mapTag, trimController, isAdmin),
+      ],
+    );
+  }
+
+  /// The controls that need a recorded track. Built inside RunTrackerMap's
+  /// GetBuilder, so the map controller is registered by now; the Obx rebuilds
+  /// the column when the first positions arrive.
+  Widget _trackOnlyControls(
+    BuildContext context,
+    String mapTag,
+    PackTrackTrimController trimController,
+    bool isAdmin,
+  ) {
+    if (!Get.isRegistered<RunTrackerMapController>(tag: mapTag)) {
+      return const SizedBox.shrink();
+    }
+    final RunTrackerMapController controller =
+        Get.find<RunTrackerMapController>(tag: mapTag);
+
+    return Obx(() {
+      if (!controller.hasRecordedTrack) return const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
           const SizedBox(height: 10),
           MapOverlayButton(
             tooltip: 'Export GPX',
             label: 'GPX',
             onTap: () => unawaited(_exportGpx(context, mapTag)),
           ),
+          if (isAdmin) ...<Widget>[
+            const SizedBox(height: 10),
+            MapOverlayButton(
+              tooltip: 'Trim run',
+              icon: Icons.content_cut,
+              onTap: trimController.toggleEditing,
+            ),
+          ],
         ],
-        if (isAdmin) ...<Widget>[
-          const SizedBox(height: 10),
-          MapOverlayButton(
-            tooltip: 'Trim run',
-            icon: Icons.content_cut,
-            onTap: trimController.toggleEditing,
-          ),
-        ],
-      ],
-    );
+      );
+    });
   }
 
   /// Exports the signed-in runner's own track. Looked up lazily at tap time:

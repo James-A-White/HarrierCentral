@@ -1937,11 +1937,31 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             onTap: _recenterMapOnUser,
           ),
         ],
-        // Hidden before the run opens — there is nothing to export from a
-        // run that has not happened.
-        if (trackingHasOpened(
-          widget.futureRun.event.eventStartDatetimeGmt,
-        )) ...<Widget>[
+        // Only when a track actually exists. It used to be gated on the run
+        // having OPENED, which is a clock test — a run can open, and finish,
+        // with nobody pressing start, and the button was then offered for a
+        // run with nothing to export. Same gate on the full-screen map.
+        _trackOnlyControls(),
+      ],
+    );
+  }
+
+  /// Controls that act ON a recorded track, so they appear only once there is
+  /// one. Reactive: the column is built inside RunTrackerMap's GetBuilder, so
+  /// the map controller exists here, and the Obx rebuilds when positions land.
+  Widget _trackOnlyControls() {
+    final String tag = widget.futureRun.event.eventId;
+    if (!Get.isRegistered<RunTrackerMapController>(tag: tag)) {
+      return const SizedBox.shrink();
+    }
+    final RunTrackerMapController controller =
+        Get.find<RunTrackerMapController>(tag: tag);
+
+    return Obx(() {
+      if (!controller.hasRecordedTrack) return const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
           const SizedBox(height: 10.0),
           MapOverlayButton(
             label: 'GPX',
@@ -1949,8 +1969,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             onTap: () => unawaited(_exportOwnTrack()),
           ),
         ],
-      ],
-    );
+      );
+    });
   }
 
   /// The run-detail map creates its controller BELOW this widget, so both of
