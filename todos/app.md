@@ -180,6 +180,66 @@ Blocked, with the reason:
 
 ---
 
+## 3.1 TRACK — post-run attendance claims ("I was there") + admin approval
+
+James's idea 2026-09-07, from the RSVP-buttons-on-past-runs screenshot.
+
+**Part 1 — hide the RSVP buttons on a past run. Small, ships on 3.0.x.**
+- [ ] On the run detail RSVP tab, hide the three action buttons ("I'll be
+      there!" / "I might come" / "I will not come") once the run is past.
+      They take a lot of vertical space and mean nothing after the event.
+- [ ] Use the SAME rule that moves a run between the future and past lists —
+      `EventStartDatetimeGmt < julianday('now','-6 hours')`, GMT instant vs GMT
+      instant (`query_runs.dart:671`). Reuse that expression so the tab can
+      never disagree with which list the run is in.
+- [ ] KEEP the Going/Maybe/Not-going counts and the roster. Only the three
+      buttons go — the counts and attendee list are the useful part of a past
+      run.
+- [ ] The run-admin attendance screens are unaffected — admins still set
+      attendance on past runs as they do today.
+
+**Part 2 — claim attendance after the fact, kennel admin approves. 3.1.**
+
+It is an ATTENDANCE feature, not an RSVP one: what people want retrospectively
+is to be counted as having run (`AttendenceState`), not to state an intention.
+Approval matters because run counts are the currency of hashing and the number
+most worth lying about — and the count guard/SET path already has a history
+(see [runcount-guard-churn] in memory).
+
+- [ ] **Add a PENDING attendance value numerically BELOW `attendenceAtHash`
+      (20) — 15 is the obvious slot.** Every existing consumer tests
+      `AttendenceState >= 20` (run counts, stats, pack list, `isAtRunStart`),
+      so a pending claim is invisible to all of them *by construction* — no
+      audit of dozens of call sites, and no way to silently inflate a count.
+      Approval is then just 15 → 20 through the existing `setEventAttendence`
+      path, which already recalculates counts.
+      - Backward compatible for free: a 2.1.2 / 3.0.x phone syncing a HEM row
+        with state 15 reads it as "not at hash", which is correct. Worth having
+        given shipped clients cannot be fixed retrospectively.
+- [ ] **Reuse the `manageAttendance` permission** (the one that already gates
+      bulk attendance) rather than inventing a new one. The natural approvers —
+      the run's hare, a run admin — are already covered by it.
+- [ ] **Approval surface is the real cost, not the data model.** There is no
+      pending-queue anywhere today. Cheapest version needing no new
+      navigation: show pending claims inline in the check-in / pack list for
+      that run, where admins already go, with approve/reject there.
+      Notifications later.
+- [ ] **Time-limit claims** — otherwise people claim runs from 2019 to bump
+      their count. Decide the window.
+- [ ] **Decide what happens to a claim nobody actions.** Suggest leaving it
+      pending and visible to the claimant rather than auto-approving after N
+      days; auto-approval defeats the point of approving.
+- [ ] **Per-kennel switch** — disabled / claims auto-accepted / claims need
+      approval. Plenty of kennels will not police this, and a big kennel needs
+      to. Extend `KennelFeature`, NOT `AppAccess` (see
+      [admin-entry-gating] in memory).
+
+Why 3.1 and not 3.0.x: this is DB + SP + sync domain + permission + UI +
+notification. 3.1 already wipes and reloads the local DB for the UNIQUE
+constraints, which is the natural moment to introduce a new attendance state.
+
+---
+
 # 3.1 TRACK — event-free payments
 
 No branch exists; `dev`/`master` stay 3.0.x and 3.1 forks from `dev` when the
