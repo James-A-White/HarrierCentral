@@ -280,7 +280,6 @@ class HashersService extends BaseService {
         // confirmation step was one more place for people to get stuck.
         final InviteCodeSendResult sendResult =
             await sendInviteCodeByEmailDetailed(existingEmail);
-        final String response = sendResult.message;
         final bool codeWasSent = sendResult.sent;
 
         if (codeWasSent) {
