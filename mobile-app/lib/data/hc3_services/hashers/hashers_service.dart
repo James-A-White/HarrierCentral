@@ -296,25 +296,21 @@ class HashersService extends BaseService {
             'OK',
           );
         } else {
-          // INTERIM WORDING — pending James's decision on the copy.
+          // Never tell anyone their account has no invite code. Every user has
+          // one: HC6.nonApi_ensureUserInviteCode mints a compliant code on
+          // demand and replaces one that is missing or malformed, so "we could
+          // not produce a code for you" is not a state the user can be in.
           //
-          // Reached only when the address IS registered (addEditUser said
-          // duplicate) but EmailInviteCode could not produce a code for it —
-          // typically nonApi_getUserInviteCode returning "No code found".
-          //
-          // The raw server string used to be shown to the user verbatim, so
-          // people could be told "No code found", which means nothing to them
-          // and looks like a bug. Never surface it: it is an internal value,
-          // and on this branch it is always a failure token rather than prose.
+          // What is left here is a transport problem, or a disagreement between
+          // addEditUser (which just said this address IS registered) and the
+          // invite-code lookup — a server bug, not something to explain to the
+          // user. Either way the answer is the same: try again shortly. The raw
+          // server string is never shown; it used to be, so people could be
+          // told "No code found".
           await Utilities.showAlert(
             'We could not send your code',
-            response.startsWith(ERROR_PREFIX)
-                ? 'That email address is already registered, but we could not '
-                      'send your invite code just now. Please check your '
-                      'connection and try again.'
-                : 'That email address is already registered, but we could not '
-                      'create an invite code for it. Please contact us at '
-                      'harriercentral@gmail.com and we will get you set up.',
+            'We could not send your invite code just now. Please check your '
+                'connection and try again in a few minutes.',
             'OK',
           );
         }

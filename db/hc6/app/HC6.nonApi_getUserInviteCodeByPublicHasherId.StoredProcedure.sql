@@ -19,9 +19,21 @@ AS
 -- =====================================================================
 SET NOCOUNT ON;
 
+-- Make sure there IS a usable code before returning one. This SP used to read
+-- ResetCode raw, so a hasher who had never been issued one came back as the
+-- column default '######' — which the caller then emailed out as if it were a
+-- real code. No rotation here (NULL): this path must not invalidate a code the
+-- user may have just been sent.
+DECLARE @userId UNIQUEIDENTIFIER;
+SELECT @userId = id FROM HC.Hasher
+WHERE PublicHasherId = @publicHasherId AND Removed = 0;
+
+IF (@userId IS NOT NULL)
+    EXEC HC6.nonApi_ensureUserInviteCode @userId = @userId;
+
 SELECT
     h.Email,
     REPLACE(h.ResetCode, 'URC:', '') AS InviteCode
 FROM HC.Hasher h
-WHERE h.PublicHasherId = @publicHasherId
-  AND h.Removed        = 0;
+WHERE h.id      = @userId
+  AND h.Removed = 0;
