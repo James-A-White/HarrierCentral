@@ -491,6 +491,74 @@ function filterTrackPoints(points: TrackPoint[]): TrackPoint[] {
     out.push(smoothed[i]);
     lastGood = i;
   }
+  return collapseStationary(out);
+}
+
+/** How far a fix may sit from the anchor and still count as "not moving". */
+const STATIONARY_RADIUS_M = 25;
+/** How long inside that radius before the stretch counts as standing still. */
+const STATIONARY_MIN_MS = 90 * 1000;
+
+/**
+ * Replaces each stretch where the runner stayed put with one position held for
+ * the same length of time.
+ *
+ * GPS does not sit still when its owner does. At a beer stop or an On Inn the
+ * fixes keep wandering inside their own error and every wander is added to the
+ * distance. Measured on the GNH 2026 Sunday trail: 0.87 km of the 15.58 km
+ * recorded was accumulated by runners who were not going anywhere — 5.6%
+ * overall, 11.4% for one runner.
+ *
+ * Two points, not one: same position, but keeping the first and last
+ * timestamps, so the timeline still advances and playback holds the dot in
+ * place for exactly as long as it was there while contributing no distance.
+ *
+ * A stretch breaks at any typed point, so a mark dropped during the pause keeps
+ * its own position and time.
+ *
+ * Mirrors TrackPointFilter._collapseStationary in the app — the two must agree
+ * or the same run measures differently in each.
+ */
+function collapseStationary(points: TrackPoint[]): TrackPoint[] {
+  if (points.length < 3) return points;
+  const out: TrackPoint[] = [];
+  let i = 0;
+  while (i < points.length) {
+    if (pointIsTyped(points[i])) {
+      out.push(points[i]);
+      i++;
+      continue;
+    }
+    const anchor = points[i];
+    let j = i;
+    while (
+      j + 1 < points.length &&
+      !pointIsTyped(points[j + 1]) &&
+      haversineMeters(anchor.lat, anchor.lng, points[j + 1].lat, points[j + 1].lng) <=
+        STATIONARY_RADIUS_M
+    ) {
+      j++;
+    }
+    if (j > i && points[j].timestampMs - anchor.timestampMs >= STATIONARY_MIN_MS) {
+      // Weighted by 1/acc, matching smoothByUncertainty, so the confident fixes
+      // decide where the group actually stood.
+      let wsum = 0, latSum = 0, lngSum = 0;
+      for (let k = i; k <= j; k++) {
+        const w = 1 / Math.max(1, points[k].acc);
+        wsum += w;
+        latSum += points[k].lat * w;
+        lngSum += points[k].lng * w;
+      }
+      const lat = latSum / wsum;
+      const lng = lngSum / wsum;
+      out.push({ ...points[i], lat, lng });
+      out.push({ ...points[j], lat, lng });
+      i = j + 1;
+    } else {
+      out.push(points[i]);
+      i++;
+    }
+  }
   return out;
 }
 

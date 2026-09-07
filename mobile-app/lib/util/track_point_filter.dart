@@ -116,7 +116,88 @@ class TrackPointFilter {
     final pointQuality = _evaluatePointQuality(smoothed);
 
     // Step 3: Filter and interpolate
-    return _filterAndInterpolatePoints(smoothed, pointQuality);
+    final filtered = _filterAndInterpolatePoints(smoothed, pointQuality);
+
+    // Step 4: Collapse the wandering that happens while nobody is moving.
+    return _collapseStationary(filtered);
+  }
+
+  /// How far a fix may sit from the anchor and still count as "not moving".
+  static const double stationaryRadiusMeters = 25.0;
+
+  /// How long the runner must stay inside that radius before the stretch is
+  /// treated as standing still rather than moving slowly.
+  static const int stationaryMinDurationMs = 90 * 1000;
+
+  /// Replaces each stretch where the runner stayed put with a single position
+  /// held for the same length of time.
+  ///
+  /// GPS does not sit still when its owner does. At a beer stop or an On Inn
+  /// the fixes keep wandering inside their own error, and every wander is added
+  /// to the distance: measuring the GNH 2026 Sunday trail, 0.87 km of the
+  /// 15.58 km recorded was accumulated by runners who were not going anywhere —
+  /// 5.6% overall and 11.4% for one runner. That is phantom distance on
+  /// somebody's run total, and it is the part they notice.
+  ///
+  /// The stretch is replaced by TWO points, not one: same position, but keeping
+  /// the first and last timestamps. Collapsing to a single point would pull the
+  /// time axis out from under playback and make the dot skip the pause; keeping
+  /// both ends holds the dot where it was for exactly as long as it was there,
+  /// while contributing no distance.
+  ///
+  /// Marks are never absorbed — a stretch breaks at any typed point, so a
+  /// CHK/PHO/OIN dropped during the pause keeps its own position and time.
+  ///
+  /// Trade-off worth knowing: milling around at a check looks identical to this
+  /// and will also be flattened. That movement is arguably real, but it is
+  /// indistinguishable from jitter at this radius, and counting it means
+  /// counting the jitter too.
+  List<TrackPoint> _collapseStationary(List<TrackPoint> points) {
+    if (points.length < 3) return points;
+
+    final List<TrackPoint> out = <TrackPoint>[];
+    int i = 0;
+    while (i < points.length) {
+      if (_isMark(points[i])) {
+        out.add(points[i]);
+        i++;
+        continue;
+      }
+
+      // Extend while every point stays within the radius of where we started
+      // and no mark interrupts.
+      final TrackPoint anchor = points[i];
+      int j = i;
+      while (j + 1 < points.length &&
+          !_isMark(points[j + 1]) &&
+          _calculateDistance(anchor, points[j + 1]) <=
+              stationaryRadiusMeters) {
+        j++;
+      }
+
+      final int spanMs = points[j].timestampMs - anchor.timestampMs;
+      if (j > i && spanMs >= stationaryMinDurationMs) {
+        // Weight by 1/accuracy, matching _smoothByUncertainty, so the confident
+        // fixes decide where the group actually stood.
+        double wsum = 0, latSum = 0, lngSum = 0;
+        for (int k = i; k <= j; k++) {
+          final double a = (points[k].acc <= 0) ? 1.0 : points[k].acc;
+          final double w = 1.0 / a;
+          wsum += w;
+          latSum += points[k].lat * w;
+          lngSum += points[k].lng * w;
+        }
+        final double lat = latSum / wsum;
+        final double lng = lngSum / wsum;
+        out.add(points[i].copyWith(lat: lat, lng: lng));
+        out.add(points[j].copyWith(lat: lat, lng: lng));
+        i = j + 1;
+      } else {
+        out.add(points[i]);
+        i++;
+      }
+    }
+    return out;
   }
 
   /// Pulls each fix toward its neighbours in proportion to how uncertain it is:
@@ -163,6 +244,10 @@ class TrackPointFilter {
     }
     return out;
   }
+
+  /// A deliberately placed mark (CHK, PHO, OIN, a trail-slot icon …) rather
+  /// than an ordinary GPS fix. Marks are never moved or absorbed.
+  static bool _isMark(TrackPoint p) => p.type != null && p.type!.isNotEmpty;
 
   static bool _isPhotoPoint(TrackPoint p) {
     final String? t = p.type;
