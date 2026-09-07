@@ -485,9 +485,21 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   Widget getProfilePhoto(String url) {
-    return (url.isEmpty)
-        ? Image.asset('images/icons/create_profile_photo.png')
-        : Image(image: avatarImageProvider(url));
+    if (url.isEmpty) {
+      return Image.asset('images/icons/create_profile_photo.png');
+    }
+    // errorBuilder, or a broken photo URL puts a raw Flutter exception in front
+    // of the user. A hasher whose upload had silently failed was greeted, on
+    // her own setup screen, with:
+    //   HttpException: Invalid statusCode: 404, uri = https://…_thumb.jpg
+    // The stored URL can outlive the blob — see the upload paths that used to
+    // record a photo without checking it landed — so this has to degrade to
+    // the "add a photo" placeholder rather than shout.
+    return Image(
+      image: avatarImageProvider(url),
+      errorBuilder: (BuildContext context, Object error, StackTrace? stack) =>
+          Image.asset('images/icons/create_profile_photo.png'),
+    );
   }
 
   Future<void> _handleRadioValueChange(

@@ -247,7 +247,24 @@ BEGIN
            );
 
     -- ----------------------------------------------------------------
-    -- Stage 5: Update rolling-year (≈182-day) counts on HKM.
+    -- Stage 5: Update rolling-year counts on HKM.
+    --
+    -- Bucket 0 = the last 365 days, counted BACK from today. It used to be a
+    -- 182-day bucket anchored six months in the PAST:
+    --     DATEDIFF(day, DATEADD(month,-6,GETDATE()), EventStartLocal) / 182
+    -- which put today at roughly day 182 — the boundary — so a run from the
+    -- last few days tipped into bucket 1 and vanished from the count. Flash
+    -- Princess's three GNH runs on 3, 5 and 6 Sep landed in buckets 0, 1 and 1,
+    -- and the leaderboard showed her 1 run for the kennel while Total and
+    -- In-2026 both correctly said 3. It under-reported the NEWEST runs, which
+    -- is exactly when people look.
+    --
+    -- Anchoring on today removes the boundary entirely: a run is in bucket 0
+    -- if it happened within the last 365 days, which is also what the app's
+    -- "365 days" tab has always claimed. Runs up to 6h in the future (the
+    -- pre-start check-in window allowed by the WHERE below) give a negative
+    -- DATEDIFF, and SQL Server truncates toward zero, so they land in bucket 0
+    -- and still count.
     --          (Inline of HC5.fn_GetRunCountsRolling)
     -- ----------------------------------------------------------------
     ;WITH rollingCounted AS (
@@ -255,15 +272,15 @@ BEGIN
             hem.UserId,
             evt.KennelId,
             hem.isHare,
-            ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartLocal)) / 182) AS bucket,
+            ((DATEDIFF(day, evt.EventStartLocal, GETDATE())) / 365) AS bucket,
             ROW_NUMBER() OVER (
                 PARTITION BY hem.userId, evt.KennelId,
-                             ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartLocal)) / 182)
+                             ((DATEDIFF(day, evt.EventStartLocal, GETDATE())) / 365)
                 ORDER BY     evt.EventStartLocal, evt.KennelId
             ) AS rollingTotal,
             ROW_NUMBER() OVER (
                 PARTITION BY hem.userId, evt.KennelId, hem.isHare,
-                             ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartLocal)) / 182)
+                             ((DATEDIFF(day, evt.EventStartLocal, GETDATE())) / 365)
                 ORDER BY     evt.EventStartLocal, evt.KennelId
             ) AS rollingHaring
         FROM   #affected af
