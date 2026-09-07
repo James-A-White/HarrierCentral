@@ -375,52 +375,74 @@ class TrimEditorOverlay extends StatelessWidget {
         color: Colors.black.withValues(alpha: 0.66),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
+      // Two rows: the window summary on top, the actions underneath.
+      //
+      // This was one unbounded Row holding the icon, the summary, four buttons
+      // and Done. On a phone the last button ran off the right edge — "Stop
+      // everyone" was simply unreachable, and which button fell off depended on
+      // the text, so it changed as the labels changed. The actions now sit in a
+      // Wrap, which cannot overflow at any width: they take a second line when
+      // they need one and stay on one line when they fit.
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.content_cut, color: Colors.white, size: 18),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Official window   ·   Start ${_fmt(trimController.officialStartMs)}   ·   End ${_fmt(trimController.officialEndMs)}',
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: busy ? null : () => trimController.setStart(),
-            child: const Text('Set start'),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: busy ? null : () => trimController.setEnd(),
-            child: const Text('Set end'),
-          ),
-          const SizedBox(width: 8),
-          TextButton(
-            onPressed: busy ? null : () => trimController.clear(),
-            child: const Text('Clear', style: TextStyle(color: Colors.white)),
-          ),
-          if (trimController.trackingEnded.value != null) ...[
-            const SizedBox(width: 8),
-            TextButton(
-              onPressed: busy
-                  ? null
-                  : () => unawaited(trimController.toggleEveryonesTracking()),
-              child: Text(
-                trimController.trackingEnded.value == true
-                    ? 'Re-open tracking'
-                    : 'Stop everyone',
-                style: TextStyle(color: Colors.red.shade300),
+          Row(
+            children: [
+              const Icon(Icons.content_cut, color: Colors.white, size: 18),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Official window   ·   Start ${_fmt(trimController.officialStartMs)}   ·   End ${_fmt(trimController.officialEndMs)}',
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-          ],
-          const SizedBox(width: 4),
-          IconButton(
-            tooltip: 'Done',
-            onPressed: busy ? null : () => trimController.toggleEditing(),
-            icon: const Icon(Icons.check, color: Colors.white),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: 'Done',
+                visualDensity: VisualDensity.compact,
+                onPressed: busy ? null : () => trimController.toggleEditing(),
+                icon: const Icon(Icons.check, color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: busy ? null : () => trimController.setStart(),
+                child: const Text('Set start'),
+              ),
+              ElevatedButton(
+                onPressed: busy ? null : () => trimController.setEnd(),
+                child: const Text('Set end'),
+              ),
+              TextButton(
+                onPressed: busy ? null : () => trimController.clear(),
+                child: const Text(
+                  'Clear',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              if (trimController.trackingEnded.value != null)
+                TextButton(
+                  onPressed: busy
+                      ? null
+                      : () =>
+                            unawaited(trimController.toggleEveryonesTracking()),
+                  child: Text(
+                    trimController.trackingEnded.value == true
+                        ? 'Re-open tracking'
+                        : 'Stop everyone',
+                    style: TextStyle(color: Colors.red.shade300),
+                  ),
+                ),
+            ],
           ),
         ],
       ),

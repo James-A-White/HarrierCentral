@@ -269,13 +269,19 @@ class PackTrackFullScreenMap extends StatelessWidget {
             ),
           // Admin trim bar (renders nothing for non-admins, and nothing at
           // all until editing starts — the scissors button in the column
-          // above is the trigger now). Sits ABOVE the playback panel so the
-          // panel can stay pinned to the bottom.
+          // above is the trigger now).
+          //
+          // Lifted clear of the playback panel. At +132 its lower edge landed
+          // inside the panel's top, overlapping the trail-type chips, so the
+          // two read as one jumbled block. It deliberately floats ABOVE the
+          // panel rather than over it: trimming means scrubbing the timeline
+          // and THEN setting a boundary, so covering the timeline would break
+          // the very workflow the bar exists for.
           if (canRender)
             Positioned(
               left: 12,
               right: 12,
-              bottom: MediaQuery.of(context).padding.bottom + 132,
+              bottom: MediaQuery.of(context).padding.bottom + 250,
               child: TrimEditorOverlay(
                 trimController: trimController,
                 wide: true,
