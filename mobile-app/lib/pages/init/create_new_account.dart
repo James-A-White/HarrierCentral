@@ -204,207 +204,227 @@ class CreateNewAccountPageContentState
                     child: Text('Get Started!', style: ts_button),
                     onPressed: () async {
                       if (_myDetailsUiStateKey.currentState!.validateForm()) {
-                        // If the form is valid, display a snackbar. In the real world,
-                        // you'd often call a server or save the information in a database.
+                        // isLoading HIDES this button (see `if (!isLoading)`
+                        // above). Everything from here on therefore sits in a
+                        // try/finally: any path that leaves the user on this
+                        // page has to bring the button back, or they are
+                        // stranded on a filled-in form with no way forward and
+                        // no way back but killing the app. Before this, the
+                        // only reset was in the device-authorisation branch —
+                        // which runs AFTER a successful create — so every
+                        // failure (a 500, an unparseable response, the
+                        // duplicate-email flow, or simply backing out of the
+                        // invite-code page) removed the button for good.
+                        // setStateIfMounted makes the reset a no-op on the
+                        // success paths, which have replaced this page.
                         setStateIfMounted(() {
                           isLoading = true;
                         });
 
-                        await setStringPref(
-                          StringPrefsEnum.firstName,
-                          _myDetailsUiStateKey
-                              .currentState!
-                              .signupFirstNameController
-                              .value
-                              .text,
-                        );
-                        await setStringPref(
-                          StringPrefsEnum.lastName,
-                          _myDetailsUiStateKey
-                              .currentState!
-                              .signupLastNameController
-                              .value
-                              .text,
-                        );
-                        await setStringPref(
-                          StringPrefsEnum.email,
-                          _myDetailsUiStateKey
-                              .currentState!
-                              .signupEmailController
-                              .value
-                              .text,
-                        );
-                        await setStringPref(
-                          StringPrefsEnum.hashName,
-                          _myDetailsUiStateKey
-                              .currentState!
-                              .signupHashNameController
-                              .value
-                              .text,
-                        );
-
-                        final HashersService srv = HashersService();
-
-                        final String profilePhotoUrl =
-                            bundledAvatarUrl(Random.secure().nextInt(49) + 1);
-
-                        final String responseBody = await srv.addEditUser(
-                          targetUserId: GUID_EMPTY,
-                          firstName: _myDetailsUiStateKey
-                              .currentState!
-                              .signupFirstNameController
-                              .value
-                              .text,
-                          lastName: _myDetailsUiStateKey
-                              .currentState!
-                              .signupLastNameController
-                              .value
-                              .text,
-                          email: _myDetailsUiStateKey
-                              .currentState!
-                              .signupEmailController
-                              .value
-                              .text,
-                          hashName: _myDetailsUiStateKey
-                              .currentState!
-                              .signupHashNameController
-                              .value
-                              .text,
-                          photo: profilePhotoUrl,
-                          // includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
-                          includeInGlobalHashDirectory: 0,
-                        );
-
-                        bool isSuccessfulLoad = false;
-
-                        if (responseBody == ERROR_INVITE_CODE_SENT) {
-                          isSuccessfulLoad = true;
-
-                          if (!mounted) return;
-                          await Navigator.push<dynamic>(
-                            navigatorKey.currentContext!,
-                            MaterialPageRoute<dynamic>(
-                              builder: (BuildContext context) =>
-                                  const UseInviteCodePage(),
-                            ),
+                        try {
+                          await setStringPref(
+                            StringPrefsEnum.firstName,
+                            _myDetailsUiStateKey
+                                .currentState!
+                                .signupFirstNameController
+                                .value
+                                .text,
                           );
-                        } else if (!responseBody.startsWith(ERROR_PREFIX)) {
-                          final List<dynamic> jsonResultSets = json.decode(
-                            responseBody,
+                          await setStringPref(
+                            StringPrefsEnum.lastName,
+                            _myDetailsUiStateKey
+                                .currentState!
+                                .signupLastNameController
+                                .value
+                                .text,
                           );
-                          if (jsonResultSets.isNotEmpty) {
-                            final List<dynamic> subSet = jsonResultSets[0];
-                            if (subSet.isNotEmpty) {
-                              final Map<String, dynamic> result = subSet[0];
-                              if (result.isNotEmpty) {
-                                await setStringPref(
-                                  StringPrefsEnum.profilePhotoUrl,
-                                  result['photo'],
-                                );
-                                await setStringPref(
-                                  StringPrefsEnum.displayName,
-                                  result['displayName'],
-                                );
-                                //setStringPref(StringPrefsEnum.email, result['email']);
-                                // await setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
-                                await setStringPref(
-                                  StringPrefsEnum.firstName,
-                                  result['firstName'],
-                                );
-                                await setStringPref(
-                                  StringPrefsEnum.hashName,
-                                  result['hashName'],
-                                );
-                                await setStringPref(
-                                  StringPrefsEnum.lastName,
-                                  result['lastName'],
-                                );
-                                await setStringPref(
-                                  StringPrefsEnum.qrCode,
-                                  result['qrCode'],
-                                );
-                                await setStringPref(
-                                  StringPrefsEnum.supportCode,
-                                  result['supportCode'],
-                                );
-                                await saveResetCode(result['resetCode']);
-                                await saveQrSecretCode(result['qrSecretCode']);
-                                await setStringPref(
-                                  StringPrefsEnum.userId,
-                                  result['hasherId'],
-                                );
-                                final int preferences =
-                                    int.tryParse(
-                                      result['preferences'] ?? '14',
-                                    ) ??
-                                    14;
-                                await setIntPref(
-                                  IntPrefsEnum.hasherPreferences,
-                                  preferences,
-                                );
-                                isSuccessfulLoad = true;
+                          await setStringPref(
+                            StringPrefsEnum.email,
+                            _myDetailsUiStateKey
+                                .currentState!
+                                .signupEmailController
+                                .value
+                                .text,
+                          );
+                          await setStringPref(
+                            StringPrefsEnum.hashName,
+                            _myDetailsUiStateKey
+                                .currentState!
+                                .signupHashNameController
+                                .value
+                                .text,
+                          );
 
-                                //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                                final String fileNamePrefix = getStringPref(
-                                  StringPrefsEnum.supportCode,
-                                )!;
-                                //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+                          final HashersService srv = HashersService();
 
-                                // call Authorize device to get the device secret and device ID. NOTE This
-                                // has to be done after the user is created.
-                                final String userId = getStringPref(
-                                  StringPrefsEnum.userId,
-                                )!;
-                                final AuthorizeDeviceService srv =
-                                    AuthorizeDeviceService();
-                                final Map<String, String> authResult =
-                                    await srv.authorizeDevice(userId: userId);
+                          final String profilePhotoUrl = bundledAvatarUrl(
+                            Random.secure().nextInt(49) + 1,
+                          );
 
-                                if (authResult['result'] == 'failed') {
-                                  setStateIfMounted(() {
-                                    isLoading = false;
-                                  });
-                                  await Utilities.showAlert(
-                                    'Setup failed',
-                                    authResult['message'] ??
-                                        'We could not set up your device. Please try again.',
-                                    'OK',
+                          final String responseBody = await srv.addEditUser(
+                            targetUserId: GUID_EMPTY,
+                            firstName: _myDetailsUiStateKey
+                                .currentState!
+                                .signupFirstNameController
+                                .value
+                                .text,
+                            lastName: _myDetailsUiStateKey
+                                .currentState!
+                                .signupLastNameController
+                                .value
+                                .text,
+                            email: _myDetailsUiStateKey
+                                .currentState!
+                                .signupEmailController
+                                .value
+                                .text,
+                            hashName: _myDetailsUiStateKey
+                                .currentState!
+                                .signupHashNameController
+                                .value
+                                .text,
+                            photo: profilePhotoUrl,
+                            // includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
+                            includeInGlobalHashDirectory: 0,
+                          );
+
+                          bool isSuccessfulLoad = false;
+
+                          if (responseBody == ERROR_INVITE_CODE_SENT) {
+                            isSuccessfulLoad = true;
+
+                            if (!mounted) return;
+                            await Navigator.push<dynamic>(
+                              navigatorKey.currentContext!,
+                              MaterialPageRoute<dynamic>(
+                                builder: (BuildContext context) =>
+                                    const UseInviteCodePage(),
+                              ),
+                            );
+                          } else if (!responseBody.startsWith(ERROR_PREFIX)) {
+                            final List<dynamic> jsonResultSets = json.decode(
+                              responseBody,
+                            );
+                            if (jsonResultSets.isNotEmpty) {
+                              final List<dynamic> subSet = jsonResultSets[0];
+                              if (subSet.isNotEmpty) {
+                                final Map<String, dynamic> result = subSet[0];
+                                if (result.isNotEmpty) {
+                                  await setStringPref(
+                                    StringPrefsEnum.profilePhotoUrl,
+                                    result['photo'],
                                   );
-                                  return;
-                                }
+                                  await setStringPref(
+                                    StringPrefsEnum.displayName,
+                                    result['displayName'],
+                                  );
+                                  //setStringPref(StringPrefsEnum.email, result['email']);
+                                  // await setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
+                                  await setStringPref(
+                                    StringPrefsEnum.firstName,
+                                    result['firstName'],
+                                  );
+                                  await setStringPref(
+                                    StringPrefsEnum.hashName,
+                                    result['hashName'],
+                                  );
+                                  await setStringPref(
+                                    StringPrefsEnum.lastName,
+                                    result['lastName'],
+                                  );
+                                  await setStringPref(
+                                    StringPrefsEnum.qrCode,
+                                    result['qrCode'],
+                                  );
+                                  await setStringPref(
+                                    StringPrefsEnum.supportCode,
+                                    result['supportCode'],
+                                  );
+                                  await saveResetCode(result['resetCode']);
+                                  await saveQrSecretCode(
+                                    result['qrSecretCode'],
+                                  );
+                                  await setStringPref(
+                                    StringPrefsEnum.userId,
+                                    result['hasherId'],
+                                  );
+                                  final int preferences =
+                                      int.tryParse(
+                                        result['preferences'] ?? '14',
+                                      ) ??
+                                      14;
+                                  await setIntPref(
+                                    IntPrefsEnum.hasherPreferences,
+                                    preferences,
+                                  );
+                                  isSuccessfulLoad = true;
 
-                                if (!mounted) return;
-                                await Navigator.pushReplacement<
-                                  dynamic,
-                                  dynamic
-                                >(
-                                  navigatorKey.currentContext!,
-                                  MaterialPageRoute<dynamic>(
-                                    builder: (BuildContext context) =>
-                                        ChooseProfileImage(
-                                          isForThisDevice: true,
-                                          fileNamePrefix: fileNamePrefix,
-                                          currentProfileImage: null,
-                                          popToCaller: false,
-                                        ),
-                                  ),
-                                );
+                                  //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
+                                  final String fileNamePrefix = getStringPref(
+                                    StringPrefsEnum.supportCode,
+                                  )!;
+                                  //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
+
+                                  // call Authorize device to get the device secret and device ID. NOTE This
+                                  // has to be done after the user is created.
+                                  final String userId = getStringPref(
+                                    StringPrefsEnum.userId,
+                                  )!;
+                                  final AuthorizeDeviceService srv =
+                                      AuthorizeDeviceService();
+                                  final Map<String, String> authResult =
+                                      await srv.authorizeDevice(userId: userId);
+
+                                  if (authResult['result'] == 'failed') {
+                                    setStateIfMounted(() {
+                                      isLoading = false;
+                                    });
+                                    await Utilities.showAlert(
+                                      'Setup failed',
+                                      authResult['message'] ??
+                                          'We could not set up your device. Please try again.',
+                                      'OK',
+                                    );
+                                    return;
+                                  }
+
+                                  if (!mounted) return;
+                                  await Navigator.pushReplacement<
+                                    dynamic,
+                                    dynamic
+                                  >(
+                                    navigatorKey.currentContext!,
+                                    MaterialPageRoute<dynamic>(
+                                      builder: (BuildContext context) =>
+                                          ChooseProfileImage(
+                                            isForThisDevice: true,
+                                            fileNamePrefix: fileNamePrefix,
+                                            currentProfileImage: null,
+                                            popToCaller: false,
+                                          ),
+                                    ),
+                                  );
+                                }
                               }
                             }
                           }
-                        }
 
-                        // ERROR_HANDLED means the service layer already
-                        // showed a specific message (e.g. the duplicate-email
-                        // invite code flow). Telling them to delete the app on
-                        // top of that would be both wrong and alarming.
-                        if (!isSuccessfulLoad &&
-                            responseBody != ERROR_HANDLED) {
-                          await Utilities.showAlert(
-                            'Account not created',
-                            'There was a problem creating your account. Please delete the app and try again later or contact us at harriercentral@gmail.com.\r\n\r\nSorry for the inconvenience!',
-                            'OK',
-                          );
+                          // ERROR_HANDLED means the service layer already
+                          // showed a specific message (e.g. the duplicate-email
+                          // invite code flow). Telling them to delete the app on
+                          // top of that would be both wrong and alarming.
+                          if (!isSuccessfulLoad &&
+                              responseBody != ERROR_HANDLED) {
+                            await Utilities.showAlert(
+                              'Account not created',
+                              'There was a problem creating your account. Please delete the app and try again later or contact us at harriercentral@gmail.com.\r\n\r\nSorry for the inconvenience!',
+                              'OK',
+                            );
+                          }
+                        } finally {
+                          setStateIfMounted(() {
+                            isLoading = false;
+                          });
                         }
                       }
                     },
