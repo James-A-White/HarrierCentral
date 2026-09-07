@@ -2,6 +2,62 @@
 
 Items flagged during development that need follow-up.
 
+## 🚀 SHIPPED 2026-09-07 — "Dance baby!"
+
+- **SPs** 152 deployed, 0 failed (twice: before and after the addEditUser guard).
+- **API 1.0.36+34** live — `func azure functionapp publish harriercentralpublicapi`.
+  Note CLAUDE.md says `func publish …`, which is not a real command; the memory
+  `reference_api_deploy` has the right one.
+- **mobile 3.0.10+1325** → iOS TestFlight, Delivery UUID
+  `eacb2b73-aebc-421c-b8cf-ee41ed96b403`. 41 frameworks verified `platform IOS`
+  before upload (the 3.0.9 409 check).
+- Portal and public-web unchanged, not deployed.
+
+### Signup was broken in FIVE places, all now fixed and verified end to end
+A brand-new user could not create an account at all. Admin-added members were
+fine, which is why signups kept appearing daily and it looked like it worked.
+
+1. The "Get Started!" button sat off-screen on Android (body sized to the whole
+   screen, not the Scaffold's box).
+2. The button vanished for good after any failure (`isLoading` never reset).
+3. The app sent the STRING "null" for latitude/longitude.
+4. The app sent an EMPTY STRING deviceId; the SP's new-user mode needs NULL.
+5. The shim's pre-auth allow-list did not include `addEditUser`, so a call with
+   no deviceId was refused outright.
+Plus: the app read the SUCCESS ENVELOPE (rowset 0) as the new profile, so the
+account was created while the app sat silently on the form.
+
+Verified on a Galaxy S22 emulator, Android 16: form → account created → device
+authorised → Choose Profile Image → welcome deck → Hash Runs, and a second
+launch goes straight to Hash Runs with no promos.
+
+- [x] Four stale splash sequences (`CountryStats`, `zombie`, `BMPH3_2000`,
+      `city_away_weekend`) set `Removed = 1`. They had run since 2024 with an
+      end date of 2040 and were still being served daily. Restore SQL is in
+      `HC.SplashSequence` — set `Removed = 0` on the id you want back.
+- [x] Six `+hctest` accounts created while debugging are `Removed = 1`.
+
+### Still open from this session
+- [ ] **The "Welcome to Harrier Central 3.0" deck shows to brand-new users.**
+      Someone who has never had the app is told about "the biggest update
+      ever". It is deliberate (a 2026-08 fix made it show for new accounts) but
+      it reads wrong for a first-time user — worth a decision.
+- [ ] **A dialog contradicts itself**: title "We could not send your code" over
+      body "An invite code has been sent to your email address."
+- [ ] **Emulator clock drift breaks auth silently.** 196s of drift made every
+      token fail `CHECK_ACCESS_TOKEN_V2` (±60s tolerance) with only "The access
+      token is invalid. Please reinstall the app." Cold-boot the emulator before
+      auth testing. Worth considering whether the app should detect large clock
+      skew and say so.
+- [ ] Nothing else in 3.0.10 has been device-tested: PackTrack durable queue,
+      the Android foreground-service/wake-lock removal, connectivity backoff,
+      Run Tools eligibility, auto check-in on tracking start. **The Android
+      foreground-service change is the risky one — if the condition is wrong,
+      run tracking loses its foreground service and Android stops delivering
+      background location.** Test a real tracked run before Play.
+
+---
+
 ---
 
 ## 🔎 GNH 2026 weekend error-log review (2026-09-06)
