@@ -111,6 +111,15 @@ class RunTrackerMapController extends GetxController
   final RxBool _trueNorthLock;
   final RxList<UserTrack> userPositions = <UserTrack>[].obs;
 
+  /// Height of the playback panel as actually laid out, in logical pixels.
+  ///
+  /// The panel is MainAxisSize.min over conditional content — the runner
+  /// carousel only appears when there are runners — so its height is not a
+  /// constant anyone can hardcode. Anything that needs to sit clear of it (the
+  /// admin trim bar) reads this instead of guessing an offset that is wrong on
+  /// the next phone or the next run.
+  final RxDouble playbackPanelHeight = 0.0.obs;
+
   /// Whether anything has actually been recorded for this run.
   ///
   /// The gate for GPX export and the trim editor: both act ON a track, so

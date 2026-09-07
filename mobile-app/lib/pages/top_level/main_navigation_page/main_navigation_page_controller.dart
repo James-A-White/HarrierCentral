@@ -157,8 +157,31 @@ class MainNavigationController extends GetxController
             SplashSequenceType.unknown.id,
       );
 
+      // "Welcome to Harrier Central 3.0 — the biggest update ever" is an
+      // UPGRADE announcement. Somebody who has never had the app is not
+      // upgrading from anything: they have nothing to compare it to, and being
+      // told about the biggest update ever is confusing on the very first
+      // screen after signing up. Watched it happen driving a brand-new account
+      // through signup, and again reconnecting an existing hasher on a new
+      // device — both got the full eight-slide deck.
+      //
+      // An empty previous version means one of exactly those two cases, since
+      // any real upgrade leaves the version it came from behind. So the deck
+      // now needs a previous version to have changed FROM, not merely to
+      // differ. First-run users go straight to the app; upgraders still get it.
+      final bool isFirstEverRun = hcPreviousVersion.isEmpty;
+
+      // Stamp the version we are on even though no deck is shown, or this user
+      // stays "first ever" for good: their next real upgrade would compare
+      // against an empty previous version, look like another first run, and
+      // skip the 3.1 deck too. Normally resetNewVersionPromoScreen does this
+      // when the deck is dismissed — there is no deck to dismiss here.
+      if (isFirstEverRun) {
+        await resetNewVersionPromoScreen();
+      }
+
       // always display version change splash sequences if they exist on the server
-      if (hcCurrentVersion != hcPreviousVersion) {
+      if (!isFirstEverRun && hcCurrentVersion != hcPreviousVersion) {
         debugPrint('[BOOT] MainNavController: version changed $hcPreviousVersion→$hcCurrentVersion, preloading images: ${DateTime.now().millisecondsSinceEpoch}ms');
         // Show the splash state BEFORE the download so the bundled first
         // slide + "Please wait" appear instantly instead of bare jungle.

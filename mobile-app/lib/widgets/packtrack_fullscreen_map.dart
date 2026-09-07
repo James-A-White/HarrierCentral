@@ -271,22 +271,49 @@ class PackTrackFullScreenMap extends StatelessWidget {
           // all until editing starts — the scissors button in the column
           // above is the trigger now).
           //
-          // Lifted clear of the playback panel. At +132 its lower edge landed
-          // inside the panel's top, overlapping the trail-type chips, so the
-          // two read as one jumbled block. It deliberately floats ABOVE the
-          // panel rather than over it: trimming means scrubbing the timeline
-          // and THEN setting a boundary, so covering the timeline would break
-          // the very workflow the bar exists for.
+          // Sits clear of the playback panel, using the panel's MEASURED height
+          // rather than a guess. It was +132, whose lower edge landed inside
+          // the panel's top and overlapped the trail-type chips; +250 cleared
+          // it on one phone, but the panel grows and shrinks with its content
+          // (the runner carousel only appears once runners load), so any fixed
+          // number is wrong somewhere.
+          //
+          // It floats ABOVE the panel rather than over it on purpose: trimming
+          // means scrubbing the timeline and THEN setting a boundary, so
+          // covering the timeline would break the workflow the bar exists for.
+          //
+          // Positioned.fill with the Obx INSIDE, not a Positioned inside an
+          // Obx: Positioned has to be a direct child of the Stack or Flutter
+          // throws on the parent data. The filled box paints nothing outside
+          // the bar itself, so touches still reach the map beneath it.
           if (canRender)
-            Positioned(
-              left: 12,
-              right: 12,
-              bottom: MediaQuery.of(context).padding.bottom + 250,
-              child: TrimEditorOverlay(
-                trimController: trimController,
-                wide: true,
-                showCollapsedPill: false,
-              ),
+            Positioned.fill(
+              child: Obx(() {
+                final double panel =
+                    Get.isRegistered<RunTrackerMapController>(tag: mapTag)
+                    ? Get.find<RunTrackerMapController>(
+                        tag: mapTag,
+                      ).playbackPanelHeight.value
+                    : 0.0;
+                // Falls back to the old constant until the first frame has
+                // been measured, so the bar never starts life over the panel.
+                final double clearance = panel > 0 ? panel + 12 : 250;
+                return Padding(
+                  padding: EdgeInsets.only(
+                    left: 12,
+                    right: 12,
+                    bottom: MediaQuery.of(context).padding.bottom + clearance,
+                  ),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: TrimEditorOverlay(
+                      trimController: trimController,
+                      wide: true,
+                      showCollapsedPill: false,
+                    ),
+                  ),
+                );
+              }),
             ),
         ],
       ),

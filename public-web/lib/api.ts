@@ -242,6 +242,42 @@ export interface Song {
  * Fetches the songs assigned to a kennel by its PublicKennelId.
  * Returns an empty array when the kennel has no songs or is not found.
  */
+export interface RunPhoto {
+  photoId: string;
+  blobUrl: string;
+  title: string | null;
+  description: string | null;
+  uploaderDisplayName: string | null;
+}
+
+/**
+ * Hash Flash-approved PUBLIC photos for a run (Status >= 3).
+ *
+ * Same SP the PackTrack map uses to resolve PHO:: marks; here it backs the
+ * shareable gallery page. Photos are optional — a run with none is normal, not
+ * an error — so this returns [] rather than throwing.
+ */
+export async function getRunPhotos(publicEventId: string): Promise<RunPhoto[]> {
+  try {
+    const data = await callPublicWebApiAllRowsets("getRunPhotos", {
+      publicEventId,
+    });
+    // Shape: [[{ EventFound: 1 }], [{ photoId, BlobUrl, ... }, ...]]
+    const rows = Array.isArray(data?.[1]) ? (data[1] as Record<string, unknown>[]) : [];
+    return rows
+      .map((r) => ({
+        photoId: String(r.photoId ?? ""),
+        blobUrl: String(r.BlobUrl ?? ""),
+        title: (r.Title as string | null) ?? null,
+        description: (r.Description as string | null) ?? null,
+        uploaderDisplayName: (r.uploaderDisplayName as string | null) ?? null,
+      }))
+      .filter((p) => p.blobUrl.length > 0);
+  } catch {
+    return [];
+  }
+}
+
 export async function getSongs(publicKennelId: string): Promise<Song[]> {
   const rows = await callPublicWebApi<Song>("getSongs", { publicKennelId });
   return rows ?? [];

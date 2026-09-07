@@ -748,40 +748,46 @@ class RunTrackerMap extends StatelessWidget {
       left: 0,
       right: 0,
       bottom: overlayBottomPadding,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.65),
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: 8.0,
-                right: 8.0,
-                top: 8.0,
-                bottom: 0.0,
+      // Publish the panel's real height so overlays that must clear it (the
+      // admin trim bar) can position themselves against a measurement rather
+      // than a hardcoded guess. Its height moves with its content.
+      child: MeasuredSize(
+        onChange: (Size s) => controller.playbackPanelHeight.value = s.height,
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.65),
+                borderRadius: BorderRadius.circular(12.0),
               ),
-              // Panel layout top→bottom: runner carousel, trail-type chips,
-              // selected-runner name, elapsed time + distance, transport buttons
-              // (play · speed · camera · tilt · follow), then a full-width
-              // scrubber on its own row at the very bottom.
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (hasRunners) ...[
-                    _buildRunnerCarousel(controller),
-                    const SizedBox(height: 6.0),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 8.0,
+                  right: 8.0,
+                  top: 8.0,
+                  bottom: 0.0,
+                ),
+                // Panel layout top→bottom: runner carousel, trail-type chips,
+                // selected-runner name, elapsed time + distance, transport buttons
+                // (play · speed · camera · tilt · follow), then a full-width
+                // scrubber on its own row at the very bottom.
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (hasRunners) ...[
+                      _buildRunnerCarousel(controller),
+                      const SizedBox(height: 6.0),
+                    ],
+                    _buildInlineTrailChips(controller),
+                    _buildSelectedRunnerName(controller),
+                    _buildTimestampDistance(controller),
+                    _buildTransportRow(controller),
+                    _buildFullWidthSlider(context, controller),
                   ],
-                  _buildInlineTrailChips(controller),
-                  _buildSelectedRunnerName(controller),
-                  _buildTimestampDistance(controller),
-                  _buildTransportRow(controller),
-                  _buildFullWidthSlider(context, controller),
-                ],
+                ),
               ),
             ),
           ),

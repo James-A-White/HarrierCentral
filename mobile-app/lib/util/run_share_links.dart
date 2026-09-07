@@ -34,6 +34,11 @@ class RunShareLinks {
   /// Big-screen event wall. Null for uncounted runs (no route exists).
   String? get trailTvUrl => _isCounted ? '$_runBase/trail-tv' : null;
 
+  /// The run's photo gallery on the web. Null for uncounted runs, which have
+  /// no per-run route. Sharing this needs no app and no account — it is the
+  /// link for the people who were there but do not use Harrier Central.
+  String? get photosUrl => _isCounted ? '$_runBase/photos' : null;
+
   String get _runName => run.event.eventName.isEmpty
       ? '${run.kennel.kennelShortName} run'
       : run.event.eventName;
@@ -60,6 +65,19 @@ class RunShareLinks {
             'Put $_runName with ${run.kennel.kennelShortName} on the big '
             'screen — live tracks, photos and the leaderboard: $url',
         subject: 'Trail TV — $_runName',
+      ),
+    );
+  }
+
+  /// OS share sheet with the photo gallery link. No-op for uncounted runs.
+  Future<void> sharePhotos() async {
+    final String? url = photosUrl;
+    if (url == null) return;
+    await SharePlus.instance.share(
+      ShareParams(
+        text:
+            'Photos from $_runName with ${run.kennel.kennelShortName}: $url',
+        subject: 'Photos — $_runName',
       ),
     );
   }
@@ -105,6 +123,14 @@ class RunShareLinks {
                   'Cast it at the pub.',
               target: _ShareTarget.trailTv,
             ),
+            _row(
+              context,
+              icon: Icons.photo_library_outlined,
+              title: 'Photos',
+              subtitle:
+                  'The run gallery — opens in any browser, no app needed.',
+              target: _ShareTarget.photos,
+            ),
             const SizedBox(height: 8),
           ],
         ),
@@ -115,6 +141,8 @@ class RunShareLinks {
         await shareMap();
       case _ShareTarget.trailTv:
         await shareTrailTv();
+      case _ShareTarget.photos:
+        await sharePhotos();
       case null:
         break;
     }
@@ -146,4 +174,4 @@ class RunShareLinks {
   }
 }
 
-enum _ShareTarget { map, trailTv }
+enum _ShareTarget { map, trailTv, photos }
