@@ -97,6 +97,17 @@ class HashersTableHelper extends BaseTableHelper<AppDomainType>
   }
 }
 
+/// Outcome of asking EmailInviteCode to send a code.
+///
+/// [sent] comes from the `X-Invite-Code-Sent` response header — the body is
+/// prose meant for display, not a status to parse.
+class InviteCodeSendResult {
+  const InviteCodeSendResult({required this.sent, required this.message});
+
+  final bool sent;
+  final String message;
+}
+
 class HashersService extends BaseService {
   // ============ Functions go here =============
 
@@ -267,8 +278,10 @@ class HashersService extends BaseService {
         // fresh invite code straight away rather than asking first: typing
         // the address into the signup form is consent enough, and the extra
         // confirmation step was one more place for people to get stuck.
-        final String response = await sendInviteCodeByEmail(existingEmail);
-        final bool codeWasSent = _looksLikeInviteCode(response);
+        final InviteCodeSendResult sendResult =
+            await sendInviteCodeByEmailDetailed(existingEmail);
+        final String response = sendResult.message;
+        final bool codeWasSent = sendResult.sent;
 
         if (codeWasSent) {
           // Only set this when a code actually went out - it is what routes
@@ -283,13 +296,25 @@ class HashersService extends BaseService {
             'OK',
           );
         } else {
+          // INTERIM WORDING — pending James's decision on the copy.
+          //
+          // Reached only when the address IS registered (addEditUser said
+          // duplicate) but EmailInviteCode could not produce a code for it —
+          // typically nonApi_getUserInviteCode returning "No code found".
+          //
+          // The raw server string used to be shown to the user verbatim, so
+          // people could be told "No code found", which means nothing to them
+          // and looks like a bug. Never surface it: it is an internal value,
+          // and on this branch it is always a failure token rather than prose.
           await Utilities.showAlert(
             'We could not send your code',
             response.startsWith(ERROR_PREFIX)
                 ? 'That email address is already registered, but we could not '
                       'send your invite code just now. Please check your '
                       'connection and try again.'
-                : response,
+                : 'That email address is already registered, but we could not '
+                      'create an invite code for it. Please contact us at '
+                      'harriercentral@gmail.com and we will get you set up.',
             'OK',
           );
         }
@@ -347,14 +372,20 @@ class HashersService extends BaseService {
     );
   }
 
-  /// The EmailInviteCode function returns the bare six-letter code on
-  /// success, or a human-readable sentence when the address could not be
-  /// matched to a live account. There is no status field to test, so the
-  /// shape of the response is the only signal available.
-  static bool _looksLikeInviteCode(String response) =>
-      RegExp(r'^[A-Za-z]{6}$').hasMatch(response.trim());
-
-  static Future<String> sendInviteCodeByEmail(String email) async {
+  /// Whether the invite code actually went out, plus the message to show.
+  ///
+  /// The old test for this was `RegExp(r'^[A-Za-z]{6}$')` against the response
+  /// body — the bare six-letter code the endpoint used to return. It returns a
+  /// sentence now, so that never matched: a returning user whose address was
+  /// already registered got "We could not send your code" with the SUCCESS text
+  /// as the body, and was left on the signup form instead of being taken to the
+  /// code-entry screen, even though the email had been sent.
+  ///
+  /// EmailInviteCode now reports the outcome in the `X-Invite-Code-Sent`
+  /// header, leaving the body untouched for the callers that display it.
+  static Future<InviteCodeSendResult> sendInviteCodeByEmailDetailed(
+    String email,
+  ) async {
     final String body = jsonEncode(<String, String>{'email': email});
 
     final Response response =
@@ -369,15 +400,28 @@ class HashersService extends BaseService {
           return Future<Response>.value(Response('', 500));
         });
 
-    String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
-
-    if ((response.statusCode < 200) || (response.statusCode >= 300)) {
-      returnValue = ERROR_UNKNOWN_HTTP_ERROR;
-    } else {
-      returnValue = response.body;
+    final bool httpOk =
+        response.statusCode >= 200 && response.statusCode < 300;
+    if (!httpOk) {
+      return const InviteCodeSendResult(
+        sent: false,
+        message: ERROR_UNKNOWN_HTTP_ERROR,
+      );
     }
-    return returnValue;
+
+    final String? header = response.headers['x-invite-code-sent'];
+    // No header means an older API build. Treat a 2xx as sent rather than
+    // falling back to the shape test, which was wrong in the direction that
+    // strands people: it always said "not sent".
+    final bool sent = header == null
+        ? true
+        : header.toLowerCase() == 'true';
+
+    return InviteCodeSendResult(sent: sent, message: response.body);
   }
+
+  static Future<String> sendInviteCodeByEmail(String email) async =>
+      (await sendInviteCodeByEmailDetailed(email)).message;
 
   Future<bool> changeProfilePicture({
     required String targetUserId,

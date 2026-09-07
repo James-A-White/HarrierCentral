@@ -86,7 +86,7 @@ BEGIN
     SET @errorType  = 1;
     SET @errorId    = NEWID();
     SET @errorTitle = 'Invalid access token';
-    SET @errorMsg   = 'The access token is invalid or has expired. Please restart the app.';
+    SET @errorMsg   = 'The access token is invalid. Please check that the clock on your phone is set automatically from Apple or Google.';
 
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Invalid access token', @errorMsg, @procName, @userId);

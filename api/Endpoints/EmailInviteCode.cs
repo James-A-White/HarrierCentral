@@ -32,6 +32,9 @@ namespace HcWebApi.Endpoints
             log.LogInformation("EmailInviteCode triggered by HTTP Request");
 
             string userMessage = "An error occurred while requesting your invite code. Please try again in a few minutes";
+            // Method scope, like userMessage: the outcome is reported in a response
+            // header after the try block (see the return).
+            bool success = false;
 
             string connectionStr = Environment.GetEnvironmentVariable("HcDbConnectionString")
                 ?? throw new InvalidOperationException("HcDbConnectionString is not set in the environment.");
@@ -63,7 +66,6 @@ namespace HcWebApi.Endpoints
                 }
 
                 string inviteCode = "No code found";
-                bool success = false;
 
                 if (!string.IsNullOrEmpty(publicHasherId))
                 {
@@ -179,6 +181,19 @@ namespace HcWebApi.Endpoints
                 return new ObjectResult(new { success = false, message = "An unexpected error occurred." }) { StatusCode = 500 };
             }
 
+            // The body stays exactly as it was — a human-readable sentence — because
+            // UseInviteCodePage shows it verbatim and shipped apps parse it as text.
+            // The outcome rides in a header instead, so a caller can tell "sent" from
+            // "not sent" without pattern-matching prose.
+            //
+            // It used to be neither: `success` was computed here and then discarded,
+            // and the app guessed by testing the body against ^[A-Za-z]{6}$ — the
+            // bare-code shape this endpoint stopped returning. That never matched the
+            // success sentence, so a returning user whose email was already registered
+            // was told "We could not send your code" ON TOP OF the success text, and
+            // was never routed to the code-entry screen, even though the email had
+            // gone out.
+            req.HttpContext.Response.Headers["X-Invite-Code-Sent"] = success ? "true" : "false";
             return new OkObjectResult(userMessage);
         }
 

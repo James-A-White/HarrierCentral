@@ -71,7 +71,7 @@ BEGIN TRY
         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                'Invalid access token' AS errorTitle,
-               'The access token is invalid. Please reinstall the app.' AS errorUserMessage,
+               'The access token is invalid. Please check that the clock on your phone is set automatically from Apple or Google.' AS errorUserMessage,
                @procName AS errorProc;
         RETURN;
     END
