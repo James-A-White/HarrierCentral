@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.12+1327 (2026-09-07)
+
+### Improvements
+- **Standing still no longer adds distance to your run.** GPS keeps wandering
+  inside its own error while you are at a beer stop or an On Inn, and every
+  wander was being counted. On the German Nash Hash Sunday trail that was 0.87
+  of the 15.58 km recorded — 5.6% of everyone's distance, and 11.4% for one
+  runner. Your dot now stays where you stopped, for as long as you stopped.
+
 ## 3.0.11+1326 (2026-09-07)
 
 ### Fixes

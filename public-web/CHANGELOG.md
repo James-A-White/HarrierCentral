@@ -1,5 +1,16 @@
 # public-web Changelog
 
+## 0.21.43 (2026-09-07)
+
+- Standing still no longer adds distance to a track. GPS keeps wandering inside
+  its own error while a runner is stopped at a beer break or an On Inn, and
+  every wander was counted: 0.87 km of the 15.58 km recorded on the German Nash
+  Hash Sunday trail was accumulated by people who were not moving — 5.6%
+  overall, 11.4% for one runner. A stretch inside 25 m for 90 s or more is now
+  held at one position for the same span, so the dot stays put and adds no
+  distance. Mirrors the same change in the mobile filter; the two must agree or
+  the same run measures differently on a phone and on Trail TV.
+
 ## 0.21.42 (2026-08-31)
 
 - **The global Runs search now matches a kennel's search keywords.** Searching
