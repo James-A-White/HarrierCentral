@@ -1,5 +1,40 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.10+1325 (2026-09-07)
+
+### Fixes
+- **You can create an account again.** Signing up from scratch was impossible:
+  the "Get Started!" button sat off-screen on Android, and if you ever got past
+  it the account creation failed and the button then vanished for good, leaving
+  a filled-in form with no way forward. Three separate faults behind that, all
+  now fixed here and in the API.
+- **Paying for your own run works again.** Checking in and paying with hash
+  credit (or bank transfer) had been refused since July for anyone who is not
+  hash cash — the run-start check-in prompt could not complete. Eleven hashers
+  hit this at German Nash Hash.
+- **A free run no longer talks about paying.** Where the fee is zero the
+  check-in button just says "Check In", and the payment-provider icons stay out
+  of the way.
+- **Fixed five crashes**, including one that took down the whole pack list when
+  a run had an attendee this phone had never synced, and two that fired when you
+  cancelled a run-options or email-options dialog.
+- **A photo that fails to upload no longer looks like it worked.** Profile
+  photos, receipts and run images used to record the picture's address even when
+  the upload had failed, leaving a permanently broken image. They now tell you.
+
+### Improvements
+- **Turning up is enough.** Live Run Tools now appears if you are at the start
+  in the run window, whether or not you RSVP'd — and starting tracking checks
+  you in, so there is no separate step.
+- **Your track survives the app being killed.** Points waiting to be sent are
+  now saved to the phone and picked up next time, instead of living only in
+  memory until something reclaims it mid-run.
+- **Less battery when you are not tracking.** The map's high-accuracy GPS is
+  released as soon as the map is out of sight rather than held until it closes,
+  Android no longer holds a wake lock for the ordinary background location
+  stream, and the connectivity check stops polling the network every 30 seconds
+  for the life of the app.
+
 ## 3.0.9+1324 (2026-09-03)
 
 ### Improvements
