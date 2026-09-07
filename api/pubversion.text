@@ -1,3 +1,6 @@
+1.0.37+35
+    • EmailInviteCode: reports the outcome in an X-Invite-Code-Sent header. The body is unchanged (UseInviteCodePage shows it verbatim), but it is prose, and the app had been deciding success by testing it against ^[A-Za-z]{6}$ — the bare-code shape this endpoint stopped returning. That never matched, so anyone whose email was already registered was always told the send had failed, was shown the SUCCESS text as the reason, and was never routed to the code-entry screen. The invite-code recovery path was unusable.
+
 1.0.36+34
     • AppApiHC6: addEditUser is allowed through pre-auth when it is creating a new hasher (no targetUserId) — self-signup builds the user BEFORE registering the device, so a brand-new install has no deviceId and every from-scratch signup was rejected. An edit (targetUserId set) still requires a device token, and hcapp_addEditUser refuses the unauthenticated combination itself.
 
