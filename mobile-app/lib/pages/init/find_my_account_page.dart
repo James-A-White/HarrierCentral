@@ -78,10 +78,12 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: Text('Find My Account', style: ts_appBarTitle),
       ),
+      // Full-screen height here overflows the body box the same way it did
+      // on the create-account page — see the comment there.
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
-        width: MediaQuery.sizeOf(context).width,
-        height: MediaQuery.sizeOf(context).height,
+        width: double.infinity,
+        height: double.infinity,
         child: SafeArea(
           child: SingleChildScrollView(
             padding:

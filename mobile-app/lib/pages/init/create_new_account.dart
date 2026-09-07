@@ -30,10 +30,22 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
               iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
               title: Text('Create New Account', style: ts_appBarTitle),
             ),
+            // double.infinity, NOT MediaQuery height. Both fill the screen
+            // visually, but infinity means "as tall as the box I am given" —
+            // the Scaffold body, i.e. screen minus app bar, minus status bar,
+            // and on Android minus the gesture inset (AppScaffold wraps the
+            // body in AndroidSafeArea). The old MediaQuery height was the
+            // WHOLE screen, so the box overflowed the space it was drawn in
+            // and the bottom of the content — the "Get Started!" button — sat
+            // off-screen. The SingleChildScrollView could not rescue it: its
+            // content fits inside the oversized box, so there was nothing to
+            // scroll. This is the tallest page in the signup flow and the only
+            // one that lost its button, and it went first on Android because
+            // the Android-only safe area makes the overshoot bigger.
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
-              height: MediaQuery.sizeOf(context).height,
-              width: MediaQuery.sizeOf(context).width,
+              width: double.infinity,
+              height: double.infinity,
               child: const CreateNewAccountPageContent(),
             ),
           ),
