@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security problem
+    url: mailto:james.a.white@gmail.com
+    about: Please report security issues privately by email, never as a public issue.
+  - name: Help using the app
+    url: https://www.hashruns.org
+    about: Not sure it is a bug? Ask your kennel's mismanagement first.

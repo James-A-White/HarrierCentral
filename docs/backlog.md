@@ -8,8 +8,12 @@ Epics are organised by **what a hasher is trying to do, not by which codebase se
 almost every feature spans three surfaces at once. IDs (`E5.F3.S4`) are stable: quote them
 when assigning work to an agent, and never renumber an existing one. New work appends.
 
-`todos/*.md` remain the day-to-day working lists. This is the level above them: when a todo
-item is finished, update the matching story's status here.
+This replaced the `todos/` files on 2026-09-08. Bugs and individual work items now live in
+**GitHub Issues**; this file is the map of what the product does, issues are the work queue.
+Device-test checks moved to `docs/verification-backlog.md`, and the old files' reasoning and
+shipped record to `docs/history/todos-archive-2026-09.md`.
+
+`docs/backlog.html` is generated — run `python3 tools/render_backlog.py` after editing.
 
 | Status | Meaning |
 |---|---|
@@ -296,6 +300,7 @@ Recording where the pack went and playing it back. Tracks live in Azure Table St
 | `E5.F1.S4` | As a **Hasher** out of signal, I want points buffered and sent when I reconnect so that a trail through a valley is not lost. | `Shipped` |
 | `E5.F1.S5` | As a **Hasher**, I want tracking to stop itself when I have clearly finished so that my phone is not tracking me home. | `Shipped` |
 | `E5.F1.S6` | As a **Hasher**, I want the app to draw no meaningful battery when I am not tracking so that it is not blamed for a flat phone. | `Shipped` |
+| `E5.F1.S7` | As a **Hasher**, I want to start, mark and stop from an Apple Watch so that I do not have to take my phone out on trail. | `Next` |
 
 ### E5.F2 · Trail marks  
 `App`
@@ -353,6 +358,7 @@ Recording where the pack went and playing it back. Tracks live in Azure Table St
 | `E5.F6.S1` | As a **Kennel HC Admin**, I want to trim the start and end of a recorded track so that the drive to the pub is not part of the trail. | `Shipped` |
 | `E5.F6.S2` | As a **Kennel HC Admin**, I want to delete a track entirely so that a mis-recorded trail can be removed. | `Shipped` |
 | `E5.F6.S3` | As a **Platform Admin**, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage. **⚠ Known gap:** no SQL record exists that a run was tracked; enumeration is a partition-key skip walk | `Building` |
+| `E5.F6.S4` | As a **Hasher**, I want my track flagged and stored in compressed form against my attendance record so that my trail survives independently of the position store. | `Next` |
 
 ---
 
@@ -487,6 +493,8 @@ Run fees, memberships, kit and credit. Every movement is a ledger entry, and the
 | `E8.F4.S2` | As a **Kennel HC Admin**, I want credit switchable per kennel so that clubs that do not work that way never see it. | `Shipped` |
 | `E8.F4.S3` | As a **Hash Cash**, I want run packages and hare rewards recorded as tracked promotional credit so that giveaways are visible rather than lost income. | `Building` |
 | `E8.F4.S4` | As a **Hasher**, I want to see my own credit ledger so that I know what I have left. | `Building` |
+| `E8.F4.S5` | As a **Hash Cash**, I want per-kennel run packages — pay for eleven runs, get twelve — so that a discount is recorded rather than fudged. | `Next` |
+| `E8.F4.S6` | As a **Hash Cash**, I want promotional credit to expire on run inactivity rather than payment inactivity so that a lapsed hasher's comps do not sit on our books forever. | `Next` |
 
 ### E8.F5 · Payment integrity  
 `App` `DB`
@@ -499,6 +507,7 @@ Run fees, memberships, kit and credit. Every movement is a ledger entry, and the
 | `E8.F5.S2` | As a **Hash Cash**, I want payments taken offline held in an outbox and sent when I reconnect so that nothing is lost in a field. | `Shipped` |
 | `E8.F5.S3` | As a **Hash Cash**, I want monetary values held as fixed-point decimals so that rounding never loses a cent. | `Shipped` |
 | `E8.F5.S4` | As a **Hasher** paying my own free run fee, I want that permitted without an admin grant so that self check-in is not silently refused. | `Shipped` |
+| `E8.F5.S5` | As a **Hash Cash**, I want a payment to exist without belonging to a run so that a membership or a kit sale is not forced to invent an event. **⚠ Known gap:** `HC.Payment.EventId` is NOT NULL, and the sync SPs must be version-gated before it can change — shipped clients would break | `Next` |
 
 ### E8.F6 · Receipts & reconciliation  
 `App` `API` `DB`
@@ -565,6 +574,7 @@ Reaching hashers where they are — in the run's chat, in a push, or in a guided
 |---|---|---|
 | `E9.F5.S1` | As a **Hasher**, I want an FAQ and video tutorials in the app so that I can answer my own question at the trail head. | `Shipped` |
 | `E9.F5.S2` | As a **Hasher**, I want a support contact that carries my diagnostic context so that I do not have to describe my setup. | `Shipped` |
+| `E9.F5.S3` | As a **Hasher**, I want in-app help I would actually open, because the current FAQ and tutorial pages are barely used. | `Backlog` |
 
 ---
 
@@ -850,7 +860,58 @@ One developer, nights and weekends, shipping to two app stores and a live produc
 
 ---
 
+## E16 — Platform Maintenance & Technical Debt
+
+Work that keeps the platform shippable rather than adding to it. It earns a place in the
+backlog because it competes for the same nights and weekends as everything above, and
+because leaving it invisible is how a solo project ends up unable to build for Android.
+
+### E16.F1 · Dependency currency  
+`App` `Portal` `Web` `API`
+
+> Upgrading is not optional — store SDK requirements and Firebase deprecations set the deadlines. But an upgrade that breaks the Android build costs more than the debt: Flutter 3.47.2 was rolled back to 3.41.9 on 2026-09-07 for exactly that reason.
+
+| ID | Story | Status |
+|---|---|---|
+| `E16.F1.S1` | As a **Platform Admin**, I want the Flutter SDK current so that new store requirements do not arrive as an emergency. | `Building` |
+| `E16.F1.S2` | As a **Platform Admin**, I want tier-2 dependency majors taken one at a time so that a failure is attributable to one package. | `Next` |
+| `E16.F1.S3` | As a **Platform Admin**, I want `flutter_secure_storage` upgraded on its own so that a keychain change cannot be confused with any other break. | `Next` |
+| `E16.F1.S4` | As a **Platform Admin**, I want Firebase moved from CocoaPods to Swift Package Manager before Google drops Pods support. | `Next` |
+| `E16.F1.S5` | As a **Platform Admin**, I want an upgrade to be revertible in one step so that a broken toolchain never blocks a release. | `Shipped` |
+
+### E16.F2 · Retiring the legacy  
+`App` `Web` `DB`
+
+| ID | Story | Status |
+|---|---|---|
+| `E16.F2.S1` | As a **Platform Admin**, I want the HC5 stored procedures retired once no shipped client calls them. **⚠ Known gap:** blocked until the 2.1.2 install base drains, roughly Dec 2026 – Mar 2027 | `Backlog` |
+| `E16.F2.S2` | As a **Platform Admin**, I want the `get_storage` preferences migration removed once no client boots from it. | `Backlog` |
+| `E16.F2.S3` | As a **Platform Admin**, I want historical `PHO::` points migrated out of the position store so that photos are not carried on somebody's track. | `Backlog` |
+| `E16.F2.S4` | As a **Platform Admin**, I want the legacy hash-URL shim removed once no inbound links use it. | `Backlog` |
+
+### E16.F3 · Data hygiene  
+`DB`
+
+| ID | Story | Status |
+|---|---|---|
+| `E16.F3.S1` | As a **Hasher**, I want profile photos that point at missing blobs cleaned up so that the roster does not show broken images. | `Next` |
+| `E16.F3.S2` | As a **Hash Cash**, I want historical zero-cash run payments rewritten as free so that free runs stop appearing as income. | `Next` |
+| `E16.F3.S3` | As a **Platform Admin**, I want a periodic audit that every API-facing procedure still meets the HC6 standard so that drift is caught by a sweep rather than an outage. | `Next` |
+
+### E16.F4 · Verification debt  
+`App`
+
+> 149 unverified checks across 20 features shipped without a device pass, carried in `docs/verification-backlog.md`. These are individual work items and belong in the issue tracker, not here — this feature exists so the debt is visible at the backlog level.
+
+| ID | Story | Status |
+|---|---|---|
+| `E16.F4.S1` | As a **Platform Admin**, I want every feature shipped blind to get a device pass so that the install base is not the test suite. | `Building` |
+| `E16.F4.S2` | As a **Platform Admin**, I want the verification backlog tracked as issues so that another developer can pick one up. | `Next` |
+| `E16.F4.S3` | As a **Platform Admin**, I want the battery draw re-measured after each release so that a regression is caught by data rather than by a complaint. | `Next` |
+
+---
+
 Status reflects the working tree at `dev` on 2026-09-08. Epic and story IDs are stable — quote them when assigning work. Where a story is marked **Building** with a known gap, the gap names what is actually missing rather than what remains to polish.
 
-Component to-do files under `todos/` remain the day-to-day working lists; this document is the level above them.
+Bugs and individual work items live in GitHub Issues; this document is the map above them.
 

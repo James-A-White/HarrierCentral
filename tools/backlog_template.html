@@ -1,0 +1,287 @@
+<title>Harrier Central Product Backlog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+  :root {
+    /* Cool technical neutrals — this is a spec, not a brochure */
+    --paper:      #F6F7F9;
+    --surface:    #FFFFFF;
+    --surface-2:  #EEF1F4;
+    --ink:        #15191C;
+    --ink-mid:    #3D474E;
+    --ink-soft:   #66727B;
+    --rule:       #DBE1E6;
+    --rule-soft:  #E9EDF1;
+
+    /* Harrier Central's own red — Colors.red.shade900. Brand only. */
+    --accent:     #B71C1C;
+    --accent-ink: #8E1519;
+    --accent-wash:#FBEDED;
+
+    /* State is a separate family from the brand, deliberately */
+    --st-ship:    #14705B;
+    --st-ship-bg: #E4F0EC;
+    --st-build:   #9A6100;
+    --st-build-bg:#F7EEDC;
+    --st-next:    #40566B;
+    --st-next-bg: #E7ECF2;
+    --st-back:    #6B747B;
+    --st-back-bg: #EAEDEF;
+
+    --font-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+    --measure: 68ch;
+    --pad: clamp(1.15rem, 4vw, 2.75rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101315;
+      --surface:    #171B1E;
+      --surface-2:  #1E2427;
+      --ink:        #E8ECEF;
+      --ink-mid:    #B4BEC5;
+      --ink-soft:   #8B959C;
+      --rule:       #2B3236;
+      --rule-soft:  #22282C;
+
+      --accent:     #F26B6B;
+      --accent-ink: #F58A8A;
+      --accent-wash:#2A1717;
+
+      --st-ship:    #6ECDAF;
+      --st-ship-bg: #16302A;
+      --st-build:   #E0A94A;
+      --st-build-bg:#302617;
+      --st-next:    #9FB6CC;
+      --st-next-bg: #1D262E;
+      --st-back:    #98A2A9;
+      --st-back-bg: #23282B;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101315;
+    --surface:    #171B1E;
+    --surface-2:  #1E2427;
+    --ink:        #E8ECEF;
+    --ink-mid:    #B4BEC5;
+    --ink-soft:   #8B959C;
+    --rule:       #2B3236;
+    --rule-soft:  #22282C;
+
+    --accent:     #F26B6B;
+    --accent-ink: #F58A8A;
+    --accent-wash:#2A1717;
+
+    --st-ship:    #6ECDAF;
+    --st-ship-bg: #16302A;
+    --st-build:   #E0A94A;
+    --st-build-bg:#302617;
+    --st-next:    #9FB6CC;
+    --st-next-bg: #1D262E;
+    --st-back:    #98A2A9;
+    --st-back-bg: #23282B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15.5px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--pad) 5rem; }
+
+  /* ── Masthead ─────────────────────────────────────────────── */
+
+  .mast { padding: clamp(2.5rem, 6vw, 4.25rem) 0 0; }
+  .mast-rule { height: 3px; background: var(--accent); width: 84px; margin-bottom: 1.5rem; }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5.2vw, 3.35rem);
+    line-height: 1.04;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+    margin: 0.5rem 0 0;
+  }
+  .standfirst {
+    max-width: var(--measure);
+    font-size: 1.0625rem;
+    color: var(--ink-mid);
+    margin: 1.15rem 0 0;
+  }
+  .standfirst strong { color: var(--ink); font-weight: 600; }
+
+  .meta-strip {
+    display: flex; flex-wrap: wrap; gap: 0 2.25rem;
+    margin-top: 2rem; padding-top: 1.1rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-mono); font-size: 0.775rem;
+    color: var(--ink-soft);
+  }
+  .meta-strip b { color: var(--ink-mid); font-weight: 500; }
+
+  /* ── Section furniture ────────────────────────────────────── */
+
+  section { margin-top: clamp(3rem, 7vw, 4.75rem); }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    letter-spacing: -0.016em;
+    line-height: 1.15;
+    margin: 0 0 0.35rem;
+    text-wrap: balance;
+  }
+  .sec-note { max-width: var(--measure); color: var(--ink-mid); margin: 0 0 1.75rem; }
+
+  /* ── Personas ─────────────────────────────────────────────── */
+
+  .personas { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  .persona { background: var(--surface); padding: 1.15rem 1.25rem; display: grid; grid-template-columns: 1fr; gap: 0.3rem; }
+  @media (min-width: 760px) { .persona { grid-template-columns: 190px 1fr; gap: 0 1.75rem; align-items: baseline; } }
+  .persona-name { font-weight: 600; font-size: 0.965rem; }
+  .persona-name span { display: block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 400; color: var(--ink-soft); letter-spacing: 0.04em; margin-top: 0.12rem; }
+  .persona-desc { color: var(--ink-mid); font-size: 0.925rem; }
+  .persona-desc code { font-size: 0.85em; }
+
+  /* ── Epic index ───────────────────────────────────────────── */
+
+  .index-grid {
+    display: grid; gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  }
+  a.idx {
+    display: grid; grid-template-rows: auto 1fr auto; gap: 0.4rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.85rem 0.95rem 0.8rem;
+    text-decoration: none; color: inherit;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.idx:hover, a.idx:focus-visible { border-color: var(--accent); transform: translateY(-1px); }
+  a.idx:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .idx-id { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; color: var(--accent-ink); letter-spacing: 0.06em; }
+  .idx-name { font-family: var(--font-display); font-weight: 500; font-size: 1.0rem; line-height: 1.22; letter-spacing: -0.01em; }
+  .idx-count { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-soft); }
+
+  /* ── Epics ────────────────────────────────────────────────── */
+
+  .epic { margin-top: clamp(2.75rem, 6vw, 4rem); scroll-margin-top: 1.5rem; }
+  .epic-head { border-top: 2px solid var(--ink); padding-top: 0.9rem; }
+  .epic-id {
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+    letter-spacing: 0.09em; color: var(--accent-ink);
+  }
+  .epic-title {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(1.5rem, 3.4vw, 2.05rem);
+    letter-spacing: -0.02em; line-height: 1.08;
+    margin: 0.18rem 0 0; text-wrap: balance;
+  }
+  .epic-intent { max-width: var(--measure); color: var(--ink-mid); margin: 0.6rem 0 0; }
+
+  .feature { margin-top: 1.9rem; }
+  .feature-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.7rem; }
+  .feature-id { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.05em; }
+  .feature-name { font-family: var(--font-display); font-weight: 500; font-size: 1.115rem; letter-spacing: -0.012em; margin: 0; }
+  .surfaces { display: flex; gap: 0.28rem; flex-wrap: wrap; }
+  .surf {
+    font-family: var(--font-mono); font-size: 0.635rem; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft); background: var(--surface-2);
+    border-radius: 2px; padding: 0.1rem 0.34rem;
+  }
+  .feature-note { max-width: var(--measure); color: var(--ink-soft); font-size: 0.9rem; margin: 0.35rem 0 0; }
+
+  .stories { margin: 0.85rem 0 0; padding: 0; list-style: none; border-top: 1px solid var(--rule-soft); }
+  .story {
+    display: grid; gap: 0.15rem 0.9rem;
+    grid-template-columns: 1fr;
+    padding: 0.62rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  @media (min-width: 860px) {
+    .story { grid-template-columns: 74px 1fr 92px; align-items: baseline; }
+    /* The gap note is a fourth child of a three-column grid — without this it
+       auto-places into the 74px ID column and wraps to nothing. */
+    .gap { grid-column: 2; }
+  }
+  .s-id { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-soft); letter-spacing: 0.03em; }
+  .s-text { font-size: 0.945rem; color: var(--ink); }
+  .s-text em { font-style: normal; font-weight: 600; }
+  .s-text code, .persona-desc code, .req code, .sec-note code, .epic-intent code, .feature-note code {
+    font-family: var(--font-mono); font-size: 0.855em;
+    background: var(--surface-2); border-radius: 2px; padding: 0.03em 0.28em;
+  }
+
+  .chip {
+    justify-self: start;
+    font-family: var(--font-mono); font-size: 0.645rem; font-weight: 600;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    border-radius: 2px; padding: 0.14rem 0.4rem; white-space: nowrap;
+  }
+  @media (min-width: 860px) { .chip { justify-self: end; } }
+  .c-ship  { color: var(--st-ship);  background: var(--st-ship-bg); }
+  .c-build { color: var(--st-build); background: var(--st-build-bg); }
+  .c-next  { color: var(--st-next);  background: var(--st-next-bg); }
+  .c-back  { color: var(--st-back);  background: var(--st-back-bg); }
+
+  .gap {
+    display: block; margin-top: 0.22rem;
+    font-size: 0.845rem; color: var(--accent-ink);
+  }
+  .gap::before { content: "Known gap — "; font-weight: 600; }
+
+  /* ── NFR treatment: constraint + verification, not a story ─── */
+
+  .reqs { margin-top: 1rem; border-top: 1px solid var(--rule); }
+  .req {
+    display: grid; gap: 0.3rem 1.5rem; grid-template-columns: 1fr;
+    padding: 0.85rem 0; border-bottom: 1px solid var(--rule-soft);
+  }
+  @media (min-width: 860px) { .req { grid-template-columns: 74px 1fr 1fr; } }
+  .req-what { font-size: 0.945rem; }
+  .req-how {
+    font-size: 0.88rem; color: var(--ink-mid);
+    border-left: 2px solid var(--rule); padding-left: 0.85rem;
+  }
+  .req-how b { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 0.1rem; }
+
+  /* ── Legend ───────────────────────────────────────────────── */
+
+  .legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; align-items: center; margin-top: 1.1rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.45rem; font-size: 0.855rem; color: var(--ink-mid); }
+
+  footer {
+    margin-top: 4.5rem; padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.87rem; color: var(--ink-soft);
+    max-width: var(--measure);
+  }
+  footer code { font-family: var(--font-mono); font-size: 0.855em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+    a.idx:hover { transform: none; }
+  }
+</style>
+

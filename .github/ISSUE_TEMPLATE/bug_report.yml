@@ -1,0 +1,68 @@
+name: Bug report
+description: Something in Harrier Central is not working
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. The most useful thing you can give us is **what you
+        did, what happened, and what you expected** — in that order.
+
+        If this is a security problem, please do not file it here. Email
+        james.a.white@gmail.com instead.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did it happen?
+      options:
+        - Mobile app (iOS)
+        - Mobile app (Android)
+        - Admin portal (portal.harriercentral.com)
+        - Kennel website (hashruns.org)
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: "Menu → Settings shows it, e.g. 3.0.10+1327. Leave blank if you cannot find it."
+      placeholder: "3.0.10+1327"
+  - type: input
+    id: kennel
+    attributes:
+      label: Kennel
+      description: Which kennel were you looking at? Helps us reproduce against the right data.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Include the exact wording of any error message.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the run for ...
+        2. Tap ...
+        3. ...
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else
+      description: Screenshots help a lot. Please blank out other hashers' personal details.
+  - type: checkboxes
+    id: money
+    attributes:
+      label: Does this involve money?
+      description: Payments, credit or membership problems are triaged first.
+      options:
+        - label: This involves a payment, credit or membership

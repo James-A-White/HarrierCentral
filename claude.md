@@ -5,56 +5,72 @@ on the Harrier Central codebase. Read this before making any changes.
 
 ---
 
-## Session Start — TODO Review and Skills
+## Session Start — Backlog Review and Skills
 
-At the start of every session, read the TODO file for the active component and
-display its contents to James before doing anything else.
+At the start of every session, read `docs/backlog.md` and show James the stories
+relevant to the component being worked on — anything marked `Building`, plus
+`Next` items in the same epic.
 
-| Working directory | TODO file |
-|-------------------|-----------|
-| `mobile-app/`     | `todos/app.md` |
-| `portal/`         | `todos/portal.md` |
-| `public-web/`     | `todos/public-web.md` |
-| `api/`            | `todos/api.md` |
-| `db/`             | `todos/db.md` |
+**The `todos/` directory no longer exists.** It was retired on 2026-09-08 and
+replaced by:
 
-If the session spans multiple components, show all relevant TODO files.
-If a TODO item is completed during the session, mark it `[x]` in the file.
+| | |
+|---|---|
+| `docs/backlog.md` | **The working list.** Epics, features, stories, statuses |
+| `docs/verification-backlog.md` | 149 device-test checks awaiting a pass (`E16.F4`) |
+| `docs/history/todos-archive-2026-09.md` | The old files' reasoning, RCAs and shipped record |
+| GitHub Issues | Bugs and individual work items |
+
+Do not recreate `todos/`. Do not add to the archive.
 
 ### Product backlog — keep it current
 
-`docs/backlog.md` is the product backlog: 15 epics, 73 features, 229 user stories
-and 45 non-functional requirements across all five components. It is the level
-**above** the `todos/` files — todos are the day-to-day working lists, the backlog
-is what the platform is for.
+`docs/backlog.md` is the source of truth and **the only file to edit by hand**.
+`docs/backlog.html` is generated from it:
 
-**It is the source of truth.** `docs/backlog.html` is a rendered snapshot of it,
-published as an artifact for reading and sharing. The snapshot carries its own
-"status as at" date, so a stale one is visible rather than misleading; refresh it
-only when James asks for an updated link, and then update BOTH files together.
+```bash
+python3 tools/render_backlog.py     # md → html, run after every backlog edit
+```
 
-**When to update it — do this without being asked:**
+Never hand-edit `docs/backlog.html`; the next render discards the change. The
+design lives in `tools/backlog_template.html`.
+
+**When to update the backlog — do this without being asked:**
 
 | Trigger | What to change |
 |---|---|
-| A todo item is ticked off | Find the matching story ID; move its status to `Shipped` |
+| Work ships to production | Move the story to `Shipped` |
 | Work starts on a story | Move it to `Building` |
-| A new feature is designed | Add the story with the next free ID under its feature |
-| A gap is discovered in shipped work | Add a `**⚠ Known gap:**` note naming what is actually missing |
-| A whole new capability appears | Add a feature (or epic) — append, never renumber |
+| A new feature is designed | Add a story with the next free ID under its feature |
+| A gap is found in shipped work | Add a `**⚠ Known gap:**` note naming what is genuinely missing |
+| A new capability appears | Add a feature or epic — append, never renumber |
 
 **Rules:**
-- **IDs are stable and are never renumbered or reused.** `E5.F3.S4` must mean the
-  same story forever — agents and commit messages quote them. New work appends the
-  next free number, including where an earlier story was abandoned.
-- **Status must be truthful, not aspirational.** `Shipped` means in production, not
-  merged. Where something is `Building`, the gap note names what is genuinely
-  missing rather than what remains to polish.
-- **Update the counts in the header** (`docs/backlog.md` intro and the
-  `meta-strip` / `idx-count` values in the HTML) whenever stories are added.
+- **IDs are stable and never renumbered or reused.** `E5.F3.S4` must mean the same
+  story forever — issues, branches and commit messages quote them. New work takes
+  the next free number even where an earlier story was abandoned.
+- **Status is truthful, not aspirational.** `Shipped` means in production, not
+  merged. Where a story is `Building`, the gap note says what is actually missing
+  rather than what remains to polish.
+- Counts are computed by the renderer — never hardcode them anywhere.
 - Personas are the six in the backlog. **Mismanagement roles and Kennel HC Admin
-  are independent grantors** — do not write a story that assumes an admin holds a
-  club office, or vice versa.
+  are independent grantors** on `HasherKennelMap` and either can allow a function —
+  never write a story assuming an admin holds a club office, or the reverse.
+
+### Bugs and work items — GitHub Issues
+
+Bugs, chores and individual work items go to GitHub Issues
+(`James-A-White/HarrierCentral`), not into the backlog. The backlog is the map of
+what the product does; issues are the work queue. Link them by quoting the story
+ID in the issue.
+
+Issue templates live in `.github/ISSUE_TEMPLATE/` (bug report, story, device test).
+`CONTRIBUTING.md` is the entry point for outside developers.
+
+**Never open, close or comment on a GitHub issue without James asking.** The
+repository is public, so issue activity is outward-facing. Note that issues below
+#340 date from 2020–2022, predate HC6, and many describe shipped work — they are
+awaiting triage and must not be treated as a current backlog.
 
 ### Mobile app — required skills
 

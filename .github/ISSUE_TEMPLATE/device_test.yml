@@ -1,0 +1,32 @@
+name: Device test
+description: Verify a feature that shipped without a device pass
+labels: ["device-test", "E16.F4"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Checks are carried in [`docs/verification-backlog.md`](../blob/dev/docs/verification-backlog.md).
+        Copy the relevant block in as a task list.
+  - type: input
+    id: feature
+    attributes:
+      label: Feature and build it shipped in
+      placeholder: "payment outbox + idempotent payments (1290)"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform needed
+      multiple: true
+      options: ["iOS phone", "iPad", "Android phone", "Android tablet", "Two devices", "A real moving run"]
+    validations:
+      required: true
+  - type: textarea
+    id: checks
+    attributes:
+      label: Checks
+      value: |
+        - [ ] 
+    validations:
+      required: true

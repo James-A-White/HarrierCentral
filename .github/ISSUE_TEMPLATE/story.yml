@@ -1,0 +1,38 @@
+name: Story / feature work
+description: A unit of work implementing something in the product backlog
+labels: ["story", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The product backlog lives at [`docs/backlog.md`](../blob/dev/docs/backlog.md).
+        If this work implements an existing story, quote its ID — the backlog is
+        the map, issues are the work.
+  - type: input
+    id: story-id
+    attributes:
+      label: Backlog story ID
+      description: "e.g. E6.F2.S4. Leave blank if this is not in the backlog yet — say so below and it can be added."
+      placeholder: "E6.F2.S4"
+  - type: dropdown
+    id: components
+    attributes:
+      label: Which components does it touch?
+      multiple: true
+      options: ["Mobile app", "Admin portal", "Public web", "API shim", "Database (SPs)"]
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What should be true when this is done
+      description: Describe the outcome for the person using it, not the implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Constraints and gotchas
+      description: |
+        Anything the implementer must not get wrong. Read `CLAUDE.md` first — sync
+        domains, access tokens and the permission model all have silent failure modes.
