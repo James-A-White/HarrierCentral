@@ -2,6 +2,24 @@
 
 ---
 
+## 2.0.67+702 (2026-09-08)
+
+### Fixes
+- **A new run no longer claims to be in the United Kingdom.** Adding a run to
+  the Tokyo hash showed its location as "United Kingdom, Tokyo, Tokyo", and
+  every kennel outside the UK saw the same thing. A blank run had the UK
+  hardcoded as its country, so while the region and city correctly fell back to
+  the kennel's, the country did not — it was not missing, it was wrong. A new
+  run now inherits its kennel's country, the way it always inherited the region
+  and the city.
+
+  Saved runs were almost always unaffected, because the database fills in the
+  kennel's country when the app does not send one. The exception was the Set
+  Location dialog, which opened on the United Kingdom and would have saved it
+  if confirmed.
+
+---
+
 ## 2.0.66+701 (2026-08-31)
 
 ### Fixes
