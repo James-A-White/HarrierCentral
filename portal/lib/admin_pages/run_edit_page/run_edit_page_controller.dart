@@ -757,7 +757,11 @@ class RunEditPageController extends TabUiController
 
     // Initialize country/region/city (IDs normalised to lower-case so they
     // match the dropdown option keys).
-    country.value = originalData.countryName;
+    // Empty means the run has no country of its own and inherits the kennel's.
+    // Held as null rather than '' so the `?? kennelData.countryName` fallbacks
+    // downstream fire — the same treatment region and city already get.
+    country.value =
+        originalData.countryName.isEmpty ? null : originalData.countryName;
     countryId.value = _normId(originalData.countryId);
     region.value = originalData.regionName;
     regionId.value = _normId(originalData.regionId);
@@ -973,7 +977,11 @@ class RunEditPageController extends TabUiController
     resetRunTagsToOriginal();
 
     // Reset country/region/city and reload their option lists.
-    country.value = originalData.countryName;
+    // Empty means the run has no country of its own and inherits the kennel's.
+    // Held as null rather than '' so the `?? kennelData.countryName` fallbacks
+    // downstream fire — the same treatment region and city already get.
+    country.value =
+        originalData.countryName.isEmpty ? null : originalData.countryName;
     countryId.value = _normId(originalData.countryId);
     region.value = originalData.regionName;
     regionId.value = _normId(originalData.regionId);

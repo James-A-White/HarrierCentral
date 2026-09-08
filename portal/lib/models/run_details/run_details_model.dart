@@ -115,6 +115,18 @@ abstract class RunDetailsModel with _$RunDetailsModel {
   factory RunDetailsModel.fromJson(Map<String, dynamic> json) =>
       _$RunDetailsModelFromJson(json);
 
+  /// A blank run, used to seed the editor before real data arrives and as the
+  /// starting point for Add Run.
+  ///
+  /// Country is deliberately EMPTY. It used to be hardcoded to the United
+  /// Kingdom, which meant every new run in every kennel on earth opened
+  /// claiming to be in the UK — "United Kingdom, Tokyo, Tokyo" on the Tokyo
+  /// hash. Worse than the wrong label: the Set-Location dialog is seeded from
+  /// this value, so confirming it wrote the UK to the run for real.
+  ///
+  /// Empty means "this run has no location of its own", which is the truth for
+  /// a new run, and lets it inherit the kennel's — the same way region and city
+  /// already behave.
   factory RunDetailsModel.empty() => _$RunDetailsModelFromJson(
         json.decode(r'''
         {
@@ -122,8 +134,8 @@ abstract class RunDetailsModel with _$RunDetailsModel {
         "canEditRunAttendence":null,
         "cityLatitude": 0.0,
         "cityLongitude":0.0,
-        "countryId":"A1325DE2-5519-4311-9F49-5AF17C37B62A",
-        "countryName":"United Kingdom",
+        "countryId":"",
+        "countryName":"",
         "currencySymbol":"$^",
         "digitsAfterDecimal":2,
         "doTrackHashCash":0,

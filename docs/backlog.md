@@ -908,6 +908,7 @@ because leaving it invisible is how a solo project ends up unable to build for A
 | `E16.F4.S1` | As a **Platform Admin**, I want every feature shipped blind to get a device pass so that the install base is not the test suite. | `Building` |
 | `E16.F4.S2` | As a **Platform Admin**, I want the verification backlog tracked as issues so that another developer can pick one up. | `Next` |
 | `E16.F4.S3` | As a **Platform Admin**, I want the battery draw re-measured after each release so that a regression is caught by data rather than by a complaint. | `Next` |
+| `E16.F4.S4` | As a **Platform Admin**, I want a working test harness in the portal so that a regression there can be pinned by a test rather than found by a kennel. **⚠ Known gap:** `flutter_test` is commented out of the portal's dev_dependencies and `widget_test.dart` has no `main` — the portal has no test coverage at all, and enabling it hits a `web` package incompatibility | `Next` |
 
 ---
 

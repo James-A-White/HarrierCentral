@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>16</b> epics</div>
     <div><b>77</b> features</div>
-    <div><b>250</b> stories</div>
+    <div><b>251</b> stories</div>
     <div><b>45</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -333,7 +333,7 @@
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 14 requirements</span></a>
   <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 17 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
-  <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">4 features · 15 stories</span></a>
+  <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">4 features · 16 stories</span></a>
 </div></section>
 <section class="epic" id="e1">
   <div class="epic-head">
@@ -1286,6 +1286,8 @@
       <li class="story"><span class="s-id">E16.F4.S1</span><span class="s-text">As a <em>Platform Admin</em>, I want every feature shipped blind to get a device pass so that the install base is not the test suite.</span><span class="chip c-build">Building</span></li>
       <li class="story"><span class="s-id">E16.F4.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want the verification backlog tracked as issues so that another developer can pick one up.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E16.F4.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want the battery draw re-measured after each release so that a regression is caught by data rather than by a complaint.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E16.F4.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want a working test harness in the portal so that a regression there can be pinned by a test rather than found by a kennel.</span><span class="chip c-next">Next</span>
+        <span class="gap"><code>flutter_test</code> is commented out of the portal's dev_dependencies and <code>widget_test.dart</code> has no <code>main</code> — the portal has no test coverage at all, and enabling it hits a <code>web</code> package incompatibility</span></li>
     </ul>
   </div>
 </section>
