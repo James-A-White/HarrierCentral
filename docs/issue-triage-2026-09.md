@@ -1,120 +1,26 @@
-# Issue triage — the 120 open issues, September 2026
+# Issue triage — working list
 
-Every open issue on `James-A-White/HarrierCentral`, classified. All 120 are here;
-none were skipped.
+**Baseline: 120 → 55 open** (2026-09-08).
 
-**Why this exists.** The tracker holds 120 open issues, every one from 2020–2022
-apart from a single 2024 report, and nothing since. Several describe work that
-shipped years ago. Before inviting outside contributors that is worse than an
-empty tracker: someone picks up an issue and builds what already exists.
+The tracker was baselined on 2026-09-08: **65 of the 120 open issues were closed** — 46 that had shipped, each with a comment naming the backlog story that covers it, and 19 describing subsystems that no longer exist. Facebook integration appears nowhere in the current app or API, and HcWeb (HC3W) was replaced by the Flutter portal, so those reports cannot be reproduced.
 
-**Nothing has been actioned.** This is a proposal. No issue has been closed,
-commented on or relabelled.
+**55 remain.** 24 are real unbuilt work; 31 need a decision only you can make. This file
+is the working list for those 55 — the 65 that were closed are recorded at the bottom
+so the baseline is auditable.
 
-| Disposition | Count | Meaning |
+| | Count | What to do with them |
 |---|---|---|
-| Close — delivered | 46 | The feature exists; close with a pointer to the backlog story |
-| Close — obsolete | 19 | Describes a retired subsystem (Facebook, HcWeb) |
-| Keep — still valid | 24 | Real unbuilt work |
-| Needs your call | 31 | I could not decide from the code alone |
+| Still valid | 24 | Label with epic and component, put on a board |
+| Needs your call | 31 | Answer the question; most take one line |
 
-Closing the first two groups takes the tracker from 120 to **55 open**, of which
-24 are known work and 31 need a decision.
-
-**Confidence.** `Close — delivered` and `Close — obsolete` I am confident about;
-each was checked against the current code or against a subsystem that verifiably
-no longer exists. `Needs your call` is where I stopped rather than guess.
 
 ---
 
-## Close — delivered — 46
+## Still valid — real unbuilt work — 24
 
-The feature exists today. Each names the backlog story that covers it, so the close comment can point at something concrete.
+Nothing here is built. Where a backlog story already covers it, that story is the home and the issue is the work item; where the Backlog column shows a dash, the backlog has a gap worth filling.
 
-| Issue | Title | Why | Backlog |
-|---|---|---|---|
-| [#5](https://github.com/James-A-White/HarrierCentral/issues/5) | Allow kennel owner to manage admin accounts | Owner/admin separation exists as AppAccessFlags plus the permission matrix. | `E2.F4` |
-| [#12](https://github.com/James-A-White/HarrierCentral/issues/12) | Add Haberdashery support | Haberdashery sells through the payment flow as productType 3. | `E8.F3` |
-| [#16](https://github.com/James-A-White/HarrierCentral/issues/16) | Implement "transfer from other phone" option on setup | Invite-code recovery plus approve-from-trusted-device covers phone transfer. | `E1.F3` |
-| [#24](https://github.com/James-A-White/HarrierCentral/issues/24) | Menu structure | Menu now groups legal, privacy, imprint, FAQ and support. | `E9.F5` |
-| [#25](https://github.com/James-A-White/HarrierCentral/issues/25) | App -> Hash Cash option (unlockable by admin) | Hash Cash check-in with RSVP-vs-paid visibility is the run admin screen. | `E4.F2` |
-| [#26](https://github.com/James-A-White/HarrierCentral/issues/26) | Pay from within the app | Self-service payment from the app. | `E8.F1.S3` |
-| [#40](https://github.com/James-A-White/HarrierCentral/issues/40) | Debug offline mode | Offline is now queues with retry across payments, photos and GPS. | `E14.G1.R6` |
-| [#41](https://github.com/James-A-White/HarrierCentral/issues/41) | Map options | Map controls were harmonised into one column per canvas. | `E5.F4.S4` |
-| [#55](https://github.com/James-A-White/HarrierCentral/issues/55) | Question: What does the end user see when an admin manually creates a hasher? | Answered by the invite-code flow: admin adds, hasher gets a code. | `E1.F3.S5` |
-| [#57](https://github.com/James-A-White/HarrierCentral/issues/57) | Add dynamic loading of Hashers | Replaced by domain sync with paged, deterministic replication. | `E14.G1` |
-| [#78](https://github.com/James-A-White/HarrierCentral/issues/78) | Finish "Log out" feature | Logout ships, with a keychain reset and restart path. | `E1.F6.S2` |
-| [#82](https://github.com/James-A-White/HarrierCentral/issues/82) | Add tutorial videos | Video tutorial page exists. | `E9.F5.S1` |
-| [#85](https://github.com/James-A-White/HarrierCentral/issues/85) | Ability to delete user with no runs and payments. | Self-service GDPR delete, plus admin removal from the roster. | `E1.F6.S1` |
-| [#86](https://github.com/James-A-White/HarrierCentral/issues/86) | Super user who are the admins for a Kennel | Exactly the Kennel HC Admin persona — AppAccessFlags on HasherKennelMap. | `E2.F3.S3` |
-| [#92](https://github.com/James-A-White/HarrierCentral/issues/92) | Documentation! | Superseded by CLAUDE.md, docs/ and the backlog. | — |
-| [#93](https://github.com/James-A-White/HarrierCentral/issues/93) | Trail chat | Run chat and kennel chat both ship. | `E9.F1` |
-| [#95](https://github.com/James-A-White/HarrierCentral/issues/95) | How to transfer admins? | Role assignment from the roster. | `E2.F3.S1` |
-| [#103](https://github.com/James-A-White/HarrierCentral/issues/103) | How to update Kennel Logo? | Kennel logo is editable in the portal. | `E11.F4.S1` |
-| [#111](https://github.com/James-A-White/HarrierCentral/issues/111) | Migrate to NULL Safety | Null safety landed in the 3.x rewrite. | — |
-| [#125](https://github.com/James-A-White/HarrierCentral/issues/125) | Make hash name a required field when setting up the app even if just "Just + Name" | Hash name is collected at signup. | `E1.F2.S1` |
-| [#144](https://github.com/James-A-White/HarrierCentral/issues/144) | Turn permissions on option | Permissions V2 is data-driven with per-kennel tri-state overrides. | `E2.F4.S2` |
-| [#153](https://github.com/James-A-White/HarrierCentral/issues/153) | Add pins for next runs for a kennel to the user-facing map for that Kennel plus Explore runs button | Guest discovery and the run locations map cover this. | `E1.F5.S1` |
-| [#173](https://github.com/James-A-White/HarrierCentral/issues/173) | Add publicly available web page to display Hash runs | The entire public web. | `E11` |
-| [#176](https://github.com/James-A-White/HarrierCentral/issues/176) | Open source code and can I contribute? | Answered: CONTRIBUTING.md now exists and the repo takes contributions. | — |
-| [#215](https://github.com/James-A-White/HarrierCentral/issues/215) | HC-App, Enhancement - Add address/POI search into Run Details map view | Address search and pin drop both ship in the run editor. | `E3.F2.S2` |
-| [#216](https://github.com/James-A-White/HarrierCentral/issues/216) | HC-App, Enhancement - "Edit Run Details" -> auto-complete hare name list | Hare selection autocompletes from the roster. | `E3.F1.S1` |
-| [#217](https://github.com/James-A-White/HarrierCentral/issues/217) | HC-App, Enhancement - Push and Automatic Email Notifications | Push notifications and scheduled emails both ship. | `E9.F2` |
-| [#220](https://github.com/James-A-White/HarrierCentral/issues/220) | Fix run number calculation for cases when a past run has been marked as "not counted" | Run numbering is recalculated in-transaction; the count churn bug was fixed. | `E3.F5.S2` |
-| [#221](https://github.com/James-A-White/HarrierCentral/issues/221) | Implement a web-portal for adding / updating runs and events | The Flutter portal. | `E12.F4.S1` |
-| [#240](https://github.com/James-A-White/HarrierCentral/issues/240) | Blank user image tile in next Brussels run | This is the bundle:// avatar bug — fixed by the canonical resolver, 2026-07-18. | `E1.F4.S1` |
-| [#254](https://github.com/James-A-White/HarrierCentral/issues/254) | Create "add run" button on portal | Runs are added from the portal. | `E12.F4.S1` |
-| [#257](https://github.com/James-A-White/HarrierCentral/issues/257) | Ensure that when someone has checked in to a run, they see that run in the run history view | Attended past runs now sit inline above the next run. | `E3.F3.S2` |
-| [#258](https://github.com/James-A-White/HarrierCentral/issues/258) | Add new mismanagement role for Harrier Central Admin | This is the Kennel HC Admin role, independent of mismanagement. | `E2.F3.S3` |
-| [#260](https://github.com/James-A-White/HarrierCentral/issues/260) | Add ability to edit location from the app (and not just the pin point) | Cascading country/region/city selection plus the pin. | `E3.F2.S1` |
-| [#262](https://github.com/James-A-White/HarrierCentral/issues/262) | Add Kennel editing features to the portal | Kennel editing in the portal. | `E12.F4.S1` |
-| [#274](https://github.com/James-A-White/HarrierCentral/issues/274) | Add Kennel Song Book support | Songbook with per-kennel selection and pushed song sync. | `E7.F2` |
-| [#275](https://github.com/James-A-White/HarrierCentral/issues/275) | Implement permissions on HC portal to match HC Admin Roles | Portal permissions match the kennel model. | `E12.F3` |
-| [#288](https://github.com/James-A-White/HarrierCentral/issues/288) | Improve how users are replicated to the mobile app. | Three-domain sync with deterministic paged replication. | `E14.G1` |
-| [#291](https://github.com/James-A-White/HarrierCentral/issues/291) | Ability of super admins to see email addresses for members | The roster shows contact details to those permitted. | `E2.F2.S1` |
-| [#297](https://github.com/James-A-White/HarrierCentral/issues/297) | Add notification to open the app for Hashers that RSVP for runs so they can check in | Run reminders plus the arrival check-in prompt. | `E9.F2.S3` |
-| [#298](https://github.com/James-A-White/HarrierCentral/issues/298) | Interactive song book...  | Song selection pushes to everyone at the run. | `E7.F2.S2` |
-| [#301](https://github.com/James-A-White/HarrierCentral/issues/301) | Add another payment button for Haberdashery | Haberdashery payments. | `E8.F3.S1` |
-| [#302](https://github.com/James-A-White/HarrierCentral/issues/302) | Add RSVP for Runs plus extras for events with extras | RSVP ships. The extras part may not — check before closing. | `E4.F1` |
-| [#306](https://github.com/James-A-White/HarrierCentral/issues/306) | Add delete me permanently button to be GDPR compliant | GDPR delete. | `E1.F6.S1` |
-| [#307](https://github.com/James-A-White/HarrierCentral/issues/307) | Allow Kennels to be able to edit their own info (especially Hash Cash) | Kennels edit their own details in the portal. | `E12.F4.S1` |
-| [#311](https://github.com/James-A-White/HarrierCentral/issues/311) | Need to add "other payment" button for visitors / virgins | Other-payment button for visitors and virgins. | `E8.F1.S2` |
-
----
-
-## Close — obsolete — 19
-
-The subsystem these describe is gone. Facebook integration appears nowhere in the current app or API, and HcWeb (HC3W) was replaced by the Flutter portal. Nothing here can be reproduced because the thing it describes no longer runs.
-
-| Issue | Title | Why | Backlog |
-|---|---|---|---|
-| [#33](https://github.com/James-A-White/HarrierCentral/issues/33) | Adding a member | HcWeb (HC3W) is retired. | — |
-| [#34](https://github.com/James-A-White/HarrierCentral/issues/34) | HcWeb App -> entering (saving) event | HcWeb (HC3W) is retired. | — |
-| [#38](https://github.com/James-A-White/HarrierCentral/issues/38) | Things to look into (from the Dev team) | 2020 Flutter code notes, predating the null-safety rewrite. | — |
-| [#42](https://github.com/James-A-White/HarrierCentral/issues/42) | Logout function does not work with Facebook OAuth enabled | Facebook OAuth no longer exists; sign-in is Apple and Google. | `E1.F2.S6` |
-| [#44](https://github.com/James-A-White/HarrierCentral/issues/44) | Hare RSVP note still showing, despite hare assigned in HCWeb | HcWeb (HC3W) is retired. | — |
-| [#47](https://github.com/James-A-White/HarrierCentral/issues/47) | HC-Web: Runs List > Date sort based on displayed value, not datestamp | HcWeb (HC3W) is retired. | — |
-| [#48](https://github.com/James-A-White/HarrierCentral/issues/48) | HC-Web: Unable to delete past runs | HcWeb (HC3W) is retired. | — |
-| [#61](https://github.com/James-A-White/HarrierCentral/issues/61) | ERROR: Cannot delete duplicate user - "modification affects multiple base tables" | HcWeb error. The underlying need is account merging — see #129. | — |
-| [#74](https://github.com/James-A-White/HarrierCentral/issues/74) | Data mismatch: FB-created event details & email blast to members | Facebook integration is gone. | — |
-| [#96](https://github.com/James-A-White/HarrierCentral/issues/96) | Make sure only one Kennel can be added per FB ID and website and name. | Facebook-ID uniqueness; Facebook integration is gone. | — |
-| [#106](https://github.com/James-A-White/HarrierCentral/issues/106) | Problem with overwriting placeholder | Facebook placeholder overwrite; Facebook integration is gone. | — |
-| [#194](https://github.com/James-A-White/HarrierCentral/issues/194) | HC-Web: Kennel information mismatched between different admin portals | Comparison between two retired admin portals. | — |
-| [#204](https://github.com/James-A-White/HarrierCentral/issues/204) | Ensure deleted FB events are hidden | Facebook integration is gone. | — |
-| [#236](https://github.com/James-A-White/HarrierCentral/issues/236) | Enhance security of Facebook and external integration component | Facebook integration is gone. | — |
-| [#256](https://github.com/James-A-White/HarrierCentral/issues/256) | Fix portal for updating run info so it say Use Update from FB instead of San Diego | Facebook integration is gone. | — |
-| [#279](https://github.com/James-A-White/HarrierCentral/issues/279) | New hasher added on portal, appeared on Membership, but not on Non-app Hasher | Depends on the retired Non-app Hasher concept. | — |
-| [#283](https://github.com/James-A-White/HarrierCentral/issues/283) | Update Display Name on Super Admin Portal -- there's a disconnect between the Admin Portal | Retired super admin portal. | — |
-| [#285](https://github.com/James-A-White/HarrierCentral/issues/285) | BUG: Facebook feed creating numbered runs for non-numbered events | Facebook integration is gone. | — |
-| [#290](https://github.com/James-A-White/HarrierCentral/issues/290) | Deleting off FB doesn't delete a hash--neither does hiding and not counting | Facebook integration is gone. | — |
-
----
-
-## Keep — still valid — 24
-
-Real, unbuilt work. Where a backlog story already covers it, that story is the home and the issue is the work item; where none is named, the backlog has a gap worth filling.
-
-| Issue | Title | Why | Backlog |
+| Issue | Title | Why it stands | Backlog |
 |---|---|---|---|
 | [#28](https://github.com/James-A-White/HarrierCentral/issues/28) | Desktop (web) version for Hashers | Member web login is genuinely not built and not designed. | `E11.F6.S1` |
 | [#39](https://github.com/James-A-White/HarrierCentral/issues/39) | Add range ring to map to indicate which runs will automatically display | Range ring on the map is small and still valid. No story yet. | — |
@@ -145,59 +51,112 @@ Real, unbuilt work. Where a backlog story already covers it, that story is the h
 
 ## Needs your call — 31
 
-I could not decide these from the code alone. Most are behaviour that has changed enough since 2022 that the original report may or may not still reproduce; a few are product or commercial decisions that were never mine to make.
+I could not decide these from the code alone. Most are behaviour reported in 2022 that has changed enough since that I cannot tell whether it still reproduces; a few were never engineering questions. Each has a specific question — most take one line to answer.
 
-| Issue | Title | Why | Backlog |
+| Issue | Title | Question | Backlog |
 |---|---|---|---|
-| [#14](https://github.com/James-A-White/HarrierCentral/issues/14) | Add ability to track runs even if kennel is not on the app | Unclear whether this means PackTrack for a kennel not on the platform, or guest run entry. | — |
-| [#21](https://github.com/James-A-White/HarrierCentral/issues/21) | Profile image change -> cut a step | UX detail on the avatar flow — needs a look at the current screen before closing. | `E1.F4.S1` |
-| [#36](https://github.com/James-A-White/HarrierCentral/issues/36) | HcWeb -> Push/edit events to/in google calendar | Calendar push ships; per-user Google auth to write their own calendar never did. | `E3.F6.S1` |
-| [#37](https://github.com/James-A-White/HarrierCentral/issues/37) | Calendar -> Tokens to control run counts/other event parameters | Depends on the Google Calendar token idea, which was never adopted. | — |
-| [#53](https://github.com/James-A-White/HarrierCentral/issues/53) | Website: Create two sections for Kennels to show free features and paid features | A commercial decision about free vs paid tiers, not an engineering task. | — |
-| [#65](https://github.com/James-A-White/HarrierCentral/issues/65) | Email templating improvement suggestions | Portal email ships; whether these template ideas still apply needs your read. | `E12.F4.S3` |
-| [#75](https://github.com/James-A-White/HarrierCentral/issues/75) | Enhancement, HC-App: Remove digital payment prompt when user has been marked "paid" | Payment prompt behaviour has changed a lot; needs checking against the current screen. | — |
-| [#89](https://github.com/James-A-White/HarrierCentral/issues/89) | Hash cash pricing | Member/visitor/virgin tiers ship. Men/women pricing looks like a wontfix. | `E8.F1.S1` |
-| [#97](https://github.com/James-A-White/HarrierCentral/issues/97) | Set HC App Access screen | App access screen may have been fixed in the 3.0 layout work — needs a look. | — |
-| [#109](https://github.com/James-A-White/HarrierCentral/issues/109) | Enhancement: Make adding members quicker when on-site at the hash | Roster add ships, but whether it is fast enough on-site is your call. | `E2.F2.S2` |
-| [#116](https://github.com/James-A-White/HarrierCentral/issues/116) | Ability for admins to set past run attendance by Hasher not by run | Bulk attendance by event ships; setting it per-hasher across runs may not. | `E4.F4` |
-| [#164](https://github.com/James-A-White/HarrierCentral/issues/164) | Kennel admin able to edit Hasher names | A real question: should an admin be able to change a hasher's name? Needs your ruling. | `E2.F2` |
-| [#200](https://github.com/James-A-White/HarrierCentral/issues/200) | Add "tearline" feature to Kennel description | Unclear what a tearline should do here. | — |
-| [#208](https://github.com/James-A-White/HarrierCentral/issues/208) | Kennel submitted two different default hash cash prices, but system used same for both | Two default prices resolving to one may still be live — worth a check. | `E8.F1.S1` |
-| [#210](https://github.com/James-A-White/HarrierCentral/issues/210) | After logging about 45 past runs, information from newly entered past event overwrites some of the data (map, hares) of the upcoming event | Sounds like a genuine data-corruption bug. May be cured by the run-numbering fixes. | `E3.F5` |
-| [#227](https://github.com/James-A-White/HarrierCentral/issues/227) | HC-App, Enhancement: "paid" status is perpetual for paypal/credit prompt uses | Payment status behaviour has changed substantially since 2022. | — |
-| [#234](https://github.com/James-A-White/HarrierCentral/issues/234) | Bug, HC-App: Some members do not see "check-in" or "use credit" prompts | May have been cured by Permissions V2, which removed IsAdmin as a bypass. | `E2.F4` |
-| [#239](https://github.com/James-A-White/HarrierCentral/issues/239) | Last run date in the app does not respect the "hidden" flag | Whether the hidden flag is respected in last-run-date needs checking. | — |
-| [#248](https://github.com/James-A-White/HarrierCentral/issues/248) | Expand description field beyond 4000 characters | Description length. Duplicate of #304 — keep one and decide the limit. | — |
-| [#259](https://github.com/James-A-White/HarrierCentral/issues/259) | Add dirty confirmation on run edit screens in the app | The single-save run editor refactor may already cover this. | — |
-| [#261](https://github.com/James-A-White/HarrierCentral/issues/261) | "North Lock" map on Kennel info page | True-north lock exists on the PackTrack map but not the kennel info map. | `E5.F4` |
-| [#264](https://github.com/James-A-White/HarrierCentral/issues/264) | Written by Hashers for Hashers | Marketing copy, not an engineering task. | — |
-| [#267](https://github.com/James-A-White/HarrierCentral/issues/267) | HC-App: Name sorting in Hash Cash view inconsistent with other screens | Sorting inconsistency may persist — worth a look at the Hash Cash list. | — |
-| [#272](https://github.com/James-A-White/HarrierCentral/issues/272) | Bug, HC-App: User displays Nerd Name, but sorts with Hash Name | Nerd name vs hash name sorting — needs checking against current display rules. | — |
-| [#278](https://github.com/James-A-White/HarrierCentral/issues/278) | Empower Hares? | Hares can edit their own run. Volunteer-to-hare with approval was never built. | `E2.F4.S4` |
-| [#292](https://github.com/James-A-White/HarrierCentral/issues/292) | Add global leaderboard for hashed and hared in the app | Global leaderboard ships. A hared leaderboard does not. | `E10.F2.S1` |
-| [#304](https://github.com/James-A-White/HarrierCentral/issues/304) | Add extra space for run descriptions (e.g. for Taiwan). | Description length. Duplicate of #248. | — |
-| [#312](https://github.com/James-A-White/HarrierCentral/issues/312) | No buttons/access to add/manage runs on portal if there are none  | Empty-state on the portal run list may be fixed — needs a look. | — |
-| [#314](https://github.com/James-A-White/HarrierCentral/issues/314) | Admin Portal not sorting correctly... | Sorting on the retired portal, but may still apply to the Flutter one. | — |
-| [#329](https://github.com/James-A-White/HarrierCentral/issues/329) | Adjusting visitor RSVP actually adjusts my own RSVP | Visitor RSVP writing the wrong record — needs reproducing on the current build. | `E4.F1` |
-| [#335](https://github.com/James-A-White/HarrierCentral/issues/335) | Trying to install the hashing app | Boot hang at kennel batch. Boot work since may have cured it; the reporter can confirm. | `E14.G4.R1` |
+| [#14](https://github.com/James-A-White/HarrierCentral/issues/14) | Add ability to track runs even if kennel is not on the app | Does this mean PackTrack for a kennel that is not on the platform, or logging runs for one? | — |
+| [#21](https://github.com/James-A-White/HarrierCentral/issues/21) | Profile image change -> cut a step | Open Profile and change the photo — is there still a redundant Next step? | `E1.F4.S1` |
+| [#36](https://github.com/James-A-White/HarrierCentral/issues/36) | HcWeb -> Push/edit events to/in google calendar | Do you still want per-user Google auth so a hasher writes to their own calendar, or is kennel-level push enough? | `E3.F6.S1` |
+| [#37](https://github.com/James-A-White/HarrierCentral/issues/37) | Calendar -> Tokens to control run counts/other event parameters | Is the calendar-token idea dead? It depended on integration you no longer run. | — |
+| [#53](https://github.com/James-A-White/HarrierCentral/issues/53) | Website: Create two sections for Kennels to show free features and paid features | Is there a commercial model to build to yet, or is this still an idea? | — |
+| [#65](https://github.com/James-A-White/HarrierCentral/issues/65) | Email templating improvement suggestions | Which of these template ideas still apply to the portal's email screen? | `E12.F4.S3` |
+| [#75](https://github.com/James-A-White/HarrierCentral/issues/75) | Enhancement, HC-App: Remove digital payment prompt when user has been marked "paid" | Does the payment prompt still appear after a hasher is marked paid? | — |
+| [#89](https://github.com/James-A-White/HarrierCentral/issues/89) | Hash cash pricing | Wontfix? Current tiers are member / visitor / virgin. | `E8.F1.S1` |
+| [#97](https://github.com/James-A-White/HarrierCentral/issues/97) | Set HC App Access screen | Does the App Access screen still cut off at the top? | — |
+| [#109](https://github.com/James-A-White/HarrierCentral/issues/109) | Enhancement: Make adding members quicker when on-site at the hash | Is adding a member on-site still too slow, and is the email address still required? | `E2.F2.S2` |
+| [#116](https://github.com/James-A-White/HarrierCentral/issues/116) | Ability for admins to set past run attendance by Hasher not by run | Can an admin already set attendance per hasher across several runs, or only per run? | `E4.F4` |
+| [#164](https://github.com/James-A-White/HarrierCentral/issues/164) | Kennel admin able to edit Hasher names | Should a kennel admin be able to change another hasher's name? This is a policy call, not a bug. | `E2.F2` |
+| [#200](https://github.com/James-A-White/HarrierCentral/issues/200) | Add "tearline" feature to Kennel description | What should a tearline in the kennel description actually do? | — |
+| [#208](https://github.com/James-A-White/HarrierCentral/issues/208) | Kennel submitted two different default hash cash prices, but system used same for both | Can a kennel still submit two default prices and have one used for both? | `E8.F1.S1` |
+| [#210](https://github.com/James-A-White/HarrierCentral/issues/210) | After logging about 45 past runs, information from newly entered past event overwrites some of the data (map, hares) of the upcoming event | Does entering many past runs still corrupt an upcoming run's map and hares? | `E3.F5` |
+| [#227](https://github.com/James-A-White/HarrierCentral/issues/227) | HC-App, Enhancement: "paid" status is perpetual for paypal/credit prompt uses | Is paid status still perpetual for the PayPal and credit prompt? | — |
+| [#234](https://github.com/James-A-White/HarrierCentral/issues/234) | Bug, HC-App: Some members do not see "check-in" or "use credit" prompts | Do mismanagement members still miss the check-in and use-credit prompts? Permissions V2 may have cured it. | `E2.F4` |
+| [#239](https://github.com/James-A-White/HarrierCentral/issues/239) | Last run date in the app does not respect the "hidden" flag | Does the last-run date still ignore the hidden flag? | — |
+| [#248](https://github.com/James-A-White/HarrierCentral/issues/248) | Expand description field beyond 4000 characters | What should the description limit be? Duplicate of #304 — close one. | — |
+| [#259](https://github.com/James-A-White/HarrierCentral/issues/259) | Add dirty confirmation on run edit screens in the app | Does the run editor still lose changes on navigate-away, after the single-save refactor? | — |
+| [#261](https://github.com/James-A-White/HarrierCentral/issues/261) | "North Lock" map on Kennel info page | Do you want true-north lock on the kennel info map too, or is PackTrack enough? | `E5.F4` |
+| [#264](https://github.com/James-A-White/HarrierCentral/issues/264) | Written by Hashers for Hashers | Is this a marketing tagline? If so it is not an engineering issue. | — |
+| [#267](https://github.com/James-A-White/HarrierCentral/issues/267) | HC-App: Name sorting in Hash Cash view inconsistent with other screens | Is name sorting in the Hash Cash view still inconsistent with other screens? | — |
+| [#272](https://github.com/James-A-White/HarrierCentral/issues/272) | Bug, HC-App: User displays Nerd Name, but sorts with Hash Name | Should display and sort both use the hash name? | — |
+| [#278](https://github.com/James-A-White/HarrierCentral/issues/278) | Empower Hares? | Do you want volunteer-to-hare with an approval step? Hares can already edit their own run. | `E2.F4.S4` |
+| [#292](https://github.com/James-A-White/HarrierCentral/issues/292) | Add global leaderboard for hashed and hared in the app | Do you want a hared leaderboard alongside the run one? | `E10.F2.S1` |
+| [#304](https://github.com/James-A-White/HarrierCentral/issues/304) | Add extra space for run descriptions (e.g. for Taiwan). | Duplicate of #248 — close one and set the limit. | — |
+| [#312](https://github.com/James-A-White/HarrierCentral/issues/312) | No buttons/access to add/manage runs on portal if there are none  | Does the portal still show a blank page when a kennel has no runs? | — |
+| [#314](https://github.com/James-A-White/HarrierCentral/issues/314) | Admin Portal not sorting correctly... | Does the sorting problem still occur in the Flutter portal, or only the retired one? | — |
+| [#329](https://github.com/James-A-White/HarrierCentral/issues/329) | Adjusting visitor RSVP actually adjusts my own RSVP | Does adjusting a visitor's RSVP still change your own? | `E4.F1` |
+| [#335](https://github.com/James-A-White/HarrierCentral/issues/335) | Trying to install the hashing app | Still reproducible? The boot work since may have cured it — the reporter could confirm. | `E14.G4.R1` |
 
 ---
 
-## Suggested order
+## Closed at baseline — 65
 
-1. **Close the 19 obsolete ones first.** They are unambiguous and need no judgement.
-2. **Close the 46 delivered ones**, each with a one-line comment naming the backlog
-   story. Several reporters are still active hashers and will appreciate knowing the
-   thing they asked for in 2021 exists.
-3. **Label the 24 keepers** with their epic and component, and put them on a board.
-4. **Work the 31 questions** at whatever pace suits — that list is the only part
-   that needs you specifically.
+Each received a comment before closing. Shipped issues were closed as completed with a pointer to their backlog story ([docs/backlog.md](https://github.com/James-A-White/HarrierCentral/blob/dev/docs/backlog.md)); obsolete ones as not planned, inviting a fresh issue if the reporter can still reproduce something similar.
 
-Three deserve attention beyond a status change:
-
-- **#164** — whether a kennel admin should be able to change another hasher's name is
-  a policy question, not a bug. It has been open since 2021.
-- **#317 / #331** — mail going to `removed_` addresses is a live defect a real kennel
-  reported twice. It is the strongest candidate for a first fix.
-- **#176** — someone asked in 2021 whether they could contribute and never got an
-  answer. `CONTRIBUTING.md` now answers it.
+| Issue | Title | Disposition |
+|---|---|---|
+| [#5](https://github.com/James-A-White/HarrierCentral/issues/5) | Allow kennel owner to manage admin accounts | Delivered |
+| [#12](https://github.com/James-A-White/HarrierCentral/issues/12) | Add Haberdashery support | Delivered |
+| [#16](https://github.com/James-A-White/HarrierCentral/issues/16) | Implement "transfer from other phone" option on setup | Delivered |
+| [#24](https://github.com/James-A-White/HarrierCentral/issues/24) | Menu structure | Delivered |
+| [#25](https://github.com/James-A-White/HarrierCentral/issues/25) | App -> Hash Cash option (unlockable by admin) | Delivered |
+| [#26](https://github.com/James-A-White/HarrierCentral/issues/26) | Pay from within the app | Delivered |
+| [#33](https://github.com/James-A-White/HarrierCentral/issues/33) | Adding a member | Obsolete |
+| [#34](https://github.com/James-A-White/HarrierCentral/issues/34) | HcWeb App -> entering (saving) event | Obsolete |
+| [#38](https://github.com/James-A-White/HarrierCentral/issues/38) | Things to look into (from the Dev team) | Obsolete |
+| [#40](https://github.com/James-A-White/HarrierCentral/issues/40) | Debug offline mode | Delivered |
+| [#41](https://github.com/James-A-White/HarrierCentral/issues/41) | Map options | Delivered |
+| [#42](https://github.com/James-A-White/HarrierCentral/issues/42) | Logout function does not work with Facebook OAuth enabled | Obsolete |
+| [#44](https://github.com/James-A-White/HarrierCentral/issues/44) | Hare RSVP note still showing, despite hare assigned in HCWeb | Obsolete |
+| [#47](https://github.com/James-A-White/HarrierCentral/issues/47) | HC-Web: Runs List > Date sort based on displayed value, not datestamp | Obsolete |
+| [#48](https://github.com/James-A-White/HarrierCentral/issues/48) | HC-Web: Unable to delete past runs | Obsolete |
+| [#55](https://github.com/James-A-White/HarrierCentral/issues/55) | Question: What does the end user see when an admin manually creates a hasher? | Delivered |
+| [#57](https://github.com/James-A-White/HarrierCentral/issues/57) | Add dynamic loading of Hashers | Delivered |
+| [#61](https://github.com/James-A-White/HarrierCentral/issues/61) | ERROR: Cannot delete duplicate user - "modification affects multiple base tables" | Obsolete |
+| [#74](https://github.com/James-A-White/HarrierCentral/issues/74) | Data mismatch: FB-created event details & email blast to members | Obsolete |
+| [#78](https://github.com/James-A-White/HarrierCentral/issues/78) | Finish "Log out" feature | Delivered |
+| [#82](https://github.com/James-A-White/HarrierCentral/issues/82) | Add tutorial videos | Delivered |
+| [#85](https://github.com/James-A-White/HarrierCentral/issues/85) | Ability to delete user with no runs and payments. | Delivered |
+| [#86](https://github.com/James-A-White/HarrierCentral/issues/86) | Super user who are the admins for a Kennel | Delivered |
+| [#92](https://github.com/James-A-White/HarrierCentral/issues/92) | Documentation! | Delivered |
+| [#93](https://github.com/James-A-White/HarrierCentral/issues/93) | Trail chat | Delivered |
+| [#95](https://github.com/James-A-White/HarrierCentral/issues/95) | How to transfer admins? | Delivered |
+| [#96](https://github.com/James-A-White/HarrierCentral/issues/96) | Make sure only one Kennel can be added per FB ID and website and name. | Obsolete |
+| [#103](https://github.com/James-A-White/HarrierCentral/issues/103) | How to update Kennel Logo? | Delivered |
+| [#106](https://github.com/James-A-White/HarrierCentral/issues/106) | Problem with overwriting placeholder | Obsolete |
+| [#111](https://github.com/James-A-White/HarrierCentral/issues/111) | Migrate to NULL Safety | Delivered |
+| [#125](https://github.com/James-A-White/HarrierCentral/issues/125) | Make hash name a required field when setting up the app even if just "Just + Name" | Delivered |
+| [#144](https://github.com/James-A-White/HarrierCentral/issues/144) | Turn permissions on option | Delivered |
+| [#153](https://github.com/James-A-White/HarrierCentral/issues/153) | Add pins for next runs for a kennel to the user-facing map for that Kennel plus Explore runs button | Delivered |
+| [#173](https://github.com/James-A-White/HarrierCentral/issues/173) | Add publicly available web page to display Hash runs | Delivered |
+| [#176](https://github.com/James-A-White/HarrierCentral/issues/176) | Open source code and can I contribute? | Delivered |
+| [#194](https://github.com/James-A-White/HarrierCentral/issues/194) | HC-Web: Kennel information mismatched between different admin portals | Obsolete |
+| [#204](https://github.com/James-A-White/HarrierCentral/issues/204) | Ensure deleted FB events are hidden | Obsolete |
+| [#215](https://github.com/James-A-White/HarrierCentral/issues/215) | HC-App, Enhancement - Add address/POI search into Run Details map view | Delivered |
+| [#216](https://github.com/James-A-White/HarrierCentral/issues/216) | HC-App, Enhancement - "Edit Run Details" -> auto-complete hare name list | Delivered |
+| [#217](https://github.com/James-A-White/HarrierCentral/issues/217) | HC-App, Enhancement - Push and Automatic Email Notifications | Delivered |
+| [#220](https://github.com/James-A-White/HarrierCentral/issues/220) | Fix run number calculation for cases when a past run has been marked as "not counted" | Delivered |
+| [#221](https://github.com/James-A-White/HarrierCentral/issues/221) | Implement a web-portal for adding / updating runs and events | Delivered |
+| [#236](https://github.com/James-A-White/HarrierCentral/issues/236) | Enhance security of Facebook and external integration component | Obsolete |
+| [#240](https://github.com/James-A-White/HarrierCentral/issues/240) | Blank user image tile in next Brussels run | Delivered |
+| [#254](https://github.com/James-A-White/HarrierCentral/issues/254) | Create "add run" button on portal | Delivered |
+| [#256](https://github.com/James-A-White/HarrierCentral/issues/256) | Fix portal for updating run info so it say Use Update from FB instead of San Diego | Obsolete |
+| [#257](https://github.com/James-A-White/HarrierCentral/issues/257) | Ensure that when someone has checked in to a run, they see that run in the run history view | Delivered |
+| [#258](https://github.com/James-A-White/HarrierCentral/issues/258) | Add new mismanagement role for Harrier Central Admin | Delivered |
+| [#260](https://github.com/James-A-White/HarrierCentral/issues/260) | Add ability to edit location from the app (and not just the pin point) | Delivered |
+| [#262](https://github.com/James-A-White/HarrierCentral/issues/262) | Add Kennel editing features to the portal | Delivered |
+| [#274](https://github.com/James-A-White/HarrierCentral/issues/274) | Add Kennel Song Book support | Delivered |
+| [#275](https://github.com/James-A-White/HarrierCentral/issues/275) | Implement permissions on HC portal to match HC Admin Roles | Delivered |
+| [#279](https://github.com/James-A-White/HarrierCentral/issues/279) | New hasher added on portal, appeared on Membership, but not on Non-app Hasher | Obsolete |
+| [#283](https://github.com/James-A-White/HarrierCentral/issues/283) | Update Display Name on Super Admin Portal -- there's a disconnect between the Admin Portal | Obsolete |
+| [#285](https://github.com/James-A-White/HarrierCentral/issues/285) | BUG: Facebook feed creating numbered runs for non-numbered events | Obsolete |
+| [#288](https://github.com/James-A-White/HarrierCentral/issues/288) | Improve how users are replicated to the mobile app. | Delivered |
+| [#290](https://github.com/James-A-White/HarrierCentral/issues/290) | Deleting off FB doesn't delete a hash--neither does hiding and not counting | Obsolete |
+| [#291](https://github.com/James-A-White/HarrierCentral/issues/291) | Ability of super admins to see email addresses for members | Delivered |
+| [#297](https://github.com/James-A-White/HarrierCentral/issues/297) | Add notification to open the app for Hashers that RSVP for runs so they can check in | Delivered |
+| [#298](https://github.com/James-A-White/HarrierCentral/issues/298) | Interactive song book...  | Delivered |
+| [#301](https://github.com/James-A-White/HarrierCentral/issues/301) | Add another payment button for Haberdashery | Delivered |
+| [#302](https://github.com/James-A-White/HarrierCentral/issues/302) | Add RSVP for Runs plus extras for events with extras | Delivered |
+| [#306](https://github.com/James-A-White/HarrierCentral/issues/306) | Add delete me permanently button to be GDPR compliant | Delivered |
+| [#307](https://github.com/James-A-White/HarrierCentral/issues/307) | Allow Kennels to be able to edit their own info (especially Hash Cash) | Delivered |
+| [#311](https://github.com/James-A-White/HarrierCentral/issues/311) | Need to add "other payment" button for visitors / virgins | Delivered |
