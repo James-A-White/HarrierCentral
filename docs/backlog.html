@@ -674,9 +674,10 @@
     <ul class="stories">
       <li class="story"><span class="s-id">E5.F6.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to trim the start and end of a recorded track so that the drive to the pub is not part of the trail.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E5.F6.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to delete a track entirely so that a mis-recorded trail can be removed.</span><span class="chip c-ship">Shipped</span></li>
-      <li class="story"><span class="s-id">E5.F6.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage.</span><span class="chip c-build">Building</span>
-        <span class="gap">no SQL record exists that a run was tracked; enumeration is a partition-key skip walk</span></li>
-      <li class="story"><span class="s-id">E5.F6.S4</span><span class="s-text">As a <em>Hasher</em>, I want my track flagged and stored in compressed form against my attendance record so that my trail survives independently of the position store.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E5.F6.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage.</span><span class="chip c-next">Next</span>
+        <span class="gap">no SQL record exists that a run was tracked; enumeration is a partition-key skip walk. Designed in <code>docs/packtrack_in_database_plan.md</code>, not started</span></li>
+      <li class="story"><span class="s-id">E5.F6.S4</span><span class="s-text">As a <em>Hasher</em>, I want my track stored in compressed form against my attendance record so that my trail survives independently of the position store.</span><span class="chip c-next">Next</span>
+        <span class="gap"><code>HC.HasherEventMap</code> has no such column — designed in <code>docs/packtrack_in_database_plan.md</code>, not started</span></li>
     </ul>
   </div>
 </section>

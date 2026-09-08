@@ -357,8 +357,8 @@ Recording where the pack went and playing it back. Tracks live in Azure Table St
 |---|---|---|
 | `E5.F6.S1` | As a **Kennel HC Admin**, I want to trim the start and end of a recorded track so that the drive to the pub is not part of the trail. | `Shipped` |
 | `E5.F6.S2` | As a **Kennel HC Admin**, I want to delete a track entirely so that a mis-recorded trail can be removed. | `Shipped` |
-| `E5.F6.S3` | As a **Platform Admin**, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage. **⚠ Known gap:** no SQL record exists that a run was tracked; enumeration is a partition-key skip walk | `Building` |
-| `E5.F6.S4` | As a **Hasher**, I want my track flagged and stored in compressed form against my attendance record so that my trail survives independently of the position store. | `Next` |
+| `E5.F6.S3` | As a **Platform Admin**, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage. **⚠ Known gap:** no SQL record exists that a run was tracked; enumeration is a partition-key skip walk. Designed in `docs/packtrack_in_database_plan.md`, not started | `Next` |
+| `E5.F6.S4` | As a **Hasher**, I want my track stored in compressed form against my attendance record so that my trail survives independently of the position store. **⚠ Known gap:** `HC.HasherEventMap` has no such column — designed in `docs/packtrack_in_database_plan.md`, not started | `Next` |
 
 ---
 
