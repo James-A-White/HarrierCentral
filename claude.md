@@ -21,6 +21,41 @@ display its contents to James before doing anything else.
 If the session spans multiple components, show all relevant TODO files.
 If a TODO item is completed during the session, mark it `[x]` in the file.
 
+### Product backlog — keep it current
+
+`docs/backlog.md` is the product backlog: 15 epics, 73 features, 229 user stories
+and 45 non-functional requirements across all five components. It is the level
+**above** the `todos/` files — todos are the day-to-day working lists, the backlog
+is what the platform is for.
+
+**It is the source of truth.** `docs/backlog.html` is a rendered snapshot of it,
+published as an artifact for reading and sharing. The snapshot carries its own
+"status as at" date, so a stale one is visible rather than misleading; refresh it
+only when James asks for an updated link, and then update BOTH files together.
+
+**When to update it — do this without being asked:**
+
+| Trigger | What to change |
+|---|---|
+| A todo item is ticked off | Find the matching story ID; move its status to `Shipped` |
+| Work starts on a story | Move it to `Building` |
+| A new feature is designed | Add the story with the next free ID under its feature |
+| A gap is discovered in shipped work | Add a `**⚠ Known gap:**` note naming what is actually missing |
+| A whole new capability appears | Add a feature (or epic) — append, never renumber |
+
+**Rules:**
+- **IDs are stable and are never renumbered or reused.** `E5.F3.S4` must mean the
+  same story forever — agents and commit messages quote them. New work appends the
+  next free number, including where an earlier story was abandoned.
+- **Status must be truthful, not aspirational.** `Shipped` means in production, not
+  merged. Where something is `Building`, the gap note names what is genuinely
+  missing rather than what remains to polish.
+- **Update the counts in the header** (`docs/backlog.md` intro and the
+  `meta-strip` / `idx-count` values in the HTML) whenever stories are added.
+- Personas are the six in the backlog. **Mismanagement roles and Kennel HC Admin
+  are independent grantors** — do not write a story that assumes an admin holds a
+  club office, or vice versa.
+
 ### Mobile app — required skills
 
 **When working in `mobile-app/`, you MUST invoke these skills before writing

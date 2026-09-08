@@ -1,0 +1,1293 @@
+<title>Harrier Central Product Backlog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+  :root {
+    /* Cool technical neutrals — this is a spec, not a brochure */
+    --paper:      #F6F7F9;
+    --surface:    #FFFFFF;
+    --surface-2:  #EEF1F4;
+    --ink:        #15191C;
+    --ink-mid:    #3D474E;
+    --ink-soft:   #66727B;
+    --rule:       #DBE1E6;
+    --rule-soft:  #E9EDF1;
+
+    /* Harrier Central's own red — Colors.red.shade900. Brand only. */
+    --accent:     #B71C1C;
+    --accent-ink: #8E1519;
+    --accent-wash:#FBEDED;
+
+    /* State is a separate family from the brand, deliberately */
+    --st-ship:    #14705B;
+    --st-ship-bg: #E4F0EC;
+    --st-build:   #9A6100;
+    --st-build-bg:#F7EEDC;
+    --st-next:    #40566B;
+    --st-next-bg: #E7ECF2;
+    --st-back:    #6B747B;
+    --st-back-bg: #EAEDEF;
+
+    --font-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+    --measure: 68ch;
+    --pad: clamp(1.15rem, 4vw, 2.75rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101315;
+      --surface:    #171B1E;
+      --surface-2:  #1E2427;
+      --ink:        #E8ECEF;
+      --ink-mid:    #B4BEC5;
+      --ink-soft:   #8B959C;
+      --rule:       #2B3236;
+      --rule-soft:  #22282C;
+
+      --accent:     #F26B6B;
+      --accent-ink: #F58A8A;
+      --accent-wash:#2A1717;
+
+      --st-ship:    #6ECDAF;
+      --st-ship-bg: #16302A;
+      --st-build:   #E0A94A;
+      --st-build-bg:#302617;
+      --st-next:    #9FB6CC;
+      --st-next-bg: #1D262E;
+      --st-back:    #98A2A9;
+      --st-back-bg: #23282B;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101315;
+    --surface:    #171B1E;
+    --surface-2:  #1E2427;
+    --ink:        #E8ECEF;
+    --ink-mid:    #B4BEC5;
+    --ink-soft:   #8B959C;
+    --rule:       #2B3236;
+    --rule-soft:  #22282C;
+
+    --accent:     #F26B6B;
+    --accent-ink: #F58A8A;
+    --accent-wash:#2A1717;
+
+    --st-ship:    #6ECDAF;
+    --st-ship-bg: #16302A;
+    --st-build:   #E0A94A;
+    --st-build-bg:#302617;
+    --st-next:    #9FB6CC;
+    --st-next-bg: #1D262E;
+    --st-back:    #98A2A9;
+    --st-back-bg: #23282B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15.5px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--pad) 5rem; }
+
+  /* ── Masthead ─────────────────────────────────────────────── */
+
+  .mast { padding: clamp(2.5rem, 6vw, 4.25rem) 0 0; }
+  .mast-rule { height: 3px; background: var(--accent); width: 84px; margin-bottom: 1.5rem; }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5.2vw, 3.35rem);
+    line-height: 1.04;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+    margin: 0.5rem 0 0;
+  }
+  .standfirst {
+    max-width: var(--measure);
+    font-size: 1.0625rem;
+    color: var(--ink-mid);
+    margin: 1.15rem 0 0;
+  }
+  .standfirst strong { color: var(--ink); font-weight: 600; }
+
+  .meta-strip {
+    display: flex; flex-wrap: wrap; gap: 0 2.25rem;
+    margin-top: 2rem; padding-top: 1.1rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-mono); font-size: 0.775rem;
+    color: var(--ink-soft);
+  }
+  .meta-strip b { color: var(--ink-mid); font-weight: 500; }
+
+  /* ── Section furniture ────────────────────────────────────── */
+
+  section { margin-top: clamp(3rem, 7vw, 4.75rem); }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    letter-spacing: -0.016em;
+    line-height: 1.15;
+    margin: 0 0 0.35rem;
+    text-wrap: balance;
+  }
+  .sec-note { max-width: var(--measure); color: var(--ink-mid); margin: 0 0 1.75rem; }
+
+  /* ── Personas ─────────────────────────────────────────────── */
+
+  .personas { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  .persona { background: var(--surface); padding: 1.15rem 1.25rem; display: grid; grid-template-columns: 1fr; gap: 0.3rem; }
+  @media (min-width: 760px) { .persona { grid-template-columns: 190px 1fr; gap: 0 1.75rem; align-items: baseline; } }
+  .persona-name { font-weight: 600; font-size: 0.965rem; }
+  .persona-name span { display: block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 400; color: var(--ink-soft); letter-spacing: 0.04em; margin-top: 0.12rem; }
+  .persona-desc { color: var(--ink-mid); font-size: 0.925rem; }
+  .persona-desc code { font-size: 0.85em; }
+
+  /* ── Epic index ───────────────────────────────────────────── */
+
+  .index-grid {
+    display: grid; gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  }
+  a.idx {
+    display: grid; grid-template-rows: auto 1fr auto; gap: 0.4rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.85rem 0.95rem 0.8rem;
+    text-decoration: none; color: inherit;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.idx:hover, a.idx:focus-visible { border-color: var(--accent); transform: translateY(-1px); }
+  a.idx:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .idx-id { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; color: var(--accent-ink); letter-spacing: 0.06em; }
+  .idx-name { font-family: var(--font-display); font-weight: 500; font-size: 1.0rem; line-height: 1.22; letter-spacing: -0.01em; }
+  .idx-count { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-soft); }
+
+  /* ── Epics ────────────────────────────────────────────────── */
+
+  .epic { margin-top: clamp(2.75rem, 6vw, 4rem); scroll-margin-top: 1.5rem; }
+  .epic-head { border-top: 2px solid var(--ink); padding-top: 0.9rem; }
+  .epic-id {
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+    letter-spacing: 0.09em; color: var(--accent-ink);
+  }
+  .epic-title {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(1.5rem, 3.4vw, 2.05rem);
+    letter-spacing: -0.02em; line-height: 1.08;
+    margin: 0.18rem 0 0; text-wrap: balance;
+  }
+  .epic-intent { max-width: var(--measure); color: var(--ink-mid); margin: 0.6rem 0 0; }
+
+  .feature { margin-top: 1.9rem; }
+  .feature-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.7rem; }
+  .feature-id { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.05em; }
+  .feature-name { font-family: var(--font-display); font-weight: 500; font-size: 1.115rem; letter-spacing: -0.012em; margin: 0; }
+  .surfaces { display: flex; gap: 0.28rem; flex-wrap: wrap; }
+  .surf {
+    font-family: var(--font-mono); font-size: 0.635rem; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft); background: var(--surface-2);
+    border-radius: 2px; padding: 0.1rem 0.34rem;
+  }
+  .feature-note { max-width: var(--measure); color: var(--ink-soft); font-size: 0.9rem; margin: 0.35rem 0 0; }
+
+  .stories { margin: 0.85rem 0 0; padding: 0; list-style: none; border-top: 1px solid var(--rule-soft); }
+  .story {
+    display: grid; gap: 0.15rem 0.9rem;
+    grid-template-columns: 1fr;
+    padding: 0.62rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  @media (min-width: 860px) {
+    .story { grid-template-columns: 74px 1fr 92px; align-items: baseline; }
+    /* The gap note is a fourth child of a three-column grid — without this it
+       auto-places into the 74px ID column and wraps to nothing. */
+    .gap { grid-column: 2; }
+  }
+  .s-id { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-soft); letter-spacing: 0.03em; }
+  .s-text { font-size: 0.945rem; color: var(--ink); }
+  .s-text em { font-style: normal; font-weight: 600; }
+  .s-text code, .persona-desc code, .req code, .sec-note code, .epic-intent code, .feature-note code {
+    font-family: var(--font-mono); font-size: 0.855em;
+    background: var(--surface-2); border-radius: 2px; padding: 0.03em 0.28em;
+  }
+
+  .chip {
+    justify-self: start;
+    font-family: var(--font-mono); font-size: 0.645rem; font-weight: 600;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    border-radius: 2px; padding: 0.14rem 0.4rem; white-space: nowrap;
+  }
+  @media (min-width: 860px) { .chip { justify-self: end; } }
+  .c-ship  { color: var(--st-ship);  background: var(--st-ship-bg); }
+  .c-build { color: var(--st-build); background: var(--st-build-bg); }
+  .c-next  { color: var(--st-next);  background: var(--st-next-bg); }
+  .c-back  { color: var(--st-back);  background: var(--st-back-bg); }
+
+  .gap {
+    display: block; margin-top: 0.22rem;
+    font-size: 0.845rem; color: var(--accent-ink);
+  }
+  .gap::before { content: "Known gap — "; font-weight: 600; }
+
+  /* ── NFR treatment: constraint + verification, not a story ─── */
+
+  .reqs { margin-top: 1rem; border-top: 1px solid var(--rule); }
+  .req {
+    display: grid; gap: 0.3rem 1.5rem; grid-template-columns: 1fr;
+    padding: 0.85rem 0; border-bottom: 1px solid var(--rule-soft);
+  }
+  @media (min-width: 860px) { .req { grid-template-columns: 74px 1fr 1fr; } }
+  .req-what { font-size: 0.945rem; }
+  .req-how {
+    font-size: 0.88rem; color: var(--ink-mid);
+    border-left: 2px solid var(--rule); padding-left: 0.85rem;
+  }
+  .req-how b { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 0.1rem; }
+
+  /* ── Legend ───────────────────────────────────────────────── */
+
+  .legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; align-items: center; margin-top: 1.1rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.45rem; font-size: 0.855rem; color: var(--ink-mid); }
+
+  footer {
+    margin-top: 4.5rem; padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.87rem; color: var(--ink-soft);
+    max-width: var(--measure);
+  }
+  footer code { font-family: var(--font-mono); font-size: 0.855em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+    a.idx:hover { transform: none; }
+  }
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="mast-rule"></div>
+  <div class="eyebrow">Harrier Central · product backlog · September 2026</div>
+  <h1>Harrier Central Product Backlog</h1>
+  <p class="standfirst">
+    Every epic, feature and user story across the five components — the Flutter mobile app,
+    the Flutter admin portal, the Next.js public web, the Azure Functions shim and the SQL Server
+    domain layer — plus the non-functional requirements that hold them together.
+    <strong>Epics are organised by what a hasher is trying to do, not by which codebase serves it</strong>,
+    because almost every feature here spans three surfaces at once.
+  </p>
+
+  <div class="meta-strip">
+    <div><b>15</b> epics</div>
+    <div><b>73</b> features</div>
+    <div><b>229</b> stories</div>
+    <div><b>45</b> NFR requirements</div>
+    <div><b>6</b> personas</div>
+    <div>Status as at <b>2026-09-08</b></div>
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="chip c-ship">Shipped</span> in production</span>
+    <span class="legend-item"><span class="chip c-build">Building</span> in flight now</span>
+    <span class="legend-item"><span class="chip c-next">Next</span> designed, not built</span>
+    <span class="legend-item"><span class="chip c-back">Backlog</span> not yet designed</span>
+  </div>
+</header>
+
+<section id="personas">
+  <h2>Personas</h2>
+  <p class="sec-note">
+    Six roles, each with a distinct mechanism behind it. The two that get confused most often are
+    <em>mismanagement</em> and <em>kennel admin</em>: they are independent grantor bitfields on
+    <code>HC.HasherKennelMap</code>, and a function is allowed if <em>either</em> grants it. Somebody can
+    run Harrier Central for their kennel while holding no club office at all.
+  </p>
+
+  <div class="personas">
+    <div class="persona">
+      <div class="persona-name">Visitor<span>no account</span></div>
+      <div class="persona-desc">Finds a kennel through the public web or guest discovery. Sees run calendars, trails and club info. Can be checked in to a run as a visitor without ever registering.</div>
+    </div>
+    <div class="persona">
+      <div class="persona-name">Hasher<span>registered member</span></div>
+      <div class="persona-desc">Has an account and follows one or more kennels. Their membership is kennel-scoped, so the same person can be a member of six kennels with different standing in each.</div>
+    </div>
+    <div class="persona">
+      <div class="persona-name">Hare<span>run-scoped</span></div>
+      <div class="persona-desc">Set the trail for one specific run. Held on <code>HasherEventMap.IsHare</code> and granted only for that event — it is the one permission that is not kennel-wide.</div>
+    </div>
+    <div class="persona">
+      <div class="persona-name">Mismanagement<span>MismanagementRoles</span></div>
+      <div class="persona-desc">The club offices: Grand Master/Mistress, Vice GM, Religious Advisor, Hash Cash, Hare Raiser, Hash Flash. A bitfield of ceremonial titles that <em>may</em> also grant system functions.</div>
+    </div>
+    <div class="persona">
+      <div class="persona-name">Kennel HC Admin<span>AppAccessFlags</span></div>
+      <div class="persona-desc">Runs Harrier Central for a kennel. A separate bitfield from mismanagement and frequently held by someone with no club office. Note <code>IsAdmin (0x01)</code> is not a bypass; <code>SuperAdmin (0x40000000)</code> is the only per-kennel one.</div>
+    </div>
+    <div class="persona">
+      <div class="persona-name">Platform Admin<span>HC.PlatformAdmin</span></div>
+      <div class="persona-desc">Opee and Tuna Melt only. Four independent capabilities — <code>CanViewMonitor</code>, <code>CanManageNewsflash</code>, <code>CanEditKennel</code>, <code>CanManagePermissions</code> — and the last is held by Opee alone.</div>
+    </div>
+  </div>
+</section>
+
+<section id="index">
+  <h2>Epics</h2>
+  <p class="sec-note">Twelve product epics and three non-functional ones. IDs are stable — quote them when assigning work to an agent.</p>
+  <div class="index-grid">
+    <a class="idx" href="#e1"><span class="idx-id">E1</span><span class="idx-name">Identity &amp; Account Access</span><span class="idx-count">6 features · 23 stories</span></a>
+    <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 18 stories</span></a>
+    <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 23 stories</span></a>
+    <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
+    <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 29 stories</span></a>
+    <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">4 features · 17 stories</span></a>
+    <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 13 stories</span></a>
+    <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">6 features · 21 stories</span></a>
+    <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">5 features · 19 stories</span></a>
+    <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 14 stories</span></a>
+    <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 21 stories</span></a>
+    <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">5 features · 16 stories</span></a>
+    <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 14 requirements</span></a>
+    <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 17 requirements</span></a>
+    <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
+  </div>
+</section>
+
+<section class="epic" id="e1">
+  <div class="epic-head">
+    <div class="epic-id">E1</div>
+    <h2 class="epic-title">Identity &amp; Account Access</h2>
+    <p class="epic-intent">Getting a hasher into the app and back into it after they change phones — without a password, because the club's own recovery route is an invite code and a hash name, not an email and a secret.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E1.F1</span><h3 class="feature-name">Device-bound authentication</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Portal</span><span class="surf">API</span><span class="surf">DB</span></span></div>
+    <p class="feature-note">A device secret plus a per-device time window mints a 30-second SHA-256 token for every call. There is no password anywhere in the system.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E1.F1.S1</span><span class="s-text">As a <em>Hasher</em>, I want my phone registered once so that every later call authenticates without me signing in again.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F1.S2</span><span class="s-text">As a <em>Hasher</em>, I want sensitive calls bound to the specific operation so that a captured token cannot be replayed against a different target or amount.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F1.S3</span><span class="s-text">As a <em>Hasher</em> whose phone clock has drifted, I want to be told to turn on automatic time rather than to reinstall, so that I can actually fix it.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F1.S4</span><span class="s-text">As a <em>Hasher</em>, I want the server to tolerate a couple of time blocks either side so that ordinary latency does not lock me out.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F1.S5</span><span class="s-text">As a <em>Hasher</em> on a second device, I want to approve the new device from the one I already trust so that I am not locked out of my own account.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E1.F2</span><h3 class="feature-name">Self-service signup</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">API</span><span class="surf">DB</span></span></div>
+    <p class="feature-note">The path a brand-new hasher takes with nobody helping them. Broken in five stacked ways until 2026-09-07; admin-created accounts had masked it for months.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E1.F2.S1</span><span class="s-text">As a <em>Visitor</em>, I want to create an account from first name, last name, hash name and email so that I can start using the app the day I hear about it.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F2.S2</span><span class="s-text">As a <em>Visitor</em>, I want the signup screen to have a visible way forward so that I am not stranded on the form.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F2.S3</span><span class="s-text">As a <em>Visitor</em> creating my first account, I want the call to be allowed before I have any credentials so that account creation is not gated on being authenticated.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F2.S4</span><span class="s-text">As a <em>Visitor</em> whose email is already registered, I want to be told that and offered recovery so that I do not create a duplicate.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F2.S5</span><span class="s-text">As a <em>Visitor</em>, I want a random bundled avatar assigned so that I have an identity before I upload anything.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F2.S6</span><span class="s-text">As a <em>Visitor</em>, I want to sign up with Apple or Google so that I do not have to type my details on a phone.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E1.F3</span><h3 class="feature-name">Account recovery by invite code</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">API</span><span class="surf">DB</span></span></div>
+    <p class="feature-note">Every hasher permanently holds a compliant <code>URC:AAAAAA</code> code. It is the only recovery route, so a user without one is locked out of their own account.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E1.F3.S1</span><span class="s-text">As a <em>Hasher</em> on a new phone, I want to enter my invite code and get my account back so that I keep my history and run counts.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F3.S2</span><span class="s-text">As a <em>Hasher</em>, I want a fresh code minted automatically whenever mine is missing or malformed so that I am never told my account has no invite code.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F3.S3</span><span class="s-text">As a <em>Hasher</em>, I want my code emailed to me on request, rate-limited so that repeated taps do not invalidate the one I was just sent.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F3.S4</span><span class="s-text">As a <em>Hasher</em> who cannot remember which email I used, I want to search for myself by hash name so that I can identify my own account.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F3.S5</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to send invite codes to my whole roster at once so that I can onboard a club in one go.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E1.F4</span><h3 class="feature-name">Profile &amp; preferences</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E1.F4.S1</span><span class="s-text">As a <em>Hasher</em>, I want to set a profile photo from my camera, my library or the bundled avatar set so that the pack recognises me on the map.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F4.S2</span><span class="s-text">As a <em>Hasher</em>, I want to control which emails and push notifications I receive so that the app is not noisy.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F4.S3</span><span class="s-text">As a <em>Hasher</em>, I want a QR code identifying me so that Hash Cash can check me in without typing.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E1.F5</span><h3 class="feature-name">Guest &amp; visitor access</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E1.F5.S1</span><span class="s-text">As a <em>Visitor</em>, I want to browse upcoming runs worldwide before registering so that I can find a hash while travelling.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F5.S2</span><span class="s-text">As a <em>Visitor</em> at a run, I want to be checked in as a guest so that I count in the attendance without creating an account.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E1.F6</span><h3 class="feature-name">Leaving the platform</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E1.F6.S1</span><span class="s-text">As a <em>Hasher</em>, I want to delete my account and personal data on request so that I can exercise my rights under GDPR.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F6.S2</span><span class="s-text">As a <em>Hasher</em>, I want to log out and have the app return to a clean first-run state so that the next person on this phone sees nothing of mine.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e2">
+  <div class="epic-head">
+    <div class="epic-id">E2</div>
+    <h2 class="epic-title">Kennels, Membership &amp; Permissions</h2>
+    <p class="epic-intent">A hasher belongs to many kennels with different standing in each, and every permission decision is scoped to one of them. This epic owns the authorisation model the whole platform depends on.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E2.F1</span><h3 class="feature-name">Finding and following a kennel</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E2.F1.S1</span><span class="s-text">As a <em>Hasher</em>, I want to search kennels by name, city, region or country so that I can find my local hash.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F1.S2</span><span class="s-text">As a <em>Hasher</em>, I want search to also match a kennel's own search tags so that "Scotland" finds kennels that are not filed under a Scotland region.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F1.S3</span><span class="s-text">As a <em>Hasher</em>, I want following a kennel to pull down its full run history so that I can see everything, not just the last ten days.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F1.S4</span><span class="s-text">As a <em>Hasher</em>, I want to join a kennel as a member so that my runs there count toward my totals.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E2.F2</span><h3 class="feature-name">The member roster</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Portal</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E2.F2.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to see every member with their run count, standing and contact details so that I can manage the club.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F2.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to add a hasher who is not yet on the platform so that I can register someone at the run.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F2.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to bulk-import a roster so that I can migrate an existing club without typing every member.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F2.S4</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want the roster on a desktop to be a dense grid and on a phone to be cards so that each is usable on its own screen.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E2.F3</span><h3 class="feature-name">Mismanagement roles</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Portal</span><span class="surf">DB</span></span></div>
+    <p class="feature-note">GM, Vice GM, Religious Advisor, Hash Cash, Hare Raiser, Hash Flash — a bitfield on <code>HasherKennelMap</code> that is both a club office and, optionally, a permission grantor.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E2.F3.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to assign club offices to members so that the roster reflects who actually runs the hash.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F3.S2</span><span class="s-text">As a <em>Hasher</em>, I want to see who to contact for what so that I know who the Hash Cash is before I turn up with no money.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F3.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to hold admin rights without holding any club office so that whoever is willing to run the software can do so.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E2.F4</span><h3 class="feature-name">Data-driven permissions (V2)</h3>
+      <span class="surfaces"><span class="surf">Portal</span><span class="surf">DB</span></span></div>
+    <p class="feature-note">One authorizer, <code>CheckKennelPermission</code>, resolving a function key against role and flag grantors with a per-kennel tri-state override.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E2.F4.S1</span><span class="s-text">As a <em>Platform Admin</em>, I want every kennel-scoped feature gated by one authorizer so that there is a single place a permission bug can live.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F4.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want a kennel to be able to grant or revoke a function against the global default so that clubs can differ without a code change.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F4.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want to edit the permission matrix in the portal so that changing who can do what is not a deployment.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F4.S4</span><span class="s-text">As a <em>Hare</em>, I want edit rights on my own run only so that setting a trail does not make me an administrator of the club.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E2.F5</span><h3 class="feature-name">Member standing</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E2.F5.S1</span><span class="s-text">As a <em>Hash Cash</em>, I want a member's paid-up standing computed from their payment history so that I do not track subscriptions on paper.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F5.S2</span><span class="s-text">As a <em>Hash Cash</em>, I want standing swept nightly so that a lapsed membership shows as lapsed without anyone touching it.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E2.F5.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want a richer standing model covering honorary, life and suspended members so that the roster matches how clubs actually work.</span><span class="chip c-next">Next</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e3">
+  <div class="epic-head">
+    <div class="epic-id">E3</div>
+    <h2 class="epic-title">Runs &amp; the Calendar</h2>
+    <p class="epic-intent">The run is the atom of the whole platform. Creating one, finding it, getting to it, and keeping its numbering straight across a club that has been running for thirty years.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E3.F1</span><h3 class="feature-name">Creating and editing a run</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Portal</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E3.F1.S1</span><span class="s-text">As a <em>Hare Raiser</em>, I want to create a run with date, time, location, hares and fees so that the pack knows where to turn up.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F1.S2</span><span class="s-text">As a <em>Hare Raiser</em>, I want to schedule a recurring run so that I am not creating the same Monday trail every week.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E3.F1.S3</span><span class="s-text">As a <em>Hare</em>, I want to edit my own run's details up to the start so that late changes reach the pack.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F1.S4</span><span class="s-text">As a <em>Hare Raiser</em>, I want to cancel a run with a reason so that nobody drives to a trail that is not happening.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F1.S5</span><span class="s-text">As a <em>Hare Raiser</em>, I want the run's start time stored as both an instant and a wall clock so that a trail in another timezone displays correctly in both places.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E3.F2</span><h3 class="feature-name">Locations &amp; the gazetteer</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">API</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E3.F2.S1</span><span class="s-text">As a <em>Hare</em>, I want to pick a country, then region, then city in a cascade so that I cannot file a run in a city that is not in that country.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F2.S2</span><span class="s-text">As a <em>Hare</em>, I want to drop a pin or search an address so that the start is exact rather than approximate.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F2.S3</span><span class="s-text">As a <em>Hasher</em>, I want one tap to open the run start in my own maps app so that I can navigate there.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F2.S4</span><span class="s-text">As a <em>Hare</em>, I want the timezone inferred from the location so that I do not have to know it.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E3.F3</span><h3 class="feature-name">Browsing runs</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E3.F3.S1</span><span class="s-text">As a <em>Hasher</em>, I want upcoming runs across every kennel I follow in one list so that I can plan my week.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F3.S2</span><span class="s-text">As a <em>Hasher</em>, I want a run I attended today to stay above the next one so that I can still do my post-run admin.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F3.S3</span><span class="s-text">As a <em>Hasher</em>, I want a run to move to the past six hours after it starts so that the app and the database always agree which side of the line it is on.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F3.S4</span><span class="s-text">As a <em>Hasher</em>, I want to filter runs by kennel, date range and distance from me so that a long list stays usable.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F3.S5</span><span class="s-text">As a <em>Hasher</em> with a slow connection, I want the cached list shown while the sync runs so that I never see "No runs" on a list that is still loading.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E3.F4</span><h3 class="feature-name">The run detail view</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Portal</span><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E3.F4.S1</span><span class="s-text">As a <em>Hasher</em>, I want everything about a run on one screen — map, hares, fees, on-after, who is coming — so that I do not have to hunt.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F4.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want a desktop rendering and a phone rendering of run detail so that neither is a compromise.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F4.S3</span><span class="s-text">As a <em>Hasher</em>, I want to share a run to the interactive map, Trail TV or the photo gallery so that I can post it to the club's group chat.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F4.S4</span><span class="s-text">As a <em>Hasher</em>, I want the shared link to preview with the run's own image so that it does not land as a bare URL.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E3.F5</span><h3 class="feature-name">Run numbering</h3>
+      <span class="surfaces"><span class="surf">DB</span></span></div>
+    <p class="feature-note">Clubs number their runs continuously, sometimes into the thousands. Inserting a forgotten historical run has to renumber everything after it.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E3.F5.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want run numbers recalculated when I insert a historical run so that the sequence stays continuous.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F5.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want renumbering to happen inside the same transaction as the write so that a failure cannot leave two runs sharing a number.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F5.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to override a run's number by hand so that a club with an idiosyncratic history can still be represented.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E3.F6</span><h3 class="feature-name">Calendar integration</h3>
+      <span class="surfaces"><span class="surf">API</span><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E3.F6.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want our runs pushed to the club's Google Calendar so that members who live in their calendar still see them.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F6.S2</span><span class="s-text">As a <em>Hasher</em>, I want to subscribe to a kennel's runs as a feed so that they appear in my own calendar automatically.</span><span class="chip c-back">Backlog</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e4">
+  <div class="epic-head">
+    <div class="epic-id">E4</div>
+    <h2 class="epic-title">Attendance &amp; Check-In</h2>
+    <p class="epic-intent">Who said they were coming, who actually turned up, and how the Hash Cash records forty people in the ten minutes before the circle. Two separate state machines that must never be conflated.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E4.F1</span><h3 class="feature-name">RSVP</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Web</span><span class="surf">DB</span></span></div>
+    <p class="feature-note">RSVP is intent — No / Maybe / Yes. Attendance is fact. They are different enums and conflating them has caused real bugs.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E4.F1.S1</span><span class="s-text">As a <em>Hasher</em>, I want to say whether I am coming so that the hares know how much beer to buy.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F1.S2</span><span class="s-text">As a <em>Hasher</em>, I want no RSVP controls on a run that has already happened so that I am not asked about a decision I can no longer make.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F1.S3</span><span class="s-text">As a <em>Hasher</em>, I want to RSVP to several runs at once so that a weekend away is one action.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F1.S4</span><span class="s-text">As a <em>Hare Raiser</em>, I want to copy the RSVP list from one run to another so that a recurring group does not re-declare every week.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E4.F2</span><h3 class="feature-name">Checking the pack in</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E4.F2.S1</span><span class="s-text">As a <em>Hash Cash</em>, I want to check people in from a searchable list of members and recent visitors so that I can work fast at the start.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F2.S2</span><span class="s-text">As a <em>Hash Cash</em>, I want to scan a hasher's QR code to check them in so that I do not have to find them in a list.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F2.S3</span><span class="s-text">As a <em>Hash Cash</em>, I want to check in a whole group in one action so that a visiting kennel is not forty separate taps.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F2.S4</span><span class="s-text">As a <em>Hash Cash</em>, I want check-in to work with no signal and sync later so that a trail in a field is not a blocker.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E4.F3</span><h3 class="feature-name">Self check-in</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E4.F3.S1</span><span class="s-text">As a <em>Hasher</em> standing at the start, I want to check myself in so that I do not queue at the Hash Cash.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F3.S2</span><span class="s-text">As a <em>Hasher</em>, I want to be prompted to check in when I arrive at the start around the right time so that I do not forget.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F3.S3</span><span class="s-text">As a <em>Hasher</em> at a free run, I want the button to say "Check In" rather than anything about paying so that a zero fee does not read as a charge.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F3.S4</span><span class="s-text">As a <em>Hasher</em> who is not logged in but is at the start at the right time, I want the run tools offered so that I can still join in.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E4.F3.S5</span><span class="s-text">As a <em>Hasher</em> who starts tracking, I want my RSVP set to attending and my attendance set to at-hash so that one action does not leave three records disagreeing.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E4.F4</span><h3 class="feature-name">Post-run attendance claims</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <p class="feature-note">Replaces the RSVP controls that used to linger on past runs. A claim is a request, not a fact, until a kennel admin approves it.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E4.F4.S1</span><span class="s-text">As a <em>Hasher</em> who forgot to check in, I want to claim I was there so that my run count is right.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E4.F4.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to be prompted to approve or decline a claim so that run counts cannot be inflated unilaterally.</span><span class="chip c-next">Next</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e5">
+  <div class="epic-head">
+    <div class="epic-id">E5</div>
+    <h2 class="epic-title">PackTrack Live Tracking</h2>
+    <p class="epic-intent">Recording where the pack went and playing it back. Tracks live in Azure Table Storage rather than SQL, which is why no stored procedure knows a run was ever tracked.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E5.F1</span><h3 class="feature-name">Recording a trail</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">API</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E5.F1.S1</span><span class="s-text">As a <em>Hasher</em>, I want to start tracking from the run tools so that my trail is recorded without any setup.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F1.S2</span><span class="s-text">As a <em>Hasher</em>, I want to choose Best, Balanced or Power Saver so that I can trade precision against battery on a long trail.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F1.S3</span><span class="s-text">As a <em>Hasher</em>, I want tracking to continue with the app in my pocket so that I do not have to keep the screen on.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F1.S4</span><span class="s-text">As a <em>Hasher</em> out of signal, I want points buffered and sent when I reconnect so that a trail through a valley is not lost.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F1.S5</span><span class="s-text">As a <em>Hasher</em>, I want tracking to stop itself when I have clearly finished so that my phone is not tracking me home.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F1.S6</span><span class="s-text">As a <em>Hasher</em>, I want the app to draw no meaningful battery when I am not tracking so that it is not blamed for a flat phone.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E5.F2</span><h3 class="feature-name">Trail marks</h3>
+      <span class="surfaces"><span class="surf">App</span></span></div>
+    <p class="feature-note">Checks, false trails, fish hooks, regroups, drink stops, On Inn — dropped by the hare as they lay, or by the pack as they run.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E5.F2.S1</span><span class="s-text">As a <em>Hare</em>, I want to drop a typed mark at my exact position so that the pack can see the trail's structure.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F2.S2</span><span class="s-text">As a <em>Hare</em>, I want to add my own text to a caution or label so that I can warn about a specific road.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F2.S3</span><span class="s-text">As a <em>Hasher</em>, I want the On Inn to end the drawn track so that the polyline stops where the trail did.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F2.S4</span><span class="s-text">As a <em>Hare</em>, I want to choose a glyph or free text for a mark so that the marker set is not limited to what was coded.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E5.F2.S5</span><span class="s-text">As a <em>Hare</em>, I want to tag a trail as Normal, Long or Walker so that viewers can filter to the route they actually ran.</span><span class="chip c-next">Next</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E5.F3</span><h3 class="feature-name">GPS noise filtering</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Web</span></span></div>
+    <p class="feature-note">Two implementations that are deliberate mirrors of one algorithm — <code>track_point_filter.dart</code> and <code>packtrack.ts</code>. They must change together or the same run measures differently in each.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E5.F3.S1</span><span class="s-text">As a <em>Hasher</em>, I want each fix pulled toward its neighbours in proportion to its own uncertainty so that a poor GPS day is cleaned rather than deleted.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F3.S2</span><span class="s-text">As a <em>Hasher</em>, I want photo marks excluded from the track maths so that an imported photo cannot drag my trail sideways or inflate my distance.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F3.S3</span><span class="s-text">As a <em>Hasher</em> who stood at a check for twenty minutes, I want that recognised as standing still so that jitter is not counted as distance.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F3.S4</span><span class="s-text">As a <em>Hasher</em> on a bad-GPS day, I want the stationary radius to scale with my accuracy so that a stall on 100m fixes is still recognised as a stall.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F3.S5</span><span class="s-text">As a <em>Platform Admin</em>, I want filter changes pinned by tests against real recorded tracks so that a tuning change cannot quietly eat real distance.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E5.F4</span><h3 class="feature-name">The live map</h3>
+      <span class="surfaces"><span class="surf">App</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E5.F4.S1</span><span class="s-text">As a <em>Hasher</em>, I want to see everyone's live position on a map so that I can find the pack when I am lost.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F4.S2</span><span class="s-text">As a <em>Hasher</em>, I want a radar view showing bearing and distance to each runner so that I can navigate to them without reading a map.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F4.S3</span><span class="s-text">As a <em>Hasher</em>, I want a sortable list of runners by trail length or proximity so that I can pick who to follow.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F4.S4</span><span class="s-text">As a <em>Hasher</em>, I want one consistent control column across the map, radar and list so that the buttons do not move when I switch view.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F4.S5</span><span class="s-text">As a <em>Hasher</em>, I want a distress mark to show even when I have filtered that trail out so that a call for help is never hidden.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E5.F5</span><h3 class="feature-name">Replay &amp; sharing</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E5.F5.S1</span><span class="s-text">As a <em>Hasher</em>, I want to scrub and play back the whole run so that I can see how the pack moved.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F5.S2</span><span class="s-text">As a <em>Hasher</em>, I want photos to appear at the moment they were taken during playback so that the replay tells the run's story.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F5.S3</span><span class="s-text">As a <em>Visitor</em>, I want to watch a trail on the web without the app so that I can share it with anybody.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F5.S4</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want a big-screen event wall cycling through live and recent trails so that it can run on a TV at the on-after.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F5.S5</span><span class="s-text">As a <em>Hasher</em>, I want to export a trail as GPX so that I can open it in my own running app.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E5.F6</span><h3 class="feature-name">Track administration</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">API</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E5.F6.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to trim the start and end of a recorded track so that the drive to the pub is not part of the trail.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F6.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to delete a track entirely so that a mis-recorded trail can be removed.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F6.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage.</span><span class="chip c-build">Building</span>
+        <span class="gap">no SQL record exists that a run was tracked; enumeration is a partition-key skip walk</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e6">
+  <div class="epic-head">
+    <div class="epic-id">E6</div>
+    <h2 class="epic-title">Photos &amp; Hash Flash</h2>
+    <p class="epic-intent">The Hash Flash takes the pictures and approves what the club sees. Photos carry their own position and capture time, which is what lets them be placed on a map without borrowing somebody's GPS track.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E6.F1</span><h3 class="feature-name">Capturing and uploading</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">API</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E6.F1.S1</span><span class="s-text">As a <em>Hasher</em>, I want to take a photo during the run and have it attached to that run so that I do not file it later.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F1.S2</span><span class="s-text">As a <em>Hasher</em>, I want to choose whether each photo is private or submitted to the club so that I control what is shared.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F1.S3</span><span class="s-text">As a <em>Hasher</em> with no signal, I want photos queued and uploaded later so that a trail in a field does not lose them.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F1.S4</span><span class="s-text">As a <em>Hasher</em>, I want the stored position to come from a fresh fix rather than a stale idle one so that the pin is where I actually was.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F1.S5</span><span class="s-text">As a <em>Hasher</em>, I want a full-quality copy saved to my camera roll so that the club's copy is not the only one.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E6.F2</span><h3 class="feature-name">Importing from the camera roll</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E6.F2.S1</span><span class="s-text">As a <em>Hasher</em>, I want to import photos I already took and have the app work out which belong to this run so that I am not filing them by hand.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F2.S2</span><span class="s-text">As a <em>Hasher</em>, I want an imported photo pinned where it was taken rather than where I imported it so that the map is honest.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F2.S3</span><span class="s-text">As a <em>Hasher</em>, I want an imported photo to carry its own capture time so that it appears at the right moment in replay.</span><span class="chip c-build">Building</span></li>
+      <li class="story"><span class="s-id">E6.F2.S4</span><span class="s-text">As a <em>Hasher</em>, I want an imported photo to stop wearing the importer's identity so that hiding a trail does not hide somebody else's photo.</span><span class="chip c-build">Building</span>
+        <span class="gap">markers still read position and time from the <code>PHO::</code> track point; the renderer switch is not done</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E6.F3</span><h3 class="feature-name">Hash Flash approval</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Portal</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E6.F3.S1</span><span class="s-text">As a <em>Hash Flash</em>, I want a review queue of submitted photos so that nothing reaches the public site unapproved.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F3.S2</span><span class="s-text">As a <em>Hash Flash</em>, I want to approve, reject or delete in bulk so that a hundred photos is not a hundred decisions one at a time.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F3.S3</span><span class="s-text">As a <em>Hash Flash</em>, I want to nominate a cover photo for the run so that the run card has a face.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F3.S4</span><span class="s-text">As a <em>Hash Flash</em>, I want to crop a photo without destroying the original so that a bad framing is fixable and reversible.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E6.F4</span><h3 class="feature-name">Viewing photos</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E6.F4.S1</span><span class="s-text">As a <em>Hasher</em>, I want photos as pins on the run map so that I can see where each was taken.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F4.S2</span><span class="s-text">As a <em>Hasher</em>, I want a swipeable carousel from any photo pin so that I can browse without going back to the map each time.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F4.S3</span><span class="s-text">As a <em>Visitor</em>, I want a public gallery for a run so that a shared link shows the pictures without the app.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E6.F4.S4</span><span class="s-text">As a <em>Visitor</em>, I want the public gallery to expose no GPS coordinates so that an unauthenticated page cannot leak where people were.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e7">
+  <div class="epic-head">
+    <div class="epic-id">E7</div>
+    <h2 class="epic-title">Circle, Down Downs &amp; Songs</h2>
+    <p class="epic-intent">What happens after the trail. The Religious Advisor runs the circle, hands out down downs, and picks the songs — and the app has to keep up with somebody shouting over forty people.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E7.F1</span><h3 class="feature-name">Down downs</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E7.F1.S1</span><span class="s-text">As a <em>Religious Advisor</em>, I want to record a down down against a hasher with a reason so that the circle has a running order.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E7.F1.S2</span><span class="s-text">As a <em>Religious Advisor</em>, I want to mark one done, undo it, or cancel it so that a mistake in a noisy circle is recoverable.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E7.F1.S3</span><span class="s-text">As a <em>Hasher</em>, I want to nominate somebody for a down down so that the circle is not only the RA's ideas.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E7.F1.S4</span><span class="s-text">As a <em>Religious Advisor</em>, I want a live count of drinks poured so that the beer meister knows where they stand.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E7.F2</span><h3 class="feature-name">Songs</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Portal</span><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E7.F2.S1</span><span class="s-text">As a <em>Hasher</em>, I want the club's songbook on my phone so that I can join in without knowing the words.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E7.F2.S2</span><span class="s-text">As a <em>Religious Advisor</em>, I want to push the current song to everyone at the run so that the whole circle is on the same verse.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E7.F2.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to choose which songs our kennel uses so that the songbook reflects our club.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E7.F2.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want to add and edit songs centrally so that every kennel benefits from one library.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E7.F3</span><h3 class="feature-name">Hash trash</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E7.F3.S1</span><span class="s-text">As a <em>Religious Advisor</em>, I want to write the run's hash trash so that there is a record of what happened.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E7.F3.S2</span><span class="s-text">As a <em>Hasher</em>, I want to read the hash trash on the run detail so that I can relive a run I was at or catch up on one I missed.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E7.F4</span><h3 class="feature-name">Naming &amp; ceremony</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E7.F4.S1</span><span class="s-text">As a <em>Religious Advisor</em>, I want to record that a hasher was named, with their old and new name so that the club's history is kept.</span><span class="chip c-back">Backlog</span></li>
+      <li class="story"><span class="s-id">E7.F4.S2</span><span class="s-text">As a <em>Hasher</em>, I want milestone runs flagged in the circle so that nobody's 100th passes unmarked.</span><span class="chip c-back">Backlog</span></li>
+      <li class="story"><span class="s-id">E7.F4.S3</span><span class="s-text">As a <em>Hasher</em>, I want virgins and visitors identified at the start so that the circle can welcome them properly.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e8">
+  <div class="epic-head">
+    <div class="epic-id">E8</div>
+    <h2 class="epic-title">Money &amp; the Hash Cash Ledger</h2>
+    <p class="epic-intent">Run fees, memberships, kit and credit. Every movement is a ledger entry, and the ledger has to balance whether the money arrived as cash in a bucket or as credit the club gave away.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E8.F1</span><h3 class="feature-name">Run fees</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E8.F1.S1</span><span class="s-text">As a <em>Hare Raiser</em>, I want to set different prices for members, visitors and virgins so that the run charges what the club decided.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F1.S2</span><span class="s-text">As a <em>Hash Cash</em>, I want to take payment at check-in in cash, credit or card so that everybody can pay however they turned up.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F1.S3</span><span class="s-text">As a <em>Hasher</em>, I want to pay my own run fee from my phone so that I do not need the Hash Cash to be free.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F1.S4</span><span class="s-text">As a <em>Hash Cash</em>, I want to charge a whole group in one action so that a visiting kennel is one transaction.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F1.S5</span><span class="s-text">As a <em>Hash Cash</em>, I want a zero-value run to record attendance without pretending money moved so that free runs do not pollute the ledger.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E8.F2</span><h3 class="feature-name">Memberships</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E8.F2.S1</span><span class="s-text">As a <em>Hash Cash</em>, I want annual, rolling and calendar-year renewal modes so that the platform fits how our club actually charges.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F2.S2</span><span class="s-text">As a <em>Hasher</em>, I want to renew my membership from the app so that I do not have to catch the Hash Cash at a run.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F2.S3</span><span class="s-text">As a <em>Hash Cash</em>, I want a renewal to be credit-neutral in the ledger so that taking a subscription does not look like income twice.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E8.F3</span><h3 class="feature-name">Haberdashery</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E8.F3.S1</span><span class="s-text">As a <em>Hash Cash</em>, I want to sell shirts and badges through the same payment flow so that kit sales are in the same ledger as everything else.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F3.S2</span><span class="s-text">As a <em>Hash Cash</em>, I want reports broken down by product type so that I can see kit income separately from run income.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E8.F4</span><h3 class="feature-name">Credit</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E8.F4.S1</span><span class="s-text">As a <em>Hash Cash</em>, I want members to hold a credit balance so that somebody can pay for ten runs up front.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F4.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want credit switchable per kennel so that clubs that do not work that way never see it.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F4.S3</span><span class="s-text">As a <em>Hash Cash</em>, I want run packages and hare rewards recorded as tracked promotional credit so that giveaways are visible rather than lost income.</span><span class="chip c-build">Building</span></li>
+      <li class="story"><span class="s-id">E8.F4.S4</span><span class="s-text">As a <em>Hasher</em>, I want to see my own credit ledger so that I know what I have left.</span><span class="chip c-build">Building</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E8.F5</span><h3 class="feature-name">Payment integrity</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <p class="feature-note">A payment taken twice is worse than one not taken at all. The client-generated payment id is the primary key, which makes a retry idempotent by construction.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E8.F5.S1</span><span class="s-text">As a <em>Hash Cash</em>, I want a retried payment to be recognised as the same payment so that a flaky signal cannot double-charge somebody.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F5.S2</span><span class="s-text">As a <em>Hash Cash</em>, I want payments taken offline held in an outbox and sent when I reconnect so that nothing is lost in a field.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F5.S3</span><span class="s-text">As a <em>Hash Cash</em>, I want monetary values held as fixed-point decimals so that rounding never loses a cent.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F5.S4</span><span class="s-text">As a <em>Hasher</em> paying my own free run fee, I want that permitted without an admin grant so that self check-in is not silently refused.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E8.F6</span><h3 class="feature-name">Receipts &amp; reconciliation</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">API</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E8.F6.S1</span><span class="s-text">As a <em>Hash Cash</em>, I want to record expenses against a run with a photographed receipt so that the run's true cost is known.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F6.S2</span><span class="s-text">As a <em>Hash Cash</em>, I want a payment report per run and per period so that I can reconcile the bucket against the app.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E8.F6.S3</span><span class="s-text">As a <em>Hash Cash</em>, I want that report emailed to me on a schedule so that reconciliation is not something I have to remember.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e9">
+  <div class="epic-head">
+    <div class="epic-id">E9</div>
+    <h2 class="epic-title">Messaging, Notifications &amp; Teaching</h2>
+    <p class="epic-intent">Reaching hashers where they are — in the run's chat, in a push, or in a guided sequence that teaches them a feature they did not know existed. The last of those is about to carry a lot more weight.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E9.F1</span><h3 class="feature-name">Run &amp; kennel chat</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Portal</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E9.F1.S1</span><span class="s-text">As a <em>Hasher</em>, I want a chat attached to each run so that "where are you" has an obvious place to go.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F1.S2</span><span class="s-text">As a <em>Hasher</em>, I want a kennel-wide chat so that club conversation is not tied to one trail.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F1.S3</span><span class="s-text">As a <em>Hasher</em>, I want an accurate unread badge that clears the moment I read so that the badge means something.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F1.S4</span><span class="s-text">As a <em>Hasher</em> with two devices, I want reading on one to clear the badge on the other so that I am not marking things read twice.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E9.F2</span><h3 class="feature-name">Push notifications</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">API</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E9.F2.S1</span><span class="s-text">As a <em>Hasher</em>, I want a push when somebody messages a run I am attending so that I do not have to keep opening the app.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F2.S2</span><span class="s-text">As a <em>Hasher</em>, I want a push when the RA selects a song so that I can find the words in the circle.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F2.S3</span><span class="s-text">As a <em>Hasher</em>, I want a reminder before a run I said I would attend so that I do not forget.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F2.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want silent sync pushes budgeted against the platform's throttle so that iOS does not quietly stop delivering them.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E9.F3</span><h3 class="feature-name">Newsflashes</h3>
+      <span class="surfaces"><span class="surf">Portal</span><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E9.F3.S1</span><span class="s-text">As a <em>Platform Admin</em>, I want to publish a newsflash to a targeted audience so that I can reach hashers without shipping a release.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F3.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want to see who has read a newsflash and how they responded so that I know whether the message landed.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F3.S3</span><span class="s-text">As a <em>Hasher</em>, I want to respond to a newsflash so that a question to the club is not one-way.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E9.F4</span><h3 class="feature-name">Teaching sequences</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <p class="feature-note">Two independent mechanisms. <code>HC.SplashSequence</code> is data-driven with scheduling, typing and kennel/event scoping — this is the one to build on. The version deck is convention-based (<code>version_&lt;minor&gt;_&lt;n&gt;</code> blobs) and fires only on an upgrade.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E9.F4.S1</span><span class="s-text">As a <em>Platform Admin</em>, I want to schedule an image sequence with a valid-from and valid-until so that a lesson appears and retires on its own.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F4.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want to retire a sequence with a flag rather than by deleting its images so that retiring one is reversible.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F4.S3</span><span class="s-text">As a <em>Hasher</em> upgrading, I want to be shown what is new so that a release does not arrive unexplained.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F4.S4</span><span class="s-text">As a <em>Hasher</em> on my very first run of the app, I want not to be shown an upgrade announcement so that my first screen is not about a version I never had.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F4.S5</span><span class="s-text">As a <em>Platform Admin</em>, I want an agent to author and schedule teaching sequences so that new features are explained without a release or hand-built artwork.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E9.F4.S6</span><span class="s-text">As a <em>Platform Admin</em>, I want a sequence targetable by kennel, event or cohort so that a lesson reaches the people it is relevant to.</span><span class="chip c-next">Next</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E9.F5</span><h3 class="feature-name">Help &amp; support</h3>
+      <span class="surfaces"><span class="surf">App</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E9.F5.S1</span><span class="s-text">As a <em>Hasher</em>, I want an FAQ and video tutorials in the app so that I can answer my own question at the trail head.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F5.S2</span><span class="s-text">As a <em>Hasher</em>, I want a support contact that carries my diagnostic context so that I do not have to describe my setup.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e10">
+  <div class="epic-head">
+    <div class="epic-id">E10</div>
+    <h2 class="epic-title">Stats, Leaderboards &amp; Reporting</h2>
+    <p class="epic-intent">Hashers care enormously about their run count. Getting it wrong is the most visible failure the platform has, because everybody knows their own number.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E10.F1</span><h3 class="feature-name">Run counts</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E10.F1.S1</span><span class="s-text">As a <em>Hasher</em>, I want my total runs per kennel and overall so that I know where I stand.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E10.F1.S2</span><span class="s-text">As a <em>Hasher</em>, I want my rolling twelve-month count to actually cover twelve months so that recent runs are not silently dropped.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E10.F1.S3</span><span class="s-text">As a <em>Hasher</em>, I want a count that has fallen to zero to be corrected to zero so that a stale high number is not left standing.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E10.F1.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want to recompute counts for one user or everybody so that a data fix has an obvious remedy.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E10.F2</span><h3 class="feature-name">Leaderboards</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E10.F2.S1</span><span class="s-text">As a <em>Hasher</em>, I want a global leaderboard so that I can see how the wider hash is doing.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E10.F2.S2</span><span class="s-text">As a <em>Hasher</em>, I want a kennel leaderboard so that the competition is with people I actually run with.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E10.F2.S3</span><span class="s-text">As a <em>Hasher</em>, I want leaderboards over a chosen period so that a newcomer is not permanently behind a thirty-year veteran.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E10.F3</span><h3 class="feature-name">Kennel statistics</h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">Web</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E10.F3.S1</span><span class="s-text">As a <em>Grand Master</em>, I want attendance trends over time so that I can see whether the club is growing.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E10.F3.S2</span><span class="s-text">As a <em>Visitor</em>, I want a kennel's public stats page so that I can judge how active a club is before turning up.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E10.F3.S3</span><span class="s-text">As a <em>Grand Master</em>, I want a run statistics summary emailed after each run so that the committee sees it without opening anything.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E10.F4</span><h3 class="feature-name">Platform usage</h3>
+      <span class="surfaces"><span class="surf">Portal</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E10.F4.S1</span><span class="s-text">As a <em>Platform Admin</em>, I want to see which kennels are active and which have gone quiet so that I know where to help.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E10.F4.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want login history per user so that I can diagnose a support case.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E10.F4.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want feature-level adoption figures so that I can tell whether a shipped feature is used.</span><span class="chip c-back">Backlog</span></li>
+      <li class="story"><span class="s-id">E10.F4.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want cost attributed per kennel so that I know what the platform costs to run at scale.</span><span class="chip c-back">Backlog</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e11">
+  <div class="epic-head">
+    <div class="epic-id">E11</div>
+    <h2 class="epic-title">Public Web Presence</h2>
+    <p class="epic-intent">A full website for every registered kennel from one deployment. Most hashers meet Harrier Central here first, through a search result rather than an app store.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E11.F1</span><h3 class="feature-name">Multi-tenant hosting</h3>
+      <span class="surfaces"><span class="surf">Web</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E11.F1.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want our site at <code>hashruns.org/&lt;slug&gt;</code> so that we have a web presence without buying a domain.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F1.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to point our own domain at it so that the club keeps its established address.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F1.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want every page scoped to our kennel so that no other club's data can ever appear on our site.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F1.S4</span><span class="s-text">As a <em>Visitor</em> following an old hash-based link, I want to land on the right modern page so that years of shared links keep working.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E11.F2</span><h3 class="feature-name">Public content</h3>
+      <span class="surfaces"><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E11.F2.S1</span><span class="s-text">As a <em>Visitor</em>, I want a landing page with the next run and the club's identity so that I can tell in five seconds whether this is for me.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F2.S2</span><span class="s-text">As a <em>Visitor</em>, I want upcoming and past run listings with full detail so that I can plan or catch up.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F2.S3</span><span class="s-text">As a <em>Visitor</em>, I want an about page explaining the club and hashing so that a newcomer is not baffled.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F2.S4</span><span class="s-text">As a <em>Visitor</em>, I want the songbook and stats pages so that the site reflects the club, not just its calendar.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F2.S5</span><span class="s-text">As a <em>Visitor</em>, I want an events page for away weekends and specials so that non-run activity has a home.</span><span class="chip c-next">Next</span>
+        <span class="gap">currently a placeholder block</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E11.F3</span><h3 class="feature-name">Page builder</h3>
+      <span class="surfaces"><span class="surf">Web</span><span class="surf">Portal</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E11.F3.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to rearrange the blocks on any top-level page so that our site says what we want it to.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F3.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want my layout saved per kennel and applied immediately so that an edit is visible on the next load.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F3.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want image, rich text and social-link blocks so that I can build a page that is more than run data.</span><span class="chip c-next">Next</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E11.F4</span><h3 class="feature-name">Theming</h3>
+      <span class="surfaces"><span class="surf">Web</span><span class="surf">Portal</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E11.F4.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want our colours, logo and light or dark mode applied across the site so that it looks like our club.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F4.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want a visual theme editor so that changing our colours does not require a developer.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E11.F4.S3</span><span class="s-text">As a <em>Visitor</em>, I want text to stay readable whatever colour the club picked so that brand never beats legibility.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E11.F5</span><h3 class="feature-name">Discovery &amp; SEO</h3>
+      <span class="surfaces"><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E11.F5.S1</span><span class="s-text">As a <em>Visitor</em>, I want to find a kennel by searching for my town so that Google is a viable front door.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F5.S2</span><span class="s-text">As a <em>Visitor</em>, I want a global calendar of runs across every kennel so that I can find a hash anywhere.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F5.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want per-kennel sitemaps, metadata and canonical URLs so that our pages rank for our club.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E11.F5.S4</span><span class="s-text">As a <em>Visitor</em>, I want fully rendered HTML so that a crawler and a slow phone both get the content.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E11.F6</span><h3 class="feature-name">Member-only web content</h3>
+      <span class="surfaces"><span class="surf">Web</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E11.F6.S1</span><span class="s-text">As a <em>Hasher</em>, I want to log into my kennel's website so that I can see member content on a laptop.</span><span class="chip c-back">Backlog</span>
+        <span class="gap">member web auth is not yet designed; only admin OTP auth exists</span></li>
+      <li class="story"><span class="s-id">E11.F6.S2</span><span class="s-text">As a <em>Hasher</em>, I want the member roster and mismanagement contacts behind that login so that they are not public.</span><span class="chip c-back">Backlog</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e12">
+  <div class="epic-head">
+    <div class="epic-id">E12</div>
+    <h2 class="epic-title">Platform Administration</h2>
+    <p class="epic-intent">The things only Opee and Tuna Melt can do — onboarding kennels, holding the permission model, and watching the platform. Gated by <code>HC.PlatformAdmin</code>, which is a different mechanism from every kennel-scoped permission.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E12.F1</span><h3 class="feature-name">Kennel onboarding</h3>
+      <span class="surfaces"><span class="surf">Portal</span><span class="surf">API</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E12.F1.S1</span><span class="s-text">As a <em>Visitor</em> starting a kennel, I want to apply to join the platform so that there is a front door.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F1.S2</span><span class="s-text">As a <em>Platform Admin</em> with <code>CanEditKennel</code>, I want to review and approve applications so that the directory stays real.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F1.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want to set a new kennel's identity, geography and search tags so that it is findable from day one.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F1.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want to name a kennel's first admin so that the club can run itself immediately.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E12.F2</span><h3 class="feature-name">Portal access</h3>
+      <span class="surfaces"><span class="surf">Portal</span><span class="surf">App</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E12.F2.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to authorise the web portal from my phone so that the portal needs no password of its own.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F2.S2</span><span class="s-text">As a <em>Kennel HC Admin</em> on one machine, I want same-device login via a short-lived code so that I can use the portal without a second phone in hand.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F2.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want a one-time token to open the public web admin so that content editing needs no separate account.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E12.F3</span><h3 class="feature-name">Permission administration</h3>
+      <span class="surfaces"><span class="surf">Portal</span><span class="surf">DB</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E12.F3.S1</span><span class="s-text">As a <em>Platform Admin</em> with <code>CanManagePermissions</code>, I want to edit which grantors allow which functions so that the model is data, not code.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F3.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want per-kennel overrides visible against the global default so that I can see where a club diverges.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F3.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want the compiled matrix regenerated after an edit so that the authorizer never reads a stale rule.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E12.F4</span><h3 class="feature-name">Kennel administration in the portal</h3>
+      <span class="surfaces"><span class="surf">Portal</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E12.F4.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to manage runs, members, photos and website content from a desktop so that bulk work is not done on a phone.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F4.S2</span><span class="s-text">As a <em>Hash Cash</em>, I want a printable check-in sheet so that a run with no signal still has a fallback.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F4.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to email our members from the portal so that club communication does not need a separate mailing list.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E12.F5</span><h3 class="feature-name">Integrations</h3>
+      <span class="surfaces"><span class="surf">API</span><span class="surf">Portal</span></span></div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E12.F5.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want an external API key so that our own site or tooling can read our run data.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F5.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to regenerate that key so that a leak has a remedy.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E12.F5.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want a form on our old WordPress site to create a hasher here so that migration is gradual.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="epic" id="e13">
+  <div class="epic-head">
+    <div class="epic-id">E13 · non-functional</div>
+    <h2 class="epic-title">Security, Privacy &amp; Data Protection</h2>
+    <p class="epic-intent">Constraints rather than stories, so each is stated as a requirement with the mechanism that enforces it. An unenforced requirement is a wish.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E13.G1</span><h3 class="feature-name">Authentication &amp; authorisation</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E13.G1.R1</span><span class="req-what">No password exists anywhere in the platform; identity is a device-bound shared secret.</span><span class="req-how"><b>Enforced by</b> <code>hcapp_authorizeDevice</code> mints a 75-char secret and a per-device 30–44s window.</span></div>
+      <div class="req"><span class="s-id">E13.G1.R2</span><span class="req-what">Every access token expires within roughly one time window and is not reusable outside it.</span><span class="req-how"><b>Enforced by</b> <code>CHECK_ACCESS_TOKEN_V2</code> accepting offsets −2…+2 only.</span></div>
+      <div class="req"><span class="s-id">E13.G1.R3</span><span class="req-what">Operations touching money or another user bind the token to that specific operation.</span><span class="req-how"><b>Enforced by</b> compound <code>paramString</code> of device secret plus target.</span></div>
+      <div class="req"><span class="s-id">E13.G1.R4</span><span class="req-what">Authorisation is always kennel-scoped; an admin of one kennel has no rights in another.</span><span class="req-how"><b>Enforced by</b> <code>CheckKennelPermission</code> reading grantors from that kennel's <code>HasherKennelMap</code> row.</span></div>
+      <div class="req"><span class="s-id">E13.G1.R5</span><span class="req-what">Frontends never touch the database directly and never build SQL.</span><span class="req-how"><b>Enforced by</b> the shim routing only to named stored procedures; no dynamic SQL anywhere.</span></div>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E13.G2</span><h3 class="feature-name">Data exposure</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E13.G2.R1</span><span class="req-what">Unauthenticated endpoints never return GPS coordinates for a person or a photo.</span><span class="req-how"><b>Enforced by</b> <code>publicWeb_getRunPhotos</code> omitting latitude and longitude by construction.</span></div>
+      <div class="req"><span class="s-id">E13.G2.R2</span><span class="req-what">Internal error detail never reaches a client; only a safe envelope and an error id do.</span><span class="req-how"><b>Enforced by</b> the shim stripping <code>debugMessage</code> and <code>errorProc</code> before responding.</span></div>
+      <div class="req"><span class="s-id">E13.G2.R3</span><span class="req-what">Blob access requires a scoped, time-limited SAS URL rather than a guessable path.</span><span class="req-how"><b>Enforced by</b> the upload-token endpoints; track labels store a photo id, never a URL.</span></div>
+      <div class="req"><span class="s-id">E13.G2.R4</span><span class="req-what">A kennel's private data is never reachable from another kennel's public site.</span><span class="req-how"><b>Enforced by</b> tenant resolution scoping every query to the resolved slug.</span></div>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E13.G3</span><h3 class="feature-name">Privacy rights</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E13.G3.R1</span><span class="req-what">A hasher can have their personal data erased on request.</span><span class="req-how"><b>Enforced by</b> <code>hcapp_gdprDelete</code> and the in-app deletion route.</span></div>
+      <div class="req"><span class="s-id">E13.G3.R2</span><span class="req-what">Location is captured only while a hasher has explicitly started tracking.</span><span class="req-how"><b>Enforced by</b> the tracking toggle gating background updates; idle mode is coarse and low-rate.</span></div>
+      <div class="req"><span class="s-id">E13.G3.R3</span><span class="req-what">Logging out leaves no recoverable trace of the previous user on the device.</span><span class="req-how"><b>Enforced by</b> keychain reset code plus the app-restart path, with a wipe guard.</span></div>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E13.G4</span><h3 class="feature-name">Data retention</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E13.G4.R1</span><span class="req-what">Operational logs are retained 90 days and no longer.</span><span class="req-how"><b>Enforced by</b> a nightly prune deleting by clustered key rather than by filter column.</span></div>
+      <div class="req"><span class="s-id">E13.G4.R2</span><span class="req-what">Deleting a photo is reversible for review purposes before it becomes permanent.</span><span class="req-how"><b>Enforced by</b> <code>DeletedAt</code> soft deletion on <code>HC.KennelPhotos</code>.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="epic" id="e14">
+  <div class="epic-head">
+    <div class="epic-id">E14 · non-functional</div>
+    <h2 class="epic-title">Reliability, Sync &amp; Observability</h2>
+    <p class="epic-intent">The app is used in fields with no signal by people who will not try twice. Everything here exists because something failed silently once.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E14.G1</span><h3 class="feature-name">Offline &amp; sync</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E14.G1.R1</span><span class="req-what">Three isolated local domains — common, kennel, event — with a table's domain fixed by its prefix.</span><span class="req-how"><b>Enforced by</b> <code>EnumDataTables</code> declaring domain membership; a wrong-domain query returns empty, never an error.</span></div>
+      <div class="req"><span class="s-id">E14.G1.R2</span><span class="req-what">Common tables accumulate deltas indefinitely and are never wiped outside a full boot resync.</span><span class="req-how"><b>Enforced by</b> the sync lifecycle; kennel and event domains are single-tenant and wiped on switch.</span></div>
+      <div class="req"><span class="s-id">E14.G1.R3</span><span class="req-what">Overlapping syncs cannot double-insert the same row.</span><span class="req-how"><b>Enforced by</b> an async serialiser around sync entry points.</span></div>
+      <div class="req"><span class="s-id">E14.G1.R4</span><span class="req-what">Paged replication is deterministic under concurrent writes.</span><span class="req-how"><b>Enforced by</b> the <code>updatedAtBias</code> tiebreaker on synced tables.</span></div>
+      <div class="req"><span class="s-id">E14.G1.R5</span><span class="req-what">Every locally cached row is uniquely keyed on the server primary key.</span><span class="req-how"><b>Planned</b> — unique constraints plus a version bump and full reload; requires insert-or-replace first.</span></div>
+      <div class="req"><span class="s-id">E14.G1.R6</span><span class="req-what">Work done offline is queued and completed later, never silently discarded.</span><span class="req-how"><b>Enforced by</b> the payment outbox, the photo upload queue and the GPS point buffer.</span></div>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E14.G2</span><h3 class="feature-name">Error handling</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E14.G2.R1</span><span class="req-what">Every stored procedure body is wrapped in TRY/CATCH, reads included.</span><span class="req-how"><b>Enforced by</b> review; an unwrapped proc turns any runtime error into an unlogged raw 500.</span></div>
+      <div class="req"><span class="s-id">E14.G2.R2</span><span class="req-what">Every CATCH writes to <code>HC.ErrorLog</code> before returning or rethrowing.</span><span class="req-how"><b>Enforced by</b> the HC6 standard and the code-smell checklist.</span></div>
+      <div class="req"><span class="s-id">E14.G2.R3</span><span class="req-what">A rollback never erases the error log row written for that same failure.</span><span class="req-how"><b>Enforced by</b> ordering: <code>ROLLBACK</code> first, then the insert. Eight sites were corrected 2026-09-06.</span></div>
+      <div class="req"><span class="s-id">E14.G2.R4</span><span class="req-what">A client-visible error explains the cause and the remedy in the user's terms.</span><span class="req-how"><b>Enforced by</b> the standard error envelope carrying a user message separate from debug detail.</span></div>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E14.G3</span><h3 class="feature-name">Diagnostics</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E14.G3.R1</span><span class="req-what">A crash or hang on a real device is diagnosable without reproducing it.</span><span class="req-how"><b>Enforced by</b> MetricKit payloads, boot breadcrumbs and memory samples uploaded to <code>HC.ClientErrorLog</code>.</span></div>
+      <div class="req"><span class="s-id">E14.G3.R2</span><span class="req-what">Verbose device logging is opt-in per cohort, not on for everybody.</span><span class="req-how"><b>Enforced by</b> a preferences bit plus a named beta cohort.</span></div>
+      <div class="req"><span class="s-id">E14.G3.R3</span><span class="req-what">Log wording states what actually happened — retained data is never reported as lost.</span><span class="req-how"><b>Enforced by</b> review after a buffer log implied 16,798 points were dropped when they were retained.</span></div>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E14.G4</span><h3 class="feature-name">Performance</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E14.G4.R1</span><span class="req-what">A returning user reaches usable content without waiting for a full sync.</span><span class="req-how"><b>Enforced by</b> boot sync deferral; the cached list renders first.</span></div>
+      <div class="req"><span class="s-id">E14.G4.R2</span><span class="req-what">The app draws no meaningful battery when tracking is off.</span><span class="req-how"><b>Enforced by</b> idle-mode location settings and removal of three standing costs, quantified from MetricKit.</span></div>
+      <div class="req"><span class="s-id">E14.G4.R3</span><span class="req-what">High-frequency reactive state does not rebuild a heavy widget subtree.</span><span class="req-how"><b>Enforced by</b> scoping observers narrowly; marker sets are memoised on a change signature.</span></div>
+      <div class="req"><span class="s-id">E14.G4.R4</span><span class="req-what">A schema change on a synced table does not force every client into a full resync.</span><span class="req-how"><b>Enforced by</b> disabling the <code>updatedAt</code> trigger around any <code>ALTER TABLE ADD COLUMN</code>.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="epic" id="e15">
+  <div class="epic-head">
+    <div class="epic-id">E15 · non-functional</div>
+    <h2 class="epic-title">Delivery &amp; Release Engineering</h2>
+    <p class="epic-intent">One developer, nights and weekends, shipping to two app stores and a live production database with no staging environment. The process has to make that safe rather than heroic.</p>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E15.G1</span><h3 class="feature-name">Deployment safety</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E15.G1.R1</span><span class="req-what">Nothing deploys to production without an explicit human instruction in that conversation.</span><span class="req-how"><b>Enforced by</b> the standing rule that no agent deploys autonomously.</span></div>
+      <div class="req"><span class="s-id">E15.G1.R2</span><span class="req-what">There is one production database, so every procedure deploy is live to every user.</span><span class="req-how"><b>Enforced by</b> awareness plus <code>CREATE OR ALTER</code> and parse-checking before deploy.</span></div>
+      <div class="req"><span class="s-id">E15.G1.R3</span><span class="req-what">Stored procedures deploy before any client build that depends on them.</span><span class="req-how"><b>Enforced by</b> release ordering; the shim forwards unknown parameters straight through and the call fails otherwise.</span></div>
+      <div class="req"><span class="s-id">E15.G1.R4</span><span class="req-what">Run-once scripts cannot be re-run by a later deploy.</span><span class="req-how"><b>Enforced by</b> archiving them; the deploy globs are non-recursive.</span></div>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E15.G2</span><h3 class="feature-name">Change control</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E15.G2.R1</span><span class="req-what">Every procedure has a contract, and a breaking change is deliberate and documented.</span><span class="req-how"><b>Enforced by</b> versioned contract JSON with explicit breaking-change rules.</span></div>
+      <div class="req"><span class="s-id">E15.G2.R2</span><span class="req-what">Work lands on <code>dev</code>; <code>master</code> moves only at a release.</span><span class="req-how"><b>Enforced by</b> the branch workflow; the portal auto-deploys on a master push.</span></div>
+      <div class="req"><span class="s-id">E15.G2.R3</span><span class="req-what">Agents propose; the developer decides. No AI output is committed unreviewed.</span><span class="req-how"><b>Enforced by</b> the project's guiding principles.</span></div>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E15.G3</span><h3 class="feature-name">Store releases</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E15.G3.R1</span><span class="req-what">A release build is never produced from a tree that has run against a simulator.</span><span class="req-how"><b>Enforced by</b> a clean before any release build; otherwise the upload is rejected.</span></div>
+      <div class="req"><span class="s-id">E15.G3.R2</span><span class="req-what">Every shipped component carries a version bump and a changelog entry.</span><span class="req-how"><b>Enforced by</b> the coordinated release procedure, per component.</span></div>
+      <div class="req"><span class="s-id">E15.G3.R3</span><span class="req-what">A version already live in a store closes its train; the next release takes a new name.</span><span class="req-how"><b>Enforced by</b> the version-naming rule.</span></div>
+      <div class="req"><span class="s-id">E15.G3.R4</span><span class="req-what">iOS and Android ship from the same commit.</span><span class="req-how"><b>Enforced by</b> the dual-store release flow.</span></div>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E15.G4</span><h3 class="feature-name">Verification</h3></div>
+    <div class="reqs">
+      <div class="req"><span class="s-id">E15.G4.R1</span><span class="req-what">Algorithms mirrored across two codebases are changed together and pinned by tests.</span><span class="req-how"><b>Enforced by</b> the GPS filter test suite running against real recorded tracks.</span></div>
+      <div class="req"><span class="s-id">E15.G4.R2</span><span class="req-what">A tuning change must be demonstrably inert on good data before it ships.</span><span class="req-how"><b>Enforced by</b> parameter sweeps asserting clean tracks are unchanged.</span></div>
+      <div class="req"><span class="s-id">E15.G4.R3</span><span class="req-what">Features that cannot be verified without a device are marked as shipped blind and tested after.</span><span class="req-how"><b>Enforced by</b> device-test checklists carried in the component to-do files.</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Status reflects the working tree at <code>dev</code> on 2026-09-08. Epic and story IDs are stable — quote them when assigning work. Where a story is marked <em>Building</em> with a known gap, the gap names what is actually missing rather than what remains to polish.</p>
+  <p>Component to-do files under <code>todos/</code> remain the day-to-day working lists; this document is the level above them.</p>
+  <p>This page is a rendered snapshot. The source of truth is <code>docs/backlog.md</code> in the repository — edit there, and refresh this snapshot from it.</p>
+</footer>
+
+</div>
