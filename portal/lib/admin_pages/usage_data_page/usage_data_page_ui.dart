@@ -364,7 +364,10 @@ class _AppStatsRow extends StatelessWidget {
   /// Whether higher values are bad (e.g. Error rows). Defaults to false
   /// (higher is better / green). When true, the color scheme is reversed
   /// so that lower values show green.
-  bool get _higherIsBad => controller.appActivity[index].dataType == 'Error';
+  bool get _higherIsBad {
+    final String t = controller.appActivity[index].dataType;
+    return t == 'Error' || t == 'App Error';
+  }
 
   @override
   Widget build(BuildContext context) {

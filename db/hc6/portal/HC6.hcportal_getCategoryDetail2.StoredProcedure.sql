@@ -17,7 +17,8 @@ AS
 --              dashboard. Returns raw data columns for one of 10
 --              categories: 0=New Hashers, 1=Event RSVPs, 2=New Events,
 --              3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access,
---              7=Errors, 8=Push Notification Log, 100=Version Adoption.
+--              7=Errors, 8=Push Notification Log, 9=App Errors (client
+--              session logs), 100=Version Adoption.
 --              Each category returns typed columns specific to its data.
 --              Portal is responsible for all presentation formatting.
 -- Parameters: @deviceId, @accessToken (auth)
@@ -268,6 +269,7 @@ BEGIN TRY
 	BEGIN
 		SELECT
 			er.updatedAt,
+			er.HcVersion AS hcVersion,
 			er.ErrorDescription AS errorDescription,
 			COALESCE(h1.DisplayName, h2.DisplayName, h3.DisplayName, '') AS displayName,
 			er.userId,
@@ -311,6 +313,36 @@ BEGIN TRY
 		LEFT OUTER JOIN HC.Device  d  WITH (NOLOCK) ON d.FcmToken       = pl.FcmToken
 		WHERE pl.SentAt > @cutoffDate
 		ORDER BY pl.SentAt DESC
+		OPTION (RECOMPILE)
+	END
+
+	-- =============================================
+	-- CATEGORY 9: App Errors (client-side session logs)
+	-- One row per uploaded session that HC6.ClientLogAppError classes as an
+	-- app error — the same definition as the 'App Error' row in
+	-- hcportal_getUsageData. 'error' is the first qualifying line, so the
+	-- row names the actual exception rather than a preceding avatar 404.
+	-- hcVersion is the build that WROTE the log (AppVersion/BuildNumber,
+	-- sent by clients from 3.0.13); older rows fall back to the device's
+	-- current build, which can be one release too new.
+	-- =============================================
+	IF (@categoryId = 9)
+	BEGIN
+		SELECT
+			c.LoggedAt AS loggedAt,
+			COALESCE(c.AppVersion + '+' + c.BuildNumber, d.Version + '+' + d.BuildNumber, '') AS hcVersion,
+			COALESCE(h.DisplayName, '') AS displayName,
+			x.appError AS error,
+			(LEN(c.ErrorLog) - LEN(REPLACE(c.ErrorLog, '[ERROR]', ''))) / LEN('[ERROR]') AS errorLines,
+			c.DeviceId AS deviceId
+		FROM HC.ClientErrorLog c WITH (NOLOCK)
+		LEFT OUTER JOIN HC.Device d WITH (NOLOCK) ON d.id = c.DeviceId
+		LEFT OUTER JOIN HC.Hasher h WITH (NOLOCK) ON h.id = d.UserId
+		CROSS APPLY (SELECT HC6.ClientLogAppError(c.ErrorLog) AS appError) x
+		WHERE c.LoggedAt > @cutoffDate
+			AND (c.ErrorLog LIKE '%[[]ERROR][[]%' OR c.ErrorLog LIKE '[[]METRICKIT]%')
+			AND x.appError IS NOT NULL
+		ORDER BY c.LoggedAt DESC
 		OPTION (RECOMPILE)
 	END
 

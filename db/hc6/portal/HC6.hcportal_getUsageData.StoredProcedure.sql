@@ -9,7 +9,7 @@ AS
 --              HC admin portal dashboard. Includes app version
 --              distribution, integration job status, usage metrics
 --              across data types (Account, Activity, Event, Kennel,
---              Login, Payment, Portal, Error), recent login details,
+--              Login, Payment, Portal, Error, Push, App Error), recent login details,
 --              and recently updated/active events.
 -- Parameters: @deviceId, @accessToken (auth)
 -- Returns: Rowset 1: VersionData (iOS vs Android)
@@ -303,6 +303,32 @@ BEGIN TRY
 		INNER JOIN HC.Device d WITH (NOLOCK) ON d.FcmToken = pl.FcmToken AND d.IsMobile = 1
 		CROSS JOIN DateBounds b
 		WHERE pl.SentAt >= b.m2
+
+		UNION ALL
+
+		-- App Error: client sessions whose uploaded log holds an app error as
+		-- defined by HC6.ClientLogAppError (uncaught Dart exception, Flutter
+		-- framework error, or a MetricKit crash/hang). HTTP timeouts and
+		-- expired-avatar 404s are deliberately NOT counted — they are the
+		-- network, not the app. The 'Error' row above is server-side
+		-- (HC.ErrorLog); this one is the phone's side of the same story.
+		-- The LIKE prefilter keeps the function off rows that cannot qualify.
+		SELECT
+			'App Error' AS dataType,
+			9 AS id,
+			SUM(CASE WHEN c.LoggedAt >= b.hr1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN c.LoggedAt >= b.hr2 AND c.LoggedAt < b.hr1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN c.LoggedAt >= b.d1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN c.LoggedAt >= b.d2 AND c.LoggedAt < b.d1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN c.LoggedAt >= b.w1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN c.LoggedAt >= b.w2 AND c.LoggedAt < b.w1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN c.LoggedAt >= b.m1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN c.LoggedAt >= b.m2 AND c.LoggedAt < b.m1 THEN 1 ELSE 0 END)
+		FROM HC.ClientErrorLog c WITH (NOLOCK)
+		CROSS JOIN DateBounds b
+		WHERE c.LoggedAt >= b.m2
+			AND (c.ErrorLog LIKE '%[[]ERROR][[]%' OR c.ErrorLog LIKE '[[]METRICKIT]%')
+			AND HC6.ClientLogAppError(c.ErrorLog) IS NOT NULL
 	) d
 	ORDER BY d.id;
 
