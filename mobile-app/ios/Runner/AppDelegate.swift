@@ -47,6 +47,7 @@ import MetricKit
     // (DeviceMetricsService). Cheap, synchronous, no permissions.
     if let controller = window?.rootViewController as? FlutterViewController {
       UIDevice.current.isBatteryMonitoringEnabled = true
+      DeviceMetricsSnapshot.startObservingSleepWake()
       let channel = FlutterMethodChannel(
         name: deviceMetricsChannelName,
         binaryMessenger: controller.binaryMessenger
@@ -78,11 +79,26 @@ import MetricKit
 ///   uidRx / uidTx   -1 — iOS has no per-app network counter
 ///   lowPower        Low Power Mode on
 ///   thermal         nominal | fair | serious | critical
+///   sleepCount      device locks seen since launch (protectedDataWillBecomeUnavailable)
+///   wakeCount       device unlocks seen since launch (protectedDataDidBecomeAvailable)
+///                   — the App Store-safe proxy for sleep/wake; a device with
+///                   no passcode never fires them, so they read 0 rather than n/a
 ///   cpuTimeMs       user+system CPU time this process has consumed (getrusage)
 ///                   — the one figure that is attributable to the app alone
 ///   diskFree        bytes the app could still write (volumeAvailableCapacity
 ///                   ForImportantUsage), -1 if unknown
 enum DeviceMetricsSnapshot {
+  private static var sleepCount: Int64 = 0
+  private static var wakeCount: Int64 = 0
+
+  static func startObservingSleepWake() {
+    let nc = NotificationCenter.default
+    nc.addObserver(forName: NSNotification.Name.UIApplicationProtectedDataWillBecomeUnavailable,
+                   object: nil, queue: .main) { _ in sleepCount += 1 }
+    nc.addObserver(forName: NSNotification.Name.UIApplicationProtectedDataDidBecomeAvailable,
+                   object: nil, queue: .main) { _ in wakeCount += 1 }
+  }
+
   static func take() -> [String: Any] {
     let device = UIDevice.current
     let info = ProcessInfo.processInfo
@@ -134,6 +150,8 @@ enum DeviceMetricsSnapshot {
       "thermal": thermal,
       "cpuTimeMs": cpuMs,
       "diskFree": diskFree,
+      "sleepCount": sleepCount,
+      "wakeCount": wakeCount,
     ]
   }
 }

@@ -156,6 +156,8 @@ trend. Sweep section 7 prints the last line per session. Fields:
 | `rss` `peak` | Dart `ProcessInfo` | This process's resident memory now and at its highest. RSS is what climbs before an iOS jetsam kill |
 | `pss` | Android `Debug.MemoryInfo` | Proportional set size, the figure Android judges the app by. `n/a` on iOS |
 | `avail` | `os_proc_available_memory` / `MemoryInfo.availMem` | What the OS says the app may still use. Low `avail` with rising `rss` is the OOM warning |
+| `bg_n` `fg_n` | Dart lifecycle | Times the app was sent to the background and brought back this session |
+| `sleep` `wake` | Android screen off/on broadcasts; iOS protected-data lock/unlock | Times the device went to sleep and woke while the app was alive. iOS needs a passcode for these to fire. Many sleeps with few foregrounds is a phone in a pocket on a run; the reverse is someone checking the app repeatedly |
 | `cpu` `cpu%` | `getrusage` / `Process.getElapsedCpuTime` | The process's own CPU time this session, and its share of wall time since the previous line (can exceed 100 on several cores). **The one battery-relevant number that belongs to the app alone.** Read it with `loc_*` to see what earned it |
 | `app_tx` `app_rx` `req` `fail` | `NetworkMeter` | The app's own API traffic: SP calls, position uploads and polls, log uploads. Not images or tiles. `fail` counts every request that got no usable answer, 599, transport failures and thrown timeouts included |
 | `lat_avg` `lat_max` | `NetworkMeter` | Round-trip time over every request, failures included, so a stalled network shows in `lat_max`. Separates "slow server" from "no signal" when read with `fail` |

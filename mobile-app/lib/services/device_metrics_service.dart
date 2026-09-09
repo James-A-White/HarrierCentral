@@ -21,6 +21,7 @@ import 'package:harrier_central/imports.dart';
 ///   rss=143MB peak=201MB pss=n/a avail=1.2GB app_tx=12.3KB app_rx=1.1MB
 ///   req=41 fail=0 lat_avg=420ms lat_max=8.2s dev_rx=n/a dev_tx=n/a
 ///   cpu=1m12s cpu%=2.1 db=12.3MB docs=45MB cache=210MB disk_free=41GB
+///   bg_n=3 fg_n=3 sleep=2 wake=2
 ///   loc_track=48m loc_idle=14m batt=87% state=unplugged Δ=-3%
 ///   drain=2.9%/h chg=n/a lpm=0 therm=nominal
 /// ```
@@ -37,6 +38,12 @@ import 'package:harrier_central/imports.dart';
 ///   `TrafficStats` for this process since device boot — everything, images
 ///   included — reported as the delta since the session started. iOS has no
 ///   per-app counter, so they read `n/a` there.
+/// * **Transitions.** `bg_n`/`fg_n` count the app being sent to the
+///   background and brought back; `sleep`/`wake` count the device screen
+///   going off and on (Android `ACTION_SCREEN_OFF/ON`; iOS protected-data
+///   lock/unlock, which needs a passcode to fire). A session with many
+///   sleeps and few foregrounds is a phone in a pocket on a run; many
+///   foregrounds with few sleeps is someone checking the app repeatedly.
 /// * **CPU.** `cpu` is the process's own user+system time this session and
 ///   `cpu%` its share of wall time since the previous line. This is the one
 ///   battery-relevant figure that belongs to the app alone; read it with the
@@ -83,6 +90,8 @@ class DeviceMetricsService with WidgetsBindingObserver {
   bool _inForeground = true;
   Duration _fgTotal = Duration.zero;
   Duration _bgTotal = Duration.zero;
+  int _bgCount = 0; // app sent to the background
+  int _fgCount = 0; // app brought back
   Timer? _timer;
   Timer? _ringTimer;
   bool _sampling = false;
@@ -219,6 +228,7 @@ class DeviceMetricsService with WidgetsBindingObserver {
         if (!_inForeground) {
           _rollTime();
           _inForeground = true;
+          _fgCount++;
           unawaited(_sample('resumed'));
         }
         break;
@@ -227,6 +237,7 @@ class DeviceMetricsService with WidgetsBindingObserver {
         if (_inForeground) {
           _rollTime();
           _inForeground = false;
+          _bgCount++;
           unawaited(_sample('paused'));
         }
         break;
@@ -288,6 +299,14 @@ class DeviceMetricsService with WidgetsBindingObserver {
     // Time
     b.write('up=${_fmtDur(now.difference(_sessionStart))} ');
     b.write('fg=${_fmtDur(_fgTotal)} bg=${_fmtDur(_bgTotal)} ');
+    // Transitions: app backgrounded / foregrounded (Flutter lifecycle) and
+    // the device going to sleep / waking (native: screen off/on on Android,
+    // protected-data lock/unlock on iOS). Both since the session started.
+    b.write('bg_n=$_bgCount fg_n=$_fgCount ');
+    final int? sleeps = _int(n['sleepCount']);
+    final int? wakes = _int(n['wakeCount']);
+    b.write('sleep=${sleeps == null || sleeps < 0 ? 'n/a' : sleeps} ');
+    b.write('wake=${wakes == null || wakes < 0 ? 'n/a' : wakes} ');
 
     // CPU — the app's own consumption: session total, and the share of wall
     // time over the last interval (can exceed 100% on several cores)

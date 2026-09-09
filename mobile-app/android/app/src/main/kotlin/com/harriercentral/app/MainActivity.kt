@@ -1,6 +1,7 @@
 package com.harriercentral.app
 
 import android.app.ActivityManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -17,8 +18,27 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
 
+    // Device sleep / wake since launch. Screen off/on broadcasts can only be
+    // received by a dynamically registered receiver, so they are counted for
+    // as long as this activity exists — which, with the location foreground
+    // service holding the process during a tracked run, is the whole run.
+    private var sleepCount = 0L
+    private var wakeCount = 0L
+    private val screenReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                Intent.ACTION_SCREEN_OFF -> sleepCount++
+                Intent.ACTION_SCREEN_ON -> wakeCount++
+            }
+        }
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        registerReceiver(screenReceiver, IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_SCREEN_ON)
+        })
         // Device metrics: one snapshot of memory, battery, power state and this
         // process's network counters on demand. Flutter folds it into the
         // [METRICS] session-log lines (DeviceMetricsService). No permissions.
@@ -30,6 +50,11 @@ class MainActivity : FlutterActivity() {
                     result.notImplemented()
                 }
             }
+    }
+
+    override fun onDestroy() {
+        try { unregisterReceiver(screenReceiver) } catch (_: IllegalArgumentException) {}
+        super.onDestroy()
     }
 
     /**
@@ -51,6 +76,8 @@ class MainActivity : FlutterActivity() {
      *                    (Process.getElapsedCpuTime) — attributable to the
      *                    app alone, unlike the battery level
      *   diskFree         bytes available on the app's data volume
+     *   sleepCount       ACTION_SCREEN_OFF broadcasts seen since launch
+     *   wakeCount        ACTION_SCREEN_ON broadcasts seen since launch
      */
     private fun snapshot(): Map<String, Any> {
         val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -102,6 +129,8 @@ class MainActivity : FlutterActivity() {
             "thermal" to thermal,
             "cpuTimeMs" to Process.getElapsedCpuTime(),
             "diskFree" to StatFs(filesDir.path).availableBytes,
+            "sleepCount" to sleepCount,
+            "wakeCount" to wakeCount,
         )
     }
 }

@@ -156,7 +156,8 @@ class _SessionCard extends StatelessWidget {
                               'up ${s.v('up')} · cpu ${s.v('cpu')} · mem ${s.v('peak')} peak · '
                               'net ${s.v('app_rx')} / ${s.v('req', '0')} req · '
                               'gps ${s.v('loc_track', '0s')} · batt ${s.v('batt')}'
-                              '${drain.isEmpty ? '' : ' ↓$drain'}',
+                              '${drain.isEmpty ? '' : ' ↓$drain'}'
+                              '${s.summary.containsKey('bg_n') ? ' · bg×${s.v('bg_n', '0')} sleep×${s.v('sleep', '0')}' : ''}',
                               style: const TextStyle(fontSize: 12),
                               overflow: TextOverflow.ellipsis,
                             )
