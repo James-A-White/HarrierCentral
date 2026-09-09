@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.15+1330 (2026-09-09)
+
+### Improvements
+- **Session logs count the switches.** How many times the app was sent to
+  the background and brought back, and how many times the phone went to
+  sleep and woke while the app was alive. Read together they tell a phone
+  in a pocket on a run from someone checking the app repeatedly.
+
 ## 3.0.14+1329 (2026-09-09)
 
 ### Improvements

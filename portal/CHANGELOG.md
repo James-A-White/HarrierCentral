@@ -2,6 +2,11 @@
 
 ---
 
+## 2.0.71+706 (2026-09-09)
+
+### Improvements
+- Device Health session headline shows the background and sleep counts.
+
 ## 2.0.70+705 (2026-09-09)
 
 ### Fixes
