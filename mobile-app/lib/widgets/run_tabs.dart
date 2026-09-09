@@ -1995,7 +1995,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     final userId = getStringPref(StringPrefsEnum.userId);
     if (userId == null || userId.isEmpty) return null;
     for (final track in controller.userPositions) {
-      if (track.id == userId && track.positions.isNotEmpty) {
+      if (track.id == userId && RunTrackerMapController.hasTrack(track)) {
         return track;
       }
     }

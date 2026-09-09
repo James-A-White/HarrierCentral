@@ -136,7 +136,7 @@ class PackTrackFullScreenMap extends StatelessWidget {
     UserTrack? mine;
     if (userId != null && userId.isNotEmpty) {
       for (final UserTrack t in controller.userPositions) {
-        if (t.id == userId && t.positions.isNotEmpty) mine = t;
+        if (t.id == userId && RunTrackerMapController.hasTrack(t)) mine = t;
       }
     }
     if (mine == null) {

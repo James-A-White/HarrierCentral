@@ -742,7 +742,7 @@ class RunTrackerMap extends StatelessWidget {
   ) {
     if (!controller.timelineAvailable) return const SizedBox.shrink();
 
-    final bool hasRunners = controller.userPositions.isNotEmpty;
+    final bool hasRunners = controller.hasAnyTrackData;
 
     return Positioned(
       left: 0,

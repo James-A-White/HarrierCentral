@@ -593,9 +593,15 @@ class RunTrackerMapController extends GetxController
   final List<_PhotoRow> _photos = <_PhotoRow>[];
 
   /// A runner is somebody with at least one GPS fix; marks alone are not a
-  /// track. Keeps a photo-only "user" from the old model out of every list.
-  static bool _hasTrack(UserTrack u) =>
+  /// track. Keeps a photo-only "user" from the old model, and an admin whose
+  /// only points are the trim's AST/AEN boundary marks, out of every list,
+  /// every default selection and every export.
+  static bool hasTrack(UserTrack u) =>
       u.positions.any((TrackPoint p) => (p.type ?? '').isEmpty);
+  static bool _hasTrack(UserTrack u) => hasTrack(u);
+
+  /// The people who actually ran: [userPositions] minus mark-only users.
+  List<UserTrack> get runners => userPositions.where(_hasTrack).toList(growable: false);
   final Map<String, String> _uploaderNameCache = {}; // userId   → display name
   final Map<String, String> _uploaderPhotoCache =
       {}; // userId   → profile photo URL
@@ -1531,7 +1537,7 @@ class RunTrackerMapController extends GetxController
       final runner = _runnerById(sel);
       if (runner != null && isRunnerVisible(runner)) return;
     }
-    final firstVisible = userPositions.firstWhereOrNull(isRunnerVisible);
+    final firstVisible = runners.firstWhereOrNull(isRunnerVisible);
     selectRunner(firstVisible?.id, recenter: false, syncPicker: true);
   }
 
@@ -2675,19 +2681,21 @@ class RunTrackerMapController extends GetxController
   }
 
   void _ensureSelection() {
-    if (userPositions.isEmpty) {
+    final List<UserTrack> tracked = runners;
+    if (tracked.isEmpty) {
       selectedRunnerId.value = null;
       return;
     }
     final selectedId = selectedRunnerId.value;
     final exists =
-        selectedId != null &&
-        userPositions.any((runner) => runner.id == selectedId);
+        selectedId != null && tracked.any((runner) => runner.id == selectedId);
     if (exists) return;
 
-    // Prefer current user if present in the fetched positions
+    // Prefer the viewer — but only if they actually ran. An admin trimming a
+    // run they were not on must not be selected on the strength of two
+    // boundary marks.
     if (_currentUserId != null) {
-      final self = userPositions.firstWhereOrNull(
+      final self = tracked.firstWhereOrNull(
         (runner) => runner.id == _currentUserId,
       );
       if (self != null) {
@@ -2697,7 +2705,7 @@ class RunTrackerMapController extends GetxController
     }
 
     // Fallback to first runner
-    selectRunner(userPositions.first.id, recenter: false, syncPicker: true);
+    selectRunner(tracked.first.id, recenter: false, syncPicker: true);
   }
 
   void _handlePlaybackTick() {
@@ -2784,7 +2792,7 @@ class RunTrackerMapController extends GetxController
   /// True when at least one runner has track points. Future runs (and any
   /// run nobody tracked) have none — the Radar has nothing to draw then, so
   /// the Map/Radar switch is hidden and the rose canvas never renders.
-  bool get hasAnyTrackData => userPositions.any((u) => u.positions.isNotEmpty);
+  bool get hasAnyTrackData => userPositions.any(_hasTrack);
 
   /// The viewer's own locally-recorded points that have NOT yet appeared in
   /// the server track — the un-uploaded tail, drawn dotted so the runner can
@@ -3557,7 +3565,7 @@ class RunTrackerMapController extends GetxController
   /// [togglePlayback] → [_applyPlaybackDurationFromZoom]).
   double _trailDistanceMeters() {
     double max = 0.0;
-    for (final runner in userPositions) {
+    for (final runner in runners) {
       final d = _sumInterpolatedDistance(
         _interpolatedTrackPoints(runner, null),
       );
