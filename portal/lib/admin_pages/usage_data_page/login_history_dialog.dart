@@ -1,4 +1,5 @@
 import 'package:hcportal/imports.dart';
+import 'package:hcportal/admin_pages/usage_data_page/device_health_view.dart';
 import 'package:intl/intl.dart';
 
 class LoginHistoryDialog extends StatelessWidget {
@@ -18,22 +19,64 @@ class LoginHistoryDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final historyFuture = controller.getLoginHistory(userId);
+    // Two read-only views of one user: the tabbed_ui framework is form
+    // chrome (locks, validation, sidebar) and would be the wrong tool here.
     return Dialog(
       child: Container(
-        width: 700,
-        height: 500,
+        width: 900,
+        height: 600,
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: <Widget>[
-            Text(
-              realName.isNotEmpty
-                  ? 'Login History – $userName ($realName)'
-                  : 'Login History – $userName',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+        child: DefaultTabController(
+          length: 2,
+          child: Column(
+            children: <Widget>[
+              Text(
+                realName.isNotEmpty ? '$userName ($realName)' : userName,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
+              TabBar(
+                labelColor: Colors.black,
+                tabs: const <Widget>[
+                  Tab(text: 'Login History'),
+                  Tab(text: 'Device Health'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: TabBarView(
+                  children: <Widget>[
+                    _loginHistory(context, historyFuture),
+                    DeviceHealthView(userId: userId, page: controller),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: HcButton.secondary(
+                  label: 'Close',
+                  onPressed: () {
+                    unawaited(Get.delete<DeviceHealthController>(tag: userId));
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _loginHistory(
+    BuildContext context,
+    Future<List<UdLoginHistoryModel>> historyFuture,
+  ) {
+    return Column(
+          children: <Widget>[
             const SizedBox(height: 4),
             FutureBuilder<List<UdLoginHistoryModel>>(
               future: historyFuture,
@@ -194,17 +237,7 @@ class LoginHistoryDialog extends StatelessWidget {
                 },
               ),
             ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: HcButton.secondary(
-                label: 'Close',
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
           ],
-        ),
-      ),
-    );
+        );
   }
 }

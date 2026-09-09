@@ -623,6 +623,7 @@ Hashers care enormously about their run count. Getting it wrong is the most visi
 | `E10.F4.S6` | As a **Platform Admin**, I want every server and client error record to name the app build that produced it so that I can see which release an error belongs to and confirm it is gone. | `Shipped` |
 
 **⚠ Known gap:** client session rows written by apps before 3.0.13 (TestFlight and Play internal 2026-09-09, not yet in the stores) carry the device's *current* build, which can be one release too new. Server-side records are exact from 2026-09-09.
+| `E10.F4.S7` | As a **Platform Admin**, I want a device health view when I open a user from the dashboard so that I can see that user's memory, CPU, network, GPS and battery per session without reading raw logs. | `Building` |
 
 ---
 

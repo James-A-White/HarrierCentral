@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
+import 'package:hcportal/models/device_health/device_health.dart';
 import 'package:hcportal/models/usage_data_new_events/usage_data_new_events.dart';
 
 class UsageDataPageController extends GetxController {
@@ -278,6 +279,44 @@ class UsageDataPageController extends GetxController {
         ? '${minAgo % 60} min ago'
         : '${minAgo ~/ 60}:${(minAgo % 60).toString().padLeft(2, '0')} ago';
     return '$timeStr / ${user.loginCount} login(s)';
+  }
+
+  /// Per-device health for a user (SP hcportal_getDeviceHealth): devices,
+  /// then sessions with their [METRICS] summary, peaks and latest ring.
+  Future<DeviceHealth> getDeviceHealth(String userId, {int days = 14}) async {
+    try {
+      final deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+      final accessToken = Utilities.generateToken(
+        deviceId,
+        'hcportal_getDeviceHealth',
+        paramString: deviceSecret,
+      );
+      final body = <String, String>{
+        'queryType': 'getDeviceHealth',
+        'deviceId': deviceId,
+        'accessToken': accessToken,
+        'userId': userId,
+        'days': days.toString(),
+      };
+      final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+      if (kDebugMode) debugPrint(result is ApiError
+          ? 'SP [getDeviceHealth] called — FAILED'
+          : 'SP [getDeviceHealth] called — success');
+      if (result is! ApiSuccess) return DeviceHealth.empty;
+      final outer = json.decode(result.body) as List<dynamic>;
+      if (outer.length < 2) return DeviceHealth.empty;
+      final devices = (outer[0] as List<dynamic>)
+          .map((e) => DeviceHealthDevice.fromJson(e as Map<String, dynamic>))
+          .toList();
+      final sessions = (outer[1] as List<dynamic>)
+          .map((e) => DeviceHealthSession.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return DeviceHealth(devices: devices, sessions: sessions);
+    } catch (e) {
+      if (kDebugMode) debugPrint('getDeviceHealth error: $e');
+      return DeviceHealth.empty;
+    }
   }
 
   /// Fetches login history for a user and returns the list.
