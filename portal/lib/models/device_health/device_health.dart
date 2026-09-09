@@ -44,6 +44,7 @@ class DeviceHealthSession {
     required this.os,
     required this.hcVersion,
     required this.summary,
+    this.summaryStart = const <String, String>{},
     required this.peaks,
     required this.ring,
     required this.appError,
@@ -66,6 +67,15 @@ class DeviceHealthSession {
 
   /// key → value from the session's last `[METRICS]` line.
   final Map<String, String> summary;
+
+  /// key → value from the session's first `[METRICS] why=start` line.
+  final Map<String, String> summaryStart;
+
+  /// Battery percent at launch and at the last sample, when the phone said.
+  int? get battStart => _pct(summaryStart['batt']);
+  int? get battEnd => _pct(summary['batt']);
+  static int? _pct(String? v) =>
+      v == null ? null : int.tryParse(v.replaceAll('%', ''));
 
   /// key → `value@HH:MM:SS` from the `[METRICS:PEAKS]` line.
   final Map<String, String> peaks;
@@ -92,6 +102,7 @@ class DeviceHealthSession {
         os: j['os'] as String? ?? '',
         hcVersion: j['hcVersion'] as String? ?? '',
         summary: parseKeyValues(j['summary'] as String?),
+        summaryStart: parseKeyValues(j['summaryStart'] as String?),
         peaks: parseKeyValues(j['peaks'] as String?),
         ring: MetricsRing.parse(j['ring'] as String?),
         appError: j['appError'] as String?,

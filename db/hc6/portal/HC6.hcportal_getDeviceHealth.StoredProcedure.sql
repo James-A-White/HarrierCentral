@@ -124,6 +124,12 @@ BEGIN TRY
 			THEN SUBSTRING(S.ErrorLog, p.lastTag + 10,
 			     CHARINDEX(CHAR(10), S.ErrorLog + CHAR(10), p.lastTag) - p.lastTag - 10)
 			ELSE NULL END AS summary,
+		-- The session's FIRST '[METRICS] why=start' line: battery and memory
+		-- at launch, so start and end can be shown side by side.
+		CASE WHEN q.startTag > 0
+			THEN SUBSTRING(S.ErrorLog, q.startTag + 10,
+			     CHARINDEX(CHAR(10), S.ErrorLog + CHAR(10), q.startTag) - q.startTag - 10)
+			ELSE NULL END AS summaryStart,
 		CASE WHEN p.peaksPos > 0
 			THEN LTRIM(SUBSTRING(S.ErrorLog, p.peaksPos + LEN('[METRICS:PEAKS]'),
 			     CHARINDEX(CHAR(10), S.ErrorLog + CHAR(10), p.peaksPos) - p.peaksPos - LEN('[METRICS:PEAKS]')))
@@ -147,6 +153,7 @@ BEGIN TRY
 			LEN(S.ErrorLog + 'x') - 1 AS logLen,
 			CHARINDEX('[METRICS:PEAKS]', S.ErrorLog) AS peaksPos,
 			CHARINDEX('[METRICS:RING]', S.ErrorLog) AS ringPos,
+			CHARINDEX('[METRICS] why=start', S.ErrorLog) AS startTag,
 			-- search only the part before the ring block (the whole log when
 			-- there is none), so a merged later session cannot be picked
 			CASE WHEN CHARINDEX('[METRICS:RING]', S.ErrorLog) > 0

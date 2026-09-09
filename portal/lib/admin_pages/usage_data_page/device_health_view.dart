@@ -153,9 +153,9 @@ class _SessionCard extends StatelessWidget {
                     Expanded(
                       child: s.hasMetrics
                           ? Text(
-                              'up ${s.v('up')} · cpu ${s.v('cpu')} · mem ${s.v('peak')} peak · '
+                              'open ${s.v('up')} (fg ${s.v('fg')} / bg ${s.v('bg')}) · cpu ${s.v('cpu')} · mem ${s.v('peak')} peak · '
                               'net ${s.v('app_rx')} / ${s.v('req', '0')} req · '
-                              'gps ${s.v('loc_track', '0s')} · batt ${s.v('batt')}'
+                              'gps ${s.v('loc_track', '0s')} · batt ${s.battStart == null ? '' : '${s.battStart}%→'}${s.v('batt')}'
                               '${drain.isEmpty ? '' : ' ↓$drain'}'
                               '${s.summary.containsKey('bg_n') ? ' · bg×${s.v('bg_n', '0')} sleep×${s.v('sleep', '0')}' : ''}',
                               style: const TextStyle(fontSize: 12),
@@ -200,6 +200,10 @@ class _SessionBody extends StatelessWidget {
             '${s.errorLines > 0 ? ' · ${s.errorLines} error line(s) in the log' : ''}',
             style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
           ),
+          if (s.hasMetrics) ...<Widget>[
+            const SizedBox(height: 6),
+            _StatsStrip(s: s),
+          ],
           if (s.appError != null) ...<Widget>[
             const SizedBox(height: 4),
             Text(s.appError!, style: TextStyle(fontSize: 12, color: Colors.red.shade800)),
@@ -248,6 +252,48 @@ class _SessionBody extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// The four figures asked for first: how long the app was open, split into
+/// foreground and background, and the battery at start and end. Times come
+/// from the session's last metrics line (cumulative); battery from its first
+/// and last lines. Drain is the whole phone's over the unplugged stretch.
+class _StatsStrip extends StatelessWidget {
+  const _StatsStrip({required this.s});
+  final DeviceHealthSession s;
+
+  @override
+  Widget build(BuildContext context) {
+    final int? b0 = s.battStart;
+    final int? b1 = s.battEnd;
+    final String battery = b0 == null && b1 == null
+        ? '—'
+        : '${b0 == null ? '?' : '$b0%'} → ${b1 == null ? '?' : '$b1%'}'
+          '${b0 != null && b1 != null ? '  (${b1 - b0 >= 0 ? '+' : ''}${b1 - b0}%)' : ''}';
+    final String state = s.v('state', '');
+    final String drain = s.v('drain', '');
+    final List<(String, String)> cells = <(String, String)>[
+      ('Open', s.v('up')),
+      ('Foreground', s.v('fg')),
+      ('Background', s.v('bg')),
+      ('Battery', battery),
+      if (drain.isNotEmpty) ('Drain', '$drain${state.isEmpty ? '' : ' $state'}'),
+    ];
+    return Wrap(
+      spacing: 14,
+      runSpacing: 6,
+      children: cells
+          .map((c) => Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(c.$1, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+                  Text(c.$2, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                ],
+              ))
+          .toList(),
     );
   }
 }

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getDeviceHealth",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Per-device health for one user, for the Usage Data user tile. Extracts the [METRICS] instrumentation (app 3.0.14+) from the user's uploaded session logs in HC.ClientErrorLog: the last [METRICS] line per session, its [METRICS:PEAKS] line, and the [METRICS:RING] block for the latest session per device. The SP extracts lines; the portal parses key=value pairs, so new app fields need no SP change.",
   "parameters": [
     { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Portal device (auth)" },
@@ -32,6 +32,7 @@
         { "name": "os", "type": "NVARCHAR(50)", "nullable": false, "description": "'iOS' or 'Android'" },
         { "name": "hcVersion", "type": "NVARCHAR(51)", "nullable": false, "description": "Build that wrote the log (falls back to the device's current build for pre-3.0.13 rows)" },
         { "name": "summary", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL when the session carried no metrics (build before 3.0.14). Otherwise the text after the LAST '[METRICS] ' tag: the session's cumulative key=value summary (why up fg bg cpu cpu% rss peak pss avail db docs cache disk_free loc_* app_tx app_rx req fail lat_avg lat_max dev_rx dev_tx batt state Δ drain chg lpm therm)" },
+        { "name": "summaryStart", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Text after the FIRST '[METRICS] why=start' tag: the session's launch sample (batt, rss, avail …), so start and end can be compared" },
         { "name": "peaks", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Text after '[METRICS:PEAKS]': key=value@HH:MM:SS extremes (rss_max avail_min cpu%_max lat_max batt_min pss_max)" },
         { "name": "ring", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Every session that has one: the [METRICS:RING] block from its tag up to the peaks line — header 'rows=N every=60s cols=…' then one CSV row per line. The trailing fragment is the peaks line's timestamp; callers drop any line starting with '['." },
         { "name": "appError", "type": "NVARCHAR(300)", "nullable": true, "description": "HC6.ClientLogAppError: first app-error line, or NULL" },
