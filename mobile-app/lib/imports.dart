@@ -152,6 +152,7 @@ export 'package:harrier_central/data/repository/data_repository.dart';
 // data/services
 export 'package:harrier_central/data/services/app_boot_service.dart';
 export 'package:harrier_central/data/services/approve_login_service.dart';
+export 'package:harrier_central/data/services/run_activity_service.dart';
 export 'package:harrier_central/data/services/authenticate_web_portal_service.dart';
 export 'package:harrier_central/data/services/authorize_device_service.dart';
 export 'package:harrier_central/data/services/email_reports_service.dart';

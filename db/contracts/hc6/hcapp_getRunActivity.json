@@ -1,0 +1,25 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getRunActivity",
+  "version": "1.0.0",
+  "description": "What a run has to show, for the activity icons on a run card: whether a PackTrack track exists (HC.EventTrack), and how many photos the viewer may see, chat messages and down-down charges. Batched: the app sends the ids of the cards on screen.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": null, "description": "Registered device UUID (auth)" },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived token (auth)" },
+    { "name": "eventIds", "type": "NVARCHAR(MAX)", "nullable": false, "mapsToColumn": "Event.id", "description": "'|'-delimited HC.Event.id values; invalid entries are dropped, duplicates collapsed" }
+  ],
+  "rowsets": [
+    { "index": 0, "ref": "StandardErrorResult", "description": "Only on auth failure: success envelope then error detail" },
+    { "index": 0, "name": "RunActivity", "description": "One row per valid id, unordered.",
+      "columns": [
+        { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.Event.id" },
+        { "name": "hasTrack", "type": "INT", "nullable": false, "description": "1 when HC.EventTrack has a row — at least one GPS point was ever stored for the run" },
+        { "name": "photoCount", "type": "INT", "nullable": false, "description": "Photos not deleted, at Status >= 2 or uploaded by the viewer" },
+        { "name": "messageCount", "type": "INT", "nullable": false, "description": "Chat messages not removed" },
+        { "name": "downDownCount", "type": "INT", "nullable": false, "description": "Down-down charges not cancelled" }
+      ] }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [ "Never remove a column from any rowset", "Never rename a parameter", "Never change a parameter type" ]
+}

@@ -1,5 +1,8 @@
+using System;
+using System.Data;
 using System.IO;
 using Azure.Data.Tables;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -190,6 +193,12 @@ namespace HcWebApi.Endpoints
                 storedCount++;
             }
 
+            // Record in SQL that this run has a track — one MERGE per accepted
+            // batch, never per point. Until this, the only record that a run
+            // was tracked was Table Storage itself (E5.F6.S3). Best-effort:
+            // a SQL hiccup never turns into a failed store.
+            await RecordEventTrackAsync(payload.EventId, storedCount);
+
             // Piggyback the event-level "tracking ended" flag (set by an admin
             // via EndEventTracking) on the response: every phone still
             // uploading points sees it within one flush interval and stops its
@@ -276,5 +285,48 @@ namespace HcWebApi.Endpoints
             [JsonProperty("alt")] public double? Altitude { get; set; }
             [JsonProperty("type")] public string? Type { get; set; }
         }
+
+        /// <summary>
+        /// Upserts HC.EventTrack for <paramref name="eventId"/>: first point time on
+        /// insert, last point time and running point count on every batch.
+        /// </summary>
+        private async Task RecordEventTrackAsync(string eventId, int storedCount)
+        {
+            if (storedCount <= 0 || !Guid.TryParse(eventId, out Guid eventGuid))
+            {
+                return;
+            }
+            string? connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                _log.LogWarning("StorePositions: HcDbConnectionString not set — HC.EventTrack not recorded.");
+                return;
+            }
+            try
+            {
+                using SqlConnection conn = new(connectionString);
+                await conn.OpenAsync();
+                using SqlCommand cmd = new(
+                    "MERGE HC.EventTrack WITH (HOLDLOCK) AS t " +
+                    "USING (SELECT @eventId AS EventId) AS s ON t.EventId = s.EventId " +
+                    "WHEN MATCHED THEN UPDATE SET LastPointAt = SYSUTCDATETIME(), " +
+                    "    PointCount = t.PointCount + @stored, UpdatedAt = SYSUTCDATETIME() " +
+                    "WHEN NOT MATCHED THEN INSERT (EventId, FirstPointAt, LastPointAt, PointCount, UpdatedAt) " +
+                    "    VALUES (@eventId, SYSUTCDATETIME(), SYSUTCDATETIME(), @stored, SYSUTCDATETIME());",
+                    conn)
+                {
+                    CommandTimeout = 5
+                };
+                cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
+                cmd.Parameters.Add("@stored", SqlDbType.Int).Value = storedCount;
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning("StorePositions: HC.EventTrack upsert failed for event {EventId}: {Message}.",
+                    eventId, ex.Message);
+            }
+        }
+
     }
 }

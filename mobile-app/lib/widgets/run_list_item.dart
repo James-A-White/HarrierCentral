@@ -568,7 +568,13 @@ class RunListItem extends StatelessWidget {
                                       ),
                                     ],
 
-                                    //Expanded(child:Container()),
+                                    // What a finished run has to show —
+                                    // track, photos, chat, down-downs — as
+                                    // a row of small icons along the bottom.
+                                    if (isRunPast(futureRun))
+                                      _ActivityIcons(
+                                        eventId: futureRun.event.eventId,
+                                      ),
                                   ],
                                 ),
                               ),
@@ -1736,5 +1742,59 @@ class RunListItem extends StatelessWidget {
 
     if (retVal is! EnumEmailAlertState) return;
     await _setEmailAlertState(retVal);
+  }
+}
+
+/// The activity row on a past run's card: a map icon when the run has a
+/// PackTrack track, then photos, chat messages and down-down charges with
+/// their counts. Draws nothing until the answer arrives and nothing at all
+/// for a run with none of them, so a quiet run's card is unchanged. Data
+/// comes from [RunActivityService], batched across the cards on screen.
+class _ActivityIcons extends StatelessWidget {
+  const _ActivityIcons({required this.eventId});
+  final String eventId;
+
+  @override
+  Widget build(BuildContext context) {
+    RunActivityService.want(eventId);
+    final String id = normalizeUuid(eventId);
+    return Obx(() {
+      final RunActivity? a = RunActivityService.byEvent[id];
+      if (a == null || !a.any) return const SizedBox.shrink();
+      final Color c = Colors.grey.shade700;
+      final TextStyle n = ts_regularMediumBlack.copyWith(
+        fontSize: 13,
+        color: c,
+      );
+      Widget item(IconData icon, int? count, String tip) => Tooltip(
+            message: tip,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(icon, size: 18, color: c),
+                if (count != null) ...<Widget>[
+                  const SizedBox(width: 3),
+                  Text('$count', style: n),
+                ],
+              ],
+            ),
+          );
+      return Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Wrap(
+          spacing: 14,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: <Widget>[
+            if (a.hasTrack) item(Icons.map_outlined, null, 'PackTrack recorded'),
+            if (a.photos > 0)
+              item(Icons.photo_library_outlined, a.photos, 'Photos'),
+            if (a.messages > 0)
+              item(Icons.forum_outlined, a.messages, 'Trail chat'),
+            if (a.downDowns > 0)
+              item(Icons.sports_bar_outlined, a.downDowns, 'Down-downs'),
+          ],
+        ),
+      );
+    });
   }
 }

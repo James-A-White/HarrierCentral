@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>16</b> epics</div>
     <div><b>77</b> features</div>
-    <div><b>256</b> stories</div>
+    <div><b>257</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -320,7 +320,7 @@
 <div class="index-grid">
   <a class="idx" href="#e1"><span class="idx-id">E1</span><span class="idx-name">Identity &amp; Account Access</span><span class="idx-count">6 features · 23 stories</span></a>
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 18 stories</span></a>
-  <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 23 stories</span></a>
+  <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 24 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
   <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 32 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">4 features · 18 stories</span></a>
@@ -542,6 +542,7 @@
     <ul class="stories">
       <li class="story"><span class="s-id">E3.F6.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want our runs pushed to the club's Google Calendar so that members who live in their calendar still see them.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E3.F6.S2</span><span class="s-text">As a <em>Hasher</em>, I want to subscribe to a kennel's runs as a feed so that they appear in my own calendar automatically.</span><span class="chip c-back">Backlog</span></li>
+      <li class="story"><span class="s-id">E3.F3.S6</span><span class="s-text">As a <em>Hasher</em>, I want a past run's card to show whether it has a PackTrack track, photos, chat and down-downs so that I can tell which runs have something to look at without opening each one.</span><span class="chip c-build">Building</span></li>
     </ul>
   </div>
 </section>
@@ -674,8 +675,7 @@
     <ul class="stories">
       <li class="story"><span class="s-id">E5.F6.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to trim the start and end of a recorded track so that the drive to the pub is not part of the trail.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E5.F6.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to delete a track entirely so that a mis-recorded trail can be removed.</span><span class="chip c-ship">Shipped</span></li>
-      <li class="story"><span class="s-id">E5.F6.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage.</span><span class="chip c-next">Next</span>
-        <span class="gap">no SQL record exists that a run was tracked; enumeration is a partition-key skip walk. Designed in <code>docs/packtrack_in_database_plan.md</code>, not started</span></li>
+      <li class="story"><span class="s-id">E5.F6.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage. <code>HC.EventTrack</code>, one row per tracked run, written by StorePositions per batch and backfilled from Table Storage; the HEM per-hasher flag in <code>docs/packtrack_in_database_plan.md</code> remains for later.</span><span class="chip c-build">Building</span></li>
       <li class="story"><span class="s-id">E5.F6.S4</span><span class="s-text">As a <em>Hasher</em>, I want my track stored in compressed form against my attendance record so that my trail survives independently of the position store.</span><span class="chip c-next">Next</span>
         <span class="gap"><code>HC.HasherEventMap</code> has no such column — designed in <code>docs/packtrack_in_database_plan.md</code>, not started</span></li>
       <li class="story"><span class="s-id">E5.F6.S5</span><span class="s-text">As a <em>Platform Admin</em>, I want the 709 legacy <code>PHO::</code> photo points removed from the position store once no shipped client reads pins from them, so that a photo lives only on its own row. <em>Due 2026-12-09</em>, after app ≤3.0.15 and web ≤0.21.44 are out of production — issue #336 has the check and the deletion path.</span><span class="chip c-next">Next</span></li>
