@@ -73,7 +73,7 @@ BEGIN
     SET @errorMsg   = 'The device making this request is not registered. Please re-authorise the app.';
 
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Device not registered', @errorMsg, @procName, NULL);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Device not registered', @errorMsg, @procName, NULL);
     RETURN;
 END
 
@@ -89,6 +89,6 @@ BEGIN
     SET @errorMsg   = 'The access token is invalid. Please check that the clock on your phone is set automatically from Apple or Google.';
 
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Invalid access token', @errorMsg, @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Invalid access token', @errorMsg, @procName, @userId);
     RETURN;
 END

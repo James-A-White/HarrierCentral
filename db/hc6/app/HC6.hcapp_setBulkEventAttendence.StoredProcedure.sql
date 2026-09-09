@@ -83,7 +83,7 @@ IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1225; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty eventId',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty eventId',
             'A null or empty eventId was passed to ' + @procName, @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -96,7 +96,7 @@ IF (@attendenceState IS NULL OR @attendenceState < 20 OR @attendenceState > 40)
 BEGIN
     SET @errorCode = 1225; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Invalid attendance state',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Invalid attendance state',
             'Bulk attendance state must be 20–40', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -110,7 +110,7 @@ IF (@hasherIds IS NULL)
 BEGIN
     SET @errorCode = 1225; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null hasherIds',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null hasherIds',
             '@hasherIds is required', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -139,7 +139,7 @@ BEGIN TRY
             SET @errorCode = 1325; SET @errorType = 13; SET @errorId = NEWID();
             ROLLBACK TRANSACTION;
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-            VALUES (@errorId, '<unknown>', 'Not authorised for bulk attendance',
+            VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised for bulk attendance',
                     'Caller does not hold required role for kennel', @procName, @userId);
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -201,7 +201,7 @@ BEGIN CATCH
 
     SET @errorCode = 1925; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

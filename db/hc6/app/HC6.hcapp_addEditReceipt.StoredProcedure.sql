@@ -106,7 +106,7 @@ IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1243; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty eventId', 'eventId is required', @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty eventId', 'eventId is required', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing event' AS errorTitle, 'An event must be specified.' AS errorUserMessage, @procName AS errorProc;
@@ -128,7 +128,7 @@ IF (@receiptAllowed = 0)
 BEGIN
     SET @errorCode = 1343; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised to manage receipts',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to manage receipts',
             'Caller does not hold required role for kennel', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -202,7 +202,7 @@ BEGIN CATCH
 
     SET @errorCode = 1943; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

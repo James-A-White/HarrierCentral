@@ -90,7 +90,7 @@ IF (@inviteCode IS NULL)
 BEGIN
     SET @errorCode = 1312; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Invite code not available',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Invite code not available',
             'Target user not found, already logged in, or caller lacks permission',
             @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -107,7 +107,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getInviteCode',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in hcapp_getInviteCode',
             ERROR_MESSAGE(), @procName, @userId);
     THROW;
 END CATCH

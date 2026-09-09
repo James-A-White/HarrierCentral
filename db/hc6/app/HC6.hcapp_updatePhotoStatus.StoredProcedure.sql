@@ -82,7 +82,7 @@ IF (@action NOT IN (1, 2, 3, 4, 5, 6, 7))
 BEGIN
     SET @errorCode = 1233; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Invalid action',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Invalid action',
             CONCAT('@action must be 1–7; received: ', @action), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -108,7 +108,7 @@ IF (@photoKennelId IS NULL)
 BEGIN
     SET @errorCode = 1333; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Photo not found',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Photo not found',
             'No KennelPhoto row exists with the supplied photoId', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -127,7 +127,7 @@ IF (@photoAllowed = 0)
 BEGIN
     SET @errorCode = 1333; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised to review photos',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to review photos',
             'Caller does not hold Hash Flash, GM, VGM or RA role for this kennel', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -194,7 +194,7 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error',
             ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, 1933 AS errorCode, 19 AS errorType;
     SELECT @errorId AS errorId, 19 AS errorType, 1933 AS errorCode,

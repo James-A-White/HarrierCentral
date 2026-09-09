@@ -73,7 +73,7 @@ IF @eventId IS NULL
 BEGIN
     SET @errorCode = 1270; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null eventId', 'eventId is required', @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null eventId', 'eventId is required', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing event' AS errorTitle, 'An event must be specified.' AS errorUserMessage, @procName AS errorProc;
     RETURN;

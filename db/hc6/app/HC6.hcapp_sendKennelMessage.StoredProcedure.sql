@@ -54,7 +54,7 @@ IF (@messageId IS NULL OR @kennelId IS NULL
 BEGIN
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing required fields',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing required fields',
             'messageId, kennelId and messageContent are required', @procName, @userId);
     SELECT @errorId AS errorId, 2 AS errorType, 1901 AS errorCode,
            'Missing fields' AS errorTitle,
@@ -69,7 +69,7 @@ IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap hkm
 BEGIN
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not a follower',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not a follower',
             'Sender has no HKM row for this kennel', @procName, @userId);
     SELECT @errorId AS errorId, 3 AS errorType, 1902 AS errorCode,
            'Not following' AS errorTitle,
@@ -114,7 +114,7 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT @errorId AS errorId, 5 AS errorType, 1933 AS errorCode,
            'Unexpected error' AS errorTitle,
            'The message could not be sent. Please try again.' AS errorUserMessage,

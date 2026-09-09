@@ -80,7 +80,7 @@ IF (@resetCode IS NULL)
 BEGIN
     SET @errorCode = 1313; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
-    VALUES (@errorId, '<unknown>', 'Support code not found',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Support code not found',
             'No active user found for support code: ' + COALESCE(@supportCode, ''),
             @procName, @userId, @supportCode);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -96,7 +96,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getResetCode',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in hcapp_getResetCode',
             ERROR_MESSAGE(), @procName, @userId);
     THROW;
 END CATCH

@@ -57,7 +57,7 @@ IF (@userId IS NULL OR @userId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @authErrorCode = 1304; SET @authErrorType = 3; SET @authErrorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@authErrorId, '<unknown>', 'Device not registered',
+    VALUES (@authErrorId, HC6.DeviceHcVersion(@deviceId), 'Device not registered',
             'Device not found in HC.Device', @procName, NULL);
     SELECT 0 AS success, @authErrorCode AS errorCode, @authErrorType AS errorType;
     SELECT @authErrorId AS errorId, @authErrorType AS errorType, @authErrorCode AS errorCode,
@@ -74,7 +74,7 @@ IF HC.CHECK_ACCESS_TOKEN_V2(@userId, @procName, COALESCE(@accessToken, 'error'),
 BEGIN
     SET @authErrorCode = 1104; SET @authErrorType = 1; SET @authErrorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@authErrorId, '<unknown>', 'Invalid access token',
+    VALUES (@authErrorId, HC6.DeviceHcVersion(@deviceId), 'Invalid access token',
             'Access token failed validation', @procName, @userId);
     SELECT 0 AS success, @authErrorCode AS errorCode, @authErrorType AS errorType;
     SELECT @authErrorId AS errorId, @authErrorType AS errorType, @authErrorCode AS errorCode,
@@ -109,7 +109,7 @@ BEGIN CATCH
 
     SET @errorCode = 1904; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

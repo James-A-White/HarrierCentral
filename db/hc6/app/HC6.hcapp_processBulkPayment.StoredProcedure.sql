@@ -100,7 +100,7 @@ IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1241; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty eventId', 'eventId is required', @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty eventId', 'eventId is required', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing event' AS errorTitle, 'An event must be specified.' AS errorUserMessage, @procName AS errorProc;
@@ -111,7 +111,7 @@ IF (@userIdsWhoPaid IS NULL)
 BEGIN
     SET @errorCode = 1241; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null userIdsWhoPaid', '@userIdsWhoPaid is required', @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null userIdsWhoPaid', '@userIdsWhoPaid is required', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing hasher list' AS errorTitle, 'At least one hasher must be specified.' AS errorUserMessage, @procName AS errorProc;
@@ -137,7 +137,7 @@ BEGIN TRY
             SET @errorCode = 1341; SET @errorType = 13; SET @errorId = NEWID();
             ROLLBACK TRANSACTION;
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-            VALUES (@errorId, '<unknown>', 'Not authorised for bulk payment',
+            VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised for bulk payment',
                     'Caller does not hold required role for kennel', @procName, @userId);
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -319,7 +319,7 @@ BEGIN CATCH
 
     SET @errorCode = 1941; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

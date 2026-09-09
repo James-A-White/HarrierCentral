@@ -119,7 +119,7 @@ IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1250; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty kennelId', 'kennelId is required', @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty kennelId', 'kennelId is required', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing kennel' AS errorTitle, 'A kennel must be specified.' AS errorUserMessage, @procName AS errorProc;
@@ -172,7 +172,7 @@ IF (@authDenied = 1)
 BEGIN
     SET @errorCode = 1337; SET @errorType = 3; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised',
             'Caller lacks permission for this kennel-membership change', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -333,7 +333,7 @@ BEGIN CATCH
 
     SET @errorCode = 1950; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

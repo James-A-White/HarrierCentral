@@ -109,7 +109,7 @@ BEGIN TRY
             ROLLBACK TRANSACTION;
             SET @errorCode = 1511; SET @errorType = 15; SET @errorId = NEWID();
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-            VALUES (@errorId, '<unknown>', 'GDPR delete failed',
+            VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'GDPR delete failed',
                     'User not found or already removed', @procName, @userId);
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -130,7 +130,7 @@ BEGIN CATCH
 
     SET @errorCode = 1911; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

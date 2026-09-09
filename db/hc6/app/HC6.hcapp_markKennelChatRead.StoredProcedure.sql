@@ -43,7 +43,7 @@ IF (@kennelId IS NULL)
 BEGIN
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null kennelId', 'kennelId is required', @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null kennelId', 'kennelId is required', @procName, @userId);
     SELECT @errorId AS errorId, 2 AS errorType, 1901 AS errorCode,
            'Missing kennel' AS errorTitle, 'A kennel must be specified.' AS errorUserMessage,
            @procName AS errorProc;
@@ -85,6 +85,6 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success;
 END CATCH

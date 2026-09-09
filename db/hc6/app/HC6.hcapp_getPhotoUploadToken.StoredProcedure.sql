@@ -67,7 +67,7 @@ IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1230; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing kennelId',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing kennelId',
             '@kennelId is required for hcapp_getPhotoUploadToken', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -81,7 +81,7 @@ IF (@photoGuid IS NULL OR @photoGuid = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1230; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing photoGuid',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing photoGuid',
             '@photoGuid is required for hcapp_getPhotoUploadToken', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -103,7 +103,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcapp_getPhotoUploadToken',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in hcapp_getPhotoUploadToken',
             ERROR_MESSAGE(), @procName, @userId);
     THROW;
 END CATCH

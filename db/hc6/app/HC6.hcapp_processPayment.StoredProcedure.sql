@@ -197,7 +197,7 @@ IF (@eventId IS NULL AND @productType IN (1, 2))
 BEGIN
     SET @errorCode = 1240; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty eventId',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty eventId',
             'eventId required for productType 1 and 2', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -210,7 +210,7 @@ IF ((@paymentAmount IS NULL OR @paymentAmount < 0) AND @paymentType < 100)
 BEGIN
     SET @errorCode = 1240; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Invalid payment amount',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Invalid payment amount',
             'paymentAmount must be >= 0 for paymentType < 100', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -296,7 +296,7 @@ BEGIN TRY
             SET @errorCode = 1340; SET @errorType = 13; SET @errorId = NEWID();
             ROLLBACK TRANSACTION;
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-            VALUES (@errorId, '<unknown>', 'Not authorised to take payment',
+            VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to take payment',
                     'Caller does not hold required role for kennel', @procName, @userId);
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -537,7 +537,7 @@ BEGIN TRY
                 SET @errorCode = 1245; SET @errorType = 2; SET @errorId = NEWID();
                 ROLLBACK TRANSACTION;
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-                VALUES (@errorId, '<unknown>', 'Membership year not set',
+                VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Membership year not set',
                         'MembershipPeriodEndDate is not configured', @procName, @userId);
                 SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
                 SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -555,7 +555,7 @@ BEGIN TRY
                 SET @errorCode = 1246; SET @errorType = 2; SET @errorId = NEWID();
                 ROLLBACK TRANSACTION;
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-                VALUES (@errorId, '<unknown>', 'Already a lifetime member',
+                VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Already a lifetime member',
                         'Attempt to charge membership to a lifetime member', @procName, @userId);
                 SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
                 SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -580,7 +580,7 @@ BEGIN TRY
                 SET @errorCode = 1247; SET @errorType = 2; SET @errorId = NEWID();
                 ROLLBACK TRANSACTION;
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-                VALUES (@errorId, '<unknown>', 'Cannot bulk-cancel haberdashery',
+                VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Cannot bulk-cancel haberdashery',
                         'paymentType 1 is not supported for productType 3', @procName, @userId);
                 SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
                 SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -976,7 +976,7 @@ BEGIN CATCH
 
     SET @errorCode = 1940; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

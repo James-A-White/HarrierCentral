@@ -358,7 +358,7 @@ BEGIN CATCH
     -- to preserve the client's existing silent-retry behaviour (see note above).
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in getEventBadgeCount',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in getEventBadgeCount',
             ERROR_MESSAGE(), @procName, @userId);
     THROW;
 END CATCH

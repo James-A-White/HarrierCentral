@@ -130,7 +130,7 @@ BEGIN CATCH
 
     SET @errorCode = 1993; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,
@@ -149,7 +149,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-        VALUES (NEWID(), '<unknown>', 'Run count update failed (non-fatal)',
+        VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Run count update failed (non-fatal)',
                 ERROR_MESSAGE(), @procName, @hasherId);
     END CATCH
 END

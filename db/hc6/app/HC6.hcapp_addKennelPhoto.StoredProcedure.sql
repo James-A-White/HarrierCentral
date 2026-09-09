@@ -102,7 +102,7 @@ IF (@photoId IS NULL OR @photoId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1231; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing photoId',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing photoId',
             '@photoId is required for hcapp_addKennelPhoto', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -118,7 +118,7 @@ IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1231; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing required fields',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing required fields',
             'eventId, kennelId, and blobUrl are all required', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -135,7 +135,7 @@ IF NOT EXISTS (
 BEGIN
     SET @errorCode = 1331; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Event/kennel mismatch',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Event/kennel mismatch',
             'eventId does not belong to the supplied kennelId', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -158,7 +158,7 @@ BEGIN
     BEGIN
         SET @errorCode = 1231; SET @errorType = 12; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-        VALUES (@errorId, '<unknown>', 'Photo quota exceeded',
+        VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Photo quota exceeded',
                 'User has reached the maximum number of photos for this run', @procName, @userId);
         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -239,7 +239,7 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error',
             ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, 1931 AS errorCode, 19 AS errorType;
     SELECT @errorId AS errorId, 19 AS errorType, 1931 AS errorCode,

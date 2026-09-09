@@ -82,7 +82,7 @@ BEGIN TRY
 END TRY
 BEGIN CATCH
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcportal_getPermissionMatrix',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in hcportal_getPermissionMatrix',
             ERROR_MESSAGE(), @procName, @hasherId);
     THROW;
 END CATCH

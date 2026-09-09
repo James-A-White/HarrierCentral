@@ -69,7 +69,7 @@ IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1281; SET @errorType = 2; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null eventId', 'eventId is required', @procName_self, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null eventId', 'eventId is required', @procName_self, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing event' AS errorTitle, 'An event must be specified.' AS errorUserMessage, @procName_self AS errorProc;
@@ -80,7 +80,7 @@ IF (@songId IS NULL OR @songId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1282; SET @errorType = 2; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null songId', 'songId is required', @procName_self, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null songId', 'songId is required', @procName_self, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing song' AS errorTitle, 'A song must be specified.' AS errorUserMessage, @procName_self AS errorProc;
@@ -95,7 +95,7 @@ IF NOT EXISTS (
 BEGIN
     SET @errorCode = 1283; SET @errorType = 3; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not RSVP''d to event', 'User must be RSVP''d to select a song', @procName_self, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not RSVP''d to event', 'User must be RSVP''d to select a song', @procName_self, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Not RSVP''d' AS errorTitle, 'You must be RSVP''d to this event to share a song.' AS errorUserMessage, @procName_self AS errorProc;
@@ -110,7 +110,7 @@ IF (@songTitle IS NULL)
 BEGIN
     SET @errorCode = 1284; SET @errorType = 2; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Song not found', 'No active song found with given songId', @procName_self, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Song not found', 'No active song found with given songId', @procName_self, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Song not found' AS errorTitle, 'The selected song could not be found.' AS errorUserMessage, @procName_self AS errorProc;
@@ -161,7 +161,7 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorCode = 1285; SET @errorType = 5; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Insert failed', ERROR_MESSAGE(), @procName_self, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Insert failed', ERROR_MESSAGE(), @procName_self, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Save failed' AS errorTitle, 'Your song selection could not be saved.' AS errorUserMessage, @procName_self AS errorProc;

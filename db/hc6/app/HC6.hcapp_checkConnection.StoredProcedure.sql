@@ -25,7 +25,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in checkConnection',
+    VALUES (NEWID(), '<no device>', 'Unhandled error in checkConnection',
             ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), NULL);
     THROW;
 END CATCH

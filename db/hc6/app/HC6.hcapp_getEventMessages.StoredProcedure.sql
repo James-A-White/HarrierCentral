@@ -83,7 +83,7 @@ IF (@eventId IS NULL)
 BEGIN
     SET @errorCode = 1260; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty eventId', 'eventId is required', @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty eventId', 'eventId is required', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing event' AS errorTitle, 'An event must be specified.' AS errorUserMessage, @procName AS errorProc;
     RETURN;
@@ -111,7 +111,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in getEventMessages',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in getEventMessages',
             ERROR_MESSAGE(), @procName, @userId);
     THROW;
 END CATCH

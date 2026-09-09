@@ -147,7 +147,7 @@ IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1220; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing kennelId',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing kennelId',
             '@kennelId is required for hcapp_addEditEvent', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -234,7 +234,7 @@ IF (@evtAllowed = 0)
 BEGIN
     SET @errorCode = 1321; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised to manage runs',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to manage runs',
             'Caller does not hold required role for kennel', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -254,7 +254,7 @@ IF (@eventId IS NOT NULL
 BEGIN
     SET @errorCode = 1320; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Event not found in kennel',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Event not found in kennel',
             'eventId exists but belongs to a different kennel', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -452,7 +452,7 @@ BEGIN CATCH
 
     SET @errorCode = 1920; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

@@ -92,7 +92,7 @@ IF (@messageId IS NULL)
 BEGIN
     SET @errorCode = 1261; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null messageId', 'messageId is required', @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null messageId', 'messageId is required', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing message ID' AS errorTitle, 'A message ID must be provided.' AS errorUserMessage, @procName AS errorProc;
     RETURN;
@@ -102,7 +102,7 @@ IF (@eventId IS NULL)
 BEGIN
     SET @errorCode = 1261; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null eventId', 'eventId is required', @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null eventId', 'eventId is required', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing event' AS errorTitle, 'An event must be specified.' AS errorUserMessage, @procName AS errorProc;
     RETURN;
@@ -114,7 +114,7 @@ IF (LEN(COALESCE(@messageContent, '')) = 0
 BEGIN
     SET @errorCode = 1261; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing required message fields',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing required message fields',
             'messageContent or messageReleasabilityFlags missing', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing message fields' AS errorTitle,
@@ -159,7 +159,7 @@ IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap WHERE UserId = @userId AND Kenne
 BEGIN
     SET @errorCode = 1263; SET @errorType = 3; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised to post',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to post',
             'Sender is not a member or attendee of this event', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Not authorised' AS errorTitle,
@@ -291,7 +291,7 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID(); SET @errorType = 5; SET @errorCode = 9999;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Runtime error in hcapp_sendEventMessage', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Runtime error in hcapp_sendEventMessage', ERROR_MESSAGE(), @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Message send failed' AS errorTitle,
            'Your message could not be sent. Please try again.' AS errorUserMessage,

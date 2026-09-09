@@ -102,7 +102,7 @@ IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1271; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty eventId', 'eventId is required', @effectiveProcName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty eventId', 'eventId is required', @effectiveProcName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing event' AS errorTitle, 'An event must be specified.' AS errorUserMessage, @effectiveProcName AS errorProc;
     RETURN;
@@ -132,7 +132,7 @@ BEGIN
     BEGIN
         SET @errorCode = 1371; SET @errorType = 13; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-        VALUES (@errorId, '<unknown>', 'Not authorised for event admin sync',
+        VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised for event admin sync',
                 'Caller does not hold required role for kennel', @effectiveProcName, @userId);
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                'Not authorised' AS errorTitle,
@@ -407,7 +407,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in syncEventAdminData',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in syncEventAdminData',
             ERROR_MESSAGE(), @effectiveProcName, @userId);
     THROW;
 END CATCH

@@ -73,7 +73,7 @@ IF (@photoKennelId IS NULL)
 BEGIN
     SET @errorCode = 1333; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Photo not found',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Photo not found',
             'No KennelPhoto row exists with the supplied photoId', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -92,7 +92,7 @@ IF (@photoAllowed = 0)
 BEGIN
     SET @errorCode = 1333; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised to edit photo caption',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to edit photo caption',
             'Caller does not hold Hash Flash, GM, VGM or RA role for this kennel', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -119,7 +119,7 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error',
             ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, 1933 AS errorCode, 19 AS errorType;
     SELECT @errorId AS errorId, 19 AS errorType, 1933 AS errorCode,

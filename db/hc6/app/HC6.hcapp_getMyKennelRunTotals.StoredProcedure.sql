@@ -130,7 +130,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in getMyKennelRunTotals',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in getMyKennelRunTotals',
             ERROR_MESSAGE(), @procName, @userId);
     THROW;
 END CATCH

@@ -75,7 +75,7 @@ IF (@kennelId   IS NULL OR @kennelId   = '00000000-0000-0000-0000-000000000000'
 BEGIN
     SET @errorCode = 1234; SET @errorType = 2; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing parameter',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing parameter',
             '@kennelId, @eventId, @downDownId and @chargeText are all required', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -97,7 +97,7 @@ IF (@createdByUserId IS NULL)
 BEGIN
     SET @errorCode = 4041; SET @errorType = 3; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'DownDown not found',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'DownDown not found',
             'No DownDown matched @downDownId + @eventId + @kennelId', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -117,7 +117,7 @@ BEGIN
     BEGIN
         SET @errorCode = 1337; SET @errorType = 3; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-        VALUES (@errorId, '<unknown>', 'Not authorised',
+        VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised',
                 'Caller is not the creator and lacks GM or RA role', @procName, @userId);
         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -146,7 +146,7 @@ END TRY
 BEGIN CATCH
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, 1933 AS errorCode, 5 AS errorType;
     SELECT @errorId AS errorId, 5 AS errorType, 1933 AS errorCode,
            'Unexpected error' AS errorTitle,

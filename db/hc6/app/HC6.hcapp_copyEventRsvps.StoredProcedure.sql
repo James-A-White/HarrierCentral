@@ -77,7 +77,7 @@ IF (@fromEvent IS NULL OR @fromEvent = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1221; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty fromEvent',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty fromEvent',
             'A null or empty fromEvent was passed to ' + @procName, @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -90,7 +90,7 @@ IF (@toEvent IS NULL OR @toEvent = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1221; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty toEvent',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty toEvent',
             'A null or empty toEvent was passed to ' + @procName, @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -114,7 +114,7 @@ BEGIN TRY
             SET @errorCode = 1221; SET @errorType = 12; SET @errorId = NEWID();
             ROLLBACK TRANSACTION;
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-            VALUES (@errorId, '<unknown>', 'Cross-kennel RSVP copy attempted',
+            VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Cross-kennel RSVP copy attempted',
                     'Source and target events must belong to the same kennel', @procName, @userId);
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -131,7 +131,7 @@ BEGIN TRY
             SET @errorCode = 1321; SET @errorType = 13; SET @errorId = NEWID();
             ROLLBACK TRANSACTION;
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-            VALUES (@errorId, '<unknown>', 'Not authorised to copy RSVPs',
+            VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to copy RSVPs',
                     'Caller does not hold required role for kennel', @procName, @userId);
             SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
             SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -176,7 +176,7 @@ BEGIN CATCH
 
     SET @errorCode = 1921; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

@@ -626,7 +626,7 @@ BEGIN CATCH
     -- to preserve the client's existing offline-fallback behaviour.
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in syncUserData',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in syncUserData',
             ERROR_MESSAGE(), @effectiveProcName, @userId);
     THROW;
 END CATCH

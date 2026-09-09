@@ -116,6 +116,10 @@ run_query "HC6 schema" \
 
 echo ""
 echo "── Step 2: Helper SPs (must precede all portal + app SPs) ──"
+run_file "HC6.DeviceHcVersion (function)" \
+    "$REPO_ROOT/db/schema/functions/HC6.DeviceHcVersion.Function.sql"
+run_file "HC6.ClientLogAppError (function)" \
+    "$REPO_ROOT/db/schema/functions/HC6.ClientLogAppError.Function.sql"
 run_file "HC6.ValidatePortalAuth" \
     "$SP_DIR/HC6.ValidatePortalAuth.StoredProcedure.sql"
 run_file "HC6.nonApi_updateRunNumbers" \

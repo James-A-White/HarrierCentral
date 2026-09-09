@@ -106,7 +106,7 @@ BEGIN
     BEGIN
         SET @errorCode = 1224; SET @errorType = 12; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-        VALUES (@errorId, '<unknown>', 'Mismatched eventIds',
+        VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Mismatched eventIds',
                 'HEM eventId and @eventId do not match', @procName, @userId);
         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -124,7 +124,7 @@ IF (@attendenceState IS NULL OR @attendenceState < 0 OR @attendenceState > 40)
 BEGIN
     SET @errorCode = 1224; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Invalid attendance state',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Invalid attendance state',
             'attendenceState must be 0–40', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -159,7 +159,7 @@ IF (@hasherId IS NULL)
 BEGIN
     SET @errorCode = 1324; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unknown user',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unknown user',
             'Could not resolve hasher from QR or hasherId', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -238,7 +238,7 @@ BEGIN
     BEGIN
         SET @errorCode = 1324; SET @errorType = 13; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-        VALUES (@errorId, '<unknown>', 'Not authorised to set attendance for other user',
+        VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to set attendance for other user',
                 'Caller does not hold required role for kennel', @procName, @userId);
         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -323,7 +323,7 @@ BEGIN CATCH
 
     SET @errorCode = 1924; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

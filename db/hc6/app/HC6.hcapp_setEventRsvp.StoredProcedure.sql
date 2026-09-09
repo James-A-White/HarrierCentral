@@ -100,7 +100,7 @@ BEGIN
     BEGIN
         SET @errorCode = 1226; SET @errorType = 12; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-        VALUES (@errorId, '<unknown>', 'Mismatched eventIds',
+        VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Mismatched eventIds',
                 'HEM eventId and @eventId do not match', @procName, @userId);
         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -270,7 +270,7 @@ BEGIN CATCH
 
     SET @errorCode = 1926; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,

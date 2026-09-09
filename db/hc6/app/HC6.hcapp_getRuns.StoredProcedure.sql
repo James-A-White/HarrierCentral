@@ -72,7 +72,7 @@ IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1222; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Null or empty kennelId',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null or empty kennelId',
             'A null or empty kennelId was passed to ' + @procName, @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing kennel' AS errorTitle,
@@ -117,7 +117,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in getRuns',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in getRuns',
             ERROR_MESSAGE(), @procName, @userId);
     THROW;
 END CATCH

@@ -112,7 +112,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcportal_savePermissionMatrix',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in hcportal_savePermissionMatrix',
             ERROR_MESSAGE(), @procName, @hasherId);
     SELECT 0 AS Success, ERROR_MESSAGE() AS ErrorMessage;
 END CATCH

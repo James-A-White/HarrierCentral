@@ -121,7 +121,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in getCurrentSong',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in getCurrentSong',
             ERROR_MESSAGE(), @procName_self, @userId);
     THROW;
 END CATCH

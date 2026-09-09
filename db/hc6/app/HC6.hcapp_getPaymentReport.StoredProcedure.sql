@@ -88,7 +88,7 @@ IF (@rptAllowed = 0)
 BEGIN
     SET @errorCode = 1342; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised to view payment report',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to view payment report',
             'Caller does not hold required role for kennel', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Not authorised' AS errorTitle,
@@ -274,7 +274,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), '<unknown>', 'Unhandled error in getPaymentReport',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in getPaymentReport',
             ERROR_MESSAGE(), @procName, @userId);
     THROW;
 END CATCH

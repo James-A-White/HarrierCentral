@@ -78,7 +78,7 @@ IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000'
 BEGIN
     SET @errorCode = 1234; SET @errorType = 2; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing or invalid parameter',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing or invalid parameter',
             '@kennelId, @eventId, @headline are required and @status must be 0 or 1', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -97,7 +97,7 @@ IF (@htAllowed = 0)
 BEGIN
     SET @errorCode = 1334; SET @errorType = 3; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised',
             'Caller lacks Hash Flash, WebMeister, or GM role', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -121,7 +121,7 @@ BEGIN TRY
     BEGIN
         SET @errorCode = 4040; SET @errorType = 3; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-        VALUES (@errorId, '<unknown>', 'Event not found',
+        VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Event not found',
                 'No event matched @eventId + @kennelId', @procName, @userId);
         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -137,7 +137,7 @@ END TRY
 BEGIN CATCH
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, 1933 AS errorCode, 5 AS errorType;
     SELECT @errorId AS errorId, 5 AS errorType, 1933 AS errorCode,
            'Unexpected error' AS errorTitle,

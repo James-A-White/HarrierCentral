@@ -96,7 +96,7 @@ IF (@kennelId  IS NULL OR @kennelId  = '00000000-0000-0000-0000-000000000000'
 BEGIN
     SET @errorCode = 1234; SET @errorType = 2; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Missing parameter',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing parameter',
             '@kennelId, @eventId, @chargeText and at least one target (hasher or external name) are required', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -116,7 +116,7 @@ IF NOT EXISTS (
 BEGIN
     SET @errorCode = 1335; SET @errorType = 3; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not authorised',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised',
             'Caller did not attend this run', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -153,7 +153,7 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, 1933 AS errorCode, 5 AS errorType;
     SELECT @errorId AS errorId, 5 AS errorType, 1933 AS errorCode,
            'Unexpected error' AS errorTitle,
