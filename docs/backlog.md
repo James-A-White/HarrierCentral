@@ -204,6 +204,8 @@ The run is the atom of the whole platform. Creating one, finding it, getting to 
 | `E3.F3.S3` | As a **Hasher**, I want a run to move to the past six hours after it starts so that the app and the database always agree which side of the line it is on. | `Shipped` |
 | `E3.F3.S4` | As a **Hasher**, I want to filter runs by kennel, date range and distance from me so that a long list stays usable. | `Shipped` |
 | `E3.F3.S5` | As a **Hasher** with a slow connection, I want the cached list shown while the sync runs so that I never see "No runs" on a list that is still loading. | `Shipped` |
+| `E3.F3.S6` | As a **Hasher**, I want a past run's card to show whether it has a PackTrack track, photos, chat and down-downs so that I can tell which runs have something to look at without opening each one. | `Shipped` |
+| `E3.F3.S7` | As a **Hasher**, I want the PackTrack icon on a past run's card to say how many runners recorded a track so that I know whether there is a pack to replay or one lone trail. `HC.EventTrackRunner`, one row per runner per run, written by StorePositions and backfilled from GetPositions. | `Building` |
 
 ### E3.F4 · The run detail view  
 `App` `Portal` `Web`
@@ -233,7 +235,6 @@ The run is the atom of the whole platform. Creating one, finding it, getting to 
 |---|---|---|
 | `E3.F6.S1` | As a **Kennel HC Admin**, I want our runs pushed to the club's Google Calendar so that members who live in their calendar still see them. | `Shipped` |
 | `E3.F6.S2` | As a **Hasher**, I want to subscribe to a kennel's runs as a feed so that they appear in my own calendar automatically. | `Backlog` |
-| `E3.F3.S6` | As a **Hasher**, I want a past run's card to show whether it has a PackTrack track, photos, chat and down-downs so that I can tell which runs have something to look at without opening each one. | `Shipped` |
 
 ---
 
@@ -359,7 +360,7 @@ Recording where the pack went and playing it back. Tracks live in Azure Table St
 | `E5.F6.S1` | As a **Kennel HC Admin**, I want to trim the start and end of a recorded track so that the drive to the pub is not part of the trail. | `Shipped` |
 | `E5.F6.S2` | As a **Kennel HC Admin**, I want to delete a track entirely so that a mis-recorded trail can be removed. | `Shipped` |
 | `E5.F6.S3` | As a **Platform Admin**, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage. `HC.EventTrack`, one row per tracked run, written by StorePositions per batch and backfilled from Table Storage; the HEM per-hasher flag in `docs/packtrack_in_database_plan.md` remains for later. | `Shipped` |
-| `E5.F6.S4` | As a **Hasher**, I want my track stored in compressed form against my attendance record so that my trail survives independently of the position store. **⚠ Known gap:** `HC.HasherEventMap` has no such column — designed in `docs/packtrack_in_database_plan.md`, not started | `Next` |
+| `E5.F6.S4` | As a **Hasher**, I want my own PackTrack trail stored as gzipped content on my `HC.HasherEventMap` row — one runner, one run, one compressed blob — so that my trail survives independently of the position store and a past run replays from the database alone. Written once when tracking ends, never per batch; `HC.EventTrackRunner` already names the (run, hasher) pairs to fill. **⚠ Known gap:** `HC.HasherEventMap` has no such column — designed in `docs/packtrack_in_database_plan.md`, not started; the ALTER needs the `UpdatedAt` trigger disabled first. | `Next` |
 | `E5.F6.S5` | As a **Platform Admin**, I want the 709 legacy `PHO::` photo points removed from the position store once no shipped client reads pins from them, so that a photo lives only on its own row. **Due 2026-12-09**, after app ≤3.0.15 and web ≤0.21.44 are out of production — issue #336 has the check and the deletion path. | `Next` |
 | `E5.F3.S6` | As a **Hasher**, I want no mark — photo, check or the admin's trim boundary — to ever be a vertex of my trail or a term in its distance, so that a marker placed off-trail cannot draw a straight line into my track. | `Building` |
 
@@ -428,6 +429,7 @@ What happens after the trail. The Religious Advisor runs the circle, hands out d
 | `E7.F1.S2` | As a **Religious Advisor**, I want to mark one done, undo it, or cancel it so that a mistake in a noisy circle is recoverable. | `Shipped` |
 | `E7.F1.S3` | As a **Hasher**, I want to nominate somebody for a down down so that the circle is not only the RA's ideas. | `Shipped` |
 | `E7.F1.S4` | As a **Religious Advisor**, I want a live count of drinks poured so that the beer meister knows where they stand. | `Shipped` |
+| `E7.F1.S5` | As a **Hasher**, I want a past run's down downs — marked done or not — on its detail page, and as a manager a way into the charges page from there, so that a circle nobody marked done on the night is not lost. Before this, six of the eight runs with charges showed none. | `Building` |
 
 ### E7.F2 · Songs  
 `App` `Portal` `Web`
