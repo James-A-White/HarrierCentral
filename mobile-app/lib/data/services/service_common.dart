@@ -76,11 +76,16 @@ class ServiceCommon {
       'buildNumber': plus > 0 ? versionAndBuild.substring(plus + 1) : null,
     });
 
+    NetworkMeter.countRequest(body);
     final Response response = await post(
           Uri.parse(BASE_AF_API_URL),
           headers: <String, String>{'content-type': 'application/json'},
           body: body,
         )
+        .then((Response r) {
+          NetworkMeter.countResponse(r);
+          return r;
+        })
         .timeout(
           const Duration(seconds: 30),
           onTimeout: () => Response('', 408),
@@ -241,12 +246,17 @@ class ServiceCommon {
           });
     }
 
+    NetworkMeter.countRequest(requestBody);
     return client
         .post(
           Uri.parse(BASE_AF_API_URL),
           headers: <String, String>{'content-type': 'application/json'},
           body: requestBody,
         )
+        .then((Response r) {
+          NetworkMeter.countResponse(r);
+          return r;
+        })
         .timeout(
           _requestTimeout,
           onTimeout: () => Response('', kLocalTimeoutStatus),

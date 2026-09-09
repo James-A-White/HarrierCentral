@@ -40,6 +40,10 @@ class AppBootService {
     // previous run (iOS only, harvest-gated). Fire-and-forget like the log send.
     unawaited(MetricKitService.drainAndUpload());
     _startErrorPersistence();
+    // Memory / network / battery samples into the same session log, harvest-
+    // gated inside. Started here so the 'start' sample is the first thing
+    // after [STARTUP] and every later line is relative to it.
+    DeviceMetricsService.start();
 
     final String? userId = await _resolveUserId();
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);

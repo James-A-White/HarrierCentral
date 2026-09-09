@@ -5,6 +5,7 @@ import MetricKit
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   private let metricKitChannelName = "harrier_central/metrickit"
+  private let deviceMetricsChannelName = "harrier_central/device_metrics"
 
   override func application(
     _ application: UIApplication,
@@ -41,7 +42,81 @@ import MetricKit
       }
     }
 
+    // Device metrics: one snapshot of memory headroom, battery and power
+    // state on demand. Flutter folds it into the [METRICS] session-log lines
+    // (DeviceMetricsService). Cheap, synchronous, no permissions.
+    if let controller = window?.rootViewController as? FlutterViewController {
+      UIDevice.current.isBatteryMonitoringEnabled = true
+      let channel = FlutterMethodChannel(
+        name: deviceMetricsChannelName,
+        binaryMessenger: controller.binaryMessenger
+      )
+      channel.setMethodCallHandler { call, result in
+        if call.method == "snapshot" {
+          result(DeviceMetricsSnapshot.take())
+        } else {
+          result(FlutterMethodNotImplemented)
+        }
+      }
+    }
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+}
+
+// MARK: - Device metrics
+
+/// What iOS will tell an app about its own footprint, in one dictionary.
+/// Keys match the Android MainActivity snapshot so Dart reads one shape:
+///   availMem        bytes the OS says this process may still allocate
+///                   (os_proc_available_memory, iOS 13+) — the jetsam headroom
+///   totalMem        physical RAM
+///   pssBytes        -1 (Android-only concept; Dart uses RSS on iOS)
+///   batteryLevel    0.0–1.0, or -1 when unknown (simulator)
+///   batteryState    unplugged | charging | full | unknown
+///   chargeCounterUah -1 (Android-only)
+///   uidRx / uidTx   -1 — iOS has no per-app network counter
+///   lowPower        Low Power Mode on
+///   thermal         nominal | fair | serious | critical
+enum DeviceMetricsSnapshot {
+  static func take() -> [String: Any] {
+    let device = UIDevice.current
+    let info = ProcessInfo.processInfo
+
+    var avail: Int64 = -1
+    if #available(iOS 13.0, *) {
+      avail = Int64(os_proc_available_memory())
+    }
+
+    let state: String
+    switch device.batteryState {
+    case .unplugged: state = "unplugged"
+    case .charging: state = "charging"
+    case .full: state = "full"
+    default: state = "unknown"
+    }
+
+    let thermal: String
+    switch info.thermalState {
+    case .nominal: thermal = "nominal"
+    case .fair: thermal = "fair"
+    case .serious: thermal = "serious"
+    case .critical: thermal = "critical"
+    @unknown default: thermal = "unknown"
+    }
+
+    return [
+      "availMem": avail,
+      "totalMem": Int64(info.physicalMemory),
+      "pssBytes": Int64(-1),
+      "batteryLevel": Double(device.batteryLevel),
+      "batteryState": state,
+      "chargeCounterUah": Int64(-1),
+      "uidRx": Int64(-1),
+      "uidTx": Int64(-1),
+      "lowPower": info.isLowPowerModeEnabled,
+      "thermal": thermal,
+    ]
   }
 }
 

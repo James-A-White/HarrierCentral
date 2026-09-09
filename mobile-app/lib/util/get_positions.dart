@@ -27,9 +27,14 @@ class GetPositionsApi {
     required Duration timeout,
   }) {
     final client = _injectedClient;
-    final request = client != null
-        ? client.post(uri, headers: headers, body: body)
-        : http.post(uri, headers: headers, body: body);
+    NetworkMeter.countRequest(body);
+    final request = (client != null
+            ? client.post(uri, headers: headers, body: body)
+            : http.post(uri, headers: headers, body: body))
+        .then((http.Response r) {
+          NetworkMeter.countResponse(r);
+          return r;
+        });
     return request.timeout(timeout);
   }
 

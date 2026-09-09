@@ -53,6 +53,15 @@ class BootLogger {
     _record(entry);
   }
 
+  /// Record a `[METRICS]` sample line from [DeviceMetricsService]. Its own tag
+  /// so the sweep can pull the last one per session as the session summary
+  /// without it counting as an error or drowning the `[TRACE]` breadcrumbs.
+  static void logMetrics(String message) {
+    final entry = '[${DateTime.now().toIso8601String()}] [METRICS] $message';
+    debugPrint(entry);
+    _record(entry);
+  }
+
   /// Compact memory footprint of the app process, e.g. `rss=142MB peak=180MB`.
   /// RSS (resident set size) is what climbs before an iOS out-of-memory (jetsam)
   /// kill, so attaching it to tracking breadcrumbs shows the trend leading up to
@@ -69,11 +78,17 @@ class BootLogger {
     }
   }
 
+  /// Entries buffered before AppBootService decides whether harvest is on.
+  /// Capped: when harvest is OFF nothing ever drains this, and a process that
+  /// lives for days would otherwise grow it without bound.
+  static const int _bufferCap = 200;
+
   static void _record(String entry) {
     final persist = onErrorPersist;
     if (persist != null) {
       persist(entry);
     } else {
+      if (_errorBuffer.length >= _bufferCap) _errorBuffer.removeAt(0);
       _errorBuffer.add(entry);
     }
   }

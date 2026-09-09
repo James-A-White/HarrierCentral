@@ -295,7 +295,7 @@
     <div><b>16</b> epics</div>
     <div><b>77</b> features</div>
     <div><b>253</b> stories</div>
-    <div><b>46</b> NFR requirements</div>
+    <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
   <div class="legend">
@@ -331,7 +331,7 @@
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 21 stories</span></a>
   <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">5 features · 16 stories</span></a>
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 14 requirements</span></a>
-  <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 18 requirements</span></a>
+  <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 19 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
   <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">4 features · 16 stories</span></a>
 </div></section>
@@ -1182,6 +1182,7 @@
       <div class="req"><span class="s-id">E14.G3.R2</span><span class="req-what">Verbose device logging is opt-in per cohort, not on for everybody.</span><span class="req-how"><b>Enforced by</b> A preferences bit plus a named beta cohort.</span></div>
       <div class="req"><span class="s-id">E14.G3.R3</span><span class="req-what">Log wording states what actually happened — retained data is never reported as lost.</span><span class="req-how"><b>Enforced by</b> Review after a buffer log implied 16,798 points were dropped when they were retained.</span></div>
       <div class="req"><span class="s-id">E14.G3.R4</span><span class="req-what">An error record names the build that produced it, not the build that reported it.</span><span class="req-how"><b>Enforced by</b> <code>HC.ErrorLog.HcVersion</code> is stamped from the calling device via <code>HC6.DeviceHcVersion</code>; <code>HC.ClientErrorLog</code> stores the version the app recorded when the session started, because the log is uploaded one boot later, possibly after an upgrade.</span></div>
+      <div class="req"><span class="s-id">E14.G3.R5</span><span class="req-what">Every harvested session log carries the device's memory, network and battery figures over time, so a resource problem is measurable per device without a repro.</span><span class="req-how"><b>Enforced by</b> <code>[METRICS]</code> lines from <code>DeviceMetricsService</code>: start, every background/foreground edge, every 15 min; RSS/PSS/headroom, app-layer and (Android) process-level bytes, battery level and unplugged drain, Low Power Mode and thermal state. Native snapshot channel on both platforms. <em>Building</em> — iOS gives no per-app network or battery attribution; the line records the device's condition beside the app's own footprint instead.</span></div>
     </div>
   </div>
   <div class="feature">

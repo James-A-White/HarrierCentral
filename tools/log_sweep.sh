@@ -95,3 +95,11 @@ awk '/^#### /{h=$0}
 echo
 echo "== 6. MetricKit diagnostics (crash/hang kinds; 'metric' is routine) =="
 grep -o '"kind":"[a-z]*"' "$ALL" | sort | uniq -c
+
+echo
+echo "== 7. Device metrics: LAST [METRICS] line per session = that session's summary (build | uptime fg/bg | memory | network | battery) =="
+awk '/^#### /{ if (last != "") print last; b=$5; last="" }
+     /\[METRICS\]/{ s=$0; sub(/^\[[^]]*\] \[METRICS\] /,"",s); last=b " | " s }
+     END{ if (last != "") print last }' "$ALL" | sort -k1,1r | head -60
+echo "   (rss/peak = this process; avail = OS headroom; app_* = our API traffic; dev_* = Android TrafficStats for the process, n/a on iOS;"
+echo "    batt/drain = the DEVICE battery over the unplugged stretch, not the app's share — read against fg/bg and the PackTrack breadcrumbs)"

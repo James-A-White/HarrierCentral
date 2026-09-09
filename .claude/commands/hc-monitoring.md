@@ -143,6 +143,32 @@ Sorted roughly from "ignore" to "act".
 and location stream state are logged deliberately so a session can be
 reconstructed; a log full of them is a busy user, not a problem.
 
+## Reading the `[METRICS]` lines (from 3.0.14)
+
+`DeviceMetricsService` writes one line at session start, on every
+background/foreground edge, and every 15 minutes. Each is cumulative, so the
+**last line in a session is that session's summary** and the sequence is the
+trend. Sweep section 7 prints the last line per session. Fields:
+
+| Field | Source | What it means, and what it does not |
+|---|---|---|
+| `up` `fg` `bg` | Dart lifecycle | Session uptime split into foreground and background |
+| `rss` `peak` | Dart `ProcessInfo` | This process's resident memory now and at its highest. RSS is what climbs before an iOS jetsam kill |
+| `pss` | Android `Debug.MemoryInfo` | Proportional set size, the figure Android judges the app by. `n/a` on iOS |
+| `avail` | `os_proc_available_memory` / `MemoryInfo.availMem` | What the OS says the app may still use. Low `avail` with rising `rss` is the OOM warning |
+| `app_tx` `app_rx` `req` `fail` | `NetworkMeter` | The app's own API traffic: SP calls, position uploads and polls, log uploads. Not images or tiles. `fail` counts every request that got no usable answer, 599 and transport failures included |
+| `dev_rx` `dev_tx` | Android `TrafficStats` | Everything this process sent and received since the session started, images included. **`n/a` on iOS**, which has no per-app counter; the MetricKit daily `networkTransferMetrics` payload is the only iOS source |
+| `batt` `state` | `UIDevice` / `BatteryManager` | The **device** battery level and whether it is unplugged, charging or full |
+| `Δ` `drain` `chg` | derived | Change in level, and drain per hour, over the current **unplugged stretch only** (the reference resets whenever charging is seen). `chg` is Android's charge counter delta in mAh, finer than 1% steps. This is the whole phone's drain; the app is one contributor. High drain with `bg` dominating and location idle is a finding. High drain during a tracked run is expected |
+| `lpm` `therm` | OS | Low Power Mode / Battery Saver on, and thermal state. Both change what the OS lets the app do, so they belong beside the numbers |
+
+The honest limits: no platform attributes battery drain to an app in real
+time, and iOS has no per-app network counter. What the line gives you is the
+app's own footprint (memory, its API bytes) beside the device's condition
+(battery, headroom, thermal) on the same timestamps, which is enough to say
+"memory climbs 3 MB a minute while tracking" or "this phone lost 12% an hour
+in the background with nothing tracked", and that is the question.
+
 ---
 
 ## What "healthy" looks like
