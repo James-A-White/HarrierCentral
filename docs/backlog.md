@@ -619,8 +619,10 @@ Hashers care enormously about their run count. Getting it wrong is the most visi
 | `E10.F4.S2` | As a **Platform Admin**, I want login history per user so that I can diagnose a support case. | `Shipped` |
 | `E10.F4.S3` | As a **Platform Admin**, I want feature-level adoption figures so that I can tell whether a shipped feature is used. | `Backlog` |
 | `E10.F4.S4` | As a **Platform Admin**, I want cost attributed per kennel so that I know what the platform costs to run at scale. | `Backlog` |
-| `E10.F4.S5` | As a **Platform Admin**, I want the usage dashboard to count app-side errors beside server-side errors so that a green Error row cannot hide a crashing release. | `Building` |
-| `E10.F4.S6` | As a **Platform Admin**, I want every server and client error record to name the app build that produced it so that I can see which release an error belongs to and confirm it is gone. | `Building` |
+| `E10.F4.S5` | As a **Platform Admin**, I want the usage dashboard to count app-side errors beside server-side errors so that a green Error row cannot hide a crashing release. | `Shipped` |
+| `E10.F4.S6` | As a **Platform Admin**, I want every server and client error record to name the app build that produced it so that I can see which release an error belongs to and confirm it is gone. | `Shipped` |
+
+**⚠ Known gap:** client session rows written by apps before 3.0.13 (TestFlight and Play internal 2026-09-09, not yet in the stores) carry the device's *current* build, which can be one release too new. Server-side records are exact from 2026-09-09.
 
 ---
 
