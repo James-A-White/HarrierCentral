@@ -92,7 +92,7 @@ class RunTrackerMap extends StatelessWidget {
               initialCanvas: initialCanvas,
             ),
       builder: (controller) {
-        controller.updateTrueNorthLock(trueNorthLock);
+        controller.applyHostNorthLock(trueNorthLock);
         // Top overlays sit at fixed offsets from the widget's top edge. On
         // the embedded maps an AppBar absorbs the system inset so this is 0;
         // on the FULLSCREEN map the widget reaches under the status bar /

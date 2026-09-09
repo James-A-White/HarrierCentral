@@ -1884,23 +1884,17 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         if (canvas != PackTrackCanvas.list) ...<Widget>[
-          // Keeps its own artwork: the compass reads as an orientation
-          // control at a glance in a way a generic icon does not.
-          GestureDetector(
+          // Same circle as every other control, here and on the full-screen
+          // route: the compass used to be a bare image in its own artwork,
+          // the one button in the column that did not match the rest.
+          MapOverlayButton(
+            icon: _trueNorthLock ? Icons.explore : Icons.navigation,
+            tooltip: _trueNorthLock ? 'North up' : 'Rotate with heading',
             onTap: () {
               setStateIfMounted(() {
                 _trueNorthLock = !_trueNorthLock;
               });
             },
-            child: SizedBox(
-              height: 44.0,
-              width: 44.0,
-              child: Image.asset(
-                _trueNorthLock
-                    ? 'images/other/set_map_to_true_north_lock.png'
-                    : 'images/other/set_map_rotation_enabled.png',
-              ),
-            ),
           ),
           const SizedBox(height: 10.0),
         ],

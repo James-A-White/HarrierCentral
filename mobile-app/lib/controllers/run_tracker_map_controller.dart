@@ -2104,6 +2104,19 @@ class RunTrackerMapController extends GetxController
     );
   }
 
+  /// The host widget's north-lock, applied only when the HOST changes it.
+  /// RunTrackerMap's builder runs on every rebuild; re-applying the host's
+  /// value each time would undo a toggle made through the controller — the
+  /// full-screen route's compass button — the moment anything else rebuilt.
+  bool? _lastHostNorthLock;
+  void applyHostNorthLock(bool value) {
+    if (_lastHostNorthLock == value) return;
+    _lastHostNorthLock = value;
+    updateTrueNorthLock(value);
+  }
+
+  void toggleTrueNorthLock() => updateTrueNorthLock(!_trueNorthLock.value);
+
   void updateTrueNorthLock(bool value) {
     if (_trueNorthLock.value == value) return;
     _trueNorthLock.value = value;

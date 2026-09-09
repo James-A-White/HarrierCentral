@@ -46,6 +46,24 @@ class PackTrackFullScreenMap extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        // Same slot, same circle, same toggle as the run-detail map. North
+        // lock has an orientation to lock on the map and the radar; nothing
+        // on the list. Toggled through the controller, which RunTrackerMap
+        // no longer overrides on rebuild (applyHostNorthLock).
+        if (canvas != PackTrackCanvas.list &&
+            Get.isRegistered<RunTrackerMapController>(tag: mapTag)) ...<Widget>[
+          Obx(() {
+            final RunTrackerMapController c =
+                Get.find<RunTrackerMapController>(tag: mapTag);
+            final bool locked = c.trueNorthLock;
+            return MapOverlayButton(
+              icon: locked ? Icons.explore : Icons.navigation,
+              tooltip: locked ? 'North up' : 'Rotate with heading',
+              onTap: c.toggleTrueNorthLock,
+            );
+          }),
+          const SizedBox(height: 10),
+        ],
         MapOverlayButton(
           tooltip: 'Close',
           icon: Icons.close,
