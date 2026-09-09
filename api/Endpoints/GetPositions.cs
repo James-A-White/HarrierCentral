@@ -122,6 +122,19 @@ namespace HcWebApi.Endpoints
                     if (trimEndMs.HasValue && timestampMs > trimEndMs.Value) continue;
                 }
 
+                // AST / AEN are the admin's trim boundaries, not places anybody
+                // stood: the editor writes them at the EVENT's venue, which on
+                // the GNH Hangover run was 507 m from the first fix and 549 m
+                // past the On Inn — every viewer drew a straight line out to
+                // each. Their timestamps are already served as TrimStartMs /
+                // TrimEndMs (GetTrimWindowAsync reads the table directly), so
+                // the points themselves are never returned.
+                if (string.Equals(positionType, "AST", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(positionType, "AEN", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 if (!userLookup.TryGetValue(userId, out var positions))
                 {
                     positions = new List<PositionResponse>();

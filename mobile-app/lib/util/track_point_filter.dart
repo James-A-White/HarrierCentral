@@ -97,11 +97,19 @@ class TrackPointFilter {
   /// Mirrored in public-web `lib/packtrack.ts` — keep the two in step.
   List<TrackPoint> filterAndInterpolate(List<TrackPoint> points) {
     if (points.length < 2) return points;
-    if (points.any(_isPhotoPoint)) {
-      final List<TrackPoint> photos = points.where(_isPhotoPoint).toList();
-      final List<TrackPoint> rest =
-          points.where((TrackPoint p) => !_isPhotoPoint(p)).toList();
-      return _mergeByTimestamp(_filterTrack(rest), photos);
+    // Every mark is held aside, not just photos. A mark's coordinate is
+    // never a GPS fix: photos carry the photographer's position, the admin
+    // trim boundaries (AST/AEN) carry the event venue, and the rest were
+    // one-shot fixes that could be stale. Letting any of them anchor the
+    // velocity check or an interpolation bends the track — the GNH Hangover
+    // run drew a 507 m straight line out to its official-start marker. The
+    // marks come back in timestamp order afterwards, untouched, for the
+    // marker layer and the On Inn terminator.
+    if (points.any(_isMark)) {
+      final List<TrackPoint> marks = points.where(_isMark).toList();
+      final List<TrackPoint> fixes =
+          points.where((TrackPoint p) => !_isMark(p)).toList();
+      return _mergeByTimestamp(_filterTrack(fixes), marks);
     }
     return _filterTrack(points);
   }
@@ -284,10 +292,7 @@ class TrackPointFilter {
   /// than an ordinary GPS fix. Marks are never moved or absorbed.
   static bool _isMark(TrackPoint p) => p.type != null && p.type!.isNotEmpty;
 
-  static bool _isPhotoPoint(TrackPoint p) {
-    final String? t = p.type;
-    return t != null && t.toUpperCase().startsWith('PHO::');
-  }
+
 
   /// Merges two timestamp-ordered lists, preserving order.
   static List<TrackPoint> _mergeByTimestamp(

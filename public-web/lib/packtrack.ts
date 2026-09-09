@@ -342,6 +342,11 @@ function pointIsTyped(p: TrackPoint): boolean {
   return !!(p.type && p.type.trim().length > 0);
 }
 
+/** Any typed point — a mark drawn by the marker layer, never a GPS fix. */
+function pointIsMark(p: TrackPoint): boolean {
+  return !!(p.type && p.type.trim().length > 0);
+}
+
 function pointIsPhoto(p: TrackPoint): boolean {
   return !!parseMark(p.type)?.isPhoto;
 }
@@ -436,9 +441,13 @@ export function filterAndInterpolate(points: TrackPoint[]): TrackPoint[] {
   // Kilty, BMPH3 #2060 (reported 2026-08-30): GPS was clean — accuracy p50 8 m,
   // max 17.6 m, nothing near the 50 m threshold — yet one photo 515 m off-trail
   // caused 26 good fixes to be discarded and displaced a real fix by 491 m.
-  if (points.some(pointIsPhoto)) {
-    const photos = points.filter(pointIsPhoto);
-    return mergeByTimestamp(filterTrackPoints(points.filter((p) => !pointIsPhoto(p))), photos);
+  // Every mark is held aside, not only photos: the admin trim boundaries
+  // (AST/AEN) are written at the event venue — 507 m off the first fix on the
+  // GNH Hangover run — and any mark can be a stale one-shot fix. Marks come
+  // back in timestamp order, untouched, for the marker layer and On Inn.
+  if (points.some(pointIsMark)) {
+    const marks = points.filter(pointIsMark);
+    return mergeByTimestamp(filterTrackPoints(points.filter((p) => !pointIsMark(p))), marks);
   }
   return filterTrackPoints(points);
 }
@@ -641,10 +650,14 @@ export function formatDistanceLabel(meters: number): string {
  * Trail TV pre-filters more broadly (`positions.filter(p => !p.type)`) and is
  * unaffected either way.
  */
+/**
+ * Track vertices only — GPS fixes. Every typed point (photo, check, the
+ * admin trim boundaries) is a mark drawn by the marker layer, never a vertex
+ * of the line or a term in the distance. Kept under its historical name; it
+ * used to drop photos alone.
+ */
 export function withoutPhotoPoints(positions: TrackPoint[]): TrackPoint[] {
-  return positions.some((p) => parseMark(p.type)?.isPhoto)
-    ? positions.filter((p) => !parseMark(p.type)?.isPhoto)
-    : positions;
+  return positions.some(pointIsMark) ? positions.filter((p) => !pointIsMark(p)) : positions;
 }
 
 export function trackUpTo(positions: TrackPoint[], cutoff: number): TrackPoint[] {

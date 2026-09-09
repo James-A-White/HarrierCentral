@@ -2654,7 +2654,7 @@ class RunTrackerMapController extends GetxController
     // are no longer track points, so they never set the replay's bounds.
     final timestamps = userPositions
         .expand((user) => user.positions)
-        .where((pos) => !_isPhotoPoint(pos))
+        .where((pos) => !_isNonTrackPoint(pos))
         .map((pos) => pos.timestampMs)
         .whereType<num>()
         .toList(growable: false);
@@ -3325,22 +3325,19 @@ class RunTrackerMapController extends GetxController
     return runner.positions.length - 1;
   }
 
-  /// True for photo markers, which are the only points that can sit somewhere
-  /// the runner never stood.
+  /// True for any typed point — a mark, not a GPS fix — which never belongs
+  /// in the line or the distance.
   ///
-  /// An IMPORTED photo carries the PHOTOGRAPHER's EXIF coordinates — another
-  /// hasher who may have been well ahead on trail. Including those in the
-  /// polyline dragged the track sideways to their position and back, and the
-  /// round trip inflated the runner's distance too, since
-  /// currentUserDistanceMeters() sums this same list (reported 2026-08-30).
-  ///
-  /// Every OTHER mark — Check, False Trail, On Inn — is dropped at the
-  /// runner's own location, so those remain legitimate track vertices, and the
-  /// On Inn mark is the track terminator. Only photos are excluded here.
-  /// (Trail TV takes the broader line and drops every typed point:
-  /// `positions.filter(p => !p.type)`.)
-  bool _isPhotoPoint(TrackPoint pos) =>
-      _parseCheckpointType(pos.type)?.type == HashRunPointTypes.photo;
+  /// Photos carry the photographer's position (an imported shot, somebody
+  /// well ahead on trail). The admin trim boundaries AST/AEN carry the EVENT
+  /// venue: on the GNH Hangover run that was 507 m from the first fix and
+  /// 549 m past the On Inn, and every viewer drew a straight line out to
+  /// each. Other marks were one-shot fixes that could be minutes stale. So
+  /// the polyline and the distance are built from untyped fixes only, and
+  /// marks are drawn by the marker layer; the On Inn still terminates the
+  /// line by its timestamp. Trail TV has always done this
+  /// (`positions.filter(p => !p.type)`); the web map and the app now agree.
+  bool _isNonTrackPoint(TrackPoint pos) => (pos.type ?? '').isNotEmpty;
 
   List<_InterpolatedPoint> _interpolatedTrackPoints(
     UserTrack runner,
@@ -3351,7 +3348,7 @@ class RunTrackerMapController extends GetxController
       final capped = <TrackPoint>[];
       for (final pos in runner.positions) {
         // Still WALK photo points so a terminal On Inn after one is seen.
-        if (!_isPhotoPoint(pos)) capped.add(pos);
+        if (!_isNonTrackPoint(pos)) capped.add(pos);
         if (_isTerminalOnInn(runner, pos)) break;
       }
       return capped
@@ -3371,7 +3368,7 @@ class RunTrackerMapController extends GetxController
       if (ts > cutoff) {
         break;
       }
-      if (!_isPhotoPoint(pos)) {
+      if (!_isNonTrackPoint(pos)) {
         results.add(
           _InterpolatedPoint(lat: pos.lat, lng: pos.lng, timestampMs: ts),
         );
@@ -3383,7 +3380,7 @@ class RunTrackerMapController extends GetxController
     if (results.isEmpty) {
       // Seed from the first point the runner actually stood at, not a photo.
       final first = runner.positions.firstWhere(
-        (p) => !_isPhotoPoint(p),
+        (p) => !_isNonTrackPoint(p),
         orElse: () => runner.positions.first,
       );
       results.add(
@@ -3419,9 +3416,9 @@ class RunTrackerMapController extends GetxController
       final cached = _photoFreeCache[runner.id];
       if (cached != null) return cached;
     }
-    final List<TrackPoint> filtered = runner.positions.any(_isPhotoPoint)
+    final List<TrackPoint> filtered = runner.positions.any(_isNonTrackPoint)
         ? runner.positions
-              .where((p) => !_isPhotoPoint(p))
+              .where((p) => !_isNonTrackPoint(p))
               .toList(growable: false)
         : runner.positions;
     _photoFreeCache[runner.id] = filtered;
