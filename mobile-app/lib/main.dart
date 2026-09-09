@@ -34,6 +34,7 @@ class AppLifecycleController extends SuperController<void> {
 
   @override
   void onPaused() {
+    ServiceCommon.notePaused();
     _trackingLifecycleBreadcrumb('paused');
     _persistPendingTrackPoints();
   }
@@ -51,6 +52,7 @@ class AppLifecycleController extends SuperController<void> {
 
   @override
   void onResumed() {
+    ServiceCommon.noteResumed();
     _trackingLifecycleBreadcrumb('resumed');
     // Re-register LocationService if it was deleted while the app was paused.
     if (!Get.isRegistered<LocationService>()) {

@@ -48,6 +48,43 @@ class ServiceCommon {
   // while still preventing the infinite-boot-hang on partially-connected networks.
   static const Duration _requestTimeout = Duration(seconds: 30);
 
+  // ── Suspend awareness ────────────────────────────────────────────────────
+  // A request in flight when iOS suspends the app cannot complete: its socket
+  // is frozen, and the moment the app wakes the 30 s timer has long expired,
+  // so the request comes back as a synthetic 599 (or a transport 500 on a
+  // socket the OS tore down). Neither is the server's doing, and the user
+  // has just picked the phone up — the worst moment for a "Request Timed
+  // Out" banner. AppLifecycleController stamps these; a failure whose
+  // request began before the last pause, or that lands within
+  // [_justWokeWindow] of the last resume, is retried once, silently, with a
+  // fresh token (bodyFactory), and never shown a banner.
+  static DateTime? _lastPausedAt;
+  static DateTime? _lastResumedAt;
+  static const Duration _justWokeWindow = Duration(seconds: 10);
+
+  static void notePaused() => _lastPausedAt = DateTime.now();
+  static void noteResumed() => _lastResumedAt = DateTime.now();
+
+  static bool _straddledSuspend(DateTime startedAt) {
+    final DateTime now = DateTime.now();
+    final DateTime? p = _lastPausedAt;
+    final DateTime? r = _lastResumedAt;
+    if (p != null && startedAt.isBefore(p) && (r == null || r.isAfter(p))) {
+      return true;
+    }
+    return r != null && now.difference(r) < _justWokeWindow;
+  }
+
+  static bool get _justWoke =>
+      _lastResumedAt != null &&
+      DateTime.now().difference(_lastResumedAt!) < _justWokeWindow;
+
+  /// The failure shapes a suspension produces: our own timeout sentinel, or
+  /// the empty-bodied 500 stamped on a transport exception.
+  static bool _looksLikeSuspendFailure(Response r) =>
+      r.statusCode == kLocalTimeoutStatus ||
+      (r.statusCode == 500 && r.body.isEmpty);
+
   /// Sends a session-level error log to HC.ClientErrorLog on the server.
   /// Token validation is skipped server-side so this can be called even when
   /// the device secret is unavailable.
@@ -116,12 +153,14 @@ class ServiceCommon {
     // httpCounter++;
     final int maxAttempts = noRetries ? 1 : _maxRetryAttempts;
     bool tokenRetryUsed = false;
+    bool suspendRetryUsed = false;
 
     // The +1 head-room attempt exists ONLY for the single fresh-token retry
     // below (tokenRetryUsed); normal status-code retries still stop at
     // maxAttempts via isLastAttempt.
     for (int attempt = 1; attempt <= maxAttempts + 1; attempt++) {
       final String requestBody = bodyFactory();
+      final DateTime startedAt = DateTime.now();
       final Response response = await _postWithClient(
         requestBody,
         client: client,
@@ -135,6 +174,22 @@ class ServiceCommon {
 
       if (isSuccess) {
         return response.body;
+      }
+
+      // The request was asleep with the app, not slow at the server: go
+      // again once, quietly. Safe for noRetries callers too — a request that
+      // never left the frozen socket had no server-side effect to repeat.
+      if (!suspendRetryUsed &&
+          _looksLikeSuspendFailure(response) &&
+          _straddledSuspend(startedAt)) {
+        suspendRetryUsed = true;
+        if (!_isConnectionProbe(requestBody)) {
+          BootLogger.logBreadcrumb(
+            'HTTP: ${response.statusCode} on a request that straddled a '
+            'suspend — retrying once, silently',
+          );
+        }
+        continue;
       }
 
       // Remote DB errors are not retried to avoid repeating side effects —
@@ -474,7 +529,9 @@ class ServiceCommon {
 
         if (isNetworkFailure) {
           await networkService.handleApiFailure();
-          if (networkService.backendReachable.value) {
+          // Just woken: the banner would tell the user their phone slept.
+          // The failure is still logged above; the next refresh catches up.
+          if (networkService.backendReachable.value && !_justWoke) {
             // Honest wording: a locally-synthesized 599 (30 s stall) or a
             // 500 stamped on a transport failure is NOT a server error — the
             // server usually never saw the request. This fires routinely
