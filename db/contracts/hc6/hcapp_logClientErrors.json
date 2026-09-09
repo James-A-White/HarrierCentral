@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_logClientErrors",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Stores a session-level client error log in HC.ClientErrorLog. No auth validation is performed — the @accessToken parameter is accepted for API consistency but intentionally not checked. Device registration is also not required: logs from de-registered devices are accepted so that failure patterns (e.g. repeated approveLogin token failures) can be captured for diagnosis. Each call inserts one row representing one session's accumulated exception log.",
   "parameters": [
     {
@@ -24,6 +24,20 @@
       "nullable": false,
       "mapsToColumn": "ClientErrorLog.ErrorLog",
       "description": "Full session error log text. Exception entries are separated by newlines and '===' delimiters within the string. Written as-is to HC.ClientErrorLog.ErrorLog."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "ClientErrorLog.AppVersion",
+      "description": "App version that WROTE the log, e.g. '3.0.12'. Sent by clients from 3.0.13 — the value the app stamped when the logged session started, because the log is uploaded on the following boot, possibly after an upgrade. When NULL together with buildNumber, the SP falls back to HC.Device.Version (the device's current build)."
+    },
+    {
+      "name": "buildNumber",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "ClientErrorLog.BuildNumber",
+      "description": "Build number that wrote the log, e.g. '1327'. Same fallback as hcVersion."
     }
   ],
   "rowsets": [

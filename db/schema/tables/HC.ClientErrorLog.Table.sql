@@ -18,6 +18,10 @@ CREATE TABLE [HC].[ClientErrorLog]
     [DeviceId]    UNIQUEIDENTIFIER    NOT NULL,
     [ErrorLog]    NVARCHAR(MAX)       NOT NULL,
     [LoggedAt]    DATETIMEOFFSET(7)   NOT NULL    CONSTRAINT [DF_ClientErrorLog_LoggedAt] DEFAULT (SYSDATETIMEOFFSET()),
+    -- Build that WROTE the session (not the build uploading it — logs land one
+    -- boot late, possibly after an upgrade). Added 2026-09-09; NULL on older rows.
+    [AppVersion]  NVARCHAR(25)        NULL,
+    [BuildNumber] NVARCHAR(25)        NULL,
 
     CONSTRAINT [PK_ClientErrorLog]
         PRIMARY KEY CLUSTERED ([Id])

@@ -59,11 +59,21 @@ class ServiceCommon {
   static Future<bool> recordClientErrorLog(String errorLog) async {
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
 
-    final String body = jsonEncode(<String, String>{
+    // 'X.Y.Z+build' of the session that wrote the log. At boot, before
+    // _prepareDeviceContext re-stamps it, this is still the PREVIOUS boot's
+    // value — which is what _sendPreviousSessionErrors needs. Every later
+    // caller (MetricKit drain, device-not-registered) gets the current build.
+    final String versionAndBuild =
+        getStringPref(StringPrefsEnum.lastSessionErrorLogVersion) ?? '';
+    final int plus = versionAndBuild.indexOf('+');
+
+    final String body = jsonEncode(<String, String?>{
       'queryType': 'logClientErrors',
       'deviceId': deviceId,
       'accessToken': '<not required>',
       'errorLog': errorLog,
+      'hcVersion': plus > 0 ? versionAndBuild.substring(0, plus) : null,
+      'buildNumber': plus > 0 ? versionAndBuild.substring(plus + 1) : null,
     });
 
     final Response response = await post(

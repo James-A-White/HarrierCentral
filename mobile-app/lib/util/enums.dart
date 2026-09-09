@@ -37,6 +37,7 @@ enum StringPrefsEnum {
   iosDownloadLink,
   lastName,
   lastSessionErrorLog,
+  lastSessionErrorLogVersion,
   leaderboardJson,
   mapPreference,
   packTrackOutboxJson,

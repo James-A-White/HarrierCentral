@@ -657,6 +657,20 @@ class AppBootService {
       StringPrefsEnum.harrierCentralVersionAndBuild,
       'HC Ver: ${p.version}, Bld: ${p.buildNumber}',
     );
+    // The build that is writing THIS session's error log. It is read back by
+    // _sendPreviousSessionErrors on the NEXT boot — before this line runs
+    // again — so the upload names the build that produced the log, not the
+    // build doing the uploading. Those differ on the boot after an upgrade,
+    // which is exactly the session a release check cares about.
+    await setStringPref(
+      StringPrefsEnum.lastSessionErrorLogVersion,
+      '${p.version}+${p.buildNumber}',
+    );
+    if (BootLogger.onErrorPersist != null) {
+      _persistErrorEntry(
+        '[${DateTime.now().toIso8601String()}] [VERSION] ${p.version}+${p.buildNumber}',
+      );
+    }
     // Capture what the last run stamped BEFORE overwriting — the upgraded-FROM
     // version, used to decide whether a DB rebuild crossed a major version.
     previousInstalledVersion =
