@@ -48,6 +48,7 @@ class DeviceHealthSession {
     required this.ring,
     required this.appError,
     required this.errorLines,
+    this.errorText = const <String>[],
   });
 
   /// When the session began, as the phone wrote it (its local clock, no
@@ -74,6 +75,9 @@ class DeviceHealthSession {
   final String? appError;
   final int errorLines;
 
+  /// The session's [ERROR] lines, in order; empty when there were none.
+  final List<String> errorText;
+
   String v(String key, [String fallback = '—']) {
     final String? s = summary[key];
     return (s == null || s.isEmpty || s == 'n/a') ? fallback : s;
@@ -92,6 +96,11 @@ class DeviceHealthSession {
         ring: MetricsRing.parse(j['ring'] as String?),
         appError: j['appError'] as String?,
         errorLines: (j['errorLines'] as num?)?.toInt() ?? 0,
+        errorText: ((j['errorText'] as String?) ?? '')
+            .split('\n')
+            .map((String l) => l.trim())
+            .where((String l) => l.isNotEmpty)
+            .toList(),
       );
 
   /// `why=start up=1h02m rss=143MB` → {why: start, up: 1h02m, rss: 143MB}.

@@ -204,6 +204,24 @@ class _SessionBody extends StatelessWidget {
             const SizedBox(height: 4),
             Text(s.appError!, style: TextStyle(fontSize: 12, color: Colors.red.shade800)),
           ],
+          if (s.errorText.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 8),
+            Text('Error lines', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Colors.grey.shade800)),
+            const SizedBox(height: 2),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.red.shade100),
+              ),
+              child: SelectableText(
+                s.errorText.join('\n'),
+                style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: Colors.red.shade900),
+              ),
+            ),
+          ],
           if (ring != null && ring.rows.length >= 2) ...<Widget>[
             const SizedBox(height: 8),
             Text(
