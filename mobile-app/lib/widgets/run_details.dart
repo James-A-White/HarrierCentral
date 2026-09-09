@@ -1226,12 +1226,23 @@ class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
                 },
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
+                  // One height for the strip, each photo at its own aspect
+                  // ratio: a landscape shot is wide, a portrait one narrow,
+                  // nothing is cropped. The width is unknown until the image
+                  // decodes, so the placeholder holds a fixed slot to keep
+                  // the strip from jumping as photos arrive.
                   child: CachedNetworkImage(
                     imageUrl: p.effectiveUrl,
-                    width: 190,
                     height: 150,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 400,
+                    fit: BoxFit.fitHeight,
+                    memCacheHeight: 450,
+                    placeholder: (BuildContext _, String _) => Container(
+                      width: 150,
+                      height: 150,
+                      color: Colors.black26,
+                    ),
+                    errorWidget: (BuildContext _, String _, Object _) =>
+                        const SizedBox(width: 150, height: 150),
                   ),
                 ),
               );
