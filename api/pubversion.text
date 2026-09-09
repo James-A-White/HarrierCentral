@@ -1,3 +1,6 @@
+1.0.39+37
+    • GetPositions no longer returns the AST/AEN trim boundary points — their timestamps already travel as TrimStartMs/TrimEndMs — so no client draws a line out to the venue where the editor writes them.
+
 1.0.38+36
     • StorePositions records each tracked run in HC.EventTrack — one MERGE per accepted batch — so "does this run have a track" is a SQL question (E5.F6.S3). Best-effort; a SQL hiccup never fails a store.
 

@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.46 (2026-09-10)
+
+- No mark is ever a vertex of a trail: photos, checks and the admin's trim
+  boundaries are held aside by the filter and drawn as markers only, so a
+  marker placed off-trail cannot put a straight line into a track. Mirrors
+  the app; Trail TV already worked this way.
+
 ## 0.21.45 (2026-09-09)
 
 - Photo pins on the run map and Trail TV come from the photo itself — where

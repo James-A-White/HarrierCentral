@@ -1,5 +1,14 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.18+1333 (2026-09-10)
+
+### Fixes
+- **No mark can bend your trail.** The admin's official-start and end
+  markers are written at the run's venue, and every map drew a straight line
+  out to them — 507 m at the start of the GNH Hangover trail, 549 m at the
+  end. No mark of any kind is a point on the line or a term in the distance
+  any more; marks are drawn as markers only.
+
 ## 3.0.17+1332 (2026-09-10)
 
 ### Fixes

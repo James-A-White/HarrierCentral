@@ -1,3 +1,6 @@
+0.21.46
+    • No mark is a trail vertex — photos, checks and trim boundaries are held aside by the filter (fixes the straight lines at the ends of trimmed tracks)
+
 0.21.45
     • Photo pins come from the photo's own location and time (new publicWeb_getRunPhotoPins), not from a track point — no more photo spikes, photographers without a track still get pins
 
