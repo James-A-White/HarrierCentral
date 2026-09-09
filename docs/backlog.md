@@ -406,6 +406,9 @@ The Hash Flash takes the pictures and approves what the club sees. Photos carry 
 | `E6.F4.S2` | As a **Hasher**, I want a swipeable carousel from any photo pin so that I can browse without going back to the map each time. | `Shipped` |
 | `E6.F4.S3` | As a **Visitor**, I want a public gallery for a run so that a shared link shows the pictures without the app. | `Shipped` |
 | `E6.F4.S4` | As a **Visitor**, I want the public gallery to expose no GPS coordinates so that an unauthenticated page cannot leak where people were. | `Shipped` |
+| `E6.F4.S5` | As a **Hasher**, I want a photo to be its own thing — a location, a time and a photographer — rather than a point on somebody's track, so that uploading photos to a run I was not on never records me as having a track and a photo's fix can never bend a trail. | `Building` |
+
+**⚠ Known gap:** the public map and Trail TV now read pin coordinates from a new unauthenticated `publicWeb_getRunPhotoPins` feed (Public and Cover photos only). This is the same exposure the PHO:: track marks carried through the track payload; the gallery feed itself still carries no coordinates, so `E6.F4.S4` holds.
 
 ---
 

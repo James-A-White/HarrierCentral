@@ -158,8 +158,15 @@ Production tracks contain **both** of the following (confirmed in live data — 
 2026-06-20 LH3 run had `I-NNN.png`, `I-400.png::historic icehouse`, and `PHO::<uuid>`):
 
 1. **`HashRunPointTypes` keys** (table above) — e.g. `CHK`, `DRK`, `CAU::watch the road`,
-   and **`PHO::<photoBlobId>`** for a run-photo marker (`PHO` is a value in the enum;
-   the suffix is the photo's blob id, rendered by `_buildPhotoMarker`).
+   and **`PHO::<photoId>`** — **legacy only, since 2026-09-09.** A photo is not a
+   track point: it is a location, a time and a photographer, held on its own
+   `HC.KennelPhotos` row (Latitude/Longitude/TakenAtUtc/UserId). The app no longer
+   writes `PHO::` marks; every renderer (app map, web map, Trail TV) draws photo pins
+   from the photo rows (`hcapp_getRunPhotos` in the app, `publicWeb_getRunPhotoPins`
+   on the web) and IGNORES `PHO::` points in tracks. A user whose positions are all
+   typed points is not a runner (`_hasTrack`). Marks taken while tracking use
+   `LocationService.freshFix()` — the live stream's latest fix — because the iOS
+   one-shot manager answers with a stale cached location (the GNH Hangover 46 m spike).
 2. **New-style `TrailSlot` icon filenames** — defined in
    `lib/data/models/trail_slot/trail_slot.dart`. Here the `type` is the **icon filename
    itself**, e.g. `I-001.png` (Check), `I-100.png` (Short Cut), `I-400.png` (Label,

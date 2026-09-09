@@ -751,6 +751,15 @@ export interface RunPhoto {
    * it such a photo has no place on the replay timeline at all.
    */
   createdAtMs: number | null;
+  /**
+   * Where and when the photo was taken, from its own row (publicWeb_
+   * getRunPhotoPins). A photo is a location, a time and a photographer, not a
+   * track point: pins come from here, never from PHO:: marks. Null when the
+   * row has no real coordinate — no pin rather than a wrong one.
+   */
+  lat: number | null;
+  lng: number | null;
+  takenAtMs: number | null;
 }
 
 /** Fetch the run's approved PUBLIC photos as photoId (lowercase) -> RunPhoto. */
@@ -792,8 +801,32 @@ export async function fetchRunPhotos(
           description: p.Description ?? null,
           uploader: p.uploaderDisplayName ?? null,
           createdAtMs: parseSqlUtc(p.CreatedAt),
+          lat: null,
+          lng: null,
+          takenAtMs: null,
         };
       }
+    }
+    // Pins: the photo's own coordinates and capture time.
+    try {
+      const pr = await fetch(`/api/run-photo-pins?publicEventId=${encodeURIComponent(publicEventId)}`, { cache: "no-store" });
+      if (pr.ok) {
+        const pd = (await pr.json()) as {
+          pins?: { photoId?: string; Latitude?: number | string | null; Longitude?: number | string | null; TakenAtUtc?: string | null; CreatedAt?: string | null }[];
+        };
+        for (const pin of pd.pins ?? []) {
+          const id = pin.photoId?.toLowerCase();
+          if (!id || !map[id]) continue;
+          const lat = pin.Latitude == null ? NaN : Number(pin.Latitude);
+          const lng = pin.Longitude == null ? NaN : Number(pin.Longitude);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) continue;
+          map[id].lat = lat;
+          map[id].lng = lng;
+          map[id].takenAtMs = parseSqlUtc(pin.TakenAtUtc) ?? parseSqlUtc(pin.CreatedAt);
+        }
+      }
+    } catch (err) {
+      console.error("[run-photo-pins] client fetch error:", err);
     }
     return map;
   } catch (err) {

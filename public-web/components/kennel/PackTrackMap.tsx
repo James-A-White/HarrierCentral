@@ -155,31 +155,28 @@ interface PhotoMarkEntry {
   photo: RunPhoto;
 }
 
-// Gather visible (<= cutoff) PHO:: marks whose photoId resolves to a Hash
-// Flash-approved PUBLIC photo, in track order, deduped by photoId. Unresolved
-// marks (unapproved / members-only) stay hidden. Legacy full-URL PHO labels
-// (pre-photoId marks) predate the approval flow and are deliberately NOT shown
-// on the unauthenticated public page.
+// Photo pins come from the photo rows, not from the tracks. A photo is a
+// location, a time and a photographer — it belongs to no runner's track, and
+// a photographer who was not on trail has no track at all. Every pin stays
+// visible for the whole replay; the timestamp orders the cues and captions.
+// `cutoff` is accepted for call-site compatibility and deliberately unused.
+// Legacy PHO:: marks still present in old tracks are ignored here.
 function visiblePhotoMarks(
-  users: UserTrack[],
-  cutoff: number,
+  _users: UserTrack[],
+  _cutoff: number,
   photos: Record<string, RunPhoto>,
 ): PhotoMarkEntry[] {
   const kept: PhotoMarkEntry[] = [];
-  const seen = new Set<string>();
-  for (const user of users) {
-    for (const p of user.positions) {
-      if (p.timestampMs > cutoff) break;
-      const parsed = parseMark(p.type);
-      if (!parsed?.isPhoto || !parsed.label || parsed.label.startsWith("http")) continue;
-      const id = parsed.label.toLowerCase();
-      if (seen.has(id)) continue;
-      const photo = photos[id];
-      if (!photo) continue;
-      seen.add(id);
-      kept.push({ point: p, photoId: id, photo });
-    }
+  for (const [id, photo] of Object.entries(photos)) {
+    if (photo.lat == null || photo.lng == null) continue;
+    const ts = photo.takenAtMs ?? photo.createdAtMs ?? 0;
+    kept.push({
+      point: { lat: photo.lat, lng: photo.lng, acc: 0, timestampMs: ts, type: `PHO::${id}` },
+      photoId: id,
+      photo,
+    });
   }
+  kept.sort((a, b) => a.point.timestampMs - b.point.timestampMs);
   return kept;
 }
 
@@ -1628,9 +1625,11 @@ export default function PackTrackMap({
         if (disposed) return;
         // Clean each runner's track (drop GPS noise, interpolate gaps) and drop
         // runners left with nothing so they don't show as empty selector chips.
+        // A runner is somebody with at least one GPS fix. Marks alone — the
+        // legacy PHO:: photo marks in particular — do not make a track.
         const live = (data?.users ?? [])
           .map(u => ({ ...u, positions: filterAndInterpolate(u.positions) }))
-          .filter(u => u.positions.length > 0);
+          .filter(u => u.positions.some(p => !p.type));
 
         if (live.length === 0) {
           if (!isRefresh) {

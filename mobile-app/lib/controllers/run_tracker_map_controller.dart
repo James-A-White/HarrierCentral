@@ -129,8 +129,7 @@ class RunTrackerMapController extends GetxController
   ///
   /// Reactive: read it inside an Obx and the control column rebuilds when the
   /// first positions land.
-  bool get hasRecordedTrack =>
-      userPositions.any((UserTrack u) => u.positions.isNotEmpty);
+  bool get hasRecordedTrack => userPositions.any(_hasTrack);
   final RxMap<String, String> userLogos = <String, String>{}.obs;
   final RxMap<String, String> userNames = <String, String>{}.obs;
   final TrackPointFilter _trackFilter = TrackPointFilter();
@@ -584,6 +583,19 @@ class RunTrackerMapController extends GetxController
   // Keyed by lowercase userId so multiple photos by the same person only trigger
   // one DB lookup. photoId → userId provides the join between the two maps.
   final Map<String, String> _photoUploaderIdCache = {}; // photoId  → userId
+
+  /// The run's photos as their own things — a location, a time and a
+  /// photographer — from hcapp_getRunPhotos. Pins, cues and the carousel all
+  /// read from here; a photo belongs to no runner's track, and a photographer
+  /// who was not on trail has no track at all. Legacy PHO:: points still in
+  /// old tracks are ignored everywhere. Rows with no real coordinate get no
+  /// pin rather than a wrong one.
+  final List<_PhotoRow> _photos = <_PhotoRow>[];
+
+  /// A runner is somebody with at least one GPS fix; marks alone are not a
+  /// track. Keeps a photo-only "user" from the old model out of every list.
+  static bool _hasTrack(UserTrack u) =>
+      u.positions.any((TrackPoint p) => (p.type ?? '').isEmpty);
   final Map<String, String> _uploaderNameCache = {}; // userId   → display name
   final Map<String, String> _uploaderPhotoCache =
       {}; // userId   → profile photo URL
@@ -729,6 +741,7 @@ class RunTrackerMapController extends GetxController
   /// the marker widgets — the flood of plain GPS points is skipped on the empty
   /// type check; only actual marks are parsed.
   int _visibleMarkCount({required bool photosOnly, required double? cutoff}) {
+    if (photosOnly) return _photos.where((ph) => ph.hasCoordinate).length;
     int n = 0;
     // Must mirror _buildCheckpointMarkers' membership rule exactly, distress
     // exception included — this count is the memo key, so a mark the builder
@@ -760,10 +773,21 @@ class RunTrackerMapController extends GetxController
     // From lane-VISIBLE runners only: hiding a trail type (e.g. Ballbreaker)
     // must hide the marks its runners put down, not just the polyline.
     final entries = <_MarkEntry>[];
+    if (photosOnly) {
+      // Photos come from their own rows, every one visible for the whole
+      // replay regardless of playhead, lane or runner (see _photos).
+      for (final _PhotoRow ph in _photos) {
+        if (!ph.hasCoordinate) continue;
+        final String rawType = '${HashRunPointTypes.photo.key}::${ph.id}';
+        final parsedType = _parseCheckpointType(rawType);
+        if (parsedType == null) continue;
+        entries.add((point: ph.asPoint, type: rawType, parsed: parsedType));
+      }
+    }
     // Distress marks come from EVERY runner, not just lane-visible ones: a call
     // for help must never be filtered out because someone hid that trail type.
     final Set<UserTrack> visible = visibleRunners.toSet();
-    for (final user in userPositions) {
+    for (final user in photosOnly ? const <UserTrack>[] : userPositions) {
       final bool laneVisible = visible.contains(user);
       for (final point in user.positions) {
         final rawType = (point.type ?? '').trim();
@@ -1192,6 +1216,7 @@ class RunTrackerMapController extends GetxController
       final outer = jsonDecode(raw) as List<dynamic>;
       // No envelope on success. rowset 0 = own photos, rowset 1 = public photos.
       bool updated = false;
+      final List<_PhotoRow> rows = <_PhotoRow>[];
       for (final idx in [0, 1]) {
         if (outer.length <= idx || outer[idx] is! List) continue;
         for (final row in outer[idx] as List<dynamic>) {
@@ -1200,6 +1225,20 @@ class RunTrackerMapController extends GetxController
           final url = (row['BlobUrl'] ?? row['blobUrl']) as String?;
           if (id != null && id.isNotEmpty && url != null && url.isNotEmpty) {
             _photoUrlCache[id] = url;
+            final double lat = _num(row['Latitude'] ?? row['latitude']);
+            final double lng = _num(row['Longitude'] ?? row['longitude']);
+            final int? takenAt = _sqlUtcMs(row['TakenAtUtc'] ?? row['takenAtUtc']);
+            final int? createdAt = _sqlUtcMs(row['CreatedAt'] ?? row['createdAt']);
+            final rawUploader = (row['UserId'] ?? row['userId']) as String?;
+            rows.add(_PhotoRow(
+              id: id,
+              lat: lat,
+              lng: lng,
+              timestampMs: takenAt ?? createdAt ?? 0,
+              uploaderId: rawUploader == null || rawUploader.isEmpty
+                  ? ''
+                  : normalizeUuid(rawUploader),
+            ));
             // AssetId is only present in rowset 0 (own photos). Store it so
             // CameraPhotoMarker can attempt local device loading first.
             final assetId = (row['AssetId'] ?? row['assetId']) as String?;
@@ -1233,7 +1272,17 @@ class RunTrackerMapController extends GetxController
           }
         }
       }
-      if (updated) {
+      rows.sort((a, b) => a.timestampMs.compareTo(b.timestampMs));
+      bool changed = rows.length != _photos.length;
+      for (int i = 0; !changed && i < rows.length; i++) {
+        if (rows[i] != _photos[i]) changed = true;
+      }
+      if (changed) {
+        _photos
+          ..clear()
+          ..addAll(rows);
+      }
+      if (updated || changed) {
         _photoCacheVersion++; // invalidate the memoised marker lists
         update();
       }
@@ -1442,8 +1491,10 @@ class RunTrackerMapController extends GetxController
       selectedTrailValues.contains(trailValueForRunner(user));
 
   /// Runners passing the active trail-type filter.
-  List<UserTrack> get visibleRunners =>
-      userPositions.where(isRunnerVisible).toList(growable: false);
+  List<UserTrack> get visibleRunners => userPositions
+      .where(_hasTrack)
+      .where(isRunnerVisible)
+      .toList(growable: false);
 
   /// Adds newly-seen lanes to the selection so new runners show by default,
   /// while keeping any deselections the user has already made.
@@ -1662,22 +1713,18 @@ class RunTrackerMapController extends GetxController
   List<PhotoCue> get _selectedRunnerCues {
     final id = selectedRunnerId.value;
     if (id == null) return const <PhotoCue>[];
-    final runner = userPositions.firstWhereOrNull((r) => r.id == id);
-    if (runner == null) return const <PhotoCue>[];
-    final prefix = '${HashRunPointTypes.photo.key}::'; // 'PHO::'
+    // A photo is tied to no track; the natural "this runner's photos" is the
+    // ones they took, so the showcase follows the photographer.
+    final String runnerId = normalizeUuid(id);
     final cues = <PhotoCue>[];
-    for (final p in runner.positions) {
-      final t = p.type ?? '';
-      if (!t.startsWith(prefix)) continue;
-      final rawId = t.substring(prefix.length).split('~').first.trim();
-      final url = rawId.startsWith('http')
-          ? rawId
-          : _photoUrlCache[rawId.toLowerCase()];
+    for (final _PhotoRow ph in _photos) {
+      if (!ph.hasCoordinate || ph.uploaderId != runnerId) continue;
+      final url = _photoUrlCache[ph.id];
       if (url == null || url.isEmpty) continue;
       cues.add(
         PhotoCue(
-          timestampMs: p.timestampMs,
-          point: latlng.LatLng(p.lat, p.lng),
+          timestampMs: ph.timestampMs,
+          point: latlng.LatLng(ph.lat, ph.lng),
           url: url,
         ),
       );
@@ -2500,18 +2547,13 @@ class RunTrackerMapController extends GetxController
   List<MapPhotoItem> get _orderedPhotoItems {
     final seen = <String>{};
     final items = <MapPhotoItem>[];
-    for (final user in userPositions) {
-      for (final point in user.positions) {
-        final parsed = _parseCheckpointType(point.type);
-        if (parsed == null || parsed.type != HashRunPointTypes.photo) continue;
-        final label = parsed.customLabel;
-        if (label == null || label.isEmpty) continue;
-        final lowerLabel = label.toLowerCase();
-        final String? url = label.startsWith('http')
-            ? label
-            : _photoUrlCache[lowerLabel];
+    // Capture order, from the photo rows (see _photos).
+    for (final _PhotoRow ph in _photos) {
+      {
+        final lowerLabel = ph.id;
+        final String? url = _photoUrlCache[lowerLabel];
         if (url == null) continue;
-        if (!seen.add(url)) continue; // deduplicate legacy-URL markers
+        if (!seen.add(url)) continue;
         final caption = _photoCaptionCache[lowerLabel] ?? '';
         final userId = _photoUploaderIdCache[lowerLabel] ?? '';
         items.add(
@@ -2589,8 +2631,11 @@ class RunTrackerMapController extends GetxController
   }
 
   void _initializeTimelineBounds() {
+    // Legacy photo points sat at odd times (an import hours later); photos
+    // are no longer track points, so they never set the replay's bounds.
     final timestamps = userPositions
         .expand((user) => user.positions)
+        .where((pos) => !_isPhotoPoint(pos))
         .map((pos) => pos.timestampMs)
         .whereType<num>()
         .toList(growable: false);
@@ -3589,6 +3634,58 @@ class _InterpolatedPoint {
 
 /// A mark point paired with its parsed type and raw type string (the latter is
 /// the dedup key in [RunTrackerMapController._dedupeNearbyMarks]).
+/// One photo of the run, as its own thing. Equality is by content so the
+/// cache loader can tell a real change from a re-fetch of the same rows.
+class _PhotoRow {
+  const _PhotoRow({
+    required this.id,
+    required this.lat,
+    required this.lng,
+    required this.timestampMs,
+    required this.uploaderId,
+  });
+
+  final String id; // lowercase photoId
+  final double lat;
+  final double lng;
+  final int timestampMs; // TakenAtUtc, else CreatedAt, else 0
+  final String uploaderId; // lowercase userId, '' if unknown
+
+  bool get hasCoordinate => !(lat == 0 && lng == 0);
+
+  TrackPoint get asPoint => TrackPoint(
+        lat: lat,
+        lng: lng,
+        acc: 0,
+        timestampMs: timestampMs,
+        type: '${HashRunPointTypes.photo.key}::$id',
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      other is _PhotoRow &&
+      other.id == id &&
+      other.lat == lat &&
+      other.lng == lng &&
+      other.timestampMs == timestampMs &&
+      other.uploaderId == uploaderId;
+
+  @override
+  int get hashCode => Object.hash(id, lat, lng, timestampMs, uploaderId);
+}
+
+double _num(dynamic v) => v is num ? v.toDouble() : (double.tryParse('$v') ?? 0);
+
+/// SQL DATETIME2 text (no zone) is UTC by convention here; the API may also
+/// hand back an offset string, which parses as-is.
+int? _sqlUtcMs(dynamic v) {
+  if (v == null) return null;
+  final String t = '$v'.trim();
+  if (t.isEmpty) return null;
+  final DateTime? d = DateTime.tryParse(t.endsWith('Z') || t.contains('+') ? t : '${t}Z');
+  return d?.millisecondsSinceEpoch;
+}
+
 typedef _MarkEntry = ({
   TrackPoint point,
   String type,

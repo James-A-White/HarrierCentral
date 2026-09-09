@@ -1,0 +1,23 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getRunPhotoPins",
+  "version": "1.0.0",
+  "description": "Where and when each Hash-Flash-approved PUBLIC photo of a run was taken, for the public PackTrack map and Trail TV pins. Photos are no longer written into GPS tracks, so maps read pins from photo rows. Same exposure as the PHO:: coordinates the track payload used to carry; the gallery endpoint still returns no coordinates.",
+  "parameters": [
+    { "name": "publicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Event.PublicEventId", "description": "The run's public id" }
+  ],
+  "rowsets": [
+    { "index": 0, "name": "EventFound", "description": "1 if the event exists, else 0", "columns": [ { "name": "EventFound", "type": "INT", "nullable": false, "description": "1/0" } ] },
+    { "index": 1, "name": "Pins", "description": "Public photos with a real coordinate, oldest first by TakenAtUtc then CreatedAt.",
+      "columns": [
+        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.KennelPhotos.id" },
+        { "name": "Latitude", "type": "DECIMAL(18,15)", "nullable": false, "description": "Where the photo was taken" },
+        { "name": "Longitude", "type": "DECIMAL(19,15)", "nullable": false, "description": "Where the photo was taken" },
+        { "name": "TakenAtUtc", "type": "DATETIME2", "nullable": true, "description": "When it was taken (UTC); NULL on rows before 2026-09-07 — callers fall back to CreatedAt" },
+        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "Upload time" }
+      ] }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [ "Never remove a column from any rowset", "Never return photos below Status 3 from this unauthenticated endpoint" ]
+}

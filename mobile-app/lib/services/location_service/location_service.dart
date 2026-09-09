@@ -663,10 +663,30 @@ class LocationService extends GetxService {
     }
   }
 
-  Future<void> markPoint(HashRunPointTypes pointType, {String? label}) async {
-    final position = await Geolocator.getCurrentPosition(
+  /// Newest usable fix for a mark, at most [_freshFixMaxAge] old.
+  ///
+  /// While tracking, the live stream's latest fix is both fresher and truer
+  /// than a one-shot: on iOS the one-shot manager answers with its cached last
+  /// location first, still carrying the accuracy it had when taken, which can
+  /// be tens of metres and minutes stale — the GNH Hangover photo that sat
+  /// 46 m off a 5 m track. A one-shot is taken only when the stream has
+  /// nothing recent, and even then the newer of the two wins.
+  static const Duration _freshFixMaxAge = Duration(seconds: 15);
+
+  Future<Position> freshFix() async {
+    final Position? live = lastKnownPosition.value;
+    final DateTime liveAt = lastKnownPositionRead.value;
+    final DateTime now = DateTime.now();
+    if (live != null && now.difference(liveAt) <= _freshFixMaxAge) return live;
+    final Position shot = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
     );
+    if (live != null && shot.timestamp.isBefore(liveAt)) return live;
+    return shot;
+  }
+
+  Future<void> markPoint(HashRunPointTypes pointType, {String? label}) async {
+    final position = await freshFix();
     await updateDeviceLocation(
       position,
       forceFlush: true,
@@ -682,9 +702,7 @@ class LocationService extends GetxService {
   /// queued or uploaded, so there is nothing to delete).
   Future<PendingSlotMark> captureSlotMark(TrailSlot slot, {String? label}) async {
     final tsMs = DateTime.now().millisecondsSinceEpoch;
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
-    );
+    final position = await freshFix();
     return PendingSlotMark(
       position: position,
       tsMs: tsMs,
@@ -713,11 +731,7 @@ class LocationService extends GetxService {
   /// track. No-ops if tracking isn't active (the point would have nowhere to go).
   Future<void> declareTrailType(int trailValue) async {
     try {
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.best,
-        ),
-      );
+      final position = await freshFix();
       await updateDeviceLocation(
         position,
         forceFlush: true,
@@ -778,11 +792,7 @@ class LocationService extends GetxService {
       );
     } else {
       try {
-        position = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.best,
-          ),
-        );
+        position = await freshFix();
       } catch (e) {
         // No fix available (services off, permission revoked, hardware timeout).
         // Never let this throw out of an unawaited call.
@@ -1055,7 +1065,11 @@ class LocationService extends GetxService {
 
       // Append to the local session track and recompute filtered distance.
       // Uses the same TrackPointFilter as the map view so both displays agree.
-      _sessionTrack.add(
+      // Only GPS fixes: a mark is metadata dropped ON the track, not a vertex
+      // of it — as a vertex it drew an out-and-back to wherever the mark's fix
+      // landed and added that distance twice.
+      if (pointStr == null) {
+        _sessionTrack.add(
         TrackPoint(
           lat: double.parse(lat.toStringAsFixed(5)),
           lng: double.parse(lon.toStringAsFixed(5)),
@@ -1064,6 +1078,7 @@ class LocationService extends GetxService {
           timestampMs: tsMs,
         ),
       );
+      }
       // Recompute the filtered distance at most ~every 10s (or on a forced flush
       // — mark/stop), not on every point, to avoid an O(n²) refilter over the run.
       final nowDist = DateTime.now();

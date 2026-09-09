@@ -127,12 +127,6 @@ class KennelPhotoService {
       // upload eventually fails permanently the map resolves the photoId to null
       // and hides the marker — no user-visible damage.
       if (!skipMapMarker) {
-        _enqueuePhotoMarker(
-          photoId: photoGuid,
-          eventId: eventId,
-          timestampMs:
-              markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-        );
       }
       onOutcome?.call(KennelPhotoCaptureOutcome.queuedOffline);
       return null;
@@ -160,12 +154,6 @@ class KennelPhotoService {
         isOnlineFailure: true,
       );
       if (!skipMapMarker) {
-        _enqueuePhotoMarker(
-          photoId: photoGuid,
-          eventId: eventId,
-          timestampMs:
-              markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-        );
       }
       return null;
     }
@@ -215,12 +203,6 @@ class KennelPhotoService {
         isOnlineFailure: true,
       );
       if (!skipMapMarker) {
-        _enqueuePhotoMarker(
-          photoId: photoGuid,
-          eventId: eventId,
-          timestampMs:
-              markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-        );
       }
       return null;
     }
@@ -256,11 +238,6 @@ class KennelPhotoService {
 
     // 9. Enqueue a PHO marker into the GPS track feed
     if (!skipMapMarker) {
-      _enqueuePhotoMarker(
-        photoId: photoGuid,
-        eventId: eventId,
-        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-      );
     }
 
     onOutcome?.call(KennelPhotoCaptureOutcome.uploaded);
@@ -479,16 +456,14 @@ class KennelPhotoService {
       // HC.KennelPhotos and used to place the photo on a map, and it is why
       // photo pins sat away from where the photo was taken.
       //
-      // This is the same one-shot LocationAccuracy.best fetch that
-      // markPointAt does for the PHO:: track marker, so the row and the
-      // marker now agree instead of describing two different places.
+      // The photo's own row is the ONLY record of where it was taken: a photo
+      // is a location, a time and a photographer, not a track point, so
+      // nothing is written into anybody's GPS track. freshFix() prefers the
+      // live tracking stream's latest fix over a one-shot, which on iOS can
+      // answer with a stale cached location (the GNH Hangover 46 m spike).
       Position? fix;
       try {
-        fix = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.best,
-          ),
-        );
+        fix = await LocationService.ensure().freshFix();
       } catch (e) {
         // Services off, permission revoked, or a hardware timeout. Fall back
         // to the stale fix — a rough position beats none, and the upload must
@@ -754,13 +729,6 @@ class KennelPhotoService {
         lng: longitude,
         takenAtMs: takenAtMs,
       );
-      _enqueuePhotoMarker(
-        photoId: photoGuid,
-        eventId: eventId,
-        timestampMs: takenAtMs,
-        atLat: latitude,
-        atLng: longitude,
-      );
       return true; // queued — it will complete on the next connected launch
     }
 
@@ -799,38 +767,7 @@ class KennelPhotoService {
     );
     if (!recorded) return false;
 
-    _enqueuePhotoMarker(
-      photoId: photoGuid,
-      eventId: eventId,
-      timestampMs: takenAtMs,
-      atLat: latitude,
-      atLng: longitude,
-    );
     return true;
-  }
-
-  void _enqueuePhotoMarker({
-    required String photoId,
-    required String eventId,
-    required int timestampMs,
-    // Imported photos mark where the PHOTO was taken, not where the phone is.
-    double? atLat,
-    double? atLng,
-  }) {
-    // Label is the photoId (UUID) only — the map controller resolves the
-    // blob URL via hcapp_getRunPhotos so the URL is never stored in the
-    // GPS track, preventing unauthenticated blob access from the label alone.
-    unawaited(
-      LocationService.ensure().markPointAt(
-        pointType: HashRunPointTypes.photo,
-        timestampMs: timestampMs,
-        overrideEventId: eventId,
-        overrideUserId: currentUserId,
-        label: photoId,
-        atLat: atLat,
-        atLng: atLng,
-      ),
-    );
   }
 
   // ── Public query methods (called by Hash Flash screen + map) ─────────────

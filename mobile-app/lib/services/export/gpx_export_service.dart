@@ -49,6 +49,10 @@ class GpxExportService {
     buffer.writeln('<trkseg>');
 
     for (final p in sorted) {
+      // Marks (checks, photos, On Inn …) are exported above as <wpt>. As
+      // <trkpt> they became vertices of the line — a photo's fix 46 m off the
+      // trail drew an out-and-back spike in every GPX reader.
+      if ((p.type ?? '').trim().isNotEmpty) continue;
       buffer.writeln(
         '<trkpt lat="${_fmtCoord(p.lat)}" lon="${_fmtCoord(p.lng)}">',
       );

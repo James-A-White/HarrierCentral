@@ -693,11 +693,13 @@ export default function TrailTv({
   const timedPhotos = useMemo(() => {
     const timed: PhotoEntry[] = photos.map((p) => {
       const mark = photoMarks.current.get(p.photoId);
-      // A PHO:: mark is the best answer — it is the runner's own position at the
-      // moment of the shot. Failing that, the upload's CreatedAt still puts the
-      // photo somewhere sensible on the timeline, which is far better than
-      // treating it as having no time and dumping it at the front of the queue.
-      const ts = mark?.ts ?? p.createdAtMs ?? null;
+      // The photo's own row is the answer: where it was taken and when. A photo
+      // is not a track point — it belongs to no runner, and a photographer who
+      // never tracked still has a pin. Legacy PHO:: marks (photos from before
+      // the rows carried a position) are the fallback, then the upload time.
+      const ts = p.takenAtMs ?? mark?.ts ?? p.createdAtMs ?? null;
+      const lat = p.lat ?? mark?.lat ?? null;
+      const lng = p.lng ?? mark?.lng ?? null;
       const outside =
         ts == null ||
         timeline == null ||
@@ -706,8 +708,8 @@ export default function TrailTv({
       return {
         ...p,
         markTs: ts,
-        lat: mark?.lat ?? null,
-        lng: mark?.lng ?? null,
+        lat,
+        lng,
         num: null,
         outsideRun: outside,
       };
