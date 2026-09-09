@@ -27,15 +27,20 @@ class GetPositionsApi {
     required Duration timeout,
   }) {
     final client = _injectedClient;
-    NetworkMeter.countRequest(body);
-    final request = (client != null
-            ? client.post(uri, headers: headers, body: body)
-            : http.post(uri, headers: headers, body: body))
-        .then((http.Response r) {
-          NetworkMeter.countResponse(r);
-          return r;
-        });
-    return request.timeout(timeout);
+    final int started = NetworkMeter.begin(body);
+    final request = client != null
+        ? client.post(uri, headers: headers, body: body)
+        : http.post(uri, headers: headers, body: body);
+    return request.timeout(timeout).then(
+      (http.Response r) {
+        NetworkMeter.end(started, r);
+        return r;
+      },
+      onError: (Object e, StackTrace st) {
+        NetworkMeter.end(started, null);
+        Error.throwWithStackTrace(e, st);
+      },
+    );
   }
 
   Future<UserPositionsPayload> fetchPositions({

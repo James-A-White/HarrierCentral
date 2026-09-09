@@ -156,7 +156,11 @@ trend. Sweep section 7 prints the last line per session. Fields:
 | `rss` `peak` | Dart `ProcessInfo` | This process's resident memory now and at its highest. RSS is what climbs before an iOS jetsam kill |
 | `pss` | Android `Debug.MemoryInfo` | Proportional set size, the figure Android judges the app by. `n/a` on iOS |
 | `avail` | `os_proc_available_memory` / `MemoryInfo.availMem` | What the OS says the app may still use. Low `avail` with rising `rss` is the OOM warning |
-| `app_tx` `app_rx` `req` `fail` | `NetworkMeter` | The app's own API traffic: SP calls, position uploads and polls, log uploads. Not images or tiles. `fail` counts every request that got no usable answer, 599 and transport failures included |
+| `cpu` `cpu%` | `getrusage` / `Process.getElapsedCpuTime` | The process's own CPU time this session, and its share of wall time since the previous line (can exceed 100 on several cores). **The one battery-relevant number that belongs to the app alone.** Read it with `loc_*` to see what earned it |
+| `app_tx` `app_rx` `req` `fail` | `NetworkMeter` | The app's own API traffic: SP calls, position uploads and polls, log uploads. Not images or tiles. `fail` counts every request that got no usable answer, 599, transport failures and thrown timeouts included |
+| `lat_avg` `lat_max` | `NetworkMeter` | Round-trip time over every request, failures included, so a stalled network shows in `lat_max`. Separates "slow server" from "no signal" when read with `fail` |
+| `db` `docs` `cache` `disk_free` | Dart file walk / `StatFs` / volume capacity | The local database, everything the app persists, the temp and image cache, and what the volume has left. Sampled at start and every interval only |
+| `loc_track` `loc_paused` `loc_precise` `loc_idle` | `LocationTimeLedger` | Minutes the shared location stream spent in each cost tier: tracking a run, the paused movement-detection stream, a map's precise boost, and low-power idle. GPS is the app's dominant battery cost, so this is the denominator for `drain` |
 | `dev_rx` `dev_tx` | Android `TrafficStats` | Everything this process sent and received since the session started, images included. **`n/a` on iOS**, which has no per-app counter; the MetricKit daily `networkTransferMetrics` payload is the only iOS source |
 | `batt` `state` | `UIDevice` / `BatteryManager` | The **device** battery level and whether it is unplugged, charging or full |
 | `Δ` `drain` `chg` | derived | Change in level, and drain per hour, over the current **unplugged stretch only** (the reference resets whenever charging is seen). `chg` is Android's charge counter delta in mAh, finer than 1% steps. This is the whole phone's drain; the app is one contributor. High drain with `bg` dominating and location idle is a finding. High drain during a tracked run is expected |
@@ -164,10 +168,12 @@ trend. Sweep section 7 prints the last line per session. Fields:
 
 The honest limits: no platform attributes battery drain to an app in real
 time, and iOS has no per-app network counter. What the line gives you is the
-app's own footprint (memory, its API bytes) beside the device's condition
-(battery, headroom, thermal) on the same timestamps, which is enough to say
-"memory climbs 3 MB a minute while tracking" or "this phone lost 12% an hour
-in the background with nothing tracked", and that is the question.
+app's own footprint (CPU time, memory, its API bytes, location tier minutes)
+beside the device's condition (battery, headroom, thermal, disk) on the same
+timestamps, which is enough to say "memory climbs 3 MB a minute while
+tracking", "this phone lost 12% an hour in the background with the stream idle
+and cpu% at 4", or "every request took eight seconds but none failed", and
+those are the questions.
 
 ---
 

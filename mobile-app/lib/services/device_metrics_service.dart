@@ -16,7 +16,9 @@ import 'package:harrier_central/imports.dart';
 /// ```
 /// [2026-09-09T12:00:00.000] [METRICS] why=periodic up=1h02m fg=58m bg=4m
 ///   rss=143MB peak=201MB pss=n/a avail=1.2GB app_tx=12.3KB app_rx=1.1MB
-///   req=41 fail=0 dev_rx=n/a dev_tx=n/a batt=87% state=unplugged Δ=-3%
+///   req=41 fail=0 lat_avg=420ms lat_max=8.2s dev_rx=n/a dev_tx=n/a
+///   cpu=1m12s cpu%=2.1 db=12.3MB docs=45MB cache=210MB disk_free=41GB
+///   loc_track=48m loc_idle=14m batt=87% state=unplugged Δ=-3%
 ///   drain=2.9%/h chg=n/a lpm=0 therm=nominal
 /// ```
 ///
@@ -32,6 +34,17 @@ import 'package:harrier_central/imports.dart';
 ///   `TrafficStats` for this process since device boot — everything, images
 ///   included — reported as the delta since the session started. iOS has no
 ///   per-app counter, so they read `n/a` there.
+/// * **CPU.** `cpu` is the process's own user+system time this session and
+///   `cpu%` its share of wall time since the previous line. This is the one
+///   battery-relevant figure that belongs to the app alone; read it with the
+///   location tiers to see what the app was doing to earn it.
+/// * **Disk.** `db`/`docs`/`cache` are the app's own footprint and
+///   `disk_free` what the volume has left. Sampled at start and every
+///   interval, not on lifecycle edges, because the walk is the only
+///   non-trivial work here.
+/// * **Location.** `loc_*` from [LocationTimeLedger]: cumulative minutes the
+///   shared stream spent tracking, paused, boosted for a map, or idle. GPS is
+///   the app's dominant battery cost, so this is the denominator for `drain`.
 /// * **Battery.** `batt`/`state` are the device battery, not the app's share
 ///   of it — no platform attributes drain to an app in real time. `Δ` and
 ///   `drain` are measured over the current UNPLUGGED stretch only (the
@@ -60,6 +73,10 @@ class DeviceMetricsService with WidgetsBindingObserver {
   bool _sampling = false;
 
   // Baselines for deltas.
+  int? _cpuMsAtStart;
+  int? _cpuMsAtLastSample;
+  DateTime? _lastSampleAt;
+  String _diskSummary = 'db=n/a docs=n/a cache=n/a';
   int? _devRxAtStart;
   int? _devTxAtStart;
   double? _battRefLevel; // 0..1, start of the current unplugged stretch
@@ -133,6 +150,11 @@ class DeviceMetricsService with WidgetsBindingObserver {
     try {
       _rollTime();
       final Map<String, dynamic> n = await _nativeSnapshot();
+      // The directory walk is the only sample work that is not O(1); keep it
+      // off the background/foreground edges so those stay instant.
+      if (why == 'start' || why == 'periodic') {
+        _diskSummary = await _measureDisk();
+      }
       BootLogger.logMetrics('why=$why ${_compose(n)}');
     } catch (e) {
       // Instrumentation must never become the error it is measuring.
@@ -162,9 +184,39 @@ class DeviceMetricsService with WidgetsBindingObserver {
     b.write('up=${_fmtDur(now.difference(_sessionStart))} ');
     b.write('fg=${_fmtDur(_fgTotal)} bg=${_fmtDur(_bgTotal)} ');
 
+    // CPU — the app's own consumption: session total, and the share of wall
+    // time over the last interval (can exceed 100% on several cores)
+    final int? cpuMs = _int(n['cpuTimeMs']);
+    if (cpuMs != null && cpuMs >= 0) {
+      _cpuMsAtStart ??= cpuMs;
+      b.write('cpu=${_fmtDur(Duration(milliseconds: cpuMs - _cpuMsAtStart!))} ');
+      final int? prev = _cpuMsAtLastSample;
+      final DateTime? prevAt = _lastSampleAt;
+      if (prev != null && prevAt != null) {
+        final int wallMs = now.difference(prevAt).inMilliseconds;
+        b.write(
+          wallMs >= 10000
+              ? 'cpu%=${(100 * (cpuMs - prev) / wallMs).toStringAsFixed(1)} '
+              : 'cpu%=n/a ',
+        );
+      } else {
+        b.write('cpu%=n/a ');
+      }
+      _cpuMsAtLastSample = cpuMs;
+    } else {
+      b.write('cpu=n/a cpu%=n/a ');
+    }
+    _lastSampleAt = now;
+
     // Memory
     b.write('${BootLogger.memInfo()} ');
     b.write('pss=${_bytes(n['pssBytes'])} avail=${_bytes(n['availMem'])} ');
+
+    // Disk — our footprint, and what is left on the volume
+    b.write('$_diskSummary disk_free=${_bytes(n['diskFree'])} ');
+
+    // Location stream cost tiers this session
+    b.write('${LocationTimeLedger.summary()} ');
 
     // Network — app layer, then the device's view of the process (Android)
     b.write('${NetworkMeter.summary()} ');
@@ -220,6 +272,46 @@ class DeviceMetricsService with WidgetsBindingObserver {
     b.write('lpm=${n['lowPower'] == true ? 1 : 0} ');
     b.write('therm=${(n['thermal'] as String?) ?? 'n/a'}');
     return b.toString();
+  }
+
+  /// `db=12.3MB docs=45MB cache=210MB` — the local database, the documents
+  /// directory it lives in (everything the app persists), and the temp/cache
+  /// directory (image cache, compression scratch). Walks are bounded so a
+  /// pathological cache cannot stall a sample.
+  Future<String> _measureDisk() async {
+    try {
+      final Directory docs = await getApplicationDocumentsDirectory();
+      final Directory cache = await getTemporaryDirectory();
+      final File db = File('${docs.path}/$DB_NAME');
+      final int dbBytes = await db.exists() ? await db.length() : -1;
+      return 'db=${NetworkMeter.formatBytes(dbBytes)} '
+          'docs=${NetworkMeter.formatBytes(await _dirSize(docs))} '
+          'cache=${NetworkMeter.formatBytes(await _dirSize(cache))}';
+    } catch (_) {
+      return 'db=n/a docs=n/a cache=n/a';
+    }
+  }
+
+  static const int _maxWalkEntries = 20000;
+
+  static Future<int> _dirSize(Directory dir) async {
+    if (!await dir.exists()) return -1;
+    int total = 0;
+    int seen = 0;
+    try {
+      await for (final FileSystemEntity e
+          in dir.list(recursive: true, followLinks: false)) {
+        if (++seen > _maxWalkEntries) break;
+        if (e is File) {
+          try {
+            total += await e.length();
+          } catch (_) {}
+        }
+      }
+    } catch (_) {
+      return total > 0 ? total : -1;
+    }
+    return total;
   }
 
   static String _bytes(dynamic v) {

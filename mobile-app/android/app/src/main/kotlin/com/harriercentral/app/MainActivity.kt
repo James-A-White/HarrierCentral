@@ -9,6 +9,8 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.Debug
 import android.os.PowerManager
+import android.os.Process
+import android.os.StatFs
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -45,6 +47,10 @@ class MainActivity : FlutterActivity() {
      *                    images and everything else, unlike the app-layer meter
      *   lowPower         Battery Saver on
      *   thermal          nominal | fair | serious | critical | unknown
+     *   cpuTimeMs        CPU time this process has consumed
+     *                    (Process.getElapsedCpuTime) — attributable to the
+     *                    app alone, unlike the battery level
+     *   diskFree         bytes available on the app's data volume
      */
     private fun snapshot(): Map<String, Any> {
         val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -94,6 +100,8 @@ class MainActivity : FlutterActivity() {
             "uidTx" to TrafficStats.getUidTxBytes(uid),
             "lowPower" to pm.isPowerSaveMode,
             "thermal" to thermal,
+            "cpuTimeMs" to Process.getElapsedCpuTime(),
+            "diskFree" to StatFs(filesDir.path).availableBytes,
         )
     }
 }

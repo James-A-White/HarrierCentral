@@ -76,16 +76,12 @@ class ServiceCommon {
       'buildNumber': plus > 0 ? versionAndBuild.substring(plus + 1) : null,
     });
 
-    NetworkMeter.countRequest(body);
+    final int started = NetworkMeter.begin(body);
     final Response response = await post(
           Uri.parse(BASE_AF_API_URL),
           headers: <String, String>{'content-type': 'application/json'},
           body: body,
         )
-        .then((Response r) {
-          NetworkMeter.countResponse(r);
-          return r;
-        })
         .timeout(
           const Duration(seconds: 30),
           onTimeout: () => Response('', 408),
@@ -93,6 +89,7 @@ class ServiceCommon {
         .catchError((dynamic error) {
           return Future<Response>.value(Response('', 500));
         });
+    NetworkMeter.end(started, response);
 
     return response.statusCode >= 200 && response.statusCode < 300;
   }
@@ -246,17 +243,13 @@ class ServiceCommon {
           });
     }
 
-    NetworkMeter.countRequest(requestBody);
+    final int started = NetworkMeter.begin(requestBody);
     return client
         .post(
           Uri.parse(BASE_AF_API_URL),
           headers: <String, String>{'content-type': 'application/json'},
           body: requestBody,
         )
-        .then((Response r) {
-          NetworkMeter.countResponse(r);
-          return r;
-        })
         .timeout(
           _requestTimeout,
           onTimeout: () => Response('', kLocalTimeoutStatus),
@@ -270,6 +263,12 @@ class ServiceCommon {
             );
           }
           return Future<Response>.value(Response('', 500));
+        })
+        .then((Response r) {
+          // After timeout + catchError so every outcome is counted, including
+          // the synthesised 599 and 500.
+          NetworkMeter.end(started, r);
+          return r;
         });
   }
 

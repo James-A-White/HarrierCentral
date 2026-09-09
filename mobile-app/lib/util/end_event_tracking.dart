@@ -47,12 +47,18 @@ class EndEventTrackingApi {
       HttpHeaders.contentTypeHeader: 'application/json',
       'X-Api-Key': GET_POSITIONS_API_KEY,
     };
-    NetworkMeter.countRequest(requestBody);
-    final response = await (client != null
-            ? client.post(_baseUri, headers: headers, body: requestBody)
-            : http.post(_baseUri, headers: headers, body: requestBody))
-        .timeout(timeout);
-    NetworkMeter.countResponse(response);
+    final int started = NetworkMeter.begin(requestBody);
+    final http.Response response;
+    try {
+      response = await (client != null
+              ? client.post(_baseUri, headers: headers, body: requestBody)
+              : http.post(_baseUri, headers: headers, body: requestBody))
+          .timeout(timeout);
+    } catch (_) {
+      NetworkMeter.end(started, null);
+      rethrow;
+    }
+    NetworkMeter.end(started, response);
 
     if (response.statusCode != 200) {
       throw HttpException(

@@ -224,6 +224,7 @@ class LocationService extends GetxService {
           false,
           androidInterval: _trackingAndroidInterval(),
         );
+        LocationTimeLedger.setTier('track');
         await _geoLocationStreamSubscription?.cancel();
         _geoLocationStreamSubscription =
             Geolocator.getPositionStream(
@@ -253,6 +254,7 @@ class LocationService extends GetxService {
           false,
           androidInterval: const Duration(seconds: 15),
         );
+        LocationTimeLedger.setTier('paused');
         await _geoLocationStreamSubscription?.cancel();
         _geoLocationStreamSubscription =
             Geolocator.getPositionStream(
@@ -526,6 +528,7 @@ class LocationService extends GetxService {
   /// Emitted on every reconfiguration, so a log shows exactly when the phone
   /// moved between low-power and high-accuracy modes and why.
   void _logStreamMode(String mode, int distanceFilter, LocationAccuracy acc) {
+    LocationTimeLedger.setTier(LocationTimeLedger.tierForMode(mode));
     BootLogger.logBreadcrumb(
       'Location: stream -> $mode (distanceFilter=${distanceFilter}m, '
       'accuracy=${acc.name}, boostHolders=$_preciseStreamRequests, '

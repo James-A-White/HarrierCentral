@@ -78,10 +78,26 @@ import MetricKit
 ///   uidRx / uidTx   -1 — iOS has no per-app network counter
 ///   lowPower        Low Power Mode on
 ///   thermal         nominal | fair | serious | critical
+///   cpuTimeMs       user+system CPU time this process has consumed (getrusage)
+///                   — the one figure that is attributable to the app alone
+///   diskFree        bytes the app could still write (volumeAvailableCapacity
+///                   ForImportantUsage), -1 if unknown
 enum DeviceMetricsSnapshot {
   static func take() -> [String: Any] {
     let device = UIDevice.current
     let info = ProcessInfo.processInfo
+
+    var usage = rusage()
+    getrusage(RUSAGE_SELF, &usage)
+    let cpuMs = Int64(usage.ru_utime.tv_sec + usage.ru_stime.tv_sec) * 1000
+      + Int64(usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000
+
+    var diskFree: Int64 = -1
+    if let home = try? URL(fileURLWithPath: NSHomeDirectory())
+      .resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]),
+      let cap = home.volumeAvailableCapacityForImportantUsage {
+      diskFree = cap
+    }
 
     var avail: Int64 = -1
     if #available(iOS 13.0, *) {
@@ -116,6 +132,8 @@ enum DeviceMetricsSnapshot {
       "uidTx": Int64(-1),
       "lowPower": info.isLowPowerModeEnabled,
       "thermal": thermal,
+      "cpuTimeMs": cpuMs,
+      "diskFree": diskFree,
     ]
   }
 }

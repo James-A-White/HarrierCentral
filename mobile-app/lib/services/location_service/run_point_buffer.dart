@@ -313,12 +313,18 @@ class RunPointBuffer {
         final client = _injectedClient;
         final uri = Uri.parse(apiUrl);
         const headers = <String, String>{'content-type': 'application/json'};
-        NetworkMeter.countRequest(body);
-        final resp = await (client != null
-                ? client.post(uri, headers: headers, body: body)
-                : http.post(uri, headers: headers, body: body))
-            .timeout(_sendTimeout);
-        NetworkMeter.countResponse(resp);
+        final int started = NetworkMeter.begin(body);
+        final http.Response resp;
+        try {
+          resp = await (client != null
+                  ? client.post(uri, headers: headers, body: body)
+                  : http.post(uri, headers: headers, body: body))
+              .timeout(_sendTimeout);
+        } catch (_) {
+          NetworkMeter.end(started, null);
+          rethrow;
+        }
+        NetworkMeter.end(started, resp);
         if (resp.statusCode >= 200 && resp.statusCode < 300) {
           if (carriesResumedFlag) _resumedCleanupPending = false;
           if (kDebugMode) {
