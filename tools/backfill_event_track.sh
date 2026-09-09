@@ -28,8 +28,9 @@ echo "SET NOCOUNT ON; CREATE TABLE #t (EventId UNIQUEIDENTIFIER, FirstPointAt DA
 while :; do
   row=$(az storage entity query -t EventPositions --connection-string "$CS" \
         --filter "PartitionKey gt '$pk'" --num-results 1 --select PartitionKey RowKey TimestampMs \
-        --only-show-errors --query "items[0].[PartitionKey, RowKey, TimestampMs]" -o tsv)
-  [ -z "$row" ] && break
+        --only-show-errors --query "items[0].[PartitionKey, RowKey, TimestampMs]" -o tsv | tr '\n' '\t')
+  # tsv prints a list one value per LINE; joined with tabs above so cut works
+  [ -z "${row//[[:space:]]/}" ] && break
   pk=$(echo "$row" | cut -f1); rk=$(echo "$row" | cut -f2); ts=$(echo "$row" | cut -f3)
   # TimestampMs is the caller's 19-digit epoch ms; legacy rows carry it in the RowKey
   ms=${ts:-${rk%%-*}}; ms=$((10#${ms:-0}))
