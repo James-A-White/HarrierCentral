@@ -1,3 +1,8 @@
+2.0.68+703
+    • Usage Data: App Error row counts phone-side exceptions and crashes, coloured like Error
+    • Both error drill-downs show the app build that produced each error
+    • Removed the dead RunDetailsModel.newRecord factory
+
 2.0.64+699
     • Label is now a permanent trail mark (slot 4) — every kennel has one
     • Hash View is now permanent (slot 6); slots 7-12 remain configurable

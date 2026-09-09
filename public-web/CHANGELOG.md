@@ -1,5 +1,15 @@
 # public-web Changelog
 
+## 0.21.44 (2026-09-09)
+
+- New per-run photo gallery at `/<kennel>/<run>/photos`: the Hash Flash-approved
+  public photos in a responsive grid, each opening its full-size original. It
+  is the target of the app's new "share photos" option, so the first photo
+  becomes the shared card's image, and a run with no photos says so.
+- The GPS filter mirrors the app's accuracy-aware stationary radius (the sum
+  of two fixes' accuracies, 25 to 60 m), so a stop on poor GPS is held still
+  and a run measures the same on a phone and on Trail TV.
+
 ## 0.21.43 (2026-09-07)
 
 - Standing still no longer adds distance to a track. GPS keeps wandering inside

@@ -2,6 +2,17 @@
 
 ---
 
+## 2.0.68+703 (2026-09-09)
+
+### New Features
+- **Usage Data counts app-side errors.** A new App Error row counts phone
+  sessions that hit an uncaught exception, a framework error or a crash,
+  coloured like the server Error row. Both error drill-downs now show the app
+  build, so "is it gone?" is a sort on that column.
+
+### Improvements
+- Removed the unused new-record factory on the run details model.
+
 ## 2.0.67+702 (2026-09-08)
 
 ### Fixes

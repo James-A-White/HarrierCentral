@@ -1,3 +1,7 @@
+0.21.44
+    • Per-run photo gallery at /<kennel>/<run>/photos — shareable from the app, first photo is the card image
+    • GPS filter mirrors the app's accuracy-aware stationary radius (25–60m), so a stop on poor GPS measures the same on phone and Trail TV
+
 0.21.43
     • Standing still no longer adds distance to a track — GPS wander at a beer stop or On Inn was being counted as movement (0.87 km of 15.58 km on the GNH Sunday trail; 11.4% for one runner). A stretch inside 25m for 90s+ is held at one position for the same span. Mirrors the mobile filter.
 

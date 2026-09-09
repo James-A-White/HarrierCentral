@@ -1,5 +1,29 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.13+1328 (2026-09-09)
+
+### Fixes
+- **Standing still on poor GPS no longer counts as running.** The stationary
+  radius now follows the fixes' own accuracy (25 to 60 m) instead of a flat
+  25 m. One hasher's twenty-minute check on 60 to 116 m fixes had become half
+  a kilometre of out-and-back that the raw track never contained.
+- **Photo pins land where the photo was taken.** The pin used a stale
+  idle-stream position — sometimes hundreds of metres off, sometimes (0,0).
+  An imported photo queued offline now keeps its own time and place too.
+- **New users no longer see the "Welcome to 3.0" upgrade deck.** It played in
+  full for brand-new accounts and for hashers reconnecting on a new phone;
+  it now requires a version to have upgraded from.
+- **The trim toolbar measures the playback panel instead of guessing,** so it
+  clears the panel on every phone rather than on the one it was tuned for.
+
+### New Features
+- **Share a run's photo gallery** from the share sheet, alongside the map and
+  Trail TV. The link opens the run's approved photos on the web.
+
+### Improvements
+- **Error reports name the build that produced them,** so a fixed crash can be
+  confirmed gone on the Usage Data dashboard rather than guessed at.
+
 ## 3.0.12+1327 (2026-09-07)
 
 ### Improvements
