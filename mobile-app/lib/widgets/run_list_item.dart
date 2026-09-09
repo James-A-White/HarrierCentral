@@ -300,24 +300,24 @@ class RunListItem extends StatelessWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                // No RSVP control once the run is past — there is nothing left
-                // to say you will attend. Gone entirely rather than disabled:
-                // a dead control that still looks tappable is worse than none.
-                if (!isRunPast(futureRun))
-                  GestureDetector(
-                    onTap: () {
-                      _showRsvpOptionsPopup();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: 5.0,
-                        right: 5.0,
-                        top: 5.0,
-                        bottom: 5.0,
-                      ),
-                      child: Obx(() => _getRsvpWidget()),
+                // The RSVP/attendance icon shows on every run — on a past run
+                // it is the record of what happened (attended, hared), drawn
+                // with the same graphics as an upcoming run — but it only
+                // opens the RSVP popup while the run is still ahead. The
+                // enlarged 56x56 hit area below stays past-gated for the same
+                // reason.
+                GestureDetector(
+                  onTap: isRunPast(futureRun) ? null : _showRsvpOptionsPopup,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 5.0,
+                      right: 5.0,
+                      top: 5.0,
+                      bottom: 5.0,
                     ),
+                    child: Obx(() => _getRsvpWidget()),
                   ),
+                ),
                 Expanded(
                   child: Container(
                     width: MediaQuery.sizeOf(context).width,
