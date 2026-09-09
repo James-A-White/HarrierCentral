@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getDeviceHealth",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Per-device health for one user, for the Usage Data user tile. Extracts the [METRICS] instrumentation (app 3.0.14+) from the user's uploaded session logs in HC.ClientErrorLog: the last [METRICS] line per session, its [METRICS:PEAKS] line, and the [METRICS:RING] block for the latest session per device. The SP extracts lines; the portal parses key=value pairs, so new app fields need no SP change.",
   "parameters": [
     { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Portal device (auth)" },
@@ -21,11 +21,12 @@
         { "name": "os", "type": "NVARCHAR(50)", "nullable": false, "description": "HC.Device.OperatingSystem; NULL reads as 'Android' (the Android payload has no systemName)" },
         { "name": "hcVersion", "type": "NVARCHAR(51)", "nullable": false, "description": "Current 'X.Y.Z+build' of the device" },
         { "name": "lastLogin", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "HC.Device.LastLogin" },
-        { "name": "sessions", "type": "INT", "nullable": false, "description": "Uploaded session logs in the window" },
+        { "name": "sessions", "type": "INT", "nullable": false, "description": "App launches whose harvested log was uploaded in the window (MetricKit payload rows excluded)" },
         { "name": "sessionsWithMetrics", "type": "INT", "nullable": false, "description": "Of those, sessions carrying [METRICS] lines" }
       ] },
     { "index": 1, "name": "Sessions", "description": "Up to 60 harvested sessions across those devices, newest first — one per app launch, with or without metrics.",
       "columns": [
+        { "name": "kind", "type": "NVARCHAR(10)", "nullable": false, "description": "'session' (an app launch's log) or 'diagnostic' (a MetricKit crash/hang payload; routine metric payloads are never listed)" },
         { "name": "sessionStart", "type": "NVARCHAR(40)", "nullable": true, "description": "The log's first entry timestamp (ISO, phone-local): when the session began. NULL if the log does not start with a timestamped entry." },
         { "name": "loggedAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Upload time (one boot after the session)" },
         { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Which device" },

@@ -43,6 +43,7 @@ class DeviceHealthSession {
     required this.deviceId,
     required this.os,
     required this.hcVersion,
+    this.kind = 'session',
     required this.summary,
     this.summaryStart = const <String, String>{},
     required this.peaks,
@@ -61,6 +62,11 @@ class DeviceHealthSession {
   final String deviceId;
   final String os;
   final String hcVersion;
+
+  /// 'session' — an app launch's harvested log — or 'diagnostic', a MetricKit
+  /// crash/hang payload that belongs to no particular launch.
+  final String kind;
+  bool get isDiagnostic => kind == 'diagnostic';
 
   bool get isIos => os.toLowerCase().contains('ios');
   bool get hasMetrics => summary.isNotEmpty;
@@ -101,6 +107,7 @@ class DeviceHealthSession {
         deviceId: (j['deviceId'] as String? ?? '').toLowerCase(),
         os: j['os'] as String? ?? '',
         hcVersion: j['hcVersion'] as String? ?? '',
+        kind: j['kind'] as String? ?? 'session',
         summary: parseKeyValues(j['summary'] as String?),
         summaryStart: parseKeyValues(j['summaryStart'] as String?),
         peaks: parseKeyValues(j['peaks'] as String?),

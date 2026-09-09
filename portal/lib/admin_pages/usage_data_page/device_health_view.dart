@@ -98,7 +98,7 @@ class _DeviceLine extends StatelessWidget {
                 color: dv.isIos ? Colors.grey.shade700 : Colors.green.shade700,
               ),
               label: Text(
-                '${dv.hcVersion} · last login $when · ${dv.sessions} sessions, ${dv.sessionsWithMetrics} with metrics',
+                '${dv.hcVersion} · last login $when · ${dv.sessions} launches in 14 days, ${dv.sessionsWithMetrics} with metrics',
                 style: const TextStyle(fontSize: 12),
               ),
             ),
@@ -120,9 +120,11 @@ class _SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String started = s.sessionStart != null
-        ? DateFormat('EEE MMM d, h:mm a').format(s.sessionStart!)
-        : 'uploaded ${DateFormat('EEE MMM d, h:mm a').format(s.loggedAt.toLocal())}';
+    final String started = s.isDiagnostic
+        ? 'iOS diagnostic, received ${DateFormat('EEE MMM d, h:mm a').format(s.loggedAt.toLocal())}'
+        : s.sessionStart != null
+            ? DateFormat('EEE MMM d, h:mm a').format(s.sessionStart!)
+            : 'uploaded ${DateFormat('EEE MMM d, h:mm a').format(s.loggedAt.toLocal())}';
     final Color platform = s.isIos ? Colors.grey.shade700 : Colors.green.shade700;
     final String drain = s.v('drain', '');
     return Obx(() {
@@ -162,9 +164,11 @@ class _SessionCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             )
                           : Text(
-                              s.errorLines > 0
-                                  ? 'no metrics on this build · ${s.errorLines} error line(s)'
-                                  : 'no metrics on this build',
+                              s.isDiagnostic
+                                  ? (s.appError ?? 'MetricKit diagnostic')
+                                  : s.errorLines > 0
+                                      ? 'no metrics on this build · ${s.errorLines} error line(s)'
+                                      : 'no metrics on this build',
                               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                             ),
                     ),

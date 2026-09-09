@@ -85,8 +85,11 @@ BEGIN TRY
 		a.os,
 		a.hcVersion,
 		a.lastLogin,
+		-- A session is one app launch's harvested log, uploaded on the next
+		-- launch. MetricKit payloads are their own rows and are NOT launches.
 		(SELECT COUNT(*) FROM HC.ClientErrorLog c WITH (NOLOCK)
-		 WHERE c.DeviceId = a.id AND c.LoggedAt > @cutoff) AS sessions,
+		 WHERE c.DeviceId = a.id AND c.LoggedAt > @cutoff
+		   AND c.ErrorLog NOT LIKE '[[]METRICKIT]%') AS sessions,
 		(SELECT COUNT(*) FROM HC.ClientErrorLog c WITH (NOLOCK)
 		 WHERE c.DeviceId = a.id AND c.LoggedAt > @cutoff
 		   AND c.ErrorLog LIKE '%[[]METRICS]%') AS sessionsWithMetrics
@@ -104,8 +107,12 @@ BEGIN TRY
 		FROM HC.ClientErrorLog c WITH (NOLOCK)
 		INNER JOIN @appDevices a ON a.id = c.DeviceId
 		WHERE c.LoggedAt > @cutoff
+		  -- launches, plus a MetricKit row only when it carries a diagnostic
+		  -- (crash / hang); routine daily metric payloads are not sessions
+		  AND (c.ErrorLog NOT LIKE '[[]METRICKIT]%' OR HC6.ClientLogAppError(c.ErrorLog) IS NOT NULL)
 	)
 	SELECT TOP 60
+		CASE WHEN S.ErrorLog LIKE '[[]METRICKIT]%' THEN 'diagnostic' ELSE 'session' END AS kind,
 		-- the log's first entry timestamp: when the session started, phone-local
 		CASE WHEN LEFT(S.ErrorLog, 1) = '[' AND CHARINDEX(']', S.ErrorLog) BETWEEN 20 AND 40
 			THEN SUBSTRING(S.ErrorLog, 2, CHARINDEX(']', S.ErrorLog) - 2) END AS sessionStart,
