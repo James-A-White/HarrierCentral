@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getCategoryDetail2",
-  "version": "1.0.0",
-  "description": "Retrieves activity feed data for the admin portal dashboard. Returns raw typed data columns for one of 10 categories: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption. Each category returns typed columns specific to its data. Uses a time window of @days days (default 7; if 0, uses 60 minutes). HC6 removes the HC5 header metadata rowset entirely — portal is responsible for all presentation. Uses READ UNCOMMITTED isolation.",
+  "version": "1.1.0",
+  "description": "Retrieves activity feed data for the admin portal dashboard. Returns raw typed data columns for one of 11 categories: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=Push Notification Log, 9=App Errors (client session logs), 100=Version Adoption. Each category returns typed columns specific to its data. Uses a time window of @days days (default 7; if 0, uses 60 minutes). HC6 removes the HC5 header metadata rowset entirely — portal is responsible for all presentation. Uses READ UNCOMMITTED isolation.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Required. Category to retrieve: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption. NULL returns an error."
+      "description": "Required. Category to retrieve: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=Push Notification Log, 9=App Errors (client session logs), 100=Version Adoption. NULL returns an error."
     },
     {
       "name": "days",
@@ -149,6 +149,7 @@
           "name": "Errors",
           "columns": [
             { "name": "updatedAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "When the error was last updated from HC.ErrorLog.updatedAt" },
+            { "name": "hcVersion", "type": "NVARCHAR(250)", "nullable": false, "description": "App build that made the failing call, from HC.ErrorLog.HcVersion — 'X.Y.Z+build' where the SP stamped it via HC6.DeviceHcVersion (from 2026-09-09); older rows hold HC5 formats or a placeholder such as '<unknown>'" },
             { "name": "errorDescription", "type": "NVARCHAR(2500)", "nullable": true, "description": "Error description from HC.ErrorLog.ErrorDescription" },
             { "name": "displayName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher's display name (LEFT JOIN on userId). NULL if no matching hasher." },
             { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "User ID from HC.ErrorLog.userId" },
@@ -165,6 +166,18 @@
             { "name": "logMessage", "type": "NVARCHAR(255)", "nullable": false, "description": "Log message from LOG.GeneralLog.Message" },
             { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Kennel name (LEFT JOIN via Event.KennelId). NULL if no matching event or kennel." },
             { "name": "eventName", "type": "NVARCHAR(250)", "nullable": true, "description": "Event name from HC.Event (LEFT JOIN via PublicEventId = StrParam1). NULL if no matching event." }
+          ]
+        },
+        "9": {
+          "name": "App Errors",
+          "description": "One row per uploaded client session that HC6.ClientLogAppError classes as an app error (uncaught Dart exception, non-transport Flutter framework error, or MetricKit crash/hang). Same definition as the 'App Error' row in hcportal_getUsageData.",
+          "columns": [
+            { "name": "loggedAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "When the session log was uploaded (one boot after the session), from HC.ClientErrorLog.LoggedAt" },
+            { "name": "hcVersion", "type": "NVARCHAR(51)", "nullable": false, "description": "'X.Y.Z+build' that WROTE the log (AppVersion/BuildNumber); falls back to the device's current build for rows before 3.0.13, which can be one release too new; '' if neither is known" },
+            { "name": "displayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher on the device (HC.Device.UserId → HC.Hasher), '' if unknown" },
+            { "name": "error", "type": "NVARCHAR(300)", "nullable": false, "description": "The first qualifying error line of the session, e.g. [ERROR][ASYNC] type 'EnumFollowType' is not a subtype of type 'int', or 'MetricKit crash'" },
+            { "name": "errorLines", "type": "INT", "nullable": false, "description": "How many [ERROR] lines of any kind the session log holds" },
+            { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ClientErrorLog.DeviceId, for pulling the full log" }
           ]
         },
         "100": {
@@ -187,7 +200,7 @@
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning",
-    "Never change the meaning of categoryId values (0-8, 100)",
+    "Never change the meaning of categoryId values (0-9, 100)",
     "Never change the column shape of any category without updating all portal callers",
     "Never restore the HC5 header metadata rowset (col1-col6) — callers have been updated to expect raw typed columns"
   ]

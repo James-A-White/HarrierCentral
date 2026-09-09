@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getUsageData",
-  "version": "1.0.0",
-  "description": "Returns comprehensive platform usage statistics for the HC admin portal dashboard. Returns 5 rowsets: app version distribution (iOS vs Android), integration job status, usage metrics across data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error), recent login details, and recently updated/active events.",
+  "version": "1.1.0",
+  "description": "Returns comprehensive platform usage statistics for the HC admin portal dashboard. Returns 5 rowsets: app version distribution (iOS vs Android), integration job status, usage metrics across data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error, Push, App Error), recent login details, and recently updated/active events.",
   "parameters": [
     {
       "name": "deviceId",
@@ -166,13 +166,13 @@
     {
       "index": 3,
       "name": "UsageStatistics",
-      "description": "Usage metrics for 8 data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error) across multiple time windows. Rows ordered by id (0-7). Counts SUM CASE expressions so all count columns can be 0 but are not NULL in practice.",
+      "description": "Usage metrics for 10 data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error, Push, App Error) across multiple time windows. Rows ordered by id (0-9). 'App Error' (id 9, added 2026-09-09) counts HC.ClientErrorLog sessions that HC6.ClientLogAppError classes as an app error; the portal colours it like 'Error' (higher is worse). Counts SUM CASE expressions so all count columns can be 0 but are not NULL in practice.",
       "columns": [
         {
           "name": "dataType",
           "type": "NVARCHAR",
           "nullable": false,
-          "description": "Type of data: 'Account', 'Activity', 'Event', 'Kennel', 'Login', 'Payment', 'Portal', or 'Error'"
+          "description": "Type of data: 'Account', 'Activity', 'Event', 'Kennel', 'Login', 'Payment', 'Portal', 'Error', 'Push', or 'App Error'"
         },
         {
           "name": "id",
@@ -390,7 +390,7 @@
     "Never change a parameter type",
     "Never change a sentinel value meaning (e.g. isIphone -1 = NULL DeviceType)",
     "Never change the dataType string values in UsageStatistics rowset",
-    "Never change the id sort order values (0-7) in UsageStatistics rowset",
+    "Never change the id sort order values (0-9) in UsageStatistics rowset — append only",
     "Never change the highlight priority values (0-3) in LoginInformation rowset without updating portal UI",
     "Never change the hardcoded excluded user GUIDs without coordinating with callers"
   ]
