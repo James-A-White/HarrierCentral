@@ -233,7 +233,7 @@ The run is the atom of the whole platform. Creating one, finding it, getting to 
 |---|---|---|
 | `E3.F6.S1` | As a **Kennel HC Admin**, I want our runs pushed to the club's Google Calendar so that members who live in their calendar still see them. | `Shipped` |
 | `E3.F6.S2` | As a **Hasher**, I want to subscribe to a kennel's runs as a feed so that they appear in my own calendar automatically. | `Backlog` |
-| `E3.F3.S6` | As a **Hasher**, I want a past run's card to show whether it has a PackTrack track, photos, chat and down-downs so that I can tell which runs have something to look at without opening each one. | `Building` |
+| `E3.F3.S6` | As a **Hasher**, I want a past run's card to show whether it has a PackTrack track, photos, chat and down-downs so that I can tell which runs have something to look at without opening each one. | `Shipped` |
 
 ---
 
@@ -358,7 +358,7 @@ Recording where the pack went and playing it back. Tracks live in Azure Table St
 |---|---|---|
 | `E5.F6.S1` | As a **Kennel HC Admin**, I want to trim the start and end of a recorded track so that the drive to the pub is not part of the trail. | `Shipped` |
 | `E5.F6.S2` | As a **Kennel HC Admin**, I want to delete a track entirely so that a mis-recorded trail can be removed. | `Shipped` |
-| `E5.F6.S3` | As a **Platform Admin**, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage. `HC.EventTrack`, one row per tracked run, written by StorePositions per batch and backfilled from Table Storage; the HEM per-hasher flag in `docs/packtrack_in_database_plan.md` remains for later. | `Building` |
+| `E5.F6.S3` | As a **Platform Admin**, I want to know from SQL which runs have tracks so that reporting does not require walking partition keys in Table Storage. `HC.EventTrack`, one row per tracked run, written by StorePositions per batch and backfilled from Table Storage; the HEM per-hasher flag in `docs/packtrack_in_database_plan.md` remains for later. | `Shipped` |
 | `E5.F6.S4` | As a **Hasher**, I want my track stored in compressed form against my attendance record so that my trail survives independently of the position store. **⚠ Known gap:** `HC.HasherEventMap` has no such column — designed in `docs/packtrack_in_database_plan.md`, not started | `Next` |
 | `E5.F6.S5` | As a **Platform Admin**, I want the 709 legacy `PHO::` photo points removed from the position store once no shipped client reads pins from them, so that a photo lives only on its own row. **Due 2026-12-09**, after app ≤3.0.15 and web ≤0.21.44 are out of production — issue #336 has the check and the deletion path. | `Next` |
 
