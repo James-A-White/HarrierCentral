@@ -5,15 +5,41 @@
 > the read-only counterpart to `/hc-debugging` (which covers how logs get
 > *onto* the server). Everything here is a query; nothing here changes state.
 
-The system has no dashboard and no alerting. Monitoring means running the
-sweep below against the production database and reading the result with the
-interpretation rules in this file. The sweep is deliberately cheap enough to
-run after every release and again a day or two later, when the logs have
+There is no alerting. There are two ways to look: the portal's **Usage Data**
+dashboard for the at-a-glance view, and the **log sweep** below for anything
+the dashboard cannot see. Both are read-only. The sweep is cheap enough to run
+after every release and again a day or two later, when the client logs have
 actually arrived.
 
 ---
 
-## The one command
+## The dashboard first — portal › Usage Data
+
+`portal/lib/admin_pages/usage_data_page/`, fed by `hcportal_getUsageData` and
+drilled into by `hcportal_getCategoryDetail2`. Open it before running anything.
+
+| Panel | What it shows | Source |
+|---|---|---|
+| Version tiles (right) | Users per build over the last **14 days**, latest login per user, split iOS / not-iOS | `HC.LaunchAndLogin` |
+| Activity grid | Hour / day / week / month counts with the previous period underneath; green = better than last period. The **Error** row is coloured the other way round | `HC.ErrorLog` for Error; other tables per row |
+| Error drill-down (tap the row) | Every server-side error in the period with proc name and the hasher it resolved to | `HC.ErrorLog` |
+| Login list (left) | Most recent logins, with old→new version and platform | `HC.LaunchAndLogin` |
+| Integration cards | External data jobs (read / errors / kennels nice / naughty) | `HC.IntegrationJob` |
+
+**What the dashboard cannot tell you.** Its Error row and drill-down are
+`HC.ErrorLog` only, so it sees exactly what the stored procedures chose to log.
+It does not read `HC.ClientErrorLog` at all: no Dart exceptions, no MetricKit,
+no client-side timeouts, and nothing about a 500 that died in the API shim.
+That is the gap the sweep fills. A green Error row is necessary for "healthy",
+not sufficient.
+
+The version tiles are the better adoption number. They count *users who
+logged in during the last 14 days*, whereas the sweep's section 1 counts
+device rows by their current version and includes stale devices.
+
+---
+
+## The sweep — what the dashboard cannot see
 
 ```bash
 ./tools/log_sweep.sh [SINCE] [OUT_DIR]     # e.g. ./tools/log_sweep.sh 2026-09-07
@@ -113,6 +139,8 @@ reconstructed; a log full of them is a busy user, not a problem.
 
 A release is healthy when, over the two or three days after it ships:
 
+0. The dashboard's Error row is flat or green, and its drill-down shows only
+   the usual residents.
 1. Section 2 has nothing new in the `ProcName`/`ErrorName` pairs — the usual
    residents are `Duplicate email` on `hcapp_addEditUser` and the occasional
    `Invalid access token` (a phone with the wrong time).
@@ -171,6 +199,8 @@ name, despite its name.
 
 ## Cadence
 
+- **Any time:** glance at Usage Data. Error row up and red, or a build tile
+  that is not growing, is the cue to run the sweep.
 - **Day of release:** run the sweep once for adoption and server errors. Client
   logs will be nearly empty — they arrive one boot late.
 - **Day +1 and +2:** run it again. This is when the real client signal lands.
