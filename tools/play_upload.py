@@ -29,6 +29,7 @@ google-api-python-client — run the script directly, not via bare python3.
 """
 
 import argparse
+import os
 import sys
 
 from google.oauth2 import service_account
@@ -45,7 +46,20 @@ def service():
     creds = service_account.Credentials.from_service_account_file(
         KEY_PATH, scopes=SCOPES
     )
-    return build("androidpublisher", "v3", credentials=creds)
+    # The client library's default socket timeout is 60 s, which an 8 MB
+    # chunk exceeds on a slow uplink (two read timeouts on 2026-09-09).
+    # A generous per-read timeout plus smaller chunks and per-chunk retries
+    # make the 120 MB bundle upload survive a poor connection.
+    # build_http() is the library's own factory: it also removes 308 from
+    # httplib2's redirect codes, which resumable uploads use to mean
+    # "continue" — a plain httplib2.Http() turns every chunk into
+    # "Redirected but the response is missing a Location: header".
+    from google_auth_httplib2 import AuthorizedHttp
+    from googleapiclient.http import build_http
+
+    http = build_http()
+    http.timeout = 600
+    return build("androidpublisher", "v3", http=AuthorizedHttp(creds, http=http))
 
 
 def validate() -> int:
@@ -64,7 +78,17 @@ def validate() -> int:
     return 0
 
 
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 def upload(aab: str, track: str, notes: str | None) -> int:
+    if not os.path.exists(aab):
+        candidate = os.path.join(REPO_ROOT, aab)
+        if os.path.exists(candidate):
+            aab = candidate
+        else:
+            print(f"ERROR: bundle not found: {aab} (cwd {os.getcwd()})")
+            return 2
     svc = service()
     edit_id = svc.edits().insert(packageName=PACKAGE, body={}).execute()["id"]
     print(f"edit {edit_id} opened; uploading {aab} …")
@@ -72,7 +96,7 @@ def upload(aab: str, track: str, notes: str | None) -> int:
     media = MediaFileUpload(
         aab,
         mimetype="application/octet-stream",
-        chunksize=8 * 1024 * 1024,
+        chunksize=4 * 1024 * 1024,
         resumable=True,
     )
     request = (
@@ -82,7 +106,7 @@ def upload(aab: str, track: str, notes: str | None) -> int:
     )
     response = None
     while response is None:
-        status, response = request.next_chunk()
+        status, response = request.next_chunk(num_retries=5)
         if status:
             print(f"  {int(status.progress() * 100)}%", flush=True)
     version_code = response["versionCode"]
