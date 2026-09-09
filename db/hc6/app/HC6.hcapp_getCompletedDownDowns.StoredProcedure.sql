@@ -8,8 +8,15 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getCompletedDownDowns]
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_getCompletedDownDowns
--- Description: Returns all completed (IsDone=true, IsCancelled=false)
---   DownDown charges for a run. Visible to any member of the kennel; a
+-- Description: Returns the DownDown charges a member may see for a run.
+--   While the run is upcoming or under way (started less than six hours
+--   ago — the app's own "past" rule, kRunBecomesPastAfter) that is the
+--   completed ones only (IsDone=1), so the circle keeps its surprises.
+--   Once the run is past, every charge that was not cancelled is returned,
+--   done or not: a charge nobody marked done is still part of that run's
+--   record, and before 2026-09-10 six of the eight runs with charges showed
+--   NOTHING here because none had been marked done (E7.F1.S5).
+--   Visible to any member of the kennel; a
 --   non-member gets EMPTY rowsets (no history), not an error — viewing a run for
 --   a kennel you don't belong to is normal, not an error condition.
 --   Two rowsets:
@@ -22,13 +29,15 @@ AS
 --   @kennelId    - Kennel that owns the event
 --   @eventId     - Event to fetch completed DownDowns for
 -- Returns:
---   On success (rowset 0): DownDown rows (isDone=1) ordered by createdAt
+--   On success (rowset 0): DownDown rows ordered by createdAt (isDone tells
+--                          which are pending on a past run)
 --   On success (rowset 1): DownDownHasher rows for those charges
 --   On error  (rowset 0): { success=0, errorCode, errorType }
 --   On error  (rowset 1): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-06-09
 -- HC5 Source: None — new feature
+-- Version: 1.1.0 (2026-09-10) — pending charges included once the run is past
 -- =====================================================================
 SET NOCOUNT ON;
 
@@ -97,7 +106,17 @@ DECLARE @isMember SMALLINT =
           AND removed  = 0
     ) THEN 1 ELSE 0 END;
 
--- Rowset 0: Completed DownDown charges
+-- A run is "past" six hours after it starts — the same line the app's run
+-- list draws (isRunPast / query_runs.dart). Pending charges are only shown
+-- on that side of it.
+DECLARE @runIsPast SMALLINT =
+    CASE WHEN EXISTS (
+        SELECT 1 FROM HC.Event
+        WHERE id = @eventId
+          AND EventStartDateTimeGmt < DATEADD(HOUR, -6, SYSUTCDATETIME())
+    ) THEN 1 ELSE 0 END;
+
+-- Rowset 0: DownDown charges (completed; plus pending once the run is past)
 SELECT
     dd.id              AS downDownId,
     dd.ChargeText      AS chargeText,
@@ -114,7 +133,7 @@ FROM HC.DownDowns dd
 INNER JOIN HC.Hasher h ON h.id = dd.CreatedByUserId
 WHERE dd.EventId    = @eventId
   AND dd.KennelId   = @kennelId
-  AND dd.IsDone     = 1
+  AND (dd.IsDone    = 1 OR @runIsPast = 1)
   AND dd.IsCancelled = 0
   AND @isMember     = 1
 ORDER BY dd.CreatedAt ASC;
@@ -129,7 +148,7 @@ INNER JOIN HC.Hasher h ON h.id = ddh.HasherId
 INNER JOIN HC.DownDowns dd ON dd.id = ddh.DownDownId
 WHERE dd.EventId    = @eventId
   AND dd.KennelId   = @kennelId
-  AND dd.IsDone     = 1
+  AND (dd.IsDone    = 1 OR @runIsPast = 1)
   AND dd.IsCancelled = 0
   AND @isMember     = 1;
 

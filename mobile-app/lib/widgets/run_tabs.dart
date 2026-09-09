@@ -4,6 +4,7 @@
 
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
+import 'package:harrier_central/pages/live_run_pages/live_run_charges_page.dart';
 import 'package:harrier_central/widgets/run_photo_gallery.dart';
 import 'package:harrier_central/widgets/hc_badges.dart' as badges;
 import 'package:eventide/eventide.dart';
@@ -503,6 +504,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             _DownDownsHistoryView(
               kennelId: widget.futureRun.kennel.kennelId,
               eventId: widget.futureRun.event.eventId,
+              eventName: widget.futureRun.event.eventName,
+              kennelSlug: widget.futureRun.kennel.kennelUniqueShortName,
+              eventNumber: widget.futureRun.event.eventNumber,
+              isPast: isRunPast(widget.futureRun),
             ),
         ],
       ),
@@ -2976,13 +2981,30 @@ class _HashTrashViewState extends State<_HashTrashView> {
   }
 }
 
-// ── Completed charges history (visible to kennel members on past runs) ─────────
+// ── Charges history (visible to kennel members) ───────────────────────────────
+//
+// Completed charges while the run is upcoming or under way; every charge
+// that was not cancelled once the run is past — the server draws that line
+// (hcapp_getCompletedDownDowns, six hours after the start), the pending ones
+// are marked here. Those who can manage down-downs get a button into the
+// charges page, so a past run's circle can still be recorded and marked done.
 
 class _DownDownsHistoryView extends StatefulWidget {
-  const _DownDownsHistoryView({required this.kennelId, required this.eventId});
+  const _DownDownsHistoryView({
+    required this.kennelId,
+    required this.eventId,
+    required this.eventName,
+    required this.kennelSlug,
+    required this.eventNumber,
+    required this.isPast,
+  });
 
   final String kennelId;
   final String eventId;
+  final String eventName;
+  final String kennelSlug;
+  final int eventNumber;
+  final bool isPast;
 
   @override
   State<_DownDownsHistoryView> createState() => _DownDownsHistoryViewState();
@@ -2991,6 +3013,7 @@ class _DownDownsHistoryView extends StatefulWidget {
 class _DownDownsHistoryViewState extends State<_DownDownsHistoryView> {
   List<DownDownModel> _charges = [];
   bool _loaded = false;
+  bool _canManage = false;
 
   @override
   void initState() {
@@ -3001,6 +3024,13 @@ class _DownDownsHistoryViewState extends State<_DownDownsHistoryView> {
   Future<void> _load() async {
     if (!Utilities.isConnected()) return;
     try {
+      final kennelAgg = await QueryKennels.getSingleKennel(widget.kennelId);
+      _canManage = canAccessFeature(
+        KennelFeature.manageDownDowns,
+        appAccessFlags: kennelAgg?.hkm?.appAccessFlags ?? 0,
+        mismanagementRoles: kennelAgg?.hkm?.mismanagementRoles ?? 0,
+        kennelOverrideJson: kennelAgg?.kennel.permissionOverrideJson,
+      );
       final result = await RunContentService().getCompletedDownDowns(
         kennelId: widget.kennelId,
         eventId: widget.eventId,
@@ -3021,9 +3051,32 @@ class _DownDownsHistoryViewState extends State<_DownDownsHistoryView> {
     }
   }
 
+  Future<void> _openChargesPage() async {
+    if (!Utilities.isConnected(showDialog: true)) return;
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => LiveRunChargesPage(
+          kennelId: widget.kennelId,
+          eventId: widget.eventId,
+          eventName: widget.eventName,
+          kennelSlug: widget.kennelSlug,
+          eventNumber: widget.eventNumber,
+        ),
+      ),
+    );
+    // Charges may have been added, marked done or cancelled.
+    RunActivityService.invalidate(widget.eventId);
+    await _load();
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (!_loaded || _charges.isEmpty) return const SizedBox.shrink();
+    if (!_loaded) return const SizedBox.shrink();
+    // A manager sees the section on a past run even when it is empty — that
+    // is the way in to record a circle nobody wrote down on the night.
+    final bool showManage = _canManage && widget.isPast;
+    if (_charges.isEmpty && !showManage) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3040,10 +3093,26 @@ class _DownDownsHistoryViewState extends State<_DownDownsHistoryView> {
             children: [
               const Icon(MaterialCommunityIcons.gavel, color: Colors.yellow, size: 20),
               const SizedBox(width: 8),
-              Text('Down Downs', style: ts_headingLarge.copyWith(color: Colors.yellow)),
+              Expanded(
+                child: Text('Down Downs', style: ts_headingLarge.copyWith(color: Colors.yellow)),
+              ),
+              if (showManage)
+                TextButton.icon(
+                  onPressed: _openChargesPage,
+                  icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.white),
+                  label: const Text('Manage', style: TextStyle(color: Colors.white)),
+                ),
             ],
           ),
         ),
+        if (_charges.isEmpty)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Text(
+              'No down downs recorded for this run.',
+              style: TextStyle(fontSize: 14, color: Colors.white70, fontStyle: FontStyle.italic),
+            ),
+          ),
         for (final dd in _charges)
           _DownDownHistoryTile(dd: dd),
         const SizedBox(height: 16),
@@ -3070,9 +3139,27 @@ class _DownDownHistoryTile extends StatelessWidget {
               names,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.yellow),
             ),
-          Text(
-            'by ${dd.createdByDisplayName}',
-            style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.yellow),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'by ${dd.createdByDisplayName}',
+                  style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.yellow),
+                ),
+              ),
+              if (!dd.isDone)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white54),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'Not marked done',
+                    style: TextStyle(fontSize: 11, color: Colors.white70),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 4),
           Text(dd.chargeText, style: const TextStyle(fontSize: 14, color: Colors.white)),

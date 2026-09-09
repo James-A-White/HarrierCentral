@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getCompletedDownDowns",
-  "version": "1.0.0",
-  "description": "Returns only completed (IsDone=1, IsCancelled=0) DownDown charges for a run, with each charge's list of named hashers. Visible to any kennel member (non-removed HasherKennelMap row). Returns two result rowsets on success. Intended for the run detail history view — non-admin users see only what was delivered. Read-only SP — no success envelope. New feature — no HC5 equivalent.",
+  "version": "1.1.0",
+  "description": "Returns the DownDown charges a member may see for a run, with each charge's list of named hashers: completed ones (IsDone=1, IsCancelled=0) while the run is upcoming or under way, and every non-cancelled charge — pending included, isDone says which — once the run started more than six hours ago (the app's own past-run rule). Visible to any kennel member (non-removed HasherKennelMap row). Returns two result rowsets on success. Intended for the run detail history view — non-admin users see only what was delivered. Read-only SP — no success envelope. New feature — no HC5 equivalent.",
   "parameters": [
     {
       "name": "deviceId",
