@@ -1,3 +1,6 @@
+2.0.70+705
+    • Device Health: app devices only, every session newest first as expandable cards, the latest open
+
 2.0.69+704
     • Device Health tab on the user dialog: per-session CPU, memory, network, GPS, battery and errors, with a two-hour sparkline
     • Fed by the new hcportal_getDeviceHealth SP; needs sessions from app 3.0.14 before it has anything to show

@@ -2,6 +2,15 @@
 
 ---
 
+## 2.0.70+705 (2026-09-09)
+
+### Fixes
+- **Device Health shows the sessions.** The device strip drew a chip for
+  every device row a user had ever registered — browsers, simulators,
+  reinstalls — and pushed the session list out of sight. It now lists only
+  app devices with recent sessions, and every session from them newest
+  first, the latest open, with the metrics inline where the build wrote them.
+
 ## 2.0.69+704 (2026-09-09)
 
 ### New Features
