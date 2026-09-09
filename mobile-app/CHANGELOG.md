@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.14+1329 (2026-09-09)
+
+### Improvements
+- **Every harvested session log now measures the phone as well as the app.**
+  A metrics line at start, on every background or foreground switch, and
+  every 15 minutes: CPU time and share, memory and headroom, disk footprint,
+  minutes the location stream spent in each cost tier, the app's own network
+  bytes and latency, and the device's battery and drain over the unplugged
+  stretch. On Android, the process's total network bytes too.
+- **The two hours before any kill are kept at one-minute resolution.** A
+  compact ring of the last 120 minutes and a timestamped record of each
+  gauge's worst value are uploaded with the next session, bounded so they
+  never displace the run breadcrumbs.
+
 ## 3.0.13+1328 (2026-09-09)
 
 ### Fixes
