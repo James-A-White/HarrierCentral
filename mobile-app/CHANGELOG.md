@@ -1,5 +1,34 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.17+1332 (2026-09-10)
+
+### Fixes
+- **Trimming a run you were not on no longer lists you as a runner.** The
+  trim's start and end marks are stored under your name; they no longer
+  count as a track anywhere.
+- **Review Photos counts as you decide.** The status chips and the Pending
+  and Reviewed tabs move with each choice instead of freezing until you
+  leave the page.
+- **Review Photos no longer refetches every photo.** The carousel, the grid
+  and the look-ahead now share one disk cache.
+- **Waking the phone no longer reports a server timeout.** A request that
+  was asleep with the app is retried quietly with a fresh token.
+
+### New Features
+- **Past runs show what they have.** A row of icons along the bottom of a
+  finished run's card: a PackTrack track, photos, trail chat and down-downs,
+  with counts.
+- **The trim control is on the run-detail map too**, and the compass joins
+  the control column on both maps, so the two columns now match.
+- **The RSVP icon is back on past runs** as the record of attending or
+  haring, with the same graphics as an upcoming run. It is not a control.
+
+### Improvements
+- **Featured photos keep their shape.** One strip height, each photo at its
+  own width, nothing cropped.
+- **Thumbnails are a tenth of the size.** Grids, strips and map markers are
+  served resized by the website; full-size photos still come from storage.
+
 ## 3.0.16+1331 (2026-09-09)
 
 ### Fixes

@@ -2,6 +2,20 @@
 
 ---
 
+## 2.0.72+707 (2026-09-10)
+
+### Fixes
+- **Device Health keeps every session's graph.** It was only returned for
+  the newest session per device, so a card lost its graph when a later one
+  uploaded. Error lines are listed under their count, and a merged retried
+  upload no longer shows the next session's start line as this one's summary.
+- **A session is an app launch.** MetricKit payloads are no longer counted;
+  the chip separates launches on this build from launches on this phone.
+
+### New Features
+- **Open, foreground and background time, and battery start → end** on
+  every session card, with the drain rate over the unplugged stretch.
+
 ## 2.0.71+706 (2026-09-09)
 
 ### Improvements

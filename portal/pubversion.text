@@ -1,3 +1,8 @@
+2.0.72+707
+    • Device Health: every session keeps its graph; error lines listed; correct summary on merged uploads
+    • Device Health: open/foreground/background time and battery start → end per session
+    • Device Health: sessions are launches (MetricKit rows excluded); launches on this build vs on this phone
+
 2.0.71+706
     • Device Health: session headline shows background and sleep counts
 

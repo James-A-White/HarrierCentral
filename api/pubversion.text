@@ -1,3 +1,6 @@
+1.0.38+36
+    • StorePositions records each tracked run in HC.EventTrack — one MERGE per accepted batch — so "does this run have a track" is a SQL question (E5.F6.S3). Best-effort; a SQL hiccup never fails a store.
+
 1.0.37+35
     • EmailInviteCode: reports the outcome in an X-Invite-Code-Sent header. The body is unchanged (UseInviteCodePage shows it verbatim), but it is prose, and the app had been deciding success by testing it against ^[A-Za-z]{6}$ — the bare-code shape this endpoint stopped returning. That never matched, so anyone whose email was already registered was always told the send had failed, was shown the SUCCESS text as the reason, and was never routed to the code-entry screen. The invite-code recovery path was unusable.
 
