@@ -798,7 +798,7 @@ The app is used in fields with no signal by people who will not try twice. Every
 | `E14.G1.R2` | Common tables accumulate deltas indefinitely and are never wiped outside a full boot resync. | The sync lifecycle; kennel and event domains are single-tenant and wiped on switch. |
 | `E14.G1.R3` | Overlapping syncs cannot double-insert the same row. | An async serialiser around sync entry points. |
 | `E14.G1.R4` | Paged replication is deterministic under concurrent writes. | The `updatedAtBias` tiebreaker on synced tables. |
-| `E14.G1.R5` | Every locally cached row is uniquely keyed on the server primary key. | Planned — unique constraints plus a version bump and full reload; requires insert-or-replace first. |
+| `E14.G1.R5` | Every locally cached row is uniquely keyed on the server primary key, so a resync running concurrently with another sync, or with a write procedure that returns the same rows, cannot insert a duplicate. | **3.1 track.** Planned — a UNIQUE constraint on the remote id in every local table, plus a `DB_VERSION` bump of 10 so the reload recreates the tables and clears every device's existing duplicates; the sync writers must switch to insert-or-replace first. The 2026-08-16 async serialiser closed the sync-vs-sync path only; write procedures still return sync rowsets outside it. |
 | `E14.G1.R6` | Work done offline is queued and completed later, never silently discarded. | The payment outbox, the photo upload queue and the GPS point buffer. |
 
 ### E14.G2 · Error handling
