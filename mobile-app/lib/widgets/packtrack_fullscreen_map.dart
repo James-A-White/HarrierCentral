@@ -217,8 +217,9 @@ class PackTrackFullScreenMap extends StatelessWidget {
     // Own controller tag so this map doesn't fight the embedded map's MapController.
     final mapTag = '${run.event.eventId}-fullscreen';
 
-    // Admin trim editor, targeting THIS fullscreen map's controller. Trimming
-    // lives only here (the fullscreen view has room to spread the controls out).
+    // Admin trim editor, targeting THIS fullscreen map's controller. The
+    // run-detail map has its own, targeting its own controller — same button,
+    // same bar, just laid out compactly there.
     final trimTag = 'trim-$mapTag';
     final trimController =
         Get.isRegistered<PackTrackTrimController>(tag: trimTag)

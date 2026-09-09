@@ -1724,6 +1724,40 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           await _launchMaps(widget.futureRun);
                         },
                       ),
+                      // Admin trim bar, as on the full-screen route: hidden
+                      // until the scissors button starts editing, then sits
+                      // just above the playback panel, whose laid-out height
+                      // the map controller publishes.
+                      Positioned.fill(
+                        child: Obx(() {
+                            final String tag =
+                                widget.futureRun.event.eventId;
+                            final double panel =
+                                Get.isRegistered<RunTrackerMapController>(
+                                  tag: tag,
+                                )
+                                ? Get.find<RunTrackerMapController>(tag: tag)
+                                      .playbackPanelHeight
+                                      .value
+                                : 0.0;
+                            final double clearance =
+                                panel > 0 ? panel + 12 : 250;
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                left: 12,
+                                right: 12,
+                                bottom: clearance,
+                              ),
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: TrimEditorOverlay(
+                                  trimController: _trimController(),
+                                  showCollapsedPill: false,
+                                ),
+                              ),
+                            );
+                          }),
+                      ),
                       if (widget.futureRun.extensions.isMapAndDistanceValid ==
                           0) ...<Widget>[
                         Positioned(
@@ -1951,6 +1985,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     final RunTrackerMapController controller =
         Get.find<RunTrackerMapController>(tag: tag);
 
+    final PackTrackTrimController trimController = _trimController();
+
     return Obx(() {
       if (!controller.hasRecordedTrack) return const SizedBox.shrink();
       return Column(
@@ -1962,9 +1998,32 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             tooltip: 'Export GPX',
             onTap: () => unawaited(_exportOwnTrack()),
           ),
+          // Same control, same slot, same gate as the full-screen route.
+          if (trimController.isAdmin) ...<Widget>[
+            const SizedBox(height: 10.0),
+            MapOverlayButton(
+              tooltip: 'Trim run',
+              icon: Icons.content_cut,
+              onTap: trimController.toggleEditing,
+            ),
+          ],
         ],
       );
     });
+  }
+
+  /// The admin trim editor for THIS embedded map. Its own controller,
+  /// targeting the embedded map's controller (tag = eventId), so it and the
+  /// full-screen route's editor never fight over one MapController.
+  PackTrackTrimController _trimController() {
+    final String eventId = widget.futureRun.event.eventId;
+    final String trimTag = 'trim-$eventId';
+    return Get.isRegistered<PackTrackTrimController>(tag: trimTag)
+        ? Get.find<PackTrackTrimController>(tag: trimTag)
+        : Get.put(
+            PackTrackTrimController(run: widget.futureRun),
+            tag: trimTag,
+          );
   }
 
   /// The run-detail map creates its controller BELOW this widget, so both of
