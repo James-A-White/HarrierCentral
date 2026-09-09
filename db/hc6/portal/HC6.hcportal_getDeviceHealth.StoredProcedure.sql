@@ -18,14 +18,22 @@ AS
 -- Parameters: @deviceId, @accessToken (auth)
 --             @userId (user to query), @days (window, default 14)
 -- Returns:
---   Rowset 1 Devices:  deviceId, os, hcVersion, lastLogin, sessions,
---                      sessionsWithMetrics
---   Rowset 2 Sessions: loggedAt, deviceId, hcVersion, summary (text after
---                      the last '[METRICS] '), peaks (text after
---                      '[METRICS:PEAKS]'), ring (the [METRICS:RING] block,
---                      latest session per device only, else NULL),
---                      appError (HC6.ClientLogAppError), errorLines
---                      Newest first, TOP 60.
+--   Rowset 1 Devices:  the user's APP devices (iOS or Android — browser
+--                      rows from the portal are excluded) that uploaded at
+--                      least one session in the window. deviceId, os,
+--                      hcVersion, lastLogin, sessions, sessionsWithMetrics
+--   Rowset 2 Sessions: EVERY uploaded session from those devices, newest
+--                      first, TOP 100 — one row per app launch that was
+--                      harvested, whether or not it carried metrics.
+--                      sessionStart (the log's first timestamp, phone
+--                      local time), loggedAt (upload), deviceId, os,
+--                      hcVersion, summary (text after the last '[METRICS] ',
+--                      NULL when the build predates 3.0.14), peaks, ring
+--                      (latest session per device only), appError,
+--                      errorLines
+-- Changes:
+--   2026-09-09 - v1.1: device rows limited to app devices with sessions;
+--                session rows no longer require metrics; sessionStart added.
 -- Author: Harrier Central
 -- Created: 2026-09-09
 -- HC5 Source: none
@@ -54,40 +62,53 @@ BEGIN TRY
 
 	DECLARE @cutoff DATETIMEOFFSET(7) = DATEADD(DAY, -@days, SYSDATETIMEOFFSET());
 
-	-- =============================================
-	-- Rowset 1: the user's devices
-	-- =============================================
-	SELECT
-		d.id AS deviceId,
-		ISNULL(d.OperatingSystem, 'Android') AS os,
-		d.Version + '+' + d.BuildNumber AS hcVersion,
-		d.LastLogin AS lastLogin,
-		(SELECT COUNT(*) FROM HC.ClientErrorLog c WITH (NOLOCK)
-		 WHERE c.DeviceId = d.id AND c.LoggedAt > @cutoff) AS sessions,
-		(SELECT COUNT(*) FROM HC.ClientErrorLog c WITH (NOLOCK)
-		 WHERE c.DeviceId = d.id AND c.LoggedAt > @cutoff
-		   AND c.ErrorLog LIKE '%[[]METRICS]%') AS sessionsWithMetrics
+	-- App devices: the mobile app reports OperatingSystem 'iOS' or nothing
+	-- (Android sends no systemName); the portal reports its browser name.
+	-- IsMobile is not reliable for this (Safari on a phone sets it).
+	DECLARE @appDevices TABLE (id UNIQUEIDENTIFIER PRIMARY KEY, os NVARCHAR(50), hcVersion NVARCHAR(60), lastLogin DATETIMEOFFSET(7));
+	INSERT @appDevices (id, os, hcVersion, lastLogin)
+	SELECT d.id, ISNULL(d.OperatingSystem, 'Android'), d.Version + '+' + d.BuildNumber, d.LastLogin
 	FROM HC.Device d WITH (NOLOCK)
 	WHERE d.UserId = @userId AND d.removed = 0
-	ORDER BY d.LastLogin DESC;
+		AND (d.OperatingSystem IS NULL OR d.OperatingSystem = 'iOS')
+		AND EXISTS (SELECT 1 FROM HC.ClientErrorLog c WITH (NOLOCK)
+		            WHERE c.DeviceId = d.id AND c.LoggedAt > @cutoff);
 
 	-- =============================================
-	-- Rowset 2: sessions with metrics, newest first
+	-- Rowset 1: app devices with sessions in the window
+	-- =============================================
+	SELECT
+		a.id AS deviceId,
+		a.os,
+		a.hcVersion,
+		a.lastLogin,
+		(SELECT COUNT(*) FROM HC.ClientErrorLog c WITH (NOLOCK)
+		 WHERE c.DeviceId = a.id AND c.LoggedAt > @cutoff) AS sessions,
+		(SELECT COUNT(*) FROM HC.ClientErrorLog c WITH (NOLOCK)
+		 WHERE c.DeviceId = a.id AND c.LoggedAt > @cutoff
+		   AND c.ErrorLog LIKE '%[[]METRICS]%') AS sessionsWithMetrics
+	FROM @appDevices a
+	ORDER BY a.lastLogin DESC;
+
+	-- =============================================
+	-- Rowset 2: every harvested session, newest first
 	-- =============================================
 	;WITH S AS (
 		SELECT
-			c.Id, c.LoggedAt, c.DeviceId, c.ErrorLog,
-			COALESCE(c.AppVersion + '+' + c.BuildNumber, d.Version + '+' + d.BuildNumber, '') AS hcVersion,
+			c.Id, c.LoggedAt, c.DeviceId, c.ErrorLog, a.os,
+			COALESCE(c.AppVersion + '+' + c.BuildNumber, a.hcVersion, '') AS hcVersion,
 			ROW_NUMBER() OVER (PARTITION BY c.DeviceId ORDER BY c.LoggedAt DESC) AS rn
 		FROM HC.ClientErrorLog c WITH (NOLOCK)
-		INNER JOIN HC.Device d WITH (NOLOCK) ON d.id = c.DeviceId
-		WHERE d.UserId = @userId
-			AND c.LoggedAt > @cutoff
-			AND c.ErrorLog LIKE '%[[]METRICS%'
+		INNER JOIN @appDevices a ON a.id = c.DeviceId
+		WHERE c.LoggedAt > @cutoff
 	)
-	SELECT TOP 60
+	SELECT TOP 100
+		-- the log's first entry timestamp: when the session started, phone-local
+		CASE WHEN LEFT(S.ErrorLog, 1) = '[' AND CHARINDEX(']', S.ErrorLog) BETWEEN 20 AND 40
+			THEN SUBSTRING(S.ErrorLog, 2, CHARINDEX(']', S.ErrorLog) - 2) END AS sessionStart,
 		S.LoggedAt AS loggedAt,
 		S.DeviceId AS deviceId,
+		S.os,
 		S.hcVersion,
 		-- the LAST '[METRICS] ' line: the session's cumulative summary
 		CASE WHEN p.lastTag > 0

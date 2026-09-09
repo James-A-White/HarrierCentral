@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getDeviceHealth",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Per-device health for one user, for the Usage Data user tile. Extracts the [METRICS] instrumentation (app 3.0.14+) from the user's uploaded session logs in HC.ClientErrorLog: the last [METRICS] line per session, its [METRICS:PEAKS] line, and the [METRICS:RING] block for the latest session per device. The SP extracts lines; the portal parses key=value pairs, so new app fields need no SP change.",
   "parameters": [
     { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Portal device (auth)" },
@@ -15,7 +15,7 @@
         { "name": "Success", "type": "INT", "nullable": false, "description": "0" },
         { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Reason" }
       ] },
-    { "index": 0, "name": "Devices", "description": "The user's live devices, most recent login first.",
+    { "index": 0, "name": "Devices", "description": "The user's APP devices (OperatingSystem iOS or NULL — portal browser rows excluded) that uploaded at least one session in the window, most recent login first.",
       "columns": [
         { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.Device.id" },
         { "name": "os", "type": "NVARCHAR(50)", "nullable": false, "description": "HC.Device.OperatingSystem; NULL reads as 'Android' (the Android payload has no systemName)" },
@@ -24,12 +24,14 @@
         { "name": "sessions", "type": "INT", "nullable": false, "description": "Uploaded session logs in the window" },
         { "name": "sessionsWithMetrics", "type": "INT", "nullable": false, "description": "Of those, sessions carrying [METRICS] lines" }
       ] },
-    { "index": 1, "name": "Sessions", "description": "Up to 60 sessions with metrics across the user's devices, newest first.",
+    { "index": 1, "name": "Sessions", "description": "Up to 100 harvested sessions across those devices, newest first — one per app launch, with or without metrics.",
       "columns": [
+        { "name": "sessionStart", "type": "NVARCHAR(40)", "nullable": true, "description": "The log's first entry timestamp (ISO, phone-local): when the session began. NULL if the log does not start with a timestamped entry." },
         { "name": "loggedAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Upload time (one boot after the session)" },
         { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Which device" },
+        { "name": "os", "type": "NVARCHAR(50)", "nullable": false, "description": "'iOS' or 'Android'" },
         { "name": "hcVersion", "type": "NVARCHAR(51)", "nullable": false, "description": "Build that wrote the log (falls back to the device's current build for pre-3.0.13 rows)" },
-        { "name": "summary", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Text after the LAST '[METRICS] ' tag: the session's cumulative key=value summary (why up fg bg cpu cpu% rss peak pss avail db docs cache disk_free loc_* app_tx app_rx req fail lat_avg lat_max dev_rx dev_tx batt state Δ drain chg lpm therm)" },
+        { "name": "summary", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL when the session carried no metrics (build before 3.0.14). Otherwise the text after the LAST '[METRICS] ' tag: the session's cumulative key=value summary (why up fg bg cpu cpu% rss peak pss avail db docs cache disk_free loc_* app_tx app_rx req fail lat_avg lat_max dev_rx dev_tx batt state Δ drain chg lpm therm)" },
         { "name": "peaks", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Text after '[METRICS:PEAKS]': key=value@HH:MM:SS extremes (rss_max avail_min cpu%_max lat_max batt_min pss_max)" },
         { "name": "ring", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Latest session per device only: the [METRICS:RING] block from its tag up to the peaks line — header 'rows=N every=60s cols=…' then one CSV row per line. The trailing fragment is the peaks line's timestamp; callers drop any line starting with '['." },
         { "name": "appError", "type": "NVARCHAR(300)", "nullable": true, "description": "HC6.ClientLogAppError: first app-error line, or NULL" },

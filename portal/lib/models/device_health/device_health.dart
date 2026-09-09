@@ -38,8 +38,10 @@ class DeviceHealthDevice {
 
 class DeviceHealthSession {
   DeviceHealthSession({
+    required this.sessionStart,
     required this.loggedAt,
     required this.deviceId,
+    required this.os,
     required this.hcVersion,
     required this.summary,
     required this.peaks,
@@ -48,9 +50,18 @@ class DeviceHealthSession {
     required this.errorLines,
   });
 
+  /// When the session began, as the phone wrote it (its local clock, no
+  /// zone). Null when the log does not open with a timestamped entry.
+  final DateTime? sessionStart;
+
+  /// When the log was uploaded — one launch later.
   final DateTime loggedAt;
   final String deviceId;
+  final String os;
   final String hcVersion;
+
+  bool get isIos => os.toLowerCase().contains('ios');
+  bool get hasMetrics => summary.isNotEmpty;
 
   /// key → value from the session's last `[METRICS]` line.
   final Map<String, String> summary;
@@ -70,9 +81,11 @@ class DeviceHealthSession {
 
   factory DeviceHealthSession.fromJson(Map<String, dynamic> j) =>
       DeviceHealthSession(
+        sessionStart: DateTime.tryParse(j['sessionStart']?.toString() ?? ''),
         loggedAt: DateTime.tryParse(j['loggedAt']?.toString() ?? '') ??
             DateTime.fromMillisecondsSinceEpoch(0),
         deviceId: (j['deviceId'] as String? ?? '').toLowerCase(),
+        os: j['os'] as String? ?? '',
         hcVersion: j['hcVersion'] as String? ?? '',
         summary: parseKeyValues(j['summary'] as String?),
         peaks: parseKeyValues(j['peaks'] as String?),
