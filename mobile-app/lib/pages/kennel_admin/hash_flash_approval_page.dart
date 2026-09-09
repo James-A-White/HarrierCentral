@@ -142,14 +142,25 @@ class PhotoStatusCounts {
       pending + private + shared + runGallery + homeGallery + eventCover +
       deleted;
 
-  static PhotoStatusCounts from(List<KennelPendingPhoto> photos) {
+  /// Counts by EFFECTIVE status: the saved status, overridden by any decision
+  /// queued for the photo but not yet flushed. Reviewing is a queue of
+  /// decisions that only reaches the server when the page is left, so
+  /// counting the saved status alone left every chip frozen at its opening
+  /// value for the whole session.
+  static PhotoStatusCounts from(
+    List<KennelPendingPhoto> photos, {
+    Map<String, int> decisions = const <String, int>{},
+  }) {
     int pending = 0, private = 0, shared = 0, runGallery = 0,
         homeGallery = 0, eventCover = 0, deleted = 0;
     for (final p in photos) {
-      if (p.isDeleted) {
+      final int? action = decisions[p.photoId];
+      final bool willDelete = p.isDeleted ||
+          action == photoActionDelete;
+      if (willDelete) {
         deleted++;
       } else {
-        switch (p.status) {
+        switch (effectiveStatus(p, action)) {
           case 0: private++;
           case 1: pending++;
           case 2: shared++;
@@ -168,6 +179,15 @@ class PhotoStatusCounts {
       eventCover: eventCover,
       deleted: deleted,
     );
+  }
+
+  /// The Status a queued [action] will leave the photo with, or the saved one
+  /// when nothing is queued. Delete is a stamp, not a Status, and is handled
+  /// by the caller; Unfeature clears the flag and leaves the photo Public.
+  static int effectiveStatus(KennelPendingPhoto p, int? action) {
+    if (action == null) return p.status;
+    if (action == photoActionUnfeature) return 3;
+    return photoActionSpec(action)?.status ?? p.status;
   }
 }
 
@@ -252,7 +272,17 @@ class PhotoReviewController extends GetxController {
           ? photo.isDeleted
           : !photo.isDeleted && photo.status == photoActionSpec(action)?.status;
 
-  PhotoStatusCounts get counts => PhotoStatusCounts.from(allPhotos);
+  PhotoStatusCounts get counts =>
+      PhotoStatusCounts.from(allPhotos, decisions: decisions);
+
+  /// Tab counts by effective status: a photo with a queued decision has been
+  /// reviewed as far as the reviewer is concerned. The LISTS stay keyed on
+  /// the saved status on purpose — a decided photo leaving the Pending
+  /// carousel underneath the reviewer would make the deck jump on every tap.
+  int get effectivePendingCount => allPhotos
+      .where((p) => p.isPending && decisions[p.photoId] == null)
+      .length;
+  int get effectiveReviewedCount => allPhotos.length - effectivePendingCount;
 
   bool get hasQueuedChanges => _queue.isNotEmpty;
 
@@ -1152,8 +1182,8 @@ class _TabPills extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final active = controller.activeTab.value;
-      final pendingCount = controller.pendingPhotos.length;
-      final reviewedCount = controller.reviewedPhotos.length;
+      final pendingCount = controller.effectivePendingCount;
+      final reviewedCount = controller.effectiveReviewedCount;
 
       return Container(
         color: Colors.black38,
