@@ -1785,7 +1785,14 @@ class _ActivityIcons extends StatelessWidget {
           spacing: 14,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: <Widget>[
-            if (a.hasTrack) item(Icons.map_outlined, null, 'PackTrack recorded'),
+            if (a.hasTrack)
+              item(
+                Icons.map_outlined,
+                a.runners > 0 ? a.runners : null,
+                a.runners > 0
+                    ? 'PackTrack: ${a.runners} runner${a.runners == 1 ? '' : 's'}'
+                    : 'PackTrack recorded',
+              ),
             if (a.photos > 0)
               item(Icons.photo_library_outlined, a.photos, 'Photos'),
             if (a.messages > 0)

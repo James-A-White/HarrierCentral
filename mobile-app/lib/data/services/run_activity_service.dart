@@ -4,12 +4,18 @@ import 'package:harrier_central/imports.dart';
 class RunActivity {
   const RunActivity({
     required this.hasTrack,
+    this.runners = 0,
     required this.photos,
     required this.messages,
     required this.downDowns,
   });
 
   final bool hasTrack;
+
+  /// Hashers who recorded a track on the run (`HC.EventTrackRunner`). Zero
+  /// for a run tracked before that table existed whose backfill found no
+  /// runner rows — the icon then shows without a number.
+  final int runners;
   final int photos;
   final int messages;
   final int downDowns;
@@ -79,6 +85,7 @@ class RunActivityService {
           if (id == null) continue;
           got[normalizeUuid(id)] = RunActivity(
             hasTrack: (r['hasTrack'] as num?)?.toInt() == 1,
+            runners: (r['runnerCount'] as num?)?.toInt() ?? 0,
             photos: (r['photoCount'] as num?)?.toInt() ?? 0,
             messages: (r['messageCount'] as num?)?.toInt() ?? 0,
             downDowns: (r['downDownCount'] as num?)?.toInt() ?? 0,

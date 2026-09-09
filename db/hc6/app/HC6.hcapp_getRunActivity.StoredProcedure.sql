@@ -7,13 +7,16 @@ AS
 -- Procedure: HC6.hcapp_getRunActivity
 -- Description: What a run has to show — for the activity icons on a run
 --   card. For each event id in the '|'-delimited @eventIds: whether a
---   PackTrack track exists (HC.EventTrack), how many photos the viewer may
---   see, how many chat messages, how many down-down charges. Read-only,
+--   PackTrack track exists (HC.EventTrack), how many runners recorded one
+--   (HC.EventTrackRunner), how many photos the viewer may see, how many
+--   chat messages, how many down-down charges. Read-only,
 --   cheap, batched by the app for the cards on screen.
 -- Parameters: @deviceId, @accessToken (auth); @eventIds — HC.Event.id
 --   values separated by '|', up to a few hundred.
--- Returns: Rowset 0: eventId, hasTrack (0/1), photoCount, messageCount,
---   downDownCount — one row per valid id.
+-- Returns: Rowset 0: eventId, hasTrack (0/1), runnerCount, photoCount,
+--   messageCount, downDownCount — one row per valid id.
+-- Version: 1.1.0 (2026-09-10) — runnerCount added; hasTrack is also 1 when
+--   a runner row exists, so the two can never disagree.
 -- Author: Harrier Central
 -- Created: 2026-09-10
 -- HC5 Source: none
@@ -56,7 +59,8 @@ BEGIN TRY
     )
     SELECT
         i.eventId,
-        CASE WHEN t.EventId IS NULL THEN 0 ELSE 1 END AS hasTrack,
+        CASE WHEN t.EventId IS NULL AND r.runnerCount IS NULL THEN 0 ELSE 1 END AS hasTrack,
+        ISNULL(r.runnerCount, 0) AS runnerCount,
         -- photos the viewer could open: their own at any status, anyone's
         -- at Members or above (the run's own gallery applies the finer
         -- audience rule; this is a "has photos" indicator)
@@ -69,6 +73,8 @@ BEGIN TRY
          WHERE d.EventId = i.eventId AND d.IsCancelled = 0) AS downDownCount
     FROM ids i
     LEFT JOIN HC.EventTrack t WITH (NOLOCK) ON t.EventId = i.eventId
+    OUTER APPLY (SELECT COUNT(*) AS runnerCount FROM HC.EventTrackRunner tr WITH (NOLOCK)
+                 WHERE tr.EventId = i.eventId HAVING COUNT(*) > 0) r
     WHERE i.eventId IS NOT NULL;
 END TRY
 BEGIN CATCH

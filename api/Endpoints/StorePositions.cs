@@ -197,7 +197,7 @@ namespace HcWebApi.Endpoints
             // batch, never per point. Until this, the only record that a run
             // was tracked was Table Storage itself (E5.F6.S3). Best-effort:
             // a SQL hiccup never turns into a failed store.
-            await RecordEventTrackAsync(payload.EventId, storedCount);
+            await RecordEventTrackAsync(payload.EventId, payload.UserId, storedCount);
 
             // Piggyback the event-level "tracking ended" flag (set by an admin
             // via EndEventTracking) on the response: every phone still
@@ -290,7 +290,7 @@ namespace HcWebApi.Endpoints
         /// Upserts HC.EventTrack for <paramref name="eventId"/>: first point time on
         /// insert, last point time and running point count on every batch.
         /// </summary>
-        private async Task RecordEventTrackAsync(string eventId, int storedCount)
+        private async Task RecordEventTrackAsync(string eventId, string userId, int storedCount)
         {
             if (storedCount <= 0 || !Guid.TryParse(eventId, out Guid eventGuid))
             {
@@ -320,6 +320,29 @@ namespace HcWebApi.Endpoints
                 cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
                 cmd.Parameters.Add("@stored", SqlDbType.Int).Value = storedCount;
                 await cmd.ExecuteNonQueryAsync();
+
+                // One row per runner as well (HC.EventTrackRunner): the count
+                // beside the PackTrack icon on a past run's card, and the
+                // per-hasher record a stored trail will hang off later.
+                if (Guid.TryParse(userId, out Guid userGuid))
+                {
+                    using SqlCommand runnerCmd = new(
+                        "MERGE HC.EventTrackRunner WITH (HOLDLOCK) AS t " +
+                        "USING (SELECT @eventId AS EventId, @userId AS UserId) AS s " +
+                        "    ON t.EventId = s.EventId AND t.UserId = s.UserId " +
+                        "WHEN MATCHED THEN UPDATE SET LastPointAt = SYSUTCDATETIME(), " +
+                        "    PointCount = t.PointCount + @stored, UpdatedAt = SYSUTCDATETIME() " +
+                        "WHEN NOT MATCHED THEN INSERT (EventId, UserId, FirstPointAt, LastPointAt, PointCount, UpdatedAt) " +
+                        "    VALUES (@eventId, @userId, SYSUTCDATETIME(), SYSUTCDATETIME(), @stored, SYSUTCDATETIME());",
+                        conn)
+                    {
+                        CommandTimeout = 5
+                    };
+                    runnerCmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
+                    runnerCmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = userGuid;
+                    runnerCmd.Parameters.Add("@stored", SqlDbType.Int).Value = storedCount;
+                    await runnerCmd.ExecuteNonQueryAsync();
+                }
             }
             catch (Exception ex)
             {

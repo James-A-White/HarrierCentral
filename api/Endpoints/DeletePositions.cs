@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Azure;
+using System.Data;
 using Azure.Data.Tables;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -124,7 +126,54 @@ namespace HcWebApi.Endpoints
                 "DeletePositions: removed {Deleted} point(s) for event {EventId} / user {UserId}.",
                 deleted, request.EventId, request.UserId);
 
+            if (deleted > 0)
+            {
+                await ForgetEmptyTrackAsync(eventTable, filter, request.EventId, request.UserId);
+            }
+
             return CreateJsonResult(StatusCodes.Status200OK, new { deleted });
+        }
+
+        /// When a runner's last point on the run has gone, their HC.EventTrackRunner
+        /// row goes with it — and HC.EventTrack too once no runner is left — so a
+        /// deleted track stops counting on the run's card. Best-effort: a SQL
+        /// failure never turns into a failed delete.
+        private async Task ForgetEmptyTrackAsync(TableClient eventTable, string filter, string eventId, string userId)
+        {
+            if (!Guid.TryParse(eventId, out Guid eventGuid) || !Guid.TryParse(userId, out Guid userGuid))
+            {
+                return;
+            }
+            string? connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                return;
+            }
+            try
+            {
+                await foreach (var _ in eventTable.QueryAsync<TableEntity>(filter, maxPerPage: 1, select: new[] { "RowKey" }))
+                {
+                    return; // the runner still has points on this run
+                }
+                using SqlConnection conn = new(connectionString);
+                await conn.OpenAsync();
+                using SqlCommand cmd = new(
+                    "DELETE HC.EventTrackRunner WHERE EventId = @eventId AND UserId = @userId; " +
+                    "DELETE HC.EventTrack WHERE EventId = @eventId " +
+                    "  AND NOT EXISTS (SELECT 1 FROM HC.EventTrackRunner r WHERE r.EventId = @eventId);",
+                    conn)
+                {
+                    CommandTimeout = 5
+                };
+                cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
+                cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = userGuid;
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning("DeletePositions: HC.EventTrackRunner cleanup failed for event {EventId} / user {UserId}: {Message}.",
+                    eventId, userId, ex.Message);
+            }
         }
 
         private static async Task<bool> TryDeleteAsync(TableClient table, string partitionKey, string rowKey)
