@@ -344,8 +344,13 @@ class PhotoReviewController extends GetxController {
     _preloadAhead(0);
   }
 
-  // Precache the next [_preloadCount] photos from [fromIndex] so they are
-  // already in Flutter's image cache when the user swipes to them.
+  // Warm the next [_preloadCount] photos from [fromIndex] so they are ready
+  // when the reviewer swipes. Uses the SAME provider as the carousel and the
+  // grid — cached_network_image, backed by the shared disk cache — so the
+  // bytes fetched here are the bytes the carousel draws. It used to warm
+  // Flutter's in-memory cache with NetworkImage while the carousel drew with
+  // Image.network: a different provider and no disk cache, so every swipe
+  // past the first dozen full-size photos fetched again and showed a spinner.
   static const int _preloadCount = 3;
   void _preloadAhead(int fromIndex) {
     final ctx = navigatorKey.currentContext;
@@ -355,10 +360,18 @@ class PhotoReviewController extends GetxController {
     for (int i = fromIndex.clamp(0, photos.length); i < end; i++) {
       final url = photos[i].effectiveUrl;
       if (url.isNotEmpty) {
-        precacheImage(NetworkImage(url), ctx);
+        unawaited(precacheImage(
+          ResizeImage(CachedNetworkImageProvider(url), width: _carouselDecodeWidth),
+          ctx,
+        ));
       }
     }
   }
+
+  /// Full-size originals are 3–5 MB decoded; the review carousel never draws
+  /// wider than a phone screen, so decode at that width and keep a run of
+  /// fifty photos inside the memory cache instead of evicting after ten.
+  static const int _carouselDecodeWidth = 1200;
 
   int? decisionFor(String photoId) => decisions[photoId];
 
@@ -1628,16 +1641,17 @@ class _PhotoPageView extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             if (photo.effectiveUrl.isNotEmpty)
-              Image.network(
-                photo.effectiveUrl,
+              // Same disk-cached provider as the thumbnails and the
+              // look-ahead, so a photo is fetched once per device, not once
+              // per view.
+              CachedNetworkImage(
+                imageUrl: photo.effectiveUrl,
                 fit: BoxFit.contain,
-                loadingBuilder: (context, child, progress) =>
-                    progress == null
-                        ? child
-                        : const Center(
-                            child: CircularProgressIndicator(
-                                color: Colors.white54)),
-                errorBuilder: (context, err, stack) {
+                memCacheWidth: PhotoReviewController._carouselDecodeWidth,
+                placeholder: (_, _) => const Center(
+                  child: CircularProgressIndicator(color: Colors.white54),
+                ),
+                errorWidget: (_, _, Object err) {
                   debugPrint(
                     'PhotoReviewPage: failed to load\n'
                     '  url: ${photo.effectiveUrl}\n  err: $err',
