@@ -1,5 +1,17 @@
 # Harrier Central Mobile App — Changelog
 
+## 3.0.16+1331 (2026-09-09)
+
+### Fixes
+- **A photo can no longer bend a trail.** A photo is now its own thing — where
+  it was taken, when, and by whom — and is no longer written into anybody's
+  GPS track. Uploading photos to a run you were not on records no track for
+  you, and a photo pin never draws an out-and-back spike on the map, in the
+  live distance, or in a GPX export.
+- **Marks land where you are.** A check, a label or a photo taken while
+  tracking now uses the live GPS fix instead of a one-shot that iOS could
+  answer with a stale cached location tens of metres away.
+
 ## 3.0.15+1330 (2026-09-09)
 
 ### Improvements

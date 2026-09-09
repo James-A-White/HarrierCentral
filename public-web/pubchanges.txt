@@ -1,3 +1,6 @@
+0.21.45
+    • Photo pins come from the photo's own location and time (new publicWeb_getRunPhotoPins), not from a track point — no more photo spikes, photographers without a track still get pins
+
 0.21.44
     • Per-run photo gallery at /<kennel>/<run>/photos — shareable from the app, first photo is the card image
     • GPS filter mirrors the app's accuracy-aware stationary radius (25–60m), so a stop on poor GPS measures the same on phone and Trail TV

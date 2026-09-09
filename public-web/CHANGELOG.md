@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.45 (2026-09-09)
+
+- Photo pins on the run map and Trail TV come from the photo itself — where
+  and when it was taken — rather than from a point in a runner's track. A
+  photographer who was not on trail has pins but no track, and a photo can no
+  longer put a spike in anybody's trail. Every pin stays visible for the whole
+  replay; the taken-at time orders the cues and captions.
+
 ## 0.21.44 (2026-09-09)
 
 - New per-run photo gallery at `/<kennel>/<run>/photos`: the Hash Flash-approved
