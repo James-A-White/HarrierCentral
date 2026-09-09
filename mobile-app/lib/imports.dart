@@ -292,6 +292,7 @@ export 'package:harrier_central/util/form_factor.dart';
 export 'package:harrier_central/util/invite_code.dart';
 export 'package:harrier_central/widgets/measured_size.dart';
 export 'package:harrier_central/util/run_recency.dart';
+export 'package:harrier_central/util/photo_urls.dart';
 export 'package:harrier_central/util/tracking_window.dart';
 export 'package:harrier_central/util/get_positions.dart';
 export 'package:harrier_central/util/delete_positions.dart';

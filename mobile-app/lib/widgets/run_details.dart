@@ -1232,7 +1232,9 @@ class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
                   // decodes, so the placeholder holds a fixed slot to keep
                   // the strip from jumping as photos arrive.
                   child: CachedNetworkImage(
-                    imageUrl: p.effectiveUrl,
+                    // 150 px tall at 3x is 450 px; a 640-wide rendition covers
+                    // every aspect ratio at a fraction of the original's bytes.
+                    imageUrl: photoThumbUrl(p.effectiveUrl, width: 640),
                     height: 150,
                     fit: BoxFit.fitHeight,
                     memCacheHeight: 450,

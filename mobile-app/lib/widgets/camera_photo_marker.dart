@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/photo_urls.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 /// A map marker widget that renders a photo thumbnail inside a camera-shaped
@@ -250,13 +252,15 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
       // Loaded (or loading) from network
       // photoUrl is non-null here — _isLandscape is only set after
       // _startNetworkDetection() fires, which requires a non-null photoUrl
-      screenContent = Image.network(
-        widget.photoUrl!,
+      // A 256-wide rendition from the website's optimizer, disk-cached: a
+      // map with fifty pins used to pull fifty originals through
+      // Image.network, uncached, on every open.
+      screenContent = CachedNetworkImage(
+        imageUrl: photoThumbUrl(widget.photoUrl!, width: 256),
         width: photoW,
         height: photoH,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stack) =>
-            ColoredBox(color: Colors.grey.shade400),
+        errorWidget: (_, _, _) => ColoredBox(color: Colors.grey.shade400),
       );
     }
 
