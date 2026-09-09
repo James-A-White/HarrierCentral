@@ -52,16 +52,17 @@ q "SELECT HcVersion, ProcName, ErrorName, LEFT(ErrorDescription,120) descr, COUN
 
 echo
 echo "== 3. Client logs: rows per build (LEN 38 = STARTUP-only, i.e. a clean session) =="
-q "SELECT ISNULL(d.BuildNumber,'?') build, COUNT(*) sessions,
+echo "   build = BuildNumber stored with the log (clients from 3.0.13); '?'-suffixed = device's current build (older rows)"
+q "SELECT ISNULL(c.BuildNumber, ISNULL(d.BuildNumber,'?') + '?') build, COUNT(*) sessions,
           SUM(CASE WHEN LEN(c.ErrorLog) <= 38 THEN 1 ELSE 0 END) clean,
           SUM(CASE WHEN c.ErrorLog LIKE '%[[]ERROR]%' THEN 1 ELSE 0 END) with_errors
    FROM HC.ClientErrorLog c LEFT JOIN HC.Device d ON d.id = c.DeviceId
    WHERE c.LoggedAt >= '$SINCE'
-   GROUP BY d.BuildNumber ORDER BY build DESC"
+   GROUP BY ISNULL(c.BuildNumber, ISNULL(d.BuildNumber,'?') + '?') ORDER BY build DESC"
 
 ALL="$OUT_DIR/client_logs_since_${SINCE//[^0-9]/}.txt"
 raw "SELECT '#### ' + CONVERT(varchar(30), c.LoggedAt, 120)
-            + ' build=' + ISNULL(d.BuildNumber,'?')
+            + ' build=' + ISNULL(c.BuildNumber, ISNULL(d.BuildNumber,'?') + '?')
             + ' dev='   + CONVERT(varchar(36), c.DeviceId) + CHAR(10) + c.ErrorLog + CHAR(10)
      FROM HC.ClientErrorLog c LEFT JOIN HC.Device d ON d.id = c.DeviceId
      WHERE c.LoggedAt >= '$SINCE' ORDER BY c.LoggedAt DESC" > "$ALL"
@@ -74,7 +75,18 @@ awk '/^#### /{b=$5}
         print b " | " substr(s,1,120) }' "$ALL" | sort | uniq -c | sort -k2,2r -k1,1rn
 
 echo
-echo "== 5. Dart exceptions with stack (ASYNC/FLUTTER, not HTTP) — the ones that are usually real bugs =="
+echo "== 5. App errors as the dashboard counts them (HC6.ClientLogAppError), per build =="
+q "SELECT ISNULL(c.BuildNumber, ISNULL(d.BuildNumber,'?') + '?') build, LEFT(x.appError, 110) error, COUNT(*) n
+   FROM HC.ClientErrorLog c LEFT JOIN HC.Device d ON d.id = c.DeviceId
+   CROSS APPLY (SELECT HC6.ClientLogAppError(c.ErrorLog) AS appError) x
+   WHERE c.LoggedAt >= '$SINCE'
+     AND (c.ErrorLog LIKE '%[[]ERROR][[]%' OR c.ErrorLog LIKE '[[]METRICKIT]%')
+     AND x.appError IS NOT NULL
+   GROUP BY ISNULL(c.BuildNumber, ISNULL(d.BuildNumber,'?') + '?'), LEFT(x.appError, 110)
+   ORDER BY build DESC, n DESC" 2>/dev/null || echo "   (HC6.ClientLogAppError not deployed yet)"
+
+echo
+echo "== 5b. Dart exceptions with stack (ASYNC/FLUTTER, not HTTP), in full =="
 awk '/^#### /{h=$0}
      /\[ERROR\]\[(ASYNC|FLUTTER)\]/ && !/HttpException/ {p=1; print h}
      p && /^===/ {p=0; print "---"}

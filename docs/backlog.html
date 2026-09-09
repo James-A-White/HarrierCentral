@@ -294,8 +294,8 @@
   <div class="meta-strip">
     <div><b>16</b> epics</div>
     <div><b>77</b> features</div>
-    <div><b>251</b> stories</div>
-    <div><b>45</b> NFR requirements</div>
+    <div><b>253</b> stories</div>
+    <div><b>46</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
   <div class="legend">
@@ -327,11 +327,11 @@
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 13 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">6 features · 24 stories</span></a>
   <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">5 features · 20 stories</span></a>
-  <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 14 stories</span></a>
+  <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 16 stories</span></a>
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 21 stories</span></a>
   <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">5 features · 16 stories</span></a>
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 14 requirements</span></a>
-  <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 17 requirements</span></a>
+  <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 18 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
   <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">4 features · 16 stories</span></a>
 </div></section>
@@ -966,6 +966,8 @@
       <li class="story"><span class="s-id">E10.F4.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want login history per user so that I can diagnose a support case.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E10.F4.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want feature-level adoption figures so that I can tell whether a shipped feature is used.</span><span class="chip c-back">Backlog</span></li>
       <li class="story"><span class="s-id">E10.F4.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want cost attributed per kennel so that I know what the platform costs to run at scale.</span><span class="chip c-back">Backlog</span></li>
+      <li class="story"><span class="s-id">E10.F4.S5</span><span class="s-text">As a <em>Platform Admin</em>, I want the usage dashboard to count app-side errors beside server-side errors so that a green Error row cannot hide a crashing release.</span><span class="chip c-build">Building</span></li>
+      <li class="story"><span class="s-id">E10.F4.S6</span><span class="s-text">As a <em>Platform Admin</em>, I want every server and client error record to name the app build that produced it so that I can see which release an error belongs to and confirm it is gone.</span><span class="chip c-build">Building</span></li>
     </ul>
   </div>
 </section>
@@ -1179,6 +1181,7 @@
       <div class="req"><span class="s-id">E14.G3.R1</span><span class="req-what">A crash or hang on a real device is diagnosable without reproducing it.</span><span class="req-how"><b>Enforced by</b> Enforced by MetricKit payloads, boot breadcrumbs and memory samples uploaded to <code>HC.ClientErrorLog</code>.</span></div>
       <div class="req"><span class="s-id">E14.G3.R2</span><span class="req-what">Verbose device logging is opt-in per cohort, not on for everybody.</span><span class="req-how"><b>Enforced by</b> A preferences bit plus a named beta cohort.</span></div>
       <div class="req"><span class="s-id">E14.G3.R3</span><span class="req-what">Log wording states what actually happened — retained data is never reported as lost.</span><span class="req-how"><b>Enforced by</b> Review after a buffer log implied 16,798 points were dropped when they were retained.</span></div>
+      <div class="req"><span class="s-id">E14.G3.R4</span><span class="req-what">An error record names the build that produced it, not the build that reported it.</span><span class="req-how"><b>Enforced by</b> <code>HC.ErrorLog.HcVersion</code> is stamped from the calling device via <code>HC6.DeviceHcVersion</code>; <code>HC.ClientErrorLog</code> stores the version the app recorded when the session started, because the log is uploaded one boot later, possibly after an upgrade.</span></div>
     </div>
   </div>
   <div class="feature">

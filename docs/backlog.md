@@ -619,6 +619,8 @@ Hashers care enormously about their run count. Getting it wrong is the most visi
 | `E10.F4.S2` | As a **Platform Admin**, I want login history per user so that I can diagnose a support case. | `Shipped` |
 | `E10.F4.S3` | As a **Platform Admin**, I want feature-level adoption figures so that I can tell whether a shipped feature is used. | `Backlog` |
 | `E10.F4.S4` | As a **Platform Admin**, I want cost attributed per kennel so that I know what the platform costs to run at scale. | `Backlog` |
+| `E10.F4.S5` | As a **Platform Admin**, I want the usage dashboard to count app-side errors beside server-side errors so that a green Error row cannot hide a crashing release. | `Building` |
+| `E10.F4.S6` | As a **Platform Admin**, I want every server and client error record to name the app build that produced it so that I can see which release an error belongs to and confirm it is gone. | `Building` |
 
 ---
 
@@ -808,6 +810,7 @@ The app is used in fields with no signal by people who will not try twice. Every
 | `E14.G3.R1` | A crash or hang on a real device is diagnosable without reproducing it. | Enforced by MetricKit payloads, boot breadcrumbs and memory samples uploaded to `HC.ClientErrorLog`. |
 | `E14.G3.R2` | Verbose device logging is opt-in per cohort, not on for everybody. | A preferences bit plus a named beta cohort. |
 | `E14.G3.R3` | Log wording states what actually happened — retained data is never reported as lost. | Review after a buffer log implied 16,798 points were dropped when they were retained. |
+| `E14.G3.R4` | An error record names the build that produced it, not the build that reported it. | `HC.ErrorLog.HcVersion` is stamped from the calling device via `HC6.DeviceHcVersion`; `HC.ClientErrorLog` stores the version the app recorded when the session started, because the log is uploaded one boot later, possibly after an upgrade. |
 
 ### E14.G4 · Performance
 

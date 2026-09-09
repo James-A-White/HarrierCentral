@@ -22,16 +22,21 @@ drilled into by `hcportal_getCategoryDetail2`. Open it before running anything.
 |---|---|---|
 | Version tiles (right) | Users per build over the last **14 days**, latest login per user, split iOS / not-iOS | `HC.LaunchAndLogin` |
 | Activity grid | Hour / day / week / month counts with the previous period underneath; green = better than last period. The **Error** row is coloured the other way round | `HC.ErrorLog` for Error; other tables per row |
-| Error drill-down (tap the row) | Every server-side error in the period with proc name and the hasher it resolved to | `HC.ErrorLog` |
+| Error drill-down (tap the row) | Every server-side error in the period with the app build (`hcVersion`), proc name and the hasher it resolved to | `HC.ErrorLog` |
+| **App Error** row (after Push) | Client sessions whose uploaded log holds an app error as defined by `HC6.ClientLogAppError`: an uncaught Dart exception, a Flutter framework error that is not a transport exception, or a MetricKit crash/hang. Network timeouts and avatar 404s are excluded on purpose | `HC.ClientErrorLog` |
+| App Error drill-down | One row per session: when, which build wrote the log, who, the first qualifying error line, how many `[ERROR]` lines the session had | `HC.ClientErrorLog` |
 | Login list (left) | Most recent logins, with old→new version and platform | `HC.LaunchAndLogin` |
 | Integration cards | External data jobs (read / errors / kennels nice / naughty) | `HC.IntegrationJob` |
 
-**What the dashboard cannot tell you.** Its Error row and drill-down are
-`HC.ErrorLog` only, so it sees exactly what the stored procedures chose to log.
-It does not read `HC.ClientErrorLog` at all: no Dart exceptions, no MetricKit,
-no client-side timeouts, and nothing about a 500 that died in the API shim.
-That is the gap the sweep fills. A green Error row is necessary for "healthy",
-not sufficient.
+**What the dashboard cannot tell you.** The Error row is what the stored
+procedures chose to log; the App Error row is what the classifier counts as
+the app's fault. Neither shows client-side timeouts, `Bad file descriptor`
+transport failures, or a 500 that died in the API shim. Those are the sweep's
+job. Two green error rows are necessary for "healthy", not sufficient.
+
+Both error drill-downs carry the build, so "is it gone?" is answered by
+sorting the dialog on `hcVersion` and checking that the newest build has no
+row for that error.
 
 The version tiles are the better adoption number. They count *users who
 logged in during the last 14 days*, whereas the sweep's section 1 counts
@@ -56,7 +61,8 @@ directory as `OUT_DIR` in a Claude session.
 | 2 Server errors | `HC.ErrorLog` | Did any SP fail, and which |
 | 3 Client sessions | `HC.ClientErrorLog` | How many sessions per build, how many clean |
 | 4 Client `[ERROR]` lines | raw dump | Every client-side error, counted, per build |
-| 5 Dart exceptions | raw dump | Stack traces — the real bugs, shown in full |
+| 5 App errors | `HC6.ClientLogAppError` | What the dashboard's App Error row counts, per build |
+| 5b Dart exceptions | raw dump | Stack traces — the real bugs, shown in full |
 | 6 MetricKit kinds | raw dump | iOS crash/hang diagnostics vs routine metrics |
 
 When you need to drill in, the raw dump is grep-able. Each session starts with
@@ -94,18 +100,22 @@ DB will look innocent. (Memory `signup-broken-five-ways`: empty 500 = shim,
 
 ---
 
-## Attribution trap: `HC.Device.Version` is *now*, not *then*
+## Attribution: which build wrote the log?
 
-The client log payload does not carry the app version. The sweep joins to
-`HC.Device`, which holds the version the device is on **today**. A device
-that upgraded yesterday will have last week's session attributed to the new
-build.
+From 3.0.13 every uploaded session carries `AppVersion`/`BuildNumber` — the
+build that **wrote** the log, stamped when the session started — and the log
+text itself has a `[VERSION] 3.0.13+1328` entry after `[STARTUP]`. Server
+errors are stamped with `HC6.DeviceHcVersion(@deviceId)`, the device's build
+at the moment of the failing call. Trust those.
 
-**Rule:** before blaming a build for an exception, compare the entry's own
-timestamp (`[2026-09-06T20:50:06]`) against the release date in
-`mobile-app/CHANGELOG.md`. In the 2026-09-09 sweep both Dart exceptions
-"on 3.0.12" were from 09-02 and 09-06 sessions — before 3.0.12 existed, and
-both already fixed in commit `04cd0c7a` (3.0.10).
+**Rows older than that** (and any row whose build ends in `?` in the sweep)
+were attributed from `HC.Device`, which holds the version the device is on
+**today**. A device that upgraded yesterday has last week's session credited
+to the new build. For those, compare the entry's own timestamp
+(`[2026-09-06T20:50:06]`) against the release date in
+`mobile-app/CHANGELOG.md` before blaming a build. In the 2026-09-09 sweep both
+Dart exceptions "on 3.0.12" were from 08-30 and 09-06 sessions — before
+3.0.12 existed, and already fixed in commit `04cd0c7a` (3.0.10).
 
 Then check the source: does the line in the stack trace still contain the
 failing call? `git log -S'<expression>' -- <file>` finds the commit that
@@ -139,8 +149,8 @@ reconstructed; a log full of them is a busy user, not a problem.
 
 A release is healthy when, over the two or three days after it ships:
 
-0. The dashboard's Error row is flat or green, and its drill-down shows only
-   the usual residents.
+0. The dashboard's Error and App Error rows are flat or green, and neither
+   drill-down has a row on the new build that is not also on the old one.
 1. Section 2 has nothing new in the `ProcName`/`ErrorName` pairs — the usual
    residents are `Duplicate email` on `hcapp_addEditUser` and the occasional
    `Invalid access token` (a phone with the wrong time).
