@@ -24,6 +24,9 @@ class LocationTimeLedger {
   static String _current = 'off';
   static DateTime _since = DateTime.now();
 
+  /// The tier the stream is in right now.
+  static String get current => _current;
+
   /// Records a transition. Unknown tiers are folded into `idle` so a renamed
   /// mode string can never silently drop time.
   static void setTier(String tier) {

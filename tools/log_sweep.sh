@@ -101,6 +101,9 @@ echo "== 7. Device metrics: LAST [METRICS] line per session = that session's sum
 awk '/^#### /{ if (last != "") print last; b=$5; last="" }
      /\[METRICS\]/{ s=$0; sub(/^\[[^]]*\] \[METRICS\] /,"",s); last=b " | " s }
      END{ if (last != "") print last }' "$ALL" | sort -k1,1r | head -60
+echo
+echo "== 7b. Peaks per session ([METRICS:PEAKS] — timestamped extremes from the one-minute ring; the ring rows themselves are in the raw dump under [METRICS:RING]) =="
+awk '/^#### /{b=$5} /\[METRICS:PEAKS\]/{ s=$0; sub(/^\[[^]]*\] \[METRICS:PEAKS\] ?/,"",s); print b " | " s }' "$ALL" | sort -k1,1r | head -40
 echo "   (cpu/cpu% = this process alone; rss/peak = this process; avail = OS headroom; app_*/lat_* = our API traffic; dev_* = Android TrafficStats, n/a on iOS;"
 echo "    loc_* = minutes per location cost tier; db/docs/cache = our disk footprint;"
 echo "    batt/drain = the DEVICE battery over the unplugged stretch, not the app's share — read against cpu%, loc_* and fg/bg)"

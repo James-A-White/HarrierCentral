@@ -166,6 +166,27 @@ trend. Sweep section 7 prints the last line per session. Fields:
 | `Δ` `drain` `chg` | derived | Change in level, and drain per hour, over the current **unplugged stretch only** (the reference resets whenever charging is seen). `chg` is Android's charge counter delta in mAh, finer than 1% steps. This is the whole phone's drain; the app is one contributor. High drain with `bg` dominating and location idle is a finding. High drain during a tracked run is expected |
 | `lpm` `therm` | OS | Low Power Mode / Battery Saver on, and thermal state. Both change what the OS lets the app do, so they belong beside the numbers |
 
+**The ring and the peaks.** Alongside the 15-minute lines, the sampler keeps
+a one-row-a-minute ring of the last two hours and a timestamped-peaks record,
+persisted separately and appended to the next boot's upload as two blocks:
+
+```
+[<session start>] [METRICS:RING] rows=120 every=60s cols=t,cpu%,rss_mb,pss_mb,avail_mb,batt,tier,fg,req,fail,lat_max_ms,rx_kb
+14:31:10,2.4,143,150,1200,87,idle,1,4,0,820,12
+14:32:10,41.0,171,178,1150,87,track,1,6,0,410,3
+…
+[<upload time>] [METRICS:PEAKS] rss_max=380MB@14:52:10 avail_min=120MB@14:52:10 cpu%_max=48.2@14:40:10 lat_max=8200ms@14:35:10 batt_min=12%@16:01:10
+```
+
+The ring is the two hours before whatever ended the session, at the
+resolution the 15-minute lines cannot give; the peaks say when each gauge
+was at its worst. Both are bounded at about 8 KB together, so they never
+compete with breadcrumbs for the log's 100 KB. Sweep section 7b prints the
+peaks per session; paste the ring rows into a spreadsheet when the shape of
+a climb matters. `tier` is the location cost tier at that minute and `fg`
+whether the app was on screen, so a row reads as "what was it doing, and
+what did it cost".
+
 The honest limits: no platform attributes battery drain to an app in real
 time, and iOS has no per-app network counter. What the line gives you is the
 app's own footprint (CPU time, memory, its API bytes, location tier minutes)

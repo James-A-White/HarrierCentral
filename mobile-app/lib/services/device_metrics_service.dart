@@ -8,7 +8,10 @@ import 'package:harrier_central/imports.dart';
 /// harvest flag, so it costs nothing on devices that are not reporting.
 ///
 /// A line is written at session start, whenever the app goes to the
-/// background or comes back, and every [_interval] in between. Each line is
+/// background or comes back, and every [_interval] in between. Separately,
+/// a one-row-a-minute ring of the last two hours plus a timestamped-peaks
+/// record is persisted on its own and appended to the next boot's upload as
+/// `[METRICS:RING]` / `[METRICS:PEAKS]` — see [_ringInterval]. Each line is
 /// cumulative for the session, so the LAST line in an uploaded log is that
 /// session's summary and the sequence shows the trend. The format is one line
 /// of `key=value` pairs, so it greps and splits without a parser:
@@ -62,6 +65,17 @@ class DeviceMetricsService with WidgetsBindingObserver {
       MethodChannel('harrier_central/device_metrics');
   static const Duration _interval = Duration(minutes: 15);
 
+  /// The fine-grained ring: one compact row a minute, the last [_ringRows]
+  /// kept, persisted as it fills and appended to the NEXT boot's upload as a
+  /// `[METRICS:RING]` block with a `[METRICS:PEAKS]` line. Bounded at ~8 KB
+  /// whatever the session did, so it never competes with breadcrumbs for the
+  /// log's 100k. Two hours at one-minute resolution is the window before an
+  /// out-of-memory kill or a battery collapse that the 15-minute lines miss.
+  static const Duration _ringInterval = Duration(minutes: 1);
+  static const int _ringRows = 120;
+  static const String ringColumns =
+      't,cpu%,rss_mb,pss_mb,avail_mb,batt,tier,fg,req,fail,lat_max_ms,rx_kb';
+
   static DeviceMetricsService? _instance;
 
   final DateTime _sessionStart = DateTime.now();
@@ -70,7 +84,14 @@ class DeviceMetricsService with WidgetsBindingObserver {
   Duration _fgTotal = Duration.zero;
   Duration _bgTotal = Duration.zero;
   Timer? _timer;
+  Timer? _ringTimer;
   bool _sampling = false;
+
+  // Ring state
+  final List<String> _ring = <String>[];
+  int? _ringCpuMs;
+  DateTime? _ringAt;
+  final Map<String, _Peak> _peaks = <String, _Peak>{};
 
   // Baselines for deltas.
   int? _cpuMsAtStart;
@@ -94,6 +115,7 @@ class DeviceMetricsService with WidgetsBindingObserver {
     s._inForeground =
         WidgetsBinding.instance.lifecycleState != AppLifecycleState.paused;
     s._timer = Timer.periodic(_interval, (_) => s._sample('periodic'));
+    s._ringTimer = Timer.periodic(_ringInterval, (_) => s._tick());
     unawaited(s._sample('start'));
   }
 
@@ -103,9 +125,92 @@ class DeviceMetricsService with WidgetsBindingObserver {
     final DeviceMetricsService? s = _instance;
     if (s == null) return;
     s._timer?.cancel();
+    s._ringTimer?.cancel();
     WidgetsBinding.instance.removeObserver(s);
     _instance = null;
   }
+
+  /// One ring row: gauges now, plus what happened since the previous row.
+  Future<void> _tick() async {
+    try {
+      final Map<String, dynamic> n = await _nativeSnapshot();
+      final DateTime now = DateTime.now();
+      final String t = _hms(now);
+
+      final int? cpuMs = _int(n['cpuTimeMs']);
+      String cpuPct = '';
+      if (cpuMs != null && _ringCpuMs != null && _ringAt != null) {
+        final int wall = now.difference(_ringAt!).inMilliseconds;
+        if (wall >= 10000) {
+          final double pct = 100 * (cpuMs - _ringCpuMs!) / wall;
+          cpuPct = pct.toStringAsFixed(1);
+          _peak('cpu%_max', pct, t, high: true, unit: '');
+        }
+      }
+      _ringCpuMs = cpuMs;
+      _ringAt = now;
+
+      final int rssMb = _mb(ProcessInfo.currentRss);
+      final int? pssMb = _mbOrNull(_int(n['pssBytes']));
+      final int? availMb = _mbOrNull(_int(n['availMem']));
+      final double? level = _double(n['batteryLevel']);
+      final int? batt = (level != null && level >= 0) ? (level * 100).round() : null;
+      final List<int> net = NetworkMeter.takeInterval();
+
+      _peak('rss_max', rssMb.toDouble(), t, high: true, unit: 'MB');
+      if (pssMb != null) _peak('pss_max', pssMb.toDouble(), t, high: true, unit: 'MB');
+      if (availMb != null) _peak('avail_min', availMb.toDouble(), t, high: false, unit: 'MB');
+      if (batt != null) _peak('batt_min', batt.toDouble(), t, high: false, unit: '%');
+      if (net[2] > 0) _peak('lat_max', net[2].toDouble(), t, high: true, unit: 'ms');
+
+      _ring.add(
+        '$t,$cpuPct,$rssMb,${pssMb ?? ''},${availMb ?? ''},${batt ?? ''},'
+        '${LocationTimeLedger.current},${_inForeground ? 1 : 0},'
+        '${net[0]},${net[1]},${net[2] > 0 ? net[2] : ''},'
+        '${(net[3] / 1024).round()}',
+      );
+      if (_ring.length > _ringRows) _ring.removeAt(0);
+
+      await setStringPref(
+        StringPrefsEnum.lastSessionMetricsSeries,
+        _seriesBlock(),
+      );
+    } catch (e) {
+      debugPrint('[METRICS] ring tick failed: $e');
+    }
+  }
+
+  /// The block appended to the next upload: header, rows, peaks.
+  String _seriesBlock() {
+    final StringBuffer b = StringBuffer();
+    b.write('[${_sessionStart.toIso8601String()}] [METRICS:RING] ');
+    b.write('rows=${_ring.length} every=${_ringInterval.inSeconds}s cols=$ringColumns');
+    for (final String row in _ring) {
+      b.write('\n');
+      b.write(row);
+    }
+    b.write('\n[${DateTime.now().toIso8601String()}] [METRICS:PEAKS]');
+    for (final MapEntry<String, _Peak> e in _peaks.entries) {
+      b.write(' ${e.key}=${e.value}');
+    }
+    return b.toString();
+  }
+
+  void _peak(String key, double value, String at,
+      {required bool high, required String unit}) {
+    final _Peak? cur = _peaks[key];
+    if (cur == null || (high ? value > cur.value : value < cur.value)) {
+      _peaks[key] = _Peak(value, at, unit);
+    }
+  }
+
+  static String _hms(DateTime d) =>
+      '${d.hour.toString().padLeft(2, '0')}:'
+      '${d.minute.toString().padLeft(2, '0')}:'
+      '${d.second.toString().padLeft(2, '0')}';
+  static int _mb(int bytes) => (bytes / (1024 * 1024)).round();
+  static int? _mbOrNull(int? bytes) =>
+      (bytes == null || bytes < 0) ? null : _mb(bytes);
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -329,5 +434,21 @@ class DeviceMetricsService with WidgetsBindingObserver {
     if (h > 0) return '${h}h${m.toString().padLeft(2, '0')}m';
     if (m > 0) return '${m}m${s.toString().padLeft(2, '0')}s';
     return '${s}s';
+  }
+}
+
+/// A timestamped extreme for the `[METRICS:PEAKS]` line, e.g. `380MB@14:32:10`.
+class _Peak {
+  const _Peak(this.value, this.at, this.unit);
+  final double value;
+  final String at;
+  final String unit;
+
+  @override
+  String toString() {
+    final String v = value == value.roundToDouble()
+        ? value.round().toString()
+        : value.toStringAsFixed(1);
+    return '$v$unit@$at';
   }
 }

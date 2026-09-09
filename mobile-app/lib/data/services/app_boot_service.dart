@@ -201,9 +201,19 @@ class AppBootService {
   /// long flaky-network sessions worth diagnosing are exactly the ones most
   /// likely to boot next on a bad connection.
   static Future<void> _sendPreviousSessionErrors() async {
-    final log = getStringPref(StringPrefsEnum.lastSessionErrorLog);
-    if (log == null || log.isEmpty) return;
+    final String errors =
+        getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '';
+    // The metrics ring + peaks the previous session persisted alongside its
+    // log (DeviceMetricsService). Bounded (~8 KB), so it is appended whole:
+    // the log's own 100k cap never has to trade breadcrumbs for it.
+    final String series =
+        getStringPref(StringPrefsEnum.lastSessionMetricsSeries) ?? '';
+    if (errors.isEmpty && series.isEmpty) return;
+    final String log = series.isEmpty
+        ? errors
+        : (errors.isEmpty ? series : '$errors\n===\n$series');
     await setStringPref(StringPrefsEnum.lastSessionErrorLog, null);
+    await setStringPref(StringPrefsEnum.lastSessionMetricsSeries, null);
     unawaited(
       ServiceCommon.recordClientErrorLog(log).then((bool accepted) {
         if (accepted) return;

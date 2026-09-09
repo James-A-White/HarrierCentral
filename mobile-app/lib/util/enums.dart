@@ -38,6 +38,7 @@ enum StringPrefsEnum {
   lastName,
   lastSessionErrorLog,
   lastSessionErrorLogVersion,
+  lastSessionMetricsSeries,
   leaderboardJson,
   mapPreference,
   packTrackOutboxJson,

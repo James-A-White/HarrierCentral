@@ -26,13 +26,32 @@ class NetworkMeter {
   static int _latencySumMs = 0;
   static int _latencyMaxMs = 0;
   static int _latencyCount = 0;
+  // Since the last [takeInterval] — feeds the one-minute metrics ring.
+  static int _intervalReq = 0;
+  static int _intervalFail = 0;
+  static int _intervalMaxMs = 0;
+  static int _intervalRxBytes = 0;
 
   /// Count a request body about to be sent. Returns the start time to hand
   /// back to [end], so latency is measured around the whole exchange.
   static int begin(String body) {
     txBytes += utf8.encode(body).length;
     requests++;
+    _intervalReq++;
     return DateTime.now().millisecondsSinceEpoch;
+  }
+
+  /// Requests, failures, worst latency and bytes received since the previous
+  /// call, then resets them. `[req, fail, maxMs, rxBytes]`.
+  static List<int> takeInterval() {
+    final List<int> out = <int>[
+      _intervalReq, _intervalFail, _intervalMaxMs, _intervalRxBytes,
+    ];
+    _intervalReq = 0;
+    _intervalFail = 0;
+    _intervalMaxMs = 0;
+    _intervalRxBytes = 0;
+    return out;
   }
 
   /// Count the outcome of a request begun with [begin]. Pass the response, or
@@ -46,12 +65,18 @@ class NetworkMeter {
     _latencySumMs += ms;
     _latencyCount++;
     if (ms > _latencyMaxMs) _latencyMaxMs = ms;
+    if (ms > _intervalMaxMs) _intervalMaxMs = ms;
     if (response == null) {
       failures++;
+      _intervalFail++;
       return;
     }
     rxBytes += response.bodyBytes.length;
-    if (response.statusCode >= 400) failures++;
+    _intervalRxBytes += response.bodyBytes.length;
+    if (response.statusCode >= 400) {
+      failures++;
+      _intervalFail++;
+    }
   }
 
   /// `app_tx=12.3KB app_rx=1.1MB req=41 fail=0 lat_avg=420ms lat_max=8.2s`
