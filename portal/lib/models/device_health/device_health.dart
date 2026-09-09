@@ -13,6 +13,7 @@ class DeviceHealthDevice {
     required this.lastLogin,
     required this.sessions,
     required this.sessionsWithMetrics,
+    this.sessionsOnBuild = 0,
   });
 
   final String deviceId;
@@ -21,6 +22,9 @@ class DeviceHealthDevice {
   final DateTime lastLogin;
   final int sessions;
   final int sessionsWithMetrics;
+
+  /// Launches on the build the device runs now.
+  final int sessionsOnBuild;
 
   bool get isIos => os.toLowerCase().contains('ios');
 
@@ -33,6 +37,7 @@ class DeviceHealthDevice {
             DateTime.fromMillisecondsSinceEpoch(0),
         sessions: (j['sessions'] as num?)?.toInt() ?? 0,
         sessionsWithMetrics: (j['sessionsWithMetrics'] as num?)?.toInt() ?? 0,
+        sessionsOnBuild: (j['sessionsOnBuild'] as num?)?.toInt() ?? 0,
       );
 }
 

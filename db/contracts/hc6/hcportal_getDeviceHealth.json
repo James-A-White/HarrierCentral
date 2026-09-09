@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getDeviceHealth",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Per-device health for one user, for the Usage Data user tile. Extracts the [METRICS] instrumentation (app 3.0.14+) from the user's uploaded session logs in HC.ClientErrorLog: the last [METRICS] line per session, its [METRICS:PEAKS] line, and the [METRICS:RING] block for the latest session per device. The SP extracts lines; the portal parses key=value pairs, so new app fields need no SP change.",
   "parameters": [
     { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Portal device (auth)" },
@@ -22,7 +22,8 @@
         { "name": "hcVersion", "type": "NVARCHAR(51)", "nullable": false, "description": "Current 'X.Y.Z+build' of the device" },
         { "name": "lastLogin", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "HC.Device.LastLogin" },
         { "name": "sessions", "type": "INT", "nullable": false, "description": "App launches whose harvested log was uploaded in the window (MetricKit payload rows excluded)" },
-        { "name": "sessionsWithMetrics", "type": "INT", "nullable": false, "description": "Of those, sessions carrying [METRICS] lines" }
+        { "name": "sessionsWithMetrics", "type": "INT", "nullable": false, "description": "Of those, sessions carrying [METRICS] lines" },
+        { "name": "sessionsOnBuild", "type": "INT", "nullable": false, "description": "Of those, launches whose log was written by the build the device runs now (AppVersion/BuildNumber match; pre-3.0.13 rows never match)" }
       ] },
     { "index": 1, "name": "Sessions", "description": "Up to 60 harvested sessions across those devices, newest first — one per app launch, with or without metrics.",
       "columns": [

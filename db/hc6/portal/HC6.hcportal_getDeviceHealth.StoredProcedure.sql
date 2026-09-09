@@ -92,7 +92,14 @@ BEGIN TRY
 		   AND c.ErrorLog NOT LIKE '[[]METRICKIT]%') AS sessions,
 		(SELECT COUNT(*) FROM HC.ClientErrorLog c WITH (NOLOCK)
 		 WHERE c.DeviceId = a.id AND c.LoggedAt > @cutoff
-		   AND c.ErrorLog LIKE '%[[]METRICS]%') AS sessionsWithMetrics
+		   AND c.ErrorLog LIKE '%[[]METRICS]%') AS sessionsWithMetrics,
+		-- launches on the build the device runs NOW — the count beside the
+		-- version must not read as 'launches of this version' when it spans
+		-- every build of the window
+		(SELECT COUNT(*) FROM HC.ClientErrorLog c WITH (NOLOCK)
+		 WHERE c.DeviceId = a.id AND c.LoggedAt > @cutoff
+		   AND c.ErrorLog NOT LIKE '[[]METRICKIT]%'
+		   AND c.AppVersion + '+' + c.BuildNumber = a.hcVersion) AS sessionsOnBuild
 	FROM @appDevices a
 	ORDER BY a.lastLogin DESC;
 

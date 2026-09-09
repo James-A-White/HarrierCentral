@@ -98,7 +98,8 @@ class _DeviceLine extends StatelessWidget {
                 color: dv.isIos ? Colors.grey.shade700 : Colors.green.shade700,
               ),
               label: Text(
-                '${dv.hcVersion} · last login $when · ${dv.sessions} launches in 14 days, ${dv.sessionsWithMetrics} with metrics',
+                '${dv.hcVersion} · last login $when · ${dv.sessionsOnBuild} launches on this build, '
+                '${dv.sessions} on this phone in 14 days, ${dv.sessionsWithMetrics} with metrics',
                 style: const TextStyle(fontSize: 12),
               ),
             ),
