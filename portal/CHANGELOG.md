@@ -2,6 +2,15 @@
 
 ---
 
+## 2.0.69+704 (2026-09-09)
+
+### New Features
+- **Device Health tab when you open a user.** Beside the login history: one
+  row per uploaded session with build, uptime, CPU, memory peak and headroom,
+  network bytes and latency, GPS tracking time, battery drain and any app
+  error; select a row for a two-hour sparkline of memory, battery and CPU,
+  the peaks, and the full metrics summary. Needs sessions from app 3.0.14.
+
 ## 2.0.68+703 (2026-09-09)
 
 ### New Features

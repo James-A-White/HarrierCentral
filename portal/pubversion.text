@@ -1,3 +1,7 @@
+2.0.69+704
+    • Device Health tab on the user dialog: per-session CPU, memory, network, GPS, battery and errors, with a two-hour sparkline
+    • Fed by the new hcportal_getDeviceHealth SP; needs sessions from app 3.0.14 before it has anything to show
+
 2.0.68+703
     • Usage Data: App Error row counts phone-side exceptions and crashes, coloured like Error
     • Both error drill-downs show the app build that produced each error
