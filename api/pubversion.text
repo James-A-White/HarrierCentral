@@ -1,3 +1,6 @@
+1.0.43+41
+    • GetPositions incremental polls now return what ARRIVED since the mark the phone hands back, keyed on the storage service's own Timestamp with a 60-second lookback, so a runner's late-flushed buffer is never missed. Apps up to 3.0.20 are unaffected: they still get a full fetch.
+
 1.0.42+40
     • GetPositions replays a finished run from the archive: on a full fetch, if every counted runner on the run has a TrackGzip, the tracks are decoded from HasherEventMap (response carries source: "archive") and Table Storage is not scanned. Incremental polls stay on Table Storage so a resumed run still streams. Fails open to the live path on any gap or read error.
 

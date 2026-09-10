@@ -1,3 +1,17 @@
+## 3.0.21+1336 (2026-09-10)
+
+### New Features
+- **Import a GPX track.** A run you recorded on your watch or in another
+  app can be your PackTrack trail. Tap the route icon on Hash Runs, or
+  open a .gpx from Files, Mail or the share sheet, and Harrier Central
+  finds the run from the track's first point and uploads it. Your own
+  exported files come back with their marks.
+
+### Fixes
+- **The pack no longer vanishes mid-run.** The live map now fetches only
+  what arrived since its last poll and merges it, instead of re-downloading
+  and redrawing every runner's whole trail every 15 seconds.
+
 ## 3.0.20+1335 (2026-09-10)
 
 ### Fixes
