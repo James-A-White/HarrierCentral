@@ -1,3 +1,6 @@
+1.0.42+40
+    • GetPositions replays a finished run from the archive: on a full fetch, if every counted runner on the run has a TrackGzip, the tracks are decoded from HasherEventMap (response carries source: "archive") and Table Storage is not scanned. Incremental polls stay on Table Storage so a resumed run still streams. Fails open to the live path on any gap or read error.
+
 1.0.41+39
     • ArchiveTracksNightly (03:30 UTC) copies every finished PackTrack trail from Table Storage onto the runner's HC.HasherEventMap row as TrackGzip, delta-encoded and gzipped (~5.5 bytes a point); one partition read per run under an 8-minute budget, functionTimeout now 10 minutes. A runner with a track but no attendance row gets one (nonApi_ensureTrackAttendance). ArchiveTrack runs the same sweep on demand ({} or {"allRuns":true}).
     • StorePositions drops a runner's archive on every new batch and DeletePositions on any delete, so the archive is never older than the newest point.
