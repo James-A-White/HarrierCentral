@@ -1,18 +1,21 @@
--- Run-once (E3.F3.S7): add this hasher's PackTrack summary to HC.HasherEventMap.
+-- Run-once (E3.F3.S7 + E5.F6.S4): add this hasher's PackTrack summary AND the
+-- column that will hold their gzipped trail to HC.HasherEventMap — one ALTER on
+-- the synced table for the whole feature (James, 2026-09-10).
 -- HasherEventMap is a SYNCED table with an updatedAt trigger — the trigger is
 -- disabled around the ALTER so no row is stamped and no client re-syncs
 -- (CLAUDE.md, "ALTER TABLE on synced tables"). James runs this, not the deploy
 -- script. Archive after running. Nullable columns, no default, no backfill here:
 -- tools/backfill_hem_track_columns.sh fills them from GetPositions afterwards.
 -- Second batch: the trigger learns to ignore a write that changes only the
--- three Track columns, so per-batch writes never stamp updatedAt.
-IF COL_LENGTH('HC.HasherEventMap', 'TrackPointCount') IS NULL
+-- four Track columns, so per-batch writes never stamp updatedAt.
+IF COL_LENGTH('HC.HasherEventMap', 'TrackGzip') IS NULL
 BEGIN
     ALTER TABLE HC.HasherEventMap DISABLE TRIGGER trgUpdateModifiedOnDateForHasherEventMap;
     ALTER TABLE HC.HasherEventMap
         ADD TrackFirstPointAt DATETIME2(3) NULL,
             TrackLastPointAt  DATETIME2(3) NULL,
-            TrackPointCount   INT          NULL;
+            TrackPointCount   INT          NULL,
+            TrackGzip         VARBINARY(MAX) NULL;   -- E5.F6.S4: delta-encoded + gzipped trail, written once at end; no writer yet
     ALTER TABLE HC.HasherEventMap ENABLE TRIGGER trgUpdateModifiedOnDateForHasherEventMap;
 END
 GO
@@ -26,15 +29,15 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- A write that touches ONLY the PackTrack summary columns (TrackFirstPointAt,
-	-- TrackLastPointAt, TrackPointCount — set by the StorePositions / DeletePositions
+	-- A write that touches ONLY the PackTrack columns (TrackFirstPointAt,
+	-- TrackLastPointAt, TrackPointCount, TrackGzip — set by the StorePositions / DeletePositions
 	-- Azure Functions per batch, and by the one-off backfill) is not a change any
 	-- client needs to hear about: the columns are in no sync rowset. So it must
 	-- NOT stamp updatedAt, or every runner's row would re-sync once a minute for
 	-- nothing. If a Track column is in the SET list and no other column changed
 	-- value, leave updatedAt alone. (James, 2026-09-10: exclude the columns from
 	-- the trigger rather than have the writer overwrite updatedAt.)
-	IF (UPDATE(TrackFirstPointAt) OR UPDATE(TrackLastPointAt) OR UPDATE(TrackPointCount))
+	IF (UPDATE(TrackFirstPointAt) OR UPDATE(TrackLastPointAt) OR UPDATE(TrackPointCount) OR UPDATE(TrackGzip))
 	   AND NOT UPDATE(updatedAt)
 	   AND NOT EXISTS (
 			SELECT i.id, i.EventId, i.KennelId, i.HasherOwnEventId, i.UserId, i.RegistrationId,

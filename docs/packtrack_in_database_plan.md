@@ -1,6 +1,7 @@
 # PackTrack in the database — plan
 
-**Status: first half building (E3.F3.S7, 2026-09-10); second half designed, not built.**
+**Status: first half building (E3.F3.S7, 2026-09-10); second half has its column
+(`TrackGzip VARBINARY(MAX) NULL`, added in the same ALTER, trigger-exempt) but no writer or reader yet.**
 `TrackFirstPointAt` / `TrackLastPointAt` / `TrackPointCount` on `HC.HasherEventMap`,
 written by StorePositions per batch (the updatedAt trigger ignores a write that changes only
 these three columns — they are in no sync rowset yet), cleared by DeletePositions, backfilled by
@@ -33,7 +34,7 @@ ask it either.
         mid-run, and a phone that never regains signal would never report.
       - Backfill from the 141 tracked events already in Table Storage.
 
-- [ ] **Store a compressed copy of each hasher's track on the HEM record.**
+- [ ] **Store a compressed copy of each hasher's track on the HEM record.** (column `TrackGzip` exists from 2026-09-10; encoder/writer/reader not built)
       So the track survives independently of Table Storage, and a run's
       history can be read without a second data store.
       - Write it ONCE, when tracking ends (the On Inn mark, the auto-stop, or
