@@ -2,8 +2,8 @@
 
 **Status: first half building (E3.F3.S7, 2026-09-10); second half designed, not built.**
 `TrackFirstPointAt` / `TrackLastPointAt` / `TrackPointCount` on `HC.HasherEventMap`,
-written by StorePositions per batch (updatedAt deliberately not bumped — the columns are
-in no sync rowset yet), cleared by DeletePositions, backfilled by
+written by StorePositions per batch (the updatedAt trigger ignores a write that changes only
+these three columns — they are in no sync rowset yet), cleared by DeletePositions, backfilled by
 `tools/backfill_hem_track_columns.sh`. James's rule: tracking starts by checking the
 hasher in (RSVP Yes, At Hash) from the phone, so the row always exists.
 

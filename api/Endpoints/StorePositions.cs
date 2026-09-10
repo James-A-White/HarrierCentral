@@ -325,18 +325,17 @@ namespace HcWebApi.Endpoints
                 // the count beside the PackTrack icon, and where the stored
                 // trail will sit later. The app checks the tracker in as At
                 // Hash when tracking starts, so the row exists; a batch that
-                // arrives before it does is simply not counted. updatedAt is
-                // set to (updatedAt - bias) so the table's trigger restores the
-                // same value — these columns are in no sync rowset, and a bump
-                // per batch would re-sync the row to every client for nothing.
+                // arrives before it does is simply not counted. The table's
+                // updatedAt trigger ignores a write that changes only these three
+                // columns (they are in no sync rowset), so the row is not re-synced
+                // to every client once a minute.
                 if (Guid.TryParse(userId, out Guid userGuid))
                 {
                     using SqlCommand hemCmd = new(
                         "UPDATE HC.HasherEventMap " +
                         "   SET TrackFirstPointAt = ISNULL(TrackFirstPointAt, SYSUTCDATETIME()), " +
                         "       TrackLastPointAt  = SYSUTCDATETIME(), " +
-                        "       TrackPointCount   = ISNULL(TrackPointCount, 0) + @stored, " +
-                        "       updatedAt         = DATEADD(MICROSECOND, -updatedAtBias, updatedAt) " +
+                        "       TrackPointCount   = ISNULL(TrackPointCount, 0) + @stored " +
                         " WHERE EventId = @eventId AND UserId = @userId AND removed = 0;",
                         conn)
                     {

@@ -205,7 +205,7 @@ The run is the atom of the whole platform. Creating one, finding it, getting to 
 | `E3.F3.S4` | As a **Hasher**, I want to filter runs by kennel, date range and distance from me so that a long list stays usable. | `Shipped` |
 | `E3.F3.S5` | As a **Hasher** with a slow connection, I want the cached list shown while the sync runs so that I never see "No runs" on a list that is still loading. | `Shipped` |
 | `E3.F3.S6` | As a **Hasher**, I want a past run's card to show whether it has a PackTrack track, photos, chat and down-downs so that I can tell which runs have something to look at without opening each one. | `Shipped` |
-| `E3.F3.S7` | As a **Hasher**, I want the PackTrack icon on a past run's card to say how many runners recorded a track so that I know whether there is a pack to replay or one lone trail. `TrackFirstPointAt` / `TrackLastPointAt` / `TrackPointCount` on the runner's own `HC.HasherEventMap` row (the app checks the tracker in as tracking starts, so the row exists), written by StorePositions without bumping `updatedAt`, backfilled from GetPositions. | `Building` |
+| `E3.F3.S7` | As a **Hasher**, I want the PackTrack icon on a past run's card to say how many runners recorded a track so that I know whether there is a pack to replay or one lone trail. `TrackFirstPointAt` / `TrackLastPointAt` / `TrackPointCount` on the runner's own `HC.HasherEventMap` row (the app checks the tracker in as tracking starts, so the row exists), written by StorePositions (the `updatedAt` trigger ignores a track-only write), backfilled from GetPositions. | `Building` |
 
 ### E3.F4 · The run detail view  
 `App` `Portal` `Web`

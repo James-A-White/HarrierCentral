@@ -8,8 +8,8 @@
 # point count and first/last timestamps onto their EXISTING attendance row.
 # A runner with no HasherEventMap row is listed, not created: since 3.0.x
 # the app checks the tracker in as tracking starts, so only old tracks can
-# be in that state. updatedAt is NOT bumped (the columns are in no sync
-# rowset yet). Idempotent — rows already carrying a count are left alone.
+# be in that state. The updatedAt trigger ignores a track-only write, so
+# no client re-syncs these rows. Idempotent — rows already carrying a count are left alone.
 # Run ONCE after db/hc6/app/2026-09-10_alter_HasherEventMap_track_columns.sql.
 #
 # Needs: curl, jq, sqlcmd, .env, and the GetPositions key (read from
@@ -40,13 +40,10 @@ while read -r eid; do
              "\(.id|ascii_downcase) \([.positions[].timestampMs]|min) \([.positions[].timestampMs]|max) \(.positions|length)"')
 done < <(SQL -Q "SET NOCOUNT ON; SELECT LOWER(CAST(EventId AS NVARCHAR(36))) FROM HC.EventTrack;" | tr -d '\r' | sed 's/[[:space:]]*$//')
 cat >> "$TMP" <<'EOSQL'
--- updatedAt = updatedAt - bias makes the trigger's ELSE branch restore the
--- exact current value: no client sees these rows as changed.
 UPDATE hem
    SET TrackFirstPointAt = DATEADD(MILLISECOND, r.FirstMs % 1000, DATEADD(SECOND, r.FirstMs / 1000, '1970-01-01')),
        TrackLastPointAt  = DATEADD(MILLISECOND, r.LastMs  % 1000, DATEADD(SECOND, r.LastMs  / 1000, '1970-01-01')),
-       TrackPointCount   = r.PointCount,
-       updatedAt         = DATEADD(MICROSECOND, -hem.updatedAtBias, hem.updatedAt)
+       TrackPointCount   = r.PointCount
 FROM HC.HasherEventMap hem
 JOIN #r r ON r.EventId = hem.EventId AND r.UserId = hem.UserId
 WHERE hem.TrackPointCount IS NULL;

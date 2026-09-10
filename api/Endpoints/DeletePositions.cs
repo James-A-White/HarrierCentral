@@ -137,8 +137,8 @@ namespace HcWebApi.Endpoints
         /// When a runner's last point on the run has gone, the track summary on
         /// their attendance row is cleared — and HC.EventTrack goes too once no
         /// runner is left — so a deleted track stops counting on the run's card.
-        /// updatedAt is restored through the trigger (see StorePositions) so the
-        /// row is not re-synced for it. Best-effort: a SQL
+        /// The table's updatedAt trigger ignores a track-only write, so the row
+        /// is not re-synced for it. Best-effort: a SQL
         /// failure never turns into a failed delete.
         private async Task ForgetEmptyTrackAsync(TableClient eventTable, string filter, string eventId, string userId)
         {
@@ -161,8 +161,7 @@ namespace HcWebApi.Endpoints
                 await conn.OpenAsync();
                 using SqlCommand cmd = new(
                     "UPDATE HC.HasherEventMap " +
-                    "   SET TrackFirstPointAt = NULL, TrackLastPointAt = NULL, TrackPointCount = NULL, " +
-                    "       updatedAt = DATEADD(MICROSECOND, -updatedAtBias, updatedAt) " +
+                    "   SET TrackFirstPointAt = NULL, TrackLastPointAt = NULL, TrackPointCount = NULL " +
                     " WHERE EventId = @eventId AND UserId = @userId; " +
                     "DELETE HC.EventTrack WHERE EventId = @eventId " +
                     "  AND NOT EXISTS (SELECT 1 FROM HC.HasherEventMap h WHERE h.EventId = @eventId AND h.TrackPointCount > 0);",
