@@ -82,6 +82,7 @@ class AppBootService {
             );
           }
           await Get.off(() => MainNavigationPage(), routeName: '/main');
+          unawaited(IncomingFileService.ensure().flushPending());
           return;
         }
         if (outcome == ReauthorizeOutcome.deadCode) {
@@ -450,6 +451,10 @@ class AppBootService {
     debugPrint('[BOOT] Get.off(MainNavigationPage) start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await Get.off(() => MainNavigationPage(), routeName: '/main');
     debugPrint('[BOOT] Get.off(MainNavigationPage) done: ${DateTime.now().millisecondsSinceEpoch}ms');
+
+    // A GPX file that launched the app ("Open in" / the share extension) is
+    // acted on now that there is a signed-in user and a page to open over.
+    unawaited(IncomingFileService.ensure().flushPending());
 
     // Navigate to songbook if a proximity song was found at login.
     final SongSessionNotifier notifier = SongSessionNotifier.ensure();

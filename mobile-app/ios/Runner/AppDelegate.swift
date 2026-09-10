@@ -17,6 +17,13 @@ import MetricKit
     // watch and executes mark commands sent from it. No-op when unsupported.
     if let controller = window?.rootViewController as? FlutterViewController {
       PhoneWatchBridge.shared.start(messenger: controller.binaryMessenger)
+      // Files handed to the app ("Open in", the share extension) — see
+      // IncomingFileBridge. A file that launched the app is kept as pending
+      // until Flutter asks for it.
+      IncomingFileBridge.shared.start(messenger: controller.binaryMessenger)
+    }
+    if let launchURL = launchOptions?[.url] as? URL {
+      IncomingFileBridge.shared.handle(url: launchURL)
     }
 
     // MetricKit: capture crash / hang / CPU-disk exception diagnostics AND the
@@ -62,6 +69,19 @@ import MetricKit
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  // A file opened in the app while it is running (or from cold via the
+  // launch URL above), and the share extension's harriercentral:// hand-off.
+  override func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+  ) -> Bool {
+    if IncomingFileBridge.shared.handle(url: url) {
+      return true
+    }
+    return super.application(app, open: url, options: options)
   }
 }
 

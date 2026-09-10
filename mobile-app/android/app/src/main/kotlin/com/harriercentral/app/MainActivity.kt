@@ -5,6 +5,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
+import android.os.Bundle
+import android.provider.OpenableColumns
+import java.io.File
 import android.net.TrafficStats
 import android.os.BatteryManager
 import android.os.Build
@@ -33,8 +37,70 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    // A file handed to the app (Open with / Share of a .gpx). Copied into the
+    // cache and its path handed to Flutter over harrier_central/incoming_file:
+    //   Flutter → native  takePending()      path that arrived before Flutter was ready, or null
+    //   native → Flutter  incomingFile(path)  a file that arrived while running
+    // Mirrors ios/Runner/IncomingFileBridge.swift; Flutter decides what to do.
+    private var incomingFileChannel: MethodChannel? = null
+    private var pendingIncomingFile: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        handleIncomingIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIncomingIntent(intent)
+    }
+
+    private fun handleIncomingIntent(intent: Intent?) {
+        if (intent == null) return
+        val uri: Uri? = when (intent.action) {
+            Intent.ACTION_VIEW -> intent.data
+            Intent.ACTION_SEND -> @Suppress("DEPRECATION") intent.getParcelableExtra(Intent.EXTRA_STREAM)
+            else -> null
+        } ?: return
+        val path = copyToInbox(uri!!) ?: return
+        // Consume it so a configuration change does not import it twice.
+        intent.action = null
+        pendingIncomingFile = path
+        incomingFileChannel?.invokeMethod("incomingFile", path)
+    }
+
+    private fun copyToInbox(uri: Uri): String? {
+        return try {
+            var name = "shared.gpx"
+            contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
+                if (c.moveToFirst()) { val n = c.getString(0); if (!n.isNullOrBlank()) name = n }
+            }
+            if (name == "shared.gpx" && uri.lastPathSegment != null) name = uri.lastPathSegment!!
+            name = name.substringAfterLast('/')
+            val dir = File(cacheDir, "incoming").apply { mkdirs() }
+            val dst = File(dir, name)
+            contentResolver.openInputStream(uri)?.use { input -> dst.outputStream().use { input.copyTo(it) } }
+                ?: return null
+            dst.absolutePath
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        incomingFileChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "harrier_central/incoming_file").apply {
+            setMethodCallHandler { call, result ->
+                if (call.method == "takePending") {
+                    val p = pendingIncomingFile
+                    pendingIncomingFile = null
+                    result.success(p)
+                } else {
+                    result.notImplemented()
+                }
+            }
+        }
         registerReceiver(screenReceiver, IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_SCREEN_ON)
