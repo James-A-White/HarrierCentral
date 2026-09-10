@@ -1,7 +1,19 @@
 # PackTrack in the database — plan
 
-**Status: first half building (E3.F3.S7, 2026-09-10); second half's WRITER built 2026-09-10
-(not yet deployed), no reader yet.**
+**Status: first half shipped (E3.F3.S7, 2026-09-10); second half's WRITER shipped 2026-09-10
+(API 1.0.41, 309 tracks archived), READER built 2026-09-10 in GetPositions (not yet deployed).**
+
+Reader, as built: on a full fetch (no `afterTimestampMs`), `GetPositions` reads
+`HasherEventMap` rows for the run with `TrackPointCount > 0 AND removed = 0`; if every one has
+`TrackGzip`, it decodes them and answers from there (`source: "archive"`), applying the same
+AST/AEN trim window and marker rules as the live path. Any counted runner without an archive
+(still live, or not yet swept) or any read/decode problem falls through to Table Storage.
+`latestServerTimestampMs` is the newest archived point, so the client's next incremental poll
+asks Table Storage for anything newer — nothing until somebody resumes, then exactly the new
+points (StorePositions has cleared the archive by then). Verified 2026-09-10: decoding the real
+blobs for the busiest run (17 runners) with the reader's rules matched the live response
+point-for-point. Removed attendees are not served from the archive (the nightly does not
+archive them).
 
 Writer, as built (E5.F6.S4) — **the phone is not involved** (James, 2026-09-10: nothing reads
 the archive yet, so there is no reason for it to exist sooner than the next night, and a

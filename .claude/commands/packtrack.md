@@ -107,8 +107,9 @@ on every batch and `DeletePositions` on any delete, so a resumed run is re-archi
 the next night. A runner in a partition with NO attendance row gets one (`nonApi_ensureTrackAttendance`,
 At Hash, run counts recomputed) — every runner who has a track has an attendance row.
 `POST /api/ArchiveTrack` (`X-Api-Key`, `{}` or `{"allRuns":true}`) runs the same sweep
-now; `tools/archive_all_tracks.sh` wraps it with allRuns. Nothing reads the archive yet — replay is
-still Table Storage.
+now; `tools/archive_all_tracks.sh` wraps it with allRuns. **Reader:** `GetPositions` answers a
+full fetch from the archive when every counted runner on the run has one (`source: "archive"`
+in the response); incremental polls stay on Table Storage. Clients need no change.
 
 ---
 
