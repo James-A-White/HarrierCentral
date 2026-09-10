@@ -1,17 +1,45 @@
 # PackTrack in the database — plan
 
-**Status: first half building (E3.F3.S7, 2026-09-10); second half has its column
-(`TrackGzip VARBINARY(MAX) NULL`, added in the same ALTER, trigger-exempt) but no writer or reader yet.**
-`TrackFirstPointAt` / `TrackLastPointAt` / `TrackPointCount` on `HC.HasherEventMap`,
-written by StorePositions per batch (the updatedAt trigger ignores a write that changes only
-these three columns — they are in no sync rowset yet), cleared by DeletePositions, backfilled by
-`tools/backfill_hem_track_columns.sh`. James's rule: tracking starts by checking the
-hasher in (RSVP Yes, At Hash) from the phone, so the row always exists.
+**Status: first half building (E3.F3.S7, 2026-09-10); second half's WRITER built 2026-09-10
+(not yet deployed), no reader yet.**
 
-Backlog: `E5.F6.S3` (the flag) and `E5.F6.S4` (the compressed copy).
-
-Decided 2026-09-03/06 and moved here from `todos/app.md` on 2026-09-08 so the design
-lives with the other plans rather than in a history archive.
+Writer, as built (E5.F6.S4) — **the phone is not involved** (James, 2026-09-10: nothing reads
+the archive yet, so there is no reason for it to exist sooner than the next night, and a
+server job covers hashers who never open the app):
+- **`ArchiveTracksNightly`** Azure Function, 03:30 UTC, after MemberStandingSweep. Shared
+  `TrackArchiver` builds the worklist and archives each pair: reads the runner's rows from
+  `EventPositions` (partition = event, filter UserId), sorts by caller timestamp, encodes
+  (`TrackArchiveCodec`: version byte, varint count, per point zigzag-varint deltas of
+  ts / lat×1e5 / lng×1e5 / alt×10 / acc×10, then length-prefixed UTF-8 type), gzips, and
+  UPDATEs `TrackGzip`, reconciles `TrackPointCount` to the true row count and fills
+  first/last where the per-batch writes never set them. Measured on a synthetic 3,000-point
+  Best-tier track: 16.6 KB, 5.5 B/point, 5.8% of the GetPositions JSON (gzipped JSON would
+  be 42 KB). At that rate 10,000 tracked runs ≈ 170 MB.
+- **Worklist:** (1) `HasherEventMap` rows with `TrackPointCount > 0 AND TrackGzip IS NULL`;
+  (2) for `HC.EventTrack` runs with a last point in the past 7 days, every UserId in the
+  run's partition whose attendance row has no archive — the batch-before-check-in case
+  that leaves the count NULL. Both need 30 minutes' quiet. **Work goes run by run**: one
+  partition read per run, split by runner in memory, every runner on it archived from that
+  read (a per-runner filtered query would scan the same partition once per runner). Newest
+  first, under an **8-minute budget** — the API is on the Consumption plan (Y1), so
+  `host.json` now sets `functionTimeout` 00:10:00 (the plan maximum) and the pass stops
+  starting runs at 8 min and reports what it left; the next night takes the rest.
+- **Staleness:** `StorePositions` sets `TrackGzip = NULL` on every accepted batch;
+  `DeletePositions` nulls it on any delete (and clears the summary when the last point
+  goes). So the archive is never older than the newest point; a resumed run is re-archived
+  the next night.
+- **On demand:** `ArchiveTrack` HTTP function (X-Api-Key, empty body) runs the same sweep and
+  returns the tally; `tools/archive_all_tracks.sh` wraps it and prints the SQL totals. Use it
+  for the first pass over the history after deploy.
+- **No row, no problem:** a runner found in a partition with no attendance row gets one via
+  `HC6.nonApi_ensureTrackAttendance` (At Hash, RSVP Yes, `nonApi_updateRunCountsByUser` —
+  the same row `hcapp_setEventAttendence` writes), then is archived. James, 2026-09-10: every
+  runner who has a track has an attendance row. The nightly only looks at the last 7 days of
+  runs for this; the script passes `allRuns: true` so the history is walked once.
+  **Deploy the SP before the API** or the ensure call fails (warning + skip, retried nightly).
+- **Not covered:** points still in a phone's outbox only go out when the same run is tracked again
+  (`restorePending` is per-buffer); when they do, StorePositions drops the archive and the
+  next night rebuilds it with the tail.
 
 ---
 
@@ -34,7 +62,7 @@ ask it either.
         mid-run, and a phone that never regains signal would never report.
       - Backfill from the 141 tracked events already in Table Storage.
 
-- [ ] **Store a compressed copy of each hasher's track on the HEM record.** (column `TrackGzip` exists from 2026-09-10; encoder/writer/reader not built)
+- [x] **Store a compressed copy of each hasher's track on the HEM record.** (nightly writer built 2026-09-10 — see status above; reader still to do)
       So the track survives independently of Table Storage, and a run's
       history can be read without a second data store.
       - Write it ONCE, when tracking ends (the On Inn mark, the auto-stop, or

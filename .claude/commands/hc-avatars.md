@@ -37,7 +37,12 @@ a random bundled avatar — `bundle://avatar-${Random.secure().nextInt(49) + 1}`
 ImageProvider avatarImageProvider(String? photo)
 ```
 
-- `http…`        → `CachedNetworkImageProvider(photo)`
+- `http…`        → `HasherAvatarImageProvider(photo)` (2026-09-10, E16.F3.S1) — loads through
+  the shared cache manager like `CachedNetworkImageProvider`, but on ANY failure paints the
+  default avatar instead of a blank. A 404/410 from storage is reported once per session via
+  `BrokenPhotoReporter` → `ReportBrokenPhoto` function, which HEAD-verifies and only then swaps
+  the photo for a bundled avatar (`HC6.nonApi_replaceBrokenPhoto`). Never report from the app
+  yourself; never trust a failed load as "broken" — a bad connection looks identical.
 - `bundle://…`   → `AssetImage('images/avatars/<name>.jpg')` (lowercased)
 - null/empty/other → `AssetImage(kDefaultAvatarAsset)` (`avatar-2.jpg`)
 

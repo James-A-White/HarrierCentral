@@ -93,6 +93,23 @@ Write endpoint used by the mobile app only. Called by `RunPointBuffer._sendBatch
 - `ts` — 19-digit zero-padded epoch-ms (`pad19()` helper in `location_service.dart`)
 - Coordinates rounded to 5 decimal places (~1.1m precision)
 
+### The database copy — `ArchiveTracksNightly` (E5.F6.S4)
+
+Every finished trail is copied out of Table Storage onto the runner's
+`HC.HasherEventMap.TrackGzip` (delta-encoded varint + gzip, `TrackArchiveCodec.cs`,
+~5.5 B/point) by a **nightly Azure Function** (03:30 UTC) — **the phone is not
+involved**, nothing in `mobile-app/` knows the archive exists. `TrackArchiver` (same
+file, `ArchiveTrack.cs`) builds the worklist: rows with `TrackPointCount > 0 AND
+TrackGzip IS NULL`, plus runners on `HC.EventTrack` runs from the last 7 days whose
+row was never counted; 30 min quiet; one partition read per run, all runners from it;
+8-min budget under the 10-min Consumption-plan `functionTimeout` in host.json. `StorePositions` nulls `TrackGzip`
+on every batch and `DeletePositions` on any delete, so a resumed run is re-archived
+the next night. A runner in a partition with NO attendance row gets one (`nonApi_ensureTrackAttendance`,
+At Hash, run counts recomputed) — every runner who has a track has an attendance row.
+`POST /api/ArchiveTrack` (`X-Api-Key`, `{}` or `{"allRuns":true}`) runs the same sweep
+now; `tools/archive_all_tracks.sh` wraps it with allRuns. Nothing reads the archive yet — replay is
+still Table Storage.
+
 ---
 
 ## Data Models
