@@ -1,3 +1,8 @@
+1.0.41+39
+    • ArchiveTracksNightly (03:30 UTC) copies every finished PackTrack trail from Table Storage onto the runner's HC.HasherEventMap row as TrackGzip, delta-encoded and gzipped (~5.5 bytes a point); one partition read per run under an 8-minute budget, functionTimeout now 10 minutes. A runner with a track but no attendance row gets one (nonApi_ensureTrackAttendance). ArchiveTrack runs the same sweep on demand ({} or {"allRuns":true}).
+    • StorePositions drops a runner's archive on every new batch and DeletePositions on any delete, so the archive is never older than the newest point.
+    • ReportBrokenPhoto: a profile photo a phone could not load is HEAD-checked against blob storage and, only if gone (404/410), replaced with a bundled avatar via nonApi_replaceBrokenPhoto.
+
 1.0.40+38
     • StorePositions records each runner's first point, last point and point count on their HC.HasherEventMap row per batch (the table's updatedAt trigger ignores track-only writes); DeletePositions clears them when a runner's last point on the run goes, and drops HC.EventTrack once no runner is left.
 

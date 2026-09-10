@@ -1,3 +1,11 @@
+## 3.0.20+1335 (2026-09-10)
+
+### Fixes
+- **No more broken profile pictures.** A photo that will not load now shows
+  the default avatar instead of a blank. If the photo file is actually gone
+  from storage, the app tells the server, which checks for itself and swaps
+  in an avatar for everyone.
+
 ## 3.0.19+1334 (2026-09-10)
 
 ### New Features
