@@ -67,6 +67,31 @@ final class IncomingFileBridge {
     return false
   }
 
+  /// Anything the share extension left in the app-group inbox that the
+  /// URL hand-off never delivered. Called at launch and every time the app
+  /// becomes active, so a share followed by opening the app (or switching
+  /// back to it) still imports. Oldest first; each is moved out of the
+  /// group as it is taken.
+  func sweepSharedInbox() {
+    guard let groupURL = FileManager.default.containerURL(
+      forSecurityApplicationGroupIdentifier: Self.appGroup) else { return }
+    let inbox = groupURL.appendingPathComponent(Self.sharedInboxFolder, isDirectory: true)
+    guard let names = try? FileManager.default.contentsOfDirectory(atPath: inbox.path), !names.isEmpty else { return }
+    func modified(_ name: String) -> Date {
+      let attrs = try? FileManager.default.attributesOfItem(atPath: inbox.appendingPathComponent(name).path)
+      return (attrs?[.modificationDate] as? Date) ?? Date.distantPast
+    }
+    let sorted = names.sorted { modified($0) < modified($1) }
+    for name in sorted {
+      let src = inbox.appendingPathComponent(name)
+      let dst = inboxURL(for: name)
+      try? FileManager.default.removeItem(at: dst)
+      if (try? FileManager.default.moveItem(at: src, to: dst)) != nil {
+        deliver(dst.path)
+      }
+    }
+  }
+
   private func copyIntoInbox(fileURL: URL) -> String? {
     // Files/Mail hand over a security-scoped URL; the copy must happen while
     // access is held, and the app must not keep the original.

@@ -25,6 +25,7 @@ import MetricKit
     if let launchURL = launchOptions?[.url] as? URL {
       IncomingFileBridge.shared.handle(url: launchURL)
     }
+    IncomingFileBridge.shared.sweepSharedInbox()
 
     // MetricKit: capture crash / hang / CPU-disk exception diagnostics AND the
     // daily app-exit metrics (including memory-pressure / memory-limit "OOM"
@@ -69,6 +70,13 @@ import MetricKit
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  // Every return to the foreground: pick up anything the share extension
+  // left that its URL hand-off did not deliver.
+  override func applicationDidBecomeActive(_ application: UIApplication) {
+    super.applicationDidBecomeActive(application)
+    IncomingFileBridge.shared.sweepSharedInbox()
   }
 
   // A file opened in the app while it is running (or from cold via the

@@ -89,23 +89,42 @@ final class ShareViewController: UIViewController {
       }
       DispatchQueue.main.async {
         self.openHostApp(open)
-        self.finish(message: nil)
+        // Give the open a moment before the sheet goes away; completing the
+        // request first can cancel it. Whether or not the app came forward,
+        // the file is in the inbox for the app's next activation.
+        self.label.text = "Shared with Harrier Central. If the app did not open, open it to import."
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+          self.finish(message: nil)
+        }
       }
     }
   }
 
   /// Extensions have no UIApplication; the host app is opened by walking
-  /// the responder chain to whatever can perform openURL — the standard
-  /// share-extension hand-off.
+  /// the responder chain to whatever can perform openURL — the share-
+  /// extension hand-off every share-to-app plugin uses. It is not an
+  /// official API and recent iOS is picky: every responder that answers is
+  /// asked (not just the first), with both selectors. If none of it works
+  /// the file is still in the app-group inbox, and the app sweeps that
+  /// inbox whenever it becomes active — so the share is never lost.
   private func openHostApp(_ url: URL) {
+    let openURL = sel_registerName("openURL:")
+    let openURLOptions = sel_registerName("openURL:options:completionHandler:")
     var responder: UIResponder? = self
-    let selector = NSSelectorFromString("openURL:")
     while let r = responder {
-      if r.responds(to: selector) {
-        r.perform(selector, with: url)
-        return
+      if r.responds(to: openURLOptions) {
+        _ = r.perform(openURLOptions, with: url, with: [:] as NSDictionary)
+      } else if r.responds(to: openURL) {
+        _ = r.perform(openURL, with: url)
       }
       responder = r.next
+    }
+    // Foundation's UIApplication, reached without naming it (an extension
+    // cannot link UIApplication.shared).
+    if let appClass = NSClassFromString("UIApplication") as? NSObject.Type,
+       let app = appClass.perform(NSSelectorFromString("sharedApplication"))?.takeUnretainedValue() as? NSObject,
+       app.responds(to: openURLOptions) {
+      _ = app.perform(openURLOptions, with: url, with: [:] as NSDictionary)
     }
   }
 
