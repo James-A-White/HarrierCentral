@@ -1,5 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/widgets.dart';
+
+import 'package:harrier_central/util/hasher_avatar_image_provider.dart';
 
 /// Bundled avatar shown when a hasher has no photo at all (null/empty). Matches
 /// the generic default used across the app.
@@ -68,10 +69,13 @@ ImageProvider avatarImageProvider(String? photo) {
     return const AssetImage(kDefaultAvatarAsset);
   }
   // blobUrlForPhoto guarantees an http(s) URL or null, so a non-http scheme
-  // (e.g. bundle://) can never reach CachedNetworkImageProvider here.
+  // (e.g. bundle://) can never reach the network provider here.
   final p = (blobUrlForPhoto(photo) ?? '').trim();
   if (p.toLowerCase().startsWith('http')) {
-    return CachedNetworkImageProvider(p);
+    // Network with a built-in fallback: a photo that will not load shows the
+    // default avatar instead of a blank, and a blob storage says is GONE is
+    // reported so the server can replace it for everyone (E16.F3.S1).
+    return HasherAvatarImageProvider(p);
   }
   return const AssetImage(kDefaultAvatarAsset);
 }

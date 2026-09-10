@@ -114,6 +114,10 @@ const String GET_POSITIONS_URL = 'https://$BASE_AF_URL/api/GetPositions';
 const String DELETE_POSITIONS_URL = 'https://$BASE_AF_URL/api/DeletePositions';
 const String END_EVENT_TRACKING_URL =
     'https://$BASE_AF_URL/api/EndEventTracking';
+// A profile photo the phone could not load. The server checks blob storage
+// itself before replacing anything (E16.F3.S1). Same X-Api-Key.
+const String REPORT_BROKEN_PHOTO_URL =
+    'https://$BASE_AF_URL/api/ReportBrokenPhoto';
 
 // Admin web portal — opened from the drawer for admin users. The app registers
 // a one-time auth code and opens `$PORTAL_URL/?authCode=<code>` so the portal
