@@ -81,6 +81,25 @@ namespace HcWebApi.Endpoints
             (long? trimStartMs, long? trimEndMs) = await GetTrimWindowAsync(eventTable, request.EventId);
             bool applyTrim = !request.IncludeTrimmed;
 
+            // A finished run is served from the database copy (E5.F6.S4): on a
+            // full fetch, if every runner StorePositions counted on this run
+            // has an archive, the tracks come from HasherEventMap.TrackGzip
+            // and Table Storage is not scanned. Incremental polls stay on
+            // Table Storage — an archive present means no point is newer than
+            // it (StorePositions clears it on every batch), so a poll after
+            // the archive's last point returns nothing until someone resumes,
+            // and then it returns exactly the new points. Fails open: any
+            // problem reading the archive falls through to the live path.
+            bool isFullFetch = afterTimestampBoundary is null || afterTimestampBoundary.Value == 0;
+            EventPositionsResponse? response = null;
+            if (isFullFetch)
+            {
+                response = await TryServeFromArchiveAsync(request, trimStartMs, trimEndMs, applyTrim);
+            }
+
+            if (response == null)
+            {
+
             await foreach (var entity in eventTable.QueryAsync<TableEntity>(filter))
             {
                 string? userId = entity.GetString("UserId");
@@ -151,7 +170,7 @@ namespace HcWebApi.Endpoints
                 });
             }
 
-            var response = new EventPositionsResponse
+            response = new EventPositionsResponse
             {
                 EventId = request.EventId,
                 LatestServerTimestamp = latestServerTimestamp,
@@ -168,6 +187,7 @@ namespace HcWebApi.Endpoints
                     })
                     .ToList()
             };
+            } // live path
 
             // On the full fetch (no / zero afterTimestamp), bundle the owning
             // kennel's PackTrack trail-type config so the playback payload is
@@ -175,7 +195,6 @@ namespace HcWebApi.Endpoints
             // who don't follow the kennel. Config doesn't change mid-run, so
             // incremental polls omit it and the client caches it from this
             // first response.
-            bool isFullFetch = afterTimestampBoundary is null || afterTimestampBoundary.Value == 0;
             if (isFullFetch)
             {
                 response.TrailTypesConfigJson = await TryGetTrailTypesConfigAsync(request.EventId);
@@ -518,6 +537,130 @@ namespace HcWebApi.Endpoints
             }
         }
 
+        /// <summary>
+        /// The archive reader. Returns the run's tracks from
+        /// HasherEventMap.TrackGzip, or null when the run should come from
+        /// Table Storage: nothing counted on it yet, or some counted runner has
+        /// no archive (still live, or not yet swept). Removed attendees are
+        /// not served — the nightly does not archive them either. Same trim
+        /// and AST/AEN rules as the live path, so a client cannot tell the
+        /// difference except by the "source" field.
+        /// </summary>
+        private async Task<EventPositionsResponse?> TryServeFromArchiveAsync(
+            GetPositionsRequest request, long? trimStartMs, long? trimEndMs, bool applyTrim)
+        {
+            if (!Guid.TryParse(request.EventId, out Guid eventGuid))
+            {
+                return null;
+            }
+            Guid? userGuid = null;
+            if (!string.IsNullOrWhiteSpace(request.UserId))
+            {
+                if (!Guid.TryParse(request.UserId, out Guid u)) return null;
+                userGuid = u;
+            }
+            string? connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                return null;
+            }
+
+            var tracks = new List<(Guid userId, byte[] blob)>();
+            try
+            {
+                using SqlConnection conn = new(connectionString);
+                await conn.OpenAsync();
+                using SqlCommand cmd = new(
+                    "SELECT UserId, TrackGzip FROM HC.HasherEventMap " +
+                    " WHERE EventId = @eventId AND removed = 0 AND TrackPointCount > 0 " +
+                    "   AND (@userId IS NULL OR UserId = @userId);",
+                    conn) { CommandTimeout = 10 };
+                cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
+                cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = (object?)userGuid ?? DBNull.Value;
+                using SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    if (await reader.IsDBNullAsync(1))
+                    {
+                        return null; // a counted runner without an archive: the run is not finished, or not swept yet
+                    }
+                    tracks.Add((reader.GetGuid(0), (byte[])reader[1]));
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning("GetPositions: archive read failed for event {EventId}: {Message}. Serving from Table Storage.", request.EventId, ex.Message);
+                return null;
+            }
+            if (tracks.Count == 0)
+            {
+                return null;
+            }
+
+            var users = new List<UserPositionsResponse>();
+            long latestMs = 0;
+            foreach ((Guid userId, byte[] blob) in tracks)
+            {
+                List<ArchivedTrackPoint> points;
+                try
+                {
+                    points = TrackArchiveCodec.Decode(blob);
+                }
+                catch (Exception ex)
+                {
+                    _log.LogWarning("GetPositions: archive for event {EventId} / user {UserId} would not decode: {Message}. Serving from Table Storage.", request.EventId, userId, ex.Message);
+                    return null;
+                }
+                var positions = new List<PositionResponse>(points.Count);
+                foreach (ArchivedTrackPoint p in points)
+                {
+                    if (applyTrim)
+                    {
+                        if (trimStartMs.HasValue && p.TimestampMs < trimStartMs.Value) continue;
+                        if (trimEndMs.HasValue && p.TimestampMs > trimEndMs.Value) continue;
+                    }
+                    // AST / AEN are the admin's trim boundaries, not places
+                    // anybody stood — never returned as points (as on the live path).
+                    if (string.Equals(p.Type, "AST", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(p.Type, "AEN", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                    // The live path drops a point with no accuracy; the codec
+                    // stores "no accuracy" as 0 and hands it back as null.
+                    if (p.Accuracy is null) continue;
+                    if (p.TimestampMs > latestMs) latestMs = p.TimestampMs;
+                    positions.Add(new PositionResponse
+                    {
+                        Latitude = RoundCoordinate(p.Latitude),
+                        Longitude = RoundCoordinate(p.Longitude),
+                        Accuracy = RoundCoordinate(p.Accuracy.Value),
+                        TimestampMs = p.TimestampMs,
+                        Type = p.Type
+                    });
+                }
+                users.Add(new UserPositionsResponse
+                {
+                    Id = userId.ToString("D").ToLowerInvariant(),
+                    Positions = positions
+                });
+            }
+
+            _log.LogInformation("GetPositions: event {EventId} served from the archive ({Users} track(s)).", request.EventId, users.Count);
+            return new EventPositionsResponse
+            {
+                EventId = request.EventId,
+                // The newest archived point, in the 19-digit form clients hand
+                // back: their next poll then asks Table Storage for anything
+                // newer, which is exactly what a resume would add.
+                LatestServerTimestamp = latestMs > 0 ? latestMs.ToString("D19") : null,
+                TrimStartMs = trimStartMs,
+                TrimEndMs = trimEndMs,
+                Source = "archive",
+                Users = users.OrderBy(u => u.Id, StringComparer.OrdinalIgnoreCase).ToList()
+            };
+        }
+
         private static byte[] CompressToGzip(string content)
         {
             byte[] payloadBytes = Encoding.UTF8.GetBytes(content);
@@ -552,6 +695,9 @@ namespace HcWebApi.Endpoints
             // clients clamp the timeline without rescanning for the markers.
             [JsonProperty("trimStartMs", NullValueHandling = NullValueHandling.Ignore)] public long? TrimStartMs { get; set; }
             [JsonProperty("trimEndMs", NullValueHandling = NullValueHandling.Ignore)] public long? TrimEndMs { get; set; }
+            // "archive" when the tracks came from HasherEventMap.TrackGzip rather
+            // than Table Storage (E5.F6.S4). Absent on the live path.
+            [JsonProperty("source", NullValueHandling = NullValueHandling.Ignore)] public string? Source { get; set; }
             [JsonProperty("users")] public List<UserPositionsResponse> Users { get; set; } = new();
         }
 
