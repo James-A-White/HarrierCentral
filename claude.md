@@ -101,8 +101,10 @@ or reviewing any code.** These are non-negotiable — do not skip them even for
 
 These are firm decisions that must not be revisited or worked around:
 
-- **Never create a new database table without asking James first.** A table
-  is schema, and schema is a product decision: it changes what the database
+- **Never create a new database table without asking James first.** James does
+  not want tables to proliferate: the default answer is a column on an existing
+  table, and a new table is the exception he chooses, never the convenience the
+  code reaches for. A table is schema, and schema is a product decision: it changes what the database
   *is*, it outlives the feature that wanted it, and every later SP, sync
   domain, retention job and backup has to know about it. When a feature
   seems to need a new table, stop and put the choice to James — what the
