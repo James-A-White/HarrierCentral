@@ -55,12 +55,14 @@ Fetches all tracks for an event, optionally incremental.
 ```
 - `eventId` — the event's **internal id** (`HC.Event.id` / mobile `run.event.eventId`), **lowercased**. Not `PublicEventId`.
 - `AfterTimestamp` — 19-digit zero-padded epoch-ms string. Pass `"0000000000000000000"` for full fetch.
-  **⚠ Found 2026-09-10: the server model reads `afterTimestampMs` (body) or `afterTimestamp`
-  (query) — NOT the `AfterTimestamp` body key the app sends — so every app poll has always been
-  a FULL fetch. That is also what the controller relies on: `loadPositions` does
-  `userPositions.assignAll(...)`, a wholesale replace. Do NOT "fix" the key on one side alone;
-  a real incremental poll needs a client-side merge first. For an archived run every poll is now
-  served from the archive (`source: "archive"`), which is cheaper than the partition scan it replaced.**
+  **Incremental polling (E5.F4.S6, built 2026-09-10):** the app ≥ 3.0.21 sends the mark as
+  `afterTimestampMs` (epoch-ms of the storage service's system `Timestamp` = arrival time, from
+  the previous response's `latestServerTimestampMs`); the server answers with every row that
+  ARRIVED from 60 s before the mark, and the controller merges into `_serverTracks` (de-dup by
+  capture time + type), re-filtering only runners that gained a point. Full fetch on reset, in
+  admin edit mode, and every 5 min (deletions). Apps ≤ 3.0.20 sent `AfterTimestamp`, which the
+  server never read: every poll was a full fetch and the controller replaced wholesale — they
+  still work unchanged. The partition is still scanned per poll; only the payload shrinks.
 - `users` — reserved, always pass `[]`
 
 **Response** (gzip, browser/http client decompresses automatically):
