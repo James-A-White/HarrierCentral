@@ -1,7 +1,7 @@
 # PackTrack in the database — plan
 
 **Status: first half shipped (E3.F3.S7, 2026-09-10); second half's WRITER shipped 2026-09-10
-(API 1.0.41, 309 tracks archived), READER built 2026-09-10 in GetPositions (not yet deployed).**
+(API 1.0.41, 309 tracks archived), READER shipped 2026-09-10 in GetPositions (API 1.0.42).**
 
 Reader, as built: on a full fetch (no `afterTimestampMs`), `GetPositions` reads
 `HasherEventMap` rows for the run with `TrackPointCount > 0 AND removed = 0`; if every one has

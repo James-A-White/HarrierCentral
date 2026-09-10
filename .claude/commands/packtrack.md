@@ -55,6 +55,12 @@ Fetches all tracks for an event, optionally incremental.
 ```
 - `eventId` — the event's **internal id** (`HC.Event.id` / mobile `run.event.eventId`), **lowercased**. Not `PublicEventId`.
 - `AfterTimestamp` — 19-digit zero-padded epoch-ms string. Pass `"0000000000000000000"` for full fetch.
+  **⚠ Found 2026-09-10: the server model reads `afterTimestampMs` (body) or `afterTimestamp`
+  (query) — NOT the `AfterTimestamp` body key the app sends — so every app poll has always been
+  a FULL fetch. That is also what the controller relies on: `loadPositions` does
+  `userPositions.assignAll(...)`, a wholesale replace. Do NOT "fix" the key on one side alone;
+  a real incremental poll needs a client-side merge first. For an archived run every poll is now
+  served from the archive (`source: "archive"`), which is cheaper than the partition scan it replaced.**
 - `users` — reserved, always pass `[]`
 
 **Response** (gzip, browser/http client decompresses automatically):
