@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>16</b> epics</div>
     <div><b>77</b> features</div>
-    <div><b>260</b> stories</div>
+    <div><b>261</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -322,7 +322,7 @@
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 18 stories</span></a>
   <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 25 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
-  <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 33 stories</span></a>
+  <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 34 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">4 features · 18 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 14 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">6 features · 24 stories</span></a>
@@ -655,6 +655,7 @@
       <li class="story"><span class="s-id">E5.F4.S3</span><span class="s-text">As a <em>Hasher</em>, I want a sortable list of runners by trail length or proximity so that I can pick who to follow.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E5.F4.S4</span><span class="s-text">As a <em>Hasher</em>, I want one consistent control column across the map, radar and list so that the buttons do not move when I switch view.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E5.F4.S5</span><span class="s-text">As a <em>Hasher</em>, I want a distress mark to show even when I have filtered that trail out so that a call for help is never hidden.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F4.S6</span><span class="s-text">As a <em>Hasher</em> watching a live run, I want each 15-second poll to fetch only the points since the last one so that following the pack for an hour does not re-download the whole run every poll. <em>⚠ Known gap (found 2026-09-10):</em> incremental polling has never actually happened — the app sends the timestamp as <code>AfterTimestamp</code> but <code>GetPositions</code> binds <code>afterTimestampMs</code>, so every poll is a full fetch; and the map controller relies on that, replacing its runner list wholesale on every load (<code>assignAll</code>). The two halves must ship together: the controller merges new points into what it holds (and still honours a removed or trimmed point), then the server key is aligned. Fixing either side alone breaks the map. An archived run is unaffected — its polls are a database read either way.</span><span class="chip c-next">Next</span></li>
     </ul>
   </div>
   <div class="feature">

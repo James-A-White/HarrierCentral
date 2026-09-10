@@ -340,6 +340,7 @@ Recording where the pack went and playing it back. Tracks live in Azure Table St
 | `E5.F4.S3` | As a **Hasher**, I want a sortable list of runners by trail length or proximity so that I can pick who to follow. | `Shipped` |
 | `E5.F4.S4` | As a **Hasher**, I want one consistent control column across the map, radar and list so that the buttons do not move when I switch view. | `Shipped` |
 | `E5.F4.S5` | As a **Hasher**, I want a distress mark to show even when I have filtered that trail out so that a call for help is never hidden. | `Shipped` |
+| `E5.F4.S6` | As a **Hasher** watching a live run, I want each 15-second poll to fetch only the points since the last one so that following the pack for an hour does not re-download the whole run every poll. **⚠ Known gap (found 2026-09-10):** incremental polling has never actually happened — the app sends the timestamp as `AfterTimestamp` but `GetPositions` binds `afterTimestampMs`, so every poll is a full fetch; and the map controller relies on that, replacing its runner list wholesale on every load (`assignAll`). The two halves must ship together: the controller merges new points into what it holds (and still honours a removed or trimmed point), then the server key is aligned. Fixing either side alone breaks the map. An archived run is unaffected — its polls are a database read either way. | `Next` |
 
 ### E5.F5 · Replay & sharing  
 `App` `Web`
