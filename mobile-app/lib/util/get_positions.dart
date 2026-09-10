@@ -69,8 +69,14 @@ class GetPositionsApi {
       body['includeTrimmed'] = true;
     }
 
-    if (latestClientTimestampMs.isNotEmpty) {
-      body['AfterTimestamp'] = latestClientTimestampMs;
+    // Incremental poll: everything that ARRIVED at the server since this
+    // stamp (the latestServerTimestampMs of the last response). The all-zero
+    // stamp means a full fetch and is simply omitted. The key is the one the
+    // server binds — until 2026-09-10 this was sent as 'AfterTimestamp',
+    // which the server never read, so every poll was a full fetch (E5.F4.S6).
+    if (latestClientTimestampMs.isNotEmpty &&
+        latestClientTimestampMs.replaceAll('0', '').isNotEmpty) {
+      body['afterTimestampMs'] = latestClientTimestampMs;
     }
 
     final requestBody = json.encode(body);

@@ -612,6 +612,22 @@ class RunTrackerMapController extends GetxController
   Timer? _autoUpdateTimer;
   String? _afterTimestampMs;
 
+  // What the server has told us so far, per runner, unfiltered and in capture
+  // order. An incremental poll MERGES into this; the filtered/interpolated view
+  // in [userPositions] is rebuilt only for the runners the poll touched. Until
+  // 2026-09-10 every poll was a full fetch that replaced everything (E5.F4.S6):
+  // late in a run that meant the whole pack's tracks were re-downloaded,
+  // re-filtered and redrawn every 15 s — and while that ran, only the viewer's
+  // own dotted tail was on screen.
+  final Map<String, List<TrackPoint>> _serverTracks = {};
+  final Map<String, UserTrack> _filteredTracks = {};
+
+  /// When the last full fetch happened. An incremental poll cannot report a
+  /// deletion (an admin trim, a resumed runner's stripped On Inn), so a full
+  /// fetch is taken again on this interval as the safety net.
+  DateTime? _lastFullFetchAt;
+  static const Duration _fullRefreshInterval = Duration(minutes: 5);
+
   // ── Operations ────────────────────────────────────────────────────────────
   // Lifecycle, data loading, playback control, camera, rendering helpers.
 
@@ -1307,14 +1323,24 @@ class RunTrackerMapController extends GetxController
       _afterTimestampMs = null;
     }
 
-    // print(
-    //   'Loading positions for event ${event.eventId}... at ${DateTime.now().microsecondsSinceEpoch}',
-    // );
+    // Full fetch when we hold nothing, on reset, in the admin editor (its
+    // trims and deletes must be seen at once), and on the safety-net
+    // interval. Otherwise ask only for what ARRIVED since the last poll: the
+    // server answers from a minute before the mark and the merge below
+    // de-duplicates, so a batch still landing when the last poll ran is not
+    // missed (E5.F4.S6).
+    final bool full =
+        _afterTimestampMs == null ||
+        adminEditMode ||
+        _lastFullFetchAt == null ||
+        DateTime.now().difference(_lastFullFetchAt!) > _fullRefreshInterval;
 
     try {
       final data = await _positionsApi.fetchPositions(
         eventId: event.eventId,
-        latestClientTimestampMs: _afterTimestampMs ?? '0000000000000000000',
+        latestClientTimestampMs: full
+            ? '0000000000000000000'
+            : _afterTimestampMs!,
         includeTrimmed: adminEditMode,
       );
       // The controller can close while the fetch is in flight (map page
@@ -1323,7 +1349,11 @@ class RunTrackerMapController extends GetxController
       // playback AnimationController — a zombie that then re-polls and throws
       // every 15s until app kill (observed 71× in the 2026-08-16 device logs).
       if (isClosed) return;
-      _afterTimestampMs = data.latestServerTimestampMs;
+      // A poll that found nothing reports no mark; keep the one we have so
+      // the next poll asks from the same place.
+      if (data.latestServerTimestampMs != null) {
+        _afterTimestampMs = data.latestServerTimestampMs;
+      }
       // Trail-type config arrives on the full fetch only; cache it (incremental
       // polls return null, so don't clobber the cached value).
       if (data.trailTypesConfigJson != null) {
@@ -1334,29 +1364,40 @@ class RunTrackerMapController extends GetxController
       officialStartMs.value = data.trimStartMs;
       officialEndMs.value = data.trimEndMs;
       _startAutoUpdateTimer();
+
+      final Set<String> changed = full
+          ? _replaceServerTracks(data.users)
+          : _mergeServerTracks(data.users);
+      if (full) _lastFullFetchAt = DateTime.now();
+
       await _hydrateLogos(data.users);
       if (isClosed) return; // closed during the logo hydration await
 
-      // Filter and clean track points for each user
-      final cleanedUsers = data.users.map((user) {
-        if (user.positions.length < 2) return user;
-
-        final filteredPositions = _trackFilter.filterAndInterpolate(
-          user.positions,
-        );
-
-        // Log filtering stats for debugging
-        if (user.positions.length != filteredPositions.length) {
-          final stats = _trackFilter.getFilterStats(
-            user.positions,
-            filteredPositions,
-          );
-          debugPrint('Filtered track for ${user.id}: $stats');
+      // Filter and clean the track of every runner this poll touched — the
+      // others keep the view they already have, and nothing of theirs is
+      // recomputed or redrawn.
+      for (final String id in changed) {
+        final List<TrackPoint> raw = _serverTracks[id]!;
+        if (raw.length < 2) {
+          _filteredTracks[id] = UserTrack(id: id, positions: List.of(raw));
+          continue;
         }
+        final filteredPositions = _trackFilter.filterAndInterpolate(raw);
+        if (raw.length != filteredPositions.length) {
+          final stats = _trackFilter.getFilterStats(raw, filteredPositions);
+          debugPrint('Filtered track for $id: $stats');
+        }
+        _filteredTracks[id] = UserTrack(id: id, positions: filteredPositions);
+      }
 
-        return user.copyWith(positions: filteredPositions);
-      }).toList();
+      if (changed.isEmpty && !full) {
+        // Nothing new for anyone: the list stays as it is.
+        lastServerUpdateAt.value = DateTime.now();
+        return;
+      }
 
+      final List<UserTrack> cleanedUsers = _filteredTracks.values.toList()
+        ..sort((a, b) => a.id.toLowerCase().compareTo(b.id.toLowerCase()));
       userPositions.assignAll(cleanedUsers);
       // Re-apply local echoes the replace just wiped; retire the ones the
       // server data now carries.
@@ -1374,6 +1415,61 @@ class RunTrackerMapController extends GetxController
         error,
         s,
       );
+    }
+  }
+
+  // ── Server track merge ────────────────────────────────────────────────────
+
+  /// A full fetch: the server's word replaces everything held. Returns every
+  /// runner id, so every track is re-filtered.
+  Set<String> _replaceServerTracks(List<UserTrack> incoming) {
+    _serverTracks.clear();
+    _filteredTracks.clear();
+    for (final user in incoming) {
+      _serverTracks[user.id] = List<TrackPoint>.of(user.positions)
+        ..sort((a, b) => a.timestampMs.compareTo(b.timestampMs));
+    }
+    return _serverTracks.keys.toSet();
+  }
+
+  /// An incremental poll: append what arrived, de-duplicated by capture time
+  /// and type (the server answers from a minute before the mark on purpose,
+  /// and a re-sent batch comes round again). Returns the runners that
+  /// actually gained a point. A runner absent from the payload is untouched.
+  Set<String> _mergeServerTracks(List<UserTrack> incoming) {
+    final Set<String> changed = {};
+    for (final user in incoming) {
+      if (user.positions.isEmpty) continue;
+      final List<TrackPoint> held = _serverTracks.putIfAbsent(
+        user.id,
+        () => <TrackPoint>[],
+      );
+      final Set<String> seen = {for (final p in held) _pointKey(p)};
+      bool added = false;
+      for (final p in user.positions) {
+        if (seen.add(_pointKey(p))) {
+          held.add(p);
+          added = true;
+        }
+      }
+      if (!added) continue;
+      held.sort((a, b) => a.timestampMs.compareTo(b.timestampMs));
+      _dropStaleTerminators(held);
+      changed.add(user.id);
+    }
+    return changed;
+  }
+
+  static String _pointKey(TrackPoint p) => '${p.timestampMs}|${p.type ?? ''}';
+
+  /// A trail has exactly one On Inn, at the end. A terminator followed by
+  /// later points means the runner resumed: the server deletes that mark on
+  /// their next batch, but this poll may have merged the newer points before
+  /// a full fetch would show the deletion — so drop it here, the same rule
+  /// the server applies.
+  void _dropStaleTerminators(List<TrackPoint> track) {
+    for (int i = track.length - 2; i >= 0; i--) {
+      if (_isOnInn(track[i].type)) track.removeAt(i);
     }
   }
 
