@@ -1,3 +1,18 @@
+## 3.0.19+1334 (2026-09-10)
+
+### New Features
+- **How many ran it.** The PackTrack icon on a past run's card now says how
+  many runners recorded a track, so you can tell a pack replay from one lone
+  trail before opening the run.
+
+### Fixes
+- **A past run's down downs are all there.** The detail page used to show
+  only charges somebody had marked done — and on six of the eight runs with
+  charges, nobody had. Once a run is past, every charge that was not
+  cancelled is listed, the unmarked ones tagged "Not marked done", and
+  anyone who can manage down downs gets a Manage button into the charges
+  page from there, even when the run has none yet.
+
 # Harrier Central Mobile App — Changelog
 
 ## 3.0.18+1333 (2026-09-10)

@@ -1,3 +1,6 @@
+1.0.40+38
+    • StorePositions records each runner's first point, last point and point count on their HC.HasherEventMap row per batch (the table's updatedAt trigger ignores track-only writes); DeletePositions clears them when a runner's last point on the run goes, and drops HC.EventTrack once no runner is left.
+
 1.0.39+37
     • GetPositions no longer returns the AST/AEN trim boundary points — their timestamps already travel as TrimStartMs/TrimEndMs — so no client draws a line out to the venue where the editor writes them.
 
