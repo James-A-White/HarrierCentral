@@ -10,11 +10,15 @@ import 'package:harrier_central/imports.dart';
 /// existing track on the chosen run is never silently overwritten: the user
 /// is told and can replace it.
 class ImportGpxController extends GetxController {
-  ImportGpxController({this.initialFilePath});
+  ImportGpxController({this.initialFilePath, this.autoPick = false});
 
   /// A file the OS handed to the app (see IncomingFileService) — loaded on
   /// open instead of waiting for the user to pick one.
   final String? initialFilePath;
+
+  /// Open the file picker as soon as the page is up (the Hash Runs app-bar
+  /// button has already explained what will happen).
+  final bool autoPick;
 
   final GpxImportService _service = const GpxImportService();
 
@@ -32,7 +36,11 @@ class ImportGpxController extends GetxController {
   void onReady() {
     super.onReady();
     final String? path = initialFilePath;
-    if (path != null && path.isNotEmpty) unawaited(loadPath(path));
+    if (path != null && path.isNotEmpty) {
+      unawaited(loadPath(path));
+    } else if (autoPick) {
+      unawaited(pickFile());
+    }
   }
 
   Future<void> pickFile() async {
@@ -189,15 +197,21 @@ class ImportGpxController extends GetxController {
 }
 
 class ImportGpxPage extends StatelessWidget {
-  const ImportGpxPage({super.key, this.initialFilePath});
+  const ImportGpxPage({super.key, this.initialFilePath, this.autoPick = false});
 
   /// Set when the OS handed the app a file; the page loads it on open.
   final String? initialFilePath;
 
+  /// Open the file picker straight away.
+  final bool autoPick;
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<ImportGpxController>(
-      init: ImportGpxController(initialFilePath: initialFilePath),
+      init: ImportGpxController(
+        initialFilePath: initialFilePath,
+        autoPick: autoPick,
+      ),
       builder: (ImportGpxController c) {
         return AppScaffold(
           appBar: AppBar(

@@ -313,6 +313,15 @@ class MainNavigationPage extends StatelessWidget {
                 ),
                 centerTitle: true,
                 actions: [
+                  // Hash Runs only: import a GPX track (E5.F5.S6). The
+                  // dialog says what will happen before the picker opens.
+                  if (controller.appBarText.value ==
+                      MainNavigationController.tabTitles[0])
+                    IconButton(
+                      tooltip: 'Import GPX track',
+                      icon: const Icon(Icons.route),
+                      onPressed: () => _importGpx(context),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.qr_code_scanner_sharp),
                     onPressed: () => Navigator.push(
@@ -711,4 +720,25 @@ class _SplashLoadingView extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The Hash Runs app-bar GPX button: explain, then pick.
+Future<void> _importGpx(BuildContext context) async {
+  final bool? go = await Utilities.showAlert(
+    'Import a GPX track',
+    'Choose a GPX file exported from your watch or running app.\n\n'
+    'Harrier Central will locate the run it belongs to — from the time '
+    'and place of the track\'s first point — and upload the track as your '
+    'PackTrack trail for that run.',
+    'Choose GPX file',
+    showCancelButton: true,
+  );
+  if (go != true || !context.mounted) return;
+  await Navigator.push<dynamic>(
+    context,
+    MaterialPageRoute<dynamic>(
+      settings: const RouteSettings(),
+      builder: (_) => const ImportGpxPage(autoPick: true),
+    ),
+  );
 }
