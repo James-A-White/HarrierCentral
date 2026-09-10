@@ -12,9 +12,9 @@ class RunActivity {
 
   final bool hasTrack;
 
-  /// Hashers who recorded a track on the run (`HC.EventTrackRunner`). Zero
-  /// for a run tracked before that table existed whose backfill found no
-  /// runner rows — the icon then shows without a number.
+  /// Hashers whose attendance row carries a track (`HC.HasherEventMap`
+  /// `TrackPointCount`). Zero for an old track whose runner had no
+  /// attendance row — the icon then shows without a number.
   final int runners;
   final int photos;
   final int messages;

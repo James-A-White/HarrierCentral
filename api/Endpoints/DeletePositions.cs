@@ -134,9 +134,11 @@ namespace HcWebApi.Endpoints
             return CreateJsonResult(StatusCodes.Status200OK, new { deleted });
         }
 
-        /// When a runner's last point on the run has gone, their HC.EventTrackRunner
-        /// row goes with it — and HC.EventTrack too once no runner is left — so a
-        /// deleted track stops counting on the run's card. Best-effort: a SQL
+        /// When a runner's last point on the run has gone, the track summary on
+        /// their attendance row is cleared — and HC.EventTrack goes too once no
+        /// runner is left — so a deleted track stops counting on the run's card.
+        /// updatedAt is restored through the trigger (see StorePositions) so the
+        /// row is not re-synced for it. Best-effort: a SQL
         /// failure never turns into a failed delete.
         private async Task ForgetEmptyTrackAsync(TableClient eventTable, string filter, string eventId, string userId)
         {
@@ -158,9 +160,12 @@ namespace HcWebApi.Endpoints
                 using SqlConnection conn = new(connectionString);
                 await conn.OpenAsync();
                 using SqlCommand cmd = new(
-                    "DELETE HC.EventTrackRunner WHERE EventId = @eventId AND UserId = @userId; " +
+                    "UPDATE HC.HasherEventMap " +
+                    "   SET TrackFirstPointAt = NULL, TrackLastPointAt = NULL, TrackPointCount = NULL, " +
+                    "       updatedAt = DATEADD(MICROSECOND, -updatedAtBias, updatedAt) " +
+                    " WHERE EventId = @eventId AND UserId = @userId; " +
                     "DELETE HC.EventTrack WHERE EventId = @eventId " +
-                    "  AND NOT EXISTS (SELECT 1 FROM HC.EventTrackRunner r WHERE r.EventId = @eventId);",
+                    "  AND NOT EXISTS (SELECT 1 FROM HC.HasherEventMap h WHERE h.EventId = @eventId AND h.TrackPointCount > 0);",
                     conn)
                 {
                     CommandTimeout = 5
@@ -171,7 +176,7 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                _log.LogWarning("DeletePositions: HC.EventTrackRunner cleanup failed for event {EventId} / user {UserId}: {Message}.",
+                _log.LogWarning("DeletePositions: HasherEventMap track cleanup failed for event {EventId} / user {UserId}: {Message}.",
                     eventId, userId, ex.Message);
             }
         }

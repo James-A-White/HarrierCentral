@@ -8,7 +8,7 @@ AS
 -- Description: What a run has to show — for the activity icons on a run
 --   card. For each event id in the '|'-delimited @eventIds: whether a
 --   PackTrack track exists (HC.EventTrack), how many runners recorded one
---   (HC.EventTrackRunner), how many photos the viewer may see, how many
+--   (HC.HasherEventMap.TrackPointCount > 0), how many photos the viewer may see, how many
 --   chat messages, how many down-down charges. Read-only,
 --   cheap, batched by the app for the cards on screen.
 -- Parameters: @deviceId, @accessToken (auth); @eventIds — HC.Event.id
@@ -73,8 +73,9 @@ BEGIN TRY
          WHERE d.EventId = i.eventId AND d.IsCancelled = 0) AS downDownCount
     FROM ids i
     LEFT JOIN HC.EventTrack t WITH (NOLOCK) ON t.EventId = i.eventId
-    OUTER APPLY (SELECT COUNT(*) AS runnerCount FROM HC.EventTrackRunner tr WITH (NOLOCK)
-                 WHERE tr.EventId = i.eventId HAVING COUNT(*) > 0) r
+    OUTER APPLY (SELECT COUNT(*) AS runnerCount FROM HC.HasherEventMap hem WITH (NOLOCK)
+                 WHERE hem.EventId = i.eventId AND hem.removed = 0 AND hem.TrackPointCount > 0
+                 HAVING COUNT(*) > 0) r
     WHERE i.eventId IS NOT NULL;
 END TRY
 BEGIN CATCH

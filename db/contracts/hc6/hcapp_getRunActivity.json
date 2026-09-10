@@ -13,8 +13,8 @@
     { "index": 0, "name": "RunActivity", "description": "One row per valid id, unordered.",
       "columns": [
         { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.Event.id" },
-        { "name": "hasTrack", "type": "INT", "nullable": false, "description": "1 when HC.EventTrack or HC.EventTrackRunner has a row — at least one GPS point was ever stored for the run" },
-        { "name": "runnerCount", "type": "INT", "nullable": false, "description": "Hashers with a row in HC.EventTrackRunner — how many runners recorded a track (0 for runs tracked before 2026-09-10 whose backfill found no runner rows)" },
+        { "name": "hasTrack", "type": "INT", "nullable": false, "description": "1 when HC.EventTrack has a row or any attendance row carries a track — at least one GPS point was ever stored for the run" },
+        { "name": "runnerCount", "type": "INT", "nullable": false, "description": "Attendance rows (HC.HasherEventMap, not removed) with TrackPointCount > 0 — how many runners recorded a track. 0 for an old track whose runner had no attendance row when the backfill ran" },
         { "name": "photoCount", "type": "INT", "nullable": false, "description": "Photos not deleted, at Status >= 2 or uploaded by the viewer" },
         { "name": "messageCount", "type": "INT", "nullable": false, "description": "Chat messages not removed" },
         { "name": "downDownCount", "type": "INT", "nullable": false, "description": "Down-down charges not cancelled" }

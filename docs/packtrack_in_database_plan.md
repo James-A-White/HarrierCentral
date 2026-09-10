@@ -1,8 +1,11 @@
 # PackTrack in the database — plan
 
-**Status: designed, not built** (checked against the live schema 2026-09-08 —
-`HC.HasherEventMap` has 29 columns and none of them is a track or a tracked flag,
-and no code exists for either).
+**Status: first half building (E3.F3.S7, 2026-09-10); second half designed, not built.**
+`TrackFirstPointAt` / `TrackLastPointAt` / `TrackPointCount` on `HC.HasherEventMap`,
+written by StorePositions per batch (updatedAt deliberately not bumped — the columns are
+in no sync rowset yet), cleared by DeletePositions, backfilled by
+`tools/backfill_hem_track_columns.sh`. James's rule: tracking starts by checking the
+hasher in (RSVP Yes, At Hash) from the phone, so the row always exists.
 
 Backlog: `E5.F6.S3` (the flag) and `E5.F6.S4` (the compressed copy).
 
@@ -17,7 +20,7 @@ Today the ONLY record that a run was tracked is Azure Table Storage. Answering
 that answers it, and no reporting, no adoption metric and no admin view can
 ask it either.
 
-- [ ] **Mark the HEM record when a hasher tracks a run.** A flag (or a first/
+- [x] **Mark the HEM record when a hasher tracks a run.** (E3.F3.S7 — building) A flag (or a first/
       last-point timestamp pair) on `HC.HasherEventMap` set when
       StorePositions accepts that hasher's first point for the event. Cheap:
       one UPDATE per hasher per run, not per point. Makes "who tracked what"

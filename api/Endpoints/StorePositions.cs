@@ -321,27 +321,37 @@ namespace HcWebApi.Endpoints
                 cmd.Parameters.Add("@stored", SqlDbType.Int).Value = storedCount;
                 await cmd.ExecuteNonQueryAsync();
 
-                // One row per runner as well (HC.EventTrackRunner): the count
-                // beside the PackTrack icon on a past run's card, and the
-                // per-hasher record a stored trail will hang off later.
+                // This runner's own summary on their attendance row (E3.F3.S7):
+                // the count beside the PackTrack icon, and where the stored
+                // trail will sit later. The app checks the tracker in as At
+                // Hash when tracking starts, so the row exists; a batch that
+                // arrives before it does is simply not counted. updatedAt is
+                // set to (updatedAt - bias) so the table's trigger restores the
+                // same value — these columns are in no sync rowset, and a bump
+                // per batch would re-sync the row to every client for nothing.
                 if (Guid.TryParse(userId, out Guid userGuid))
                 {
-                    using SqlCommand runnerCmd = new(
-                        "MERGE HC.EventTrackRunner WITH (HOLDLOCK) AS t " +
-                        "USING (SELECT @eventId AS EventId, @userId AS UserId) AS s " +
-                        "    ON t.EventId = s.EventId AND t.UserId = s.UserId " +
-                        "WHEN MATCHED THEN UPDATE SET LastPointAt = SYSUTCDATETIME(), " +
-                        "    PointCount = t.PointCount + @stored, UpdatedAt = SYSUTCDATETIME() " +
-                        "WHEN NOT MATCHED THEN INSERT (EventId, UserId, FirstPointAt, LastPointAt, PointCount, UpdatedAt) " +
-                        "    VALUES (@eventId, @userId, SYSUTCDATETIME(), SYSUTCDATETIME(), @stored, SYSUTCDATETIME());",
+                    using SqlCommand hemCmd = new(
+                        "UPDATE HC.HasherEventMap " +
+                        "   SET TrackFirstPointAt = ISNULL(TrackFirstPointAt, SYSUTCDATETIME()), " +
+                        "       TrackLastPointAt  = SYSUTCDATETIME(), " +
+                        "       TrackPointCount   = ISNULL(TrackPointCount, 0) + @stored, " +
+                        "       updatedAt         = DATEADD(MICROSECOND, -updatedAtBias, updatedAt) " +
+                        " WHERE EventId = @eventId AND UserId = @userId AND removed = 0;",
                         conn)
                     {
                         CommandTimeout = 5
                     };
-                    runnerCmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
-                    runnerCmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = userGuid;
-                    runnerCmd.Parameters.Add("@stored", SqlDbType.Int).Value = storedCount;
-                    await runnerCmd.ExecuteNonQueryAsync();
+                    hemCmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
+                    hemCmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = userGuid;
+                    hemCmd.Parameters.Add("@stored", SqlDbType.Int).Value = storedCount;
+                    int hemRows = await hemCmd.ExecuteNonQueryAsync();
+                    if (hemRows == 0)
+                    {
+                        _log.LogInformation(
+                            "StorePositions: no attendance row yet for event {EventId} / user {UserId} — {Stored} point(s) not counted.",
+                            eventId, userId, storedCount);
+                    }
                 }
             }
             catch (Exception ex)
