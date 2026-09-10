@@ -106,7 +106,6 @@ namespace HcWebApi.Endpoints
                 double? latitude = entity.GetDouble("Latitude");
                 double? longitude = entity.GetDouble("Longitude");
                 double? accuracy = entity.GetDouble("Accuracy");
-                string? serverTimestamp = entity.GetString("ServerTimestampMs") ?? ExtractServerTimestampFromRowKey(entity.RowKey);
                 string? positionType = entity.GetString("Type");
 
                 if (string.IsNullOrWhiteSpace(userId) || latitude is null || longitude is null || accuracy is null)
@@ -120,15 +119,16 @@ namespace HcWebApi.Endpoints
                     continue;
                 }
 
-                if (!string.IsNullOrWhiteSpace(serverTimestamp) &&
-                    (latestServerTimestamp == null || string.CompareOrdinal(serverTimestamp, latestServerTimestamp) > 0))
+                // The mark handed back for the next incremental poll: the
+                // newest system Timestamp in what we scanned, as 19-digit
+                // epoch-ms (the form clients already carry).
+                if (entity.Timestamp.HasValue)
                 {
-                    latestServerTimestamp = serverTimestamp;
-                }
-
-                if (afterTimestampBoundary.HasValue && timestampMs <= afterTimestampBoundary.Value)
-                {
-                    continue;
+                    string arrived = entity.Timestamp.Value.ToUnixTimeMilliseconds().ToString("D19");
+                    if (latestServerTimestamp == null || string.CompareOrdinal(arrived, latestServerTimestamp) > 0)
+                    {
+                        latestServerTimestamp = arrived;
+                    }
                 }
 
                 // Trim: drop points before the official start or after the
@@ -310,61 +310,39 @@ namespace HcWebApi.Endpoints
             return null;
         }
 
-        private const int RowKeySegmentLength = 19;
-        private const string ZeroRowKeySegment = "0000000000000000000";
-        private const string DefaultRowKeyLowerBound = "0000000000000000000-0000000000000000000";
+        /// How far before the caller's mark an incremental poll reaches back.
+        /// A poll can see a later row before an earlier one of another
+        /// runner's batch has finished landing; re-covering the last minute
+        /// picks that row up next time. The client de-duplicates by capture
+        /// time, so the overlap costs bytes, never correctness.
+        private static readonly TimeSpan IncrementalLookback = TimeSpan.FromSeconds(60);
 
+        // An incremental poll asks for everything that ARRIVED since the
+        // caller's last poll. The mark is the storage service's own system
+        // Timestamp — set by the service on every insert and upsert, from one
+        // clock, never written by us — so a runner who flushes five minutes
+        // of buffered points after a signal hole (old capture times, new
+        // arrival) is simply the newest rows. The client hands the mark back
+        // as epoch-ms in afterTimestampMs and the server reaches back
+        // IncrementalLookback from it. A re-sent batch refreshes its rows'
+        // Timestamp and so comes round again; the client de-duplicates.
+        // (Until 2026-09-10 this was a RowKey lower bound on capture time —
+        // and no shipped client ever reached it: the app sent the wrong key
+        // and got a full fetch every poll, E5.F4.S6.)
         private static string BuildEventTableFilter(GetPositionsRequest request)
         {
-            string rowKeyLowerBound = NormalizeRowKeyLowerBound(request.AfterTimestamp);
-
-            var filter = $"PartitionKey eq '{EscapeForFilter(request.EventId)}' and RowKey ge '{EscapeForFilter(rowKeyLowerBound)}'";
+            var filter = $"PartitionKey eq '{EscapeForFilter(request.EventId)}'";
+            long? since = ParseTimestampToLong(request.AfterTimestamp);
+            if (since.HasValue && since.Value > 0)
+            {
+                DateTimeOffset from = DateTimeOffset.FromUnixTimeMilliseconds(since.Value) - IncrementalLookback;
+                filter += $" and Timestamp ge datetime'{from.UtcDateTime:yyyy-MM-ddTHH:mm:ss.fffffffZ}'";
+            }
             if (!string.IsNullOrWhiteSpace(request.UserId))
             {
                 filter += $" and UserId eq '{EscapeForFilter(request.UserId)}'";
             }
-
             return filter;
-        }
-
-        private static string NormalizeRowKeyLowerBound(string? timestamp)
-        {
-            if (string.IsNullOrWhiteSpace(timestamp))
-            {
-                return DefaultRowKeyLowerBound;
-            }
-
-            string trimmed = timestamp.Trim();
-            int dashIndex = trimmed.IndexOf('-');
-            if (dashIndex >= 0)
-            {
-                string serverPartRaw = dashIndex > 0 ? trimmed.Substring(0, dashIndex) : string.Empty;
-                string callerPartRaw = dashIndex + 1 < trimmed.Length ? trimmed.Substring(dashIndex + 1) : string.Empty;
-                string serverPart = NormalizeRowKeySegment(serverPartRaw);
-                string callerPart = NormalizeRowKeySegment(callerPartRaw);
-                return $"{serverPart}-{callerPart}";
-            }
-
-            string normalizedServer = NormalizeRowKeySegment(trimmed);
-            return $"{normalizedServer}-{ZeroRowKeySegment}";
-        }
-
-        private static string NormalizeRowKeySegment(string candidate)
-        {
-            if (string.IsNullOrWhiteSpace(candidate))
-            {
-                return ZeroRowKeySegment;
-            }
-
-            string digitsOnly = new string(candidate.Where(char.IsDigit).ToArray());
-            if (digitsOnly.Length == 0)
-            {
-                return ZeroRowKeySegment;
-            }
-
-            return digitsOnly.Length >= RowKeySegmentLength
-                ? digitsOnly.Substring(digitsOnly.Length - RowKeySegmentLength, RowKeySegmentLength)
-                : digitsOnly.PadLeft(RowKeySegmentLength, '0');
         }
 
         private static long? ParseTimestampToLong(string? timestamp)
