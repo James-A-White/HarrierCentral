@@ -347,6 +347,22 @@ class DrawerMenuState extends State<DrawerMenu> {
                   //   ),
                   // ],
                   ListTile(
+                    leading: const Icon(Icons.upload_file, color: textColor),
+                    title: Text('Import GPX Track', style: _style),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          settings: const RouteSettings(),
+                          builder: (BuildContext context) {
+                            return const ImportGpxPage();
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
                     leading: const Icon(FontAwesome.support, color: textColor),
                     title: Text('Support', style: _style),
                     onTap: () async {

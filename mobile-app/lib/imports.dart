@@ -228,6 +228,7 @@ export 'package:harrier_central/widgets/payment_outbox_banner.dart';
 export 'package:harrier_central/widgets/rose_canvas.dart';
 export 'package:harrier_central/widgets/runner_list_canvas.dart';
 export 'package:harrier_central/pages/menu_pages/settings_page.dart';
+export 'package:harrier_central/pages/menu_pages/import_gpx_page.dart';
 export 'package:harrier_central/pages/menu_pages/support_page.dart';
 
 // pages/misc_pages
@@ -275,6 +276,8 @@ export 'package:harrier_central/services/device_metrics_service.dart';
 export 'package:harrier_central/services/network_meter.dart';
 export 'package:harrier_central/services/location_time_ledger.dart';
 export 'package:harrier_central/services/data_change_service.dart';
+export 'package:harrier_central/services/import/gpx_import_service.dart';
+export 'package:harrier_central/services/incoming_file_service.dart';
 export 'package:harrier_central/services/location_service/location_service.dart';
 export 'package:harrier_central/services/watch_bridge_service.dart';
 export 'package:harrier_central/util/viewer_local_time.dart';
