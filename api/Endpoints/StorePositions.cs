@@ -329,13 +329,20 @@ namespace HcWebApi.Endpoints
                 // updatedAt trigger ignores a write that changes only these three
                 // columns (they are in no sync rowset), so the row is not re-synced
                 // to every client once a minute.
+                //
+                // A new batch also drops any archive already written (TrackGzip,
+                // E5.F6.S4): the archive is the track as it stood when tracking
+                // stopped, and a point arriving after it means the runner
+                // resumed. ArchiveTrack rebuilds it when they stop again, and the
+                // boot sweep catches a track whose stop never reached us.
                 if (Guid.TryParse(userId, out Guid userGuid))
                 {
                     using SqlCommand hemCmd = new(
                         "UPDATE HC.HasherEventMap " +
                         "   SET TrackFirstPointAt = ISNULL(TrackFirstPointAt, SYSUTCDATETIME()), " +
                         "       TrackLastPointAt  = SYSUTCDATETIME(), " +
-                        "       TrackPointCount   = ISNULL(TrackPointCount, 0) + @stored " +
+                        "       TrackPointCount   = ISNULL(TrackPointCount, 0) + @stored, " +
+                        "       TrackGzip         = NULL " +
                         " WHERE EventId = @eventId AND UserId = @userId AND removed = 0;",
                         conn)
                     {

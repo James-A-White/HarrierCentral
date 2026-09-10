@@ -134,12 +134,14 @@ namespace HcWebApi.Endpoints
             return CreateJsonResult(StatusCodes.Status200OK, new { deleted });
         }
 
-        /// When a runner's last point on the run has gone, the track summary on
-        /// their attendance row is cleared — and HC.EventTrack goes too once no
-        /// runner is left — so a deleted track stops counting on the run's card.
-        /// The table's updatedAt trigger ignores a track-only write, so the row
-        /// is not re-synced for it. Best-effort: a SQL
-        /// failure never turns into a failed delete.
+        /// Any delete makes the archived copy of this runner's track (TrackGzip,
+        /// E5.F6.S4) stale, so it is dropped; the boot sweep rebuilds it from
+        /// what remains. When the runner's LAST point on the run has gone, the
+        /// track summary on their attendance row is cleared too — and
+        /// HC.EventTrack goes once no runner is left — so a deleted track stops
+        /// counting on the run's card. The table's updatedAt trigger ignores a
+        /// track-only write, so the row is not re-synced for it. Best-effort: a
+        /// SQL failure never turns into a failed delete.
         private async Task ForgetEmptyTrackAsync(TableClient eventTable, string filter, string eventId, string userId)
         {
             if (!Guid.TryParse(eventId, out Guid eventGuid) || !Guid.TryParse(userId, out Guid userGuid))
@@ -153,15 +155,31 @@ namespace HcWebApi.Endpoints
             }
             try
             {
+                bool trackRemains = false;
                 await foreach (var _ in eventTable.QueryAsync<TableEntity>(filter, maxPerPage: 1, select: new[] { "RowKey" }))
                 {
-                    return; // the runner still has points on this run
+                    trackRemains = true; // the runner still has points on this run
+                    break;
                 }
                 using SqlConnection conn = new(connectionString);
                 await conn.OpenAsync();
+                if (trackRemains)
+                {
+                    using SqlCommand staleCmd = new(
+                        "UPDATE HC.HasherEventMap SET TrackGzip = NULL " +
+                        " WHERE EventId = @eventId AND UserId = @userId;",
+                        conn)
+                    {
+                        CommandTimeout = 5
+                    };
+                    staleCmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
+                    staleCmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = userGuid;
+                    await staleCmd.ExecuteNonQueryAsync();
+                    return;
+                }
                 using SqlCommand cmd = new(
                     "UPDATE HC.HasherEventMap " +
-                    "   SET TrackFirstPointAt = NULL, TrackLastPointAt = NULL, TrackPointCount = NULL " +
+                    "   SET TrackFirstPointAt = NULL, TrackLastPointAt = NULL, TrackPointCount = NULL, TrackGzip = NULL " +
                     " WHERE EventId = @eventId AND UserId = @userId; " +
                     "DELETE HC.EventTrack WHERE EventId = @eventId " +
                     "  AND NOT EXISTS (SELECT 1 FROM HC.HasherEventMap h WHERE h.EventId = @eventId AND h.TrackPointCount > 0);",
