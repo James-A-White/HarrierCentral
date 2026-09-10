@@ -205,7 +205,7 @@ The run is the atom of the whole platform. Creating one, finding it, getting to 
 | `E3.F3.S4` | As a **Hasher**, I want to filter runs by kennel, date range and distance from me so that a long list stays usable. | `Shipped` |
 | `E3.F3.S5` | As a **Hasher** with a slow connection, I want the cached list shown while the sync runs so that I never see "No runs" on a list that is still loading. | `Shipped` |
 | `E3.F3.S6` | As a **Hasher**, I want a past run's card to show whether it has a PackTrack track, photos, chat and down-downs so that I can tell which runs have something to look at without opening each one. | `Shipped` |
-| `E3.F3.S7` | As a **Hasher**, I want the PackTrack icon on a past run's card to say how many runners recorded a track so that I know whether there is a pack to replay or one lone trail. `TrackFirstPointAt` / `TrackLastPointAt` / `TrackPointCount` on the runner's own `HC.HasherEventMap` row (the app checks the tracker in as tracking starts, so the row exists), written by StorePositions (the `updatedAt` trigger ignores a track-only write), backfilled from GetPositions. | `Building` |
+| `E3.F3.S7` | As a **Hasher**, I want the PackTrack icon on a past run's card to say how many runners recorded a track so that I know whether there is a pack to replay or one lone trail. `TrackFirstPointAt` / `TrackLastPointAt` / `TrackPointCount` on the runner's own `HC.HasherEventMap` row (the app checks the tracker in as tracking starts, so the row exists), written by StorePositions (the `updatedAt` trigger ignores a track-only write), backfilled from GetPositions. | `Shipped` |
 
 ### E3.F4 · The run detail view  
 `App` `Portal` `Web`
@@ -429,7 +429,7 @@ What happens after the trail. The Religious Advisor runs the circle, hands out d
 | `E7.F1.S2` | As a **Religious Advisor**, I want to mark one done, undo it, or cancel it so that a mistake in a noisy circle is recoverable. | `Shipped` |
 | `E7.F1.S3` | As a **Hasher**, I want to nominate somebody for a down down so that the circle is not only the RA's ideas. | `Shipped` |
 | `E7.F1.S4` | As a **Religious Advisor**, I want a live count of drinks poured so that the beer meister knows where they stand. | `Shipped` |
-| `E7.F1.S5` | As a **Hasher**, I want a past run's down downs — marked done or not — on its detail page, and as a manager a way into the charges page from there, so that a circle nobody marked done on the night is not lost. Before this, six of the eight runs with charges showed none. | `Building` |
+| `E7.F1.S5` | As a **Hasher**, I want a past run's down downs — marked done or not — on its detail page, and as a manager a way into the charges page from there, so that a circle nobody marked done on the night is not lost. Before this, six of the eight runs with charges showed none. | `Shipped` |
 
 ### E7.F2 · Songs  
 `App` `Portal` `Web`
