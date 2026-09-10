@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>16</b> epics</div>
     <div><b>77</b> features</div>
-    <div><b>261</b> stories</div>
+    <div><b>262</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -322,7 +322,7 @@
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 18 stories</span></a>
   <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 25 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
-  <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 34 stories</span></a>
+  <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 35 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">4 features · 18 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 14 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">6 features · 24 stories</span></a>
@@ -669,6 +669,8 @@
       <li class="story"><span class="s-id">E5.F5.S3</span><span class="s-text">As a <em>Visitor</em>, I want to watch a trail on the web without the app so that I can share it with anybody.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E5.F5.S4</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want a big-screen event wall cycling through live and recent trails so that it can run on a TV at the on-after.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E5.F5.S5</span><span class="s-text">As a <em>Hasher</em>, I want to export a trail as GPX so that I can open it in my own running app.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E5.F5.S6</span><span class="s-text">As a <em>Hasher</em>, I want to import a GPX file from my watch or running app as my PackTrack trail so that a run I recorded elsewhere is on the map with everyone else's. Menu → Import GPX Track → pick a file; the run is found server-side (<code>hcapp_findRunForTrack</code>) from the first point's time (runs starting between 3 h before it and the last point) and position (a recorded start must be within a mile; a run with no location is accepted on time alone after confirming); several matches are offered as a list. The track is thinned to the app's own cadence, our own exported waypoints come back as marks, an On Inn is added at the end, and the points go through StorePositions like a phone's — so replay, the nightly archive and the run-card count need nothing new — then the hasher is checked in At Hash. A file with no timestamps is rejected; an existing track on that run is refused unless the hasher chooses Replace, which deletes it first. The app is also a handler for <code>.gpx</code>: "Open in Harrier Central" from Files, Mail and browser downloads on iOS (document type + <code>harriercentral://</code> scheme, <code>IncomingFileBridge</code>), "Open with"/Share on Android (intent filters, <code>MainActivity</code>), and a Harrier Central row in the iOS share sheet (a <code>ShareExtension</code> target that drops the file in the <code>group.com.harriercentral.app</code> container and opens the app). Strava's and Garmin's own apps do not export GPX — it comes from their websites — so the share path is Files → Harrier Central.</span><span class="chip c-build">Building</span>
+        <span class="gap">foreign waypoints are ignored. Not yet deployed or device-tested.</span></li>
     </ul>
   </div>
   <div class="feature">

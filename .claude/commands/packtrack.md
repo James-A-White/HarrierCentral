@@ -31,6 +31,8 @@ id returns nothing). Azure Table partition keys are case-sensitive.
 | Live run shell + pages | `lib/pages/live_run_pages/` |
 | Point type enum | `lib/util/enums.dart:600` (`HashRunPointTypes`) |
 | API URL constants | `lib/util/constants.dart:95-96` |
+| GPX export | `lib/services/export/gpx_export_service.dart` (marks as `<wpt>`: `<type>` = label, `<name>` = label or custom text) |
+| GPX import (E5.F5.S6) | `lib/services/import/gpx_import_service.dart` + `lib/pages/menu_pages/import_gpx_page.dart`; run found by `hcapp_findRunForTrack` (first point's time ±window, start within a mile); points thinned to ~5 m / 15 s and sent through StorePositions; our waypoints round-trip by label words; On Inn appended; existing track = refuse-or-replace via DeletePositions. Files handed to the app: `lib/services/incoming_file_service.dart` ↔ `ios/Runner/IncomingFileBridge.swift` / `android MainActivity` over `harrier_central/incoming_file`; iOS share sheet = `ios/ShareExtension/` target (app group `group.com.harriercentral.app`, bundle `com.harriercentral.app.share`, created with the `xcodeproj` gem) |
 
 ---
 
