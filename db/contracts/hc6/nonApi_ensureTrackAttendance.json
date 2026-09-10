@@ -1,0 +1,44 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_ensureTrackAttendance",
+  "version": "1.0.0",
+  "description": "Creates the attendance row for a runner who has a PackTrack trail on a run but no HC.HasherEventMap row (tracks recorded before the app checked the tracker in as tracking starts). Called only by the nightly track archive (TrackArchiver / ArchiveTrack Azure Functions) when a run's partition holds points for a hasher with no row. The insert mirrors a fresh At Hash check-in from hcapp_setEventAttendence and the run counts are recomputed the same way. A row that already exists in any state, including removed, is left alone.",
+  "parameters": [
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.EventId",
+      "description": "The run the trail belongs to. Must exist and not be deleted."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.UserId",
+      "description": "The runner. Must exist and not be deleted."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "EnsureResult",
+      "description": "One row saying what happened.",
+      "columns": [
+        { "name": "Inserted", "type": "INT", "nullable": false, "description": "1 when a row was created, else 0." },
+        { "name": "Reason", "type": "VARCHAR(20)", "nullable": false, "description": "'inserted' | 'rowExists' | 'noHasher' | 'noEvent'." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Inserts one HC.HasherEventMap row (AttendenceState 20, RsvpState 3, IsHare 0, VirginVisitorType 0, KennelId from HC.Event) under UPDLOCK/HOLDLOCK on the existence check — fires the HEM updatedAt trigger so the row syncs to the runner's clients.",
+    "EXEC HC6.nonApi_updateRunCountsByUser for the runner after the insert, outside the transaction, exactly as hcapp_setEventAttendence does — the runner's run counts change.",
+    "On any runtime error: rolls back, logs to HC.ErrorLog (with userId and eventId), re-throws."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}
