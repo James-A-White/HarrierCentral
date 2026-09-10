@@ -1,0 +1,52 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_replaceBrokenPhoto",
+  "version": "1.0.0",
+  "description": "Replaces a profile photo whose blob no longer exists with a bundled avatar (E16.F3.S1). Called only by the ReportBrokenPhoto Azure Function, and only after that function has HEAD-checked the URL against blob storage and been told it is gone — a phone's report is never acted on unverified. Corrects HC.Hasher.Photo (replaced) and HC.HasherKennelMap.KennelUserPhoto (cleared; the app falls back to the hasher photo). Both tables re-sync the corrected rows through their updatedAt triggers.",
+  "parameters": [
+    {
+      "name": "url",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.Photo",
+      "description": "The photo URL the phone could not load and storage has confirmed missing. Matched exactly against Hasher.Photo (NVARCHAR(1000)) and HasherKennelMap.KennelUserPhoto (NVARCHAR(500))."
+    },
+    {
+      "name": "replacement",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.Photo",
+      "description": "The bundled-avatar URL written in place of the missing photo (https://harriercentral.blob.core.windows.net/profile-photos/avatar-N.jpg)."
+    },
+    {
+      "name": "httpStatus",
+      "type": "INT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The status blob storage answered the HEAD with (404 or 410). Recorded in the LOG.GeneralLog line only."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ReplacedCounts",
+      "description": "One row: how many rows each table corrected. Zero in both means the URL was already gone from the database (a second phone reporting the same photo).",
+      "columns": [
+        { "name": "HasherRows", "type": "INT", "nullable": false, "description": "HC.Hasher rows whose Photo was replaced." },
+        { "name": "KennelRows", "type": "INT", "nullable": false, "description": "HC.HasherKennelMap rows whose KennelUserPhoto was cleared." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher SET Photo = @replacement WHERE Photo = @url AND deleted = 0 — fires trgUpdateModifiedOnDateForHasher so every client re-syncs the hasher on its next delta.",
+    "UPDATE HC.HasherKennelMap SET KennelUserPhoto = NULL WHERE KennelUserPhoto = @url — fires the HKM updatedAt trigger.",
+    "Inserts one LOG.GeneralLog row (LogSource 'ReportBrokenPhoto') recording the URL, the status and the row counts.",
+    "On any runtime error: rolls back, logs to HC.ErrorLog, re-throws."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}
