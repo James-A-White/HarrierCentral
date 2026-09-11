@@ -1,3 +1,9 @@
+## 3.0.24+1339 (2026-09-11)
+
+### Fixes
+- **My notes is readable.** Its helper text, share switch and counter were
+  dark on the dark run page; they now use the page's white text.
+
 ## 3.0.23+1338 (2026-09-11)
 
 ### New Features
