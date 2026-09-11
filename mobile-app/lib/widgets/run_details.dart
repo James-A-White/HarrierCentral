@@ -1375,10 +1375,12 @@ class _MyNotesSection extends StatelessWidget {
                 'Your own words about this run — also filled in from a Strava '
                 'title and description when you import a track. Private unless '
                 'you choose to share.',
-                style: ts_alertDialogBody,
+                style: ts_body.copyWith(fontSize: 16),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
+                activeThumbColor: Colors.white,
+                activeTrackColor: customRed,
                 value: c.shareRequested.value,
                 onChanged: c.savingShare.value ? null : c.setShare,
                 title: Text('Share these notes', style: ts_alertDialogBody),
@@ -1389,7 +1391,7 @@ class _MyNotesSection extends StatelessWidget {
                             : 'Sharing has been turned off for you by the kennel '
                                   'or Harrier Central; your notes stay private.')
                       : 'Only you can see them.',
-                  style: ts_alertDialogBody,
+                  style: ts_body.copyWith(fontSize: 16),
                 ),
               ),
               const SizedBox(height: 10),
@@ -1401,11 +1403,13 @@ class _MyNotesSection extends StatelessWidget {
                 maxLength: 4000,
                 keyboardType: TextInputType.multiline,
                 textCapitalization: TextCapitalization.sentences,
+                style: const TextStyle(color: Colors.black87, fontSize: 16),
                 decoration: const InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(),
                   hintText: 'How was the run?',
+                  counterStyle: TextStyle(color: Colors.white70),
                 ),
               ),
               if (c.dirty.value) ...<Widget>[
