@@ -1,0 +1,39 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_setTrackNotes",
+  "version": "1.0.0",
+  "description": "Fills a hasher's notes on a run from an imported file's title and description, only when they have none (E3.F4.S5). Called by the track-import processor for every activity that matched a run, whether or not the track was imported. A note the hasher wrote is never touched.",
+  "parameters": [
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.EventId",
+      "description": ""
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.UserId",
+      "description": ""
+    },
+    {
+      "name": "notes",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "HasherEventMap.Notes",
+      "description": "Title, blank line, description; trimmed; blank ⇒ no-op."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "UPDATE HC.HasherEventMap SET Notes WHERE Notes IS NULL or blank — fires the updatedAt trigger."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

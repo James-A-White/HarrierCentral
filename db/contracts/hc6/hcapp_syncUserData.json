@@ -128,7 +128,7 @@
     {
       "index": 0,
       "name": "AuthError",
-      "description": "Returned when authentication fails. errorType=11 (auth). This rowset is emitted instead of any data rowsets \u2014 execution returns immediately.",
+      "description": "Returned when authentication fails. errorType=11 (auth). This rowset is emitted instead of any data rowsets — execution returns immediately.",
       "columns": [
         {
           "name": "errorId",
@@ -171,7 +171,7 @@
     {
       "index": "conditional",
       "name": "Hashers",
-      "description": "All HC.Hasher rows updated after @hashersUpdatedAfter watermark. Not user-scoped \u2014 returns all hashers. Page size: 1000 (when paging enabled). Emitted only when @hashersUpdatedAfter != 'ignore'.",
+      "description": "All HC.Hasher rows updated after @hashersUpdatedAfter watermark. Not user-scoped — returns all hashers. Page size: 1000 (when paging enabled). Emitted only when @hashersUpdatedAfter != 'ignore'.",
       "columns": [
         {
           "name": "hasherId",
@@ -231,7 +231,7 @@
           "name": "updatedAt",
           "type": "NVARCHAR(50)",
           "nullable": false,
-          "description": "Hasher.updatedAt serialised as local DATETIME2 string (timezone stripped). Note: COALESCE(updatedAt, GETDATE()) used \u2014 rows without updatedAt receive current server time."
+          "description": "Hasher.updatedAt serialised as local DATETIME2 string (timezone stripped). Note: COALESCE(updatedAt, GETDATE()) used — rows without updatedAt receive current server time."
         },
         {
           "name": "removed",
@@ -704,7 +704,7 @@
           "name": "allowCredit",
           "type": "SMALLINT",
           "nullable": false,
-          "description": "Kennel.AllowCredit \u2014 master flag: whether credit payments are allowed for this kennel (1=on, default 1)."
+          "description": "Kennel.AllowCredit — master flag: whether credit payments are allowed for this kennel (1=on, default 1)."
         },
         {
           "name": "allowSelfPayment",
@@ -963,7 +963,7 @@
     {
       "index": "conditional",
       "name": "HasherKennelMap",
-      "description": "HC.HasherKennelMap rows for the authenticated user updated after @hasherKennelMapUpdatedAfter watermark (WHERE UserId = @userId). isMember is computed dynamically from MembershipExpirationDate > GETDATE() \u2014 not from the stored IsMember column. authorizedDeviceList and authorizedDeviceCount are returned as empty string / 0 respectively (stripped in HC6). Page size: 250. Emitted only when @hasherKennelMapUpdatedAfter != 'ignore'.",
+      "description": "HC.HasherKennelMap rows for the authenticated user updated after @hasherKennelMapUpdatedAfter watermark (WHERE UserId = @userId). isMember is computed dynamically from MembershipExpirationDate > GETDATE() — not from the stored IsMember column. authorizedDeviceList and authorizedDeviceCount are returned as empty string / 0 respectively (stripped in HC6). Page size: 250. Emitted only when @hasherKennelMapUpdatedAfter != 'ignore'.",
       "columns": [
         {
           "name": "hkmId",
@@ -1273,6 +1273,12 @@
           "description": "HasherEventMap.PhoneNumber."
         },
         {
+          "name": "notes",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "The hasher's own private notes on the run (E3.F4.S5, 2026-09-11). User sync only — not in the kennel or event admin rowsets."
+        },
+        {
           "name": "hemEventNumber",
           "type": "INT",
           "nullable": true,
@@ -1535,7 +1541,7 @@
           "name": "eventDescription",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "Event.SyncDescription (NOT Event.EventDescription \u2014 this differs from the force-replicate path which uses FB/non-FB EventDescription)."
+          "description": "Event.SyncDescription (NOT Event.EventDescription — this differs from the force-replicate path which uses FB/non-FB EventDescription)."
         },
         {
           "name": "locationOneLineDesc",
@@ -2011,7 +2017,7 @@
           "name": "eventDescription",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "FB/non-FB EventDescription (NOT SyncDescription \u2014 this differs from NarrowEvents which uses SyncDescription)."
+          "description": "FB/non-FB EventDescription (NOT SyncDescription — this differs from NarrowEvents which uses SyncDescription)."
         },
         {
           "name": "locationOneLineDesc",
@@ -2134,7 +2140,7 @@
   "codeSmells": [
     {
       "severity": "high",
-      "issue": "updatedAt serialised as local DATETIME2 string \u2014 timezone stripped",
+      "issue": "updatedAt serialised as local DATETIME2 string — timezone stripped",
       "detail": "All updatedAt columns are serialised via CONVERT(NVARCHAR(50), CAST(updatedAt AS DATETIME2)), which strips the timezone offset. Sync cursors sent by clients in different timezones can silently drift or replay rows. Should use DATETIMEOFFSET formatted string instead."
     },
     {
@@ -2149,7 +2155,7 @@
     },
     {
       "severity": "medium",
-      "issue": "Watermark strings cast directly without TRY_CAST \u2014 invalid values throw unhandled exceptions",
+      "issue": "Watermark strings cast directly without TRY_CAST — invalid values throw unhandled exceptions",
       "detail": "Lines such as SET @ua = CAST(@hashersUpdatedAfter AS DATETIMEOFFSET(7)) will throw if the caller passes a malformed string. There is no TRY_CAST or validation guard. A bad watermark value from a misbehaving client causes an unhandled SQL exception."
     },
     {
@@ -2159,12 +2165,12 @@
     },
     {
       "severity": "medium",
-      "issue": "Hasher.updatedAt uses COALESCE(updatedAt, GETDATE()) \u2014 rows with NULL updatedAt receive current server time",
+      "issue": "Hasher.updatedAt uses COALESCE(updatedAt, GETDATE()) — rows with NULL updatedAt receive current server time",
       "detail": "The Hashers rowset uses COALESCE(h.updatedAt, GETDATE()) when serialising updatedAt. If a row has a NULL updatedAt it will be returned with the current server timestamp, which can cause phantom re-syncs across polling cycles."
     },
     {
       "severity": "medium",
-      "issue": "Payment dates downcast from DATETIMEOFFSET to DATETIME \u2014 timezone and sub-second precision lost",
+      "issue": "Payment dates downcast from DATETIMEOFFSET to DATETIME — timezone and sub-second precision lost",
       "detail": "paidDate, cancelledDate, and confirmedDate are all CAST to DATETIME. The Payment table stores these as DATETIMEOFFSET(7). Downcasting loses the timezone offset and truncates precision. Client timestamps for payment events may be inaccurate."
     },
     {
@@ -2179,7 +2185,7 @@
     }
   ],
   "breakingChanges": [
-    "isMember in HasherKennelMap rowset is now computed dynamically from MembershipExpirationDate > GETDATE() \u2014 HC5 read the stored IsMember column. Members whose stored IsMember flag was stale will now see accurate membership state, which may change behaviour for kennels where the column was not kept in sync.",
+    "isMember in HasherKennelMap rowset is now computed dynamically from MembershipExpirationDate > GETDATE() — HC5 read the stored IsMember column. Members whose stored IsMember flag was stale will now see accurate membership state, which may change behaviour for kennels where the column was not kept in sync.",
     "@procName parameter widened from NVARCHAR(100) in HC5 to NVARCHAR(128) in HC6 to match OBJECT_NAME() return type."
   ]
 }

@@ -421,6 +421,7 @@ BEGIN
         hem.DisplayName                                                     AS displayName,
         hem.Email                                                           AS email,
         hem.PhoneNumber                                                     AS phoneNumber,
+        hem.Notes                                                           AS notes,
         evt.EventNumber                                                     AS hemEventNumber,
         evt.CountryId                                                       AS hemCountryId,
         CASE WHEN evt.UseFbRunDetails = 1 THEN evt.FbEventName  ELSE evt.EventName  END AS hemEventName,

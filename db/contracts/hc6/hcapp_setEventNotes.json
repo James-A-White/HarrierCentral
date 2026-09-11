@@ -1,0 +1,108 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setEventNotes",
+  "version": "1.0.0",
+  "description": "The hasher's own private notes on a run (E3.F4.S5). Writes HasherEventMap.Notes on their row for the event (blank clears), then hands the changed row back through hcapp_syncUserData. Requires an existing attendance row (RSVPed, attended or tracked) — errorCode 1200 otherwise.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Standard token: userId#hcapp_setEventNotes#timeBlocks#deviceSecret."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.EventId",
+      "description": "The run."
+    },
+    {
+      "name": "notes",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "HasherEventMap.Notes",
+      "description": "Up to 4000 characters; NULL or blank clears. Trimmed."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The app's HEM sync watermark, passed to hcapp_syncUserData."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure, or 1200 when the hasher has no row on the run."
+    },
+    {
+      "index": 0,
+      "name": "Success",
+      "description": "{ success, errorCode, errorType }",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1"
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL"
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "adHocData",
+      "description": "adHocDataId = 1.",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "1"
+        },
+        {
+          "name": "hasherEventMapId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "The row written, lowercased."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "syncUserData",
+      "description": "Rowsets from hcapp_syncUserData (HEM only; the rest 'ignore')."
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherEventMap SET Notes, updatedAt — the trigger re-syncs the row to the owner's devices."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}
