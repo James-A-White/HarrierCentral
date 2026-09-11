@@ -28,6 +28,8 @@ abstract class HasherEventMapModel
     String? displayName,
     String? email,
     String? phoneNumber,
+    // The hasher's own private notes on the run (user sync only).
+    String? notes,
 
     // these fields are cached from the event itself. This enables us to keep run count information without
     // having to have the actual run cached on the phone

@@ -1037,6 +1037,7 @@ class RunDetails extends StatelessWidget {
               ),
             ),
           ],
+          _MyNotesSection(eventId: event.eventId),
           ?bottomExtension,
         ],
       ),
@@ -1252,6 +1253,132 @@ class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
           ),
         ),
       ],
+    );
+  }
+}
+
+
+// ── My notes ────────────────────────────────────────────────────────────────
+
+/// The hasher's own private notes on this run (E3.F4.S5). Shown only when
+/// they have an attendance row (RSVPed, attended, or tracked); saved through
+/// hcapp_setEventNotes, which hands the changed row back via the user sync.
+class RunNotesController extends GetxController {
+  RunNotesController(this.eventId);
+
+  final String eventId;
+  final TextEditingController text = TextEditingController();
+  final RxBool hasRow = false.obs;
+  final RxBool dirty = false.obs;
+  final RxBool saving = false.obs;
+  final RxString saved = ''.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    unawaited(_load());
+  }
+
+  @override
+  void onClose() {
+    text.dispose();
+    super.onClose();
+  }
+
+  Future<void> _load() async {
+    final Map<String, dynamic>? row =
+        await QueryHasherEventMap.queryOwnRow(eventId);
+    if (isClosed) return;
+    hasRow.value = row != null;
+    final String notes =
+        (row?[tableModel.hasherEventMapTableHelper.colNotes] as String?) ?? '';
+    saved.value = notes;
+    text.text = notes;
+    dirty.value = false;
+  }
+
+  void onChanged(String _) => dirty.value = text.text != saved.value;
+
+  Future<void> save() async {
+    if (saving.value || !dirty.value) return;
+    saving.value = true;
+    try {
+      final String notes = text.text.trim();
+      final bool ok =
+          await tableModel.hasherEventMapService.setEventNotes(eventId, notes);
+      if (ok) {
+        saved.value = notes;
+        dirty.value = false;
+      } else {
+        await Utilities.showAlert(
+          'Notes not saved',
+          'Your notes could not be saved. Check your connection and try again.',
+          'OK',
+        );
+      }
+    } finally {
+      saving.value = false;
+    }
+  }
+}
+
+class _MyNotesSection extends StatelessWidget {
+  const _MyNotesSection({required this.eventId});
+
+  final String eventId;
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<RunNotesController>(
+      init: RunNotesController(eventId),
+      tag: 'notes-$eventId',
+      builder: (RunNotesController c) => Obx(() {
+        if (!c.hasRow.value) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text('My notes', style: ts_headingLarge),
+              const SizedBox(height: 4),
+              Text(
+                'Private to you. Your own words about this run — also filled '
+                'in from a Strava title and description when you import a track.',
+                style: ts_alertDialogBody,
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: c.text,
+                onChanged: c.onChanged,
+                minLines: 3,
+                maxLines: null,
+                maxLength: 4000,
+                keyboardType: TextInputType.multiline,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(),
+                  hintText: 'How was the run?',
+                ),
+              ),
+              if (c.dirty.value) ...<Widget>[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: c.saving.value ? null : c.save,
+                    child: Text(
+                      c.saving.value ? 'Saving…' : 'Save notes',
+                      style: ts_button,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      }),
     );
   }
 }

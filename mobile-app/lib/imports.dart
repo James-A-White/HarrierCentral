@@ -171,6 +171,7 @@ export 'package:harrier_central/database/db_errors.dart';
 export 'package:harrier_central/database/notifications_table.dart';
 export 'package:harrier_central/database/query_kennels.dart';
 export 'package:harrier_central/database/query_runs.dart';
+export 'package:harrier_central/database/query_hasher_event_map.dart';
 export 'package:harrier_central/database/query_users.dart';
 export 'package:harrier_central/database/tables.dart';
 

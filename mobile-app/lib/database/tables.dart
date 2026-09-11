@@ -430,6 +430,19 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 528 — the hasher's private run notes (E3.F4.S5). The column
+    // exists in all three domains' tables (one CREATE TABLE); only the user
+    // sync fills it.
+    MigrationsModel(
+      dbVersion: 528,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colNotes} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colNotes} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colNotes} TEXT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
   ];
 
   static Future<void> createTables(

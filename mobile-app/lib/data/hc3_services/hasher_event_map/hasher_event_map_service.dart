@@ -47,6 +47,7 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
   final String colDisplayName = 'displayName';
   final String colEmail = 'email';
   final String colPhoneNumber = 'phoneNumber';
+  final String colNotes = 'notes';
 
   final String colEventName = 'hemEventName';
   final String colEventNumber = 'hemEventNumber';
@@ -91,6 +92,7 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
             $colDisplayName TEXT,
             $colEmail TEXT,
             $colPhoneNumber TEXT,
+            $colNotes TEXT,
 
             $colEventName TEXT,
             $colEventNumber INT,
@@ -517,6 +519,49 @@ class HasherEventMapService {
     }
 
     return adHocData;
+  }
+
+  /// The hasher's own private notes on a run (E3.F4.S5). Blank clears.
+  /// The SP updates their attendance row and hands the changed row back
+  /// through the user sync, so the local row (and every other device of
+  /// theirs) carries the new text.
+  Future<bool> setEventNotes(String eventId, String notes) async {
+    if (Utilities.isNotConnected()) return false;
+
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final int hasherEventMapLastUpdated = await tableModel.baseService
+        .getLastUpdatedTime(
+          database,
+          tableModel.hasherEventMapTableHelper,
+          tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user),
+          tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
+        );
+    final DateTime hasherEventMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
+
+    final Map<String, Object?> body = <String, Object?>{
+      'queryType': 'setEventNotes',
+      'deviceId': deviceId,
+      'eventId': normalizeUuid(eventId),
+      'notes': notes,
+      'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+    };
+
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      body['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_setEventNotes',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    });
+    if (responseBody.startsWith(ERROR_PREFIX)) return false;
+    await tableModel.syncUserDataService
+        .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
+    return true;
   }
 
   Future<List<dynamic>> joinEventAsVisitor(
