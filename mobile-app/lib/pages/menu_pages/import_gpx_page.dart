@@ -82,13 +82,7 @@ class ImportGpxController extends GetxController {
       );
       if (_cancelled) return;
       status.value = 'Finding your runs…';
-      TrackImportJob j = await _service.process(jobId);
-      job.value = j;
-      while (!j.isFinished && !_cancelled) {
-        status.value = _progressText(j);
-        j = await _service.process(jobId);
-        job.value = j;
-      }
+      TrackImportJob j = await _driveToCompletion(jobId);
       status.value = _summaryText(j);
     } on TrackImportException catch (e) {
       status.value = e.message;
@@ -98,6 +92,44 @@ class ImportGpxController extends GetxController {
     } finally {
       busy.value = false;
     }
+  }
+
+  /// Calls the server for slices until the job is done. A slice that times
+  /// out or fails on the wire is NOT a failed import — the server carries on
+  /// with it — so the loop waits, reads the job as stored, and continues from
+  /// wherever the server got to. It gives up only when nothing has moved
+  /// after several attempts, and the nightly backstop finishes the job then.
+  Future<TrackImportJob> _driveToCompletion(String jobId) async {
+    int stalls = 0;
+    int lastIndex = -1;
+    TrackImportJob? j;
+    while (!_cancelled) {
+      try {
+        j = await _service.process(jobId);
+        stalls = 0;
+      } catch (e) {
+        BootLogger.logBreadcrumb('TrackImport: slice failed ($e) — polling');
+        await Future<void>.delayed(const Duration(seconds: 5));
+        final TrackImportJob? stored = await _service.fetch(jobId);
+        if (stored != null) j = stored;
+        if (j == null || j.nextIndex == lastIndex) {
+          if (++stalls >= 4) {
+            throw const TrackImportException(
+              'The import stopped responding. What was done so far is kept, '
+              'and the rest will be finished overnight — check back tomorrow.',
+            );
+          }
+        } else {
+          stalls = 0;
+        }
+      }
+      job.value = j;
+      if (j == null) continue;
+      if (j.isFinished) return j;
+      lastIndex = j.nextIndex;
+      status.value = _progressText(j);
+    }
+    return j ?? (throw const TrackImportException('Cancelled.'));
   }
 
   /// A held activity: the user picked a run (or confirmed the only one).
