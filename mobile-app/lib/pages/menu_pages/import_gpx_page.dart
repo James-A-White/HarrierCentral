@@ -405,54 +405,136 @@ class _ActivityCard extends StatelessWidget {
         ? Colors.orange.shade800
         : Colors.grey;
     final String detail = ImportGpxController.describeActivity(a);
+    // On the white card: dark text throughout.
+    final TextStyle heading = ts_alertDialogTitle.copyWith(fontSize: 18);
+    final TextStyle body = ts_alertDialogBody.copyWith(fontSize: 15);
+    final TextStyle small = ts_alertDialogBody.copyWith(
+      fontSize: 13,
+      color: Colors.black54,
+    );
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Icon(icon, color: color, size: 20),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(icon, color: color, size: 22),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    title,
-                    style: ts_titleCondensed,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        detail.isNotEmpty ? detail : title,
+                        style: heading,
+                      ),
+                      if (detail.isNotEmpty)
+                        Text(title, style: small, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 2),
+                      Text(
+                        a.outcomeText,
+                        style: body.copyWith(
+                          color: a.isHeld ? Colors.orange.shade900 : Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            if (detail.isNotEmpty) Text(detail, style: ts_alertDialogBody),
-            Text(a.outcomeText, style: ts_alertDialogBody),
-            if (a.isHeld)
-              for (final ImportCandidate cand in a.candidates) ...<Widget>[
-                const SizedBox(height: 6),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        '${cand.eventName} — ${cand.kennelName}\n'
-                        '${ImportGpxController.describeStart(cand.startLocal)}'
-                        '${cand.hasLocation ? '  ·  ${cand.distanceMeters} m from the track start' : '  ·  no recorded start'}'
-                        '${cand.existingTrackPoints > 0 ? '  ·  you have a track here' : ''}',
-                        style: ts_alertDialogBody,
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: busy ? null : () => onResolve(cand),
-                      child: Text(
-                        cand.existingTrackPoints > 0 ? 'Replace' : 'Import',
-                        style: ts_button,
-                      ),
-                    ),
-                  ],
+            if (a.isHeld) ...<Widget>[
+              const SizedBox(height: 6),
+              for (final ImportCandidate cand in a.candidates)
+                _CandidateRow(
+                  candidate: cand,
+                  busy: busy,
+                  onResolve: () => onResolve(cand),
                 ),
-              ],
+            ] else
+              const SizedBox(height: 6),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// One run the hasher can choose for a held activity: name, kennel, when
+/// and how far, a flag if they already have a track there, and its button.
+class _CandidateRow extends StatelessWidget {
+  const _CandidateRow({
+    required this.candidate,
+    required this.busy,
+    required this.onResolve,
+  });
+
+  final ImportCandidate candidate;
+  final bool busy;
+  final VoidCallback onResolve;
+
+  @override
+  Widget build(BuildContext context) {
+    final ImportCandidate c = candidate;
+    final TextStyle name = ts_alertDialogTitle.copyWith(fontSize: 17);
+    final TextStyle line = ts_alertDialogBody.copyWith(fontSize: 14);
+    final TextStyle small = ts_alertDialogBody.copyWith(
+      fontSize: 13,
+      color: Colors.black54,
+    );
+    final String when = ImportGpxController.describeStart(c.startLocal);
+    final String where = c.hasLocation
+        ? '${c.distanceMeters} m from where the track starts'
+        : 'no recorded start location';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        const Divider(height: 1, thickness: 1, color: Color(0xFFE0E0E0)),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(c.eventName, style: name),
+                    Text(c.kennelName, style: small),
+                    const SizedBox(height: 4),
+                    Text('$when  ·  $where', style: line),
+                    if (c.existingTrackPoints > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          'You already have a track on this run',
+                          style: line.copyWith(color: Colors.orange.shade900),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: busy ? null : onResolve,
+                style: ElevatedButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: Text(
+                  c.existingTrackPoints > 0 ? 'Replace' : 'Import',
+                  style: ts_button,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
