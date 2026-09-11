@@ -1,0 +1,67 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_getPendingTrackImports",
+  "version": "1.0.0",
+  "description": "The timer backstop's worklist: jobs uploaded and never started, or started more than @staleMinutes ago and not finished. Oldest first.",
+  "parameters": [
+    {
+      "name": "staleMinutes",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Default 15."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "PendingJobs",
+      "description": "",
+      "columns": [
+        {
+          "name": "jobId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "blobUrl",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "fileName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "nextIndex",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "resultJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

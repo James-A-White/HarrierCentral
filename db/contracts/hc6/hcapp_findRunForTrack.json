@@ -1,33 +1,123 @@
 {
   "schema": "HC6",
   "name": "hcapp_findRunForTrack",
-  "version": "1.0.0",
-  "description": "Which run does an imported GPX file belong to (E5.F5.S6)? Given a track's first and last point times (UTC) and its first point's position, returns the runs that started between three hours before the first point and the last point, nearest start first, with the distance from each run's recorded start to that first point, whether the caller already has a PackTrack trail on it, and their attendance state. The app applies the rule: a run with a recorded location must be within a mile; one with no location is accepted on time alone after the user confirms. Server-side because the phone only holds runs for followed kennels and the last ten days.",
+  "version": "1.0.1",
+  "description": "Which run does an imported GPX file belong to (E5.F5.S6)? Given a track's first and last point times (UTC) and its first point's position, returns the runs that started between three hours before the first point and the last point, nearest start first, with the distance from each run's recorded start to that first point, whether the caller already has a PackTrack trail on it, and their attendance state. The app applies the rule: a run with a recorded location must be within a mile; one with no location is accepted on time alone after the user confirms. Server-side because the phone only holds runs for followed kennels and the last ten days. 1.0.1: delegates to nonApi_findRunForTrack so the server-side import processor matches identically.",
   "parameters": [
-    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": null, "description": "Device-bound auth (ValidateAppAuth, spNumber 95)." },
-    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Standard token: userId#hcapp_findRunForTrack#timeBlocks#deviceSecret." },
-    { "name": "firstPointUtc", "type": "DATETIME2(3)", "nullable": false, "mapsToColumn": null, "description": "Capture time of the track's first point, UTC." },
-    { "name": "lastPointUtc", "type": "DATETIME2(3)", "nullable": false, "mapsToColumn": null, "description": "Capture time of the track's last point, UTC. Must not precede firstPointUtc." },
-    { "name": "latitude", "type": "DECIMAL(18,15)", "nullable": false, "mapsToColumn": null, "description": "First point's latitude." },
-    { "name": "longitude", "type": "DECIMAL(19,15)", "nullable": false, "mapsToColumn": null, "description": "First point's longitude." }
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound auth (ValidateAppAuth, spNumber 95)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Standard token: userId#hcapp_findRunForTrack#timeBlocks#deviceSecret."
+    },
+    {
+      "name": "firstPointUtc",
+      "type": "DATETIME2(3)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Capture time of the track's first point, UTC."
+    },
+    {
+      "name": "lastPointUtc",
+      "type": "DATETIME2(3)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Capture time of the track's last point, UTC. Must not precede firstPointUtc."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "First point's latitude."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "First point's longitude."
+    }
   ],
   "rowsets": [
-    { "index": 0, "ref": "StandardErrorResult", "description": "Auth failure or invalid span/position (errorCode 1295)." },
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure or invalid span/position (errorCode 1295)."
+    },
     {
       "index": 0,
       "name": "CandidateRuns",
       "description": "Up to 10 runs whose EventStartDateTimeGmt lies in [firstPointUtc - 3h, lastPointUtc], nearest start to the first point first. Empty when nothing started in the window.",
       "columns": [
-        { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.Event.id — the Table Storage partition key, lowercased by the app." },
-        { "name": "eventName", "type": "NVARCHAR(250)", "nullable": false, "description": "HC.Event.EventName." },
-        { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": false, "description": "HC.Kennel.KennelName." },
-        { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.Event.KennelId." },
-        { "name": "eventStartGmt", "type": "DATETIMEOFFSET", "nullable": false, "description": "True UTC start instant." },
-        { "name": "eventStartLocal", "type": "DATETIME2(0)", "nullable": false, "description": "Local wall-clock start (spurious offset stripped) for display." },
-        { "name": "hasLocation", "type": "INT", "nullable": false, "description": "1 when the event has a recorded, non-zero Latitude/Longitude." },
-        { "name": "distanceMeters", "type": "INT", "nullable": true, "description": "Metres from the event's recorded start to the track's first point; NULL when hasLocation = 0." },
-        { "name": "existingTrackPoints", "type": "INT", "nullable": false, "description": "The caller's HasherEventMap.TrackPointCount on this run (0 when none) — a track already exists when > 0." },
-        { "name": "attendenceState", "type": "SMALLINT", "nullable": false, "description": "The caller's attendance state on this run (0 when no row)." }
+        {
+          "name": "eventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Event.id — the Table Storage partition key, lowercased by the app."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Event.EventName."
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Kennel.KennelName."
+        },
+        {
+          "name": "kennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Event.KennelId."
+        },
+        {
+          "name": "eventStartGmt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": "True UTC start instant."
+        },
+        {
+          "name": "eventStartLocal",
+          "type": "DATETIME2(0)",
+          "nullable": false,
+          "description": "Local wall-clock start (spurious offset stripped) for display."
+        },
+        {
+          "name": "hasLocation",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the event has a recorded, non-zero Latitude/Longitude."
+        },
+        {
+          "name": "distanceMeters",
+          "type": "INT",
+          "nullable": true,
+          "description": "Metres from the event's recorded start to the track's first point; NULL when hasLocation = 0."
+        },
+        {
+          "name": "existingTrackPoints",
+          "type": "INT",
+          "nullable": false,
+          "description": "The caller's HasherEventMap.TrackPointCount on this run (0 when none) — a track already exists when > 0."
+        },
+        {
+          "name": "attendenceState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "The caller's attendance state on this run (0 when no row)."
+        }
       ]
     }
   ],

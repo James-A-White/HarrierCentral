@@ -14,13 +14,16 @@ AS
 --   At Hash check-in (AttendenceState 20, RSVP Yes, not hare, not
 --   virgin/visitor) and the hasher's run counts are recomputed the same way,
 --   so the archive's attendance row is indistinguishable from a real one.
---   Does nothing if a row already exists in any state (including removed —
---   an admin's removal is not undone), or if the hasher or event is gone.
+--   A row that exists below At Hash (an RSVP, a No) is raised to At Hash /
+--   RSVP Yes, as a check-in would. A removed row is left alone (an admin's
+--   removal is not undone); a missing hasher or event does nothing.
+--   2026-09-11: also used by the track-import processor for every imported
+--   activity, so an import on a run you RSVPed to counts.
 -- Parameters:
 --   @eventId - The run.
 --   @userId  - The runner.
--- Returns: one row — Inserted (1/0), Reason ('inserted' | 'rowExists' |
---   'noHasher' | 'noEvent').
+-- Returns: one row — Inserted (1 created, 0 otherwise), Reason ('inserted' |
+--   'raised' | 'rowExists' | 'noHasher' | 'noEvent').
 -- Author: Harrier Central
 -- Created: 2026-09-10
 -- HC5 Source: none (new) — insert mirrors HC6.hcapp_setEventAttendence
@@ -32,9 +35,18 @@ SET XACT_ABORT ON;
 DECLARE @procName NVARCHAR(128) = OBJECT_NAME(@@PROCID);
 DECLARE @kennelId UNIQUEIDENTIFIER;
 
-IF EXISTS (SELECT 1 FROM HC.HasherEventMap WHERE EventId = @eventId AND UserId = @userId)
+DECLARE @existingState SMALLINT = (SELECT TOP (1) AttendenceState FROM HC.HasherEventMap
+                                    WHERE EventId = @eventId AND UserId = @userId AND removed = 0
+                                    ORDER BY AttendenceState DESC);
+IF (@existingState IS NOT NULL AND @existingState >= 20)
 BEGIN
     SELECT 0 AS Inserted, 'rowExists' AS Reason;
+    RETURN;
+END
+IF EXISTS (SELECT 1 FROM HC.HasherEventMap WHERE EventId = @eventId AND UserId = @userId AND removed = 1)
+   AND @existingState IS NULL
+BEGIN
+    SELECT 0 AS Inserted, 'rowExists' AS Reason;   -- an admin removed them; not undone here
     RETURN;
 END
 IF NOT EXISTS (SELECT 1 FROM HC.Hasher WHERE id = @userId AND deleted = 0)
@@ -65,6 +77,14 @@ BEGIN TRY
             (NEWID(), @eventId, @kennelId, @userId,
              20, 3, 0, 0, GETDATE());
     END
+    ELSE
+    BEGIN
+        -- RSVPed (or checked in below At Hash) and has a track: they ran.
+        -- Same transition hcapp_setEventAttendence makes for a check-in.
+        UPDATE HC.HasherEventMap
+           SET AttendenceState = 20, RsvpState = 3, updatedAt = GETDATE()
+         WHERE EventId = @eventId AND UserId = @userId AND removed = 0 AND AttendenceState < 20;
+    END
 
     COMMIT TRANSACTION;
 
@@ -72,7 +92,8 @@ BEGIN TRY
     -- as hcapp_setEventAttendence does it).
     EXEC HC6.nonApi_updateRunCountsByUser @userId = @userId;
 
-    SELECT 1 AS Inserted, 'inserted' AS Reason;
+    SELECT CASE WHEN @existingState IS NULL THEN 1 ELSE 0 END AS Inserted,
+           CASE WHEN @existingState IS NULL THEN 'inserted' ELSE 'raised' END AS Reason;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

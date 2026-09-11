@@ -1,0 +1,55 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getTrackImportUploadToken",
+  "version": "1.0.0",
+  "description": "Authenticates the device for GetTrackImportUploadToken and returns the hasher id that names the blob folder (E5.F5.S7). Same shape as hcapp_getProfilePhotoUploadToken.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound auth (ValidateAppAuth)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Standard token: userId#<procName>#timeBlocks#deviceSecret."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure or validation error."
+    },
+    {
+      "index": 0,
+      "name": "User",
+      "description": "success and the hasher id.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1"
+        },
+        {
+          "name": "userId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The caller."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_ensureTrackAttendance",
-  "version": "1.0.0",
-  "description": "Creates the attendance row for a runner who has a PackTrack trail on a run but no HC.HasherEventMap row (tracks recorded before the app checked the tracker in as tracking starts). Called only by the nightly track archive (TrackArchiver / ArchiveTrack Azure Functions) when a run's partition holds points for a hasher with no row. The insert mirrors a fresh At Hash check-in from hcapp_setEventAttendence and the run counts are recomputed the same way. A row that already exists in any state, including removed, is left alone.",
+  "version": "1.1.0",
+  "description": "Creates the attendance row for a runner who has a PackTrack trail on a run but no HC.HasherEventMap row (tracks recorded before the app checked the tracker in as tracking starts). Called only by the nightly track archive (TrackArchiver / ArchiveTrack Azure Functions) when a run's partition holds points for a hasher with no row. The insert mirrors a fresh At Hash check-in from hcapp_setEventAttendence and the run counts are recomputed the same way. A row that already exists in any state, including removed, is left alone. 1.1.0 (2026-09-11): a row below At Hash (an RSVP) is raised to At Hash / RSVP Yes as a check-in would; Reason 'raised'. Also called by the track-import processor for every imported activity.",
   "parameters": [
     {
       "name": "eventId",
@@ -25,8 +25,18 @@
       "name": "EnsureResult",
       "description": "One row saying what happened.",
       "columns": [
-        { "name": "Inserted", "type": "INT", "nullable": false, "description": "1 when a row was created, else 0." },
-        { "name": "Reason", "type": "VARCHAR(20)", "nullable": false, "description": "'inserted' | 'rowExists' | 'noHasher' | 'noEvent'." }
+        {
+          "name": "Inserted",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when a row was created, else 0."
+        },
+        {
+          "name": "Reason",
+          "type": "VARCHAR(20)",
+          "nullable": false,
+          "description": "'inserted' | 'raised' | 'rowExists' | 'noHasher' | 'noEvent'."
+        }
       ]
     }
   ],

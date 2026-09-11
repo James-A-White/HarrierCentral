@@ -1,0 +1,152 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getTrackImports",
+  "version": "1.0.0",
+  "description": "The caller's track-import jobs (E5.F5.S7). With @jobId: that one job in full (result JSON and blob URL), only if it is theirs. Without: their latest 20 without the JSON. Also used by ProcessTrackImport to authenticate and scope the job it works on.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound auth (ValidateAppAuth)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Standard token: userId#<procName>#timeBlocks#deviceSecret."
+    },
+    {
+      "name": "jobId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.id",
+      "description": "One job, or NULL for the list."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure or validation error."
+    },
+    {
+      "index": 0,
+      "name": "Jobs",
+      "description": "One row per job.",
+      "columns": [
+        {
+          "name": "jobId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.TrackImport.id."
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The uploader."
+        },
+        {
+          "name": "fileName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "As uploaded."
+        },
+        {
+          "name": "blobUrl",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Single-job form only; NULL in the list."
+        },
+        {
+          "name": "byteSize",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Upload size."
+        },
+        {
+          "name": "kind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 unknown · 1 gpx · 2 tcx · 3 fit · 4 zip (set by the processor)."
+        },
+        {
+          "name": "status",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 uploaded · 1 processing · 2 done · 3 failed."
+        },
+        {
+          "name": "uploadedAt",
+          "type": "DATETIME2(3)",
+          "nullable": false,
+          "description": "UTC."
+        },
+        {
+          "name": "startedAt",
+          "type": "DATETIME2(3)",
+          "nullable": true,
+          "description": "UTC; first slice."
+        },
+        {
+          "name": "processedAt",
+          "type": "DATETIME2(3)",
+          "nullable": true,
+          "description": "UTC; done or failed."
+        },
+        {
+          "name": "nextIndex",
+          "type": "INT",
+          "nullable": false,
+          "description": "Activities before this index are done."
+        },
+        {
+          "name": "activityCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "Activities found in the file."
+        },
+        {
+          "name": "importedCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "imported + replaced."
+        },
+        {
+          "name": "skippedCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Everything not imported and not held."
+        },
+        {
+          "name": "heldCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Awaiting the hasher's choice."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(2500)",
+          "nullable": true,
+          "description": "When status = 3."
+        },
+        {
+          "name": "resultJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Single-job form only: {activities:[{i,name,format,sport,startUtc,endUtc,lat,lng,points,distanceM,outcome,eventId,eventName,kennelName,candidates,error}]}. Every activity found, matched or not."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

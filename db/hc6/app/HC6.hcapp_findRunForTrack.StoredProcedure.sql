@@ -81,38 +81,11 @@ BEGIN
 END
 
 BEGIN TRY
-    DECLARE @windowStart DATETIMEOFFSET = TODATETIMEOFFSET(DATEADD(HOUR, -3, @firstPointUtc), 0);
-    DECLARE @windowEnd   DATETIMEOFFSET = TODATETIMEOFFSET(@lastPointUtc, 0);
-    DECLARE @firstAt     DATETIMEOFFSET = TODATETIMEOFFSET(@firstPointUtc, 0);
-    DECLARE @here        GEOGRAPHY      = geography::Point(@latitude, @longitude, 4326);
-
-    SELECT TOP (10)
-        e.id                                   AS eventId,
-        e.EventName                            AS eventName,
-        k.KennelName                           AS kennelName,
-        e.KennelId                             AS kennelId,
-        e.EventStartDateTimeGmt                AS eventStartGmt,
-        CAST(e.EventStartDatetime AS DATETIME2(0)) AS eventStartLocal,
-        CASE WHEN e.Latitude IS NOT NULL AND e.Longitude IS NOT NULL
-              AND NOT (e.Latitude = 0 AND e.Longitude = 0) THEN 1 ELSE 0 END AS hasLocation,
-        CASE WHEN e.Latitude IS NOT NULL AND e.Longitude IS NOT NULL
-              AND NOT (e.Latitude = 0 AND e.Longitude = 0)
-             THEN CAST(geography::Point(e.Latitude, e.Longitude, 4326).STDistance(@here) AS INT)
-        END                                    AS distanceMeters,
-        ISNULL(hem.TrackPointCount, 0)         AS existingTrackPoints,
-        ISNULL(hem.AttendenceState, 0)         AS attendenceState
-    FROM HC.Event e
-    INNER JOIN HC.Kennel k ON k.id = e.KennelId
-    OUTER APPLY (
-        SELECT TOP (1) h.TrackPointCount, h.AttendenceState
-        FROM HC.HasherEventMap h
-        WHERE h.EventId = e.id AND h.UserId = @userId AND h.removed = 0
-        ORDER BY h.TrackPointCount DESC
-    ) hem
-    WHERE e.deleted = 0 AND e.removed = 0 AND e.IsVisible = 1
-      AND e.EventStartDateTimeGmt >= @windowStart
-      AND e.EventStartDateTimeGmt <= @windowEnd
-    ORDER BY ABS(DATEDIFF(SECOND, e.EventStartDateTimeGmt, @firstAt)) ASC;
+    -- The rule lives in nonApi_findRunForTrack so the server-side import
+    -- processor (ProcessTrackImport) and the app match identically.
+    EXEC HC6.nonApi_findRunForTrack
+        @userId = @userId, @firstPointUtc = @firstPointUtc, @lastPointUtc = @lastPointUtc,
+        @latitude = @latitude, @longitude = @longitude;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

@@ -1,0 +1,119 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_findRunForTrack",
+  "version": "1.0.0",
+  "description": "The matching rule behind a track import, without auth, so hcapp_findRunForTrack (the app) and the ProcessTrackImport function match identically. Runs starting in [firstPointUtc - 3h, lastPointUtc], nearest first, with distance from the recorded start, the caller's existing track points and attendance.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.UserId",
+      "description": "The runner."
+    },
+    {
+      "name": "firstPointUtc",
+      "type": "DATETIME2(3)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "First point capture time, UTC."
+    },
+    {
+      "name": "lastPointUtc",
+      "type": "DATETIME2(3)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Last point capture time, UTC."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "First point."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "First point."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "CandidateRuns",
+      "description": "As hcapp_findRunForTrack.",
+      "columns": [
+        {
+          "name": "eventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Event.id"
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "kennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "eventStartGmt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": "UTC instant."
+        },
+        {
+          "name": "eventStartLocal",
+          "type": "DATETIME2(0)",
+          "nullable": false,
+          "description": "Wall clock."
+        },
+        {
+          "name": "hasLocation",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when a non-zero start location is recorded."
+        },
+        {
+          "name": "distanceMeters",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL when hasLocation = 0."
+        },
+        {
+          "name": "existingTrackPoints",
+          "type": "INT",
+          "nullable": false,
+          "description": "The runner's TrackPointCount on this run."
+        },
+        {
+          "name": "attendenceState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

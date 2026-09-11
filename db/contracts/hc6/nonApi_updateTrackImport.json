@@ -1,0 +1,88 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_updateTrackImport",
+  "version": "1.0.0",
+  "description": "The import processor's progress write: after each activity, and on completion or failure. NULL leaves a column unchanged. Status 1 stamps StartedAt; 2/3 stamp ProcessedAt.",
+  "parameters": [
+    {
+      "name": "id",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "TrackImport.id",
+      "description": ""
+    },
+    {
+      "name": "status",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "TrackImport.Status",
+      "description": "0..3"
+    },
+    {
+      "name": "kind",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.Kind",
+      "description": ""
+    },
+    {
+      "name": "nextIndex",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.NextIndex",
+      "description": ""
+    },
+    {
+      "name": "activityCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.ActivityCount",
+      "description": ""
+    },
+    {
+      "name": "importedCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.ImportedCount",
+      "description": ""
+    },
+    {
+      "name": "skippedCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.SkippedCount",
+      "description": ""
+    },
+    {
+      "name": "heldCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.HeldCount",
+      "description": ""
+    },
+    {
+      "name": "resultJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.ResultJson",
+      "description": ""
+    },
+    {
+      "name": "errorMessage",
+      "type": "NVARCHAR(2500)",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.ErrorMessage",
+      "description": ""
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Updates one HC.TrackImport row."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

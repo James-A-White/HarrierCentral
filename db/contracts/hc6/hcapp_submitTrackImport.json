@@ -1,0 +1,93 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_submitTrackImport",
+  "version": "1.0.0",
+  "description": "Registers an uploaded track file (GPX/TCX/FIT or a Strava/Garmin zip) as an HC.TrackImport job for the caller (E5.F5.S7). The bytes are already in blob storage (container track-imports, uploaded with a SAS from GetTrackImportUploadToken, which minted @jobId). Idempotent on @jobId.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound auth (ValidateAppAuth)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Standard token: userId#<procName>#timeBlocks#deviceSecret."
+    },
+    {
+      "name": "jobId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "TrackImport.id",
+      "description": "Minted by GetTrackImportUploadToken; names the blob."
+    },
+    {
+      "name": "blobUrl",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "TrackImport.BlobUrl",
+      "description": "The uploaded blob."
+    },
+    {
+      "name": "fileName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.FileName",
+      "description": "As chosen on the phone."
+    },
+    {
+      "name": "byteSize",
+      "type": "BIGINT",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.ByteSize",
+      "description": "Upload size."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure or validation error."
+    },
+    {
+      "index": 0,
+      "name": "Success",
+      "description": "success = 1.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Job",
+      "description": "The job id.",
+      "columns": [
+        {
+          "name": "jobId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.TrackImport.id"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Inserts one HC.TrackImport row (Status 0) unless @jobId already exists.",
+    "errorCode 1296 when @jobId or @blobUrl is missing."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}
