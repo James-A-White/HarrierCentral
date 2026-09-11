@@ -542,8 +542,13 @@ class MainNavigationPage extends StatelessWidget {
 /// under edge-to-edge, which leaves the row beneath the gesture bar and
 /// unreachable. Taking the reported inset with a floor under it covers both —
 /// same treatment as the onboarding slider's SafeArea minimum.
+// Sits clear of the home indicator with room to spare: on an iPhone the
+// buttons' lower edge was running off the bottom of the screen (2026-09-11).
 double _splashControlsBottom(BuildContext context) =>
-    MediaQuery.paddingOf(context).bottom.clamp(24.0, double.infinity) + 16.0;
+    MediaQuery.paddingOf(context).bottom.clamp(24.0, double.infinity) + 48.0;
+
+/// Side inset for the Prev / Next row — enough that a whole button shows.
+const double _splashControlsInset = 24.0;
 
 /// Hand-rolled replacement for the retired `intro_slider` package's
 /// "what's new" splash sequence: full-bleed promo images in a PageView
@@ -602,8 +607,8 @@ class _SplashSequenceSlider extends StatelessWidget {
             ),
           ),
           Positioned(
-            left: 8,
-            right: 8,
+            left: _splashControlsInset,
+            right: _splashControlsInset,
             bottom: _splashControlsBottom(context),
             child: Row(
               children: [
@@ -687,8 +692,8 @@ class _SplashLoadingView extends StatelessWidget {
             ),
           ),
         Positioned(
-          left: 8,
-          right: 8,
+          left: _splashControlsInset,
+          right: _splashControlsInset,
           bottom: _splashControlsBottom(context),
           child: Obx(
             () => controller.splashLoadStalled.value
