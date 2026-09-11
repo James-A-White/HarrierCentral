@@ -665,6 +665,22 @@ class KennelMemberListState extends State<KennelMembersList>
                                         -9999,
                                       );
                                       break;
+                                    case EnumMemberPopupActions.hideSharedNotes:
+                                      await _setUserProperties(
+                                        snapshot,
+                                        index,
+                                        kennelStandingSet:
+                                            KENNEL_STANDING_NOTES_SUPPRESSED,
+                                      );
+                                      break;
+                                    case EnumMemberPopupActions.allowSharedNotes:
+                                      await _setUserProperties(
+                                        snapshot,
+                                        index,
+                                        kennelStandingClear:
+                                            KENNEL_STANDING_NOTES_SUPPRESSED,
+                                      );
+                                      break;
                                     case EnumMemberPopupActions.grantAlumni:
                                       // ALUMNI bit 0x0002 (manual grant)
                                       await _setUserProperties(

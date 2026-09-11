@@ -32,6 +32,12 @@ const int SPLASH_SCREEN_DISPLAY_TIME = 3;
 // relaunch (minutes later) always gets fresh data.
 const int DEBOUNCE_SYNC_USER_DATA = 30;
 
+// Run-notes overrides (E3.F4.S5). A hasher's shared note is visible only while
+// neither bit is set. Kennel HC Admin: HasherKennelMap.KennelStanding bit
+// (high bits are not access grants); Platform Admin: HC.Hasher.Preferences bit.
+const int KENNEL_STANDING_NOTES_SUPPRESSED = 0x1000;
+const int HASHER_PREF_NOTES_SUPPRESSED = 0x2000;
+
 // ── Kennel membership states ──────────────────────────────────────────────
 const int KENNEL_IS_FOLLOWING = 1;
 const int KENNEL_IS_BLOCKED = 2;

@@ -1273,6 +1273,13 @@ class RunNotesController extends GetxController {
   final RxBool saving = false.obs;
   final RxString saved = ''.obs;
 
+  /// The hasher's own choice (0 private · 1 shared) and whether sharing is
+  /// currently effective — false while a kennel or platform admin has hidden
+  /// this hasher's shared notes.
+  final RxBool shareRequested = false.obs;
+  final RxBool shareEffective = false.obs;
+  final RxBool savingShare = false.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -1295,6 +1302,29 @@ class RunNotesController extends GetxController {
     saved.value = notes;
     text.text = notes;
     dirty.value = false;
+    final h = tableModel.hasherEventMapTableHelper;
+    shareRequested.value = (row?[h.colNotesVisibility] as int? ?? 0) == 1;
+    shareEffective.value = (row?[h.colNotesShared] as int? ?? 0) == 1;
+  }
+
+  /// Flip sharing. Saves the current text with it so one round trip does both.
+  Future<void> setShare(bool share) async {
+    if (savingShare.value) return;
+    savingShare.value = true;
+    try {
+      final bool ok = await tableModel.hasherEventMapService.setEventNotes(
+        eventId,
+        text.text.trim(),
+        visibility: share ? 1 : 0,
+      );
+      if (ok) {
+        saved.value = text.text.trim();
+        dirty.value = false;
+        await _load(); // the synced row says whether sharing is effective
+      }
+    } finally {
+      savingShare.value = false;
+    }
   }
 
   void onChanged(String _) => dirty.value = text.text != saved.value;
@@ -1342,9 +1372,25 @@ class _MyNotesSection extends StatelessWidget {
               Text('My notes', style: ts_headingLarge),
               const SizedBox(height: 4),
               Text(
-                'Private to you. Your own words about this run — also filled '
-                'in from a Strava title and description when you import a track.',
+                'Your own words about this run — also filled in from a Strava '
+                'title and description when you import a track. Private unless '
+                'you choose to share.',
                 style: ts_alertDialogBody,
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: c.shareRequested.value,
+                onChanged: c.savingShare.value ? null : c.setShare,
+                title: Text('Share these notes', style: ts_alertDialogBody),
+                subtitle: Text(
+                  c.shareRequested.value
+                      ? (c.shareEffective.value
+                            ? 'Visible to the kennel and on the run\'s web page.'
+                            : 'Sharing has been turned off for you by the kennel '
+                                  'or Harrier Central; your notes stay private.')
+                      : 'Only you can see them.',
+                  style: ts_alertDialogBody,
+                ),
               ),
               const SizedBox(height: 10),
               TextField(

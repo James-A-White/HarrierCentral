@@ -30,6 +30,10 @@ abstract class HasherEventMapModel
     String? phoneNumber,
     // The hasher's own private notes on the run (user sync only).
     String? notes,
+    // 0 private · 1 shared (the hasher's own choice).
+    int? notesVisibility,
+    // 1 when shared AND neither admin override hides it (server-computed).
+    int? notesShared,
 
     // these fields are cached from the event itself. This enables us to keep run count information without
     // having to have the actual run cached on the phone

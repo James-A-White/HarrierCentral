@@ -15,6 +15,10 @@ enum EnumMemberPopupActions {
   editMismanagementRole,
   grantAlumni,
   revokeAlumni,
+  // Content rules: hide / allow every run note this hasher shares in this
+  // kennel (KennelStanding bit KENNEL_STANDING_NOTES_SUPPRESSED).
+  hideSharedNotes,
+  allowSharedNotes,
   cancelDialog,
 }
 
@@ -432,6 +436,37 @@ class KennelMemberListItem extends StatelessWidget {
                           ),
                         ],
                         'returnValue': EnumMemberPopupActions.revokeAlumni,
+                      });
+                      // Shared run notes: a kennel admin can hide everything
+                      // this hasher shares here (content rules), and allow it
+                      // again. Their private notes are never affected.
+                      buttons.add(<String, dynamic>{
+                        'title': 'Hide their shared run notes',
+                        'icon': <Widget>[
+                          const SizedBox(
+                            height: 30,
+                            width: 30,
+                            child: Icon(
+                              MaterialCommunityIcons.note_off_outline,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                        'returnValue': EnumMemberPopupActions.hideSharedNotes,
+                      });
+                      buttons.add(<String, dynamic>{
+                        'title': 'Allow their shared run notes',
+                        'icon': <Widget>[
+                          SizedBox(
+                            height: 30,
+                            width: 30,
+                            child: Icon(
+                              MaterialCommunityIcons.note_text_outline,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                        'returnValue': EnumMemberPopupActions.allowSharedNotes,
                       });
 
                       // give them the ability to set and clear admin flags for other

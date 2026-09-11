@@ -48,6 +48,8 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
   final String colEmail = 'email';
   final String colPhoneNumber = 'phoneNumber';
   final String colNotes = 'notes';
+  final String colNotesVisibility = 'notesVisibility';
+  final String colNotesShared = 'notesShared';
 
   final String colEventName = 'hemEventName';
   final String colEventNumber = 'hemEventNumber';
@@ -93,6 +95,8 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
             $colEmail TEXT,
             $colPhoneNumber TEXT,
             $colNotes TEXT,
+            $colNotesVisibility INT,
+            $colNotesShared INT,
 
             $colEventName TEXT,
             $colEventNumber INT,
@@ -525,7 +529,8 @@ class HasherEventMapService {
   /// The SP updates their attendance row and hands the changed row back
   /// through the user sync, so the local row (and every other device of
   /// theirs) carries the new text.
-  Future<bool> setEventNotes(String eventId, String notes) async {
+  /// [visibility]: 0 private, 1 shared with the kennel and the web, null keep.
+  Future<bool> setEventNotes(String eventId, String notes, {int? visibility}) async {
     if (Utilities.isNotConnected()) return false;
 
     final String userId = currentUserId;
@@ -548,6 +553,7 @@ class HasherEventMapService {
       'eventId': normalizeUuid(eventId),
       'notes': notes,
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
+      'notesVisibility': ?visibility,
     };
 
     final String responseBody = await ServiceCommon.sendHttpPost(() {
