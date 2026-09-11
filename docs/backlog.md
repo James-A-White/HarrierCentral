@@ -216,6 +216,7 @@ The run is the atom of the whole platform. Creating one, finding it, getting to 
 | `E3.F4.S2` | As a **Kennel HC Admin**, I want a desktop rendering and a phone rendering of run detail so that neither is a compromise. | `Shipped` |
 | `E3.F4.S3` | As a **Hasher**, I want to share a run to the interactive map, Trail TV or the photo gallery so that I can post it to the club's group chat. | `Shipped` |
 | `E3.F4.S4` | As a **Hasher**, I want the shared link to preview with the run's own image so that it does not land as a bare URL. | `Shipped` |
+| `E3.F4.S5` | As a **Hasher**, I want private notes on a run — mine to write, and filled in from a Strava title and description when I import a track — so that I can look back at what a run was like. `HasherEventMap.Notes` (NVARCHAR(4000), plain text — gzip was considered and rejected: notes are a few hundred bytes, gzip adds more than it saves at that size, and binary would break search, sync and readability), synced to the owner only. Written by `hcapp_setEventNotes` from a My notes section on the run detail page; the import processor fills it with the file's title and description whenever it matches a run and the note is blank, including a run tracked by phone — a note the hasher wrote is never overwritten. The column is on a synced table: James runs the ALTER with the trigger disabled. **⚠ Known gap:** not yet deployed or device-tested. | `Building` |
 
 ### E3.F5 · Run numbering  
 `DB`

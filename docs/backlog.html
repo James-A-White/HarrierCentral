@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>16</b> epics</div>
     <div><b>77</b> features</div>
-    <div><b>263</b> stories</div>
+    <div><b>264</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -320,7 +320,7 @@
 <div class="index-grid">
   <a class="idx" href="#e1"><span class="idx-id">E1</span><span class="idx-name">Identity &amp; Account Access</span><span class="idx-count">6 features · 23 stories</span></a>
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 18 stories</span></a>
-  <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 25 stories</span></a>
+  <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 26 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
   <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 36 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">4 features · 18 stories</span></a>
@@ -524,6 +524,8 @@
       <li class="story"><span class="s-id">E3.F4.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want a desktop rendering and a phone rendering of run detail so that neither is a compromise.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E3.F4.S3</span><span class="s-text">As a <em>Hasher</em>, I want to share a run to the interactive map, Trail TV or the photo gallery so that I can post it to the club's group chat.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E3.F4.S4</span><span class="s-text">As a <em>Hasher</em>, I want the shared link to preview with the run's own image so that it does not land as a bare URL.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E3.F4.S5</span><span class="s-text">As a <em>Hasher</em>, I want private notes on a run — mine to write, and filled in from a Strava title and description when I import a track — so that I can look back at what a run was like. <code>HasherEventMap.Notes</code> (NVARCHAR(4000), plain text — gzip was considered and rejected: notes are a few hundred bytes, gzip adds more than it saves at that size, and binary would break search, sync and readability), synced to the owner only. Written by <code>hcapp_setEventNotes</code> from a My notes section on the run detail page; the import processor fills it with the file's title and description whenever it matches a run and the note is blank, including a run tracked by phone — a note the hasher wrote is never overwritten. The column is on a synced table: James runs the ALTER with the trigger disabled.</span><span class="chip c-build">Building</span>
+        <span class="gap">not yet deployed or device-tested.</span></li>
     </ul>
   </div>
   <div class="feature">
