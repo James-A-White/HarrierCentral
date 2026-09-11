@@ -1,3 +1,16 @@
+## 3.0.26+1341 (2026-09-11)
+
+### Improvements
+- **A real progress bar while an archive imports** — "x of y activities
+  checked, n imported" — and a percentage on the upload.
+- **Import results are easier to read.** Each run you can choose for a
+  track has its own row with a divider, and the activity heading shows
+  its date, distance and sport.
+
+### Fixes
+- **Prev and Next on the welcome pages** sit clear of the bottom of the
+  screen.
+
 ## 3.0.25+1340 (2026-09-11)
 
 ### Fixes
