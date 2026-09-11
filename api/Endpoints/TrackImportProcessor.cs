@@ -588,6 +588,13 @@ namespace HcWebApi.Endpoints
                 foreach (ZipArchiveEntry entry in zip.Entries.Where(e => e.Length > 0).OrderBy(e => e.FullName, StringComparer.Ordinal))
                 {
                     if (KindByName(entry.FullName) is Kind.Unknown or Kind.Zip) continue;
+                    // A Strava archive re-zipped on a Mac carries a __MACOSX
+                    // folder of "._name.gpx" resource forks — named like
+                    // activities, not activities (249 of them in the first
+                    // real archive, all "unparseable").
+                    if (entry.FullName.StartsWith("__MACOSX/", StringComparison.OrdinalIgnoreCase)
+                        || entry.FullName.Contains("/__MACOSX/", StringComparison.OrdinalIgnoreCase)
+                        || entry.Name.StartsWith("._", StringComparison.Ordinal)) continue;
                     ZipArchiveEntry captured = entry;
                     list.Add((captured.FullName, () => MaybeGunzip(captured.Open(), captured.FullName)));
                 }
