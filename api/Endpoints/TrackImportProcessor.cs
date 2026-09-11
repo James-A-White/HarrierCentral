@@ -106,6 +106,10 @@ namespace HcWebApi.Endpoints
             public List<WritePoint> Points = new();  // GPS points, ascending, untyped
             public List<WritePoint> Marks = new();   // typed marks (from our own GPX waypoints)
             public bool HadUntimedPoints;
+            /// The activity's title and free-text notes, when the file carries
+            /// them (a GPX from the Strava site; a Strava archive's CSV).
+            public string? Title;
+            public string? Description;
         }
 
         // ── Slice driver ──────────────────────────────────────────────────────
@@ -132,6 +136,7 @@ namespace HcWebApi.Endpoints
             using Stream stream = await blob.OpenReadAsync();
             Kind kind = SniffKind(stream, job.FileName);
             List<(string name, Func<Stream> open)> entries = EnumerateEntries(stream, kind, job.FileName ?? "upload");
+            Dictionary<string, (string? title, string? description)> csvNotes = kind == Kind.Zip ? ReadArchiveNotes(stream) : new();
             int total = entries.Count;
             bool single = total == 1;
 
@@ -148,6 +153,7 @@ namespace HcWebApi.Endpoints
                 try
                 {
                     Activity? act = ParseActivity(entries[i].open(), entries[i].name);
+                    ApplyCsvNotes(act, entries[i].name, csvNotes);
                     await DecideAndImportAsync(log, tables, conn, job.HasherId, act, ar, single, replace: false, chosenEventId: null);
                 }
                 catch (Exception ex)
@@ -186,6 +192,7 @@ namespace HcWebApi.Endpoints
             if (index >= entries.Count) throw new InvalidOperationException("The file no longer holds that activity.");
 
             Activity? act = ParseActivity(entries[index].open(), entries[index].name);
+            if (kind == Kind.Zip) ApplyCsvNotes(act, entries[index].name, ReadArchiveNotes(stream));
             await DecideAndImportAsync(log, tables, conn, job.HasherId, act, ar, single: true, replace, chosenEventId: eventId);
             await UpdateAsync(conn, job.Id, Status.Done, kind, null, entries.Count, result);
             job.ResultJson = JsonConvert.SerializeObject(result);
@@ -266,6 +273,13 @@ namespace HcWebApi.Endpoints
             ar.EventName = chosen.EventName;
             ar.KennelName = chosen.KennelName;
 
+            // The hasher's notes: the file's title and description, written
+            // onto their attendance row when they have none (James, 2026-09-11:
+            // a phone-tracked run with a blank note takes the file's words; a
+            // note they wrote is never touched). Done before the track decision
+            // so a skipped-because-tracked run still gets its notes.
+            await SetNotesIfBlankAsync(conn, chosen.EventId, hasherId, ComposeNotes(act), log);
+
             if (chosen.ExistingTrackPoints > 0)
             {
                 if (!replace)
@@ -337,6 +351,118 @@ namespace HcWebApi.Endpoints
                 });
             }
             return list;
+        }
+
+        private static string? ComposeNotes(Activity act)
+        {
+            string? title = act.Title?.Trim();
+            // Strava's auto-titles ("Morning Run", "Evening Ride") say nothing; a title only counts when the person wrote one.
+            if (title != null && System.Text.RegularExpressions.Regex.IsMatch(title, @"^(Morning|Afternoon|Evening|Night|Lunch|Early Morning|Late Night)\s+(Run|Ride|Walk|Hike|Swim|Workout|Activity)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) title = null;
+            string? desc = act.Description?.Trim();
+            string joined = string.IsNullOrEmpty(title) ? (desc ?? string.Empty)
+                : string.IsNullOrEmpty(desc) ? title : title + "\n\n" + desc;
+            if (string.IsNullOrWhiteSpace(joined)) return null;
+            return joined.Length > 4000 ? joined[..4000] : joined;
+        }
+
+        private static async Task SetNotesIfBlankAsync(SqlConnection conn, Guid eventId, Guid hasherId, string? notes, ILogger log)
+        {
+            if (string.IsNullOrWhiteSpace(notes)) return;
+            try
+            {
+                using SqlCommand cmd = new("[HC6].[nonApi_setTrackNotes]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 15 };
+                cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventId;
+                cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = hasherId;
+                cmd.Parameters.Add("@notes", SqlDbType.NVarChar, 4000).Value = notes;
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                log.LogWarning("TrackImport: notes for event {Event} / hasher {Hasher} failed: {Message}", eventId, hasherId, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// A Strava archive's activities.csv: "Activity Name" and "Activity
+        /// Description" keyed by "Filename" (e.g. activities/1234.fit.gz).
+        /// RFC 4180 quoting — descriptions carry commas and newlines.
+        /// </summary>
+        private static Dictionary<string, (string? title, string? description)> ReadArchiveNotes(Stream zipStream)
+        {
+            var map = new Dictionary<string, (string?, string?)>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                zipStream.Position = 0;
+                using var zip = new ZipArchive(zipStream, ZipArchiveMode.Read, leaveOpen: true);
+                ZipArchiveEntry? csv = zip.Entries.FirstOrDefault(e => e.Name.Equals("activities.csv", StringComparison.OrdinalIgnoreCase));
+                if (csv == null) return map;
+                string text;
+                using (var r = new StreamReader(csv.Open(), Encoding.UTF8)) text = r.ReadToEnd();
+                List<List<string>> rows = ParseCsv(text);
+                if (rows.Count < 2) return map;
+                List<string> header = rows[0];
+                int iName = header.FindIndex(h => h.Trim().Equals("Activity Name", StringComparison.OrdinalIgnoreCase));
+                int iDesc = header.FindIndex(h => h.Trim().Equals("Activity Description", StringComparison.OrdinalIgnoreCase));
+                int iFile = header.FindIndex(h => h.Trim().Equals("Filename", StringComparison.OrdinalIgnoreCase));
+                if (iFile < 0) return map;
+                foreach (List<string> row in rows.Skip(1))
+                {
+                    if (iFile >= row.Count) continue;
+                    string file = row[iFile].Trim();
+                    if (file.Length == 0) continue;
+                    string? name = iName >= 0 && iName < row.Count ? row[iName] : null;
+                    string? desc = iDesc >= 0 && iDesc < row.Count ? row[iDesc] : null;
+                    map[file] = (name, desc);
+                }
+            }
+            catch
+            {
+                // No CSV or an odd one: the tracks still import, just without notes.
+            }
+            return map;
+        }
+
+        private static void ApplyCsvNotes(Activity? act, string entryName, Dictionary<string, (string? title, string? description)> csvNotes)
+        {
+            if (act == null || csvNotes.Count == 0) return;
+            if (!csvNotes.TryGetValue(entryName, out var n))
+            {
+                // The CSV names "activities/123.fit.gz"; a zip entry may say the same, or just the file.
+                string tail = entryName.Substring(entryName.LastIndexOf('/') + 1);
+                var hit = csvNotes.FirstOrDefault(kv => kv.Key.EndsWith("/" + tail, StringComparison.OrdinalIgnoreCase) || kv.Key.Equals(tail, StringComparison.OrdinalIgnoreCase));
+                if (hit.Key == null) return;
+                n = hit.Value;
+            }
+            act.Title ??= n.title;
+            act.Description ??= n.description;
+        }
+
+        private static List<List<string>> ParseCsv(string text)
+        {
+            var rows = new List<List<string>>();
+            var row = new List<string>();
+            var cell = new StringBuilder();
+            bool inQuotes = false;
+            for (int i = 0; i < text.Length; i++)
+            {
+                char c = text[i];
+                if (inQuotes)
+                {
+                    if (c == '"')
+                    {
+                        if (i + 1 < text.Length && text[i + 1] == '"') { cell.Append('"'); i++; }
+                        else inQuotes = false;
+                    }
+                    else cell.Append(c);
+                }
+                else if (c == '"') inQuotes = true;
+                else if (c == ',') { row.Add(cell.ToString()); cell.Clear(); }
+                else if (c == '\r') { }
+                else if (c == '\n') { row.Add(cell.ToString()); cell.Clear(); rows.Add(row); row = new List<string>(); }
+                else cell.Append(c);
+            }
+            if (cell.Length > 0 || row.Count > 0) { row.Add(cell.ToString()); rows.Add(row); }
+            return rows;
         }
 
         private static async Task EnsureAttendanceAsync(SqlConnection conn, Guid eventId, Guid hasherId, ILogger log)
@@ -549,7 +675,10 @@ namespace HcWebApi.Endpoints
         public static Activity ParseGpx(XDocument doc, string name)
         {
             var act = new Activity { Name = name, Format = "gpx" };
-            act.Sport = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "type" && e.Parent?.Name.LocalName == "trk")?.Value?.Trim();
+            XElement? trk = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "trk");
+            act.Sport = trk?.Elements().FirstOrDefault(e => e.Name.LocalName == "type")?.Value?.Trim();
+            act.Title = trk?.Elements().FirstOrDefault(e => e.Name.LocalName == "name")?.Value?.Trim();
+            act.Description = trk?.Elements().FirstOrDefault(e => e.Name.LocalName == "desc")?.Value?.Trim();
             foreach (XElement pt in doc.Descendants().Where(e => e.Name.LocalName == "trkpt"))
             {
                 double? lat = Dbl(pt.Attribute("lat")?.Value), lon = Dbl(pt.Attribute("lon")?.Value);
