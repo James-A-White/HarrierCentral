@@ -1,3 +1,7 @@
+1.0.44+42
+    • Track import, server-side: GetTrackImportUploadToken mints a job and a SAS; the phone uploads a GPX/TCX/FIT or a whole Strava/Garmin zip straight to blob storage; ProcessTrackImport parses (GPX/TCX, own FIT decoder, gzip, zip), matches each activity to a hash run and writes it as the hasher's PackTrack trail, in slices the app drives; ProcessTrackImportsNightly (03:45 UTC) finishes abandoned jobs.
+    • PositionWriter is the one write path for points (StorePositions uses it); HasherEventMap Track* and EventTrack first/last are now the points' capture times, so an import months later is not "recently tracked".
+
 1.0.43+41
     • GetPositions incremental polls now return what ARRIVED since the mark the phone hands back, keyed on the storage service's own Timestamp with a 60-second lookback, so a runner's late-flushed buffer is never missed. Apps up to 3.0.20 are unaffected: they still get a full fetch.
 

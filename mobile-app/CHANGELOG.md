@@ -1,3 +1,16 @@
+## 3.0.22+1337 (2026-09-11)
+
+### New Features
+- **Import your whole running history.** One button takes a GPX, TCX or
+  FIT file, or an entire Strava or Garmin archive. Harrier Central finds
+  the hash run each track belongs to and adds it as your PackTrack trail,
+  showing the results as they land. Runs you already have a track on are
+  left alone; when two runs could match, you choose.
+
+### Fixes
+- **Sharing a file into Harrier Central now opens the app**, and if iOS
+  declines to switch, the file is imported the next time you open the app.
+
 ## 3.0.21+1336 (2026-09-10)
 
 ### New Features
