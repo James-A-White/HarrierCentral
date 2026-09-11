@@ -1,3 +1,6 @@
+1.0.46+44
+    • Track import ignores a Mac re-zip's __MACOSX resource forks (._ twins of every file), which were counted as activities and marked unparseable.
+
 1.0.45+43
     • Track import fills a hasher's run notes from a Strava title and description (activities.csv or a GPX track's name/desc) when their note is blank, including on a run they tracked by phone; Strava's automatic titles are dropped. Via nonApi_setTrackNotes.
 

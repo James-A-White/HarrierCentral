@@ -1,3 +1,9 @@
+## 3.0.25+1340 (2026-09-11)
+
+### Fixes
+- **A slow import no longer reports failure.** The app now waits for the
+  server and carries on from where it got to.
+
 ## 3.0.24+1339 (2026-09-11)
 
 ### Fixes
