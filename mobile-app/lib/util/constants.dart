@@ -118,6 +118,13 @@ const String END_EVENT_TRACKING_URL =
 // itself before replacing anything (E16.F3.S1). Same X-Api-Key.
 const String REPORT_BROKEN_PHOTO_URL =
     'https://$BASE_AF_URL/api/ReportBrokenPhoto';
+// Track import (E5.F5.S7): a SAS to upload a GPX/TCX/FIT or a whole archive
+// straight to blob storage, then the processing function the app drives in
+// slices. Both device-authenticated through their SPs.
+const String TRACK_IMPORT_UPLOAD_TOKEN_URL =
+    'https://$BASE_AF_URL/api/GetTrackImportUploadToken';
+const String PROCESS_TRACK_IMPORT_URL =
+    'https://$BASE_AF_URL/api/ProcessTrackImport';
 
 // Admin web portal — opened from the drawer for admin users. The app registers
 // a one-time auth code and opens `$PORTAL_URL/?authCode=<code>` so the portal

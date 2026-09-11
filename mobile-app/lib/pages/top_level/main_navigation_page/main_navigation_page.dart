@@ -318,7 +318,7 @@ class MainNavigationPage extends StatelessWidget {
                   if (controller.appBarText.value ==
                       MainNavigationController.tabTitles[0])
                     IconButton(
-                      tooltip: 'Import GPX track',
+                      tooltip: 'Import tracks',
                       icon: const Icon(Icons.route),
                       onPressed: () => _importGpx(context),
                     ),
@@ -725,12 +725,13 @@ class _SplashLoadingView extends StatelessWidget {
 /// The Hash Runs app-bar GPX button: explain, then pick.
 Future<void> _importGpx(BuildContext context) async {
   final bool? go = await Utilities.showAlert(
-    'Import a GPX track',
-    'Choose a GPX file exported from your watch or running app.\n\n'
-    'Harrier Central will locate the run it belongs to — from the time '
-    'and place of the track\'s first point — and upload the track as your '
-    'PackTrack trail for that run.',
-    'Choose GPX file',
+    'Import your tracks',
+    'Choose a GPX, TCX or FIT file from your watch or running app — or a '
+    'whole Strava or Garmin archive (zip).\n\n'
+    'Harrier Central will locate the hash run each track belongs to — from '
+    'the time and place of its first point — and upload it as your PackTrack '
+    'trail for that run. Runs you already have a track on are left alone.',
+    'Choose a file',
     showCancelButton: true,
   );
   if (go != true || !context.mounted) return;

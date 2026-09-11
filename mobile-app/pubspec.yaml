@@ -99,7 +99,6 @@ dependencies:
   flutter_markdown: ^0.7.7+1
   torch_light: ^1.1.0
   exif: ^3.3.0
-  xml: ^6.6.1
   file_picker: ^11.0.3
   # video_player: ^2.4.10
 

@@ -1,36 +1,37 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:harrier_central/imports.dart';
 
-/// Import a GPX file as the user's own PackTrack trail (E5.F5.S6).
+/// Import a track file as PackTrack trails (E5.F5.S6 / S7).
 ///
-/// Flow: pick a file → parse it → ask the server which run it belongs to
-/// (first point's time and position) → confirm → upload. A run with a
-/// recorded start must be within a mile of the track's first point; a run
-/// with none is accepted on time alone once the user confirms it. An
-/// existing track on the chosen run is never silently overwritten: the user
-/// is told and can replace it.
+/// One button, any file: a GPX, TCX or FIT activity, or a whole Strava /
+/// Garmin archive (zip). The file goes straight to blob storage, then the
+/// server is asked to process it in slices while this page shows each
+/// activity's outcome as it lands — a single file resolves in seconds, an
+/// archive streams. The server applies the rules: a run that already has a
+/// track is never overwritten by an archive; a run with no recorded start
+/// is skipped; several runs on one day are held for the hasher to choose.
+/// A single file is held instead of skipped in those two cases, so the
+/// person can confirm or replace right here.
 class ImportGpxController extends GetxController {
   ImportGpxController({this.initialFilePath, this.autoPick = false});
 
-  /// A file the OS handed to the app (see IncomingFileService) — loaded on
-  /// open instead of waiting for the user to pick one.
+  /// A file the OS handed to the app (see IncomingFileService) — uploaded
+  /// on open instead of waiting for the user to pick one.
   final String? initialFilePath;
 
   /// Open the file picker as soon as the page is up (the Hash Runs app-bar
   /// button has already explained what will happen).
   final bool autoPick;
 
-  final GpxImportService _service = const GpxImportService();
+  final TrackImportService _service = const TrackImportService();
 
   final RxBool busy = false.obs;
   final RxnString fileName = RxnString();
   final RxString status = ''.obs;
-  final RxList<RunCandidate> candidates = <RunCandidate>[].obs;
-  final RxnString importedEventName = RxnString();
+  final RxDouble uploadProgress = 0.0.obs;
+  final Rxn<TrackImportJob> job = Rxn<TrackImportJob>();
 
-  List<UserEventLocation>? _points;
-
-  int get pointCount => _points?.length ?? 0;
+  bool _cancelled = false;
 
   @override
   void onReady() {
@@ -43,163 +44,160 @@ class ImportGpxController extends GetxController {
     }
   }
 
+  @override
+  void onClose() {
+    _cancelled = true;
+    super.onClose();
+  }
+
   Future<void> pickFile() async {
     if (busy.value) return;
     // FileType.any: the picker's own extension filter needs a registered UTI
-    // on iOS; the extension is checked in [_load] instead.
+    // on iOS; the server decides the type from the bytes anyway.
     final FilePickerResult? picked = await FilePicker.pickFiles(
       type: FileType.any,
-      withData: true,
     );
     final PlatformFile? file = picked?.files.singleOrNull;
-    if (file == null) return;
-    await _load(name: file.name, bytes: file.bytes);
+    if (file == null || file.path == null) return;
+    await _run(File(file.path!), file.name);
   }
 
   /// A file already on disk — handed to the app by the OS.
   Future<void> loadPath(String path) async {
     if (busy.value) return;
-    Uint8List? bytes;
-    try {
-      bytes = await File(path).readAsBytes();
-    } catch (_) {
-      bytes = null;
-    }
-    await _load(name: path.split('/').last, bytes: bytes);
+    await _run(File(path), path.split('/').last);
   }
 
-  Future<void> _load({required String name, required Uint8List? bytes}) async {
+  Future<void> _run(File file, String name) async {
     busy.value = true;
-    candidates.clear();
-    importedEventName.value = null;
-    _points = null;
+    job.value = null;
+    uploadProgress.value = 0;
+    fileName.value = name;
     try {
-      fileName.value = name;
-      if (!name.toLowerCase().endsWith('.gpx')) {
-        status.value = 'Please choose a .gpx file.';
-        return;
+      status.value = 'Uploading $name…';
+      final String jobId = await _service.upload(
+        file: file,
+        fileName: name,
+        onProgress: (double f) => uploadProgress.value = f,
+      );
+      if (_cancelled) return;
+      status.value = 'Finding your runs…';
+      TrackImportJob j = await _service.process(jobId);
+      job.value = j;
+      while (!j.isFinished && !_cancelled) {
+        status.value = _progressText(j);
+        j = await _service.process(jobId);
+        job.value = j;
       }
-      if (bytes == null) {
-        status.value = 'Could not read that file.';
-        return;
-      }
-      status.value = 'Reading $name…';
-      final ParsedGpx parsed = _service.parse(utf8.decode(bytes));
-      final List<UserEventLocation> points = _service.buildPoints(parsed);
-      _points = points;
-
-      status.value = 'Finding the run…';
-      final List<RunCandidate> found = await _service.findRuns(parsed);
-      final List<RunCandidate> passing = found
-          .where((c) => c.passesDistance)
-          .toList(growable: false);
-      if (passing.isEmpty) {
-        status.value = found.isEmpty
-            ? 'No run started around ${_fmtWhen(parsed.firstTimestampMs)}.'
-            : 'A run started around then, but its recorded start is '
-                  '${_fmtDistance(found.first.distanceMeters)} from where '
-                  'this track begins — more than a mile, so it was not '
-                  'matched.';
-        return;
-      }
-      candidates.assignAll(passing);
-      status.value = passing.length == 1
-          ? 'Track of ${parsed.points.length} points, '
-                '${points.length} after thinning. Import it to this run?'
-          : 'Track of ${parsed.points.length} points, '
-                '${points.length} after thinning. Which run is it?';
-    } on GpxImportException catch (e) {
+      status.value = _summaryText(j);
+    } on TrackImportException catch (e) {
       status.value = e.message;
     } catch (e, s) {
-      BootLogger.logError('[ImportGpxController.pickFile]', e, s);
-      status.value = 'Something went wrong reading that file.';
-    } finally {
-      busy.value = false;
-    }
-  }
-
-  Future<void> importTo(RunCandidate run) async {
-    final List<UserEventLocation>? points = _points;
-    if (busy.value || points == null) return;
-
-    if (!run.hasLocation) {
-      final bool? go = await Utilities.showAlert(
-        'No recorded start',
-        '${run.eventName} (${run.kennelName}) has no recorded start '
-            'location, so it was matched on time alone. Import the track to '
-            'this run?',
-        'Import',
-        showCancelButton: true,
-      );
-      if (go != true) return;
-    }
-
-    if (run.hasExistingTrack) {
-      final bool? replace = await Utilities.showAlert(
-        'You already have a track on this run',
-        'Your PackTrack trail for ${run.eventName} has '
-            '${run.existingTrackPoints} points. Importing this file will '
-            'REPLACE it — the existing trail is deleted first.',
-        'Replace',
-        showCancelButton: true,
-      );
-      if (replace != true) return;
-    }
-
-    busy.value = true;
-    try {
-      if (run.hasExistingTrack) {
-        status.value = 'Removing the existing track…';
-        await _service.deleteExistingTrack(run.eventId);
-      }
-      status.value = 'Uploading ${points.length} points…';
-      final int sent = await _service.importTrack(
-        eventId: run.eventId,
-        points: points,
-      );
-      candidates.clear();
-      importedEventName.value = run.eventName;
-      status.value =
-          'Done — $sent points imported as your track for ${run.eventName}. '
-          'It will show on the run\'s map now and be archived tonight.';
-    } on GpxImportException catch (e) {
-      status.value = e.message;
-    } catch (e, s) {
-      BootLogger.logError('[ImportGpxController.importTo]', e, s);
+      BootLogger.logError('[ImportGpxController._run]', e, s);
       status.value = 'The import failed. Please try again.';
     } finally {
       busy.value = false;
     }
   }
 
-  static String _fmtWhen(int ms) {
-    final DateTime local = DateTime.fromMillisecondsSinceEpoch(ms).toLocal();
-    return '${local.year}-${_two(local.month)}-${_two(local.day)} '
-        '${_two(local.hour)}:${_two(local.minute)}';
+  /// A held activity: the user picked a run (or confirmed the only one).
+  Future<void> resolve(ImportActivity a, ImportCandidate c) async {
+    final TrackImportJob? j = job.value;
+    if (busy.value || j == null) return;
+    bool replace = false;
+    if (c.existingTrackPoints > 0) {
+      final bool? ok = await Utilities.showAlert(
+        'You already have a track on this run',
+        'Your PackTrack trail for ${c.eventName} has ${c.existingTrackPoints} '
+            'points. Importing this activity will REPLACE it — the existing '
+            'trail is deleted first.',
+        'Replace',
+        showCancelButton: true,
+      );
+      if (ok != true) return;
+      replace = true;
+    } else if (!c.hasLocation) {
+      final bool? ok = await Utilities.showAlert(
+        'No recorded start',
+        '${c.eventName} (${c.kennelName}) has no recorded start location, so '
+            'it was matched on time alone. Import the track to this run?',
+        'Import',
+        showCancelButton: true,
+      );
+      if (ok != true) return;
+    }
+    busy.value = true;
+    try {
+      status.value = 'Importing to ${c.eventName}…';
+      final TrackImportJob updated = await _service.resolve(
+        jobId: j.jobId,
+        index: a.index,
+        eventId: c.eventId,
+        replace: replace,
+      );
+      job.value = updated;
+      status.value = _summaryText(updated);
+    } on TrackImportException catch (e) {
+      status.value = e.message;
+    } catch (e, s) {
+      BootLogger.logError('[ImportGpxController.resolve]', e, s);
+      status.value = 'That import failed. Please try again.';
+    } finally {
+      busy.value = false;
+    }
+  }
+
+  static String _progressText(TrackImportJob j) {
+    final int? total = j.activityCount;
+    if (total == null || total <= 1) return 'Finding your runs…';
+    return 'Checked ${j.nextIndex} of $total activities — '
+        '${j.importedCount} imported so far…';
+  }
+
+  static String _summaryText(TrackImportJob j) {
+    if (j.status == 3) return j.errorMessage ?? 'The import failed.';
+    final int total = j.activityCount ?? j.activities.length;
+    if (total == 1) {
+      final ImportActivity? a = j.activities.singleOrNull;
+      return a?.outcomeText ?? 'Done.';
+    }
+    final StringBuffer b = StringBuffer(
+      'Done — $total activities: ${j.importedCount} imported',
+    );
+    if (j.heldCount > 0) b.write(', ${j.heldCount} need a look');
+    if (j.skippedCount > 0) b.write(', ${j.skippedCount} skipped');
+    b.write(
+      '. Imported tracks show on their runs now and are archived tonight.',
+    );
+    return b.toString();
   }
 
   static String _two(int v) => v.toString().padLeft(2, '0');
 
-  static String _fmtDistance(int? metres) {
-    if (metres == null) return 'an unknown distance';
-    final double miles = metres * METERS_TO_MILES;
-    return miles >= 10
-        ? '${miles.round()} miles'
-        : '${miles.toStringAsFixed(1)} miles';
-  }
-
-  static String describeStart(RunCandidate c) {
-    final DateTime? l = c.startLocal;
+  static String describeStart(DateTime? l) {
     if (l == null) return '';
     return '${l.year}-${_two(l.month)}-${_two(l.day)} '
         '${_two(l.hour)}:${_two(l.minute)}';
+  }
+
+  static String describeActivity(ImportActivity a) {
+    final DateTime? s = a.startUtc?.toLocal();
+    final String when = s == null ? '' : describeStart(s);
+    final String dist = a.distanceM > 0
+        ? '${(a.distanceM * METERS_TO_MILES).toStringAsFixed(1)} mi'
+        : '';
+    return <String>[
+      when,
+      dist,
+      if (a.sport != null) a.sport!,
+    ].where((String x) => x.isNotEmpty).join('  ·  ');
   }
 }
 
 class ImportGpxPage extends StatelessWidget {
   const ImportGpxPage({super.key, this.initialFilePath, this.autoPick = false});
 
-  /// Set when the OS handed the app a file; the page loads it on open.
+  /// Set when the OS handed the app a file; the page uploads it on open.
   final String? initialFilePath;
 
   /// Open the file picker straight away.
@@ -217,18 +215,29 @@ class ImportGpxPage extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: themeAppBarBackground,
             iconTheme: const IconThemeData(color: Colors.white),
-            title: Text('Import GPX Track', style: ts_appBarTitle),
+            title: Text('Import Tracks', style: ts_appBarTitle),
           ),
           body: Obx(() {
             final bool busy = c.busy.value;
+            final TrackImportJob? j = c.job.value;
+            final double up = c.uploadProgress.value;
+            final bool uploading = busy && j == null && up > 0 && up < 1;
+            final List<ImportActivity> ordered = j == null
+                ? const <ImportActivity>[]
+                : <ImportActivity>[
+                    ...j.activities.where((ImportActivity a) => a.isHeld),
+                    ...j.activities.where((ImportActivity a) => !a.isHeld),
+                  ];
             return ListView(
               padding: const EdgeInsets.all(16),
               children: <Widget>[
                 Text(
-                  'Choose a GPX file from your watch or running app. The run '
-                  'is found from the track\'s first point: its time, and its '
-                  'position within a mile of the run\'s recorded start. The '
-                  'track then becomes your PackTrack trail for that run.',
+                  'Choose a GPX, TCX or FIT file from your watch or running '
+                  'app — or a whole Strava or Garmin archive (zip). Harrier '
+                  'Central finds the hash run each track belongs to, from the '
+                  'time and place of its first point, and uploads it as your '
+                  'PackTrack trail for that run. Runs you already have a track '
+                  'on are left alone.',
                   style: ts_alertDialogBody,
                 ),
                 const SizedBox(height: 16),
@@ -237,7 +246,7 @@ class ImportGpxPage extends StatelessWidget {
                   icon: const Icon(Icons.upload_file, color: Colors.white),
                   label: Text(
                     c.fileName.value == null
-                        ? 'Choose GPX file'
+                        ? 'Choose a file'
                         : 'Choose a different file',
                     style: ts_button,
                   ),
@@ -246,7 +255,10 @@ class ImportGpxPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(c.fileName.value!, style: ts_alertDialogBody),
                 ],
-                if (busy) ...<Widget>[
+                if (uploading) ...<Widget>[
+                  const SizedBox(height: 12),
+                  LinearProgressIndicator(value: up),
+                ] else if (busy) ...<Widget>[
                   const SizedBox(height: 16),
                   const Center(child: CircularProgressIndicator()),
                 ],
@@ -254,24 +266,15 @@ class ImportGpxPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(c.status.value, style: ts_alertDialogBody),
                 ],
-                for (final RunCandidate run in c.candidates) ...<Widget>[
-                  const SizedBox(height: 12),
-                  Card(
-                    child: ListTile(
-                      title: Text(run.eventName, style: ts_titleCondensed),
-                      subtitle: Text(
-                        '${run.kennelName}\n'
-                        '${ImportGpxController.describeStart(run)}'
-                        '${run.hasLocation ? '  ·  start ${run.distanceMeters} m from the track\'s first point' : '  ·  no recorded start location'}'
-                        '${run.hasExistingTrack ? '\nYou already have a track here (${run.existingTrackPoints} points)' : ''}',
-                        style: ts_alertDialogBody,
-                      ),
-                      isThreeLine: true,
-                      trailing: ElevatedButton(
-                        onPressed: busy ? null : () => c.importTo(run),
-                        child: Text('Import', style: ts_button),
-                      ),
-                    ),
+                for (final ImportActivity a in ordered) ...<Widget>[
+                  const SizedBox(height: 10),
+                  _ActivityCard(
+                    activity: a,
+                    title: (j != null && j.isArchive)
+                        ? a.shortName
+                        : (c.fileName.value ?? a.shortName),
+                    busy: busy,
+                    onResolve: (ImportCandidate cand) => c.resolve(a, cand),
                   ),
                 ],
               ],
@@ -279,6 +282,85 @@ class ImportGpxPage extends StatelessWidget {
           }),
         );
       },
+    );
+  }
+}
+
+class _ActivityCard extends StatelessWidget {
+  const _ActivityCard({
+    required this.activity,
+    required this.title,
+    required this.busy,
+    required this.onResolve,
+  });
+
+  final ImportActivity activity;
+  final String title;
+  final bool busy;
+  final void Function(ImportCandidate) onResolve;
+
+  @override
+  Widget build(BuildContext context) {
+    final ImportActivity a = activity;
+    final IconData icon = a.isImported
+        ? Icons.check_circle
+        : a.isHeld
+        ? Icons.help_outline
+        : Icons.remove_circle_outline;
+    final Color color = a.isImported
+        ? Colors.green.shade700
+        : a.isHeld
+        ? Colors.orange.shade800
+        : Colors.grey;
+    final String detail = ImportGpxController.describeActivity(a);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: ts_titleCondensed,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            if (detail.isNotEmpty) Text(detail, style: ts_alertDialogBody),
+            Text(a.outcomeText, style: ts_alertDialogBody),
+            if (a.isHeld)
+              for (final ImportCandidate cand in a.candidates) ...<Widget>[
+                const SizedBox(height: 6),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        '${cand.eventName} — ${cand.kennelName}\n'
+                        '${ImportGpxController.describeStart(cand.startLocal)}'
+                        '${cand.hasLocation ? '  ·  ${cand.distanceMeters} m from the track start' : '  ·  no recorded start'}'
+                        '${cand.existingTrackPoints > 0 ? '  ·  you have a track here' : ''}',
+                        style: ts_alertDialogBody,
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: busy ? null : () => onResolve(cand),
+                      child: Text(
+                        cand.existingTrackPoints > 0 ? 'Replace' : 'Import',
+                        style: ts_button,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+          ],
+        ),
+      ),
     );
   }
 }

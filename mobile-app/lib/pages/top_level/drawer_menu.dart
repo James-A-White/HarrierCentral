@@ -348,7 +348,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                   // ],
                   ListTile(
                     leading: const Icon(Icons.upload_file, color: textColor),
-                    title: Text('Import GPX Track', style: _style),
+                    title: Text('Import Tracks', style: _style),
                     onTap: () async {
                       Navigator.pop(context);
                       await Navigator.push<dynamic>(
