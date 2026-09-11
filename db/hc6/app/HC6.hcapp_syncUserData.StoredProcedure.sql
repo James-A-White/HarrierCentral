@@ -422,6 +422,10 @@ BEGIN
         hem.Email                                                           AS email,
         hem.PhoneNumber                                                     AS phoneNumber,
         hem.Notes                                                           AS notes,
+        hem.NotesVisibility                                                 AS notesVisibility,
+        CASE WHEN hem.NotesVisibility = 1 AND (ISNULL(hkm.KennelStanding, 0) & 4096) = 0
+              AND (ISNULL((SELECT h.Preferences FROM HC.Hasher h WHERE h.id = hem.UserId), 0) & 8192) = 0
+             THEN 1 ELSE 0 END                                              AS notesShared,
         evt.EventNumber                                                     AS hemEventNumber,
         evt.CountryId                                                       AS hemCountryId,
         CASE WHEN evt.UseFbRunDetails = 1 THEN evt.FbEventName  ELSE evt.EventName  END AS hemEventName,

@@ -1,5 +1,5 @@
--- Run-once (E3.F4.S5, 2026-09-11): HC.HasherEventMap.Notes — the hasher's own
--- private notes on a run, written in the app or filled from a Strava title /
+-- Run-once (E3.F4.S5, 2026-09-11): HC.HasherEventMap.Notes and NotesVisibility — the
+-- hasher's own notes on a run and whether they share them, written in the app or filled from a Strava title /
 -- description on import when blank. HasherEventMap is a SYNCED table with an
 -- updatedAt trigger — disabled around the ALTER so no row is stamped and no
 -- client re-syncs (CLAUDE.md, "ALTER TABLE on synced tables"). James runs
@@ -9,7 +9,9 @@
 IF COL_LENGTH('HC.HasherEventMap', 'Notes') IS NULL
 BEGIN
     ALTER TABLE HC.HasherEventMap DISABLE TRIGGER trgUpdateModifiedOnDateForHasherEventMap;
-    ALTER TABLE HC.HasherEventMap ADD Notes NVARCHAR(4000) NULL;
+    ALTER TABLE HC.HasherEventMap
+        ADD Notes NVARCHAR(4000) NULL,
+            NotesVisibility SMALLINT NOT NULL CONSTRAINT DF_HasherEventMap_NotesVisibility DEFAULT (0);  -- 0 private · 1 shared
     ALTER TABLE HC.HasherEventMap ENABLE TRIGGER trgUpdateModifiedOnDateForHasherEventMap;
     PRINT 'HC.HasherEventMap.Notes added';
 END
@@ -31,7 +33,7 @@ BEGIN
 			       i.EventEmailAlertPreference, i.EventCountOverride, i.VirginVisitorType,
 			       i.TotalRuns, i.TotalHaring, i.TotalRunsThisKennel, i.TotalHaringThisKennel,
 			       i.YtdTotalRunsThisKennel, i.YtdHaringThisKennel, i.DisplayName, i.Email,
-			       i.PhoneNumber, i.removed, i.Notes
+			       i.PhoneNumber, i.removed, i.Notes, i.NotesVisibility
 			FROM INSERTED i
 			EXCEPT
 			SELECT d.id, d.EventId, d.KennelId, d.HasherOwnEventId, d.UserId, d.RegistrationId,
@@ -40,7 +42,7 @@ BEGIN
 			       d.EventEmailAlertPreference, d.EventCountOverride, d.VirginVisitorType,
 			       d.TotalRuns, d.TotalHaring, d.TotalRunsThisKennel, d.TotalHaringThisKennel,
 			       d.YtdTotalRunsThisKennel, d.YtdHaringThisKennel, d.DisplayName, d.Email,
-			       d.PhoneNumber, d.removed, d.Notes
+			       d.PhoneNumber, d.removed, d.Notes, d.NotesVisibility
 			FROM DELETED d)
 		RETURN;
 	IF NOT UPDATE(updatedAt)

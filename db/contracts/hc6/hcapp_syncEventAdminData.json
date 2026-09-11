@@ -333,6 +333,24 @@
           "description": "HasherEventMap.PhoneNumber."
         },
         {
+          "name": "notes",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "The hasher's notes ONLY when shared and not hidden by a kennel (KennelStanding & 0x1000) or platform (Preferences & 0x2000) override; NULL otherwise."
+        },
+        {
+          "name": "notesVisibility",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 private · 1 shared (the hasher's choice)."
+        },
+        {
+          "name": "notesShared",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when shared and neither admin override is set."
+        },
+        {
           "name": "hemEventNumber",
           "type": "INT",
           "nullable": true,
@@ -1212,4 +1230,4 @@
   "breakingChanges": [
     "@procName parameter type widened from NVARCHAR(100) (HC5) to NVARCHAR(128) (HC6) — compatible for all real SP names but is a type change."
   ]
-}
+}\n

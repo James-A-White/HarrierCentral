@@ -38,6 +38,13 @@
       "nullable": false,
       "mapsToColumn": null,
       "description": "The app's HEM sync watermark, passed to hcapp_syncUserData."
+    },
+    {
+      "name": "notesVisibility",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherEventMap.NotesVisibility",
+      "description": "0 private, 1 shared with the kennel and the web; NULL keeps. Effective only while neither admin override bit is set (HasherKennelMap.KennelStanding & 0x1000, Hasher.Preferences & 0x2000)."
     }
   ],
   "rowsets": [
@@ -105,4 +112,4 @@
     "Never rename a parameter",
     "Never change a parameter type"
   ]
-}
+}\n

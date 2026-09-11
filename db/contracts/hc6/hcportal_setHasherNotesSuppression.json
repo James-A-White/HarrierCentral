@@ -1,0 +1,66 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_setHasherNotesSuppression",
+  "version": "1.0.0",
+  "description": "Platform Admin override on shared run notes (E3.F4.S5): sets or clears bit 0x2000 of HC.Hasher.Preferences, which hides every note the hasher shares in every kennel. Requires HC.PlatformAdmin.CanEditKennel. Private notes are unaffected. No portal UI yet — callable from the portal shim.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token."
+    },
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "The hasher."
+    },
+    {
+      "name": "suppressed",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "Hasher.Preferences",
+      "description": "1 hide, 0 allow (bit 0x2000)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Success",
+      "description": "{ Success, ErrorMessage }",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1/0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher.Preferences (bit 0x2000) — fires the hasher updatedAt trigger."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}\n

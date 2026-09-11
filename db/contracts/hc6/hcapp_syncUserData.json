@@ -1273,6 +1273,18 @@
           "description": "HasherEventMap.PhoneNumber."
         },
         {
+          "name": "notesVisibility",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 private · 1 shared (the hasher's choice)."
+        },
+        {
+          "name": "notesShared",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when shared and neither admin override is set."
+        },
+        {
           "name": "notes",
           "type": "NVARCHAR(4000)",
           "nullable": true,
@@ -2188,4 +2200,4 @@
     "isMember in HasherKennelMap rowset is now computed dynamically from MembershipExpirationDate > GETDATE() — HC5 read the stored IsMember column. Members whose stored IsMember flag was stale will now see accurate membership state, which may change behaviour for kennels where the column was not kept in sync.",
     "@procName parameter widened from NVARCHAR(100) in HC5 to NVARCHAR(128) in HC6 to match OBJECT_NAME() return type."
   ]
-}
+}\n

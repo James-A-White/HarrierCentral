@@ -3,7 +3,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setEventNotes]
     @accessToken                NVARCHAR(1000),
     @eventId                    UNIQUEIDENTIFIER,
     @notes                      NVARCHAR(4000),
-    @hasherEventMapUpdatedAfter NVARCHAR(50)
+    @hasherEventMapUpdatedAfter NVARCHAR(50),
+    @notesVisibility            SMALLINT = NULL   -- 0 private · 1 shared · NULL keep
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_setEventNotes
@@ -14,6 +15,8 @@ AS
 --   to, attended, or tracked.
 -- Parameters:
 --   @notes                      - Up to 4000 characters; NULL/blank clears.
+--   @notesVisibility            - 0 private, 1 shared with the kennel and the web; NULL keeps.
+--                                 Shared is effective only while neither admin override is set.
 --   @hasherEventMapUpdatedAfter - The app's HEM sync watermark.
 -- Returns:
 --   rowset 0 — success envelope { success, errorCode, errorType }
@@ -81,6 +84,7 @@ BEGIN TRY
     BEGIN TRANSACTION;
     UPDATE HC.HasherEventMap
        SET Notes = NULLIF(LTRIM(RTRIM(@notes)), ''),
+           NotesVisibility = CASE WHEN @notesVisibility IN (0, 1) THEN @notesVisibility ELSE NotesVisibility END,
            updatedAt = GETDATE()
      WHERE id = @hemId;
     COMMIT TRANSACTION;

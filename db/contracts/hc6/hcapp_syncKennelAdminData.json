@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_syncKennelAdminData",
   "version": "1.1.0",
-  "description": "Incremental pull-sync for kennel-level admin data. Each of the five entity types is gated by a watermark parameter \u2014 'ignore' (default) skips that table. HasherKennelMap is scoped to @kennelId; Payments and HasherEventMap are scoped to @targetHasherId if provided. Used after write SPs that modify kennel-level membership so the admin view is immediately updated. Supports the write-SP delegation pattern via @procName and @param.",
+  "description": "Incremental pull-sync for kennel-level admin data. Each of the five entity types is gated by a watermark parameter — 'ignore' (default) skips that table. HasherKennelMap is scoped to @kennelId; Payments and HasherEventMap are scoped to @targetHasherId if provided. Used after write SPs that modify kennel-level membership so the admin view is immediately updated. Supports the write-SP delegation pattern via @procName and @param.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Kennel to scope the sync to. Required \u2014 returns errorCode 1272 if NULL or zero UUID."
+      "description": "Kennel to scope the sync to. Required — returns errorCode 1272 if NULL or zero UUID."
     },
     {
       "name": "hashersUpdatedAfter",
@@ -845,7 +845,7 @@
     {
       "index": "conditional",
       "name": "Payments",
-      "description": "Emitted when @paymentsUpdatedAfter != 'ignore'. Payments where UserId = @targetHasherId and updatedAt > watermark. No ORDER BY clause \u2014 returned in storage order. No page limit regardless of @usePaging.",
+      "description": "Emitted when @paymentsUpdatedAfter != 'ignore'. Payments where UserId = @targetHasherId and updatedAt > watermark. No ORDER BY clause — returned in storage order. No page limit regardless of @usePaging.",
       "columns": [
         {
           "name": "paymentId",
@@ -859,7 +859,7 @@
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
           "mapsToColumn": "Payment.KennelId",
-          "description": "Kennel the payment belongs to. Note: not filtered by @kennelId \u2014 may include payments from other kennels."
+          "description": "Kennel the payment belongs to. Note: not filtered by @kennelId — may include payments from other kennels."
         },
         {
           "name": "paidBy",
@@ -1180,6 +1180,24 @@
           "description": "Phone number recorded at time of event."
         },
         {
+          "name": "notes",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "The hasher's notes ONLY when shared and not hidden by a kennel (KennelStanding & 0x1000) or platform (Preferences & 0x2000) override; NULL otherwise."
+        },
+        {
+          "name": "notesVisibility",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 private · 1 shared (the hasher's choice)."
+        },
+        {
+          "name": "notesShared",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when shared and neither admin override is set."
+        },
+        {
           "name": "hemEventNumber",
           "type": "SMALLINT",
           "nullable": false,
@@ -1202,7 +1220,7 @@
           "name": "hemEventStartDatetimeGmt",
           "type": "DATETIME2",
           "nullable": true,
-          "description": "Event start datetime (GMT) as DATETIME2: uses FbEventStartDatetime when UseFbRunDetails=1, otherwise EventStartDatetimeGmt. Note: second derivation uses Fb column for both local and GMT when UseFbRunDetails=1 \u2014 EventStartDatetimeGmt is not used in the FB branch."
+          "description": "Event start datetime (GMT) as DATETIME2: uses FbEventStartDatetime when UseFbRunDetails=1, otherwise EventStartDatetimeGmt. Note: second derivation uses Fb column for both local and GMT when UseFbRunDetails=1 — EventStartDatetimeGmt is not used in the FB branch."
         },
         {
           "name": "eventStartDatetimeGmt",
@@ -1297,4 +1315,4 @@
     "isMember in HasherKennelMap rowset is now computed dynamically (CASE WHEN MembershipExpirationDate > GETDATE() THEN 1 ELSE 0 END) instead of returning the stored HasherKennelMap.IsMember SMALLINT column. The stored column can be stale; the computed value reflects current membership state. Column type changes from SMALLINT to INT.",
     "@procName parameter widened from NVARCHAR(100) in HC5 to NVARCHAR(128) in HC6, matching OBJECT_NAME() return type."
   ]
-}
+}\n
