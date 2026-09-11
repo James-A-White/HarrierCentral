@@ -1,3 +1,13 @@
+## 3.0.23+1338 (2026-09-11)
+
+### New Features
+- **My notes.** Every run you are on now has a notes box on its detail
+  page — your own words, kept on your account and shown on all your
+  devices. Importing a Strava file fills it in from your title and
+  description when it is empty.
+- **Share your notes.** One switch shares a run's notes with your kennel;
+  kennel admins can hide a member's shared notes from the member menu.
+
 ## 3.0.22+1337 (2026-09-11)
 
 ### New Features

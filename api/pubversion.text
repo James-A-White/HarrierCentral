@@ -1,3 +1,6 @@
+1.0.45+43
+    • Track import fills a hasher's run notes from a Strava title and description (activities.csv or a GPX track's name/desc) when their note is blank, including on a run they tracked by phone; Strava's automatic titles are dropped. Via nonApi_setTrackNotes.
+
 1.0.44+42
     • Track import, server-side: GetTrackImportUploadToken mints a job and a SAS; the phone uploads a GPX/TCX/FIT or a whole Strava/Garmin zip straight to blob storage; ProcessTrackImport parses (GPX/TCX, own FIT decoder, gzip, zip), matches each activity to a hash run and writes it as the hasher's PackTrack trail, in slices the app drives; ProcessTrackImportsNightly (03:45 UTC) finishes abandoned jobs.
     • PositionWriter is the one write path for points (StorePositions uses it); HasherEventMap Track* and EventTrack first/last are now the points' capture times, so an import months later is not "recently tracked".
