@@ -31,6 +31,14 @@ class ImportGpxController extends GetxController {
   final RxDouble uploadProgress = 0.0.obs;
   final Rxn<TrackImportJob> job = Rxn<TrackImportJob>();
 
+  /// Live position while the server works: activities checked so far, of
+  /// how many, and imported so far. Polled every few seconds between the
+  /// slice responses, which only arrive every ~40 s.
+  final RxInt checked = 0.obs;
+  final RxnInt total = RxnInt();
+  final RxInt importedSoFar = 0.obs;
+  Timer? _progressTimer;
+
   bool _cancelled = false;
 
   @override
@@ -47,7 +55,28 @@ class ImportGpxController extends GetxController {
   @override
   void onClose() {
     _cancelled = true;
+    _progressTimer?.cancel();
     super.onClose();
+  }
+
+  void _startProgressPolling(String jobId) {
+    _progressTimer?.cancel();
+    _progressTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      try {
+        final p = await _service.fetchProgress(jobId);
+        if (p == null || _cancelled) return;
+        checked.value = p.nextIndex;
+        total.value = p.activityCount;
+        importedSoFar.value = p.imported;
+      } catch (_) {
+        // A missed poll is nothing; the next one or the slice response updates.
+      }
+    });
+  }
+
+  void _stopProgressPolling() {
+    _progressTimer?.cancel();
+    _progressTimer = null;
   }
 
   Future<void> pickFile() async {
@@ -82,7 +111,19 @@ class ImportGpxController extends GetxController {
       );
       if (_cancelled) return;
       status.value = 'Finding your runs…';
-      TrackImportJob j = await _driveToCompletion(jobId);
+      checked.value = 0;
+      total.value = null;
+      importedSoFar.value = 0;
+      _startProgressPolling(jobId);
+      TrackImportJob j;
+      try {
+        j = await _driveToCompletion(jobId);
+      } finally {
+        _stopProgressPolling();
+      }
+      checked.value = j.activityCount ?? j.activities.length;
+      total.value = j.activityCount ?? j.activities.length;
+      importedSoFar.value = j.importedCount;
       status.value = _summaryText(j);
     } on TrackImportException catch (e) {
       status.value = e.message;
@@ -125,6 +166,9 @@ class ImportGpxController extends GetxController {
       }
       job.value = j;
       if (j == null) continue;
+      checked.value = j.nextIndex;
+      total.value = j.activityCount;
+      importedSoFar.value = j.importedCount;
       if (j.isFinished) return j;
       lastIndex = j.nextIndex;
       status.value = _progressText(j);
@@ -290,6 +334,22 @@ class ImportGpxPage extends StatelessWidget {
                 if (uploading) ...<Widget>[
                   const SizedBox(height: 12),
                   LinearProgressIndicator(value: up),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Uploading… ${(up * 100).round()}%',
+                    style: ts_alertDialogBody,
+                  ),
+                ] else if (busy && c.total.value != null && c.total.value! > 1) ...<Widget>[
+                  const SizedBox(height: 12),
+                  LinearProgressIndicator(
+                    value: (c.checked.value / c.total.value!).clamp(0.0, 1.0),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${c.checked.value} of ${c.total.value} activities checked'
+                    '  ·  ${c.importedSoFar.value} imported',
+                    style: ts_alertDialogBody,
+                  ),
                 ] else if (busy) ...<Widget>[
                   const SizedBox(height: 16),
                   const Center(child: CircularProgressIndicator()),

@@ -383,6 +383,40 @@ class TrackImportService {
     return TrackImportJob.fromJson(jsonDecode(r.body) as Map<String, dynamic>);
   }
 
+  /// Position only — the list form, which carries no result JSON, so it is
+  /// cheap enough to poll every few seconds while a slice runs.
+  Future<({int nextIndex, int? activityCount, int imported, int status})?>
+  fetchProgress(String jobId) async {
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String raw = await ServiceCommon.sendHttpPost(() {
+      return jsonEncode(<String, dynamic>{
+        'queryType': 'getTrackImports',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_getTrackImports',
+          paramString: deviceSecret,
+        ),
+      });
+    }, noRetries: true);
+    if (raw.startsWith(ERROR_PREFIX)) return null;
+    final List<dynamic> rowsets = jsonDecode(raw) as List<dynamic>;
+    if (rowsets.isEmpty) return null;
+    for (final dynamic r in rowsets[0] as List<dynamic>) {
+      final Map<String, dynamic> m = r as Map<String, dynamic>;
+      if (normalizeUuid(m['jobId'] as String) != normalizeUuid(jobId)) continue;
+      return (
+        nextIndex: (m['nextIndex'] as num?)?.toInt() ?? 0,
+        activityCount: (m['activityCount'] as num?)?.toInt(),
+        imported: (m['importedCount'] as num?)?.toInt() ?? 0,
+        status: (m['status'] as num?)?.toInt() ?? 0,
+      );
+    }
+    return null;
+  }
+
   /// The job as stored (no processing) — for reopening a past import.
   Future<TrackImportJob?> fetch(String jobId) async {
     final String userId = currentUserId;
