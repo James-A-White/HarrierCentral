@@ -96,7 +96,8 @@ class RunDetails extends StatelessWidget {
   );
 
   bool get _hasEventImage =>
-      (event.eventImage ?? '').isNotEmpty && event.eventImage!.startsWith('http');
+      (event.eventImage ?? '').isNotEmpty &&
+      event.eventImage!.startsWith('http');
 
   /// Cover photo (from a Cover-tagged run photo), propagated to
   /// HC.Event.EventCoverPhotoUrl. Always absolute.
@@ -104,12 +105,52 @@ class RunDetails extends StatelessWidget {
       (event.eventCoverPhotoUrl ?? '').isNotEmpty &&
       event.eventCoverPhotoUrl!.startsWith('http');
 
+  /// The kennel's logo and name, sat above the run's photo so it is obvious
+  /// whose run you have opened. Only drawn when there IS a photo: without one
+  /// the page already leads with a large kennel logo.
+  Widget _kennelStrip() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 18.0, left: 20.0, right: 20.0),
+      child: Row(
+        children: <Widget>[
+          // KennelLogo sizes itself to a square of logoHeight.
+          KennelLogo(
+            kennelLogoUrl: kennel.kennelLogo,
+            kennelShortName: kennel.kennelShortName,
+            logoHeight: 50,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: AutoSizeText(
+              kennel.kennelName.isNotEmpty
+                  ? kennel.kennelName
+                  : kennel.kennelShortName,
+              style: ts_titleMedium,
+              maxLines: 2,
+              minFontSize: 12,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// A tappable, zoomable image with a drop shadow — used for both the run's
   /// cover photo and its event image.
   Widget _zoomableImage(
-      BuildContext context, String url, String heroTag, String pageTitle) {
+    BuildContext context,
+    String url,
+    String heroTag,
+    String pageTitle,
+  ) {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.only(
+        top: 12.0,
+        left: 20.0,
+        right: 20.0,
+        bottom: 20.0,
+      ),
       child: GestureDetector(
         onTap: () async {
           await Navigator.push<void>(
@@ -153,12 +194,25 @@ class RunDetails extends StatelessWidget {
           // Photo block: the run's cover photo on top (a Cover-tagged run photo,
           // past runs), then the event image; kennel-logo fallback only when
           // neither exists. Followed by a strip of the run's Featured photos.
+          // Whose run is this? A cover photo fills the top of the screen and
+          // tells you nothing about the kennel — the name is otherwise buried
+          // in Event details further down (James, 2026-09-12). The logo-only
+          // fallback below already answers it, so this rides with the photos.
+          if (_hasCover || _hasEventImage) _kennelStrip(),
           if (_hasCover)
-            _zoomableImage(context, event.eventCoverPhotoUrl!,
-                'CoverImage-${event.eventId}', 'Cover photo'),
+            _zoomableImage(
+              context,
+              event.eventCoverPhotoUrl!,
+              'CoverImage-${event.eventId}',
+              'Cover photo',
+            ),
           if (_hasEventImage)
-            _zoomableImage(context, event.eventImage!,
-                'EventImage-${event.eventId}', 'Zoomable Event Image'),
+            _zoomableImage(
+              context,
+              event.eventImage!,
+              'EventImage-${event.eventId}',
+              'Zoomable Event Image',
+            ),
           if (!_hasCover && !_hasEventImage)
             Padding(
               padding: const EdgeInsets.only(top: 20),
@@ -172,7 +226,9 @@ class RunDetails extends StatelessWidget {
               ),
             ),
           _FeaturedPhotoStrip(
-              eventId: event.eventId, eventName: event.eventName),
+            eventId: event.eventId,
+            eventName: event.eventName,
+          ),
           const Padding(
             padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
             child: FancyDivider(
@@ -1158,12 +1214,14 @@ class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
   }
 
   Future<void> _load() async {
-    final result =
-        await KennelPhotoService().getRunPhotosForGallery(eventId: widget.eventId);
+    final result = await KennelPhotoService().getRunPhotosForGallery(
+      eventId: widget.eventId,
+    );
     if (!mounted) return;
     setState(() {
-      _featured =
-          result.photos.where((RunPhotoModel p) => p.status == 4).toList();
+      _featured = result.photos
+          .where((RunPhotoModel p) => p.status == 4)
+          .toList();
       _loaded = true;
     });
   }
@@ -1257,7 +1315,6 @@ class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
   }
 }
 
-
 // ── My notes ────────────────────────────────────────────────────────────────
 
 /// The hasher's own private notes on this run (E3.F4.S5). Shown only when
@@ -1293,8 +1350,9 @@ class RunNotesController extends GetxController {
   }
 
   Future<void> _load() async {
-    final Map<String, dynamic>? row =
-        await QueryHasherEventMap.queryOwnRow(eventId);
+    final Map<String, dynamic>? row = await QueryHasherEventMap.queryOwnRow(
+      eventId,
+    );
     if (isClosed) return;
     hasRow.value = row != null;
     final String notes =
@@ -1334,8 +1392,10 @@ class RunNotesController extends GetxController {
     saving.value = true;
     try {
       final String notes = text.text.trim();
-      final bool ok =
-          await tableModel.hasherEventMapService.setEventNotes(eventId, notes);
+      final bool ok = await tableModel.hasherEventMapService.setEventNotes(
+        eventId,
+        notes,
+      );
       if (ok) {
         saved.value = notes;
         dirty.value = false;
