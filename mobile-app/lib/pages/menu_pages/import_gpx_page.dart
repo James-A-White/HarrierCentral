@@ -469,7 +469,7 @@ class ImportGpxPage extends StatelessWidget {
                   ),
                   for (final TrackImportJob p in c.previous) ...<Widget>[
                     const SizedBox(height: 10),
-                    _PreviousUploadCard(
+                    PreviousUploadCard(
                       job: p,
                       busy: busy,
                       onReimport: () => c.reimport(p),
@@ -659,9 +659,11 @@ class _CandidateRow extends StatelessWidget {
   }
 }
 
-/// One earlier upload: name, when, what it found, and a Re-import button.
-class _PreviousUploadCard extends StatelessWidget {
-  const _PreviousUploadCard({
+/// One earlier upload: name, when, what it found, and its two buttons.
+/// Public so a widget test can lay it out at phone width.
+class PreviousUploadCard extends StatelessWidget {
+  const PreviousUploadCard({
+    super.key,
     required this.job,
     required this.busy,
     required this.onReimport,
@@ -712,20 +714,29 @@ class _PreviousUploadCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              ElevatedButton(
-                onPressed: busy ? null : onReimport,
-                child: Text('Re-import', style: ts_button),
-              ),
-              const SizedBox(height: 6),
-              ElevatedButton(
-                onPressed: busy ? null : onDelete,
-                child: Text('Remove', style: ts_button),
-              ),
-            ],
+          // IntrinsicWidth, not a bare Column: a Row lays its non-flexible
+          // children out with UNBOUNDED width, so CrossAxisAlignment.stretch
+          // has nothing finite to stretch to — the column claimed the width,
+          // the Expanded text was squeezed to one character per line and the
+          // buttons were pushed off screen (shipped in 3.0.29, caught the same
+          // day). IntrinsicWidth bounds the column to its widest child, so
+          // stretch resolves and both buttons match.
+          IntrinsicWidth(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: busy ? null : onReimport,
+                  child: Text('Re-import', style: ts_button),
+                ),
+                const SizedBox(height: 6),
+                ElevatedButton(
+                  onPressed: busy ? null : onDelete,
+                  child: Text('Remove', style: ts_button),
+                ),
+              ],
+            ),
           ),
         ],
       ),
