@@ -1,0 +1,33 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_deleteTrackImport",
+  "version": "1.0.0",
+  "description": "Clears one of the caller's own track-import uploads off their Import Tracks list by stamping DeletedAt. The row and its BlobUrl are kept (the archives are retained for historic-run discovery); tracks already imported from the upload are untouched.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": null, "description": "Calling device; validated by ValidateAppAuth (spNumber 101)." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Standard app access token." },
+    { "name": "jobId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "TrackImport.id", "description": "The upload to clear. Must belong to the caller and must not be mid-import." }
+  ],
+  "rowsets": [
+    { "index": 0, "name": "SuccessEnvelope", "description": "Envelope only. { success } on success; { success, errorCode, errorType } on failure.", "columns": [
+      { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on failure." },
+      { "name": "errorCode", "type": "INT", "nullable": true, "description": "1011 not found or not the caller's, 1012 still processing, 1013 unhandled." },
+      { "name": "errorType", "type": "INT", "nullable": true, "description": "3 not found, 2 validation, 5 unhandled." }
+    ]},
+    { "index": 1, "name": "DeletedJob", "description": "The job that was cleared.", "columns": [
+      { "name": "jobId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Echo of the cleared upload's id." }
+    ]},
+    { "index": 1, "ref": "StandardErrorResult", "description": "Returned in place of DeletedJob on any failure." }
+  ],
+  "sideEffects": [
+    "Stamps HC.TrackImport.DeletedAt. The blob is NOT deleted and imported tracks are NOT removed."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

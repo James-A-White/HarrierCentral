@@ -66,9 +66,13 @@ class MainNavigationPage extends StatelessWidget {
                                     // non-zero badge. Fire-and-forget: cached
                                     // rows show immediately, the fetch re-runs
                                     // the list UI when it lands.
-                                    if (Get.isRegistered<NotificationService>()) {
-                                      unawaited(Get.find<NotificationService>()
-                                          .getEventChatMessageCounts());
+                                    if (Get.isRegistered<
+                                      NotificationService
+                                    >()) {
+                                      unawaited(
+                                        Get.find<NotificationService>()
+                                            .getEventChatMessageCounts(),
+                                      );
                                     }
                                   } else {
                                     badgeController.runsToDisplay.value =
@@ -512,9 +516,7 @@ class MainNavigationPage extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Image.asset(
-                    'images/other/beer_pour.gif',
-                  ),
+                  child: Image.asset('images/other/beer_pour.gif'),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -561,13 +563,13 @@ class _SplashSequenceSlider extends StatelessWidget {
   final PageController _pageController = PageController();
 
   TextStyle get _navStyle => TextStyle(
-        // White on the theme's red buttons (see CLAUDE.md button rule).
-        color: Colors.white,
-        // Clamped: the raw width factor balloons text on wide screens
-        // (Fold) until it wraps inside the buttons.
-        fontSize: 18.0 * deviceInfo.deviceWidthScaleFactor,
-        fontFamily: 'AvenirNextDemiBold',
-      );
+    // White on the theme's red buttons (see CLAUDE.md button rule).
+    color: Colors.white,
+    // Clamped: the raw width factor balloons text on wide screens
+    // (Fold) until it wraps inside the buttons.
+    fontSize: 18.0 * deviceInfo.deviceWidthScaleFactor,
+    fontFamily: 'AvenirNextDemiBold',
+  );
 
   Future<void> _onDonePress() => controller.completeSplashSequence();
 
@@ -672,11 +674,11 @@ class _SplashLoadingView extends StatelessWidget {
   final MainNavigationController controller;
 
   TextStyle get _navStyle => TextStyle(
-        // White on the theme's red buttons (see CLAUDE.md button rule).
-        color: Colors.white,
-        fontSize: 18.0 * deviceInfo.deviceWidthScaleFactor,
-        fontFamily: 'AvenirNextDemiBold',
-      );
+    // White on the theme's red buttons (see CLAUDE.md button rule).
+    color: Colors.white,
+    fontSize: 18.0 * deviceInfo.deviceWidthScaleFactor,
+    fontFamily: 'AvenirNextDemiBold',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -727,16 +729,18 @@ class _SplashLoadingView extends StatelessWidget {
   }
 }
 
-/// The Hash Runs app-bar GPX button: explain, then pick.
+/// The Hash Runs app-bar GPX button: explain, then open the import page.
+/// The page itself no longer opens a file browser on arrival, so this button
+/// promises the page, not a picker.
 Future<void> _importGpx(BuildContext context) async {
   final bool? go = await Utilities.showAlert(
     'Import your tracks',
     'Choose a GPX, TCX or FIT file from your watch or running app — or a '
-    'whole Strava or Garmin archive (zip).\n\n'
-    'Harrier Central will locate the hash run each track belongs to — from '
-    'the time and place of its first point — and upload it as your PackTrack '
-    'trail for that run. Runs you already have a track on are left alone.',
-    'Choose a file',
+        'whole Strava or Garmin archive (zip).\n\n'
+        'Harrier Central will locate the hash run each track belongs to — from '
+        'the time and place of its first point — and upload it as your PackTrack '
+        'trail for that run. Runs you already have a track on are left alone.',
+    'Continue',
     showCancelButton: true,
   );
   if (go != true || !context.mounted) return;
@@ -744,7 +748,7 @@ Future<void> _importGpx(BuildContext context) async {
     context,
     MaterialPageRoute<dynamic>(
       settings: const RouteSettings(),
-      builder: (_) => const ImportGpxPage(autoPick: true),
+      builder: (_) => const ImportGpxPage(),
     ),
   );
 }

@@ -161,9 +161,15 @@ class TrackImportJob {
     if (rj != null && rj.isNotEmpty) {
       try {
         final dynamic decoded = jsonDecode(rj);
-        acts = ((decoded as Map<String, dynamic>)['activities'] as List<dynamic>? ?? const <dynamic>[])
-            .map((dynamic a) => ImportActivity.fromJson(a as Map<String, dynamic>))
-            .toList(growable: false);
+        acts =
+            ((decoded as Map<String, dynamic>)['activities']
+                        as List<dynamic>? ??
+                    const <dynamic>[])
+                .map(
+                  (dynamic a) =>
+                      ImportActivity.fromJson(a as Map<String, dynamic>),
+                )
+                .toList(growable: false);
       } catch (_) {
         acts = const <ImportActivity>[];
       }
@@ -179,7 +185,9 @@ class TrackImportJob {
       skippedCount: (j['skippedCount'] as num?)?.toInt() ?? 0,
       heldCount: (j['heldCount'] as num?)?.toInt() ?? 0,
       errorMessage: j['errorMessage'] as String?,
-      uploadedAt: DateTime.tryParse((j['uploadedAt'] as String?) ?? '')?.toUtc(),
+      uploadedAt: DateTime.tryParse(
+        (j['uploadedAt'] as String?) ?? '',
+      )?.toUtc(),
       activities: acts,
     );
   }
@@ -232,7 +240,8 @@ class TrackImportService {
   }) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     // 1. The SAS and the job id.
     final http.Response tokenResp = await http
@@ -255,7 +264,8 @@ class TrackImportService {
         'Could not start the upload (${tokenResp.statusCode}). Please try again.',
       );
     }
-    final Map<String, dynamic> token = jsonDecode(tokenResp.body) as Map<String, dynamic>;
+    final Map<String, dynamic> token =
+        jsonDecode(tokenResp.body) as Map<String, dynamic>;
     final String jobId = normalizeUuid(token['jobId'] as String);
     final String sasUrl = token['sasUrl'] as String;
     final String blobUrl = token['blobUrl'] as String;
@@ -278,7 +288,11 @@ class TrackImportService {
           '$sasUrl&comp=block&blockid=${Uri.encodeQueryComponent(blockId)}',
         );
         final http.Response r = await http
-            .put(put, headers: const <String, String>{'x-ms-blob-type': 'BlockBlob'}, body: chunk)
+            .put(
+              put,
+              headers: const <String, String>{'x-ms-blob-type': 'BlockBlob'},
+              body: chunk,
+            )
             .timeout(_blockTimeout);
         if (r.statusCode != 201) {
           throw TrackImportException(
@@ -369,7 +383,8 @@ class TrackImportService {
   }) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
     final http.Response r = await http
         .post(
           Uri.parse(PROCESS_TRACK_IMPORT_URL),
@@ -391,8 +406,12 @@ class TrackImportService {
       String msg = 'The import could not be processed (${r.statusCode}).';
       try {
         final dynamic d = jsonDecode(r.body);
-        if (d is Map && d['errorUserMessage'] is String) msg = d['errorUserMessage'] as String;
-        if (d is Map && d['error'] is String) msg = d['error'] as String;
+        if (d is Map && d['errorUserMessage'] is String) {
+          msg = d['errorUserMessage'] as String;
+        }
+        if (d is Map && d['error'] is String) {
+          msg = d['error'] as String;
+        }
       } catch (_) {}
       throw TrackImportException(msg);
     }
@@ -405,7 +424,8 @@ class TrackImportService {
   fetchProgress(String jobId) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
     final String raw = await ServiceCommon.sendHttpPost(() {
       return jsonEncode(<String, dynamic>{
         'queryType': 'getTrackImports',
@@ -438,7 +458,8 @@ class TrackImportService {
   Future<List<TrackImportJob>> fetchRecent() async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
     final String raw = await ServiceCommon.sendHttpPost(() {
       return jsonEncode(<String, dynamic>{
         'queryType': 'getTrackImports',
@@ -458,11 +479,63 @@ class TrackImportService {
         .toList(growable: false);
   }
 
+  /// Clear one of the caller's own uploads off the list. The server keeps
+  /// the row and the file (the archives are retained for historic-run
+  /// discovery) and leaves every track already imported from it alone; a
+  /// job that is still importing is refused. Throws on failure so the page
+  /// can say why.
+  Future<void> delete(String jobId) async {
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    String? serverMessage;
+    final String raw = await ServiceCommon.sendHttpPost(
+      () {
+        return jsonEncode(<String, dynamic>{
+          'queryType': 'deleteTrackImport',
+          'deviceId': deviceId,
+          'jobId': jobId,
+          'accessToken': Utilities.generateToken(
+            userId,
+            'hcapp_deleteTrackImport',
+            paramString: deviceSecret,
+          ),
+        });
+      },
+      noRetries: true,
+      // Handle it here so the page can say what happened in place, instead
+      // of the shared alert with its Quit button.
+      errorCallback: (DbErrorModel dbError) async {
+        serverMessage = dbError.errorUserMessage;
+        return true;
+      },
+    );
+    if (raw.startsWith(ERROR_PREFIX)) {
+      throw TrackImportException(
+        serverMessage ?? 'The upload could not be cleared. Please try again.',
+      );
+    }
+    final List<dynamic> rowsets = jsonDecode(raw) as List<dynamic>;
+    final List<dynamic> envelope = rowsets.isEmpty
+        ? const <dynamic>[]
+        : rowsets[0] as List<dynamic>;
+    final Map<String, dynamic>? first = envelope.isEmpty
+        ? null
+        : envelope.first as Map<String, dynamic>;
+    if ((first?['success'] as num?)?.toInt() != 1) {
+      throw TrackImportException(
+        serverMessage ?? 'The upload could not be cleared.',
+      );
+    }
+  }
+
   /// The job as stored (no processing) — for reopening a past import.
   Future<TrackImportJob?> fetch(String jobId) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
     final String raw = await ServiceCommon.sendHttpPost(() {
       return jsonEncode(<String, dynamic>{
         'queryType': 'getTrackImports',
@@ -478,6 +551,8 @@ class TrackImportService {
     if (raw.startsWith(ERROR_PREFIX)) return null;
     final List<dynamic> rowsets = jsonDecode(raw) as List<dynamic>;
     if (rowsets.isEmpty || (rowsets[0] as List<dynamic>).isEmpty) return null;
-    return TrackImportJob.fromJson((rowsets[0] as List<dynamic>)[0] as Map<String, dynamic>);
+    return TrackImportJob.fromJson(
+      (rowsets[0] as List<dynamic>)[0] as Map<String, dynamic>,
+    );
   }
 }

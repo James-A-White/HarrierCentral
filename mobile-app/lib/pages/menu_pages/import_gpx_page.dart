@@ -13,15 +13,11 @@ import 'package:harrier_central/imports.dart';
 /// A single file is held instead of skipped in those two cases, so the
 /// person can confirm or replace right here.
 class ImportGpxController extends GetxController {
-  ImportGpxController({this.initialFilePath, this.autoPick = false});
+  ImportGpxController({this.initialFilePath});
 
   /// A file the OS handed to the app (see IncomingFileService) — uploaded
   /// on open instead of waiting for the user to pick one.
   final String? initialFilePath;
-
-  /// Open the file picker as soon as the page is up (the Hash Runs app-bar
-  /// button has already explained what will happen).
-  final bool autoPick;
 
   final TrackImportService _service = const TrackImportService();
 
@@ -50,11 +46,12 @@ class ImportGpxController extends GetxController {
   void onReady() {
     super.onReady();
     unawaited(_loadPrevious());
+    // The page opens on its own explanation and the Choose a file button;
+    // it no longer throws a file browser at the user (James, 2026-09-12).
+    // A file the OS handed us is still loaded straight away.
     final String? path = initialFilePath;
     if (path != null && path.isNotEmpty) {
       unawaited(loadPath(path));
-    } else if (autoPick) {
-      unawaited(pickFile());
     }
   }
 
@@ -167,6 +164,34 @@ class ImportGpxController extends GetxController {
     } catch (e, s) {
       BootLogger.logError('[ImportGpxController.reimport]', e, s);
       status.value = 'That re-import failed. Please try again.';
+    } finally {
+      busy.value = false;
+      unawaited(_loadPrevious());
+    }
+  }
+
+  /// Clear an earlier upload off the list. The file and everything already
+  /// imported from it stay put — this only tidies the list.
+  Future<void> deleteUpload(TrackImportJob prev) async {
+    if (busy.value) return;
+    final String name = prev.fileName ?? 'that file';
+    final bool? ok = await Utilities.showAlert(
+      'Remove $name from the list?',
+      'The runs this upload already imported keep their tracks. Only the '
+          'entry in this list goes, so you can no longer re-import from it.',
+      'Remove',
+      showCancelButton: true,
+    );
+    if (ok != true) return;
+    busy.value = true;
+    try {
+      await _service.delete(prev.jobId);
+      previous.removeWhere((TrackImportJob j) => j.jobId == prev.jobId);
+    } on TrackImportException catch (e) {
+      status.value = e.message;
+    } catch (e, s) {
+      BootLogger.logError('[ImportGpxController.deleteUpload]', e, s);
+      status.value = 'That upload could not be removed. Please try again.';
     } finally {
       busy.value = false;
       unawaited(_loadPrevious());
@@ -332,21 +357,15 @@ class ImportGpxController extends GetxController {
 }
 
 class ImportGpxPage extends StatelessWidget {
-  const ImportGpxPage({super.key, this.initialFilePath, this.autoPick = false});
+  const ImportGpxPage({super.key, this.initialFilePath});
 
   /// Set when the OS handed the app a file; the page uploads it on open.
   final String? initialFilePath;
 
-  /// Open the file picker straight away.
-  final bool autoPick;
-
   @override
   Widget build(BuildContext context) {
     return GetBuilder<ImportGpxController>(
-      init: ImportGpxController(
-        initialFilePath: initialFilePath,
-        autoPick: autoPick,
-      ),
+      init: ImportGpxController(initialFilePath: initialFilePath),
       builder: (ImportGpxController c) {
         return AppScaffold(
           appBar: AppBar(
@@ -400,7 +419,9 @@ class ImportGpxPage extends StatelessWidget {
                     'Uploading… ${(up * 100).round()}%',
                     style: ts_alertDialogBody,
                   ),
-                ] else if (busy && c.total.value != null && c.total.value! > 1) ...<Widget>[
+                ] else if (busy &&
+                    c.total.value != null &&
+                    c.total.value! > 1) ...<Widget>[
                   const SizedBox(height: 12),
                   LinearProgressIndicator(
                     value: (c.checked.value / c.total.value!).clamp(0.0, 1.0),
@@ -446,6 +467,7 @@ class ImportGpxPage extends StatelessWidget {
                       job: p,
                       busy: busy,
                       onReimport: () => c.reimport(p),
+                      onDelete: () => c.deleteUpload(p),
                     ),
                   ],
                 ],
@@ -510,17 +532,20 @@ class _ActivityCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                        detail.isNotEmpty ? detail : title,
-                        style: heading,
-                      ),
+                      Text(detail.isNotEmpty ? detail : title, style: heading),
                       if (detail.isNotEmpty)
-                        Text(title, style: small, overflow: TextOverflow.ellipsis),
+                        Text(
+                          title,
+                          style: small,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       const SizedBox(height: 2),
                       Text(
                         a.outcomeText,
                         style: body.copyWith(
-                          color: a.isHeld ? Colors.orange.shade900 : Colors.black87,
+                          color: a.isHeld
+                              ? Colors.orange.shade900
+                              : Colors.black87,
                         ),
                       ),
                     ],
@@ -604,7 +629,10 @@ class _CandidateRow extends StatelessWidget {
                 onPressed: busy ? null : onResolve,
                 style: ElevatedButton.styleFrom(
                   visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                 ),
                 child: Text(
                   c.existingTrackPoints > 0 ? 'Replace' : 'Import',
@@ -625,11 +653,13 @@ class _PreviousUploadCard extends StatelessWidget {
     required this.job,
     required this.busy,
     required this.onReimport,
+    required this.onDelete,
   });
 
   final TrackImportJob job;
   final bool busy;
   final VoidCallback onReimport;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -638,10 +668,10 @@ class _PreviousUploadCard extends StatelessWidget {
     final String found = job.status == 3
         ? (job.errorMessage ?? 'Failed')
         : total == null
-            ? ''
-            : '$total ${total == 1 ? 'activity' : 'activities'}'
-                '  ·  ${job.importedCount} imported'
-                '${job.heldCount > 0 ? '  ·  ${job.heldCount} held' : ''}';
+        ? ''
+        : '$total ${total == 1 ? 'activity' : 'activities'}'
+              '  ·  ${job.importedCount} imported'
+              '${job.heldCount > 0 ? '  ·  ${job.heldCount} held' : ''}';
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -670,9 +700,20 @@ class _PreviousUploadCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: busy ? null : onReimport,
-            child: Text('Re-import', style: ts_button),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              ElevatedButton(
+                onPressed: busy ? null : onReimport,
+                child: Text('Re-import', style: ts_button),
+              ),
+              const SizedBox(height: 6),
+              ElevatedButton(
+                onPressed: busy ? null : onDelete,
+                child: Text('Remove', style: ts_button),
+              ),
+            ],
           ),
         ],
       ),

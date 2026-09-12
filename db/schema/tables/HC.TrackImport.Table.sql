@@ -37,7 +37,8 @@ CREATE TABLE [HC].[TrackImport]
     [SkippedCount]  INT              NOT NULL CONSTRAINT [DF_TrackImport_SkippedCount] DEFAULT (0),
     [HeldCount]     INT              NOT NULL CONSTRAINT [DF_TrackImport_HeldCount] DEFAULT (0),
     [ResultJson]    NVARCHAR(MAX)    NULL,
-    [ErrorMessage]  NVARCHAR(2500)   NULL
+    [ErrorMessage]  NVARCHAR(2500)   NULL,
+    [DeletedAt]     DATETIME2(3)     NULL
 )
 GO
 CREATE NONCLUSTERED INDEX [IX_TrackImport_Hasher] ON [HC].[TrackImport] ([HasherId], [UploadedAt] DESC)

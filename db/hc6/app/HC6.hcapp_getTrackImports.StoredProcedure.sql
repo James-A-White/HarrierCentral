@@ -7,7 +7,7 @@ AS
 -- Procedure: HC6.hcapp_getTrackImports
 -- Description: A hasher's track-import jobs (E5.F5.S7). With @jobId, that
 --   one job in full (result JSON and blob URL included) — only if it is
---   theirs; without, their latest 20 without the JSON. The app polls the
+--   theirs; without, their latest 20 undeleted ones without the JSON. The app polls the
 --   single form while a job is processing to show results as they land.
 -- Returns: rowset 0 — jobs (see contract).
 -- Author: Harrier Central
@@ -69,7 +69,7 @@ BEGIN TRY
                t.ImportedCount AS importedCount, t.SkippedCount AS skippedCount, t.HeldCount AS heldCount,
                t.ErrorMessage AS errorMessage, NULL AS resultJson
         FROM HC.TrackImport t
-        WHERE t.HasherId = @userId
+        WHERE t.HasherId = @userId AND t.DeletedAt IS NULL
         ORDER BY t.UploadedAt DESC;
 END TRY
 BEGIN CATCH
