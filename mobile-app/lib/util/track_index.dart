@@ -31,11 +31,30 @@ class TrailOnMap {
 /// simplification of about 150 points (JSON). The trails map is then one
 /// bounding-box query and no decoding at all. A re-sync that replaces the
 /// row wipes both; [ensureIndexed] fills them again on the next look.
+///
+/// Two levels of detail (James, 2026-09-12): the stored path is the overview.
+/// From [detailFromZoom] up, the trails the box test selects are few, so
+/// [trailsInBounds] decodes each one's archive instead and simplifies it to
+/// about a screen pixel at that zoom ([toleranceDegForZoom]); the finer the
+/// zoom, the more of the original points survive. Decoded paths are kept in
+/// a small cache so panning at street level does not decode again.
 class TrackIndex {
   TrackIndex._();
 
   /// Upper bound on points kept per simplified trail.
   static const int maxSimplifiedPoints = 150;
+
+  /// From this zoom the overview path (about 150 points) is visibly angular
+  /// on a long trail, and few enough trails are in view to decode each one.
+  static const double detailFromZoom = 12;
+
+  /// Simplification tolerance at detail zooms, in screen pixels. Under one
+  /// pixel the extra points cannot be seen; the renderer drops them anyway.
+  static const double detailTolerancePx = 0.7;
+
+  /// Decoded full paths by attendance row, most recently used last.
+  static final Map<String, List<LatLng>> _fullPaths = <String, List<LatLng>>{};
+  static const int _fullPathCacheSize = 80;
 
   /// About five metres at the equator: the starting tolerance. Doubled until
   /// the trail fits [maxSimplifiedPoints].
@@ -69,13 +88,7 @@ class TrackIndex {
       for (final Map<String, dynamic> row in rows) {
         final String hemId = row['hemId'] as String;
         try {
-          final List<ArchivedTrackPoint> pts = TrackArchiveCodec.decodeBase64(
-            row['gz'] as String,
-          );
-          final List<LatLng> path = pts
-              .where((ArchivedTrackPoint p) => p.type == null || !_isOnInn(p.type!))
-              .map((ArchivedTrackPoint p) => LatLng(p.lat, p.lng))
-              .toList(growable: false);
+          final List<LatLng> path = pathFromArchive(row['gz'] as String);
           if (path.isEmpty) {
             // Nothing to draw: mark it so it is not decoded again.
             await database.rawUpdate(
@@ -99,7 +112,14 @@ class TrackIndex {
             'UPDATE $table SET ${h.colTrackMinLat} = ?, ${h.colTrackMinLng} = ?, '
             '${h.colTrackMaxLat} = ?, ${h.colTrackMaxLng} = ?, ${h.colTrackSimplified} = ? '
             'WHERE ${h.colHemId} = ?',
-            <Object?>[minLat, minLng, maxLat, maxLng, encodePath(simplified), hemId],
+            <Object?>[
+              minLat,
+              minLng,
+              maxLat,
+              maxLng,
+              encodePath(simplified),
+              hemId,
+            ],
           );
           done++;
         } on TrackArchiveVersionException catch (e) {
@@ -118,8 +138,14 @@ class TrackIndex {
 
   /// The hasher's trails whose bounding box touches [bounds], with the run
   /// and the kennel's pin colour, newest first.
+  ///
+  /// With [detailToleranceDeg] null each trail is its stored overview path.
+  /// Given a tolerance (see [toleranceDegForZoom]) each trail is decoded from
+  /// its archive and simplified to that tolerance instead, so a zoomed-in
+  /// map draws the trail as it was run. The box test is the same either way.
   static Future<List<TrailOnMap>> trailsInBounds(
     LatLngBounds bounds, {
+    double? detailToleranceDeg,
     int limit = 300,
   }) async {
     final h = tableModel.hasherEventMapTableHelper;
@@ -127,14 +153,16 @@ class TrackIndex {
     final k = tableModel.kennelsTableHelper;
     final String userId = currentUserId;
     if (userId.isEmpty) return const <TrailOnMap>[];
+    final bool detail = detailToleranceDeg != null;
     final List<Map<String, dynamic>> rows = await database.rawQuery(
       '''
-      SELECT hem.${h.colEventId} AS eventId,
+      SELECT hem.${h.colHemId} AS hemId,
+             hem.${h.colEventId} AS eventId,
              evt.${e.colEventName} AS eventName,
              evt.${e.colEventStartDatetime} AS eventStart,
              evt.${e.colKennelId} AS kennelId,
              COALESCE(k.${k.colKennelPinColor}, 0) AS pinColor,
-             hem.${h.colTrackSimplified} AS path
+             ${detail ? 'hem.${h.colTrackGzip} AS gz' : 'hem.${h.colTrackSimplified} AS path'}
         FROM ${EnumDataTables.hasherEventMap.commonTableName} hem
         JOIN ${EnumDataTables.events.commonTableName} evt
           ON evt.${e.colEventId} = hem.${h.colEventId}
@@ -158,7 +186,16 @@ class TrackIndex {
     );
     final List<TrailOnMap> out = <TrailOnMap>[];
     for (final Map<String, dynamic> r in rows) {
-      final List<LatLng> pts = decodePath(r['path'] as String? ?? '[]');
+      final List<LatLng> pts;
+      if (detail) {
+        final List<LatLng> full = _fullPath(
+          r['hemId'] as String,
+          r['gz'] as String?,
+        );
+        pts = simplifyTo(full, detailToleranceDeg);
+      } else {
+        pts = decodePath(r['path'] as String? ?? '[]');
+      }
       if (pts.length < 2) continue;
       out.add(
         TrailOnMap(
@@ -172,6 +209,58 @@ class TrackIndex {
       );
     }
     return out;
+  }
+
+  // ── Full paths ──────────────────────────────────────────────────────────
+
+  /// The drawable path in an archive blob: every point up to the On-Inn,
+  /// in order. Empty when the blob has nothing to draw.
+  static List<LatLng> pathFromArchive(String base64Gzip) {
+    final List<ArchivedTrackPoint> pts = TrackArchiveCodec.decodeBase64(
+      base64Gzip,
+    );
+    return pts
+        .where((ArchivedTrackPoint p) => p.type == null || !_isOnInn(p.type!))
+        .map((ArchivedTrackPoint p) => LatLng(p.lat, p.lng))
+        .toList(growable: false);
+  }
+
+  /// The full path for an attendance row, decoded once and kept. Keyed by
+  /// row and blob length so a re-archived trail is not served stale.
+  static List<LatLng> _fullPath(String hemId, String? gz) {
+    if (gz == null || gz.isEmpty) return const <LatLng>[];
+    final String key = '$hemId:${gz.length}';
+    final List<LatLng>? hit = _fullPaths.remove(key);
+    if (hit != null) {
+      _fullPaths[key] = hit; // most recently used last
+      return hit;
+    }
+    List<LatLng> path;
+    try {
+      path = pathFromArchive(gz);
+    } catch (e, s) {
+      BootLogger.logError('[TrackIndex._fullPath] $hemId', e, s);
+      path = const <LatLng>[];
+    }
+    _fullPaths[key] = path;
+    while (_fullPaths.length > _fullPathCacheSize) {
+      _fullPaths.remove(_fullPaths.keys.first);
+    }
+    return path;
+  }
+
+  /// Forget every decoded path (a sync replaced rows, or memory pressure).
+  static void clearCache() => _fullPaths.clear();
+
+  /// The simplification tolerance, in degrees of latitude, that equals
+  /// [detailTolerancePx] screen pixels at [zoom] and latitude [latDeg] on a
+  /// Web Mercator map with 256-pixel tiles. Null below [detailFromZoom]:
+  /// the overview path is enough there.
+  static double? toleranceDegForZoom(double zoom, double latDeg) {
+    if (zoom < detailFromZoom) return null;
+    final double metresPerPx =
+        156543.03392 * math.cos(latDeg * math.pi / 180) / math.pow(2, zoom);
+    return detailTolerancePx * metresPerPx / 111320;
   }
 
   // ── Simplification ──────────────────────────────────────────────────────
@@ -190,17 +279,27 @@ class TrackIndex {
     if (out.length > maxPoints) {
       // Pathological (a dense straight line still over budget): thin evenly.
       final double step = (out.length - 1) / (maxPoints - 1);
-      out = List<LatLng>.generate(maxPoints, (int i) => out[(i * step).round()]);
+      out = List<LatLng>.generate(
+        maxPoints,
+        (int i) => out[(i * step).round()],
+      );
     }
     return out;
   }
+
+  /// Douglas-Peucker at a fixed [toleranceDeg] — the detail tier, where the
+  /// point budget is whatever the zoom can show.
+  static List<LatLng> simplifyTo(List<LatLng> path, double toleranceDeg) =>
+      path.length < 3 ? path : _douglasPeucker(path, toleranceDeg);
 
   static List<LatLng> _douglasPeucker(List<LatLng> pts, double tolerance) {
     if (pts.length < 3) return pts;
     final List<bool> keep = List<bool>.filled(pts.length, false);
     keep[0] = true;
     keep[pts.length - 1] = true;
-    final List<List<int>> stack = <List<int>>[<int>[0, pts.length - 1]];
+    final List<List<int>> stack = <List<int>>[
+      <int>[0, pts.length - 1],
+    ];
     while (stack.isNotEmpty) {
       final List<int> seg = stack.removeLast();
       final int a = seg[0], b = seg[1];
@@ -232,7 +331,9 @@ class TrackIndex {
     final double x1 = a.longitude, y1 = a.latitude;
     final double x2 = b.longitude, y2 = b.latitude;
     final double dx = x2 - x1, dy = y2 - y1;
-    if (dx == 0 && dy == 0) return math.sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
+    if (dx == 0 && dy == 0) {
+      return math.sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
+    }
     double t = ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy);
     t = t.clamp(0.0, 1.0);
     final double px = x1 + t * dx, py = y1 + t * dy;
@@ -242,19 +343,24 @@ class TrackIndex {
   // ── Storage form ────────────────────────────────────────────────────────
 
   static String encodePath(List<LatLng> pts) => jsonEncode(
-        pts
-            .map((LatLng p) => <double>[
-                  double.parse(p.latitude.toStringAsFixed(5)),
-                  double.parse(p.longitude.toStringAsFixed(5)),
-                ])
-            .toList(growable: false),
-      );
+    pts
+        .map(
+          (LatLng p) => <double>[
+            double.parse(p.latitude.toStringAsFixed(5)),
+            double.parse(p.longitude.toStringAsFixed(5)),
+          ],
+        )
+        .toList(growable: false),
+  );
 
   static List<LatLng> decodePath(String json) {
     try {
       final List<dynamic> raw = jsonDecode(json) as List<dynamic>;
       return raw
-          .map((dynamic p) => LatLng((p[0] as num).toDouble(), (p[1] as num).toDouble()))
+          .map(
+            (dynamic p) =>
+                LatLng((p[0] as num).toDouble(), (p[1] as num).toDouble()),
+          )
           .toList(growable: false);
     } catch (_) {
       return const <LatLng>[];

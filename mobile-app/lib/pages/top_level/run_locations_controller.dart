@@ -40,7 +40,8 @@ class RunAndKennelMapController extends GetxController {
   final showMyTrails = false.obs;
   final trailsVersion = 0.obs; // bump to trigger Obx rebuild
   List<Polyline<String>> trailPolylines = <Polyline<String>>[];
-  final LayerHitNotifier<String> trailHits = ValueNotifier<LayerHitResult<String>?>(null);
+  final LayerHitNotifier<String> trailHits =
+      ValueNotifier<LayerHitResult<String>?>(null);
   int _trailQuery = 0;
   final trueNorthLock = true.obs;
   final searchText = ''.obs;
@@ -346,11 +347,27 @@ class RunAndKennelMapController extends GetxController {
 
   /// Index anything newly synced, then load the trails in view. A later
   /// call supersedes an earlier one still running (fast panning).
+  ///
+  /// Level of detail follows the zoom, not the distance from the centre: a
+  /// trail at the edge of a zoomed-in screen deserves the same detail as one
+  /// in the middle. Below [TrackIndex.detailFromZoom] the stored overview
+  /// path is drawn; from there up each trail in view is decoded and
+  /// simplified to about a pixel, so the finer the zoom, the more of the
+  /// run's own points are on screen. The box test picks the trails either
+  /// way, so a trail that starts off screen and crosses it is still drawn.
   Future<void> refreshTrails(LatLngBounds bounds) async {
     final int mine = ++_trailQuery;
     try {
       await TrackIndex.ensureIndexed();
-      final List<TrailOnMap> trails = await TrackIndex.trailsInBounds(bounds);
+      final MapCamera camera = mapController.camera;
+      final double? tolerance = TrackIndex.toleranceDegForZoom(
+        camera.zoom,
+        camera.center.latitude,
+      );
+      final List<TrailOnMap> trails = await TrackIndex.trailsInBounds(
+        bounds,
+        detailToleranceDeg: tolerance,
+      );
       if (mine != _trailQuery || isClosed) return;
       trailPolylines = trails
           .map(
@@ -535,9 +552,15 @@ class RunAndKennelMapController extends GetxController {
           if (lat != null && lon != null) {
             if (lat <= 90.0 && lat >= -90.0 && lon <= 180.0 && lon >= -180.0) {
               final EventModel em = EventModel.fromJson(results[i]);
-              final DateTime dt = DateTime.tryParse(
-                    (results[i]['eventStartDatetime']?.toString() ?? '').length >= 19
-                        ? results[i]['eventStartDatetime'].toString().substring(0, 19)
+              final DateTime dt =
+                  DateTime.tryParse(
+                    (results[i]['eventStartDatetime']?.toString() ?? '')
+                                .length >=
+                            19
+                        ? results[i]['eventStartDatetime'].toString().substring(
+                            0,
+                            19,
+                          )
                         : '',
                   ) ??
                   DateTime.now();
