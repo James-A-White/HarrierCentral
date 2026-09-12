@@ -216,7 +216,10 @@ class RunPhotoSweepPage extends StatelessWidget {
       final bool done = p.alreadyUploaded;
       final bool ticked = c.chosen.contains(p.asset.id);
       return GestureDetector(
-        onTap: done ? null : () => c.toggle(p.asset.id),
+        // The picture opens; the ring in the corner is what selects. Choosing
+        // between four near-identical circle shots needs them full screen
+        // (James, 2026-09-12).
+        onTap: () => _openCarousel(c, r, i),
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
@@ -224,27 +227,14 @@ class RunPhotoSweepPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
               child: _Thumb(asset: p.asset),
             ),
-            if (done)
-              const ColoredBox(
-                color: Color(0x99000000),
-                child: Center(
-                  child: Icon(Icons.check_circle, color: Colors.white, size: 30),
-                ),
-              )
-            else
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Icon(
-                    ticked
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
-                    color: ticked ? hc_blue : Colors.white,
-                    size: 24,
-                  ),
-                ),
+            if (done) const ColoredBox(color: Color(0x66000000)),
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: _SelectionRing(selected: done || ticked),
               ),
+            ),
           ],
         ),
       );
@@ -284,6 +274,221 @@ class RunPhotoSweepPage extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// The selection marker (James, 2026-09-12): a black outer circle and a white
+/// ring, which never change, around an inner area that is transparent when
+/// unselected and green with a solid white tick when selected. The two rings
+/// are the point — a plain tick vanishes on a bright photo and a plain circle
+/// vanishes on a dark one, and a pub interior gives you both in one grid.
+class _SelectionRing extends StatelessWidget {
+  const _SelectionRing({required this.selected});
+
+  final bool selected;
+
+  static const double _size = 32;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: _size,
+      height: _size,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.black54,
+      ),
+      padding: const EdgeInsets.all(2.5),
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
+          // Transparent until chosen, so the photo shows through the middle.
+          color: selected ? const Color(0xFF2E9E4F) : Colors.transparent,
+        ),
+        child: selected
+            ? const Icon(Icons.check, color: Colors.white, size: 17)
+            : null,
+      ),
+    );
+  }
+}
+
+/// Full screen, swipeable and pinch-zoomable, opening on the photo tapped.
+/// Selection stays reachable from here because this is where the choice
+/// between four near-identical shots is actually made.
+Future<void> _openCarousel(
+  RunPhotoSweepController c,
+  RunScanResult r,
+  int index,
+) async {
+  final BuildContext? ctx = navigatorKey.currentContext;
+  if (ctx == null) return;
+  await Navigator.push<void>(
+    ctx,
+    MaterialPageRoute<void>(
+      builder: (_) => _SweepCarousel(controller: c, result: r, initial: index),
+    ),
+  );
+}
+
+class _SweepCarousel extends StatefulWidget {
+  const _SweepCarousel({
+    required this.controller,
+    required this.result,
+    required this.initial,
+  });
+
+  final RunPhotoSweepController controller;
+  final RunScanResult result;
+  final int initial;
+
+  @override
+  State<_SweepCarousel> createState() => _SweepCarouselState();
+}
+
+class _SweepCarouselState extends State<_SweepCarousel> {
+  late final PageController _pages = PageController(
+    initialPage: widget.initial,
+  );
+  late int _index = widget.initial;
+
+  @override
+  void dispose() {
+    _pages.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<PhotoCandidate> photos = widget.result.candidates;
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          '${_index + 1} of ${photos.length}',
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+        ),
+      ),
+      body: Stack(
+        children: <Widget>[
+          PhotoViewGallery(
+            pageController: _pages,
+            onPageChanged: (int i) => setState(() => _index = i),
+            backgroundDecoration: const BoxDecoration(color: Colors.black),
+            pageOptions: photos
+                .map(
+                  (PhotoCandidate p) => PhotoViewGalleryPageOptions.customChild(
+                    child: _FullPhoto(asset: p.asset),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: Obx(() {
+                  final PhotoCandidate p = photos[_index];
+                  if (p.alreadyUploaded) {
+                    return const _CarouselLabel(text: 'Already added');
+                  }
+                  final bool ticked = widget.controller.chosen.contains(
+                    p.asset.id,
+                  );
+                  return GestureDetector(
+                    onTap: () => widget.controller.toggle(p.asset.id),
+                    child: _CarouselLabel(
+                      text: ticked ? 'Selected' : 'Not selected',
+                      selected: ticked,
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CarouselLabel extends StatelessWidget {
+  const _CarouselLabel({required this.text, this.selected = false});
+
+  final String text;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.62),
+        borderRadius: BorderRadius.circular(26),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            _SelectionRing(selected: selected),
+            const SizedBox(width: 10),
+            Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A full-resolution-enough copy for pinching into. The grid's 260 px
+/// thumbnail is useless zoomed; the original can be tens of megabytes, so
+/// this asks for a large thumbnail instead.
+class _FullPhoto extends StatefulWidget {
+  const _FullPhoto({required this.asset});
+
+  final AssetEntity asset;
+
+  @override
+  State<_FullPhoto> createState() => _FullPhotoState();
+}
+
+class _FullPhotoState extends State<_FullPhoto> {
+  late Future<Uint8List?> _bytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _bytes = widget.asset.thumbnailDataWithSize(
+      const ThumbnailSize(1600, 1600),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List?>(
+      future: _bytes,
+      builder: (BuildContext _, AsyncSnapshot<Uint8List?> snap) {
+        final Uint8List? data = snap.data;
+        if (data == null) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        }
+        return Image.memory(data, fit: BoxFit.contain, gaplessPlayback: true);
+      },
+    );
+  }
 }
 
 /// A camera-roll thumbnail. photo_manager hands back bytes rather than a

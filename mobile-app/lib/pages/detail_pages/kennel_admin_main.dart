@@ -100,14 +100,25 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         if (canEnterArea(
                           PermissionArea.kennelTools,
                           appAccessFlags:
-                              widget.kennelAggregateItem.hkm?.appAccessFlags ?? 0,
-                          mismanagementRoles: widget
-                                  .kennelAggregateItem.hkm?.mismanagementRoles ??
+                              widget.kennelAggregateItem.hkm?.appAccessFlags ??
+                              0,
+                          mismanagementRoles:
+                              widget
+                                  .kennelAggregateItem
+                                  .hkm
+                                  ?.mismanagementRoles ??
                               0,
                           kennelOverrideJson: widget
-                              .kennelAggregateItem.kennel.permissionOverrideJson,
+                              .kennelAggregateItem
+                              .kennel
+                              .permissionOverrideJson,
                         ))
                           _buildAdminFunctions(context),
+                        // Everyone's own photos and their own attended runs:
+                        // nothing here needs kennel rights, so this sits
+                        // OUTSIDE the admin grid, which is gated on
+                        // kennelTools (James, 2026-09-12).
+                        _buildMyPhotosButton(context),
                         _buildDescriptionSection(),
                         _buildMapAndInfoSection(context),
                         const SizedBox(height: 25.0),
@@ -215,6 +226,35 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   // ---------------------------------------------------------------------------
   // Admin functions section
   // ---------------------------------------------------------------------------
+  Widget _buildMyPhotosButton(BuildContext context) {
+    final agg = widget.kennelAggregateItem;
+    return Padding(
+      padding: const EdgeInsets.only(top: 20.0, left: 30.0, right: 30.0),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.photo_library, color: Colors.white),
+          label: Text(
+            'Photos of these runs on your phone',
+            style: ts_button,
+            textAlign: TextAlign.center,
+          ),
+          onPressed: () async {
+            await Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) => KennelPhotoSweepPage(
+                  kennelId: agg.kennel.kennelId,
+                  kennelName: agg.kennel.kennelShortName,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildAdminFunctions(BuildContext context) {
     final agg = widget.kennelAggregateItem;
     // Gate buttons via the server-mirroring check (role OR flag). See
@@ -297,24 +337,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         showRunLink: false,
                         title: 'Any ${agg.kennel.kennelShortName} run',
                         kennelWebsiteUrl: agg.kennel.kennelWebsiteUrl,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              _adminButton(
-                icon: MaterialIcons.photo_library,
-                iconTopPadding: 4,
-                iconSize: 48,
-                labelTopPadding: 7,
-                label: 'Photos on\r\nyour phone',
-                onPressed: () async {
-                  await Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => KennelPhotoSweepPage(
-                        kennelId: agg.kennel.kennelId,
-                        kennelName: agg.kennel.kennelShortName,
                       ),
                     ),
                   );
