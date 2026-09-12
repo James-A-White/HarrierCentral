@@ -1,3 +1,22 @@
+## 3.0.32+1347 (2026-09-12)
+
+### Improvements
+- **"Find my photos" now has a Gallery / Carousel switch.** Tap a photo in
+  the gallery to select or unselect it; switch to Carousel to see them big,
+  swipe between them and pinch to zoom. Both views share one selection, and
+  switching back returns you to the photo you were looking at.
+- **Nothing is selected to start with**, with a Select all beside the
+  counts. These photos can end up on a public website, so sending them is
+  a choice you make rather than one you undo.
+- **The photo screens use the usual Harrier Central background** instead of
+  plain grey and black.
+- **"Photos on your phone" sits with Open website, Run art gallery and
+  Leaderboards** rather than inside Kennel Admin Functions, where most
+  members could not see it.
+
+### Fixes
+- The "Looking through your photos" message is centred on the screen.
+
 ## 3.0.31+1346 (2026-09-12)
 
 ### Improvements
