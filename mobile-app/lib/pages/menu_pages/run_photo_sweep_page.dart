@@ -22,6 +22,15 @@ class RunPhotoSweepController extends GetxController {
   final RxInt uploadDone = 0.obs;
   final RxInt uploadTotal = 0.obs;
 
+  /// Gallery or carousel. Same photos, same selection — the switch only
+  /// changes how big they are (James, 2026-09-12). A tap in the gallery
+  /// therefore selects, instead of being spent on navigation.
+  final RxBool carousel = false.obs;
+
+  /// Where the carousel has got to, so switching views lands on the photo you
+  /// were looking at rather than back at the first one.
+  final RxInt page = 0.obs;
+
   @override
   void onReady() {
     super.onReady();
@@ -172,7 +181,11 @@ class RunPhotoSweepPage extends StatelessWidget {
               return Column(
                 children: <Widget>[
                   _header(c, r),
-                  Expanded(child: _grid(c, r)),
+                  Expanded(
+                    child: c.carousel.value
+                        ? _SweepCarousel(controller: c, result: r)
+                        : _grid(c, r),
+                  ),
                   _footer(context, c),
                 ],
               );
@@ -209,7 +222,12 @@ class RunPhotoSweepPage extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
+        _GalleryCarouselSwitch(
+          carousel: c.carousel.value,
+          onSelect: (bool wantCarousel) => c.carousel.value = wantCarousel,
+        ),
+        const SizedBox(height: 8),
         Text(
           'Anything you send goes to your Hash Flash for review. Approved '
           'photos appear on the run and on the kennel\'s public website, so '
@@ -233,10 +251,9 @@ class RunPhotoSweepPage extends StatelessWidget {
       final bool done = p.alreadyUploaded;
       final bool ticked = c.chosen.contains(p.asset.id);
       return GestureDetector(
-        // The picture opens; the ring in the corner is what selects. Choosing
-        // between four near-identical circle shots needs them full screen
-        // (James, 2026-09-12).
-        onTap: () => _openCarousel(c, r, i),
+        // A tap selects. Seeing a photo big is what the switch at the top is
+        // for, so the tap no longer has to do both (James, 2026-09-12).
+        onTap: done ? null : () => c.toggle(p.asset.id),
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
@@ -330,34 +347,14 @@ class _SelectionRing extends StatelessWidget {
   }
 }
 
-/// Full screen, swipeable and pinch-zoomable, opening on the photo tapped.
-/// Selection stays reachable from here because this is where the choice
-/// between four near-identical shots is actually made.
-Future<void> _openCarousel(
-  RunPhotoSweepController c,
-  RunScanResult r,
-  int index,
-) async {
-  final BuildContext? ctx = navigatorKey.currentContext;
-  if (ctx == null) return;
-  await Navigator.push<void>(
-    ctx,
-    MaterialPageRoute<void>(
-      builder: (_) => _SweepCarousel(controller: c, result: r, initial: index),
-    ),
-  );
-}
-
+/// The carousel as an inline view, not a pushed page: it is one of two ways
+/// of looking at the same list, chosen by the switch at the top, so it keeps
+/// the header, the switch and the Send button in place around it.
 class _SweepCarousel extends StatefulWidget {
-  const _SweepCarousel({
-    required this.controller,
-    required this.result,
-    required this.initial,
-  });
+  const _SweepCarousel({required this.controller, required this.result});
 
   final RunPhotoSweepController controller;
   final RunScanResult result;
-  final int initial;
 
   @override
   State<_SweepCarousel> createState() => _SweepCarouselState();
@@ -365,9 +362,8 @@ class _SweepCarousel extends StatefulWidget {
 
 class _SweepCarouselState extends State<_SweepCarousel> {
   late final PageController _pages = PageController(
-    initialPage: widget.initial,
+    initialPage: widget.controller.page.value,
   );
-  late int _index = widget.initial;
 
   @override
   void dispose() {
@@ -378,53 +374,129 @@ class _SweepCarouselState extends State<_SweepCarousel> {
   @override
   Widget build(BuildContext context) {
     final List<PhotoCandidate> photos = widget.result.candidates;
-    return AppScaffold(
-      appBar: AppBar(
-        backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text('${_index + 1} of ${photos.length}', style: ts_appBarTitle),
-      ),
-      body: DecoratedBox(
-        decoration: Backgrounds.defaultHcBackground(),
-        child: Stack(
-          children: <Widget>[
-            PhotoViewGallery(
-              pageController: _pages,
-              onPageChanged: (int i) => setState(() => _index = i),
-              // Transparent: the jungle behind it is the page's background.
-              backgroundDecoration: const BoxDecoration(),
-              pageOptions: photos
-                  .map(
-                    (PhotoCandidate p) =>
-                        PhotoViewGalleryPageOptions.customChild(
-                          child: _FullPhoto(asset: p.asset),
-                        ),
-                  )
-                  .toList(growable: false),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 20.0),
-                  child: Obx(() {
-                    final PhotoCandidate p = photos[_index];
-                    if (p.alreadyUploaded) {
-                      return const _CarouselLabel(text: 'Already added');
-                    }
-                    final bool ticked = widget.controller.chosen.contains(
-                      p.asset.id,
-                    );
-                    return GestureDetector(
-                      onTap: () => widget.controller.toggle(p.asset.id),
-                      child: _CarouselLabel(
-                        text: ticked ? 'Selected' : 'Not selected',
-                        selected: ticked,
-                      ),
-                    );
-                  }),
+    return Stack(
+      children: <Widget>[
+        PhotoViewGallery(
+          pageController: _pages,
+          onPageChanged: (int i) => widget.controller.page.value = i,
+          // Transparent: the jungle behind it is the page's background.
+          backgroundDecoration: const BoxDecoration(),
+          pageOptions: photos
+              .map(
+                (PhotoCandidate p) => PhotoViewGalleryPageOptions.customChild(
+                  child: _FullPhoto(asset: p.asset),
                 ),
+              )
+              .toList(growable: false),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 14.0),
+            child: Obx(() {
+              final int i = widget.controller.page.value.clamp(
+                0,
+                photos.length - 1,
+              );
+              final PhotoCandidate p = photos[i];
+              final String counter = '${i + 1} of ${photos.length}';
+              if (p.alreadyUploaded) {
+                return _CarouselLabel(text: '$counter  ·  Already added');
+              }
+              final bool ticked = widget.controller.chosen.contains(p.asset.id);
+              return GestureDetector(
+                onTap: () => widget.controller.toggle(p.asset.id),
+                child: _CarouselLabel(
+                  text: ticked
+                      ? '$counter  ·  Selected'
+                      : '$counter  ·  Tap to select',
+                  selected: ticked,
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Gallery / Carousel, in the shape of the run map's Map / Radar / List
+/// switch: it names both views and highlights the one you are in, so the tap
+/// on a photo is free to do the thing the screen is actually for.
+class _GalleryCarouselSwitch extends StatelessWidget {
+  const _GalleryCarouselSwitch({
+    required this.carousel,
+    required this.onSelect,
+  });
+
+  final bool carousel;
+  final void Function(bool carousel) onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Material(
+        color: Colors.black.withValues(alpha: 0.62),
+        borderRadius: BorderRadius.circular(9),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(9),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.88),
+              width: 1.5,
+            ),
+          ),
+          padding: const EdgeInsets.all(3),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _segment(
+                label: 'Gallery',
+                icon: Icons.grid_view,
+                selected: !carousel,
+                onTap: () => onSelect(false),
+              ),
+              _segment(
+                label: 'Carousel',
+                icon: Icons.photo_size_select_actual_outlined,
+                selected: carousel,
+                onTap: () => onSelect(true),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _segment({
+    required String label,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(7),
+      onTap: selected ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 17, color: selected ? Colors.black : Colors.white),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: selected ? Colors.black : Colors.white,
               ),
             ),
           ],
