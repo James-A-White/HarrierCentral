@@ -1,3 +1,20 @@
+## 3.0.30+1345 (2026-09-12)
+
+### New Features
+- **Find my photos.** A button on a run finds the photos of it still
+  sitting in your camera roll — by when and where they were taken — and
+  lets you pick which to send. Approved photos reach the kennel's public
+  website, and the selector says so before anything leaves your phone.
+- **Photos on your phone.** A kennel-level view listing every run you were
+  at as "14 eligible · 6 added", so you can work through a backlog.
+- **The trails map totals what it is showing.** Distance, time and pace
+  for the trails on screen, in your units, following the run filter.
+
+### Fixes
+- **The Previous uploads list shows its buttons again.** In 3.0.29 the
+  Re-import and Remove buttons were pushed off screen and the file name
+  ran one character per line.
+
 ## 3.0.29+1344 (2026-09-12)
 
 ### Fixes
