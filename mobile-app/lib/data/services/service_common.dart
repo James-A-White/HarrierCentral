@@ -56,28 +56,43 @@ class ServiceCommon {
   // has just picked the phone up — the worst moment for a "Request Timed
   // Out" banner. AppLifecycleController stamps these; a failure whose
   // request began before the last pause, or that lands within
-  // [_justWokeWindow] of the last resume, is retried once, silently, with a
+  // the unsettled stretch after the last resume, is retried once, silently, with a
   // fresh token (bodyFactory), and never shown a banner.
   static DateTime? _lastPausedAt;
   static DateTime? _lastResumedAt;
-  static const Duration _justWokeWindow = Duration(seconds: 10);
+
+  /// True from the moment the app resumes until the first request actually
+  /// comes back. The phone's sockets are only proven good by a round trip
+  /// that works, so "has it settled?" cannot be answered by a clock.
+  ///
+  /// A ten-second window used to stand in for this, and could not work: the
+  /// request timeout is 30 s, so a request that stalls from the instant of
+  /// waking reports its failure 30 s later, twenty seconds after any
+  /// ten-second window has closed. Five days of logs showed 67 stalls and
+  /// one silent retry (James, 2026-09-12).
+  static bool _wakeUnsettled = false;
 
   static void notePaused() => _lastPausedAt = DateTime.now();
-  static void noteResumed() => _lastResumedAt = DateTime.now();
 
-  static bool _straddledSuspend(DateTime startedAt) {
-    final DateTime now = DateTime.now();
+  static void noteResumed() {
+    _lastResumedAt = DateTime.now();
+    _wakeUnsettled = true;
+  }
+
+  /// Whether a request that began at [startedAt], while the wake was still
+  /// [unsettled], can be blamed on the suspend rather than on the server.
+  static bool _straddledSuspend(DateTime startedAt, bool unsettled) {
     final DateTime? p = _lastPausedAt;
     final DateTime? r = _lastResumedAt;
+    // It left (or tried to leave) before the phone paused and we have woken
+    // since: the socket it was holding is gone.
     if (p != null && startedAt.isBefore(p) && (r == null || r.isAfter(p))) {
       return true;
     }
-    return r != null && now.difference(r) < _justWokeWindow;
+    // It was the first request after waking and nothing had proved the
+    // network good yet.
+    return unsettled && r != null && !startedAt.isBefore(r);
   }
-
-  static bool get _justWoke =>
-      _lastResumedAt != null &&
-      DateTime.now().difference(_lastResumedAt!) < _justWokeWindow;
 
   /// The failure shapes a suspension produces: our own timeout sentinel, or
   /// the empty-bodied 500 stamped on a transport exception.
@@ -114,18 +129,19 @@ class ServiceCommon {
     });
 
     final int started = NetworkMeter.begin(body);
-    final Response response = await post(
-          Uri.parse(BASE_AF_API_URL),
-          headers: <String, String>{'content-type': 'application/json'},
-          body: body,
-        )
-        .timeout(
-          const Duration(seconds: 30),
-          onTimeout: () => Response('', 408),
-        )
-        .catchError((dynamic error) {
-          return Future<Response>.value(Response('', 500));
-        });
+    final Response response =
+        await post(
+              Uri.parse(BASE_AF_API_URL),
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body,
+            )
+            .timeout(
+              const Duration(seconds: 30),
+              onTimeout: () => Response('', 408),
+            )
+            .catchError((dynamic error) {
+              return Future<Response>.value(Response('', 500));
+            });
     NetworkMeter.end(started, response);
 
     return response.statusCode >= 200 && response.statusCode < 300;
@@ -161,6 +177,9 @@ class ServiceCommon {
     for (int attempt = 1; attempt <= maxAttempts + 1; attempt++) {
       final String requestBody = bodyFactory();
       final DateTime startedAt = DateTime.now();
+      // Read at START, not when the answer lands: by then another request may
+      // have settled the wake, and this one's verdict must not change.
+      final bool startedUnsettled = _wakeUnsettled;
       final Response response = await _postWithClient(
         requestBody,
         client: client,
@@ -173,15 +192,19 @@ class ServiceCommon {
           !hasErrorId;
 
       if (isSuccess) {
+        // A round trip completed: the phone's network is awake again.
+        _wakeUnsettled = false;
         return response.body;
       }
 
       // The request was asleep with the app, not slow at the server: go
       // again once, quietly. Safe for noRetries callers too — a request that
       // never left the frozen socket had no server-side effect to repeat.
-      if (!suspendRetryUsed &&
+      final bool blameTheSuspend =
           _looksLikeSuspendFailure(response) &&
-          _straddledSuspend(startedAt)) {
+          _straddledSuspend(startedAt, startedUnsettled);
+
+      if (!suspendRetryUsed && blameTheSuspend) {
         suspendRetryUsed = true;
         if (!_isConnectionProbe(requestBody)) {
           BootLogger.logBreadcrumb(
@@ -223,24 +246,28 @@ class ServiceCommon {
           response,
           requestBody,
           errorCallback: errorCallback,
+          blameTheSuspend: blameTheSuspend,
         );
       }
 
       if (isLastAttempt) {
-        _showSnackbarSafely(
-          title: response.statusCode == kLocalTimeoutStatus
-              ? 'Request Timed Out'
-              : 'Connection Issue',
-          message: response.statusCode == kLocalTimeoutStatus
-              ? 'The server took too long to respond. Please try again.'
-              : 'Unable to connect. Please check your connection.',
-          backgroundColor: hc_red,
-        );
+        if (!blameTheSuspend) {
+          _showSnackbarSafely(
+            title: response.statusCode == kLocalTimeoutStatus
+                ? 'Request Timed Out'
+                : 'Connection Issue',
+            message: response.statusCode == kLocalTimeoutStatus
+                ? 'The server took too long to respond. Please try again.'
+                : 'Unable to connect. Please check your connection.',
+            backgroundColor: hc_red,
+          );
+        }
 
         return checkHttpPostResponse(
           response,
           requestBody,
           errorCallback: errorCallback,
+          blameTheSuspend: blameTheSuspend,
         );
       }
 
@@ -435,6 +462,11 @@ class ServiceCommon {
     Response response,
     String requestBody, {
     Function? errorCallback,
+
+    /// Set when this failure belongs to a request that straddled a suspend.
+    /// Such a request was killed by the phone waking, not by a slow server,
+    /// so it is logged but never announced.
+    bool blameTheSuspend = false,
   }) async {
     String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
 
@@ -536,7 +568,7 @@ class ServiceCommon {
           await networkService.handleApiFailure();
           // Just woken: the banner would tell the user their phone slept.
           // The failure is still logged above; the next refresh catches up.
-          if (networkService.backendReachable.value && !_justWoke) {
+          if (networkService.backendReachable.value && !blameTheSuspend) {
             // Honest wording: a locally-synthesized 599 (30 s stall) or a
             // 500 stamped on a transport failure is NOT a server error — the
             // server usually never saw the request. This fires routinely
@@ -560,8 +592,8 @@ class ServiceCommon {
         } else {
           _showSnackbarSafely(
             title: 'Server Error',
-            message: response.reasonPhrase == null ||
-                    response.reasonPhrase!.isEmpty
+            message:
+                response.reasonPhrase == null || response.reasonPhrase!.isEmpty
                 ? 'The server rejected a request '
                       '(HTTP ${response.statusCode}).'
                 : '${response.reasonPhrase} (HTTP ${response.statusCode})',
