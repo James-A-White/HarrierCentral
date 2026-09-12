@@ -1369,6 +1369,7 @@ class RunTrackerMapController extends GetxController
           ? _replaceServerTracks(data.users)
           : _mergeServerTracks(data.users);
       if (full) _lastFullFetchAt = DateTime.now();
+      if (full) showingOwnTrailOffline.value = false;
 
       await _hydrateLogos(data.users);
       if (isClosed) return; // closed during the logo hydration await
@@ -1415,6 +1416,76 @@ class RunTrackerMapController extends GetxController
         error,
         s,
       );
+      if (_serverTracks.isEmpty && !adminEditMode && !isClosed) {
+        await _showOwnTrailFromArchive();
+      }
+    }
+  }
+
+  /// True while the map is showing only the hasher's own trail, read from
+  /// the archive synced onto their attendance row because the server could
+  /// not be reached (E5.F7.S1). Cleared by the next successful full fetch.
+  final RxBool showingOwnTrailOffline = false.obs;
+
+  /// Offline, or the server unreachable, and nothing loaded yet: draw the
+  /// hasher's own trail from the archive on their synced attendance row. The
+  /// pack still needs the server; the next successful poll is a full fetch
+  /// (the mark stays null) and replaces this with the whole picture.
+  Future<void> _showOwnTrailFromArchive() async {
+    try {
+      final String userId = currentUserId;
+      if (userId.isEmpty) return;
+      final Map<String, dynamic>? row = await QueryHasherEventMap.queryOwnRow(
+        event.eventId,
+      );
+      final String? b64 =
+          row?[tableModel.hasherEventMapTableHelper.colTrackGzip] as String?;
+      if (b64 == null || b64.isEmpty || isClosed) return;
+      final List<ArchivedTrackPoint> archived = TrackArchiveCodec.decodeBase64(
+        b64,
+      );
+      if (archived.isEmpty) return;
+      final UserTrack own = UserTrack(
+        id: userId,
+        positions: archived
+            .map(
+              (ArchivedTrackPoint a) => TrackPoint(
+                lat: a.lat,
+                lng: a.lng,
+                acc: a.acc ?? 0,
+                alt: a.alt,
+                timestampMs: a.timestampMs,
+                type: a.type,
+              ),
+            )
+            .toList(growable: false),
+      );
+      final Set<String> changed = _replaceServerTracks(<UserTrack>[own]);
+      await _hydrateLogos(<UserTrack>[own]);
+      if (isClosed) return;
+      for (final String id in changed) {
+        final List<TrackPoint> raw = _serverTracks[id]!;
+        _filteredTracks[id] = UserTrack(
+          id: id,
+          positions: raw.length < 2
+              ? List.of(raw)
+              : _trackFilter.filterAndInterpolate(raw),
+        );
+      }
+      final List<UserTrack> cleanedUsers = _filteredTracks.values.toList();
+      userPositions.assignAll(cleanedUsers);
+      _assignRunnerColors(cleanedUsers);
+      _refreshTrailFilter();
+      _initializeTimelineBounds();
+      _ensureSelection();
+      syncRunnerPickerToSelection(onlyIfMismatch: true, animated: false);
+      showingOwnTrailOffline.value = true;
+      BootLogger.logBreadcrumb(
+        'PackTrack: own archived trail shown offline for ${event.eventId} '
+        '(${own.positions.length} pts)',
+      );
+    } catch (e, s) {
+      BootLogger.logError('[RunTrackerMapController._showOwnTrailFromArchive]', e, s);
     }
   }
 

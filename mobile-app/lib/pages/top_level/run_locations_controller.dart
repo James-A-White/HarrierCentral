@@ -30,6 +30,18 @@ class RunAndKennelMapController extends GetxController {
   final textDescription = 'Showing recent runs'.obs;
   final showFilters = false.obs;
   final showKennels = true.obs;
+
+  // ---------------------------------------------------------------------------
+  // My trails (E5.F7.S1): every run the hasher tracked, drawn from the
+  // archive synced onto their attendance rows — no server call, same offline.
+  // The polylines are the simplified paths TrackIndex keeps locally, in the
+  // kennel's pin colour, for the trails whose bounds touch the view.
+  // ---------------------------------------------------------------------------
+  final showMyTrails = false.obs;
+  final trailsVersion = 0.obs; // bump to trigger Obx rebuild
+  List<Polyline<String>> trailPolylines = <Polyline<String>>[];
+  final LayerHitNotifier<String> trailHits = ValueNotifier<LayerHitResult<String>?>(null);
+  int _trailQuery = 0;
   final trueNorthLock = true.obs;
   final searchText = ''.obs;
 
@@ -106,6 +118,7 @@ class RunAndKennelMapController extends GetxController {
     homeKennelLon.value = getDoublePref(NumPrefsEnum.homeKennelLon);
     showFilters.value = (getIntPref(IntPrefsEnum.mapShowSearchBar) ?? 0) != 0;
     showKennels.value = (getIntPref(IntPrefsEnum.mapShowKennels) ?? 1) != 0;
+    showMyTrails.value = (getIntPref(IntPrefsEnum.mapShowMyTrails) ?? 0) != 0;
     mapCenterOption.value =
         getIntPref(IntPrefsEnum.mapCenterOption) ??
         centerOnCurrentLocation.value;
@@ -314,6 +327,70 @@ class RunAndKennelMapController extends GetxController {
     if (Get.isRegistered<FutureRunListPageController>()) {
       Get.find<FutureRunListPageController>().mapBounds = bounds;
     }
+    if (showMyTrails.value) unawaited(refreshTrails(bounds));
+  }
+
+  // ---------------------------------------------------------------------------
+  // My trails
+  // ---------------------------------------------------------------------------
+  Future<void> toggleShowMyTrails() async {
+    showMyTrails.value = !showMyTrails.value;
+    await setIntPref(IntPrefsEnum.mapShowMyTrails, showMyTrails.value ? 1 : 0);
+    if (showMyTrails.value) {
+      await refreshTrails(mapController.camera.visibleBounds);
+    } else {
+      trailPolylines = <Polyline<String>>[];
+      trailsVersion.value++;
+    }
+  }
+
+  /// Index anything newly synced, then load the trails in view. A later
+  /// call supersedes an earlier one still running (fast panning).
+  Future<void> refreshTrails(LatLngBounds bounds) async {
+    final int mine = ++_trailQuery;
+    try {
+      await TrackIndex.ensureIndexed();
+      final List<TrailOnMap> trails = await TrackIndex.trailsInBounds(bounds);
+      if (mine != _trailQuery || isClosed) return;
+      trailPolylines = trails
+          .map(
+            (TrailOnMap t) => Polyline<String>(
+              points: t.points,
+              color: pinColorOf(t.kennelPinColor),
+              strokeWidth: 3,
+              hitValue: t.eventId,
+            ),
+          )
+          .toList(growable: false);
+      trailsVersion.value++;
+    } catch (e, s) {
+      BootLogger.logError('[RunAndKennelMapController.refreshTrails]', e, s);
+    }
+  }
+
+  /// A tap on a trail opens its run, like a tap on its pin.
+  void onTrailTap() {
+    final List<String>? hits = trailHits.value?.hitValues;
+    if (hits == null || hits.isEmpty) return;
+    unawaited(onRunMarkerTap(hits.first));
+  }
+
+  /// The kennel's pin colour as a line colour — same palette as the pins
+  /// (`images/map_pins/<colour>/`), by index.
+  static Color pinColorOf(int index) {
+    const List<Color> palette = <Color>[
+      Colors.red,
+      Colors.orange,
+      Colors.amber,
+      Colors.green,
+      Colors.teal,
+      Colors.lightBlue,
+      Colors.blue,
+      Colors.purple,
+      Colors.pink,
+    ];
+    if (index < 0 || index >= palette.length) return Colors.red;
+    return palette[index];
   }
 
   // ---------------------------------------------------------------------------

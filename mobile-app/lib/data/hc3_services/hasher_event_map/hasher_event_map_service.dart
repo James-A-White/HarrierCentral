@@ -50,6 +50,20 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
   final String colNotes = 'notes';
   final String colNotesVisibility = 'notesVisibility';
   final String colNotesShared = 'notesShared';
+  // The hasher's own PackTrack trail, as archived on the server (user sync
+  // only): gzipped delta-coded points, base64 on the wire and in this column.
+  final String colTrackGzip = 'trackGzip';
+  final String colTrackPointCount = 'trackPointCount';
+  final String colTrackFirstPointAt = 'trackFirstPointAt';
+  final String colTrackLastPointAt = 'trackLastPointAt';
+  // Local only, never on the wire: filled by TrackIndex when trackGzip lands
+  // (and again after any re-sync replaces the row). The trails map queries
+  // the bounds and draws the simplified line without decoding anything.
+  final String colTrackMinLat = 'trackMinLat';
+  final String colTrackMinLng = 'trackMinLng';
+  final String colTrackMaxLat = 'trackMaxLat';
+  final String colTrackMaxLng = 'trackMaxLng';
+  final String colTrackSimplified = 'trackSimplified';
 
   final String colEventName = 'hemEventName';
   final String colEventNumber = 'hemEventNumber';
@@ -97,6 +111,15 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
             $colNotes TEXT,
             $colNotesVisibility INT,
             $colNotesShared INT,
+            $colTrackGzip TEXT,
+            $colTrackPointCount INT,
+            $colTrackFirstPointAt TEXT,
+            $colTrackLastPointAt TEXT,
+            $colTrackMinLat REAL,
+            $colTrackMinLng REAL,
+            $colTrackMaxLat REAL,
+            $colTrackMaxLng REAL,
+            $colTrackSimplified TEXT,
 
             $colEventName TEXT,
             $colEventNumber INT,

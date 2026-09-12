@@ -46,6 +46,12 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
   final String colEventFacebookId = 'eventFacebookId';
   final String colAbsoluteEventNumber = 'absoluteEventNumber';
   final String colCanEditRunAttendence = 'canEditRunAttendence';
+  // Activity counts kept on HC.Event by server triggers and synced with the
+  // row, so a run card never asks the server (E5.F7.S1, James 2026-09-12).
+  final String colTrackRunnerCount = 'trackRunnerCount';
+  final String colPhotoCount = 'photoCount';
+  final String colMessageCount = 'messageCount';
+  final String colDownDownCount = 'downDownCount';
   final String colEventImage = 'eventImage';
   // Cover photo URL (absolute) from a Cover-tagged run photo; propagated to
   // HC.Event.EventCoverPhotoUrl. Always a full https URL — no base-URL prefixing.
@@ -110,6 +116,10 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
             $colEventFacebookId TEXT,
             $colAbsoluteEventNumber NUM,
             $colCanEditRunAttendence NUM,
+            $colTrackRunnerCount INT,
+            $colPhotoCount INT,
+            $colMessageCount INT,
+            $colDownDownCount INT,
             $colEventImage TEXT,
             $colEventCoverPhotoUrl TEXT,
             $colEventDescription TEXT,

@@ -572,9 +572,7 @@ class RunListItem extends StatelessWidget {
                                     // track, photos, chat, down-downs — as
                                     // a row of small icons along the bottom.
                                     if (isRunPast(futureRun))
-                                      _ActivityIcons(
-                                        eventId: futureRun.event.eventId,
-                                      ),
+                                      _ActivityIcons(event: futureRun.event),
                                   ],
                                 ),
                               ),
@@ -1747,61 +1745,54 @@ class RunListItem extends StatelessWidget {
 
 /// The activity row on a past run's card: a map icon when the run has a
 /// PackTrack track, then photos, chat messages and down-down charges with
-/// their counts. Draws nothing until the answer arrives and nothing at all
-/// for a run with none of them, so a quiet run's card is unchanged. Data
-/// comes from [RunActivityService], batched across the cards on screen.
+/// their counts. Read straight from the synced event row — the counts are
+/// kept on HC.Event by server triggers and arrive with the run, so a card
+/// never asks the server and looks the same offline (E5.F7.S1, James
+/// 2026-09-12; CLAUDE.md "Run-card data is synced"). Draws nothing for a
+/// run with none of them, so a quiet run's card is unchanged.
 class _ActivityIcons extends StatelessWidget {
-  const _ActivityIcons({required this.eventId});
-  final String eventId;
+  const _ActivityIcons({required this.event});
+  final EventModel event;
 
   @override
   Widget build(BuildContext context) {
-    RunActivityService.want(eventId);
-    final String id = normalizeUuid(eventId);
-    return Obx(() {
-      final RunActivity? a = RunActivityService.byEvent[id];
-      if (a == null || !a.any) return const SizedBox.shrink();
-      final Color c = Colors.grey.shade700;
-      final TextStyle n = ts_regularMediumBlack.copyWith(
-        fontSize: 13,
-        color: c,
-      );
-      Widget item(IconData icon, int? count, String tip) => Tooltip(
-            message: tip,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Icon(icon, size: 18, color: c),
-                if (count != null) ...<Widget>[
-                  const SizedBox(width: 3),
-                  Text('$count', style: n),
-                ],
-              ],
+    final int runners = event.trackRunnerCount ?? 0;
+    final int photos = event.photoCount ?? 0;
+    final int messages = event.messageCount ?? 0;
+    final int downDowns = event.downDownCount ?? 0;
+    if (runners == 0 && photos == 0 && messages == 0 && downDowns == 0) {
+      return const SizedBox.shrink();
+    }
+    final Color c = Colors.grey.shade700;
+    final TextStyle n = ts_regularMediumBlack.copyWith(fontSize: 13, color: c);
+    Widget item(IconData icon, int count, String tip) => Tooltip(
+          message: tip,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(icon, size: 18, color: c),
+              const SizedBox(width: 3),
+              Text('$count', style: n),
+            ],
+          ),
+        );
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Wrap(
+        spacing: 14,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: <Widget>[
+          if (runners > 0)
+            item(
+              Icons.map_outlined,
+              runners,
+              'PackTrack: $runners runner${runners == 1 ? '' : 's'}',
             ),
-          );
-      return Padding(
-        padding: const EdgeInsets.only(top: 6),
-        child: Wrap(
-          spacing: 14,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: <Widget>[
-            if (a.hasTrack)
-              item(
-                Icons.map_outlined,
-                a.runners > 0 ? a.runners : null,
-                a.runners > 0
-                    ? 'PackTrack: ${a.runners} runner${a.runners == 1 ? '' : 's'}'
-                    : 'PackTrack recorded',
-              ),
-            if (a.photos > 0)
-              item(Icons.photo_library_outlined, a.photos, 'Photos'),
-            if (a.messages > 0)
-              item(Icons.forum_outlined, a.messages, 'Trail chat'),
-            if (a.downDowns > 0)
-              item(Icons.sports_bar_outlined, a.downDowns, 'Down-downs'),
-          ],
-        ),
-      );
-    });
+          if (photos > 0) item(Icons.photo_library_outlined, photos, 'Photos'),
+          if (messages > 0) item(Icons.forum_outlined, messages, 'Trail chat'),
+          if (downDowns > 0) item(Icons.sports_bar_outlined, downDowns, 'Down-downs'),
+        ],
+      ),
+    );
   }
 }

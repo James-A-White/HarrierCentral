@@ -29,6 +29,11 @@ abstract class EventModel with _$EventModel implements BaseModel {
     String? eventFacebookId,
     int? absoluteEventNumber,
     int? canEditRunAttendence,
+    // Activity counts for the run card, synced with the row (E5.F7.S1).
+    int? trackRunnerCount,
+    int? photoCount,
+    int? messageCount,
+    int? downDownCount,
     String? eventImage,
     String? eventCoverPhotoUrl,
     String? eventDescription,

@@ -91,6 +91,7 @@ enum IntPrefsEnum {
   launchCount,
   mapCenterOption,
   mapShowKennels,
+  mapShowMyTrails,
   mapShowSearchBar,
   positionReportsCaptured,
   positionReportsSent,

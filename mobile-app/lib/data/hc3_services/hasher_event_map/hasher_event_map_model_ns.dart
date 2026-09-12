@@ -34,6 +34,13 @@ abstract class HasherEventMapModel
     int? notesVisibility,
     // 1 when shared AND neither admin override hides it (server-computed).
     int? notesShared,
+    // The hasher's own archived PackTrack trail (user sync only; E5.F7.S1):
+    // base64 of the server's gzipped delta-coded points, decoded on the
+    // phone by TrackArchiveCodec. Null until the nightly archive has run.
+    String? trackGzip,
+    int? trackPointCount,
+    String? trackFirstPointAt,
+    String? trackLastPointAt,
 
     // these fields are cached from the event itself. This enables us to keep run count information without
     // having to have the actual run cached on the phone

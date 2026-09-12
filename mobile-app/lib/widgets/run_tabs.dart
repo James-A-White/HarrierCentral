@@ -3068,8 +3068,8 @@ class _DownDownsHistoryViewState extends State<_DownDownsHistoryView> {
         ),
       ),
     );
-    // Charges may have been added, marked done or cancelled.
-    RunActivityService.invalidate(widget.eventId);
+    // Charges may have been added, marked done or cancelled: the run card's
+    // count lives on the synced event row and follows with the next sync.
     await _load();
   }
 

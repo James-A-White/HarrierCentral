@@ -449,6 +449,50 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 529 — run-card counts on the event row and the hasher's own
+    // trail on the attendance row (E5.F7.S1, James 2026-09-12): what a card
+    // shows is synced, never fetched while scrolling, and the same offline.
+    // The trail columns exist on all three attendance tables (one CREATE
+    // TABLE); only the user sync fills them. The trackMin/Max and
+    // trackSimplified columns are local only, filled by TrackIndex.
+    MigrationsModel(
+      dbVersion: 529,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.events.commonTableName} ADD COLUMN ${tableModel.eventsTableHelper.colTrackRunnerCount} INT;
+        ALTER TABLE ${EnumDataTables.events.commonTableName} ADD COLUMN ${tableModel.eventsTableHelper.colPhotoCount} INT;
+        ALTER TABLE ${EnumDataTables.events.commonTableName} ADD COLUMN ${tableModel.eventsTableHelper.colMessageCount} INT;
+        ALTER TABLE ${EnumDataTables.events.commonTableName} ADD COLUMN ${tableModel.eventsTableHelper.colDownDownCount} INT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackGzip} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackPointCount} INT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackFirstPointAt} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackLastPointAt} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMinLat} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMinLng} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMaxLat} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMaxLng} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackSimplified} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackGzip} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackPointCount} INT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackFirstPointAt} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackLastPointAt} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMinLat} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMinLng} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMaxLat} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMaxLng} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackSimplified} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackGzip} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackPointCount} INT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackFirstPointAt} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackLastPointAt} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMinLat} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMinLng} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMaxLat} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackMaxLng} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackSimplified} TEXT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
   ];
 
   static Future<void> createTables(

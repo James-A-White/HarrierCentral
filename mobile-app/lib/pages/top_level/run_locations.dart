@@ -112,6 +112,13 @@ class _MapFab extends StatelessWidget {
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () => unawaited(controller.toggleShowKennels()),
           ),
+          SpeedDialChild(
+            child: const Icon(Icons.route, color: Colors.white),
+            backgroundColor: Colors.purple[700],
+            label: 'Show / hide my trails',
+            labelStyle: const TextStyle(fontSize: 18.0),
+            onTap: () => unawaited(controller.toggleShowMyTrails()),
+          ),
         ],
       ),
     );
@@ -224,8 +231,11 @@ class _RunLocationsBody extends StatelessWidget {
                 Obx(() {
                   // Reading markersVersion, showKennels, trueNorthLock forces
                   // rebuild when markers change or interaction flags change.
-                  final _ = controller.markersVersion.value;
+                  // (both versions are read so the Obx rebuilds on either)
+                  final _ = controller.markersVersion.value +
+                      controller.trailsVersion.value;
                   final showKennels = controller.showKennels.value;
+                  final showMyTrails = controller.showMyTrails.value;
                   final trueNorthLock = controller.trueNorthLock.value;
 
                   return FlutterMap(
@@ -256,6 +266,17 @@ class _RunLocationsBody extends StatelessWidget {
                             'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                         subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3'],
                       ),
+                      // The hasher's own trails, from the archive synced onto
+                      // their attendance rows — drawn under the pins, tap
+                      // opens the run (E5.F7.S1).
+                      if (showMyTrails)
+                        GestureDetector(
+                          onTap: controller.onTrailTap,
+                          child: PolylineLayer<String>(
+                            hitNotifier: controller.trailHits,
+                            polylines: controller.trailPolylines,
+                          ),
+                        ),
                       MarkerLayer(
                         // Pins stay upright when the map is rotated.
                         rotate: true,
