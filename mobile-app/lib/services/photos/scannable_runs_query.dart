@@ -47,6 +47,7 @@ class ScannableRunsQuery {
              evt.${e.colEventNumber}    AS eventNumber,
              evt.${e.colKennelId}       AS kennelId,
              evt.${e.colEventStartDatetimeGmt} AS startGmt,
+             evt.${e.colEventStartDatetime}    AS startLocal,
              evt.${e.colHcLatitude}     AS lat,
              evt.${e.colHcLongitude}    AS lng,
              k.${k.colKennelUniqueShortName} AS slug
@@ -85,6 +86,7 @@ class ScannableRunsQuery {
           kennelId: normalizeUuid((r['kennelId'] as String?) ?? ''),
           kennelSlug: (r['slug'] as String?) ?? '',
           startUtc: start,
+          startWallClock: _wallClock(r['startLocal']),
           startLat: (r['lat'] as num?)?.toDouble(),
           startLng: (r['lng'] as num?)?.toDouble(),
           trail: trail,
@@ -92,6 +94,17 @@ class ScannableRunsQuery {
       );
     }
     return out;
+  }
+
+  /// The run's local wall clock, taken as the digits that were written and
+  /// NOT converted. The stored offset is a spurious +00:00 on about two
+  /// thirds of rows, so honouring it would shift the displayed time by the
+  /// kennel's offset (/hc-event-datetimes).
+  static DateTime? _wallClock(dynamic v) {
+    if (v == null) return null;
+    final String t = '$v'.trim().replaceFirst(' ', 'T');
+    if (t.length < 19) return null;
+    return DateTime.tryParse(t.substring(0, 19));
   }
 
   /// The stored start is the run's true instant, written without a zone.

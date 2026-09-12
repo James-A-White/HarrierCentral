@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 import 'package:harrier_central/services/photos/camera_roll_scan_service.dart';
 import 'package:harrier_central/services/photos/run_photo_sweep_service.dart';
 import 'package:photo_manager/photo_manager.dart' hide LatLng;
@@ -208,6 +209,20 @@ class KennelPhotoSweepPage extends StatelessWidget {
                     Text(
                       r.run.eventName,
                       style: ts_body.copyWith(fontSize: 15),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  if (r.run.startWallClock != null)
+                    Text(
+                      // Same shape as the run cards, with the year: this list
+                      // reaches back years, so "Tue, Sep 8" alone is ambiguous.
+                      DateFormat(
+                        "E, MMM d yyyy 'at' h:mm a",
+                      ).format(r.run.startWallClock!),
+                      style: ts_body.copyWith(
+                        fontSize: 13,
+                        color: Colors.white70,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

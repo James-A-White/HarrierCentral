@@ -16,6 +16,7 @@ class ScannableRun {
     required this.kennelId,
     required this.kennelSlug,
     required this.startUtc,
+    this.startWallClock,
     this.startLat,
     this.startLng,
     this.trail = const <LatLng>[],
@@ -31,6 +32,13 @@ class ScannableRun {
   /// both sides are on one clock and a hasher who runs abroad and imports
   /// after flying home still matches.
   final DateTime startUtc;
+
+  /// The run's LOCAL wall clock, for showing a human when it was. Separate
+  /// from [startUtc] on purpose: the instant is what a photo's capture time is
+  /// compared against, the wall clock is what the hasher recognises, and
+  /// HC.EventStartDatetime carries a spurious +00:00 on about two thirds of
+  /// rows so the two must never be derived from each other (/hc-event-datetimes).
+  final DateTime? startWallClock;
 
   final double? startLat;
   final double? startLng;
