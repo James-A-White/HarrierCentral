@@ -50,9 +50,10 @@ class RunPhotoSweepController extends GetxController {
       }
       final List<RunScanResult> found = await _service.sweep(eventId: eventId);
       result.value = found.isEmpty ? null : found.first;
-      chosen
-        ..clear()
-        ..addAll(offerable.map((PhotoCandidate c) => c.asset.id));
+      // Nothing ticked to start with (James, 2026-09-12). These photos can end
+      // up on a public website, so sending them is a decision the hasher makes
+      // rather than one they have to undo.
+      chosen.clear();
       status.value = '';
     } catch (e, s) {
       BootLogger.logError('[RunPhotoSweepController.scan]', e, s);
@@ -61,6 +62,15 @@ class RunPhotoSweepController extends GetxController {
       busy.value = false;
     }
   }
+
+  /// True once every offerable photo is ticked, so the control can flip.
+  bool get allChosen =>
+      offerable.isNotEmpty && chosen.length >= offerable.length;
+
+  void selectAll() =>
+      chosen.addAll(offerable.map((PhotoCandidate c) => c.asset.id));
+
+  void selectNone() => chosen.clear();
 
   void toggle(String assetId) {
     if (chosen.contains(assetId)) {
@@ -137,11 +147,11 @@ class RunPhotoSweepPage extends StatelessWidget {
           body: Obx(() {
             final String? blocked = c.blocked.value;
             if (blocked != null) {
-              return _message(blocked);
+              return SweepMessage(text: blocked);
             }
             if (c.busy.value && c.result.value == null) {
-              return _message(
-                c.status.value.isEmpty
+              return SweepMessage(
+                text: c.status.value.isEmpty
                     ? 'Looking through your photos…'
                     : c.status.value,
                 spinner: true,
@@ -149,11 +159,12 @@ class RunPhotoSweepPage extends StatelessWidget {
             }
             final RunScanResult? r = c.result.value;
             if (r == null || r.eligible == 0) {
-              return _message(
-                'No photos from your camera roll match this run.\n\n'
-                'A photo has to carry a location as well as a time — one '
-                'without a location cannot be placed on the trail, so it is '
-                'left alone.',
+              return SweepMessage(
+                text:
+                    'No photos from your camera roll match this run.\n\n'
+                    'A photo has to carry a location as well as a time — one '
+                    'without a location cannot be placed on the trail, so it is '
+                    'left alone.',
               );
             }
             return Column(
@@ -169,28 +180,31 @@ class RunPhotoSweepPage extends StatelessWidget {
     );
   }
 
-  Widget _message(String text, {bool spinner = false}) => Padding(
-    padding: const EdgeInsets.all(28.0),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        if (spinner) ...<Widget>[
-          const CircularProgressIndicator(),
-          const SizedBox(height: 18),
-        ],
-        Text(text, style: ts_alertDialogBody, textAlign: TextAlign.center),
-      ],
-    ),
-  );
-
   Widget _header(RunPhotoSweepController c, RunScanResult r) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          '${r.eligible} eligible  ·  ${r.added} already added',
-          style: ts_alertDialogTitle.copyWith(fontSize: 17),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                '${r.eligible} eligible  ·  ${r.added} already added',
+                style: ts_alertDialogTitle.copyWith(fontSize: 17),
+              ),
+            ),
+            if (c.offerable.isNotEmpty)
+              TextButton(
+                onPressed: c.busy.value
+                    ? null
+                    : (c.allChosen ? c.selectNone : c.selectAll),
+                child: Text(
+                  c.allChosen ? 'Select none' : 'Select all',
+                  // White: the button themes paint red (see CLAUDE.md).
+                  style: ts_button.copyWith(color: Colors.white),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 6),
         Text(

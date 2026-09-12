@@ -309,6 +309,7 @@ export 'package:harrier_central/util/kennel_permissions.dart';
 export 'package:harrier_central/util/async_serializer.dart';
 export 'package:harrier_central/util/membership_status.dart';
 export 'package:harrier_central/widgets/packtrack_trim_overlay.dart';
+export 'package:harrier_central/widgets/sweep_message.dart';
 export 'package:harrier_central/pages/menu_pages/kennel_photo_sweep_page.dart';
 export 'package:harrier_central/pages/menu_pages/run_photo_sweep_page.dart';
 export 'package:harrier_central/widgets/packtrack_fullscreen_map.dart';

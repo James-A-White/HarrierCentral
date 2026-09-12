@@ -7,7 +7,10 @@ import 'package:photo_manager/photo_manager.dart' hide LatLng;
 /// roll (E6.F2.S5): "Run #1696 — 14 eligible, 6 added". Tapping one opens the
 /// per-run selector.
 class KennelPhotoSweepController extends GetxController {
-  KennelPhotoSweepController({required this.kennelId, required this.kennelName});
+  KennelPhotoSweepController({
+    required this.kennelId,
+    required this.kennelName,
+  });
 
   final String kennelId;
   final String kennelName;
@@ -102,22 +105,23 @@ class KennelPhotoSweepPage extends StatelessWidget {
           body: Obx(() {
             final String? blocked = c.blocked.value;
             if (blocked != null) {
-              return _centred(blocked);
+              return SweepMessage(text: blocked);
             }
             if (c.busy.value && c.results.isEmpty) {
-              return _centred(
-                c.total.value > 0
+              return SweepMessage(
+                text: c.total.value > 0
                     ? 'Checking your runs… ${c.done.value} of ${c.total.value}'
                     : 'Looking through your photos…',
                 spinner: true,
               );
             }
             if (c.results.isEmpty) {
-              return _centred(
-                'No photos on this phone match your runs with $kennelName.\n\n'
-                'A photo has to carry a location as well as a time — one '
-                'without a location cannot be placed on a trail, so it is '
-                'left alone.',
+              return SweepMessage(
+                text:
+                    'No photos on this phone match your runs with $kennelName.\n\n'
+                    'A photo has to carry a location as well as a time — one '
+                    'without a location cannot be placed on a trail, so it is '
+                    'left alone.',
               );
             }
             return ListView.separated(
@@ -134,20 +138,6 @@ class KennelPhotoSweepPage extends StatelessWidget {
       },
     );
   }
-
-  Widget _centred(String text, {bool spinner = false}) => Padding(
-    padding: const EdgeInsets.all(28.0),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        if (spinner) ...<Widget>[
-          const CircularProgressIndicator(),
-          const SizedBox(height: 18),
-        ],
-        Text(text, style: ts_alertDialogBody, textAlign: TextAlign.center),
-      ],
-    ),
-  );
 
   Widget _summary(KennelPhotoSweepController c) => Padding(
     padding: const EdgeInsets.only(bottom: 4.0),
@@ -175,8 +165,9 @@ class KennelPhotoSweepPage extends StatelessWidget {
     KennelPhotoSweepController c,
     RunScanResult r,
   ) {
-    final String number =
-        r.run.eventNumber > 0 ? 'Run #${r.run.eventNumber}' : r.run.eventName;
+    final String number = r.run.eventNumber > 0
+        ? 'Run #${r.run.eventNumber}'
+        : r.run.eventName;
     return InkWell(
       onTap: () async {
         await Navigator.push<dynamic>(
