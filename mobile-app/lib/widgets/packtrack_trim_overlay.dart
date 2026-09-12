@@ -227,9 +227,9 @@ class TrimEditorOverlay extends StatelessWidget {
   /// room). Compact scissors-card layout otherwise.
   final bool wide;
 
-  /// Whether the collapsed "Trim run" pill is drawn. The fullscreen route sets
-  /// false because it puts a scissors button in its own control column — the
-  /// bar still appears here once editing starts.
+  /// Whether the collapsed "Trim run" pill is drawn. Both the run Map tab and
+  /// the fullscreen route set false, because each puts a scissors button in
+  /// its own control column — the bar still appears here once editing starts.
   final bool showCollapsedPill;
 
   String _fmt(int? ms) => ms == null
@@ -246,6 +246,10 @@ class TrimEditorOverlay extends StatelessWidget {
       final busy = trimController.busy.value;
       if (wide) return _buildWide(editing: editing, busy: busy);
       if (!editing) {
+        // The caller may already offer a scissors of its own (the run Map tab
+        // and the fullscreen route both put one in their control column), in
+        // which case the collapsed card here is a second one on the same map.
+        if (!showCollapsedPill) return const SizedBox.shrink();
         return Material(
           color: Colors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(8),
@@ -272,9 +276,7 @@ class TrimEditorOverlay extends StatelessWidget {
               children: [
                 Icon(Icons.content_cut, color: hc_blue, size: 18),
                 const SizedBox(width: 6),
-                Expanded(
-                  child: Text('Official window', style: ts_tileText),
-                ),
+                Expanded(child: Text('Official window', style: ts_tileText)),
                 GestureDetector(
                   onTap: busy ? null : () => trimController.toggleEditing(),
                   child: const Icon(Icons.close, size: 18, color: Colors.grey),
@@ -319,8 +321,7 @@ class TrimEditorOverlay extends StatelessWidget {
               TextButton(
                 onPressed: busy
                     ? null
-                    : () =>
-                          unawaited(trimController.toggleEveryonesTracking()),
+                    : () => unawaited(trimController.toggleEveryonesTracking()),
                 child: Text(
                   trimController.trackingEnded.value == true
                       ? 'Re-open tracking'
