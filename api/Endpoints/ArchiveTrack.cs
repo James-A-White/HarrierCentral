@@ -314,10 +314,16 @@ namespace HcWebApi.Endpoints
             // counted twice). First/last are filled only where the per-batch
             // writes never set them — the uncounted-row case.
             using SqlCommand cmd = new(
+                // updatedAt is stamped here on purpose (the trigger skips
+                // track-only writes so live batches never re-sync the row):
+                // the finished archive is what the hasher's phone keeps, so
+                // this one write must sync — once per track (E5.F7.S1,
+                // 2026-09-12). The trigger adds the row's bias to the value.
                 "UPDATE HC.HasherEventMap " +
                 "   SET TrackGzip = @blob, TrackPointCount = @count, " +
                 "       TrackFirstPointAt = ISNULL(TrackFirstPointAt, @firstAt), " +
-                "       TrackLastPointAt  = ISNULL(TrackLastPointAt,  @lastAt) " +
+                "       TrackLastPointAt  = ISNULL(TrackLastPointAt,  @lastAt), " +
+                "       updatedAt = SYSDATETIME() " +
                 " WHERE EventId = @eventId AND UserId = @userId AND removed = 0;",
                 conn) { CommandTimeout = 10 };
             cmd.Parameters.Add("@blob", SqlDbType.VarBinary, -1).Value = blob;
