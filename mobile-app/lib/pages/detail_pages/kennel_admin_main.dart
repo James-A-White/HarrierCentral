@@ -114,11 +114,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               .permissionOverrideJson,
                         ))
                           _buildAdminFunctions(context),
-                        // Everyone's own photos and their own attended runs:
-                        // nothing here needs kennel rights, so this sits
-                        // OUTSIDE the admin grid, which is gated on
-                        // kennelTools (James, 2026-09-12).
-                        _buildMyPhotosButton(context),
                         _buildDescriptionSection(),
                         _buildMapAndInfoSection(context),
                         const SizedBox(height: 25.0),
@@ -226,35 +221,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   // ---------------------------------------------------------------------------
   // Admin functions section
   // ---------------------------------------------------------------------------
-  Widget _buildMyPhotosButton(BuildContext context) {
-    final agg = widget.kennelAggregateItem;
-    return Padding(
-      padding: const EdgeInsets.only(top: 20.0, left: 30.0, right: 30.0),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton.icon(
-          icon: const Icon(Icons.photo_library, color: Colors.white),
-          label: Text(
-            'Photos of these runs on your phone',
-            style: ts_button,
-            textAlign: TextAlign.center,
-          ),
-          onPressed: () async {
-            await Navigator.push<dynamic>(
-              context,
-              MaterialPageRoute<dynamic>(
-                builder: (BuildContext context) => KennelPhotoSweepPage(
-                  kennelId: agg.kennel.kennelId,
-                  kennelName: agg.kennel.kennelShortName,
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildAdminFunctions(BuildContext context) {
     final agg = widget.kennelAggregateItem;
     // Gate buttons via the server-mirroring check (role OR flag). See
@@ -1107,6 +1073,59 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                           key: const Key('52233311'),
                           widget: Leaderboard(kennelId: agg.kennel.kennelId),
                           appBarTitle: 'Get a Life (Leaderboards)',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            // Below the member-facing buttons, behind its own divider
+            // (James, 2026-09-12). It reads the hasher's OWN camera roll and
+            // their OWN attended runs, so it needs no kennel rights and does
+            // not belong in the admin grid.
+            FancyDivider(
+              key: const Key('photos-on-phone-divider'),
+              innerColor: Colors.white,
+              topMargin: 10.0,
+            ),
+            Container(
+              margin: const EdgeInsets.only(top: 20, bottom: 20),
+              width: _buttonWidth,
+              height: _buttonHeight,
+              child: StyleForConnected(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.only(
+                      left: 12.0,
+                      top: 8.0,
+                      bottom: 8.0,
+                    ),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      const SizedBox(
+                        width: 45.0,
+                        child: Icon(
+                          Icons.photo_library,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 0),
+                        child: Text('Photos on your phone', style: ts_button),
+                      ),
+                    ],
+                  ),
+                  onPressed: () async {
+                    if (!mounted) return;
+                    await Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) => KennelPhotoSweepPage(
+                          kennelId: agg.kennel.kennelId,
+                          kennelName: agg.kennel.kennelShortName,
                         ),
                       ),
                     );
