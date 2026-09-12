@@ -1,3 +1,20 @@
+## 3.0.31+1346 (2026-09-12)
+
+### Improvements
+- **Tap a photo in "Find my photos" to open it full screen.** Swipe
+  between them and pinch to zoom, so you can pick the best of several
+  similar shots. You can select from there too.
+- **The selection marker is bigger and reads on any photo** — a black and
+  white ring that stays put, green with a white tick once chosen. It no
+  longer disappears against a dark pub or a bright sky.
+- **"Photos on your phone" has moved out of Kennel Admin Functions.** It
+  needs no admin rights, so every member can find it.
+- **A run's photo carries the kennel's logo and name above it**, so it is
+  obvious whose run you have opened.
+
+### Fixes
+- **Cancelling a run's "Set event details" menu no longer throws.**
+
 ## 3.0.30+1345 (2026-09-12)
 
 ### New Features
