@@ -89,6 +89,12 @@
           "description": "KennelPhotos.BlobUrl — original blob storage URL. Table column is NVARCHAR(500) NOT NULL."
         },
         {
+          "name": "EditedBlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "The Hash Flash crop, when one exists. BlobUrl stays the untouched original so a re-edit always starts from it; callers display this when present."
+        },
+        {
           "name": "Title",
           "type": "NVARCHAR(250)",
           "nullable": true,

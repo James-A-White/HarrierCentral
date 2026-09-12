@@ -19,6 +19,7 @@ class _Photo {
   _Photo({
     required this.photoId,
     required this.blobUrl,
+    this.editedBlobUrl,
     required this.uploaderDisplayName,
     required this.status,
     required this.createdAt,
@@ -31,6 +32,9 @@ class _Photo {
     return _Photo(
       photoId: json['photoId']?.toString() ?? '',
       blobUrl: json['BlobUrl']?.toString() ?? '',
+      editedBlobUrl: (json['EditedBlobUrl']?.toString().isNotEmpty ?? false)
+          ? json['EditedBlobUrl'].toString()
+          : null,
       uploaderDisplayName: json['uploaderDisplayName']?.toString() ?? 'Unknown',
       status: (json['Status'] as num?)?.toInt() ?? 0,
       deletedAt: json['DeletedAt'] != null
@@ -46,6 +50,16 @@ class _Photo {
 
   final String photoId;
   final String blobUrl;
+
+  /// The Hash Flash crop, when one exists. [blobUrl] stays the untouched
+  /// original so a re-edit always starts from it.
+  final String? editedBlobUrl;
+
+  /// What a reviewer should be looking at: the crop if there is one.
+  String get effectiveUrl =>
+      (editedBlobUrl != null && editedBlobUrl!.isNotEmpty)
+      ? editedBlobUrl!
+      : blobUrl;
   final String uploaderDisplayName;
   final int status;
   final DateTime? deletedAt;
@@ -139,7 +153,9 @@ class PhotoReviewController extends GetxController {
           .toList();
     } catch (e) {
       errorMessage.value = 'Failed to load photos.';
-      if (kDebugMode) debugPrint('[PhotoReviewController] _loadPhotos error: $e');
+      if (kDebugMode) {
+        debugPrint('[PhotoReviewController] _loadPhotos error: $e');
+      }
     } finally {
       isLoading.value = false;
     }
@@ -157,8 +173,9 @@ class PhotoReviewController extends GetxController {
         'hcportal_batchUpdatePhotoStatus',
         paramString: deviceSecret,
       );
-      final updates =
-          jsonEncode([{'photoId': photo.photoId, 'action': action}]);
+      final updates = jsonEncode([
+        {'photoId': photo.photoId, 'action': action},
+      ]);
       final body = <String, dynamic>{
         'queryType': 'batchUpdatePhotoStatus',
         'deviceId': deviceId,
@@ -177,15 +194,18 @@ class PhotoReviewController extends GetxController {
       }
       await _loadPhotos(silent: true);
       final newList = tabPhotos;
-      currentIndex.value =
-          newList.isEmpty ? 0 : removedIdx.clamp(0, newList.length - 1);
+      currentIndex.value = newList.isEmpty
+          ? 0
+          : removedIdx.clamp(0, newList.length - 1);
     } catch (e) {
       Get.snackbar(
         'Error',
         'An unexpected error occurred.',
         snackPosition: SnackPosition.BOTTOM,
       );
-      if (kDebugMode) debugPrint('[PhotoReviewController] applyAction error: $e');
+      if (kDebugMode) {
+        debugPrint('[PhotoReviewController] applyAction error: $e');
+      }
     } finally {
       isSaving.value = false;
     }
@@ -347,9 +367,7 @@ class PhotoReviewPage extends StatelessWidget {
             color: active ? const Color(0xFF1D4ED8) : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: active
-                  ? const Color(0xFF1D4ED8)
-                  : const Color(0xFFCBD5E1),
+              color: active ? const Color(0xFF1D4ED8) : const Color(0xFFCBD5E1),
             ),
           ),
           child: Text(
@@ -413,7 +431,7 @@ class PhotoReviewPage extends StatelessWidget {
           children: [
             Positioned.fill(
               child: HcNetworkImage(
-                photo.blobUrl,
+                photo.effectiveUrl,
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) => const Center(
                   child: Icon(
@@ -450,26 +468,30 @@ class PhotoReviewPage extends StatelessWidget {
               bottom: 0,
               child: Container(
                 color: Colors.black.withValues(alpha: 0.4),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.chevron_left,
-                          color: Colors.white, size: 22),
+                      icon: const Icon(
+                        Icons.chevron_left,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                       onPressed: idx > 0 ? _controller.prev : null,
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                     ),
                     Text(
                       '${idx + 1} of ${list.length}',
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 13),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.chevron_right,
-                          color: Colors.white, size: 22),
+                      icon: const Icon(
+                        Icons.chevron_right,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                       onPressed: idx < list.length - 1
                           ? _controller.next
                           : null,
@@ -611,25 +633,25 @@ class PhotoReviewPage extends StatelessWidget {
       final saving = _controller.isSaving.value;
       final (bg, fg, border) = switch (style) {
         _BtnStyle.danger => (
-            const Color(0xFFFEF2F2),
-            const Color(0xFFB91C1C),
-            const Color(0xFFFCA5A5),
-          ),
+          const Color(0xFFFEF2F2),
+          const Color(0xFFB91C1C),
+          const Color(0xFFFCA5A5),
+        ),
         _BtnStyle.secondary => (
-            Colors.white,
-            const Color(0xFF374151),
-            const Color(0xFFE2E8F0),
-          ),
+          Colors.white,
+          const Color(0xFF374151),
+          const Color(0xFFE2E8F0),
+        ),
         _BtnStyle.success => (
-            const Color(0xFFF0FDF4),
-            const Color(0xFF15803D),
-            const Color(0xFF86EFAC),
-          ),
+          const Color(0xFFF0FDF4),
+          const Color(0xFF15803D),
+          const Color(0xFF86EFAC),
+        ),
         _BtnStyle.primary => (
-            const Color(0xFFEFF6FF),
-            const Color(0xFF1D4ED8),
-            const Color(0xFFBFDBFE),
-          ),
+          const Color(0xFFEFF6FF),
+          const Color(0xFF1D4ED8),
+          const Color(0xFFBFDBFE),
+        ),
       };
       return TextButton(
         style: TextButton.styleFrom(
@@ -637,12 +659,10 @@ class PhotoReviewPage extends StatelessWidget {
           foregroundColor: fg,
           side: BorderSide(color: border),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           minimumSize: const Size(double.infinity, 0),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textStyle:
-              const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
         ),
         onPressed: saving ? null : onPressed,
         child: Row(
@@ -678,9 +698,7 @@ class PhotoReviewPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            isPending
-                ? 'No photos pending review'
-                : 'No reviewed photos yet',
+            isPending ? 'No photos pending review' : 'No reviewed photos yet',
             style: const TextStyle(fontSize: 15, color: Color(0xFF94A3B8)),
           ),
         ],
@@ -707,8 +725,18 @@ class PhotoReviewPage extends StatelessWidget {
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   String _formatDate(DateTime dt) {

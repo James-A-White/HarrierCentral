@@ -13,6 +13,12 @@ AS
 --   of a run photo. The original BlobUrl is never modified — this SP
 --   writes only to EditedBlobUrl. Callers should always start a re-edit
 --   from the original BlobUrl, not from EditedBlobUrl.
+--   If this photo is the run's cover, the cover is re-pointed at the new
+--   edit. HC.Event.EventCoverPhotoUrl is a COPY of the chosen photo's URL,
+--   set when a photo is approved (hcportal_batchUpdatePhotoStatus, which
+--   already prefers the edited version). Editing a photo that was approved
+--   EARLIER used to leave that copy on the original, so the run card and the
+--   run detail kept showing the uncropped shot for ever (James, 2026-09-12).
 --   Auth: Hash Flash (0x20), GM (0x02), VGM (0x04), or RA (0x08).
 -- Parameters:
 --   @deviceId      - Registered device UUID
@@ -101,6 +107,17 @@ BEGIN
 END
 
 BEGIN TRY
+    -- Read the URLs this photo had BEFORE the update: the cover may be
+    -- holding either of them, and the UPDATE below destroys the second.
+    DECLARE @originalUrl   NVARCHAR(500);
+    DECLARE @previousEdit  NVARCHAR(500);
+    DECLARE @eventId       UNIQUEIDENTIFIER;
+    SELECT @originalUrl  = BlobUrl,
+           @previousEdit = EditedBlobUrl,
+           @eventId      = EventId
+      FROM HC.KennelPhotos
+     WHERE id = @photoId AND KennelId = @kennelId;
+
     UPDATE HC.KennelPhotos
     SET EditedBlobUrl = @editedBlobUrl,
         UpdatedAt     = GETUTCDATE()
@@ -119,6 +136,24 @@ BEGIN TRY
                'The photo could not be found. It may have been removed.' AS errorUserMessage,
                @procName AS errorProc;
         RETURN;
+    END
+
+    -- The run card reads HC.Event.EventCoverPhotoUrl, not the photo row, so
+    -- an edit has to follow the copy. Matched on the URLs the photo held a
+    -- moment ago: the cover may carry the original (approved before this
+    -- edit) or an earlier crop (this photo edited more than once). A cover
+    -- showing some OTHER photo is left alone — editing one photo must never
+    -- steal the cover from another.
+    IF (@eventId IS NOT NULL)
+    BEGIN
+        UPDATE HC.Event
+           SET EventCoverPhotoUrl = @editedBlobUrl
+         WHERE id = @eventId
+           AND EventCoverPhotoUrl IS NOT NULL
+           AND EventCoverPhotoUrl <> @editedBlobUrl
+           AND (EventCoverPhotoUrl = @originalUrl
+                OR (@previousEdit IS NOT NULL
+                    AND EventCoverPhotoUrl = @previousEdit));
     END
 
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;

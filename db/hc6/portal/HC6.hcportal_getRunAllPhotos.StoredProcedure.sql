@@ -87,6 +87,10 @@ BEGIN TRY
         kp.Status,
         kp.DeletedAt,
         kp.BlobUrl,
+        -- The Hash Flash crop. BlobUrl stays the untouched original so a
+        -- re-edit always starts from it; callers show EditedBlobUrl when it
+        -- is there. Same shape as hcapp_getRunAllPhotos.
+        kp.EditedBlobUrl,
         kp.Title,
         kp.Description,
         kp.CreatedAt,
