@@ -51,6 +51,12 @@ class RunAndKennelMapController extends GetxController {
   /// follow the filter, so narrowing the runs narrows the total.
   final trailCount = 0.obs;
   final trailMetres = 0.0.obs;
+  final trailMillis = 0.obs;
+
+  /// How many of the shown trails actually carried usable times. Averages and
+  /// pace are over THESE, not over every trail, so one archive with no clock
+  /// cannot drag the average down.
+  final trailTimedCount = 0.obs;
 
   /// The runs whose pins are on the map right now, lowercased. A trail is
   /// drawn only when its run's pin is (James, 2026-09-12): filtering the
@@ -358,8 +364,7 @@ class RunAndKennelMapController extends GetxController {
     } else {
       _loadedTrails = <TrailOnMap>[];
       trailPolylines = <Polyline<String>>[];
-      trailCount.value = 0;
-      trailMetres.value = 0;
+      _clearTrailTotals();
       trailsVersion.value++;
     }
   }
@@ -404,8 +409,7 @@ class RunAndKennelMapController extends GetxController {
         trailPolylines = <Polyline<String>>[];
         trailsVersion.value++;
       }
-      trailCount.value = 0;
-      trailMetres.value = 0;
+      _clearTrailTotals();
       return;
     }
     final List<TrailOnMap> shown = _loadedTrails
@@ -416,6 +420,16 @@ class RunAndKennelMapController extends GetxController {
       0,
       (double sum, TrailOnMap t) => sum + t.distanceMeters,
     );
+    int millis = 0;
+    int timed = 0;
+    for (final TrailOnMap t in shown) {
+      final Duration? d = t.duration;
+      if (d == null) continue;
+      millis += d.inMilliseconds;
+      timed++;
+    }
+    trailMillis.value = millis;
+    trailTimedCount.value = timed;
     trailPolylines = shown
         .map(
           (TrailOnMap t) => Polyline<String>(
@@ -429,23 +443,65 @@ class RunAndKennelMapController extends GetxController {
     trailsVersion.value++;
   }
 
-  /// "4 trails · 38.2 km" — in the hasher's own units. Empty when there is
-  /// nothing on screen to total. A trail still being measured counts toward
-  /// the number but contributes nothing to the distance, so the figure only
-  /// ever understates while the index catches up; it never invents.
-  String get trailSummary {
+  void _clearTrailTotals() {
+    trailCount.value = 0;
+    trailMetres.value = 0;
+    trailMillis.value = 0;
+    trailTimedCount.value = 0;
+  }
+
+  /// The heading for the panel: how many trails are being totalled.
+  String get trailHeading {
     final int n = trailCount.value;
-    if (n == 0) return '';
-    final String trails = n == 1 ? '1 trail' : '$n trails';
-    final double m = trailMetres.value;
-    if (m <= 0) return trails;
+    return n == 1 ? '1 trail' : '$n trails';
+  }
+
+  /// The panel's rows, as (label, value) pairs. Distance always; time and
+  /// pace only where the trails carried clocks. A trail still being measured
+  /// counts in the heading but adds nothing here, so the figures understate
+  /// while the index catches up and never invent.
+  List<(String, String)> get trailStats {
+    if (trailCount.value == 0) return const <(String, String)>[];
     final bool imperial = Utilities.prefersImperial();
-    final double value = imperial ? m * METERS_TO_MILES : m / 1000;
     final String unit = imperial ? 'mi' : 'km';
-    final String shown = value >= 100
-        ? value.toStringAsFixed(0)
-        : value.toStringAsFixed(1);
-    return '$trails  ·  $shown $unit';
+    final double metres = trailMetres.value;
+    final double total = imperial ? metres * METERS_TO_MILES : metres / 1000;
+
+    final List<(String, String)> rows = <(String, String)>[];
+    if (metres > 0) {
+      final double avg = total / trailCount.value;
+      rows.add((
+        'Distance',
+        '${_dist(total)} $unit    avg ${_dist(avg)} $unit',
+      ));
+    }
+
+    final int timed = trailTimedCount.value;
+    if (timed > 0 && trailMillis.value > 0) {
+      final Duration sum = Duration(milliseconds: trailMillis.value);
+      final Duration avg = Duration(milliseconds: trailMillis.value ~/ timed);
+      rows.add(('Time', '${_span(sum)}    avg ${_span(avg)}'));
+
+      // Pace over the whole distance rather than an average of paces: a
+      // 2 km stroll must not weigh the same as a 15 km trail.
+      if (total > 0) {
+        final double secondsPerUnit = sum.inSeconds / total;
+        final int m = secondsPerUnit ~/ 60;
+        final int sec = (secondsPerUnit % 60).round();
+        rows.add(('Pace', "$m:${sec.toString().padLeft(2, '0')} / $unit"));
+      }
+    }
+    return rows;
+  }
+
+  static String _dist(double v) =>
+      v >= 100 ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
+
+  static String _span(Duration d) {
+    final int h = d.inHours;
+    final int m = d.inMinutes.remainder(60);
+    if (h == 0) return '${m}m';
+    return "${h}h ${m.toString().padLeft(2, '0')}m";
   }
 
   /// A tap on a trail opens its run, like a tap on its pin.

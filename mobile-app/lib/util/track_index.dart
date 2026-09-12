@@ -13,6 +13,8 @@ class TrailOnMap {
     required this.kennelPinColor,
     required this.points,
     this.distanceMeters = 0,
+    this.startMs,
+    this.endMs,
   });
 
   final String eventId;
@@ -26,6 +28,22 @@ class TrailOnMap {
   /// Not derived from [points] — those are simplified for drawing, and at a
   /// zoomed-out level they would under-report the distance badly.
   final double distanceMeters;
+
+  /// First and last CAPTURE times, as synced onto the attendance row. Null
+  /// on a trail whose archive carried no usable times.
+  final int? startMs;
+  final int? endMs;
+
+  /// How long the trail took, or null when either end is missing. Negative
+  /// or absurd spans are rejected rather than averaged in.
+  Duration? get duration {
+    final int? a = startMs;
+    final int? b = endMs;
+    if (a == null || b == null) return null;
+    final int ms = b - a;
+    if (ms <= 0 || ms > const Duration(hours: 24).inMilliseconds) return null;
+    return Duration(milliseconds: ms);
+  }
 }
 
 /// The local index over the hasher's own archived trails (E5.F7.S1).
@@ -172,6 +190,8 @@ class TrackIndex {
              evt.${e.colKennelId} AS kennelId,
              COALESCE(k.${k.colKennelPinColor}, 0) AS pinColor,
              hem.${h.colTrackDistanceM} AS distanceM,
+             hem.${h.colTrackFirstPointAt} AS firstAt,
+             hem.${h.colTrackLastPointAt} AS lastAt,
              ${detail ? 'hem.${h.colTrackGzip} AS gz' : 'hem.${h.colTrackSimplified} AS path'}
         FROM ${EnumDataTables.hasherEventMap.commonTableName} hem
         JOIN ${EnumDataTables.events.commonTableName} evt
@@ -216,6 +236,8 @@ class TrackIndex {
           kennelPinColor: (r['pinColor'] as num?)?.toInt() ?? 0,
           points: pts,
           distanceMeters: (r['distanceM'] as num?)?.toDouble() ?? 0,
+          startMs: sqlUtcMs(r['firstAt']),
+          endMs: sqlUtcMs(r['lastAt']),
         ),
       );
     }
@@ -272,6 +294,20 @@ class TrackIndex {
     final double metresPerPx =
         156543.03392 * math.cos(latDeg * math.pi / 180) / math.pow(2, zoom);
     return detailTolerancePx * metresPerPx / 111320;
+  }
+
+  /// A SQL datetime2 as written by the sync ("2026-09-12 07:23:19.992"),
+  /// read as UTC. DATETIME2 carries no zone, and every capture time is
+  /// stored on the UTC clock, so a missing suffix means UTC and not local.
+  static int? sqlUtcMs(dynamic v) {
+    if (v == null) return null;
+    String t = '$v'.trim();
+    if (t.isEmpty) return null;
+    // Dart rejects more than six fractional digits; SQL can write seven.
+    final int dot = t.indexOf('.');
+    if (dot >= 0 && t.length - dot - 1 > 6) t = t.substring(0, dot + 7);
+    if (!t.endsWith('Z') && !t.contains('+')) t = '${t}Z';
+    return DateTime.tryParse(t)?.millisecondsSinceEpoch;
   }
 
   /// The length of a path in metres, by the haversine formula over every

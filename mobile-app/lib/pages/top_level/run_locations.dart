@@ -377,27 +377,71 @@ class _RunLocationsBody extends StatelessWidget {
                         Align(
                           alignment: Alignment.bottomCenter,
                           child: Obx(() {
-                            final String text = controller.trailSummary;
-                            if (text.isEmpty) return const SizedBox.shrink();
+                            final List<(String, String)> stats =
+                                controller.trailStats;
+                            if (controller.trailCount.value == 0) {
+                              return const SizedBox.shrink();
+                            }
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 14.0),
+                              padding: const EdgeInsets.only(
+                                bottom: 14.0,
+                                left: 12.0,
+                                right: 12.0,
+                              ),
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.62),
-                                  borderRadius: BorderRadius.circular(16),
+                                  color: Colors.black.withValues(alpha: 0.66),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 14,
-                                    vertical: 7,
+                                    vertical: 9,
                                   ),
-                                  child: Text(
-                                    text,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        controller.trailHeading,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      for (final (String label, String value)
+                                          in stats) ...<Widget>[
+                                        const SizedBox(height: 3),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: <Widget>[
+                                            SizedBox(
+                                              width: 62,
+                                              child: Text(
+                                                label,
+                                                style: TextStyle(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.7),
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ),
+                                            Flexible(
+                                              child: Text(
+                                                value,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
                               ),

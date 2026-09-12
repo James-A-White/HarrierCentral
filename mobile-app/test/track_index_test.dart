@@ -98,6 +98,36 @@ void main() {
     expect(full, greaterThan(drawn));
   });
 
+  test('a trail duration ignores a missing, reversed or runaway clock', () {
+    TrailOnMap t({int? a, int? b}) => TrailOnMap(
+          eventId: 'e',
+          eventName: 'n',
+          eventStartLocal: '',
+          kennelId: 'k',
+          kennelPinColor: 0,
+          points: const <LatLng>[],
+          startMs: a,
+          endMs: b,
+        );
+    expect(t(a: 1000, b: 4600000).duration, const Duration(milliseconds: 4599000));
+    expect(t(a: null, b: 4600000).duration, isNull, reason: 'no start');
+    expect(t(a: 1000, b: null).duration, isNull, reason: 'no end');
+    expect(t(a: 5000, b: 1000).duration, isNull, reason: 'runs backwards');
+    expect(t(a: 0, b: const Duration(hours: 25).inMilliseconds).duration, isNull,
+        reason: 'tracker left running overnight');
+  });
+
+  test('SQL datetime2 is read as UTC, seven fractional digits and all', () {
+    final int? ms = TrackIndex.sqlUtcMs('2026-09-12 07:23:19.9920000');
+    expect(ms, isNotNull);
+    final DateTime d = DateTime.fromMillisecondsSinceEpoch(ms!, isUtc: true);
+    expect(d.hour, 7, reason: 'a zone-less capture time is UTC, not local');
+    expect(d.minute, 23);
+    expect(TrackIndex.sqlUtcMs(null), isNull);
+    expect(TrackIndex.sqlUtcMs('  '), isNull);
+    expect(TrackIndex.sqlUtcMs('not a date'), isNull);
+  });
+
   test('path storage round-trips at five decimals', () {
     final List<LatLng> path = <LatLng>[
       const LatLng(51.506321, -0.053049),
