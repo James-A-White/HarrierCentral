@@ -449,6 +449,20 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 530 — how far each trail actually is (E5.F7.S1, James
+    // 2026-09-12): the trails map shows a total for what is on screen. Local
+    // only, like the bounds and the simplified path — TrackIndex measures it
+    // once from the FULL archive, so the figure never depends on how much of
+    // the line the current zoom happens to draw.
+    MigrationsModel(
+      dbVersion: 530,
+      appliedAtInt: 0,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackDistanceM} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackDistanceM} REAL;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTrackDistanceM} REAL;
+      ''',
+    ),
     // MIGRATION 529 — run-card counts on the event row and the hasher's own
     // trail on the attendance row (E5.F7.S1, James 2026-09-12): what a card
     // shows is synced, never fetched while scrolling, and the same offline.

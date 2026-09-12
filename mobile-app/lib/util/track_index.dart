@@ -12,6 +12,7 @@ class TrailOnMap {
     required this.kennelId,
     required this.kennelPinColor,
     required this.points,
+    this.distanceMeters = 0,
   });
 
   final String eventId;
@@ -20,6 +21,11 @@ class TrailOnMap {
   final String kennelId;
   final int kennelPinColor;
   final List<LatLng> points;
+
+  /// How far the trail actually is, measured once from the full archive.
+  /// Not derived from [points] — those are simplified for drawing, and at a
+  /// zoomed-out level they would under-report the distance badly.
+  final double distanceMeters;
 }
 
 /// The local index over the hasher's own archived trails (E5.F7.S1).
@@ -62,8 +68,10 @@ class TrackIndex {
 
   static bool _indexing = false;
 
-  /// Index every own row that has a trail and no bounds yet. Returns how
-  /// many rows were indexed. Bounded per call so a first sync of a long
+  /// Index every own row that has a trail and is missing either its bounds
+  /// or its measured distance — the second condition picks up trails indexed
+  /// by an earlier build, before the distance was kept. Returns how many rows
+  /// were indexed. Bounded per call so a first sync of a long
   /// history never blocks a map for long; called again on the next look.
   static Future<int> ensureIndexed({int limit = 100}) async {
     if (_indexing) return 0;
@@ -79,7 +87,7 @@ class TrackIndex {
           FROM $table
          WHERE ${h.colUserId} = ? AND ${h.colRemoved} = 0
            AND ${h.colTrackGzip} IS NOT NULL AND ${h.colTrackGzip} <> ''
-           AND ${h.colTrackMinLat} IS NULL
+           AND (${h.colTrackMinLat} IS NULL OR ${h.colTrackDistanceM} IS NULL)
          LIMIT ?
         ''',
         <Object?>[userId, limit],
@@ -93,7 +101,8 @@ class TrackIndex {
             // Nothing to draw: mark it so it is not decoded again.
             await database.rawUpdate(
               'UPDATE $table SET ${h.colTrackMinLat} = 0, ${h.colTrackMinLng} = 0, '
-              '${h.colTrackMaxLat} = 0, ${h.colTrackMaxLng} = 0, ${h.colTrackSimplified} = ? '
+              '${h.colTrackMaxLat} = 0, ${h.colTrackMaxLng} = 0, ${h.colTrackSimplified} = ?, '
+              '${h.colTrackDistanceM} = 0 '
               'WHERE ${h.colHemId} = ?',
               <Object?>['[]', hemId],
             );
@@ -162,6 +171,7 @@ class TrackIndex {
              evt.${e.colEventStartDatetime} AS eventStart,
              evt.${e.colKennelId} AS kennelId,
              COALESCE(k.${k.colKennelPinColor}, 0) AS pinColor,
+             hem.${h.colTrackDistanceM} AS distanceM,
              ${detail ? 'hem.${h.colTrackGzip} AS gz' : 'hem.${h.colTrackSimplified} AS path'}
         FROM ${EnumDataTables.hasherEventMap.commonTableName} hem
         JOIN ${EnumDataTables.events.commonTableName} evt
@@ -205,6 +215,7 @@ class TrackIndex {
           kennelId: normalizeUuid((r['kennelId'] as String?) ?? ''),
           kennelPinColor: (r['pinColor'] as num?)?.toInt() ?? 0,
           points: pts,
+          distanceMeters: (r['distanceM'] as num?)?.toDouble() ?? 0,
         ),
       );
     }
@@ -261,6 +272,31 @@ class TrackIndex {
     final double metresPerPx =
         156543.03392 * math.cos(latDeg * math.pi / 180) / math.pow(2, zoom);
     return detailTolerancePx * metresPerPx / 111320;
+  }
+
+  /// The length of a path in metres, by the haversine formula over every
+  /// consecutive pair. Measured on the FULL path at index time and stored, so
+  /// the number is the trail's own and not an artefact of the drawn detail.
+  static double pathLengthMeters(List<LatLng> path) {
+    if (path.length < 2) return 0;
+    const double earthRadiusM = 6371008.8;
+    double total = 0;
+    for (int i = 1; i < path.length; i++) {
+      final LatLng a = path[i - 1];
+      final LatLng b = path[i];
+      final double lat1 = a.latitude * math.pi / 180;
+      final double lat2 = b.latitude * math.pi / 180;
+      final double dLat = lat2 - lat1;
+      final double dLng = (b.longitude - a.longitude) * math.pi / 180;
+      final double h =
+          math.sin(dLat / 2) * math.sin(dLat / 2) +
+          math.cos(lat1) *
+              math.cos(lat2) *
+              math.sin(dLng / 2) *
+              math.sin(dLng / 2);
+      total += 2 * earthRadiusM * math.asin(math.min(1, math.sqrt(h)));
+    }
+    return total;
   }
 
   // ── Simplification ──────────────────────────────────────────────────────

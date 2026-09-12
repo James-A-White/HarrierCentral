@@ -72,6 +72,32 @@ void main() {
     expect(detail.last, path.last);
   });
 
+  test('a trail is measured from its full path, not the drawn simplification',
+      () {
+    // One degree of latitude is about 111.2 km; a tenth of a degree due north
+    // is a known length to check the haversine against.
+    final List<LatLng> north = <LatLng>[
+      const LatLng(51.5, -0.1),
+      const LatLng(51.6, -0.1),
+    ];
+    expect(TrackIndex.pathLengthMeters(north), closeTo(11119, 40));
+
+    expect(TrackIndex.pathLengthMeters(const <LatLng>[]), 0);
+    expect(TrackIndex.pathLengthMeters(<LatLng>[const LatLng(1, 2)]), 0);
+
+    // A wiggly trail: simplifying for the screen loses real distance, which
+    // is exactly why the figure is measured once on the full path.
+    final List<LatLng> wiggly = List<LatLng>.generate(
+      2000,
+      (int i) => LatLng(51.5 + i * 0.00002, -0.1 + 0.00004 * (i % 7 - 3)),
+    );
+    final double full = TrackIndex.pathLengthMeters(wiggly);
+    final double drawn = TrackIndex.pathLengthMeters(
+      TrackIndex.simplify(wiggly, TrackIndex.maxSimplifiedPoints),
+    );
+    expect(full, greaterThan(drawn));
+  });
+
   test('path storage round-trips at five decimals', () {
     final List<LatLng> path = <LatLng>[
       const LatLng(51.506321, -0.053049),

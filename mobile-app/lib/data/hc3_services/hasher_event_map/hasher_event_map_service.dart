@@ -64,6 +64,7 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
   final String colTrackMaxLat = 'trackMaxLat';
   final String colTrackMaxLng = 'trackMaxLng';
   final String colTrackSimplified = 'trackSimplified';
+  final String colTrackDistanceM = 'trackDistanceM';
 
   final String colEventName = 'hemEventName';
   final String colEventNumber = 'hemEventNumber';
@@ -120,6 +121,7 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
             $colTrackMaxLat REAL,
             $colTrackMaxLng REAL,
             $colTrackSimplified TEXT,
+            $colTrackDistanceM REAL,
 
             $colEventName TEXT,
             $colEventNumber INT,

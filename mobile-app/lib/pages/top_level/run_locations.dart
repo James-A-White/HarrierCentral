@@ -367,6 +367,43 @@ class _RunLocationsBody extends StatelessWidget {
                           },
                         ),
                       ),
+                      // What the trails on screen add up to (E5.F7.S1, James
+                      // 2026-09-12). A flutter_map child is just a stacked
+                      // widget, so the panel rides above the layers and moves
+                      // with nothing. Its own Obx: the totals change on every
+                      // pan and filter, and the map layers must not rebuild
+                      // for a line of text.
+                      if (showMyTrails)
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Obx(() {
+                            final String text = controller.trailSummary;
+                            if (text.isEmpty) return const SizedBox.shrink();
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 14.0),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.62),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 7,
+                                  ),
+                                  child: Text(
+                                    text,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
                     ],
                   );
                 }),

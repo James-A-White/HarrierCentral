@@ -46,6 +46,12 @@ class RunAndKennelMapController extends GetxController {
   /// instead of decoding the archives again.
   List<TrailOnMap> _loadedTrails = <TrailOnMap>[];
 
+  /// What the trails on screen add up to: how many, and how far. Shown in a
+  /// small panel while "Show my trails" is on (James, 2026-09-12). Both
+  /// follow the filter, so narrowing the runs narrows the total.
+  final trailCount = 0.obs;
+  final trailMetres = 0.0.obs;
+
   /// The runs whose pins are on the map right now, lowercased. A trail is
   /// drawn only when its run's pin is (James, 2026-09-12): filtering the
   /// runs used to leave the trails behind.
@@ -352,6 +358,8 @@ class RunAndKennelMapController extends GetxController {
     } else {
       _loadedTrails = <TrailOnMap>[];
       trailPolylines = <Polyline<String>>[];
+      trailCount.value = 0;
+      trailMetres.value = 0;
       trailsVersion.value++;
     }
   }
@@ -396,10 +404,19 @@ class RunAndKennelMapController extends GetxController {
         trailPolylines = <Polyline<String>>[];
         trailsVersion.value++;
       }
+      trailCount.value = 0;
+      trailMetres.value = 0;
       return;
     }
-    trailPolylines = _loadedTrails
+    final List<TrailOnMap> shown = _loadedTrails
         .where((TrailOnMap t) => _visibleRunIds.contains(t.eventId.asUuid))
+        .toList(growable: false);
+    trailCount.value = shown.length;
+    trailMetres.value = shown.fold<double>(
+      0,
+      (double sum, TrailOnMap t) => sum + t.distanceMeters,
+    );
+    trailPolylines = shown
         .map(
           (TrailOnMap t) => Polyline<String>(
             points: t.points,
@@ -410,6 +427,25 @@ class RunAndKennelMapController extends GetxController {
         )
         .toList(growable: false);
     trailsVersion.value++;
+  }
+
+  /// "4 trails · 38.2 km" — in the hasher's own units. Empty when there is
+  /// nothing on screen to total. A trail still being measured counts toward
+  /// the number but contributes nothing to the distance, so the figure only
+  /// ever understates while the index catches up; it never invents.
+  String get trailSummary {
+    final int n = trailCount.value;
+    if (n == 0) return '';
+    final String trails = n == 1 ? '1 trail' : '$n trails';
+    final double m = trailMetres.value;
+    if (m <= 0) return trails;
+    final bool imperial = Utilities.prefersImperial();
+    final double value = imperial ? m * METERS_TO_MILES : m / 1000;
+    final String unit = imperial ? 'mi' : 'km';
+    final String shown = value >= 100
+        ? value.toStringAsFixed(0)
+        : value.toStringAsFixed(1);
+    return '$trails  ·  $shown $unit';
   }
 
   /// A tap on a trail opens its run, like a tap on its pin.
