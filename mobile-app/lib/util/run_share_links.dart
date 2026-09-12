@@ -75,8 +75,7 @@ class RunShareLinks {
     if (url == null) return;
     await SharePlus.instance.share(
       ShareParams(
-        text:
-            'Photos from $_runName with ${run.kennel.kennelShortName}: $url',
+        text: 'Photos from $_runName with ${run.kennel.kennelShortName}: $url',
         subject: 'Photos — $_runName',
       ),
     );
@@ -93,46 +92,55 @@ class RunShareLinks {
     final _ShareTarget? choice = await showModalBottomSheet<_ShareTarget>(
       context: context,
       backgroundColor: Colors.white,
+      // Without this the sheet is capped at 9/16 of the screen and simply
+      // CLIPS what does not fit: at a large text size the third row (Photos)
+      // was cut off below the fold, with nothing to scroll and no sign it was
+      // there (James, 2026-09-12). Scroll-controlled, the sheet grows to its
+      // content and scrolls only when the content really is taller than the
+      // screen.
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (BuildContext context) => SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const SizedBox(height: 12),
-            Text(
-              'Share this run',
-              style: ts_titleMedium.copyWith(color: Colors.black87),
-            ),
-            const SizedBox(height: 4),
-            _row(
-              context,
-              icon: Icons.map_outlined,
-              title: 'Interactive map',
-              subtitle: 'Follow live or replay on any phone',
-              target: _ShareTarget.map,
-            ),
-            _row(
-              context,
-              icon: Icons.tv,
-              title: 'Trail TV',
-              subtitle:
-                  'Big-screen event wall — live tracks, photos, leaderboard. '
-                  'Cast it at the pub.',
-              target: _ShareTarget.trailTv,
-            ),
-            _row(
-              context,
-              icon: Icons.photo_library_outlined,
-              title: 'Photos',
-              subtitle:
-                  'The run gallery — opens in any browser, no app needed.',
-              target: _ShareTarget.photos,
-            ),
-            const SizedBox(height: 8),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const SizedBox(height: 12),
+              Text(
+                'Share this run',
+                style: ts_titleMedium.copyWith(color: Colors.black87),
+              ),
+              const SizedBox(height: 4),
+              _row(
+                context,
+                icon: Icons.map_outlined,
+                title: 'Interactive map',
+                subtitle: 'Follow live or replay on any phone',
+                target: _ShareTarget.map,
+              ),
+              _row(
+                context,
+                icon: Icons.tv,
+                title: 'Trail TV',
+                subtitle:
+                    'Big-screen event wall — live tracks, photos, leaderboard. '
+                    'Cast it at the pub.',
+                target: _ShareTarget.trailTv,
+              ),
+              _row(
+                context,
+                icon: Icons.photo_library_outlined,
+                title: 'Photos',
+                subtitle:
+                    'The run gallery — opens in any browser, no app needed.',
+                target: _ShareTarget.photos,
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
