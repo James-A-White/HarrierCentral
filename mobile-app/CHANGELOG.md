@@ -1,3 +1,25 @@
+## 3.0.27+1342 (2026-09-12)
+
+### New Features
+- **Your trails on your phone.** Runs you tracked come down with your
+  sync, so your trail on a run and the new "Show my trails" layer on the
+  Run Locations map (kennel pin colour, tap opens the run) work without a
+  signal.
+- **Re-import a previous upload** from the import page. The file is kept,
+  so a run whose start point was fixed is found without a second transfer.
+
+### Improvements
+- **Run-card icons come from the run itself.** Runners, photos, chat and
+  down-downs are synced with the run, so the list looks the same offline
+  and the app no longer asks the server as you scroll.
+- **Imported run notes** carry the activity's private note and a stats
+  line (gear, moving and elapsed time, heart rate, climb, calories).
+- Indoor activities in an archive show "no GPS" instead of "unparseable".
+
+### Fixes
+- Strava TCX activities import; every one was reported unparseable.
+- Two crash guards on the import page.
+
 ## 3.0.26+1341 (2026-09-11)
 
 ### Improvements

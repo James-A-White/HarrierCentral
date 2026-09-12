@@ -1,3 +1,9 @@
+1.0.47+45
+    • Strava TCX archives parse (whitespace and a BOM before the XML declaration were rejected); an activity with timestamps but no GPS is reported as noGps, not unparseable.
+    • ProcessTrackImport reimport: re-run a kept archive without uploading it again.
+    • Run notes from an archive carry the activity's private note and a stats line.
+    • The nightly track archive stamps the attendance row's updatedAt so a finished track syncs to the phone once.
+
 1.0.46+44
     • Track import ignores a Mac re-zip's __MACOSX resource forks (._ twins of every file), which were counted as activities and marked unparseable.
 

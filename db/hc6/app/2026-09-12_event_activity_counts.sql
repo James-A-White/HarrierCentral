@@ -1,7 +1,12 @@
 -- =====================================================================
 -- Run-once: activity counts on HC.Event for the run cards (2026-09-12)
---   James runs this by hand. Deploy HC6.nonApi_refreshEventActivity FIRST
---   (./tools/deploy_hc6.sh), because the triggers below call it.
+--   Run by hand in this order (the SPs read the new columns, and SQL Server
+--   binds a column of an EXISTING table at CREATE PROCEDURE, so deploying
+--   them before the ALTER fails with "Invalid column name"):
+--     a. step 1 below (the ALTER) on its own;
+--     b. ./tools/deploy_hc6.sh (nonApi_refreshEventActivity + the sync SPs);
+--     c. this whole script — step 1 no-ops, the triggers and backfill run
+--        (the backfill EXECs the SP, so it must exist by then).
 --
 --   1. Four SMALLINT columns on HC.Event, trigger DISABLED for the ALTER so
 --      no row is stamped (HC.Event is synced; see CLAUDE.md).
