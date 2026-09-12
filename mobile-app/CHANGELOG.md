@@ -1,3 +1,9 @@
+## 3.0.28+1343 (2026-09-12)
+
+### Improvements
+- **My trails are drawn in full detail as you zoom in.** Zoomed out they
+  stay light; zoomed in you see each trail as it was run.
+
 ## 3.0.27+1342 (2026-09-12)
 
 ### New Features
