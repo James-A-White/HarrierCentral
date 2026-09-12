@@ -28,7 +28,11 @@ class SweepMessage extends StatelessWidget {
               const CircularProgressIndicator(),
               const SizedBox(height: 18),
             ],
-            Text(text, style: ts_alertDialogBody, textAlign: TextAlign.center),
+            Text(
+              text,
+              style: ts_body.copyWith(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

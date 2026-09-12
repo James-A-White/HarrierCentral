@@ -102,38 +102,41 @@ class KennelPhotoSweepPage extends StatelessWidget {
               ),
             ],
           ),
-          body: Obx(() {
-            final String? blocked = c.blocked.value;
-            if (blocked != null) {
-              return SweepMessage(text: blocked);
-            }
-            if (c.busy.value && c.results.isEmpty) {
-              return SweepMessage(
-                text: c.total.value > 0
-                    ? 'Checking your runs… ${c.done.value} of ${c.total.value}'
-                    : 'Looking through your photos…',
-                spinner: true,
+          body: DecoratedBox(
+            decoration: Backgrounds.defaultHcBackground(),
+            child: Obx(() {
+              final String? blocked = c.blocked.value;
+              if (blocked != null) {
+                return SweepMessage(text: blocked);
+              }
+              if (c.busy.value && c.results.isEmpty) {
+                return SweepMessage(
+                  text: c.total.value > 0
+                      ? 'Checking your runs… ${c.done.value} of ${c.total.value}'
+                      : 'Looking through your photos…',
+                  spinner: true,
+                );
+              }
+              if (c.results.isEmpty) {
+                return SweepMessage(
+                  text:
+                      'No photos on this phone match your runs with $kennelName.\n\n'
+                      'A photo has to carry a location as well as a time — one '
+                      'without a location cannot be placed on a trail, so it is '
+                      'left alone.',
+                );
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
+                itemCount: c.results.length + 1,
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
+                itemBuilder: (BuildContext _, int i) {
+                  if (i == 0) return _summary(c);
+                  return _runRow(context, c, c.results[i - 1]);
+                },
               );
-            }
-            if (c.results.isEmpty) {
-              return SweepMessage(
-                text:
-                    'No photos on this phone match your runs with $kennelName.\n\n'
-                    'A photo has to carry a location as well as a time — one '
-                    'without a location cannot be placed on a trail, so it is '
-                    'left alone.',
-              );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
-              itemCount: c.results.length + 1,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
-              itemBuilder: (BuildContext _, int i) {
-                if (i == 0) return _summary(c);
-                return _runRow(context, c, c.results[i - 1]);
-              },
-            );
-          }),
+            }),
+          ),
         );
       },
     );
@@ -147,14 +150,14 @@ class KennelPhotoSweepPage extends StatelessWidget {
         Text(
           '${c.results.length} ${c.results.length == 1 ? 'run' : 'runs'}  ·  '
           '${c.totalEligible} eligible  ·  ${c.totalPending} still to add',
-          style: ts_alertDialogTitle.copyWith(fontSize: 17),
+          style: ts_titleMedium.copyWith(fontSize: 17),
         ),
         const SizedBox(height: 6),
         Text(
           'These are photos on this phone taken around a run you were at, '
           'close to where you ran. Open a run to choose which to send; '
           'nothing is sent until you do.',
-          style: ts_footnoteBlack.copyWith(color: Colors.black54),
+          style: ts_body.copyWith(fontSize: 13, color: Colors.white70),
         ),
       ],
     ),
@@ -185,7 +188,8 @@ class KennelPhotoSweepPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.black12),
+          border: Border.all(color: Colors.white24),
+          color: Colors.black.withValues(alpha: 0.28),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -196,14 +200,14 @@ class KennelPhotoSweepPage extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     number,
-                    style: ts_alertDialogTitle.copyWith(fontSize: 16),
+                    style: ts_titleMedium.copyWith(fontSize: 16),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (r.run.eventNumber > 0 && r.run.eventName.isNotEmpty)
                     Text(
                       r.run.eventName,
-                      style: ts_alertDialogBody,
+                      style: ts_body.copyWith(fontSize: 15),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -211,7 +215,9 @@ class KennelPhotoSweepPage extends StatelessWidget {
                   Text(
                     '${r.eligible} eligible  ·  ${r.added} added',
                     style: ts_footnoteBlack.copyWith(
-                      color: r.pending > 0 ? hc_blue : Colors.black45,
+                      color: r.pending > 0
+                          ? Colors.lightBlueAccent
+                          : Colors.white60,
                       fontWeight: r.pending > 0
                           ? FontWeight.w700
                           : FontWeight.w400,
@@ -220,7 +226,7 @@ class KennelPhotoSweepPage extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.black38),
+            const Icon(Icons.chevron_right, color: Colors.white70),
           ],
         ),
       ),

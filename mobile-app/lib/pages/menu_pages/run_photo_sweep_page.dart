@@ -144,37 +144,40 @@ class RunPhotoSweepPage extends StatelessWidget {
             title: Text('Photos of this run', style: ts_appBarTitle),
             iconTheme: const IconThemeData(color: Colors.white),
           ),
-          body: Obx(() {
-            final String? blocked = c.blocked.value;
-            if (blocked != null) {
-              return SweepMessage(text: blocked);
-            }
-            if (c.busy.value && c.result.value == null) {
-              return SweepMessage(
-                text: c.status.value.isEmpty
-                    ? 'Looking through your photos…'
-                    : c.status.value,
-                spinner: true,
+          body: DecoratedBox(
+            decoration: Backgrounds.defaultHcBackground(),
+            child: Obx(() {
+              final String? blocked = c.blocked.value;
+              if (blocked != null) {
+                return SweepMessage(text: blocked);
+              }
+              if (c.busy.value && c.result.value == null) {
+                return SweepMessage(
+                  text: c.status.value.isEmpty
+                      ? 'Looking through your photos…'
+                      : c.status.value,
+                  spinner: true,
+                );
+              }
+              final RunScanResult? r = c.result.value;
+              if (r == null || r.eligible == 0) {
+                return SweepMessage(
+                  text:
+                      'No photos from your camera roll match this run.\n\n'
+                      'A photo has to carry a location as well as a time — one '
+                      'without a location cannot be placed on the trail, so it is '
+                      'left alone.',
+                );
+              }
+              return Column(
+                children: <Widget>[
+                  _header(c, r),
+                  Expanded(child: _grid(c, r)),
+                  _footer(context, c),
+                ],
               );
-            }
-            final RunScanResult? r = c.result.value;
-            if (r == null || r.eligible == 0) {
-              return SweepMessage(
-                text:
-                    'No photos from your camera roll match this run.\n\n'
-                    'A photo has to carry a location as well as a time — one '
-                    'without a location cannot be placed on the trail, so it is '
-                    'left alone.',
-              );
-            }
-            return Column(
-              children: <Widget>[
-                _header(c, r),
-                Expanded(child: _grid(c, r)),
-                _footer(context, c),
-              ],
-            );
-          }),
+            }),
+          ),
         );
       },
     );
@@ -190,7 +193,7 @@ class RunPhotoSweepPage extends StatelessWidget {
             Expanded(
               child: Text(
                 '${r.eligible} eligible  ·  ${r.added} already added',
-                style: ts_alertDialogTitle.copyWith(fontSize: 17),
+                style: ts_titleMedium.copyWith(fontSize: 17),
               ),
             ),
             if (c.offerable.isNotEmpty)
@@ -211,7 +214,7 @@ class RunPhotoSweepPage extends StatelessWidget {
           'Anything you send goes to your Hash Flash for review. Approved '
           'photos appear on the run and on the kennel\'s public website, so '
           'they may become publicly viewable.',
-          style: ts_footnoteBlack.copyWith(color: Colors.black54),
+          style: ts_body.copyWith(fontSize: 13, color: Colors.white70),
         ),
       ],
     ),
@@ -375,56 +378,57 @@ class _SweepCarouselState extends State<_SweepCarousel> {
   @override
   Widget build(BuildContext context) {
     final List<PhotoCandidate> photos = widget.result.candidates;
-    return Scaffold(
-      backgroundColor: Colors.black,
+    return AppScaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: themeAppBarBackground,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          '${_index + 1} of ${photos.length}',
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-        ),
+        title: Text('${_index + 1} of ${photos.length}', style: ts_appBarTitle),
       ),
-      body: Stack(
-        children: <Widget>[
-          PhotoViewGallery(
-            pageController: _pages,
-            onPageChanged: (int i) => setState(() => _index = i),
-            backgroundDecoration: const BoxDecoration(color: Colors.black),
-            pageOptions: photos
-                .map(
-                  (PhotoCandidate p) => PhotoViewGalleryPageOptions.customChild(
-                    child: _FullPhoto(asset: p.asset),
-                  ),
-                )
-                .toList(growable: false),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
-                child: Obx(() {
-                  final PhotoCandidate p = photos[_index];
-                  if (p.alreadyUploaded) {
-                    return const _CarouselLabel(text: 'Already added');
-                  }
-                  final bool ticked = widget.controller.chosen.contains(
-                    p.asset.id,
-                  );
-                  return GestureDetector(
-                    onTap: () => widget.controller.toggle(p.asset.id),
-                    child: _CarouselLabel(
-                      text: ticked ? 'Selected' : 'Not selected',
-                      selected: ticked,
-                    ),
-                  );
-                }),
+      body: DecoratedBox(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: Stack(
+          children: <Widget>[
+            PhotoViewGallery(
+              pageController: _pages,
+              onPageChanged: (int i) => setState(() => _index = i),
+              // Transparent: the jungle behind it is the page's background.
+              backgroundDecoration: const BoxDecoration(),
+              pageOptions: photos
+                  .map(
+                    (PhotoCandidate p) =>
+                        PhotoViewGalleryPageOptions.customChild(
+                          child: _FullPhoto(asset: p.asset),
+                        ),
+                  )
+                  .toList(growable: false),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: Obx(() {
+                    final PhotoCandidate p = photos[_index];
+                    if (p.alreadyUploaded) {
+                      return const _CarouselLabel(text: 'Already added');
+                    }
+                    final bool ticked = widget.controller.chosen.contains(
+                      p.asset.id,
+                    );
+                    return GestureDetector(
+                      onTap: () => widget.controller.toggle(p.asset.id),
+                      child: _CarouselLabel(
+                        text: ticked ? 'Selected' : 'Not selected',
+                        selected: ticked,
+                      ),
+                    );
+                  }),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

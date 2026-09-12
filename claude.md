@@ -518,6 +518,37 @@ splitting the list. Use `STRING_SPLIT(@param, '|')` on the SQL side and
   is staying as-is and SP parameters that map to it should use `SMALLINT` (SQL
   Server converts implicitly).
 
+**Every new screen gets the jungle background (Flutter/Dart):**
+
+New pages default to the Harrier Central jungle background, not the theme's
+plain scaffold colour and not black. Wrap the body:
+
+```dart
+AppScaffold(
+  appBar: AppBar(backgroundColor: themeAppBarBackground, title: Text(..., style: ts_appBarTitle)),
+  body: DecoratedBox(
+    decoration: Backgrounds.defaultHcBackground(),
+    child: ...,
+  ),
+)
+```
+
+`AppScaffold` does **not** apply it — it paints the theme colour — so a page
+that forgets the wrapper comes out plain grey and looks like a different app.
+51 of the 64 `AppScaffold` screens already wrap their own body; the rule exists
+so the next one does too.
+
+**The background is dark, so the text has to be light.** Use `ts_body`,
+`ts_titleMedium` and friends (white). The `ts_alertDialog*` and
+`ts_footnoteBlack` styles are BLACK — they belong on a white dialog and are
+unreadable on the jungle. Same for borders and icons: `Colors.black12` /
+`black38` / `black45` disappear. Use `Colors.white24` / `white60` / `white70`,
+and give a card its own `Colors.black.withValues(alpha: 0.28)` fill so it reads
+against the leaves.
+
+(James, 2026-09-12, after the photo-sweep carousel shipped on a black
+background and the sweep pages on plain grey.)
+
 **Button text on red buttons (Flutter/Dart):**
 
 The app's `TextButton`/`ElevatedButton` themes render default buttons with a
