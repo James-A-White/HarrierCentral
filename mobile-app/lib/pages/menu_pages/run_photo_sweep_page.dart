@@ -199,15 +199,27 @@ class RunPhotoSweepPage extends StatelessWidget {
   Widget _header(RunPhotoSweepController c, RunScanResult r) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      // Centred, like every control we put on a layout (James, 2026-09-13).
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Row(
+        Text(
+          '${r.eligible} eligible  ·  ${r.added} already added',
+          style: ts_titleMedium.copyWith(fontSize: 17),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 10),
+        // A Wrap rather than a Row: at a large text size the switch and the
+        // button together are wider than a phone, and a Wrap takes a second
+        // line instead of overflowing.
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          runSpacing: 8,
           children: <Widget>[
-            Expanded(
-              child: Text(
-                '${r.eligible} eligible  ·  ${r.added} already added',
-                style: ts_titleMedium.copyWith(fontSize: 17),
-              ),
+            _GalleryCarouselSwitch(
+              carousel: c.carousel.value,
+              onSelect: (bool wantCarousel) => c.carousel.value = wantCarousel,
             ),
             if (c.offerable.isNotEmpty)
               TextButton(
@@ -222,17 +234,13 @@ class RunPhotoSweepPage extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 8),
-        _GalleryCarouselSwitch(
-          carousel: c.carousel.value,
-          onSelect: (bool wantCarousel) => c.carousel.value = wantCarousel,
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Text(
           'Anything you send goes to your Hash Flash for review. Approved '
           'photos appear on the run and on the kennel\'s public website, so '
           'they may become publicly viewable.',
           style: ts_body.copyWith(fontSize: 13, color: Colors.white70),
+          textAlign: TextAlign.center,
         ),
       ],
     ),
@@ -435,8 +443,7 @@ class _GalleryCarouselSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
+    return Center(
       child: Material(
         color: Colors.black.withValues(alpha: 0.62),
         borderRadius: BorderRadius.circular(9),

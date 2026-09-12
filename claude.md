@@ -518,6 +518,23 @@ splitting the list. Use `STRING_SPLIT(@param, '|')` on the SQL side and
   is staying as-is and SP parameters that map to it should use `SMALLINT` (SQL
   Server converts implicitly).
 
+**Centre the controls you add to a layout (Flutter/Dart):**
+
+Buttons, segmented switches, counts and the messages that go with them are
+**centred**, not left-aligned against the padding (James, 2026-09-13). Set
+`crossAxisAlignment: CrossAxisAlignment.center` on the Column and
+`textAlign: TextAlign.center` on the text that sits with them.
+
+Two traps, both of which shipped:
+
+- **A Column does not fill its width** — it takes the width of its widest
+  child. Inside a `Padding` it therefore sits against the LEFT edge, and its
+  `crossAxisAlignment` then centres the children against *each other* rather
+  than against the screen. Wrap it in a `Center` when it is the whole body.
+- **Two controls side by side want a `Wrap`, not a `Row`.** At a large text
+  size a switch plus a button is wider than a phone; a `Wrap` with
+  `alignment: WrapAlignment.center` takes a second line, a `Row` overflows.
+
 **Every new screen gets the jungle background (Flutter/Dart):**
 
 New pages default to the Harrier Central jungle background, not the theme's
