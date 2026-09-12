@@ -30,3 +30,29 @@ CREATE TABLE [HC].[KennelPhotos] (
 
 CREATE INDEX [IX_KennelPhotos_EventId_UpdatedAt]
     ON [HC].[KennelPhotos] ([EventId], [UpdatedAt]);
+
+GO
+-- 2026-09-12 (E5.F7.S1): keep HC.Event's run-card activity counts right from
+-- whichever path writes this table; see HC6.nonApi_refreshEventActivity and
+-- db/hc6/app/archive/2026-09-12_event_activity_counts.sql.
+CREATE OR ALTER TRIGGER [HC].[trgKennelPhotosActivityCount] ON [HC].[KennelPhotos]
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF NOT (UPDATE(Status) OR UPDATE(DeletedAt) OR UPDATE(EventId) OR NOT EXISTS (SELECT 1 FROM INSERTED) OR NOT EXISTS (SELECT 1 FROM DELETED)) RETURN;
+    DECLARE @ids TABLE (EventId UNIQUEIDENTIFIER PRIMARY KEY);
+    INSERT INTO @ids (EventId)
+    SELECT DISTINCT EventId FROM (SELECT EventId FROM INSERTED UNION SELECT EventId FROM DELETED) s
+     WHERE EventId IS NOT NULL;
+    DECLARE @eventId UNIQUEIDENTIFIER;
+    DECLARE c CURSOR LOCAL FAST_FORWARD FOR SELECT EventId FROM @ids;
+    OPEN c; FETCH NEXT FROM c INTO @eventId;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        EXEC HC6.nonApi_refreshEventActivity @eventId = @eventId;
+        FETCH NEXT FROM c INTO @eventId;
+    END
+    CLOSE c; DEALLOCATE c;
+END
+GO

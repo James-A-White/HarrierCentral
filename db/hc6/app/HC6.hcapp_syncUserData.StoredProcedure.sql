@@ -432,6 +432,15 @@ BEGIN
         CONVERT(DATETIME2, evt.EventStartDatetime) AS hemEventStartDatetime,
         COALESCE(evt.EventStartDatetimeGmt, evt.EventStartDatetime)        AS hemEventStartDatetimeGmt,
         evt.CanEditRunAttendence                                            AS hemCanEditRunAttendence,
+        -- The hasher's own PackTrack trail (E5.F7.S1, James 2026-09-12): the
+        -- archive bytes as stored (base64 on the wire), so the phone draws the
+        -- trail and the trails map with no call. Only this rowset carries it —
+        -- never the admin domains. Track-only writes do not stamp updatedAt;
+        -- the nightly archive does, so a finished track syncs exactly once.
+        hem.TrackGzip                                                       AS trackGzip,
+        hem.TrackPointCount                                                 AS trackPointCount,
+        CONVERT(NVARCHAR(50), hem.TrackFirstPointAt)                        AS trackFirstPointAt,
+        CONVERT(NVARCHAR(50), hem.TrackLastPointAt)                         AS trackLastPointAt,
         CASE WHEN evt.IsCountedRun != 0 AND evt.IsVisible != 0 THEN 1 ELSE 0 END AS hemEventIsCountedAndVisible,
         evt.KennelId                                                        AS hemEventKennelId,
         hkm.KennelUserPhoto                                                 AS hemKennelUserPhoto,
@@ -470,6 +479,10 @@ BEGIN
         evt.EventFacebookId                                                 AS eventFacebookId,
         evt.AbsoluteEventNumber                                             AS absoluteEventNumber,
         evt.CanEditRunAttendence                                            AS canEditRunAttendence,
+        evt.TrackRunnerCount                                                AS trackRunnerCount,
+        evt.PhotoCount                                                      AS photoCount,
+        evt.MessageCount                                                    AS messageCount,
+        evt.DownDownCount                                                   AS downDownCount,
         evt.Hares                                                           AS hares,
         evt.EventPaymentScheme                                              AS eventPaymentScheme,
         evt.EventPaymentUrl                                                 AS eventPaymentUrl,
@@ -579,6 +592,10 @@ BEGIN
         evt.EventFacebookId                                                 AS eventFacebookId,
         evt.AbsoluteEventNumber                                             AS absoluteEventNumber,
         evt.CanEditRunAttendence                                            AS canEditRunAttendence,
+        evt.TrackRunnerCount                                                AS trackRunnerCount,
+        evt.PhotoCount                                                      AS photoCount,
+        evt.MessageCount                                                    AS messageCount,
+        evt.DownDownCount                                                   AS downDownCount,
         evt.Hares                                                           AS hares,
         evt.EventPaymentScheme                                              AS eventPaymentScheme,
         evt.EventPaymentUrl                                                 AS eventPaymentUrl,

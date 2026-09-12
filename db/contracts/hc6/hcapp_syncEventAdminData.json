@@ -713,6 +713,30 @@
           "description": "Event.CanEditRunAttendence."
         },
         {
+          "name": "trackRunnerCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Attendance rows on this run with a PackTrack track. Kept by HC.trgHasherEventMapActivityCount via HC6.nonApi_refreshEventActivity; synced so the run card never asks the server (E5.F7.S1, 2026-09-12)."
+        },
+        {
+          "name": "photoCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Approved, undeleted run photos (Status >= 2). Kept by HC.trgKennelPhotosActivityCount."
+        },
+        {
+          "name": "messageCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Trail-chat messages not removed. Kept by HC.trgEventMessageActivityCount."
+        },
+        {
+          "name": "downDownCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Down-down charges not cancelled. Kept by HC.trgDownDownsActivityCount."
+        },
+        {
           "name": "hares",
           "type": "NVARCHAR",
           "nullable": true,

@@ -767,6 +767,30 @@
           "description": "Kennel.CanEditRunAttendence."
         },
         {
+          "name": "trackRunnerCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Attendance rows on this run with a PackTrack track. Kept by HC.trgHasherEventMapActivityCount via HC6.nonApi_refreshEventActivity; synced so the run card never asks the server (E5.F7.S1, 2026-09-12)."
+        },
+        {
+          "name": "photoCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Approved, undeleted run photos (Status >= 2). Kept by HC.trgKennelPhotosActivityCount."
+        },
+        {
+          "name": "messageCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Trail-chat messages not removed. Kept by HC.trgEventMessageActivityCount."
+        },
+        {
+          "name": "downDownCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Down-down charges not cancelled. Kept by HC.trgDownDownsActivityCount."
+        },
+        {
           "name": "kennelInboundIntegrationId",
           "type": "INT",
           "nullable": true,
@@ -1285,6 +1309,30 @@
           "description": "1 when shared and neither admin override is set."
         },
         {
+          "name": "trackGzip",
+          "type": "VARBINARY(MAX)",
+          "nullable": true,
+          "description": "The hasher\u2019s own archived PackTrack trail (TrackArchiveCodec v1, gzipped; base64 on the wire). Null until the nightly archive has run. This rowset only \u2014 the admin domains never carry it (E5.F7.S1, 2026-09-12)."
+        },
+        {
+          "name": "trackPointCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "Points in the hasher\u2019s trail on this run; > 0 with a null trackGzip means tracked, archive not yet delivered."
+        },
+        {
+          "name": "trackFirstPointAt",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Capture time (UTC) of the first point."
+        },
+        {
+          "name": "trackLastPointAt",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Capture time (UTC) of the last point."
+        },
+        {
           "name": "notes",
           "type": "NVARCHAR(4000)",
           "nullable": true,
@@ -1470,6 +1518,30 @@
           "type": "SMALLINT",
           "nullable": true,
           "description": "Event.CanEditRunAttendence."
+        },
+        {
+          "name": "trackRunnerCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Attendance rows on this run with a PackTrack track. Kept by HC.trgHasherEventMapActivityCount via HC6.nonApi_refreshEventActivity; synced so the run card never asks the server (E5.F7.S1, 2026-09-12)."
+        },
+        {
+          "name": "photoCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Approved, undeleted run photos (Status >= 2). Kept by HC.trgKennelPhotosActivityCount."
+        },
+        {
+          "name": "messageCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Trail-chat messages not removed. Kept by HC.trgEventMessageActivityCount."
+        },
+        {
+          "name": "downDownCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Down-down charges not cancelled. Kept by HC.trgDownDownsActivityCount."
         },
         {
           "name": "hares",
@@ -1946,6 +2018,30 @@
           "type": "SMALLINT",
           "nullable": true,
           "description": "Event.CanEditRunAttendence."
+        },
+        {
+          "name": "trackRunnerCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Attendance rows on this run with a PackTrack track. Kept by HC.trgHasherEventMapActivityCount via HC6.nonApi_refreshEventActivity; synced so the run card never asks the server (E5.F7.S1, 2026-09-12)."
+        },
+        {
+          "name": "photoCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Approved, undeleted run photos (Status >= 2). Kept by HC.trgKennelPhotosActivityCount."
+        },
+        {
+          "name": "messageCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Trail-chat messages not removed. Kept by HC.trgEventMessageActivityCount."
+        },
+        {
+          "name": "downDownCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Down-down charges not cancelled. Kept by HC.trgDownDownsActivityCount."
         },
         {
           "name": "hares",
