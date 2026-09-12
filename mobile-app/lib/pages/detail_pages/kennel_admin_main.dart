@@ -303,6 +303,24 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 },
               ),
               _adminButton(
+                icon: MaterialIcons.photo_library,
+                iconTopPadding: 4,
+                iconSize: 48,
+                labelTopPadding: 7,
+                label: 'Photos on\r\nyour phone',
+                onPressed: () async {
+                  await Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => KennelPhotoSweepPage(
+                        kennelId: agg.kennel.kennelId,
+                        kennelName: agg.kennel.kennelShortName,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _adminButton(
                 icon: MaterialIcons.location_on,
                 iconTopPadding: 4,
                 iconSize: 55,

@@ -1,0 +1,27 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getMyPhotoAssetIds",
+  "version": "1.0.0",
+  "description": "The camera-roll asset ids of photos the CALLER has already uploaded, optionally narrowed to one kennel or one run. Lets the camera-roll sweep say '14 eligible, 6 already added' and stop offering a photo that is already on the run, with one call for a whole kennel.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": null, "description": "Calling device; validated by ValidateAppAuth (spNumber 102)." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Standard app access token." },
+    { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "KennelPhotos.KennelId", "description": "Optional. Narrow to one kennel." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "KennelPhotos.EventId", "description": "Optional. Narrow to one run." }
+  ],
+  "rowsets": [
+    { "index": 0, "name": "MyPhotoAssetIds", "description": "One row per uploaded photo of the caller's that carries a camera-roll asset id. Never includes anybody else's photos: an asset id is a handle into a private photo library.", "columns": [
+      { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The run the photo belongs to." },
+      { "name": "assetId", "type": "NVARCHAR(250)", "nullable": false, "description": "The camera-roll identifier the photo was uploaded from." }
+    ]}
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

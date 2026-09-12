@@ -100,7 +100,38 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
         Positioned(
           right: 16,
           bottom: 16,
-          child: FloatingActionButton.extended(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              // Finds this run's photos in the roll by time and place, rather
+              // than making the hasher pick them out (E6.F2.S5).
+              if (widget.run != null) ...<Widget>[
+                FloatingActionButton.extended(
+                  heroTag: 'sweep-run-photos',
+                  backgroundColor: Colors.white,
+                  foregroundColor: hc_blue,
+                  icon: const Icon(Icons.auto_awesome),
+                  label: Text(
+                    'Find my photos',
+                    style: ts_button.copyWith(color: hc_blue),
+                  ),
+                  onPressed: () async {
+                    await Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (_) => RunPhotoSweepPage(
+                          eventId: widget.run!.event.eventId,
+                          eventName: widget.eventName,
+                        ),
+                      ),
+                    );
+                    if (mounted) setState(() {});
+                  },
+                ),
+                const SizedBox(height: 10),
+              ],
+              FloatingActionButton.extended(
             heroTag: 'import-run-photos',
             backgroundColor: hc_blue,
             foregroundColor: Colors.white,
@@ -119,6 +150,8 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
               style: ts_button,
             ),
             onPressed: _isImporting ? null : _importFromCameraRoll,
+              ),
+            ],
           ),
         ),
       ],
