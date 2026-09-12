@@ -293,8 +293,8 @@
   <p class="standfirst">Every epic, feature and user story across the five components — the Flutter mobile app, the Flutter admin portal, the Next.js public web, the Azure Functions shim and the SQL Server domain layer — plus the non-functional requirements that hold them together. <strong>Epics are organised by what a hasher is trying to do, not by which codebase serves it</strong>, because almost every feature here spans three surfaces at once.</p>
   <div class="meta-strip">
     <div><b>16</b> epics</div>
-    <div><b>77</b> features</div>
-    <div><b>267</b> stories</div>
+    <div><b>78</b> features</div>
+    <div><b>268</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -323,7 +323,7 @@
   <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 26 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
   <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 37 stories</span></a>
-  <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">4 features · 18 stories</span></a>
+  <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 19 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 15 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">6 features · 24 stories</span></a>
   <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">5 features · 20 stories</span></a>
@@ -697,6 +697,14 @@
     <div class="epic-id">E6</div>
     <h2 class="epic-title">Photos &amp; Hash Flash</h2>
     <p class="epic-intent">The Hash Flash takes the pictures and approves what the club sees. Photos carry their own position and capture time, which is what lets them be placed on a map without borrowing somebody's GPS track.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E5.F7</span><h3 class="feature-name">Tracks on the device  </h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">API</span><span class="surf">DB</span></span>
+    </div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E5.F7.S1</span><span class="s-text">As a <em>Hasher</em>, I want my own trails and each run's runner count on my phone so that the run list, my trail on a run, and a map of every run I have done in an area work the same with or without a signal, and the app stops asking the server for what it already knows. Study and recommendation in <code>docs/packtrack_on_device_plan.md</code> (2026-09-12): the user sync's HEM rowset carries <code>trackGzip</code> (about 4 KB a track, under 1 MB for the heaviest runner), the nightly archive stamps <code>updatedAt</code> so a finished track syncs once, <code>HC.Event.TrackRunnerCount</code> replaces the track half of <code>hcapp_getRunActivity</code> (updated only when the count changes, so a live run does not churn followers' event rows), a Dart port of the archive codec with locally computed bounds and a simplified polyline, and a "Show my trails" layer on the Run Locations map coloured by kennel pin colour. Other runners' replays and the live map still need the server.</span><span class="chip c-next">Next</span></li>
+    </ul>
   </div>
   <div class="feature">
     <div class="feature-head"><span class="feature-id">E6.F1</span><h3 class="feature-name">Capturing and uploading  </h3>

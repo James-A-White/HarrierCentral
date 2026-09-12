@@ -375,6 +375,13 @@ Recording where the pack went and playing it back. Tracks live in Azure Table St
 
 The Hash Flash takes the pictures and approves what the club sees. Photos carry their own position and capture time, which is what lets them be placed on a map without borrowing somebody's GPS track.
 
+### E5.F7 · Tracks on the device  
+`App` `API` `DB`
+
+| ID | Story | Status |
+|---|---|---|
+| `E5.F7.S1` | As a **Hasher**, I want my own trails and each run's runner count on my phone so that the run list, my trail on a run, and a map of every run I have done in an area work the same with or without a signal, and the app stops asking the server for what it already knows. Study and recommendation in `docs/packtrack_on_device_plan.md` (2026-09-12): the user sync's HEM rowset carries `trackGzip` (about 4 KB a track, under 1 MB for the heaviest runner), the nightly archive stamps `updatedAt` so a finished track syncs once, `HC.Event.TrackRunnerCount` replaces the track half of `hcapp_getRunActivity` (updated only when the count changes, so a live run does not churn followers' event rows), a Dart port of the archive codec with locally computed bounds and a simplified polyline, and a "Show my trails" layer on the Run Locations map coloured by kennel pin colour. Other runners' replays and the live map still need the server. | `Next` |
+
 ### E6.F1 · Capturing and uploading  
 `App` `API` `DB`
 
