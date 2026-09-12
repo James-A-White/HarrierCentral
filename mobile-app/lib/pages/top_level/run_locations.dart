@@ -232,7 +232,8 @@ class _RunLocationsBody extends StatelessWidget {
                   // Reading markersVersion, showKennels, trueNorthLock forces
                   // rebuild when markers change or interaction flags change.
                   // (both versions are read so the Obx rebuilds on either)
-                  final _ = controller.markersVersion.value +
+                  final _ =
+                      controller.markersVersion.value +
                       controller.trailsVersion.value;
                   final showKennels = controller.showKennels.value;
                   final showMyTrails = controller.showMyTrails.value;
@@ -241,6 +242,9 @@ class _RunLocationsBody extends StatelessWidget {
                   return FlutterMap(
                     mapController: controller.mapController,
                     options: MapOptions(
+                      onMapReady: () => controller.onMapMoveEnd(
+                        controller.mapController.camera.visibleBounds,
+                      ),
                       onMapEvent: (MapEvent mapEvent) {
                         if (mapEvent is MapEventMoveEnd) {
                           controller.onMapMoveEnd(

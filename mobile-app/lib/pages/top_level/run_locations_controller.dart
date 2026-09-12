@@ -40,6 +40,16 @@ class RunAndKennelMapController extends GetxController {
   final showMyTrails = false.obs;
   final trailsVersion = 0.obs; // bump to trigger Obx rebuild
   List<Polyline<String>> trailPolylines = <Polyline<String>>[];
+
+  /// The trails the last bounding-box query returned, before the run filter.
+  /// Kept so changing the filter or the search text re-draws from memory
+  /// instead of decoding the archives again.
+  List<TrailOnMap> _loadedTrails = <TrailOnMap>[];
+
+  /// The runs whose pins are on the map right now, lowercased. A trail is
+  /// drawn only when its run's pin is (James, 2026-09-12): filtering the
+  /// runs used to leave the trails behind.
+  Set<String> _visibleRunIds = <String>{};
   final LayerHitNotifier<String> trailHits =
       ValueNotifier<LayerHitResult<String>?>(null);
   int _trailQuery = 0;
@@ -340,6 +350,7 @@ class RunAndKennelMapController extends GetxController {
     if (showMyTrails.value) {
       await refreshTrails(mapController.camera.visibleBounds);
     } else {
+      _loadedTrails = <TrailOnMap>[];
       trailPolylines = <Polyline<String>>[];
       trailsVersion.value++;
     }
@@ -369,20 +380,36 @@ class RunAndKennelMapController extends GetxController {
         detailToleranceDeg: tolerance,
       );
       if (mine != _trailQuery || isClosed) return;
-      trailPolylines = trails
-          .map(
-            (TrailOnMap t) => Polyline<String>(
-              points: t.points,
-              color: pinColorOf(t.kennelPinColor),
-              strokeWidth: 3,
-              hitValue: t.eventId,
-            ),
-          )
-          .toList(growable: false);
-      trailsVersion.value++;
+      _loadedTrails = trails;
+      applyTrailFilter();
     } catch (e, s) {
       BootLogger.logError('[RunAndKennelMapController.refreshTrails]', e, s);
     }
+  }
+
+  /// Draw the loaded trails whose run is on the map, in the kennel's pin
+  /// colour. Cheap: no query, no decoding — called whenever the view mode or
+  /// the search text changes, and after a bounding-box load.
+  void applyTrailFilter() {
+    if (!showMyTrails.value) {
+      if (trailPolylines.isNotEmpty) {
+        trailPolylines = <Polyline<String>>[];
+        trailsVersion.value++;
+      }
+      return;
+    }
+    trailPolylines = _loadedTrails
+        .where((TrailOnMap t) => _visibleRunIds.contains(t.eventId.asUuid))
+        .map(
+          (TrailOnMap t) => Polyline<String>(
+            points: t.points,
+            color: pinColorOf(t.kennelPinColor),
+            strokeWidth: 3,
+            hitValue: t.eventId,
+          ),
+        )
+        .toList(growable: false);
+    trailsVersion.value++;
   }
 
   /// A tap on a trail opens its run, like a tap on its pin.
@@ -627,9 +654,28 @@ class RunAndKennelMapController extends GetxController {
 
   void _buildRunMarkers() {
     runLocationMarkers = <Marker>[];
+    _visibleRunIds = <String>{};
 
     for (int i = 0; i < _filteredRuns.length; i++) {
       final RunDetailsAggregate run = _filteredRuns[i];
+
+      final DateTime start = run.event.eventStartDatetimeGmt;
+      final RunLocationsViewMode mode = viewMode.value;
+      final bool passesFilter =
+          (mode == RunLocationsViewMode.all) ||
+          (mode == RunLocationsViewMode.past &&
+              start.isBefore(DateTime.now())) ||
+          (mode == RunLocationsViewMode.recent &&
+              start.isAfter(
+                DateTime.now().subtract(const Duration(days: 90)),
+              )) ||
+          (mode == RunLocationsViewMode.myRuns &&
+              (run.extensions.attendenceState) >= attendenceAtHash.value);
+
+      // The verdict is the run's, not the pin's: a run with a trail but no
+      // map location on its event row still has a trail to draw.
+      if (!passesFilter) continue;
+      _visibleRunIds.add(run.event.eventId.asUuid);
 
       if (run.extensions.evtLat == null || run.extensions.evtLon == null) {
         continue;
@@ -639,8 +685,6 @@ class RunAndKennelMapController extends GetxController {
         run.extensions.evtLat!,
         run.extensions.evtLon!,
       );
-      final DateTime dt = run.event.eventStartDatetimeGmt;
-
       final Marker marker = Marker(
         width: 45.0,
         height: 55.0,
@@ -648,12 +692,12 @@ class RunAndKennelMapController extends GetxController {
         point: ll,
         child: Opacity(
           opacity:
-              dt.isBefore(DateTime.now().subtract(const Duration(hours: 6)))
+              start.isBefore(DateTime.now().subtract(const Duration(hours: 6)))
               ? 0.66
               : 1.0,
           child: _buildRunMarkerWidget(
             run.event.eventId,
-            dt,
+            start,
             run.event.eventName,
             rsvpState: run.extensions.rsvpState,
             attendenceState: run.extensions.attendenceState,
@@ -665,16 +709,10 @@ class RunAndKennelMapController extends GetxController {
         ),
       );
 
-      final RunLocationsViewMode mode = viewMode.value;
-      if ((mode == RunLocationsViewMode.all) ||
-          (mode == RunLocationsViewMode.past && dt.isBefore(DateTime.now())) ||
-          (mode == RunLocationsViewMode.recent &&
-              dt.isAfter(DateTime.now().subtract(const Duration(days: 90)))) ||
-          (mode == RunLocationsViewMode.myRuns &&
-              (run.extensions.attendenceState) >= attendenceAtHash.value)) {
-        runLocationMarkers.add(marker);
-      }
+      runLocationMarkers.add(marker);
     }
+    // The trails follow the pins: same filter, same search text.
+    applyTrailFilter();
   }
 
   // ---------------------------------------------------------------------------
