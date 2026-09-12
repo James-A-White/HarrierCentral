@@ -248,7 +248,9 @@ class FilterEventListItem extends StatelessWidget {
                     title: 'Set event details',
                     buttons: buttons,
                     cancelButtonTitle: 'Cancel',
-                    cancelButtonReturnValue: followTypeCancel,
+                    // This menu's choices are EnumEventFilterType, so its
+                    // cancel has to be one too — the caller switches on it.
+                    cancelButtonReturnValue: eventFilterType_cancel,
                   );
 
                   final retVal = await showDialog<dynamic>(

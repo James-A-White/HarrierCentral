@@ -667,8 +667,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                     child: Text(
                       'Hide event',
                       style: ts_titleMedium.copyWith(
-                        color:
-                            ((event.appAccessFlags & authCanManageRuns) == 0)
+                        color: ((event.appAccessFlags & authCanManageRuns) == 0)
                             ? Colors.black54
                             : Colors.white,
                       ),
@@ -699,8 +698,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                     child: Text(
                       'Show event',
                       style: ts_titleMedium.copyWith(
-                        color:
-                            ((event.appAccessFlags & authCanManageRuns) == 0)
+                        color: ((event.appAccessFlags & authCanManageRuns) == 0)
                             ? Colors.black54
                             : Colors.white,
                       ),
@@ -725,8 +723,15 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                     mismanagementRoles:
                         widget.kennel.hkm?.mismanagementRoles ?? 0,
                     updateEvent: (dynamic retVal) async {
-                      final EnumEventFilterType ft =
-                          retVal as EnumEventFilterType;
+                      // A dismissed dialog can hand back anything — null, or
+                      // (until 2026-09-12) a cancel sentinel from a different
+                      // enum. A bare cast turned that into an uncaught async
+                      // exception every time the menu was cancelled.
+                      if (retVal is! EnumEventFilterType ||
+                          retVal == eventFilterType_cancel) {
+                        return;
+                      }
+                      final EnumEventFilterType ft = retVal;
                       _controller.itemBeingUpdatedId.value = event.eventId;
 
                       switch (ft) {

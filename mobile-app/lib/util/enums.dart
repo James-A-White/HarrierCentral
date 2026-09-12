@@ -1024,6 +1024,11 @@ class EnumEventFilterType extends HcEnum<int> {
   const EnumEventFilterType(super.val);
 }
 
+/// Dismissed without choosing. The popup used to hand back followTypeCancel,
+/// an EnumFollowType, which the event-filter handler then cast to
+/// EnumEventFilterType — so CANCELLING the menu threw every time
+/// (found in the logs 2026-09-12).
+const EnumEventFilterType eventFilterType_cancel = EnumEventFilterType(-1);
 const EnumEventFilterType eventFilterType_refreshOnly = EnumEventFilterType(0);
 const EnumEventFilterType eventFilterType_hideEvent = EnumEventFilterType(1);
 const EnumEventFilterType eventFilterType_showEvent = EnumEventFilterType(2);
