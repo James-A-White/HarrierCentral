@@ -15,7 +15,10 @@ AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_addDownDown
 -- Description: Records a DownDown charge against one or more people.
---   Any run attendee (AttendenceState >= 20 on the event) may submit.
+--   Anyone may submit, checked in or not. Where the kennel (or the run)
+--   lets hashers set their own attendance, a caller below At Hash is
+--   checked in as a side effect; otherwise attendance is untouched
+--   (James, 2026-09-12).
 --   A charge may target registered hashers, people not in the app, or a
 --   mix of both. @hasherIds is a pipe-delimited list of UUID strings;
 --   @externalNames is a JSON array of names for people not in the app,
@@ -106,24 +109,27 @@ BEGIN
     RETURN;
 END
 
--- Verify caller attended this run (AttendenceState >= 20)
-IF NOT EXISTS (
-    SELECT 1 FROM HC.HasherEventMap
-    WHERE UserId         = @userId
-      AND EventId        = @eventId
-      AND AttendenceState >= 20
-)
+-- Entering a charge never needs a check-in (James, 2026-09-12). Until now
+-- a caller below At Hash was refused ("Only run attendees can submit
+-- DownDowns" — eight refusals at one German Nash Hash run on 2026-09-05,
+-- all RSVP'd members who had not checked in). Where the kennel lets
+-- hashers mark their own attendance (Event.CanEditRunAttendence, falling
+-- back to Kennel.CanEditRunAttendence — the same rule the app's run list
+-- applies), the charge checks them in: the At Hash / RSVP Yes transition a
+-- check-in makes, run counts recomputed, an admin's removal left alone.
+-- Otherwise their attendance is left exactly as it was. The check-in runs
+-- in its own transaction; its result row is swallowed so rowset 0 stays
+-- { downDownId }.
+DECLARE @selfCheckIn SMALLINT = (
+    SELECT COALESCE(evt.CanEditRunAttendence, k.CanEditRunAttendence)
+    FROM HC.Event evt
+    JOIN HC.Kennel k ON k.id = evt.KennelId
+    WHERE evt.id = @eventId);
+IF (@selfCheckIn = 1)
 BEGIN
-    SET @errorCode = 1335; SET @errorType = 3; SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised',
-            'Caller did not attend this run', @procName, @userId);
-    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
-    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
-           'Not authorised' AS errorTitle,
-           'Only run attendees can submit DownDowns.' AS errorUserMessage,
-           @procName AS errorProc;
-    RETURN;
+    DECLARE @checkIn TABLE (Inserted INT, Reason NVARCHAR(20));
+    INSERT INTO @checkIn (Inserted, Reason)
+        EXEC HC6.nonApi_ensureTrackAttendance @eventId = @eventId, @userId = @userId;
 END
 
 BEGIN TRY

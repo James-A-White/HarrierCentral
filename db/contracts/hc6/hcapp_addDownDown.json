@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_addDownDown",
-  "version": "1.0.0",
-  "description": "Records a new DownDown charge for one or more hashers at a run. Any authenticated user with AttendenceState >= 20 on the event (i.e. physically attended) may submit. Creates one HC.DownDowns row and one HC.DownDownHashers row per hasher in @hasherIds. Returns the new DownDown ID on success via the adHocDataId pattern. New feature — no HC5 equivalent.",
+  "version": "1.1.0",
+  "description": "Records a new DownDown charge for one or more hashers at a run. Any authenticated user may submit, checked in or not. Where COALESCE(Event.CanEditRunAttendence, Kennel.CanEditRunAttendence) = 1 (the kennel lets hashers set their own attendance), a caller below At Hash is checked in (AttendenceState 20, RSVP Yes) via HC6.nonApi_ensureTrackAttendance first; otherwise their attendance is left as it was (1.1.0, 2026-09-12; 1.0.0 refused anyone below At Hash with errorCode 1335). Creates one HC.DownDowns row and one HC.DownDownHashers row per hasher in @hasherIds. Returns the new DownDown ID on success via the adHocDataId pattern. New feature — no HC5 equivalent.",
   "parameters": [
     {
       "name": "deviceId",
@@ -99,6 +99,7 @@
     }
   ],
   "sideEffects": [
+    "When the kennel or run allows self-set attendance, checks the caller in to the event (inserts or raises their HC.HasherEventMap row to AttendenceState 20 / RsvpState 3 via HC6.nonApi_ensureTrackAttendance, then recomputes their run counts) if they were below At Hash. A row an admin removed is left alone. No attendance change otherwise.",
     "Inserts one row into HC.DownDowns.",
     "Inserts one row into HC.DownDownHashers per valid UUID in @hasherIds.",
     "Writes to HC.ErrorLog on validation or unhandled errors."

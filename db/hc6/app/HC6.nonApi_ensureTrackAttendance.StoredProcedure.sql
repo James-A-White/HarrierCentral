@@ -19,6 +19,8 @@ AS
 --   removal is not undone); a missing hasher or event does nothing.
 --   2026-09-11: also used by the track-import processor for every imported
 --   activity, so an import on a run you RSVPed to counts.
+--   2026-09-12: also hcapp_addDownDown, where the kennel lets hashers set
+--   their own attendance — entering a charge then checks you in.
 -- Parameters:
 --   @eventId - The run.
 --   @userId  - The runner.
