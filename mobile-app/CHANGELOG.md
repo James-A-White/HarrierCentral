@@ -1,3 +1,27 @@
+## 3.0.29+1344 (2026-09-12)
+
+### Fixes
+- **Filtering the runs now filters the trails too.** Switching the run
+  filter or searching used to empty the map of pins but leave every trail
+  drawn.
+- **One Trim run button on the run map**, not two.
+- **The share sheet no longer hides its third option.** At a large text
+  size the Photos link — the run's web gallery — was cut off below the
+  fold with no way to scroll to it.
+- **Import distances follow your units.** The Strava import screen showed
+  miles whatever you had chosen in Settings.
+- **No file browser when the import page opens.** It waits for you to
+  choose.
+- **Waking the app no longer blames the server.** A request killed by the
+  phone waking is now sent again quietly, so the sync completes and the
+  "Request Timed Out" banner stays down.
+
+### Improvements
+- **Remove an upload** from the Previous uploads list on the import page.
+  The runs it already imported keep their tracks.
+- **An edited photo reaches the run card.** Cropping a photo that had
+  already been approved left the card showing the uncropped original.
+
 ## 3.0.28+1343 (2026-09-12)
 
 ### Improvements

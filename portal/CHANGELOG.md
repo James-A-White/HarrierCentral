@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.73+708 (2026-09-12)
+
+### Fixes
+- **Photo Review shows the cropped version** of a photo rather than the
+  untouched original. The original is still what a re-crop starts from.
+
 ## 2.0.72+707 (2026-09-10)
 
 ### Fixes
