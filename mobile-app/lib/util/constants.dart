@@ -70,6 +70,7 @@ const double PROFILE_PIC_SIZE2 = 60.0;
 
 const double METERS_TO_MILES = 0.000621371;
 const double MILES_TO_METERS = 1609.34449;
+const double METERS_TO_YARDS = 1.0936133;
 
 const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.best;
 
@@ -190,7 +191,8 @@ const String BASE_TRAIL_GLYPHS_URL =
 
 // IP geolocation is performed server-side via the HC API shim.
 // The client calls GetIpGeoInfo — no token required on the client.
-const String IP_GEO_INFO_URL = 'https://harriercentralpublicapi.azurewebsites.net/api/GetIpGeoInfo';
+const String IP_GEO_INFO_URL =
+    'https://harriercentralpublicapi.azurewebsites.net/api/GetIpGeoInfo';
 
 const String NOTIFICATION_PREFIX_EVENT_UPDATE = 'evtUpdate_';
 
@@ -269,6 +271,7 @@ const int authCanManageMembers = 0x00000010;
 const int authCanManageAwards = 0x00000020;
 const int authCanManageSongs = 0x00000040;
 const int authCanManagePublicWebContent = 0x00000080;
+
 /// Grants the whole photo pipeline: the pending-approval queue, approve/reject
 /// (single and batch) and caption/crop edits. Being an AppAccessFlag it can be
 /// given to ANY hasher, on mismanagement or not — which is why no separate
@@ -345,7 +348,8 @@ class AppAccess {
   }
 
   bool get canManagePhotos {
-    return (appAccessFlags ?? 0) & (authCanManagePhotos | authIsSuperAdmin) != 0;
+    return (appAccessFlags ?? 0) & (authCanManagePhotos | authIsSuperAdmin) !=
+        0;
   }
 
   /// True when the user holds Hash Flash, GM, VGM, or RA for this kennel —
@@ -356,7 +360,10 @@ class AppAccess {
   /// ManagePhotos override flag and SuperAdmin, matching the server.
   bool get isPhotoAdmin {
     return mismanagementRoles &
-            (mmRoleFlagHashFlash | mmRoleFlagGm | mmRoleFlagVgm | mmRoleFlagRa) !=
+            (mmRoleFlagHashFlash |
+                mmRoleFlagGm |
+                mmRoleFlagVgm |
+                mmRoleFlagRa) !=
         0;
   }
 }

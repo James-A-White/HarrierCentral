@@ -345,8 +345,14 @@ class ImportGpxController extends GetxController {
   static String describeActivity(ImportActivity a) {
     final DateTime? s = a.startUtc?.toLocal();
     final String when = s == null ? '' : describeStart(s);
+    // The units the hasher chose in Settings, not miles for everyone
+    // (James, 2026-09-12). An imported activity has no run yet, so Auto
+    // falls back to the device locale inside prefersImperial.
+    final bool imperial = Utilities.prefersImperial();
     final String dist = a.distanceM > 0
-        ? '${(a.distanceM * METERS_TO_MILES).toStringAsFixed(1)} mi'
+        ? imperial
+              ? '${(a.distanceM * METERS_TO_MILES).toStringAsFixed(1)} mi'
+              : '${(a.distanceM / 1000).toStringAsFixed(1)} km'
         : '';
     return <String>[
       when,
@@ -593,8 +599,14 @@ class _CandidateRow extends StatelessWidget {
       color: Colors.black54,
     );
     final String when = ImportGpxController.describeStart(c.startLocal);
+    final int? away = c.distanceMeters;
+    final String gap = away == null
+        ? ''
+        : Utilities.prefersImperial()
+        ? '${(away * METERS_TO_YARDS).round()} yd'
+        : '$away m';
     final String where = c.hasLocation
-        ? '${c.distanceMeters} m from where the track starts'
+        ? '$gap from where the track starts'
         : 'no recorded start location';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -560,6 +560,39 @@ class Utilities {
     return result;
   }
 
+  /// Whether distances should be shown in miles for this hasher.
+  ///
+  /// The stored preference is 3 = miles, 2 = kilometres, 0 = Auto. Auto means
+  /// "follow the run's kennel", so pass [kennelDistanceUnitsPref] wherever a
+  /// kennel is in hand. Where none is — an imported activity has no run yet —
+  /// Auto falls back to the device's own locale, which is the closest thing
+  /// to the user's country that the phone can answer offline.
+  static bool prefersImperial({int? kennelDistanceUnitsPref}) {
+    final int pref =
+        (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
+        hasherPref_distanceMeasuredIn;
+    if (pref == 3) return true;
+    if (pref != 0) return false;
+    if (kennelDistanceUnitsPref != null) return kennelDistanceUnitsPref == 3;
+    return _localeUsesMiles();
+  }
+
+  /// The handful of places that measure road distance in miles.
+  static bool _localeUsesMiles() {
+    try {
+      final String country =
+          WidgetsBinding.instance.platformDispatcher.locale.countryCode
+              ?.toUpperCase() ??
+          '';
+      return country == 'US' ||
+          country == 'GB' ||
+          country == 'LR' ||
+          country == 'MM';
+    } catch (_) {
+      return false;
+    }
+  }
+
   static int checkSpecialHaring(int haringCount) {
     int result = specialRunNo;
 
@@ -984,7 +1017,9 @@ class Utilities {
   static bool _isAtRunStartRunning = false;
 
   static Future<void> isAtRunStart({String? eventId}) async {
-    debugPrint('[BOOT] Utilities.isAtRunStart: start, eventId=${eventId ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] Utilities.isAtRunStart: start, eventId=${eventId ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
 
     // A notification tap passes an explicit eventId — deliberate user intent
@@ -995,7 +1030,9 @@ class Utilities {
 
     if (passive) {
       if (_isAtRunStartRunning) {
-        debugPrint('[BOOT] Utilities.isAtRunStart: already running, skipping: ${DateTime.now().millisecondsSinceEpoch}ms');
+        debugPrint(
+          '[BOOT] Utilities.isAtRunStart: already running, skipping: ${DateTime.now().millisecondsSinceEpoch}ms',
+        );
         return;
       }
 
@@ -1005,13 +1042,18 @@ class Utilities {
         lastRunStartCheck = DateTime(2000);
       }
 
-      final minutesSinceLastCheck =
-          DateTime.now().difference(lastRunStartCheck).inMinutes;
+      final minutesSinceLastCheck = DateTime.now()
+          .difference(lastRunStartCheck)
+          .inMinutes;
       if (minutesSinceLastCheck < 2) {
-        debugPrint('[BOOT] Utilities.isAtRunStart: throttled (${minutesSinceLastCheck}min since last check): ${DateTime.now().millisecondsSinceEpoch}ms');
+        debugPrint(
+          '[BOOT] Utilities.isAtRunStart: throttled (${minutesSinceLastCheck}min since last check): ${DateTime.now().millisecondsSinceEpoch}ms',
+        );
         return;
       }
-      debugPrint('[BOOT] Utilities.isAtRunStart: throttle passed (${minutesSinceLastCheck}min), querying: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] Utilities.isAtRunStart: throttle passed (${minutesSinceLastCheck}min), querying: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
 
       _isAtRunStartRunning = true;
     }
@@ -1028,172 +1070,186 @@ class Utilities {
       if (passive) {
         await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime.now());
       }
-      debugPrint('[BOOT] Utilities.isAtRunStart: query returned ${resultList.length} candidate run(s): ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] Utilities.isAtRunStart: query returned ${resultList.length} candidate run(s): ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
       final String userId = currentUserId;
 
       if (resultList.length == 1) {
-      final AreWeAtRunModel result = resultList[0];
+        final AreWeAtRunModel result = resultList[0];
 
-      final String blockAutoCheckinForThisEventId =
-          getStringPref(StringPrefsEnum.blockAutoCheckinForThisEventId) ?? '';
+        final String blockAutoCheckinForThisEventId =
+            getStringPref(StringPrefsEnum.blockAutoCheckinForThisEventId) ?? '';
 
-      if (blockAutoCheckinForThisEventId == result.eventId) {
-        debugPrint('[BOOT] Utilities.isAtRunStart: auto check-in blocked for this event, returning: ${DateTime.now().millisecondsSinceEpoch}ms');
-        // user has previously declined auto check-in for this event
-        return;
-      }
-
-      if (result.eventId != EMPTY_RESULT) {
-        debugPrint('[BOOT] Utilities.isAtRunStart: showing check-in dialog for "${result.eventName}": ${DateTime.now().millisecondsSinceEpoch}ms');
-        final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
-          title: 'Check-in to Run',
-          areWeAtRunData: result,
-          okButtonTitle: 'Yes',
-          cancelButtonTitle: 'No',
-        );
-
-        final EnumCheckinOptions? retVal = await showDialog<EnumCheckinOptions>(
-          context: navigatorKey.currentContext!,
-          barrierDismissible: false, // user must tap button!
-          builder: (BuildContext context) {
-            return popup;
-          },
-        );
-        debugPrint('[BOOT] Utilities.isAtRunStart: dialog dismissed, retVal=$retVal: ${DateTime.now().millisecondsSinceEpoch}ms');
-
-        if (retVal == enumCheckInOption_Cancel) {
-          // user decided not to check in automatically. Let's take note of this so we don't show the popup again.
-          await setStringPref(
-            StringPrefsEnum.blockAutoCheckinForThisEventId,
-            result.eventId,
+        if (blockAutoCheckinForThisEventId == result.eventId) {
+          debugPrint(
+            '[BOOT] Utilities.isAtRunStart: auto check-in blocked for this event, returning: ${DateTime.now().millisecondsSinceEpoch}ms',
           );
-        } else if (retVal == enumCheckInOption_Yes) {
-          final adHoc = await tableModel.hasherEventMapService.setEventAttendence(
-            result.eventId,
-            userId,
-            AppDomainType.user,
-            attendenceAtHash.value,
+          // user has previously declined auto check-in for this event
+          return;
+        }
+
+        if (result.eventId != EMPTY_RESULT) {
+          debugPrint(
+            '[BOOT] Utilities.isAtRunStart: showing check-in dialog for "${result.eventName}": ${DateTime.now().millisecondsSinceEpoch}ms',
+          );
+          final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
+            title: 'Check-in to Run',
+            areWeAtRunData: result,
+            okButtonTitle: 'Yes',
+            cancelButtonTitle: 'No',
           );
 
-          if (adHoc.isEmpty) {
-            showHcSnackbar(
-              'Check-in failed — please check your connection and try again.',
-              isError: true,
-            );
-          } else {
-            showHcSnackbar('Checked in to ${result.eventName}!');
-            if (Get.isRegistered<FutureRunListPageController>()) {
-              await Get.find<FutureRunListPageController>().refreshFromTable(
-                true,
+          final EnumCheckinOptions? retVal =
+              await showDialog<EnumCheckinOptions>(
+                context: navigatorKey.currentContext!,
+                barrierDismissible: false, // user must tap button!
+                builder: (BuildContext context) {
+                  return popup;
+                },
               );
-            }
-          }
-        } else if ((retVal == enumCheckInOption_YesAndPayByCredit) ||
-            (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
-          final PaymentsService paySrv = PaymentsService();
-          await paySrv.payForEvent(
-            result.eventId,
-            userId,
-            GUID_EMPTY,
-            retVal == enumCheckInOption_YesAndPayByCredit
-                ? paymentHashCredit.value
-                : paymentBankTransfer.value,
-            result.membershipExpirationDate.isAfter(DateTime.now())
-                ? result.memberPrice
-                : result.nonMemberPrice,
-            attendenceAtHash.value,
-            payForRunOnly,
-            AppDomainType.user,
-          );
-        } else if ((retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit) ||
-            (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
-          final PaymentsService paySrv = PaymentsService();
-          await paySrv.payForEvent(
-            result.eventId,
-            userId,
-            GUID_EMPTY,
-            retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit
-                ? paymentHashCredit.value
-                : paymentBankTransfer.value,
-            result.extrasCost +
-                (result.membershipExpirationDate.isAfter(DateTime.now())
-                    ? result.memberPrice
-                    : result.nonMemberPrice),
-            attendenceAtHash.value,
-            payForRunAndExtras,
-            AppDomainType.user,
-          );
-        }
-
-        // The user picked a "Yes" option (checked in). Clear any prior
-        // "don't ask again" block for this event — a one-time "No" should not
-        // suppress the prompt for this event permanently. ("No"/Cancel still
-        // sets the block above, as intended.)
-        if (retVal != null && retVal != enumCheckInOption_Cancel) {
-          await setStringPref(
-            StringPrefsEnum.blockAutoCheckinForThisEventId,
-            '',
-          );
-        }
-      }
-    } else if (resultList.length > 1) {
-      // look through the list of runs and determine if this hasher is
-      // at any of the runs on the list. If so, don't show the
-      // selection view
-      bool showRunList = true;
-      final Map<String, bool> selectedRuns = <String, bool>{};
-
-      for (AreWeAtRunModel result in resultList) {
-        selectedRuns[result.eventId] =
-            false; //prepare the selection result list
-        if (result.attendenceState >= attendenceAtHash.value) {
-          showRunList = false;
-          break;
-        }
-      }
-
-      if (showRunList) {
-        final Map<String, bool>? selections = await Get.to<Map<String, bool>?>(
-          SelectRunPage(runList: resultList, selected: selectedRuns),
-        );
-
-        // null = Cancel tapped — no writes, dialog may appear again
-        if (selections != null) {
-          final List<String> checkInIds = selections.entries
-              .where((e) => e.value)
-              .map((e) => e.key)
-              .toList();
-          final List<String> rsvpNoIds = selections.entries
-              .where((e) => !e.value)
-              .map((e) => e.key)
-              .toList();
-
-          final List<dynamic> adHoc =
-              await tableModel.hasherEventMapService.setMultiRunRsvpAndCheckin(
-            checkInEventIds: checkInIds,
-            rsvpNoEventIds: rsvpNoIds,
+          debugPrint(
+            '[BOOT] Utilities.isAtRunStart: dialog dismissed, retVal=$retVal: ${DateTime.now().millisecondsSinceEpoch}ms',
           );
 
-          if (adHoc.isEmpty) {
-            showHcSnackbar(
-              'Save failed — please check your connection and try again.',
-              isError: true,
+          if (retVal == enumCheckInOption_Cancel) {
+            // user decided not to check in automatically. Let's take note of this so we don't show the popup again.
+            await setStringPref(
+              StringPrefsEnum.blockAutoCheckinForThisEventId,
+              result.eventId,
             );
-          } else {
-            if (checkInIds.isNotEmpty) {
+          } else if (retVal == enumCheckInOption_Yes) {
+            final adHoc = await tableModel.hasherEventMapService
+                .setEventAttendence(
+                  result.eventId,
+                  userId,
+                  AppDomainType.user,
+                  attendenceAtHash.value,
+                );
+
+            if (adHoc.isEmpty) {
               showHcSnackbar(
-                checkInIds.length == 1
-                    ? 'Checked in!'
-                    : 'Checked in to ${checkInIds.length} runs!',
+                'Check-in failed — please check your connection and try again.',
+                isError: true,
               );
+            } else {
+              showHcSnackbar('Checked in to ${result.eventName}!');
+              if (Get.isRegistered<FutureRunListPageController>()) {
+                await Get.find<FutureRunListPageController>().refreshFromTable(
+                  true,
+                );
+              }
             }
-            if (Get.isRegistered<FutureRunListPageController>()) {
-              await Get.find<FutureRunListPageController>().refreshFromTable(true);
+          } else if ((retVal == enumCheckInOption_YesAndPayByCredit) ||
+              (retVal == enumCheckInOption_YesAndPayByBankXfer)) {
+            final PaymentsService paySrv = PaymentsService();
+            await paySrv.payForEvent(
+              result.eventId,
+              userId,
+              GUID_EMPTY,
+              retVal == enumCheckInOption_YesAndPayByCredit
+                  ? paymentHashCredit.value
+                  : paymentBankTransfer.value,
+              result.membershipExpirationDate.isAfter(DateTime.now())
+                  ? result.memberPrice
+                  : result.nonMemberPrice,
+              attendenceAtHash.value,
+              payForRunOnly,
+              AppDomainType.user,
+            );
+          } else if ((retVal ==
+                  enumCheckInOption_YesAndPayPlusExtrasByCredit) ||
+              (retVal == enumCheckInOption_YesAndPayPlusExtrasByBankXfer)) {
+            final PaymentsService paySrv = PaymentsService();
+            await paySrv.payForEvent(
+              result.eventId,
+              userId,
+              GUID_EMPTY,
+              retVal == enumCheckInOption_YesAndPayPlusExtrasByCredit
+                  ? paymentHashCredit.value
+                  : paymentBankTransfer.value,
+              result.extrasCost +
+                  (result.membershipExpirationDate.isAfter(DateTime.now())
+                      ? result.memberPrice
+                      : result.nonMemberPrice),
+              attendenceAtHash.value,
+              payForRunAndExtras,
+              AppDomainType.user,
+            );
+          }
+
+          // The user picked a "Yes" option (checked in). Clear any prior
+          // "don't ask again" block for this event — a one-time "No" should not
+          // suppress the prompt for this event permanently. ("No"/Cancel still
+          // sets the block above, as intended.)
+          if (retVal != null && retVal != enumCheckInOption_Cancel) {
+            await setStringPref(
+              StringPrefsEnum.blockAutoCheckinForThisEventId,
+              '',
+            );
+          }
+        }
+      } else if (resultList.length > 1) {
+        // look through the list of runs and determine if this hasher is
+        // at any of the runs on the list. If so, don't show the
+        // selection view
+        bool showRunList = true;
+        final Map<String, bool> selectedRuns = <String, bool>{};
+
+        for (AreWeAtRunModel result in resultList) {
+          selectedRuns[result.eventId] =
+              false; //prepare the selection result list
+          if (result.attendenceState >= attendenceAtHash.value) {
+            showRunList = false;
+            break;
+          }
+        }
+
+        if (showRunList) {
+          final Map<String, bool>? selections =
+              await Get.to<Map<String, bool>?>(
+                SelectRunPage(runList: resultList, selected: selectedRuns),
+              );
+
+          // null = Cancel tapped — no writes, dialog may appear again
+          if (selections != null) {
+            final List<String> checkInIds = selections.entries
+                .where((e) => e.value)
+                .map((e) => e.key)
+                .toList();
+            final List<String> rsvpNoIds = selections.entries
+                .where((e) => !e.value)
+                .map((e) => e.key)
+                .toList();
+
+            final List<dynamic> adHoc = await tableModel.hasherEventMapService
+                .setMultiRunRsvpAndCheckin(
+                  checkInEventIds: checkInIds,
+                  rsvpNoEventIds: rsvpNoIds,
+                );
+
+            if (adHoc.isEmpty) {
+              showHcSnackbar(
+                'Save failed — please check your connection and try again.',
+                isError: true,
+              );
+            } else {
+              if (checkInIds.isNotEmpty) {
+                showHcSnackbar(
+                  checkInIds.length == 1
+                      ? 'Checked in!'
+                      : 'Checked in to ${checkInIds.length} runs!',
+                );
+              }
+              if (Get.isRegistered<FutureRunListPageController>()) {
+                await Get.find<FutureRunListPageController>().refreshFromTable(
+                  true,
+                );
+              }
             }
           }
         }
       }
-    }
     } finally {
       if (passive) {
         _isAtRunStartRunning = false;
