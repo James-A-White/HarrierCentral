@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_setTrackNotes",
-  "version": "1.0.0",
-  "description": "Fills a hasher's notes on a run from an imported file's title and description, only when they have none (E3.F4.S5). Called by the track-import processor for every activity that matched a run, whether or not the track was imported. A note the hasher wrote is never touched.",
+  "version": "1.1.0",
+  "description": "Fills a hasher's notes on a run from an imported file's title, description, private note and stats line: when the notes are blank, or when the existing notes are exactly the start of the new text (an earlier import's fill, extended by a re-import — 1.1.0, 2026-09-12). Text the hasher wrote or edited is never touched. Called by the track-import processor for every activity that matched a run.",
   "parameters": [
     {
       "name": "eventId",
