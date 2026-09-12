@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>16</b> epics</div>
     <div><b>78</b> features</div>
-    <div><b>268</b> stories</div>
+    <div><b>269</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -323,7 +323,7 @@
   <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 26 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
   <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 37 stories</span></a>
-  <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 19 stories</span></a>
+  <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 20 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 15 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">6 features · 24 stories</span></a>
   <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">5 features · 20 stories</span></a>
@@ -728,6 +728,7 @@
       <li class="story"><span class="s-id">E6.F2.S3</span><span class="s-text">As a <em>Hasher</em>, I want an imported photo to carry its own capture time so that it appears at the right moment in replay.</span><span class="chip c-build">Building</span></li>
       <li class="story"><span class="s-id">E6.F2.S4</span><span class="s-text">As a <em>Hasher</em>, I want an imported photo to stop wearing the importer's identity so that hiding a trail does not hide somebody else's photo.</span><span class="chip c-build">Building</span>
         <span class="gap">markers still read position and time from the <code>PHO::</code> track point; the renderer switch is not done</span></li>
+      <li class="story"><span class="s-id">E6.F2.S5</span><span class="s-text">As a <em>Hasher</em>, I want a button on a past run that finds the photos of it still sitting in my camera roll so that the club's gallery gets the pictures I never got round to filing. Designed 2026-09-12 (James). Scan is <em>per run and on demand</em> — never a background sweep of the roll. Candidates are photos captured from 30 minutes before the run's start to six hours after it, <em>that carry a location</em>: a photo with a time but no coordinate is discarded rather than offered, because a roll full of unrelated pictures is worse than a missed one. Location is read from the media store as well as the EXIF, since a forwarded or permission-stripped photo often keeps one and not the other. A candidate must fall near the hasher's <em>own trail for that run</em> (any point, not just the start — the On-Inn and the far end of trail are both a long way from the circle), falling back to a radius around the start where they have no track. Only runs they attended are offered. The matched photos appear in a <em>selector the hasher ticks</em>, carrying the notice that what they send may become publicly viewable; nothing uploads on its own. Uploads take the existing path, so capture time, coordinate, asset id and the Hash Flash review queue all apply, and a photo already uploaded is skipped on its asset id. <em>Needs:</em> full camera-roll permission (the app deliberately bypasses the check today because it only touches its own assets) and a privacy-declaration update in both stores.</span><span class="chip c-next">Next</span></li>
     </ul>
   </div>
   <div class="feature">
