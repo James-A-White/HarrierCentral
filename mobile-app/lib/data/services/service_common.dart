@@ -363,7 +363,12 @@ class ServiceCommon {
     Duration duration = const Duration(seconds: 5),
   }) {
     void show() {
-      Get.closeAllSnackbars();
+      // GetX throws LateInitializationError from closeAllSnackbars when a
+      // queued snackbar never got its controller (seen 2026-09-11 while an
+      // import was polling through 599s). Closing is best-effort.
+      try {
+        Get.closeAllSnackbars();
+      } catch (_) {}
       Get.showSnackbar(
         GetSnackBar(
           title: title,

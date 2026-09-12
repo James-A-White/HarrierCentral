@@ -71,7 +71,7 @@ namespace HcWebApi.Endpoints
             [JsonProperty("lng")] public double? Lng;
             [JsonProperty("points")] public int Points;
             [JsonProperty("distanceM")] public int DistanceM;
-            /// imported | replaced | skippedExisting | noRun | noLocation | tooFar | held | unparseable | noTime | failed
+            /// imported | replaced | skippedExisting | noRun | noLocation | tooFar | held | unparseable | noGps | noTime | failed
             [JsonProperty("outcome")] public string Outcome = "pending";
             [JsonProperty("eventId")] public Guid? EventId;
             [JsonProperty("eventName")] public string? EventName;
@@ -212,7 +212,10 @@ namespace HcWebApi.Endpoints
             ar.Sport = act.Sport;
             if (act.Points.Count == 0)
             {
-                ar.Outcome = act.HadUntimedPoints ? "noTime" : "unparseable";
+                // Parsed fine, nothing to place: a FIT from a wearable without
+                // GPS (distance from steps, records with no position), a gym
+                // session, a ceilidh. Not "unparseable" — the file was read.
+                ar.Outcome = act.HadUntimedPoints ? "noTime" : "noGps";
                 return;
             }
             List<WritePoint> thinned = Thin(act.Points);
@@ -652,8 +655,12 @@ namespace HcWebApi.Endpoints
                 using (var ms = new MemoryStream()) { s.CopyTo(ms); bytes = ms.ToArray(); }
                 if (bytes.Length >= 12 && bytes[8] == '.' && bytes[9] == 'F' && bytes[10] == 'I' && bytes[11] == 'T')
                     return ParseFit(bytes, name);
-                string text = Encoding.UTF8.GetString(bytes);
-                if (!text.TrimStart().StartsWith("<")) return null;
+                // Strava's .tcx.gz files open with ten spaces before <?xml,
+                // and XDocument.Parse rejects any whitespace (or a BOM) ahead of
+                // the declaration — every Strava TCX was "unparseable" until
+                // 2026-09-12. Trim before parsing, not just before sniffing.
+                string text = Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF', ' ', '\t', '\r', '\n');
+                if (!text.StartsWith("<")) return null;
                 XDocument doc;
                 try { doc = XDocument.Parse(text); } catch { return null; }
                 string root = doc.Root?.Name.LocalName ?? string.Empty;

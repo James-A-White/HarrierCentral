@@ -53,7 +53,7 @@ class ImportActivity {
   final String name;
 
   /// imported | replaced | skippedExisting | noRun | noLocation | tooFar |
-  /// held | unparseable | noTime | failed | pending
+  /// held | unparseable | noGps | noTime | failed | pending
   final String outcome;
   final String? format;
   final String? sport;
@@ -96,6 +96,8 @@ class ImportActivity {
             : 'Needs your confirmation';
       case 'unparseable':
         return 'Not a readable track file';
+      case 'noGps':
+        return 'No GPS in this activity — nothing to place on a trail';
       case 'noTime':
         return 'No timestamps in the track';
       case 'failed':
@@ -150,6 +152,7 @@ class TrackImportJob {
     this.skippedCount = 0,
     this.heldCount = 0,
     this.errorMessage,
+    this.uploadedAt,
   });
 
   factory TrackImportJob.fromJson(Map<String, dynamic> j) {
@@ -176,6 +179,7 @@ class TrackImportJob {
       skippedCount: (j['skippedCount'] as num?)?.toInt() ?? 0,
       heldCount: (j['heldCount'] as num?)?.toInt() ?? 0,
       errorMessage: j['errorMessage'] as String?,
+      uploadedAt: DateTime.tryParse((j['uploadedAt'] as String?) ?? '')?.toUtc(),
       activities: acts,
     );
   }
@@ -194,6 +198,7 @@ class TrackImportJob {
   final int skippedCount;
   final int heldCount;
   final String? errorMessage;
+  final DateTime? uploadedAt;
   final List<ImportActivity> activities;
 
   bool get isFinished => status == 2 || status == 3;
@@ -336,7 +341,13 @@ class TrackImportService {
   // ── Process ───────────────────────────────────────────────────────────────
 
   /// One slice of processing; returns the job as it stands afterwards.
-  Future<TrackImportJob> process(String jobId) => _processCall(jobId, null);
+  /// [reimport] restarts the job from its first activity first — the file
+  /// is still in blob storage, so a hasher who has fixed a run's start
+  /// point since the first pass can have it checked again without another
+  /// upload (James, 2026-09-12). Runs that already carry their track come
+  /// back skippedExisting.
+  Future<TrackImportJob> process(String jobId, {bool reimport = false}) =>
+      _processCall(jobId, null, reimport: reimport);
 
   /// Import held activity [index] to [eventId]; [replace] deletes an
   /// existing track first (the single-file Replace button).
@@ -351,7 +362,11 @@ class TrackImportService {
     'replace': replace,
   });
 
-  Future<TrackImportJob> _processCall(String jobId, Map<String, dynamic>? resolve) async {
+  Future<TrackImportJob> _processCall(
+    String jobId,
+    Map<String, dynamic>? resolve, {
+    bool reimport = false,
+  }) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -368,6 +383,7 @@ class TrackImportService {
             ),
             'jobId': jobId,
             'resolve': ?resolve,
+            if (reimport) 'reimport': true,
           }),
         )
         .timeout(_processTimeout);
@@ -415,6 +431,31 @@ class TrackImportService {
       );
     }
     return null;
+  }
+
+  /// The hasher's previous uploads, newest first (the list form: no result
+  /// JSON), so a kept archive can be re-imported without another transfer.
+  Future<List<TrackImportJob>> fetchRecent() async {
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String raw = await ServiceCommon.sendHttpPost(() {
+      return jsonEncode(<String, dynamic>{
+        'queryType': 'getTrackImports',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_getTrackImports',
+          paramString: deviceSecret,
+        ),
+      });
+    }, noRetries: true);
+    if (raw.startsWith(ERROR_PREFIX)) return const <TrackImportJob>[];
+    final List<dynamic> rowsets = jsonDecode(raw) as List<dynamic>;
+    if (rowsets.isEmpty) return const <TrackImportJob>[];
+    return (rowsets[0] as List<dynamic>)
+        .map((dynamic r) => TrackImportJob.fromJson(r as Map<String, dynamic>))
+        .toList(growable: false);
   }
 
   /// The job as stored (no processing) — for reopening a past import.
