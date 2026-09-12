@@ -157,6 +157,25 @@ namespace HcWebApi.Endpoints
                 }
                 if (job == null) return new NotFoundObjectResult(new { error = "No such import." });
 
+                // Re-import (James, 2026-09-12): run the whole file again from
+                // the blob we kept, without another upload — for the hasher who
+                // fixed a run's start point after the first pass and wants the
+                // activities that missed it found now. The job restarts at
+                // index 0 with an empty result; runs that already have their
+                // track come back skippedExisting, as any archive pass does.
+                // The first slice runs in this same call; the phone drives the
+                // rest exactly as for a fresh upload, the nightly backstop
+                // finishes a stalled one.
+                bool reimport = data["reimport"]?.Value<bool>() ?? false;
+                if (reimport)
+                {
+                    var fresh = new TrackImportProcessor.Result();
+                    await TrackImportProcessor.UpdateAsync(conn, job.Id, TrackImportProcessor.Status.Processing, null, 0, null, fresh);
+                    job.NextIndex = 0;
+                    job.ResultJson = JsonConvert.SerializeObject(fresh);
+                    _log.LogInformation("TrackImport {Job}: re-import requested; restarted from 0.", job.Id);
+                }
+
                 JObject? resolve = data["resolve"] as JObject;
                 if (resolve != null)
                 {

@@ -39,16 +39,32 @@ class ImportGpxController extends GetxController {
   final RxInt importedSoFar = 0.obs;
   Timer? _progressTimer;
 
+  /// Earlier uploads, newest first. Their files are kept, so any of them
+  /// can be run again — the way to pick up runs whose start point was
+  /// fixed after the first pass, without transferring the archive again.
+  final RxList<TrackImportJob> previous = <TrackImportJob>[].obs;
+
   bool _cancelled = false;
 
   @override
   void onReady() {
     super.onReady();
+    unawaited(_loadPrevious());
     final String? path = initialFilePath;
     if (path != null && path.isNotEmpty) {
       unawaited(loadPath(path));
     } else if (autoPick) {
       unawaited(pickFile());
+    }
+  }
+
+  Future<void> _loadPrevious() async {
+    try {
+      final List<TrackImportJob> jobs = await _service.fetchRecent();
+      if (_cancelled) return;
+      previous.assignAll(jobs.where((TrackImportJob j) => j.isFinished));
+    } catch (e, s) {
+      BootLogger.logError('[ImportGpxController._loadPrevious]', e, s);
     }
   }
 
@@ -110,21 +126,7 @@ class ImportGpxController extends GetxController {
         onProgress: (double f) => uploadProgress.value = f,
       );
       if (_cancelled) return;
-      status.value = 'Finding your runs…';
-      checked.value = 0;
-      total.value = null;
-      importedSoFar.value = 0;
-      _startProgressPolling(jobId);
-      TrackImportJob j;
-      try {
-        j = await _driveToCompletion(jobId);
-      } finally {
-        _stopProgressPolling();
-      }
-      checked.value = j.activityCount ?? j.activities.length;
-      total.value = j.activityCount ?? j.activities.length;
-      importedSoFar.value = j.importedCount;
-      status.value = _summaryText(j);
+      await _follow(jobId);
     } on TrackImportException catch (e) {
       status.value = e.message;
     } catch (e, s) {
@@ -140,13 +142,72 @@ class ImportGpxController extends GetxController {
   /// with it — so the loop waits, reads the job as stored, and continues from
   /// wherever the server got to. It gives up only when nothing has moved
   /// after several attempts, and the nightly backstop finishes the job then.
-  Future<TrackImportJob> _driveToCompletion(String jobId) async {
+  /// Run a kept upload again from its first activity (see [previous]).
+  Future<void> reimport(TrackImportJob prev) async {
+    if (busy.value) return;
+    final String name = prev.fileName ?? 'that file';
+    final bool? ok = await Utilities.showAlert(
+      'Re-import $name?',
+      'Every activity in the file is checked against your runs again, '
+          'using the file already uploaded. Runs that already have your '
+          'track are left alone; runs whose start point has been fixed '
+          'since, and runs added since, are found now.',
+      'Re-import',
+      showCancelButton: true,
+    );
+    if (ok != true) return;
+    busy.value = true;
+    job.value = null;
+    uploadProgress.value = 0;
+    fileName.value = prev.fileName;
+    try {
+      await _follow(prev.jobId, reimport: true);
+    } on TrackImportException catch (e) {
+      status.value = e.message;
+    } catch (e, s) {
+      BootLogger.logError('[ImportGpxController.reimport]', e, s);
+      status.value = 'That re-import failed. Please try again.';
+    } finally {
+      busy.value = false;
+      unawaited(_loadPrevious());
+    }
+  }
+
+  /// Drive a registered job to completion, showing progress as it goes.
+  Future<void> _follow(String jobId, {bool reimport = false}) async {
+    status.value = 'Finding your runs…';
+    checked.value = 0;
+    total.value = null;
+    importedSoFar.value = 0;
+    _startProgressPolling(jobId);
+    TrackImportJob j;
+    try {
+      j = await _driveToCompletion(jobId, reimportFirst: reimport);
+    } finally {
+      _stopProgressPolling();
+    }
+    checked.value = j.activityCount ?? j.activities.length;
+    total.value = j.activityCount ?? j.activities.length;
+    importedSoFar.value = j.importedCount;
+    status.value = _summaryText(j);
+    unawaited(_loadPrevious());
+  }
+
+  Future<TrackImportJob> _driveToCompletion(
+    String jobId, {
+    bool reimportFirst = false,
+  }) async {
     int stalls = 0;
     int lastIndex = -1;
+    bool first = true;
     TrackImportJob? j;
     while (!_cancelled) {
       try {
-        j = await _service.process(jobId);
+        // The restart flag rides on the first call only; a retry after a
+        // timeout must continue the job, not restart it again.
+        final bool restart = reimportFirst && first;
+        first = false;
+        j = await _service.process(jobId, reimport: restart);
         stalls = 0;
       } catch (e) {
         BootLogger.logBreadcrumb('TrackImport: slice failed ($e) — polling');
@@ -369,6 +430,25 @@ class ImportGpxPage extends StatelessWidget {
                     onResolve: (ImportCandidate cand) => c.resolve(a, cand),
                   ),
                 ],
+                if (c.previous.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: 24),
+                  Text('Previous uploads', style: ts_alertDialogTitle),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Your files are kept. Re-import one to check its '
+                    'activities against your runs again — for runs whose '
+                    'start point was fixed after the first pass.',
+                    style: ts_alertDialogBody,
+                  ),
+                  for (final TrackImportJob p in c.previous) ...<Widget>[
+                    const SizedBox(height: 10),
+                    _PreviousUploadCard(
+                      job: p,
+                      busy: busy,
+                      onReimport: () => c.reimport(p),
+                    ),
+                  ],
+                ],
               ],
             );
           }),
@@ -535,6 +615,67 @@ class _CandidateRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// One earlier upload: name, when, what it found, and a Re-import button.
+class _PreviousUploadCard extends StatelessWidget {
+  const _PreviousUploadCard({
+    required this.job,
+    required this.busy,
+    required this.onReimport,
+  });
+
+  final TrackImportJob job;
+  final bool busy;
+  final VoidCallback onReimport;
+
+  @override
+  Widget build(BuildContext context) {
+    final DateTime? when = job.uploadedAt?.toLocal();
+    final int? total = job.activityCount;
+    final String found = job.status == 3
+        ? (job.errorMessage ?? 'Failed')
+        : total == null
+            ? ''
+            : '$total ${total == 1 ? 'activity' : 'activities'}'
+                '  ·  ${job.importedCount} imported'
+                '${job.heldCount > 0 ? '  ·  ${job.heldCount} held' : ''}';
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white24),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  job.fileName ?? 'Upload',
+                  style: ts_alertDialogBody,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (when != null)
+                  Text(
+                    ImportGpxController.describeStart(when),
+                    style: ts_alertDialogBody,
+                  ),
+                if (found.isNotEmpty) Text(found, style: ts_alertDialogBody),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          ElevatedButton(
+            onPressed: busy ? null : onReimport,
+            child: Text('Re-import', style: ts_button),
+          ),
+        ],
+      ),
     );
   }
 }
