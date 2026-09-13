@@ -1,3 +1,31 @@
+## 3.0.33+1348 (2026-09-13)
+
+### New Features
+- **Review photos for the whole kennel**, not one run at a time. A new
+  button on the kennel screen opens the same review queue you already know,
+  showing everything waiting from every run — which is what imported
+  photos need, since they arrive for past runs in no order.
+- **You can take your own photo back out of public view at any time**, even
+  after it has been approved. Open it full screen and choose Make private.
+  It comes off the run, the kennel gallery and the public website, and you
+  can send it again later.
+
+### Improvements
+- **Chats stay in the list after you read them**, newest conversation
+  first, with the badge simply gone. A chat you had just read used to
+  vanish, which made it the hardest one to find again.
+- **"Share my photos"** replaces "Photos on your phone", with a clearer
+  icon.
+- The sweep now shows each run's **date and location**, so you can tell
+  runs apart.
+- The photo screens **centre their controls**, use the usual Harrier
+  Central background, and their small text is easier to read.
+- A photo that has already been sent shows a **tick instead of a toggle**
+  that did nothing.
+- **Power Saver tracks every 3 minutes on Android** rather than every 15.
+  A quarter of an hour is not a track — a hash covers a couple of miles in
+  that time.
+
 ## 3.0.32+1347 (2026-09-12)
 
 ### Improvements
