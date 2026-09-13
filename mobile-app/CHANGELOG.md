@@ -1,3 +1,25 @@
+## 3.1.0+1349 (2026-09-13)
+
+The first 3.1 build. This is the payments train, and it reloads your whole
+local database on first launch, which takes a minute on a slow connection.
+
+### New Features
+- **A kennel can keep a catalogue.** Run packages, memberships,
+  haberdashery and away weekends, each with what it costs you, what it
+  costs the kennel, and any credit it grants. Kennel admins with the money
+  roles get a Products editor; everyone else sees nothing new yet.
+
+### Improvements
+- **Duplicate rows can no longer be created on your phone.** Every synced
+  table now carries a unique constraint on the server's own id, so two
+  syncs overlapping can no longer insert the same row twice. Healing the
+  existing duplicates is why this build reloads everything once.
+
+### Fixes
+- **Saving a product no longer sends empty fields to the server.** An
+  optional field left blank was being sent as an explicit null instead of
+  being left out.
+
 ## 3.0.33+1348 (2026-09-13)
 
 ### New Features

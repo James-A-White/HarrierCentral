@@ -2,6 +2,20 @@
 
 ---
 
+## 2.0.75+710 (2026-09-13)
+
+### New Features
+- **Products.** A kennel's catalogue now has its own screen, reached from
+  the admin buttons beside Edit Website. List what is on sale, add a run
+  package, a membership, a piece of haberdashery or an away weekend, and
+  record what each costs you to supply so the margin is visible.
+  Haberdashery carries its sizes, its photos and the supplier's details,
+  and the supplier's details stay here: they are never sent to anyone's
+  phone.
+- Nothing in the catalogue can be deleted. Retiring something is "Take off
+  sale", and the confirmation tells you how many have sold, because a
+  deleted product would break the link from every payment made against it.
+
 ## 2.0.74+709 (2026-09-13)
 
 ### New Features
