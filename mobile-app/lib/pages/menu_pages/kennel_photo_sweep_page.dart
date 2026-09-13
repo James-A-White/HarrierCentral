@@ -158,7 +158,7 @@ class KennelPhotoSweepPage extends StatelessWidget {
           'These are photos on this phone taken around a run you were at, '
           'close to where you ran. Open a run to choose which to send; '
           'nothing is sent until you do.',
-          style: ts_body.copyWith(fontSize: 13, color: Colors.white70),
+          style: ts_body.copyWith(fontSize: 13, color: Colors.white),
         ),
       ],
     ),
@@ -221,7 +221,7 @@ class KennelPhotoSweepPage extends StatelessWidget {
                       ).format(r.run.startWallClock!),
                       style: ts_body.copyWith(
                         fontSize: 13,
-                        color: Colors.white70,
+                        color: Colors.white,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -231,7 +231,7 @@ class KennelPhotoSweepPage extends StatelessWidget {
                       r.run.locationOneLine!,
                       style: ts_body.copyWith(
                         fontSize: 13,
-                        color: Colors.white70,
+                        color: Colors.white,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -242,7 +242,7 @@ class KennelPhotoSweepPage extends StatelessWidget {
                     style: ts_footnoteBlack.copyWith(
                       color: r.pending > 0
                           ? Colors.lightBlueAccent
-                          : Colors.white60,
+                          : Colors.white,
                       fontWeight: r.pending > 0
                           ? FontWeight.w700
                           : FontWeight.w400,

@@ -239,7 +239,7 @@ class RunPhotoSweepPage extends StatelessWidget {
           'Anything you send goes to your Hash Flash for review. Approved '
           'photos appear on the run and on the kennel\'s public website, so '
           'they may become publicly viewable.',
-          style: ts_body.copyWith(fontSize: 13, color: Colors.white70),
+          style: ts_body.copyWith(fontSize: 13, color: Colors.white),
           textAlign: TextAlign.center,
         ),
       ],
@@ -552,7 +552,7 @@ class _CarouselLabel extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             if (sent)
-              const Icon(Icons.cloud_done, color: Colors.white70, size: 22)
+              const Icon(Icons.cloud_done, color: Colors.white, size: 22)
             else
               _SelectionRing(selected: selected),
             const SizedBox(width: 10),
