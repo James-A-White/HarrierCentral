@@ -1,3 +1,22 @@
+## 3.0.35+1354 (2026-09-13)
+
+For Barbados, and anyone else running on a weak signal.
+
+### Fixes
+- **The award list no longer says a run has no awards when it simply could
+  not load.** On a poor connection it skipped the refresh silently and then
+  showed "No awards yet for this Trail", which is a statement about the run
+  rather than about the phone. It now says it could not load, explains that
+  the run may well have awards, and offers a Try again button. There is also
+  a refresh button in the toolbar.
+- **Opening a run's admin screens no longer empties them when the refresh
+  fails.** The app cleared the previous run's data before fetching the new
+  run's, so a dropped connection left the screens blank until you backed out
+  and came in again. It now fetches first and only clears once the new data
+  is in hand.
+- **Attendee and RSVP lists are covered by the same fix**, which had the
+  identical problem.
+
 ## 3.0.34+1351 (2026-09-13)
 
 ### Fixes
