@@ -54,11 +54,17 @@ int _trackingDistanceFilter() {
 
 // Android update interval per tracking tier. Set explicitly (rather than derived
 // from the distance filter) so the tiers get a real cadence progression
-// 15s → 1min → 15min instead of the old 15s / 15s / 15min.
+// 15s → 1min → 3min instead of the old 15s / 15s / 15min.
+//
+// Power Saver was 15 minutes, which is not a track: a hash covers a couple of
+// miles in that time, so the trail came back as a few straight lines between
+// distant points and looked like noise rather than a route. 3 minutes still
+// saves most of the battery and draws something recognisable (James,
+// 2026-09-13).
 Duration _trackingAndroidInterval() {
   switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
     case 0:
-      return const Duration(minutes: 15); // Power Saver
+      return const Duration(minutes: 3); // Power Saver
     case 1:
       return const Duration(minutes: 1); // Balanced
     default:
@@ -70,7 +76,8 @@ Duration _trackingAndroidInterval() {
 /// against the track (2026-09-13).
 ///
 /// The tier's NAME is not enough. These tiers have been redefined between
-/// builds — the Android cadence went from 15s/15s/15min to 15s/1min/15min —
+/// builds — the Android cadence has been 15s/15s/15min, then 15s/1min/15min,
+/// and from 2026-09-13 is 15s/1min/3min —
 /// so "Balanced" does not say what a track was recorded with unless the build
 /// is recorded beside it. Hence the resolved values AND the build number.
 String trackingGpsSettingsJson() {
@@ -535,9 +542,7 @@ class LocationService extends GetxService {
       }
       // While tracking, fine-grained GPS is the point — not worth a line.
       if (joinRunTracking.value || isPaused.value) return;
-      final held = DateTime.now().difference(
-        _boostHeldSince ?? DateTime.now(),
-      );
+      final held = DateTime.now().difference(_boostHeldSince ?? DateTime.now());
       BootLogger.logBreadcrumb(
         'Location: precise boost still held after ${held.inMinutes}min with no '
         'run tracking (holders=$_preciseStreamRequests) ${BootLogger.memInfo()}',
@@ -727,7 +732,10 @@ class LocationService extends GetxService {
   /// returned [PendingSlotMark] while the confirmation card is up: dismissal
   /// commits it via [commitSlotMark]; Undo simply drops it (nothing was ever
   /// queued or uploaded, so there is nothing to delete).
-  Future<PendingSlotMark> captureSlotMark(TrailSlot slot, {String? label}) async {
+  Future<PendingSlotMark> captureSlotMark(
+    TrailSlot slot, {
+    String? label,
+  }) async {
     final tsMs = DateTime.now().millisecondsSinceEpoch;
     final position = await freshFix();
     return PendingSlotMark(
@@ -926,7 +934,7 @@ class LocationService extends GetxService {
   /// queued for upload so an open map draws it immediately instead of
   /// waiting for the next server poll.
   final Map<Object, void Function(String eventId, TrackPoint point)>
-      typedPointListeners = {};
+  typedPointListeners = {};
 
   void _notifyTypedPointListeners(UserEventLocation p, int tsMs, String? evId) {
     if (typedPointListeners.isEmpty) return;
@@ -1097,14 +1105,14 @@ class LocationService extends GetxService {
       // landed and added that distance twice.
       if (pointStr == null) {
         _sessionTrack.add(
-        TrackPoint(
-          lat: double.parse(lat.toStringAsFixed(5)),
-          lng: double.parse(lon.toStringAsFixed(5)),
-          acc: double.parse(accuracy.toStringAsFixed(2)),
-          alt: double.parse(altitude.toStringAsFixed(2)),
-          timestampMs: tsMs,
-        ),
-      );
+          TrackPoint(
+            lat: double.parse(lat.toStringAsFixed(5)),
+            lng: double.parse(lon.toStringAsFixed(5)),
+            acc: double.parse(accuracy.toStringAsFixed(2)),
+            alt: double.parse(altitude.toStringAsFixed(2)),
+            timestampMs: tsMs,
+          ),
+        );
       }
       // Recompute the filtered distance at most ~every 10s (or on a forced flush
       // — mark/stop), not on every point, to avoid an O(n²) refilter over the run.
