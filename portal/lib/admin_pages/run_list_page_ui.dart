@@ -631,6 +631,25 @@ class RunListPage extends StatelessWidget {
               }
             },
           ),
+        // Gated on the 'manageProducts' function key, resolved server-side in
+        // hcportal_getLandingPageData so this button and the SP's own
+        // CheckKennelPermission gate cannot drift apart.
+        if (k.canManageProducts == 1)
+          (
+            label: 'Products',
+            icon: Icons.inventory_2_outlined,
+            isPrimary: false,
+            onTap: () async {
+              await Get.delete<ProductController>(force: true);
+              await Get.to<ProductsPage>(
+                () => ProductsPage(
+                  publicKennelId: k.publicKennelId,
+                  kennelName: k.kennelShortName,
+                ),
+              );
+              await Get.delete<ProductController>(force: true);
+            },
+          ),
         if (k.canEditWebsite == 1)
           (
             label: 'Edit Website',
