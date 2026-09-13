@@ -266,8 +266,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           textAlign: TextAlign.center,
         ),
         if (can(KennelFeature.createEditRuns))
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          // Wrap, not Row. Every button is a fixed 110pt, and how many appear
+          // depends on the viewer's permissions — four of them is 440pt plus
+          // spacing, which is wider than a phone, so a Row clipped the last one
+          // off the right edge (James, 2026-09-13). A Wrap takes a second line
+          // instead. CLAUDE.md calls this out: two controls side by side want a
+          // Wrap, and a Row overflows.
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
             children: <Widget>[
               _adminButton(
                 icon: MaterialCommunityIcons.run_fast,
@@ -308,8 +315,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             ],
           ),
         if (can(KennelFeature.createEditRuns))
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          // Wrap, not Row. Every button is a fixed 110pt, and how many appear
+          // depends on the viewer's permissions — four of them is 440pt plus
+          // spacing, which is wider than a phone, so a Row clipped the last one
+          // off the right edge (James, 2026-09-13). A Wrap takes a second line
+          // instead. CLAUDE.md calls this out: two controls side by side want a
+          // Wrap, and a Row overflows.
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
             children: <Widget>[
               _adminButton(
                 icon: MaterialCommunityIcons.qrcode,
@@ -353,12 +367,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               ),
             ],
           ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
           children: <Widget>[
             if (can(KennelFeature.createEditRuns))
               Container(
-                margin: const EdgeInsets.only(top: 20, bottom: 15),
+                // 15/15 to match _adminButton's padding. This was 20/15, which
+                // sat this one button 5pt lower than the rest of its row.
+                margin: const EdgeInsets.only(top: 15, bottom: 15),
                 width: 110,
                 height: 110,
                 child: StyleForConnected(

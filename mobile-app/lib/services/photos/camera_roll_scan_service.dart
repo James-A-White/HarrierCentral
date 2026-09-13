@@ -113,7 +113,16 @@ class CameraRollScanService {
   /// Used only where the hasher has no trail for the run: everything is
   /// measured from the start, so it has to reach an On-Inn without sweeping
   /// in the rest of town.
-  static const double startRadiusMeters = 2000;
+  ///
+  /// 10 km, widened from 2 km on 2026-09-13 (James). 2 km reached an On-Inn a
+  /// short walk away but missed trails that genuinely travel — a point-to-point,
+  /// a coach out to the countryside, or a city hash that ends several stops
+  /// down the line. This radius only ever applies when the hasher has NO track
+  /// for the run, so the time window is doing most of the filtering: a photo
+  /// still has to fall between [windowBefore] and [windowAfter] of the start.
+  /// Where a track DOES exist, [trailRadiusMeters] is used instead and is
+  /// unchanged at 300 m.
+  static const double startRadiusMeters = 10000;
 
   static const Distance _distance = Distance();
 
