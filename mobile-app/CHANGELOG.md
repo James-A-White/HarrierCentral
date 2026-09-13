@@ -1,3 +1,20 @@
+## 3.1.0+1352 (2026-09-13)
+
+Everything in 3.0.34, on the 3.1 catalogue train. 1351 was skipped: that
+number went to the 3.0.34 build cut from master the same afternoon.
+
+### Fixes
+- **A button on the trail-trim panel was invisible**, drawn in the same red
+  as the button it sat on. It now reads "Stop tracking" in white.
+- **The trim panel's buttons match each other** and the rest of the app,
+  rather than mixing two corner shapes and two text sizes.
+- **Setting an official start or end no longer claims success when the
+  marker never reached the server.**
+
+### Improvements
+- **Close is the top button on the full-screen map**, set apart from the
+  controls below it.
+
 ## 3.1.0+1350 (2026-09-13)
 
 Rebuilds your local database again. 3.1.0+1349 stored the catalogue with
