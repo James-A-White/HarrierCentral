@@ -33,6 +33,18 @@ class SupportPageState extends State<SupportPage> {
   void initState() {
     super.initState();
     _loadSecretCode();
+    unawaited(_loadAdminChannelAccess());
+  }
+
+  /// Whether to offer the Harrier Central admin channel. Read from the LOCAL
+  /// HasherKennelMap, so the page decides without a round trip and behaves
+  /// offline. The SPs check the same bit themselves — this only decides
+  /// whether the button is drawn.
+  bool _showAdminChannel = false;
+
+  Future<void> _loadAdminChannelAccess() async {
+    final bool may = await AdminChannelService.currentUserMayUse();
+    if (mounted) setState(() => _showAdminChannel = may);
   }
 
   // qrSecretCode now lives in the keychain (async) — load it after first frame.
@@ -130,6 +142,49 @@ class SupportPageState extends State<SupportPage> {
                         ),
                         child: Column(
                           children: <Widget>[
+                            // Harrier Central admin channel — one room for the
+                            // people who run the platform, not scoped to any
+                            // kennel. Sits above the QR code because someone
+                            // opening Support to ask a question should see it
+                            // before they see their own secret code.
+                            if (_showAdminChannel) ...<Widget>[
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(Icons.forum_outlined),
+                                    label: const Text('Admin channel'),
+                                    onPressed: () async {
+                                      // Delete first AND after: the controller
+                                      // is Get.put by the page, so a stale one
+                                      // would otherwise be reused.
+                                      await Get.delete<ChatPageController>(
+                                        force: true,
+                                      );
+                                      await Get.to<ChatPage>(
+                                        () => ChatPage.adminChannel(
+                                          key: UniqueKey(),
+                                        ),
+                                      );
+                                      await Get.delete<ChatPageController>(
+                                        force: true,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
+                                child: Text(
+                                  'Talk to the other Harrier Central admins.',
+                                  textAlign: TextAlign.center,
+                                  style: ts_body.copyWith(fontSize: 13),
+                                ),
+                              ),
+                              const Divider(color: Colors.white24),
+                              const SizedBox(height: 10),
+                            ],
                             AutoSizeText(
                               'Secret QR code for:',
                               //'QR Code for xxx',

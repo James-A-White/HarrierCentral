@@ -7,19 +7,31 @@ class ChatPage extends StatelessWidget {
     required this.eventId,
     required this.publicEventId,
     this.isKennelThread = false,
+    this.isAdminThread = false,
     super.key,
   });
+
+  /// The platform-wide Harrier Central admin room. Belongs to no kennel and no
+  /// run, so [eventId] and [publicEventId] are both empty for it.
+  factory ChatPage.adminChannel({Key? key}) => ChatPage(
+    eventId: '',
+    publicEventId: '',
+    isAdminThread: true,
+    key: key,
+  );
 
   /// Kennel thread: [eventId]=kennelId, [publicEventId]=publicKennelId.
   final String eventId;
   final String publicEventId;
   final bool isKennelThread;
+  final bool isAdminThread;
 
   late final ChatPageController controller = Get.put(
     ChatPageController(
       eventId: eventId,
       publicEventId: publicEventId,
       isKennelThread: isKennelThread,
+      isAdminThread: isAdminThread,
     ),
   );
 
