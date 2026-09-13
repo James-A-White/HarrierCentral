@@ -1,3 +1,16 @@
+## 3.0.36+1356 (2026-09-13)
+
+### Fixes
+- **A crash on the runs list.** On the App Store build it fired 61 times over
+  one weekend across five phones, and once it started it repeated on every
+  frame until the screen was left. The list is rebuilt whenever runs are
+  filtered, searched or refreshed, and it was reusing the old list's layout
+  after the contents had changed underneath it.
+
+Not reproducible to order, so this is a fix by diagnosis rather than one
+watched failing and then passing. If anyone still sees the runs list
+misbehave after a sync lands, that is worth knowing.
+
 ## 3.0.35+1354 (2026-09-13)
 
 For Barbados, and anyone else running on a weak signal.
