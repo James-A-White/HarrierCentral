@@ -415,6 +415,9 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
             kennelId: (canEdit && p.isOwnPhoto) ? widget.kennelId : null,
             kennelSlug: (canEdit && p.isOwnPhoto) ? widget.kennelSlug : null,
             eventNumber: (canEdit && p.isOwnPhoto) ? widget.eventNumber : null,
+            // Their own photo, currently visible to more than just them.
+            // No role required — see MapPhotoItem.myPhotoId.
+            myPhotoId: (p.isOwnPhoto && p.status >= 2) ? p.photoId : null,
           );
         })
         .toList(growable: false);

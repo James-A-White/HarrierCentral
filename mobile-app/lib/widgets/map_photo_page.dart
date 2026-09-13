@@ -16,6 +16,7 @@ class MapPhotoItem {
     this.kennelId,
     this.kennelSlug,
     this.eventNumber,
+    this.myPhotoId,
   });
   final String imageUrl;
   final String caption;
@@ -34,28 +35,41 @@ class MapPhotoItem {
   // can edit (Hash Flash / GM / VGM / RA role). Null for others' photos and
   // for the guest gallery.
   final String? photoId;
+
   /// Original unedited blob URL — always start re-edits from here, never from imageUrl.
   final String? originalBlobUrl;
   final String? kennelId;
   final String? kennelSlug;
   final int? eventNumber;
 
-  bool get isEditable => photoId != null && kennelId != null && kennelSlug != null;
+  /// Set when this photo is the VIEWER'S OWN and is currently visible beyond
+  /// them. Separate from [photoId], which is only populated for someone who
+  /// can edit the kennel's photos: the person who took a photo may withdraw
+  /// it from public view whether or not they hold any role (James,
+  /// 2026-09-13).
+  final String? myPhotoId;
+
+  bool get isEditable =>
+      photoId != null && kennelId != null && kennelSlug != null;
+
+  /// Whether the viewer can withdraw this photo from public view.
+  bool get canMakePrivate => myPhotoId != null;
 
   MapPhotoItem withImageUrl(String newUrl) => MapPhotoItem(
-        imageUrl: newUrl,
-        caption: caption,
-        uploaderName: uploaderName,
-        uploaderPhotoUrl: uploaderPhotoUrl,
-        capturedAt: capturedAt,
-        latitude: latitude,
-        longitude: longitude,
-        photoId: photoId,
-        originalBlobUrl: originalBlobUrl,
-        kennelId: kennelId,
-        kennelSlug: kennelSlug,
-        eventNumber: eventNumber,
-      );
+    myPhotoId: myPhotoId,
+    imageUrl: newUrl,
+    caption: caption,
+    uploaderName: uploaderName,
+    uploaderPhotoUrl: uploaderPhotoUrl,
+    capturedAt: capturedAt,
+    latitude: latitude,
+    longitude: longitude,
+    photoId: photoId,
+    originalBlobUrl: originalBlobUrl,
+    kennelId: kennelId,
+    kennelSlug: kennelSlug,
+    eventNumber: eventNumber,
+  );
 }
 
 class MapPhotoPage extends StatefulWidget {
@@ -156,12 +170,16 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
       _heightsInitialized = true;
       final mq = MediaQuery.of(context);
       _screenHeight = mq.size.height;
-      final initialHeight = (_initialLines * _lineHeight) +
+      final initialHeight =
+          (_initialLines * _lineHeight) +
           _captionTopPadding +
           mq.padding.bottom +
           _captionBottomPadding +
           _footerHeight;
-      _maxCaptionTop = (_screenHeight - initialHeight).clamp(0.0, _screenHeight);
+      _maxCaptionTop = (_screenHeight - initialHeight).clamp(
+        0.0,
+        _screenHeight,
+      );
       _captionTop = _maxCaptionTop;
     }
   }
@@ -184,9 +202,8 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
         // text plus the bottom buffer. If text already fits at initial height,
         // this matches _maxCaptionTop so the panel won't expand at all.
         // If text is longer than the screen, clamp to 0 (allow full-screen).
-        _minCaptionTop =
-            (_screenHeight - contentHeight - _expansionBuffer)
-                .clamp(0.0, _maxCaptionTop);
+        _minCaptionTop = (_screenHeight - contentHeight - _expansionBuffer)
+            .clamp(0.0, _maxCaptionTop);
       });
     });
   }
@@ -230,24 +247,32 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
       if (dy < 0) {
         // Dragging up: expand container first, then scroll content.
         if (_captionTop > _minCaptionTop) {
-          _captionTop =
-              (_captionTop + dy).clamp(_minCaptionTop, _maxCaptionTop);
+          _captionTop = (_captionTop + dy).clamp(
+            _minCaptionTop,
+            _maxCaptionTop,
+          );
         } else if (_scrollController.hasClients) {
           _scrollController.jumpTo(
-            (_scrollController.offset - dy)
-                .clamp(0.0, _scrollController.position.maxScrollExtent),
+            (_scrollController.offset - dy).clamp(
+              0.0,
+              _scrollController.position.maxScrollExtent,
+            ),
           );
         }
       } else {
         // Dragging down: scroll content back first, then collapse container.
         if (_scrollController.hasClients && _scrollController.offset > 0) {
           _scrollController.jumpTo(
-            (_scrollController.offset - dy)
-                .clamp(0.0, _scrollController.position.maxScrollExtent),
+            (_scrollController.offset - dy).clamp(
+              0.0,
+              _scrollController.position.maxScrollExtent,
+            ),
           );
         } else {
-          _captionTop =
-              (_captionTop + dy).clamp(_minCaptionTop, _maxCaptionTop);
+          _captionTop = (_captionTop + dy).clamp(
+            _minCaptionTop,
+            _maxCaptionTop,
+          );
         }
       }
       _updateMask();
@@ -331,6 +356,17 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
           minFontSize: 2.0,
           maxLines: 1,
         ),
+        actions: <Widget>[
+          // Your photo, your call — at any point in its life, whether it is
+          // still waiting on the Hash Flash or was approved months ago
+          // (James, 2026-09-13).
+          if (_currentPhoto.canMakePrivate)
+            IconButton(
+              tooltip: 'Make private',
+              icon: const Icon(Icons.visibility_off, color: Colors.white),
+              onPressed: _makeCurrentPrivate,
+            ),
+        ],
       ),
       body: Stack(
         children: [
@@ -365,7 +401,6 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
             Positioned.fill(child: _navArrow(left: false)),
           ],
 
-
           // Caption overlay — a Positioned panel that starts at the bottom and
           // expands upward as the user drags vertically.
           // HitTestBehavior.opaque absorbs all touches in the panel area so they
@@ -386,9 +421,9 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
                     ? (details) {
                         final dx = details.velocity.pixelsPerSecond.dx;
                         if (dx.abs() < 300) return;
-                        _navigateTo(dx < 0
-                            ? _currentIndex + 1
-                            : _currentIndex - 1);
+                        _navigateTo(
+                          dx < 0 ? _currentIndex + 1 : _currentIndex - 1,
+                        );
                       }
                     : null,
                 child: Stack(
@@ -474,8 +509,9 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
   // A single side navigation arrow, centered vertically. Returns an empty box
   // at the ends so there's nothing to tap past the first / last photo.
   Widget _navArrow({required bool left}) {
-    final bool enabled =
-        left ? _currentIndex > 0 : _currentIndex < _photos.length - 1;
+    final bool enabled = left
+        ? _currentIndex > 0
+        : _currentIndex < _photos.length - 1;
     if (!enabled) return const SizedBox.shrink();
     return Align(
       alignment: left ? Alignment.centerLeft : Alignment.centerRight,
@@ -498,11 +534,54 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
     );
   }
 
+  /// Take the viewer's own photo back out of public view. Sets it Private,
+  /// which removes it from the run, the kennel's gallery and the public
+  /// website — and from the Hash Flash's queue if it had not been reviewed
+  /// yet. Reversible: they can send it again later.
+  Future<void> _makeCurrentPrivate() async {
+    final String? id = _currentPhoto.myPhotoId;
+    if (id == null || _makingPrivate) return;
+
+    final bool? ok = await Utilities.showAlert(
+      'Make this photo private?',
+      'It comes off the run, the kennel gallery and the public website, and '
+          'only you will see it. You can send it again later.',
+      'Make private',
+      showCancelButton: true,
+    );
+    if (ok != true) return;
+
+    setState(() => _makingPrivate = true);
+    try {
+      final String result = await KennelPhotoService().updatePhotoStatus(
+        photoId: id,
+        action: photoActionKeepPrivate,
+      );
+      if (result.startsWith(ERROR_PREFIX)) {
+        await Utilities.showAlert(
+          'Could not make it private',
+          'The photo could not be changed. Please check your connection and '
+              'try again.',
+          'OK',
+        );
+        return;
+      }
+      // It is no longer part of this gallery, so leave the viewer rather than
+      // showing a photo that is no longer there.
+      if (mounted) Navigator.of(context).maybePop();
+    } catch (e, st) {
+      BootLogger.logError('[MapPhotoPage._makeCurrentPrivate]', e, st);
+    } finally {
+      if (mounted) setState(() => _makingPrivate = false);
+    }
+  }
+
+  bool _makingPrivate = false;
+
   Widget _buildInfoFooter(BuildContext context, double bottomInset) {
     final photo = _currentPhoto;
-    final bool showMap = widget.run != null &&
-        photo.latitude != null &&
-        photo.longitude != null;
+    final bool showMap =
+        widget.run != null && photo.latitude != null && photo.longitude != null;
 
     final metaParts = <String>[
       '${_currentIndex + 1} of ${_photos.length} photo${_photos.length == 1 ? '' : 's'}',
@@ -578,15 +657,16 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
               onPressed: () => Get.to<void>(
                 () => PackTrackFullScreenMap(
                   run: widget.run!,
-                  focusPoint:
-                      latlng.LatLng(photo.latitude!, photo.longitude!),
+                  focusPoint: latlng.LatLng(photo.latitude!, photo.longitude!),
                 ),
               ),
               style: TextButton.styleFrom(
                 backgroundColor: hc_red,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),

@@ -34,6 +34,9 @@ AS
 --   On success (rowset 1): { photoId, newStatus, deletedAt }
 --   On error  (rowset 0): { success, errorCode, errorType }
 --   On error  (rowset 1): standard HC6 error detail
+-- Authorization: the editPhoto feature (Hash Flash / GM / VGM / RA), OR the
+--   photo's own uploader when they are setting it Private (action 2) — their
+--   photo, their call, at any point in its life (James, 2026-09-13).
 -- Author: Harrier Central
 -- Created: 2026-05-20
 -- Updated: 2026-05-21 — expanded actions (3→6), expanded roles
@@ -96,11 +99,14 @@ DECLARE @photoKennelId    UNIQUEIDENTIFIER;
 DECLARE @photoEventId     UNIQUEIDENTIFIER;
 DECLARE @photoBlobUrl     NVARCHAR(500);
 DECLARE @photoEditedBlobUrl NVARCHAR(MAX);
+-- Who took it: they may withdraw their own photo from public view.
+DECLARE @photoUserId      UNIQUEIDENTIFIER;
 
 SELECT @photoKennelId     = KennelId,
        @photoEventId      = EventId,
        @photoBlobUrl      = BlobUrl,
-       @photoEditedBlobUrl = EditedBlobUrl
+       @photoEditedBlobUrl = EditedBlobUrl,
+       @photoUserId       = UserId
 FROM HC.KennelPhotos
 WHERE id = @photoId;
 
@@ -122,6 +128,16 @@ END
 -- Authorization: feature "Edit photo status / caption" (see /hc-authorizations).
 DECLARE @photoAllowed SMALLINT;
 EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @photoKennelId, @functionKey = 'editPhoto', @allowed = @photoAllowed OUTPUT;
+
+-- The person who took the photo may withdraw it from public view at ANY time
+-- — before review (it simply leaves the queue) or long after approval (James,
+-- 2026-09-13). Deliberately narrow: it is their OWN photo and the only status
+-- they may set is Private (action 2). They cannot approve their own photo into
+-- a gallery, which is what the editPhoto role is for.
+IF (@photoAllowed = 0 AND @action = 2 AND @photoUserId = @userId)
+BEGIN
+    SET @photoAllowed = 1;
+END
 
 IF (@photoAllowed = 0)
 BEGIN
@@ -162,6 +178,16 @@ BEGIN TRY
         SET DeletedAt = GETUTCDATE(),
             UpdatedAt = GETUTCDATE()
         WHERE id = @photoId;
+
+        -- Same reasoning as Private: a deleted photo cannot stay the cover.
+        IF (@photoEventId IS NOT NULL)
+        BEGIN
+            UPDATE HC.Event
+            SET EventCoverPhotoUrl = NULL
+            WHERE id = @photoEventId
+              AND EventCoverPhotoUrl IS NOT NULL
+              AND EventCoverPhotoUrl IN (@photoBlobUrl, @photoEditedBlobUrl);
+        END
     END
     ELSE
     BEGIN
@@ -171,6 +197,19 @@ BEGIN TRY
             DeletedAt = NULL,
             UpdatedAt = GETUTCDATE()
         WHERE id = @photoId;
+
+        -- Out of public view (Private) — clear the run's cover if this photo
+        -- was it, rather than leaving the card pointing at a photo nobody may
+        -- see. A run without a cover is a fine outcome; plenty have none
+        -- (James, 2026-09-13).
+        IF (@newStatus = 0 AND @photoEventId IS NOT NULL)
+        BEGIN
+            UPDATE HC.Event
+            SET EventCoverPhotoUrl = NULL
+            WHERE id = @photoEventId
+              AND EventCoverPhotoUrl IS NOT NULL
+              AND EventCoverPhotoUrl IN (@photoBlobUrl, @photoEditedBlobUrl);
+        END
 
         IF (@action = 6 AND @photoEventId IS NOT NULL)
         BEGIN
