@@ -1160,17 +1160,23 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   ),
                   child: Row(
                     children: <Widget>[
-                      const SizedBox(
+                      SizedBox(
                         width: 45.0,
-                        child: Icon(
-                          Icons.photo_library,
-                          color: Colors.white,
-                          size: 32,
+                        // The platform's own photo-library mark — the same
+                        // pair the profile-photo picker uses for its Gallery
+                        // button. Colourful like its neighbours, and it says
+                        // "your phone's photos" without a word (James,
+                        // 2026-09-13).
+                        child: Image.asset(
+                          Platform.isAndroid
+                              ? 'images/icons/android_gallery.png'
+                              : 'images/icons/ios_gallery.png',
+                          height: 35,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 20, right: 0),
-                        child: Text('Photos on your phone', style: ts_button),
+                        child: Text('Share my photos', style: ts_button),
                       ),
                     ],
                   ),
