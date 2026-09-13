@@ -31,6 +31,35 @@ class _CategoryDetailDialogState extends State<CategoryDetailDialog> {
   int? _sortColumn;
   bool _sortAscending = true;
 
+  /// A cell. A value that is a URL is a link you can open — the PackTrack
+  /// detail lists a public map per track and reading the address off the
+  /// screen to retype it is no use to anyone (James, 2026-09-13). Everything
+  /// else is plain text.
+  Widget _cell(String value) {
+    if (!value.startsWith('http://') && !value.startsWith('https://')) {
+      return Text(value, overflow: TextOverflow.ellipsis, maxLines: 2);
+    }
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () =>
+            unawaited(launchUrl(Uri.parse(value), webOnlyWindowName: '_blank')),
+        child: Tooltip(
+          message: value,
+          child: Text(
+            value,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+            style: const TextStyle(
+              color: Colors.blue,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   double get _totalWidth =>
       _widths.fold<double>(0, (a, b) => a + b) + _widths.length * 16 + 24;
 
@@ -44,8 +73,10 @@ class _CategoryDetailDialogState extends State<CategoryDetailDialog> {
       _widths = List<double>.from(saved);
     } else {
       final w = 744.0 / widget.headers.length;
-      _widths =
-          List<double>.filled(widget.headers.length, w < 150.0 ? 150.0 : w);
+      _widths = List<double>.filled(
+        widget.headers.length,
+        w < 150.0 ? 150.0 : w,
+      );
     }
     _dataScrollCtrl.addListener(_onDataScroll);
   }
@@ -113,10 +144,7 @@ class _CategoryDetailDialogState extends State<CategoryDetailDialog> {
           children: <Widget>[
             Text(
               widget.title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
@@ -141,7 +169,9 @@ class _CategoryDetailDialogState extends State<CategoryDetailDialog> {
                     width: tw,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 12),
+                        vertical: 8,
+                        horizontal: 12,
+                      ),
                       color: Colors.grey.shade200,
                       child: Row(
                         children: <Widget>[
@@ -157,7 +187,8 @@ class _CategoryDetailDialogState extends State<CategoryDetailDialog> {
                                       child: Text(
                                         widget.headers[i],
                                         style: const TextStyle(
-                                            fontWeight: FontWeight.w600),
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -228,11 +259,7 @@ class _CategoryDetailDialogState extends State<CategoryDetailDialog> {
                                   for (var i = 0; i < row.length; i++) ...[
                                     SizedBox(
                                       width: _widths[i],
-                                      child: Text(
-                                        row[i],
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 2,
-                                      ),
+                                      child: _cell(row[i]),
                                     ),
                                     const SizedBox(width: 16),
                                   ],
