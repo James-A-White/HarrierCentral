@@ -959,6 +959,42 @@ class RunDetails extends StatelessWidget {
             innerColor: Colors.white,
             topMargin: 30.0,
           ),
+          // The same door as the kennel's "Share my photos", but for THIS run
+          // (James, 2026-09-13). One already existed as a floating button on
+          // the Photos tab, which is no use to somebody who has not thought to
+          // go looking in there — and the kennel screen sets the expectation
+          // that this is a labelled button you can read.
+          Padding(
+            padding: const EdgeInsets.only(top: 15.0, bottom: 0.0),
+            child: ElevatedButton.icon(
+              icon: Image.asset(
+                Platform.isAndroid
+                    ? 'images/icons/android_gallery.png'
+                    : 'images/icons/ios_gallery.png',
+                height: 28,
+              ),
+              label: Text(
+                'Share my photos of this run',
+                style: ts_button,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              onPressed: () async {
+                final BuildContext? ctx = navigatorKey.currentContext;
+                if (ctx == null) return;
+                await Navigator.push<dynamic>(
+                  ctx,
+                  MaterialPageRoute<dynamic>(
+                    builder: (_) => RunPhotoSweepPage(
+                      eventId: event.eventId,
+                      eventName: event.eventName,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
             child: ElevatedButton(
