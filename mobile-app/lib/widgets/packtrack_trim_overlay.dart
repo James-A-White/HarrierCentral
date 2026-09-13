@@ -162,6 +162,23 @@ class PackTrackTrimController extends GetxController {
         _snack('Could not reach the server — the boundary was not set.');
         return;
       }
+
+      // Show it NOW. The point is stored, so this is the truth; waiting for it
+      // to come back round the loop is what made the panel look broken.
+      //
+      // GetPositions caches the official window per event for five minutes.
+      // The API now drops that entry when a boundary is written, but the cache
+      // is per Function INSTANCE, so a poll answered by a different instance
+      // can still serve a stale window for a while. Setting the value locally
+      // makes the UI correct regardless, and the next successful load either
+      // confirms it or corrects it (James, 2026-09-13).
+      final int tsMs = ts.round();
+      if (type == HashRunPointTypes.adminStart) {
+        map.officialStartMs.value = tsMs;
+      } else {
+        map.officialEndMs.value = tsMs;
+      }
+
       await map.loadPositions(reset: true);
       _snack(
         type == HashRunPointTypes.adminStart
@@ -195,6 +212,12 @@ class PackTrackTrimController extends GetxController {
         userId: _userId,
         timestampsMs: ts,
       );
+      // Clear the panel NOW, for the same reason the setters do: the points
+      // are deleted, so this is the truth, and waiting for a poll to agree is
+      // what made the button look inert.
+      map.officialStartMs.value = null;
+      map.officialEndMs.value = null;
+
       await map.loadPositions(reset: true);
       _snack('Official window cleared.');
     } catch (e) {
@@ -254,7 +277,6 @@ class TrimEditorOverlay extends StatelessWidget {
   const TrimEditorOverlay({
     super.key,
     required this.trimController,
-    this.wide = false,
     this.showCollapsedPill = true,
   });
 
@@ -262,7 +284,6 @@ class TrimEditorOverlay extends StatelessWidget {
 
   /// Spread-out full-width bottom-bar layout for the fullscreen map (which has
   /// room). Compact scissors-card layout otherwise.
-  final bool wide;
 
   /// Whether the collapsed "Trim run" pill is drawn. Both the run Map tab and
   /// the fullscreen route set false, because each puts a scissors button in
@@ -281,7 +302,6 @@ class TrimEditorOverlay extends StatelessWidget {
     return Obx(() {
       final editing = trimController.editing.value;
       final busy = trimController.busy.value;
-      if (wide) return _buildWide(editing: editing, busy: busy);
       if (!editing) {
         // The caller may already offer a scissors of its own (the run Map tab
         // and the fullscreen route both put one in their control column), in
@@ -390,116 +410,4 @@ class TrimEditorOverlay extends StatelessWidget {
   /// Fullscreen layout: a "Trim run" pill that expands to a full-width bar
   /// spreading the controls across the bottom. Tapping the pill also enters
   /// edit mode (the map shows the full untrimmed track while trimming).
-  Widget _buildWide({required bool editing, required bool busy}) {
-    if (!editing && !showCollapsedPill) return const SizedBox.shrink();
-    if (!editing) {
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: Material(
-          color: Colors.black.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(22),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: () => trimController.toggleEditing(),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.content_cut, color: Colors.white, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'Trim run',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.66),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      // Two rows: the window summary on top, the actions underneath.
-      //
-      // This was one unbounded Row holding the icon, the summary, four buttons
-      // and Done. On a phone the last button ran off the right edge — "Stop
-      // everyone" was simply unreachable, and which button fell off depended on
-      // the text, so it changed as the labels changed. The actions now sit in a
-      // Wrap, which cannot overflow at any width: they take a second line when
-      // they need one and stay on one line when they fit.
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.content_cut, color: Colors.white, size: 18),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Official window   ·   Start ${_fmt(trimController.officialStartMs)}   ·   End ${_fmt(trimController.officialEndMs)}',
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                tooltip: 'Done',
-                visualDensity: VisualDensity.compact,
-                onPressed: busy ? null : () => trimController.toggleEditing(),
-                icon: const Icon(Icons.check, color: Colors.white),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              ElevatedButton(
-                style: _trimButtonStyle(),
-                onPressed: busy ? null : () => trimController.setStart(),
-                child: const Text('Set start'),
-              ),
-              ElevatedButton(
-                style: _trimButtonStyle(),
-                onPressed: busy ? null : () => trimController.setEnd(),
-                child: const Text('Set end'),
-              ),
-              ElevatedButton(
-                style: _trimButtonStyle(),
-                onPressed: busy ? null : () => trimController.clear(),
-                child: const Text('Clear'),
-              ),
-              if (trimController.trackingEnded.value != null)
-                ElevatedButton(
-                  style: _trimButtonStyle(),
-                  onPressed: busy
-                      ? null
-                      : () =>
-                            unawaited(trimController.toggleEveryonesTracking()),
-                  // Was Colors.red.shade300 on a red button: legible only just.
-                  child: Text(
-                    trimController.trackingEnded.value == true
-                        ? 'Re-open tracking'
-                        : 'Stop tracking',
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 }
