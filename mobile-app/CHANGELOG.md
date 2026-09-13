@@ -1,3 +1,13 @@
+## 3.1.0+1357 (2026-09-13)
+
+Build 1356 went to 3.0.36 the same evening, so this is 1357.
+
+### Fixes
+- **A crash on the runs list**, the same fix as 3.0.36. On the App Store
+  build it fired 61 times over one weekend across five phones, repeating
+  every frame until the screen was left. The list was reusing the previous
+  layout after its contents had changed underneath it.
+
 ## 3.1.0+1355 (2026-09-13)
 
 Build 1354 went to 3.0.35 the same afternoon, so this is 1355.
