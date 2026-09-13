@@ -15,6 +15,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_syncUserData]
     @forceReplicateAllRunsForKennel  NVARCHAR(50)      = 'ignore',
     @usePaging                       INT               = 0,
     @initialLoad                     INT               = 0,
+    -- 0 (the default) hides payments that have no run attached, so a client
+    -- from before 3.1 never receives a row its model cannot parse. 3.1+ sends
+    -- 1. See the WHERE clause on the payments rowset for the full reasoning.
+    @includeUnboundPayments          SMALLINT          = 0,
     @procName                        NVARCHAR(128)     = NULL,
     @param                           NVARCHAR(500)     = NULL
 
@@ -565,6 +569,23 @@ BEGIN
         CONVERT(NVARCHAR(50), CAST(pmt.updatedAt AS DATETIME2))             AS updatedAt
     FROM HC.Payment pmt
     WHERE pmt.UserId = @userId AND pmt.updatedAt > @ua
+      AND (
+            -- Event-less payments (run packages, hare rewards) must NOT reach a
+            -- client that cannot parse them: payments_model_ns.dart declares
+            -- eventId and hemId as REQUIRED, so a null row throws
+            -- "type 'Null' is not a subtype of type 'String'" and breaks
+            -- payment sync for every 2.1.2 and 3.0.x install in the field. No
+            -- app release fixes a phone that has not updated.
+            --
+            -- A DEFAULTED parameter rather than a forked copy of this SP: HC3
+            -- already carries syncUserData, _392, _668, _705 and _800, drifted
+            -- copies of one procedure, which is much of why HC6 exists. An old
+            -- client omits the key, the shim passes nothing, the default
+            -- filters the rows out. 3.1+ asks for 1 and sees everything.
+            -- (James chose this approach, 2026-09-13.)
+            @includeUnboundPayments = 1
+            OR (pmt.EventId IS NOT NULL AND pmt.HasherEventMapId IS NOT NULL)
+          )
     ORDER BY pmt.updatedAt ASC, pmt.id ASC
     OFFSET 0 ROWS FETCH NEXT @paging250 ROWS ONLY;
 END
