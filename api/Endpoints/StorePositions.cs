@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.IO;
+using System.Linq;
 using Azure.Data.Tables;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Http;
@@ -75,6 +76,20 @@ namespace HcWebApi.Endpoints
             }
             PositionWriter.Outcome written = await PositionWriter.WriteAsync(
                 _tableServiceClient, _log, payload.EventId, payload.UserId, points, payload.Resumed);
+
+            // A boundary marker changes the event's official window, which
+            // GetPositions caches for five minutes. Without this the admin sets
+            // a start or end, the point IS stored, and the map keeps drawing
+            // the old window until the cache ages out — which reads as "it did
+            // not work" and invites a second tap (James, 2026-09-13).
+            if (points.Any(p => string.Equals(p.Type, "AST", StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(p.Type, "AEN", StringComparison.OrdinalIgnoreCase)))
+            {
+                GetPositions.InvalidateTrimWindow(payload.EventId);
+                _log.LogInformation(
+                    "StorePositions: boundary marker written for event {EventId} — trim window cache invalidated.",
+                    payload.EventId);
+            }
             int storedCount = written.Stored;
             int resumeDeleted = written.ResumeDeleted;
 

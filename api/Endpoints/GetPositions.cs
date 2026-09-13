@@ -462,6 +462,31 @@ namespace HcWebApi.Endpoints
             return (startMs, endMs);
         }
 
+        /// <summary>
+        /// Drops the cached official window for one event.
+        /// </summary>
+        /// <remarks>
+        /// The window is cached for five minutes, which is right for reads —
+        /// it is a markers-only query on every positions poll. But an admin
+        /// dropping a new AST/AEN boundary changes the answer immediately, and
+        /// without this the map kept serving the stale window until the entry
+        /// aged out. From the phone that looked like the Start/End simply not
+        /// registering: the mark was stored, the panel showed nothing, and it
+        /// appeared some tens of seconds later when a poll happened to land on
+        /// an instance whose cache had expired or was cold (James, 2026-09-13).
+        ///
+        /// Called by StorePositions whenever a boundary marker is written.
+        /// Per-instance, like the cache itself: another Function instance still
+        /// serves its own copy until that ages out, so this makes the common
+        /// single-instance case correct rather than promising distributed
+        /// invalidation the cache was never built for.
+        /// </remarks>
+        public static void InvalidateTrimWindow(string eventId)
+        {
+            if (string.IsNullOrWhiteSpace(eventId)) return;
+            _trimCache.TryRemove(eventId, out _);
+        }
+
         private class TrimWindowCacheEntry
         {
             public long? StartMs { get; set; }

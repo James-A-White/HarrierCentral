@@ -337,9 +337,16 @@ class PackTrackFullScreenMap extends StatelessWidget {
                   ),
                   child: Align(
                     alignment: Alignment.bottomCenter,
+                    // The COMPACT panel, the same one the run-detail map shows,
+                    // rather than the wide Wrap. James prefers it and it is the
+                    // better layout: Start and End sit as a pair, Clear window
+                    // and Stop tracking get their own full-width rows, and the
+                    // window's current Start/End values are stated above them
+                    // instead of squeezed into a single line of chrome
+                    // (2026-09-13). One layout across both maps also means one
+                    // place to fix anything wrong with it.
                     child: TrimEditorOverlay(
                       trimController: trimController,
-                      wide: true,
                       showCollapsedPill: false,
                     ),
                   ),

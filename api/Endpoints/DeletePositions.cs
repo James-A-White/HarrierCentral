@@ -122,6 +122,11 @@ namespace HcWebApi.Endpoints
                 if (removed) deleted++;
             }
 
+            // Clearing the official window is a boundary change like setting one, and
+            // GetPositions caches that window for five minutes. Without this, Clear
+            // window appeared to do nothing until the entry aged out.
+            GetPositions.InvalidateTrimWindow(request.EventId);
+
             _log.LogInformation(
                 "DeletePositions: removed {Deleted} point(s) for event {EventId} / user {UserId}.",
                 deleted, request.EventId, request.UserId);
