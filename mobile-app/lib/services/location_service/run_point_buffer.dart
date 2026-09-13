@@ -220,12 +220,20 @@ class RunPointBuffer {
     _flushTimer ??= Timer.periodic(_flushInterval, (_) => unawaited(flush()));
   }
 
-  Future<void> flush() async {
-    if (_uploading) return;
+  /// Returns true when the queued points actually left for the server.
+  ///
+  /// Callers on the live-tracking path ignore this and should: a point that
+  /// cannot go now is retried on the next flush, which is the whole purpose of
+  /// the buffer. It matters for the ONE-SHOT callers — an admin dropping an
+  /// AST/AEN boundary marker gets one attempt, and silently reporting success
+  /// when the send was refused is how the trim panel came to say "Official
+  /// start set." over a window that stayed empty (James, 2026-09-13).
+  Future<bool> flush() async {
+    if (_uploading) return false;
     // Pick up anything the previous session could not send before flushing, so
     // the recovered points go out with (and ahead of) the current ones.
     if (!_restored) await restorePending();
-    if (_q.isEmpty) return;
+    if (_q.isEmpty) return true;
 
     // Snapshot current queue (so new points keep buffering)
     final batchSize = _q.length;
@@ -236,8 +244,10 @@ class RunPointBuffer {
     );
 
     _uploading = true;
+    bool sent = false;
     try {
       final outcome = await _sendBatch(batch);
+      sent = outcome == _SendOutcome.accepted;
       // Accepted: gone to the server. Refused: the server will never take it,
       // so holding it only wedges the queue. Either way the points leave.
       if (outcome != _SendOutcome.retryLater) {
@@ -254,8 +264,9 @@ class RunPointBuffer {
     await persistPending();
 
     if (kDebugMode) {
-      debugPrint('LocationService: Flushed run buffer.');
+      debugPrint('LocationService: Flushed run buffer. sent=$sent');
     }
+    return sent;
   }
 
   /// Surfaces the piggybacked "tracking ended" flag from a successful

@@ -148,7 +148,7 @@ class PackTrackTrimController extends GetxController {
     if (_userId.isEmpty) return;
     busy.value = true;
     try {
-      await LocationService.ensure().markBoundaryAt(
+      final bool sent = await LocationService.ensure().markBoundaryAt(
         boundaryType: type,
         timestampMs: ts.round(),
         overrideEventId: _eventId,
@@ -156,6 +156,12 @@ class PackTrackTrimController extends GetxController {
         lat: run.extensions.evtLat ?? 0.0,
         lng: run.extensions.evtLon ?? 0.0,
       );
+      if (!sent) {
+        // The buffer is one-shot here, so a refused send means the boundary was
+        // never set. Saying otherwise is what made this look like a display bug.
+        _snack('Could not reach the server — the boundary was not set.');
+        return;
+      }
       await map.loadPositions(reset: true);
       _snack(
         type == HashRunPointTypes.adminStart
@@ -213,6 +219,37 @@ class PackTrackTrimController extends GetxController {
 /// Compact admin overlay for setting the official start/end of a run. Collapsed
 /// to a single scissors button; expands to Set Start / Set End / Clear plus a
 /// readout of the current window. Renders nothing for non-admins.
+/// One style for every button in this overlay.
+///
+/// The app theme gives ElevatedButton a red background, radius 10 and no text
+/// size, and gives TextButton a red background with NO shape at all. So a panel
+/// mixing the two rendered two different corner radii and two different font
+/// sizes side by side, which is exactly what it looked like. Setting both
+/// explicitly here — and using ts_button, the app's canonical button text —
+/// makes these match every other button in the app.
+///
+/// foregroundColor is white and is NOT overridden per button. Red text on a red
+/// button is invisible, which is how "Stop everyone's tracking" shipped as a
+/// blank red bar (James, 2026-09-13). CLAUDE.md flags this as a recurring
+/// mistake; the fix is one shared style rather than a colour per call site.
+/// Exposed for the widget test that guards the red-on-red regression.
+@visibleForTesting
+ButtonStyle trimButtonStyleForTest() => _trimButtonStyle();
+
+ButtonStyle _trimButtonStyle() => ElevatedButton.styleFrom(
+  backgroundColor: hc_red,
+  foregroundColor: Colors.white,
+  disabledBackgroundColor: hc_red.withValues(alpha: 0.45),
+  disabledForegroundColor: Colors.white70,
+  // Height only. A minimum WIDTH would force the Wrap group to full width.
+  minimumSize: const Size(0, 44),
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+  textStyle: ts_button,
+  elevation: 0,
+  shadowColor: Colors.transparent,
+);
+
 class TrimEditorOverlay extends StatelessWidget {
   const TrimEditorOverlay({
     super.key,
@@ -299,6 +336,7 @@ class TrimEditorOverlay extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
+                    style: _trimButtonStyle(),
                     onPressed: busy ? null : () => trimController.setStart(),
                     child: const Text('Start'),
                   ),
@@ -306,6 +344,7 @@ class TrimEditorOverlay extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: ElevatedButton(
+                    style: _trimButtonStyle(),
                     onPressed: busy ? null : () => trimController.setEnd(),
                     child: const Text('End'),
                   ),
@@ -313,22 +352,35 @@ class TrimEditorOverlay extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            TextButton(
-              onPressed: busy ? null : () => trimController.clear(),
-              child: const Text('Clear window'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: _trimButtonStyle(),
+                onPressed: busy ? null : () => trimController.clear(),
+                child: const Text('Clear window'),
+              ),
             ),
-            if (trimController.trackingEnded.value != null)
-              TextButton(
-                onPressed: busy
-                    ? null
-                    : () => unawaited(trimController.toggleEveryonesTracking()),
-                child: Text(
-                  trimController.trackingEnded.value == true
-                      ? 'Re-open tracking'
-                      : "Stop everyone's tracking",
-                  style: TextStyle(color: hc_red),
+            if (trimController.trackingEnded.value != null) ...[
+              const SizedBox(height: 6),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: _trimButtonStyle(),
+                  onPressed: busy
+                      ? null
+                      : () =>
+                            unawaited(trimController.toggleEveryonesTracking()),
+                  // Shortened from "Stop everyone's tracking", which no longer
+                  // fits on one line at the standard button size. It matches
+                  // the confirmation dialog, which already says "Stop tracking".
+                  child: Text(
+                    trimController.trackingEnded.value == true
+                        ? 'Re-open tracking'
+                        : 'Stop tracking',
+                  ),
                 ),
               ),
+            ],
           ],
         ),
       );
@@ -416,31 +468,32 @@ class TrimEditorOverlay extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               ElevatedButton(
+                style: _trimButtonStyle(),
                 onPressed: busy ? null : () => trimController.setStart(),
                 child: const Text('Set start'),
               ),
               ElevatedButton(
+                style: _trimButtonStyle(),
                 onPressed: busy ? null : () => trimController.setEnd(),
                 child: const Text('Set end'),
               ),
-              TextButton(
+              ElevatedButton(
+                style: _trimButtonStyle(),
                 onPressed: busy ? null : () => trimController.clear(),
-                child: const Text(
-                  'Clear',
-                  style: TextStyle(color: Colors.white),
-                ),
+                child: const Text('Clear'),
               ),
               if (trimController.trackingEnded.value != null)
-                TextButton(
+                ElevatedButton(
+                  style: _trimButtonStyle(),
                   onPressed: busy
                       ? null
                       : () =>
                             unawaited(trimController.toggleEveryonesTracking()),
+                  // Was Colors.red.shade300 on a red button: legible only just.
                   child: Text(
                     trimController.trackingEnded.value == true
                         ? 'Re-open tracking'
-                        : 'Stop everyone',
-                    style: TextStyle(color: Colors.red.shade300),
+                        : 'Stop tracking',
                   ),
                 ),
             ],
