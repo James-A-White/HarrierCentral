@@ -97,22 +97,49 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         // kennel-tools capability, not the raw isAdmin flag (which
                         // grants nothing here under Permissions V2). Each button
                         // still self-gates via can(KennelFeature.…).
+                        // kennelTools OR photos: a Hash Flash may hold no
+                        // kennel-tools capability at all, and the grid is
+                        // where the photo queue lives. Every button inside
+                        // self-gates, so this widens who sees the section,
+                        // not what is in it (James, 2026-09-13).
                         if (canEnterArea(
-                          PermissionArea.kennelTools,
-                          appAccessFlags:
-                              widget.kennelAggregateItem.hkm?.appAccessFlags ??
-                              0,
-                          mismanagementRoles:
-                              widget
+                              PermissionArea.kennelTools,
+                              appAccessFlags:
+                                  widget
+                                      .kennelAggregateItem
+                                      .hkm
+                                      ?.appAccessFlags ??
+                                  0,
+                              mismanagementRoles:
+                                  widget
+                                      .kennelAggregateItem
+                                      .hkm
+                                      ?.mismanagementRoles ??
+                                  0,
+                              kennelOverrideJson: widget
                                   .kennelAggregateItem
-                                  .hkm
-                                  ?.mismanagementRoles ??
-                              0,
-                          kennelOverrideJson: widget
-                              .kennelAggregateItem
-                              .kennel
-                              .permissionOverrideJson,
-                        ))
+                                  .kennel
+                                  .permissionOverrideJson,
+                            ) ||
+                            canAccessFeature(
+                              KennelFeature.reviewPhotos,
+                              appAccessFlags:
+                                  widget
+                                      .kennelAggregateItem
+                                      .hkm
+                                      ?.appAccessFlags ??
+                                  0,
+                              mismanagementRoles:
+                                  widget
+                                      .kennelAggregateItem
+                                      .hkm
+                                      ?.mismanagementRoles ??
+                                  0,
+                              kennelOverrideJson: widget
+                                  .kennelAggregateItem
+                                  .kennel
+                                  .permissionOverrideJson,
+                            ))
                           _buildAdminFunctions(context),
                         _buildDescriptionSection(),
                         _buildMapAndInfoSection(context),
@@ -400,6 +427,35 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     },
                   ),
                 ),
+              ),
+            // The whole kennel's pending photos, not one run's. Imports land
+            // on past runs in no order, so a queue that can only be reached
+            // run by run never gets cleared (James, 2026-09-13). Same screen
+            // as the run's own review — it takes an empty eventId to mean
+            // "every run".
+            if (can(KennelFeature.reviewPhotos))
+              _adminButton(
+                icon: MaterialIcons.photo_library,
+                iconTopPadding: 4,
+                iconSize: 48,
+                labelTopPadding: 7,
+                label: 'Review\r\nphotos',
+                onPressed: () async {
+                  await Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => PhotoReviewPage(
+                        kennelId: agg.kennel.kennelId,
+                        eventId: '',
+                        eventName: agg.kennel.kennelShortName,
+                        eventNumber: null,
+                        kennelSlug: agg.kennel.kennelUniqueShortName,
+                        kennelLogoUrl: agg.kennel.kennelLogo,
+                        kennelShortName: agg.kennel.kennelShortName,
+                      ),
+                    ),
+                  );
+                },
               ),
             if (can(KennelFeature.manageMembers))
               Padding(

@@ -101,6 +101,10 @@ SELECT
     kp.UserId,
     kp.BlobUrl,
     kp.EditedBlobUrl,
+    -- Always 1 here (the WHERE says so), but returned so these rows map onto
+    -- the same model as hcapp_getRunAllPhotos — the review screen reads one
+    -- shape whether it is showing one run or the whole kennel (2026-09-13).
+    kp.Status,
     kp.Featured,
     kp.Latitude,
     kp.Longitude,

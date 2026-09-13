@@ -24,10 +24,12 @@ class KennelPendingPhoto {
   final String photoId;
   final String eventId;
   final int status;
+
   /// Orthogonal showcase flag (kennel home page) — not an audience level.
   final int featured;
   final DateTime? deletedAt;
   final String blobUrl;
+
   /// Hash-Flash-edited crop. Null until the Hash Flash crops the photo.
   /// Always display [effectiveUrl]. Always re-edit from [blobUrl] (original).
   final String? editedBlobUrl;
@@ -93,15 +95,14 @@ class KennelPendingPhoto {
       status: (json['Status'] ?? json['status'] as num?)?.toInt() ?? 0,
       featured: (json['Featured'] as num?)?.toInt() ?? 0,
       deletedAt: () {
-        final raw =
-            (json['DeletedAt'] ?? json['deletedAt'])?.toString();
+        final raw = (json['DeletedAt'] ?? json['deletedAt'])?.toString();
         if (raw == null || raw.isEmpty) return null;
         return DateTime.tryParse(raw);
       }(),
       blobUrl: (json['BlobUrl'] ?? json['blobUrl'])?.toString() ?? '',
-      editedBlobUrl: (json['EditedBlobUrl'] ?? json['editedBlobUrl'])?.toString(),
-      uploaderDisplayName:
-          json['uploaderDisplayName']?.toString() ?? 'Unknown',
+      editedBlobUrl: (json['EditedBlobUrl'] ?? json['editedBlobUrl'])
+          ?.toString(),
+      uploaderDisplayName: json['uploaderDisplayName']?.toString() ?? 'Unknown',
       eventName: json['eventName']?.toString() ?? '',
       eventNumber: (json['eventNumber'] as num?)?.toInt() ?? 0,
       createdAt:
@@ -139,7 +140,12 @@ class PhotoStatusCounts {
   final int deleted;
 
   int get total =>
-      pending + private + shared + runGallery + homeGallery + eventCover +
+      pending +
+      private +
+      shared +
+      runGallery +
+      homeGallery +
+      eventCover +
       deleted;
 
   /// Counts by EFFECTIVE status: the saved status, overridden by any decision
@@ -151,22 +157,32 @@ class PhotoStatusCounts {
     List<KennelPendingPhoto> photos, {
     Map<String, int> decisions = const <String, int>{},
   }) {
-    int pending = 0, private = 0, shared = 0, runGallery = 0,
-        homeGallery = 0, eventCover = 0, deleted = 0;
+    int pending = 0,
+        private = 0,
+        shared = 0,
+        runGallery = 0,
+        homeGallery = 0,
+        eventCover = 0,
+        deleted = 0;
     for (final p in photos) {
       final int? action = decisions[p.photoId];
-      final bool willDelete = p.isDeleted ||
-          action == photoActionDelete;
+      final bool willDelete = p.isDeleted || action == photoActionDelete;
       if (willDelete) {
         deleted++;
       } else {
         switch (effectiveStatus(p, action)) {
-          case 0: private++;
-          case 1: pending++;
-          case 2: shared++;
-          case 3: runGallery++;
-          case 4: homeGallery++;
-          case 5: eventCover++;
+          case 0:
+            private++;
+          case 1:
+            pending++;
+          case 2:
+            shared++;
+          case 3:
+            runGallery++;
+          case 4:
+            homeGallery++;
+          case 5:
+            eventCover++;
         }
       }
     }
@@ -215,7 +231,12 @@ class PhotoReviewController extends GetxController {
   });
 
   final String kennelId;
+
+  /// The run being reviewed, or empty for the kennel-wide pending queue.
   final String eventId;
+
+  /// Reviewing every run's pending photos rather than one run's.
+  bool get kennelWide => eventId.isEmpty;
   final String kennelSlug;
   final int eventNumber;
 
@@ -269,8 +290,8 @@ class PhotoReviewController extends GetxController {
   /// action writes.
   bool _matchesFilter(KennelPendingPhoto photo, int action) =>
       action == photoActionDelete
-          ? photo.isDeleted
-          : !photo.isDeleted && photo.status == photoActionSpec(action)?.status;
+      ? photo.isDeleted
+      : !photo.isDeleted && photo.status == photoActionSpec(action)?.status;
 
   PhotoStatusCounts get counts =>
       PhotoStatusCounts.from(allPhotos, decisions: decisions);
@@ -360,10 +381,15 @@ class PhotoReviewController extends GetxController {
     for (int i = fromIndex.clamp(0, photos.length); i < end; i++) {
       final url = photos[i].effectiveUrl;
       if (url.isNotEmpty) {
-        unawaited(precacheImage(
-          ResizeImage(CachedNetworkImageProvider(url), width: _carouselDecodeWidth),
-          ctx,
-        ));
+        unawaited(
+          precacheImage(
+            ResizeImage(
+              CachedNetworkImageProvider(url),
+              width: _carouselDecodeWidth,
+            ),
+            ctx,
+          ),
+        );
       }
     }
   }
@@ -521,14 +547,25 @@ class PhotoReviewController extends GetxController {
     isLoading.value = true;
     loadError.value = '';
     try {
-      final result = await _service.getRunAllPhotos(
-        kennelId: kennelId,
-        eventId: eventId,
-      );
+      // An empty eventId means "the whole kennel": every photo still waiting
+      // on a Hash Flash, from any run. Imported photos arrive for past runs in
+      // no particular order, so waiting for someone to open each run is no way
+      // to clear a queue (James, 2026-09-13). Same screen, same model — only
+      // the question changes.
+      final result = kennelWide
+          ? await _service.getKennelPendingPhotos(kennelId: kennelId)
+          : await _service.getRunAllPhotos(
+              kennelId: kennelId,
+              eventId: eventId,
+            );
       if (result.startsWith(ERROR_PREFIX)) {
         loadError.value =
             'Could not load photos. Please check your connection and try again.';
-        BootLogger.logError('[PhotoReviewController.loadPhotos] server error kennelId=$kennelId eventId=$eventId', result, null);
+        BootLogger.logError(
+          '[PhotoReviewController.loadPhotos] server error kennelId=$kennelId eventId=$eventId',
+          result,
+          null,
+        );
         allPhotos.clear();
         return;
       }
@@ -552,7 +589,11 @@ class PhotoReviewController extends GetxController {
       loadError.value =
           'Could not load photos. Please check your connection and try again.';
       debugPrint('PhotoReviewController.loadPhotos error: $e');
-      BootLogger.logError('[PhotoReviewController.loadPhotos] kennelId=$kennelId eventId=$eventId', e, s);
+      BootLogger.logError(
+        '[PhotoReviewController.loadPhotos] kennelId=$kennelId eventId=$eventId',
+        e,
+        s,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -633,10 +674,9 @@ class PhotoReviewController extends GetxController {
     if (_queue.isEmpty) return;
 
     final updates = _queue.entries
-        .map((e) => <String, dynamic>{
-              'photoId': e.key,
-              'action': e.value.action,
-            })
+        .map(
+          (e) => <String, dynamic>{'photoId': e.key, 'action': e.value.action},
+        )
         .toList();
 
     isSaving.value = true;
@@ -653,7 +693,9 @@ class PhotoReviewController extends GetxController {
       }
 
       final outer = jsonDecode(result) as List<dynamic>;
-      final row = (outer.isNotEmpty && outer[0] is List &&
+      final row =
+          (outer.isNotEmpty &&
+              outer[0] is List &&
               (outer[0] as List).isNotEmpty)
           ? (outer[0] as List)[0] as Map<String, dynamic>?
           : null;
@@ -664,8 +706,7 @@ class PhotoReviewController extends GetxController {
         return;
       }
 
-      final failureCount =
-          (row?['failureCount'] as num?)?.toInt() ?? 0;
+      final failureCount = (row?['failureCount'] as num?)?.toInt() ?? 0;
       _queue.clear();
       decisions.clear();
       await loadPhotos();
@@ -673,7 +714,11 @@ class PhotoReviewController extends GetxController {
       if (failureCount > 0) _showPartialFailureDialog(failureCount);
     } catch (e, s) {
       debugPrint('PhotoReviewController._flushQueue error: $e');
-      BootLogger.logError('[PhotoReviewController._flushQueue] kennelId=$kennelId eventId=$eventId queueSize=${_queue.length}', e, s);
+      BootLogger.logError(
+        '[PhotoReviewController._flushQueue] kennelId=$kennelId eventId=$eventId queueSize=${_queue.length}',
+        e,
+        s,
+      );
       _revertOptimisticUpdates();
       _showFailureDialog();
     } finally {
@@ -686,8 +731,9 @@ class PhotoReviewController extends GetxController {
     if (_queue.isNotEmpty) await _flushQueue();
     // Refresh the pending badge on the runs list so it immediately reflects
     // any photos just approved or rejected.
-    unawaited(KennelPhotoService()
-        .loadPendingPhotoSummary(kennelId, force: true));
+    unawaited(
+      KennelPhotoService().loadPendingPhotoSummary(kennelId, force: true),
+    );
     Get.back();
   }
 
@@ -761,8 +807,9 @@ class PhotoReviewController extends GetxController {
 
     isSaving.value = true;
     try {
-      final trimmed =
-          (newCaption == null || newCaption.trim().isEmpty) ? null : newCaption.trim();
+      final trimmed = (newCaption == null || newCaption.trim().isEmpty)
+          ? null
+          : newCaption.trim();
 
       final result = await _service.updatePhotoCaption(
         photoId: photoId,
@@ -775,7 +822,8 @@ class PhotoReviewController extends GetxController {
       }
 
       final outer = jsonDecode(result) as List<dynamic>;
-      final row = (outer.isNotEmpty &&
+      final row =
+          (outer.isNotEmpty &&
               outer[0] is List &&
               (outer[0] as List).isNotEmpty)
           ? (outer[0] as List)[0] as Map<String, dynamic>?
@@ -794,7 +842,10 @@ class PhotoReviewController extends GetxController {
     } catch (e, s) {
       debugPrint('PhotoReviewController.editCaption error: $e');
       BootLogger.logError(
-          '[PhotoReviewController.editCaption] photoId=$photoId', e, s);
+        '[PhotoReviewController.editCaption] photoId=$photoId',
+        e,
+        s,
+      );
       _showCaptionFailureDialog();
     } finally {
       isSaving.value = false;
@@ -835,8 +886,17 @@ class PhotoReviewController extends GetxController {
       );
       if (cropped == null) return; // user cancelled — not an error
 
-      final runFolder =
-          eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
+      // The PHOTO's run, not the screen's: kennel-wide there is no screen run,
+      // and an edited crop still belongs in its own run's folder rather than
+      // in "other" (2026-09-13).
+      final int photoEventNumber =
+          allPhotos
+              .firstWhereOrNull((KennelPendingPhoto p) => p.photoId == photoId)
+              ?.eventNumber ??
+          eventNumber;
+      final runFolder = photoEventNumber > 0
+          ? '$kennelSlug-$photoEventNumber'
+          : 'other';
       final editedUrl = await _service.uploadEditedPhoto(
         croppedFile: File(cropped.path),
         kennelId: kennelId,
@@ -876,7 +936,10 @@ class PhotoReviewController extends GetxController {
       }
     } catch (e, s) {
       BootLogger.logError(
-          '[PhotoReviewController.editPhoto] photoId=$photoId', e, s);
+        '[PhotoReviewController.editPhoto] photoId=$photoId',
+        e,
+        s,
+      );
       Get.snackbar(
         'Edit failed',
         'An unexpected error occurred. Please try again.',
@@ -931,7 +994,12 @@ class PhotoReviewPage extends StatelessWidget {
     required this.kennelSlug,
     this.kennelLogoUrl,
     this.kennelShortName,
-  }) : controller = _freshController(kennelId, eventId, kennelSlug, eventNumber ?? 0);
+  }) : controller = _freshController(
+         kennelId,
+         eventId,
+         kennelSlug,
+         eventNumber ?? 0,
+       );
 
   final String kennelId;
   final String eventId;
@@ -943,8 +1011,16 @@ class PhotoReviewPage extends StatelessWidget {
   final PhotoReviewController controller;
 
   static PhotoReviewController _freshController(
-      String kennelId, String eventId, String kennelSlug, int eventNumber) {
-    final tag = 'photo-review-$eventId';
+    String kennelId,
+    String eventId,
+    String kennelSlug,
+    int eventNumber,
+  ) {
+    // Kennel-wide has no event id, so key the tag on the kennel — otherwise
+    // two kennels' queues would share one tag.
+    final tag = eventId.isEmpty
+        ? 'photo-review-kennel-$kennelId'
+        : 'photo-review-$eventId';
     Get.delete<PhotoReviewController>(tag: tag, force: true);
     return Get.put(
       PhotoReviewController(
@@ -978,44 +1054,50 @@ class PhotoReviewPage extends StatelessWidget {
           ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(2),
-            child: Obx(() => controller.isSaving.value
-                ? const LinearProgressIndicator(
-                    minHeight: 2,
-                    backgroundColor: Colors.transparent,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.white70),
-                  )
-                : const SizedBox.shrink()),
+            child: Obx(
+              () => controller.isSaving.value
+                  ? const LinearProgressIndicator(
+                      minHeight: 2,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ),
         ),
         body: Container(
           decoration: Backgrounds.defaultHcBackground(),
           child: Obx(() {
-          if (controller.isLoading.value) {
-            return const Center(
-              child: HcAppCircularProgressIndicator(
-                  key: Key('photo_review_loading')),
+            if (controller.isLoading.value) {
+              return const Center(
+                child: HcAppCircularProgressIndicator(
+                  key: Key('photo_review_loading'),
+                ),
+              );
+            }
+            if (controller.loadError.value.isNotEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Text(
+                    controller.loadError.value,
+                    style: ts_bodyYellow,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }
+            return Column(
+              children: [
+                _RunHeader(page: this),
+                _TabPills(controller: controller),
+                Expanded(child: _PhotoBody(page: this)),
+              ],
             );
-          }
-          if (controller.loadError.value.isNotEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text(controller.loadError.value,
-                    style: ts_bodyYellow, textAlign: TextAlign.center),
-              ),
-            );
-          }
-          return Column(
-            children: [
-              _RunHeader(page: this),
-              _TabPills(controller: controller),
-              Expanded(child: _PhotoBody(page: this)),
-            ],
-          );
-        }),
+          }),
+        ),
       ),
-    ));
+    );
   }
 }
 
@@ -1029,9 +1111,12 @@ class _RunHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final runLabel = page.eventNumber != null && page.eventNumber! > 0
-        ? 'Run #${page.eventNumber}'
-        : page.eventName;
+    // Kennel-wide, the header cannot name one run — the queue spans them.
+    final runLabel = page.controller.kennelWide
+        ? 'Photos awaiting review'
+        : (page.eventNumber != null && page.eventNumber! > 0
+              ? 'Run #${page.eventNumber}'
+              : page.eventName);
 
     return Obx(() {
       final c = page.controller.counts;
@@ -1066,8 +1151,9 @@ class _RunHeader extends StatelessWidget {
                   Text(
                     page.eventName,
                     style: ts_bodySmall.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1090,8 +1176,8 @@ class _RunHeader extends StatelessWidget {
                           count: c.pending,
                           color: photoPendingColor,
                           // Pending is a whole tab, not a rung filter.
-                          onTap: () => page.controller
-                              .switchTab(PhotoReviewTab.pending),
+                          onTap: () =>
+                              page.controller.switchTab(PhotoReviewTab.pending),
                           isDimmed: activeFilter != null,
                         ),
                       for (final spec in photoActionSpecs)
@@ -1101,11 +1187,13 @@ class _RunHeader extends StatelessWidget {
                             count: countsByStatus[spec.status] ?? 0,
                             color: spec.color,
                             onTap: (countsByStatus[spec.status] ?? 0) > 0
-                                ? () => page.controller
-                                    .toggleStatusFilter(spec.action)
+                                ? () => page.controller.toggleStatusFilter(
+                                    spec.action,
+                                  )
                                 : null,
                             isActive: activeFilter == spec.action,
-                            isDimmed: activeFilter != null &&
+                            isDimmed:
+                                activeFilter != null &&
                                 activeFilter != spec.action,
                           ),
                       if (c.deleted > 0)
@@ -1113,10 +1201,12 @@ class _RunHeader extends StatelessWidget {
                           label: photoActionSpec(photoActionDelete)!.tagLabel,
                           count: c.deleted,
                           color: hc_red,
-                          onTap: () => page.controller
-                              .toggleStatusFilter(photoActionDelete),
+                          onTap: () => page.controller.toggleStatusFilter(
+                            photoActionDelete,
+                          ),
                           isActive: activeFilter == photoActionDelete,
-                          isDimmed: activeFilter != null &&
+                          isDimmed:
+                              activeFilter != null &&
                               activeFilter != photoActionDelete,
                         ),
                     ],
@@ -1169,9 +1259,10 @@ class _CountChip extends StatelessWidget {
       child: Text(
         '$count $label',
         style: const TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.w600),
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
     if (onTap == null) return chip;
@@ -1242,10 +1333,11 @@ class _TabPills extends StatelessWidget {
 }
 
 class _PillButton extends StatelessWidget {
-  const _PillButton(
-      {required this.label,
-      required this.isSelected,
-      required this.onTap});
+  const _PillButton({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
@@ -1256,8 +1348,7 @@ class _PillButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected ? hc_red : Colors.white24,
           borderRadius: BorderRadius.circular(999),
@@ -1266,8 +1357,7 @@ class _PillButton extends StatelessWidget {
           label,
           style: ts_bodySmall.copyWith(
             color: Colors.white,
-            fontWeight:
-                isSelected ? FontWeight.bold : FontWeight.normal,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),
@@ -1292,8 +1382,7 @@ class _PhotoBody extends StatelessWidget {
       if (photos.isEmpty) {
         // A filter emptying the list is a different situation from a genuinely
         // empty tab — say so, and give the reviewer a way back.
-        final filterSpec =
-            photoActionSpec(page.controller.statusFilter.value);
+        final filterSpec = photoActionSpec(page.controller.statusFilter.value);
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -1304,8 +1393,8 @@ class _PhotoBody extends StatelessWidget {
                   filterSpec != null
                       ? Icons.filter_alt_off_outlined
                       : tab == PhotoReviewTab.pending
-                          ? Icons.check_circle_outline
-                          : Icons.photo_library_outlined,
+                      ? Icons.check_circle_outline
+                      : Icons.photo_library_outlined,
                   color: Colors.white54,
                   size: 64,
                 ),
@@ -1314,8 +1403,8 @@ class _PhotoBody extends StatelessWidget {
                   filterSpec != null
                       ? 'No ${filterSpec.tagLabel} photos left.'
                       : tab == PhotoReviewTab.pending
-                          ? 'All photos reviewed for this run.'
-                          : 'No reviewed photos yet.',
+                      ? 'All photos reviewed for this run.'
+                      : 'No reviewed photos yet.',
                   style: ts_bodyYellow,
                   textAlign: TextAlign.center,
                 ),
@@ -1324,8 +1413,8 @@ class _PhotoBody extends StatelessWidget {
                   filterSpec != null
                       ? 'The ${filterSpec.tagLabel} filter is on.'
                       : tab == PhotoReviewTab.pending
-                          ? 'Switch to Reviewed to see previously actioned photos.'
-                          : 'Photos you action will appear here.',
+                      ? 'Switch to Reviewed to see previously actioned photos.'
+                      : 'Photos you action will appear here.',
                   style: ts_bodySmall.copyWith(color: Colors.white70),
                   textAlign: TextAlign.center,
                 ),
@@ -1402,8 +1491,7 @@ class _PhotoGrid extends StatelessWidget {
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(8),
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 mainAxisSpacing: 6,
                 crossAxisSpacing: 6,
@@ -1435,10 +1523,7 @@ class _PhotoGrid extends StatelessWidget {
 }
 
 class _GridThumb extends StatelessWidget {
-  const _GridThumb({
-    required this.photo,
-    required this.selected,
-  });
+  const _GridThumb({required this.photo, required this.selected});
   final KennelPendingPhoto photo;
   final bool selected;
 
@@ -1467,8 +1552,7 @@ class _GridThumb extends StatelessWidget {
               left: 4,
               top: 4,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: tag.color.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(6),
@@ -1544,9 +1628,8 @@ class _BulkActionBar extends StatelessWidget {
               // Nothing selected → whole bar greys out. Cover Photo also needs
               // exactly one photo: the SP demotes any previous cover, so a
               // multi-selection would leave an arbitrary winner.
-              isEnabled: (spec) => spec.singleTargetOnly
-                  ? count == 1
-                  : count > 0,
+              isEnabled: (spec) =>
+                  spec.singleTargetOnly ? count == 1 : count > 0,
             ),
           ],
         ),
@@ -1568,19 +1651,16 @@ class _PhotoCounter extends StatelessWidget {
     return Obx(() {
       final photos = controller.visiblePhotos;
       if (photos.isEmpty) return const SizedBox.shrink();
-      final idx =
-          controller.currentIndex.value.clamp(0, photos.length - 1);
+      final idx = controller.currentIndex.value.clamp(0, photos.length - 1);
       final photo = photos[idx];
       final runLabel = photo.eventNumber > 0
           ? 'Run #${photo.eventNumber}'
           : photo.eventName;
-      final decided =
-          controller.decisionFor(photo.photoId) != null;
+      final decided = controller.decisionFor(photo.photoId) != null;
 
       return Container(
         color: Colors.black54,
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         child: Row(
           children: [
             Expanded(
@@ -1591,23 +1671,28 @@ class _PhotoCounter extends StatelessWidget {
                   Text(
                     photo.uploaderDisplayName,
                     style: ts_bodySmall.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (runLabel.isNotEmpty)
-                    Text(runLabel,
-                        style: ts_bodySmall.copyWith(
-                            color: Colors.white60),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
+                    Text(
+                      runLabel,
+                      style: ts_bodySmall.copyWith(color: Colors.white60),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                 ],
               ),
             ),
             if (decided) ...[
-              const Icon(Icons.check_circle,
-                  color: Colors.greenAccent, size: 14),
+              const Icon(
+                Icons.check_circle,
+                color: Colors.greenAccent,
+                size: 14,
+              ),
               const SizedBox(width: 4),
             ],
             Text(
@@ -1658,15 +1743,21 @@ class _PhotoPageView extends StatelessWidget {
                     '  url: ${photo.effectiveUrl}\n  err: $err',
                   );
                   return const Center(
-                    child: Icon(Icons.broken_image,
-                        color: Colors.white38, size: 64),
+                    child: Icon(
+                      Icons.broken_image,
+                      color: Colors.white38,
+                      size: 64,
+                    ),
                   );
                 },
               )
             else
               const Center(
-                child: Icon(Icons.image_not_supported,
-                    color: Colors.white38, size: 64),
+                child: Icon(
+                  Icons.image_not_supported,
+                  color: Colors.white38,
+                  size: 64,
+                ),
               ),
 
             // Soft-deleted overlay — rendered before caption strip so the
@@ -1679,12 +1770,16 @@ class _PhotoPageView extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.delete_outline,
-                            color: Colors.white54, size: 48),
+                        Icon(
+                          Icons.delete_outline,
+                          color: Colors.white54,
+                          size: 48,
+                        ),
                         SizedBox(height: 8),
-                        Text('Deleted',
-                            style: TextStyle(
-                                color: Colors.white54, fontSize: 16)),
+                        Text(
+                          'Deleted',
+                          style: TextStyle(color: Colors.white54, fontSize: 16),
+                        ),
                       ],
                     ),
                   ),
@@ -1692,32 +1787,41 @@ class _PhotoPageView extends StatelessWidget {
               ),
 
             // Crop/edit button — top-left, opposite the status badge.
-            Obx(() => Positioned(
-              top: 10,
-              left: 10,
-              child: controller.isEditing.value
-                  ? const SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: CircularProgressIndicator(
-                          color: Colors.white70, strokeWidth: 2.5),
-                    )
-                  : GestureDetector(
-                      onTap: () => unawaited(controller.editPhoto(
-                        photoId: photo.photoId,
-                        originalBlobUrl: photo.blobUrl,
-                      )),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.circular(20),
+            Obx(
+              () => Positioned(
+                top: 10,
+                left: 10,
+                child: controller.isEditing.value
+                    ? const SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: CircularProgressIndicator(
+                          color: Colors.white70,
+                          strokeWidth: 2.5,
                         ),
-                        child: const Icon(Icons.crop,
-                            color: Colors.white70, size: 18),
+                      )
+                    : GestureDetector(
+                        onTap: () => unawaited(
+                          controller.editPhoto(
+                            photoId: photo.photoId,
+                            originalBlobUrl: photo.blobUrl,
+                          ),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black87,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(
+                            Icons.crop,
+                            color: Colors.white70,
+                            size: 18,
+                          ),
+                        ),
                       ),
-                    ),
-            )),
+              ),
+            ),
 
             // Caption strip — always visible so the reviewer can add or edit
             // captions regardless of whether one exists already.
@@ -1727,8 +1831,8 @@ class _PhotoPageView extends StatelessWidget {
               bottom: 0,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => unawaited(
-                    _showCaptionEditor(context, controller, photo)),
+                onTap: () =>
+                    unawaited(_showCaptionEditor(context, controller, photo)),
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
                   color: Colors.black.withValues(alpha: 0.65),
@@ -1736,28 +1840,34 @@ class _PhotoPageView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Expanded(
-                        child: photo.description != null &&
+                        child:
+                            photo.description != null &&
                                 photo.description!.isNotEmpty
                             ? Text(
                                 photo.description!,
                                 style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    height: 1.4),
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  height: 1.4,
+                                ),
                                 maxLines: 4,
                                 overflow: TextOverflow.ellipsis,
                               )
                             : Text(
                                 'Add a caption…',
                                 style: TextStyle(
-                                    color: Colors.white38,
-                                    fontSize: 13,
-                                    fontStyle: FontStyle.italic),
+                                  color: Colors.white38,
+                                  fontSize: 13,
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.edit_outlined,
-                          color: Colors.white54, size: 16),
+                      const Icon(
+                        Icons.edit_outlined,
+                        color: Colors.white54,
+                        size: 16,
+                      ),
                     ],
                   ),
                 ),
@@ -1780,7 +1890,9 @@ class _PhotoPageView extends StatelessWidget {
                 right: 10,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 5),
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(20),
@@ -1824,14 +1936,14 @@ class _ActionPanel extends StatelessWidget {
     return Obx(() {
       final photos = controller.visiblePhotos;
       if (photos.isEmpty) return const SizedBox.shrink();
-      final idx =
-          controller.currentIndex.value.clamp(0, photos.length - 1);
+      final idx = controller.currentIndex.value.clamp(0, photos.length - 1);
       final photo = photos[idx];
 
       // Queued decision takes priority; fall back to committed status. Every
       // action is a rung of one ladder — mutually exclusive, one tag at a
       // time. To un-feature, pick a lower rung.
-      final int? selected = controller.decisionFor(photo.photoId) ??
+      final int? selected =
+          controller.decisionFor(photo.photoId) ??
           (photo.isDeleted
               ? photoActionDelete
               : photoActionForStatus(photo.status));
@@ -1842,11 +1954,13 @@ class _ActionPanel extends StatelessWidget {
         child: PhotoActionButtonBar(
           selectedAction: selected,
           dimUnselected: true,
-          onAction: (action) => unawaited(controller.actionPhoto(
-            photoId: photo.photoId,
-            action: action,
-            context: context,
-          )),
+          onAction: (action) => unawaited(
+            controller.actionPhoto(
+              photoId: photo.photoId,
+              action: action,
+              context: context,
+            ),
+          ),
         ),
       );
     });
@@ -1872,9 +1986,8 @@ Future<void> _showCaptionEditor(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
-    builder: (_) => _CaptionEditorSheet(
-      initialCaption: photo.description ?? '',
-    ),
+    builder: (_) =>
+        _CaptionEditorSheet(initialCaption: photo.description ?? ''),
   );
 
   if (result == null) return; // dismissed, no action
@@ -1937,7 +2050,8 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
         // padding.bottom covers the Android 15/16 edge-to-edge system nav
         // bar once the keyboard is dismissed (it is 0 while the keyboard
         // is up, so the two insets never double-pad).
-        bottom: MediaQuery.of(context).viewInsets.bottom +
+        bottom:
+            MediaQuery.of(context).viewInsets.bottom +
             MediaQuery.of(context).padding.bottom +
             16,
       ),
@@ -1950,7 +2064,9 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
               Text(
                 'Caption',
                 style: ts_bodySmall.copyWith(
-                    color: Colors.white, fontWeight: FontWeight.bold),
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const Spacer(),
               if (widget.initialCaption.isNotEmpty)
@@ -1969,8 +2085,7 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
             style: const TextStyle(color: Colors.white, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Describe this photo…',
-              hintStyle:
-                  const TextStyle(color: Colors.white38, fontSize: 14),
+              hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
               filled: true,
               fillColor: Colors.white10,
               border: OutlineInputBorder(
@@ -1978,7 +2093,9 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
                 borderSide: BorderSide.none,
               ),
               contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 10),
+                horizontal: 12,
+                vertical: 10,
+              ),
             ),
           ),
           const SizedBox(height: 4),
@@ -1987,8 +2104,7 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
             child: Text(
               '$_wordCount / 200 words',
               style: TextStyle(
-                color:
-                    _wordCount > 200 ? Colors.redAccent : Colors.white38,
+                color: _wordCount > 200 ? Colors.redAccent : Colors.white38,
                 fontSize: 11,
               ),
             ),
@@ -2001,10 +2117,10 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
                 backgroundColor: Colors.green.shade700,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              onPressed: () =>
-                  Navigator.of(context).pop(_finalCaption ?? ''),
+              onPressed: () => Navigator.of(context).pop(_finalCaption ?? ''),
               child: Text('Save caption', style: ts_button),
             ),
           ),
