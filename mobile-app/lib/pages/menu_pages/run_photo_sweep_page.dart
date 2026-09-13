@@ -274,7 +274,15 @@ class RunPhotoSweepPage extends StatelessWidget {
               alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.all(5.0),
-                child: _SelectionRing(selected: done || ticked),
+                // Sent already: a tick, not the selection ring. The ring is
+                // the control for choosing, and this one cannot be chosen.
+                child: done
+                    ? const Icon(
+                        Icons.cloud_done,
+                        color: Colors.white,
+                        size: 26,
+                      )
+                    : _SelectionRing(selected: ticked),
               ),
             ),
           ],
@@ -409,7 +417,10 @@ class _SweepCarouselState extends State<_SweepCarousel> {
               final PhotoCandidate p = photos[i];
               final String counter = '${i + 1} of ${photos.length}';
               if (p.alreadyUploaded) {
-                return _CarouselLabel(text: '$counter  ·  Already added');
+                return _CarouselLabel(
+                  text: '$counter  ·  Already added',
+                  sent: true,
+                );
               }
               final bool ticked = widget.controller.chosen.contains(p.asset.id);
               return GestureDetector(
@@ -514,10 +525,19 @@ class _GalleryCarouselSwitch extends StatelessWidget {
 }
 
 class _CarouselLabel extends StatelessWidget {
-  const _CarouselLabel({required this.text, this.selected = false});
+  const _CarouselLabel({
+    required this.text,
+    this.selected = false,
+    this.sent = false,
+  });
 
   final String text;
   final bool selected;
+
+  /// Already sent for review. A selection ring here would look like a control
+  /// you could tap, and this one cannot be toggled (James, 2026-09-13), so it
+  /// shows a plain tick instead — a statement, not a button.
+  final bool sent;
 
   @override
   Widget build(BuildContext context) {
@@ -531,7 +551,10 @@ class _CarouselLabel extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            _SelectionRing(selected: selected),
+            if (sent)
+              const Icon(Icons.cloud_done, color: Colors.white70, size: 22)
+            else
+              _SelectionRing(selected: selected),
             const SizedBox(width: 10),
             Text(
               text,
