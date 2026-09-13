@@ -1,3 +1,23 @@
+## 3.1.0+1350 (2026-09-13)
+
+Rebuilds your local database again. 3.1.0+1349 stored the catalogue with
+four separate price columns; this build stores it as one pricing field, and
+the old shape cannot be migrated into the new one, so it is rebuilt instead.
+
+### Improvements
+- **A product can now be priced the way it is actually sold.** One price, a
+  member price and a guest price, a choice of amounts with an "Other" option,
+  a price per size, or a deposit now with the balance later. Only the kennel
+  catalogue changes; what you are charged at a run is unaffected.
+- Product photos and the rules for each kind of product are stored properly
+  rather than squeezed into delimited text, so a web address with a comma in
+  it no longer breaks anything.
+
+### Fixes
+- **Products could not reach your phone at all.** Every product row was
+  arriving stripped of its contents, because the products table was the one
+  table missing the step that matches server fields to phone fields.
+
 ## 3.1.0+1349 (2026-09-13)
 
 The first 3.1 build. This is the payments train, and it reloads your whole
