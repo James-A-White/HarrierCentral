@@ -989,6 +989,11 @@ const EnumProductType productTypeHaberdashery = EnumProductType(3);
 // 2026-09-02 and never used; they are real now.
 const EnumProductType productTypeRunPackage = EnumProductType(4);
 const EnumProductType productTypeAwayWeekend = EnumProductType(5);
+// 6 and 7 added 2026-09-13 for the portal's product tab groups. Both are
+// catalogue-only so far: hcapp_processPayment does not accept them yet, so a
+// kennel can LIST them before it can SELL them.
+const EnumProductType productTypeBarAndRefreshments = EnumProductType(6);
+const EnumProductType productTypeCharityDonation = EnumProductType(7);
 
 /// What a catalogue entry can be, in the order the editor offers them.
 ///
@@ -1007,7 +1012,11 @@ const List<({EnumProductType type, String label})> productTypeChoices =
   (type: productTypeRunPackage, label: 'Run package'),
   (type: productTypeMembership, label: 'Membership'),
   (type: productTypeHaberdashery, label: 'Haberdashery'),
-  (type: productTypeAwayWeekend, label: 'Away weekend'),
+  // 'Trips & Events', not 'Away weekend': the same type covers a weekend
+  // away, a red dress run, an anniversary do and a coach trip (James).
+  (type: productTypeAwayWeekend, label: 'Trips & Events'),
+  (type: productTypeBarAndRefreshments, label: 'Bar & Refreshments'),
+  (type: productTypeCharityDonation, label: 'Charity & Donation'),
 ];
 
 String productTypeLabel(int value) {

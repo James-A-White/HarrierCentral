@@ -129,7 +129,55 @@ const Map<int, String> productTypeLabels = <int, String>{
   4: 'Run package',
   2: 'Membership',
   3: 'Haberdashery',
-  5: 'Away weekend',
+  5: 'Trips & Events',
+  6: 'Bar & Refreshments',
+  7: 'Charity & Donation',
 };
 
 String productTypeLabel(int value) => productTypeLabels[value] ?? 'Other';
+
+/// The catalogue's product groups, in the order the Kennel Products tabs show
+/// them. Each tab is one ProductType, so adding a group here adds a tab.
+///
+/// Type 1 (a single run) is deliberately absent: a run's price lives on its
+/// event, varies by member and non-member, and is not a catalogue entry.
+const List<({int type, String label, String blurb})> productGroups =
+    <({int type, String label, String blurb})>[
+  (
+    type: 2,
+    label: 'Memberships',
+    blurb: 'Annual or rolling membership of the kennel. The term itself is set '
+        'in Edit Kennel, not here, so one kennel cannot have two different '
+        'membership lengths.',
+  ),
+  (
+    type: 4,
+    label: 'Run Packages',
+    blurb: 'Pay for several runs up front. Put the runs bought in Runs '
+        'included, and anything free on top in Promotional credit.',
+  ),
+  (
+    type: 3,
+    label: 'Haberdashery',
+    blurb: 'Shirts, mugs, badges and patches. Sizes and photos live on the '
+        'product; the supplier details stay in the portal and never reach a '
+        "hasher's phone.",
+  ),
+  (
+    type: 5,
+    label: 'Trips & Events',
+    blurb: 'Weekends away, red dress runs, anniversary dos and coach trips. '
+        'Anything ticketed that is not an ordinary run.',
+  ),
+  (
+    type: 6,
+    label: 'Bar & Refreshments',
+    blurb: 'Beer tokens, food at the on-on, prepaid bar tabs.',
+  ),
+  (
+    type: 7,
+    label: 'Charity & Donation',
+    blurb: 'Collections passed straight on. Leave Unit cost at zero unless the '
+        'kennel keeps a handling share.',
+  ),
+];
