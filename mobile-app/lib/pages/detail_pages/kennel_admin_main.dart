@@ -265,18 +265,30 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           style: ts_headingLarge,
           textAlign: TextAlign.center,
         ),
-        if (can(KennelFeature.createEditRuns))
-          // Wrap, not Row. Every button is a fixed 110pt, and how many appear
-          // depends on the viewer's permissions — four of them is 440pt plus
-          // spacing, which is wider than a phone, so a Row clipped the last one
-          // off the right edge (James, 2026-09-13). A Wrap takes a second line
-          // instead. CLAUDE.md calls this out: two controls side by side want a
-          // Wrap, and a Row overflows.
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 12,
-            children: <Widget>[
-              _adminButton(
+        Center(
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              // ONE flat Wrap, sized to a whole number of columns.
+              //
+              // Three separate Wraps centred their rows independently, so a row
+              // of four and a row of two did not line up. Every button is a
+              // fixed 110pt, so the box is widened to exactly the columns that
+              // fit and the Wrap fills it from the START. That is what makes a
+              // last, partial row sit under the columns above rather than
+              // centring on its own (James, 2026-09-13).
+              const double itemWidth = 110;
+              const double gap = 12;
+              final int columns =
+                  (((constraints.maxWidth + gap) / (itemWidth + gap)).floor())
+                      .clamp(2, 4);
+              return SizedBox(
+                width: columns * itemWidth + (columns - 1) * gap,
+                child: Wrap(
+                  alignment: WrapAlignment.start,
+                  spacing: gap,
+                  children: <Widget>[
+                    if (can(KennelFeature.createEditRuns))
+                      _adminButton(
                 icon: MaterialCommunityIcons.run_fast,
                 label: 'Add & Edit\r\nruns',
                 onPressed: () async {
@@ -294,7 +306,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   }
                 },
               ),
-              _adminButton(
+                    if (can(KennelFeature.createEditRuns))
+                      _adminButton(
                 icon: MaterialCommunityIcons.playlist_edit,
                 label: 'Past\r\nevents',
                 onPressed: () async {
@@ -312,20 +325,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   }
                 },
               ),
-            ],
-          ),
-        if (can(KennelFeature.createEditRuns))
-          // Wrap, not Row. Every button is a fixed 110pt, and how many appear
-          // depends on the viewer's permissions — four of them is 440pt plus
-          // spacing, which is wider than a phone, so a Row clipped the last one
-          // off the right edge (James, 2026-09-13). A Wrap takes a second line
-          // instead. CLAUDE.md calls this out: two controls side by side want a
-          // Wrap, and a Row overflows.
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 12,
-            children: <Widget>[
-              _adminButton(
+                    if (can(KennelFeature.createEditRuns))
+                      _adminButton(
                 icon: MaterialCommunityIcons.qrcode,
                 iconTopPadding: 4,
                 iconSize: 55,
@@ -349,7 +350,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   );
                 },
               ),
-              _adminButton(
+                    if (can(KennelFeature.createEditRuns))
+                      _adminButton(
                 icon: MaterialIcons.location_on,
                 iconTopPadding: 4,
                 iconSize: 55,
@@ -365,13 +367,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   );
                 },
               ),
-            ],
-          ),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 12,
-          children: <Widget>[
-            if (can(KennelFeature.createEditRuns))
+                    if (can(KennelFeature.createEditRuns))
               Container(
                 // 15/15 to match _adminButton's padding. This was 20/15, which
                 // sat this one button 5pt lower than the rest of its row.
@@ -445,7 +441,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   ),
                 ),
               ),
-            // The whole kennel's pending photos, not one run's. Imports land
+                    // The whole kennel's pending photos, not one run's. Imports land
             // on past runs in no order, so a queue that can only be reached
             // run by run never gets cleared (James, 2026-09-13). Same screen
             // as the run's own review — it takes an empty eventId to mean
@@ -496,7 +492,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   );
                 },
               ),
-            if (can(KennelFeature.manageMembers))
+                    if (can(KennelFeature.manageMembers))
               Padding(
                 padding: const EdgeInsets.only(top: 15, bottom: 15),
                 child: SizedBox(
@@ -549,7 +545,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   ),
                 ),
               ),
-          ],
+                  ],
+                ),
+              );
+            },
+          ),
         ),
         const Padding(
           padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
