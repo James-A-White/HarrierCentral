@@ -13,6 +13,7 @@ class ChatPageController extends GetxController {
     required this.eventId,
     required this.publicEventId,
     this.isKennelThread = false,
+    this.isAdminThread = false,
   });
 
   /// For a KENNEL thread, [eventId] carries the kennel id and [publicEventId]
@@ -22,7 +23,54 @@ class ChatPageController extends GetxController {
   final String publicEventId;
   final bool isKennelThread;
 
-  String get _idKey => isKennelThread ? 'kennelId' : 'eventId';
+  /// The platform-wide Harrier Central admin room. Belongs to no kennel and
+  /// no run, so [eventId] and [publicEventId] are both empty for it.
+  ///
+  /// Added as a separate flag rather than turning [isKennelThread] into an
+  /// enum: that flag reaches NotificationService and the run list too, and a
+  /// working chat with 1,227 real messages is not worth a sweeping refactor
+  /// for a room 290 people will use (James, 2026-09-13). The two flags are
+  /// collapsed into ONE [_ThreadKind] immediately below, so every decision
+  /// below switches on a single value and a fourth kind cannot be half-added.
+  final bool isAdminThread;
+
+  _ThreadKind get _kind => isAdminThread
+      ? _ThreadKind.admin
+      : isKennelThread
+      ? _ThreadKind.kennel
+      : _ThreadKind.event;
+
+  /// The request field naming the thread. The admin room has no id — it is
+  /// THE room — so it sends none.
+  String? get _idKey => switch (_kind) {
+    _ThreadKind.event => 'eventId',
+    _ThreadKind.kennel => 'kennelId',
+    _ThreadKind.admin => null,
+  };
+
+  String get _getQueryType => switch (_kind) {
+    _ThreadKind.event => 'getEventMessages',
+    _ThreadKind.kennel => 'getKennelMessages',
+    _ThreadKind.admin => 'getAdminMessages',
+  };
+
+  String get _getProcName => switch (_kind) {
+    _ThreadKind.event => 'hcapp_getEventMessages',
+    _ThreadKind.kennel => 'hcapp_getKennelMessages',
+    _ThreadKind.admin => 'hcapp_getAdminMessages',
+  };
+
+  String get _sendQueryType => switch (_kind) {
+    _ThreadKind.event => 'sendEventMessage',
+    _ThreadKind.kennel => 'sendKennelMessage',
+    _ThreadKind.admin => 'sendAdminMessage',
+  };
+
+  String get _sendProcName => switch (_kind) {
+    _ThreadKind.event => 'hcapp_sendEventMessage',
+    _ThreadKind.kennel => 'hcapp_sendKennelMessage',
+    _ThreadKind.admin => 'hcapp_sendAdminMessage',
+  };
 
   final chatController = core.InMemoryChatController();
   final _userCache = <String, core.User>{};
@@ -87,7 +135,9 @@ class ChatPageController extends GetxController {
     // race-free where a post-close server refetch is not: markEventChatRead is
     // fired-and-forgotten above, so a refetch can beat its write and read back
     // the stale count. The SP remains the durable server-side backstop.
-    if (Get.isRegistered<NotificationService>()) {
+    if (!isAdminThread && Get.isRegistered<NotificationService>()) {
+      // The admin room has no publicEventId to key a local badge on, and its
+      // GET marks it read server-side via @markRead.
       Get.find<NotificationService>()
           .clearUnreadForThread(publicEventId, isKennelThread: isKennelThread);
     }
@@ -186,7 +236,7 @@ class ChatPageController extends GetxController {
           isKennelThread ? 'hcapp_markKennelChatRead' : 'hcapp_markEventChatRead',
           paramString: deviceSecret,
         ),
-        _idKey: eventId,
+        _idKey!: eventId,
       }),
     );
 
@@ -201,9 +251,11 @@ class ChatPageController extends GetxController {
     final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final body = <String, dynamic>{
-      'queryType': isKennelThread ? 'getKennelMessages' : 'getEventMessages',
+      'queryType': _getQueryType,
       'deviceId': deviceId,
-      _idKey: eventId,
+      ?_idKey: eventId,
+      // The admin room is marked read by the same call that reads it.
+      if (isAdminThread) 'markRead': 1,
     };
     if (sinceSequenceCount != null) {
       body['sinceSequenceCount'] = sinceSequenceCount;
@@ -213,7 +265,7 @@ class ChatPageController extends GetxController {
       // Minted inside the closure: fresh token per attempt (token retry).
       body['accessToken'] = Utilities.generateToken(
         userId,
-        isKennelThread ? 'hcapp_getKennelMessages' : 'hcapp_getEventMessages',
+        _getProcName,
         paramString: deviceSecret,
       );
       return jsonEncode(body);
@@ -345,14 +397,14 @@ class ChatPageController extends GetxController {
 
     final result = await ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, dynamic>{
-        'queryType': isKennelThread ? 'sendKennelMessage' : 'sendEventMessage',
+        'queryType': _sendQueryType,
         'deviceId': deviceId,
         'accessToken': Utilities.generateToken(
           userId,
-          isKennelThread ? 'hcapp_sendKennelMessage' : 'hcapp_sendEventMessage',
+          _sendProcName,
           paramString: deviceSecret,
         ),
-        _idKey: eventId,
+        ?_idKey: eventId,
         'messageId': uuid,
         'messageContent': text,
         'messageReleasabilityFlags': kChatReleasabilityAll,
@@ -372,3 +424,7 @@ class ChatPageController extends GetxController {
     }
   }
 }
+
+/// The three kinds of thread [ChatPageController] serves. Private: callers
+/// pass the public flags, and this is how the controller reasons about them.
+enum _ThreadKind { event, kennel, admin }
