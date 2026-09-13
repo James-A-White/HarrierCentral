@@ -29,6 +29,13 @@ class PackTrackFullScreenMap extends StatelessWidget {
   /// zoomed on this coordinate instead of the run's default center.
   final latlng.LatLng? focusPoint;
 
+  /// Gap between the controls that act on the run. They read as one group.
+  static const double _gap = 10;
+
+  /// Gap under Close. Wider than [_gap] on purpose: it is what separates
+  /// "leave this screen" from the controls that act on the run.
+  static const double _closeGap = 26;
+
   /// EVERY control on this route lives in this one left-hand column, one
   /// style and one size — MapOverlayButton, the same control the run-detail
   /// and live-run maps use, so the three maps cannot drift apart again.
@@ -46,6 +53,17 @@ class PackTrackFullScreenMap extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        // Close comes FIRST, and is set apart from everything below it.
+        //
+        // It was second, under the compass, which put "leave this screen" in
+        // the middle of a run of controls that all act ON the run, and made it
+        // easy to hit the compass reaching for it (James, 2026-09-13).
+        MapOverlayButton(
+          tooltip: 'Close',
+          icon: Icons.close,
+          onTap: () => Navigator.of(context).maybePop(),
+        ),
+        const SizedBox(height: _closeGap),
         // Same slot, same circle, same toggle as the run-detail map. North
         // lock has an orientation to lock on the map and the radar; nothing
         // on the list. Toggled through the controller, which RunTrackerMap
@@ -62,14 +80,8 @@ class PackTrackFullScreenMap extends StatelessWidget {
               onTap: c.toggleTrueNorthLock,
             );
           }),
-          const SizedBox(height: 10),
+          const SizedBox(height: _gap),
         ],
-        MapOverlayButton(
-          tooltip: 'Close',
-          icon: Icons.close,
-          onTap: () => Navigator.of(context).maybePop(),
-        ),
-        const SizedBox(height: 10),
         // Interactive-map / Trail TV chooser, then the OS share sheet — so
         // spectators can watch in a browser without the app. Same flow as
         // Run Tools and the run-detail map.
@@ -85,7 +97,7 @@ class PackTrackFullScreenMap extends StatelessWidget {
             appModel.hasLocationPermissions &&
             deviceInfo.deviceLat != null &&
             deviceInfo.deviceLon != null) ...<Widget>[
-          const SizedBox(height: 10),
+          const SizedBox(height: _gap),
           MapOverlayButton(
             tooltip: 'My location',
             icon: Icons.near_me,
@@ -125,14 +137,14 @@ class PackTrackFullScreenMap extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const SizedBox(height: 10),
+          const SizedBox(height: _gap),
           MapOverlayButton(
             tooltip: 'Export GPX',
             label: 'GPX',
             onTap: () => unawaited(_exportGpx(context, mapTag)),
           ),
           if (isAdmin) ...<Widget>[
-            const SizedBox(height: 10),
+            const SizedBox(height: _gap),
             MapOverlayButton(
               tooltip: 'Trim run',
               icon: Icons.content_cut,
