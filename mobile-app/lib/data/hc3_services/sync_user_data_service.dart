@@ -22,6 +22,7 @@ class SyncUserDataService {
   static const int pageSize_regionsTable = 250;
   static const int pageSize_countriesTable = 250;
   static const int pageSize_songsTable = 250;
+  static const int pageSize_productsTable = 250;
   static const int pageSize_kennelsTable = 250;
   static const int pageSize_eventsTable = 250;
   static const int pageSize_hkmTable = 250;
@@ -39,6 +40,7 @@ class SyncUserDataService {
   int _regionsLastUpdated = FORCE;
   int _countriesLastUpdated = FORCE;
   int _songsLastUpdated = FORCE;
+  int _productsLastUpdated = FORCE;
   int _kennelsLastUpdated = FORCE;
   int _paymentsLastUpdated = FORCE;
   int _hasherKennelMapLastUpdated = FORCE;
@@ -83,6 +85,12 @@ class SyncUserDataService {
         : await _getLastUpdatedTime(
             tableModel.songsTableHelper.colUpdatedAtValue,
             EnumDataTables.songs.commonTableName,
+          );
+    _productsLastUpdated = (flags & EnumDataTables.products.flag) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.productsTableHelper.colUpdatedAtValue,
+            EnumDataTables.products.commonTableName,
           );
     _kennelsLastUpdated = (flags & EnumDataTables.kennels.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
@@ -219,6 +227,9 @@ class SyncUserDataService {
       final DateTime songsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
         _songsLastUpdated + 1,
       );
+      final DateTime productsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _productsLastUpdated + 1,
+      );
       final DateTime kennelsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
         _kennelsLastUpdated + 1,
       );
@@ -256,6 +267,12 @@ class SyncUserDataService {
         'songsUpdatedAfter': (tablesToSync & EnumDataTables.songs.flag) == 0
             ? 'ignore'
             : ('${songsUpdatedAfter}000000').substring(0, 26),
+        // 3.1 only. The SP defaults this to 'ignore', so a client that does
+        // not send it never receives the products rowset.
+        'productsUpdatedAfter':
+            (tablesToSync & EnumDataTables.products.flag) == 0
+            ? 'ignore'
+            : ('${productsUpdatedAfter}000000').substring(0, 26),
         'hasherKennelMapUpdatedAfter':
             (tablesToSync & EnumDataTables.hasherKennelMap.flag) == 0
             ? 'ignore'
@@ -356,6 +373,7 @@ class SyncUserDataService {
     tableModel.regionsTableHelper,
     tableModel.countriesTableHelper,
     tableModel.songsTableHelper,
+    tableModel.productsTableHelper,
     tableModel.kennelsTableHelper,
     tableModel.eventsTableHelper,
     tableModel.hasherKennelMapTableHelper,

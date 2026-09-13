@@ -12,6 +12,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_syncUserData]
     @narrowEventsUpdatedAfter        NVARCHAR(50)      = 'ignore',
     @paymentsUpdatedAfter            NVARCHAR(50)      = 'ignore',
     @songsUpdatedAfter               NVARCHAR(50)      = 'ignore',
+    -- The kennel catalogue (3.1). Defaults to 'ignore', so a client that
+    -- does not know about products never receives the rowset — the same
+    -- shape as every other watermark here.
+    @productsUpdatedAfter            NVARCHAR(50)      = 'ignore',
     @forceReplicateAllRunsForKennel  NVARCHAR(50)      = 'ignore',
     @usePaging                       INT               = 0,
     @initialLoad                     INT               = 0,
@@ -135,6 +139,7 @@ IF (@hasherEventMapUpdatedAfter     IS NULL OR @hasherEventMapUpdatedAfter     <
 IF (@narrowEventsUpdatedAfter       IS NULL OR @narrowEventsUpdatedAfter       <= '2000-01-01') SET @narrowEventsUpdatedAfter       = 'ignore';
 IF (@paymentsUpdatedAfter           IS NULL OR @paymentsUpdatedAfter           <= '2000-01-01') SET @paymentsUpdatedAfter           = 'ignore';
 IF (@songsUpdatedAfter              IS NULL OR @songsUpdatedAfter              <= '2000-01-01') SET @songsUpdatedAfter              = 'ignore';
+IF (@productsUpdatedAfter           IS NULL OR @productsUpdatedAfter           <= '2000-01-01') SET @productsUpdatedAfter           = 'ignore';
 
 DECLARE @DAYS_PAST  INT = 10;
 DECLARE @forceKennelId UNIQUEIDENTIFIER = NULL;
@@ -272,6 +277,41 @@ BEGIN
     FROM HC.Song s
     WHERE s.updatedAt > @ua
     ORDER BY s.updatedAt ASC, s.id ASC
+    OFFSET 0 ROWS FETCH NEXT @paging250 ROWS ONLY;
+END
+
+-- ---------------------------------------------------------------
+-- PRODUCTS — the kennel catalogue (3.1)
+--
+-- GLOBAL, exactly like songs above: every kennel's products reach every
+-- phone. The data is small, and scoping to followed kennels would orphan
+-- the product behind a hasher's own past payment the moment they
+-- unfollowed (James, 2026-09-13).
+--
+-- Note Removed is returned like any other synced table, but a product that
+-- has been SOLD is never removed — it is taken off sale with IsActive = 0,
+-- so the row keeps syncing and old payments still resolve it.
+-- ---------------------------------------------------------------
+IF (@productsUpdatedAfter != 'ignore')
+BEGIN
+    SET @ua = CAST(@productsUpdatedAfter AS DATETIMEOFFSET(7));
+    SELECT
+        p.id                                                                AS productId,
+        p.KennelId                                                          AS kennelId,
+        p.ProductType                                                       AS productType,
+        p.Name                                                              AS name,
+        p.Description                                                       AS description,
+        p.PriceCharged                                                      AS priceCharged,
+        p.PromotionalCredit                                                 AS promotionalCredit,
+        p.UnitCost                                                          AS unitCost,
+        p.RunCount                                                          AS runCount,
+        p.IsActive                                                          AS isActive,
+        p.SortOrder                                                         AS sortOrder,
+        p.Removed                                                           AS removed,
+        CONVERT(NVARCHAR(50), CAST(p.updatedAt AS DATETIME2))               AS updatedAt
+    FROM HC.Product p
+    WHERE p.updatedAt > @ua
+    ORDER BY p.updatedAt ASC, p.id ASC
     OFFSET 0 ROWS FETCH NEXT @paging250 ROWS ONLY;
 END
 

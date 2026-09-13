@@ -191,6 +191,16 @@ enum EnumDataTables {
     hasKennelTable: false,
     hasEventTable: false,
   ),
+  // The kennel catalogue (3.1). Common domain only and GLOBAL — every
+  // kennel's products reach every phone, like songs and kennels.
+  products(
+    name: 'Products',
+    internalTableName: 'products',
+    flag: 0x00000200,
+    hasCommonTable: true,
+    hasKennelTable: false,
+    hasEventTable: false,
+  ),
   hasherKennelMap(
     name: 'Hasher ↔ Kennel Map',
     internalTableName: 'hasherKennelMap',
@@ -313,6 +323,8 @@ extension EnumDataTablesMapper on EnumDataTables {
         return tableModel.hasherEventMapTableHelper;
       case EnumDataTables.songs:
         return tableModel.songsTableHelper;
+      case EnumDataTables.products:
+        return tableModel.productsTableHelper;
     }
   }
 }
@@ -973,6 +985,27 @@ class EnumProductType extends HcEnum<int> {
 const EnumProductType productTypeEvent = EnumProductType(1);
 const EnumProductType productTypeMembership = EnumProductType(2);
 const EnumProductType productTypeHaberdashery = EnumProductType(3);
+// 3.1: the catalogue's own kinds. 4 and 5 were reserved in a comment on
+// 2026-09-02 and never used; they are real now.
+const EnumProductType productTypeRunPackage = EnumProductType(4);
+const EnumProductType productTypeAwayWeekend = EnumProductType(5);
+
+/// What a catalogue entry can be, in the order the editor offers them.
+const List<({EnumProductType type, String label})> productTypeChoices =
+    <({EnumProductType type, String label})>[
+  (type: productTypeRunPackage, label: 'Run package'),
+  (type: productTypeMembership, label: 'Membership'),
+  (type: productTypeHaberdashery, label: 'Haberdashery'),
+  (type: productTypeAwayWeekend, label: 'Away weekend'),
+  (type: productTypeEvent, label: 'Single run'),
+];
+
+String productTypeLabel(int value) {
+  for (final c in productTypeChoices) {
+    if (c.type.value == value) return c.label;
+  }
+  return 'Other';
+}
 
 //////////////////////////
 

@@ -315,6 +315,7 @@ class TableModel extends GetxService {
   late final CitiesTableHelper citiesTableHelper = CitiesTableHelper();
   late final CountriesTableHelper countriesTableHelper = CountriesTableHelper();
   late final SongsTableHelper songsTableHelper = SongsTableHelper();
+  late final ProductsTableHelper productsTableHelper = ProductsTableHelper();
   late final RegionsTableHelper regionsTableHelper = RegionsTableHelper();
   late final ReceiptsTableHelper receiptsTableHelper = ReceiptsTableHelper();
   late final PaymentsTableHelper paymentsTableHelper = PaymentsTableHelper();

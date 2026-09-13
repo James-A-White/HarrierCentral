@@ -26,21 +26,61 @@ class PermissionArea {
 }
 
 enum KennelFeature {
-  viewPaymentReport(0x0004040E, authCanManageHashCash, false, PermissionArea.runAdmin),
+  viewPaymentReport(
+    0x0004040E,
+    authCanManageHashCash,
+    false,
+    PermissionArea.runAdmin,
+  ),
   takePayment(0x0004040E, authCanManageHashCash, true, PermissionArea.runAdmin),
-  bulkPayment(0x0004040E, authCanManageHashCash, false, PermissionArea.runAdmin),
-  manageReceipts(0x0004841E, authCanManageHashCash, true, PermissionArea.runAdmin),
+  bulkPayment(
+    0x0004040E,
+    authCanManageHashCash,
+    false,
+    PermissionArea.runAdmin,
+  ),
+  manageReceipts(
+    0x0004841E,
+    authCanManageHashCash,
+    true,
+    PermissionArea.runAdmin,
+  ),
   // Adding/editing runs is a KENNEL-admin function (managing the kennel's
   // calendar), not per-run admin. Lives in the kennelTools area.
-  createEditRuns(0x00080346, authCanManageRuns, true, PermissionArea.kennelTools),
+  createEditRuns(
+    0x00080346,
+    authCanManageRuns,
+    true,
+    PermissionArea.kennelTools,
+  ),
   printQrCodes(0x00080306, authCanManageRuns, true, PermissionArea.runAdmin),
-  manageAttendance(0x0008014E, authCanManageRuns, true, PermissionArea.runAdmin),
+  manageAttendance(
+    0x0008014E,
+    authCanManageRuns,
+    true,
+    PermissionArea.runAdmin,
+  ),
   copyRsvps(0x00080146, authCanManageRuns, false, PermissionArea.runAdmin),
   packTrackTrim(0x00000106, authCanManageRuns, false, PermissionArea.runAdmin),
   awardList(0x0000001E, authCanManageAwards, false, PermissionArea.runAdmin),
-  manageDownDowns(0x0000001E, authCanManageAwards, false, PermissionArea.runAdmin),
-  manageMembers(0x00000046, authCanManageMembers, false, PermissionArea.kennelTools),
-  viewInviteCodes(0x00000046, authCanManageMembers, false, PermissionArea.kennelTools),
+  manageDownDowns(
+    0x0000001E,
+    authCanManageAwards,
+    false,
+    PermissionArea.runAdmin,
+  ),
+  manageMembers(
+    0x00000046,
+    authCanManageMembers,
+    false,
+    PermissionArea.kennelTools,
+  ),
+  viewInviteCodes(
+    0x00000046,
+    authCanManageMembers,
+    false,
+    PermissionArea.kennelTools,
+  ),
   // super-admin only
   assignAppAccessFlags(0x00000000, 0, false, PermissionArea.kennelTools),
   // GM|VGM + super-admin
@@ -52,14 +92,45 @@ enum KennelFeature {
   // allowed. Manage Photos stays the single photo flag and can be granted to
   // anyone regardless of role.
   reviewPhotos(0x00001026, authCanManagePhotos, false, PermissionArea.photos),
+  // 3.1 — the kennel catalogue. Masks copied verbatim from the
+  // manageProducts grants seeded in HC.RolePermission: gm | vgm | hashCash |
+  // haberdasher on the role side, ManageHashCash on the flag side. If these
+  // drift from the SP the button appears and the server refuses it.
+  //   gm 0x02 | vgm 0x04 | hashCash 0x400 | haberdasher 0x8000 = 0x8406
+  manageProducts(
+    0x00008406,
+    authCanManageHashCash,
+    false,
+    PermissionArea.kennelTools,
+  ),
   editPhoto(0x00001026, authCanManagePhotos, false, PermissionArea.photos),
   batchPhotos(0x00001026, authCanManagePhotos, false, PermissionArea.photos),
-  writeHashTrash(0x00121806, authCanManagePublicWebContent, false, PermissionArea.web),
-  viewHashTrashDrafts(0x00121806, authCanManagePublicWebContent, false, PermissionArea.web),
-  manageKennelSettings(0x00000006, authCanManageKennel, false, PermissionArea.kennelTools),
+  writeHashTrash(
+    0x00121806,
+    authCanManagePublicWebContent,
+    false,
+    PermissionArea.web,
+  ),
+  viewHashTrashDrafts(
+    0x00121806,
+    authCanManagePublicWebContent,
+    false,
+    PermissionArea.web,
+  ),
+  manageKennelSettings(
+    0x00000006,
+    authCanManageKennel,
+    false,
+    PermissionArea.kennelTools,
+  ),
   manageSongs(0x00000086, authCanManageSongs, false, PermissionArea.songs);
 
-  const KennelFeature(this.mmMask, this.flagMask, this.hareScoped, this.areaKey);
+  const KennelFeature(
+    this.mmMask,
+    this.flagMask,
+    this.hareScoped,
+    this.areaKey,
+  );
 
   /// Fallback MismanagementRoles bits whose holders get this feature by default.
   final int mmMask;

@@ -118,6 +118,7 @@ export 'package:harrier_central/data/hc3_services/regions/regions_model_ns.dart'
 export 'package:harrier_central/data/hc3_services/regions/regions_service.dart';
 export 'package:harrier_central/data/hc3_services/songs/songs_model_ns.dart';
 export 'package:harrier_central/data/hc3_services/songs/songs_service.dart';
+export 'package:harrier_central/data/hc3_services/products/products_service.dart';
 export 'package:harrier_central/data/hc3_services/sync_event_admin_service.dart';
 export 'package:harrier_central/data/hc3_services/sync_kennel_admin_service.dart';
 export 'package:harrier_central/data/hc3_services/sync_user_data_service.dart';
@@ -310,6 +311,8 @@ export 'package:harrier_central/util/async_serializer.dart';
 export 'package:harrier_central/util/membership_status.dart';
 export 'package:harrier_central/widgets/packtrack_trim_overlay.dart';
 export 'package:harrier_central/widgets/sweep_message.dart';
+export 'package:harrier_central/services/products/product_service.dart';
+export 'package:harrier_central/pages/kennel_admin/product_editor_page.dart';
 export 'package:harrier_central/pages/menu_pages/kennel_photo_sweep_page.dart';
 export 'package:harrier_central/pages/menu_pages/run_photo_sweep_page.dart';
 export 'package:harrier_central/widgets/packtrack_fullscreen_map.dart';

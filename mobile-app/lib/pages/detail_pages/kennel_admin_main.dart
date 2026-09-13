@@ -433,6 +433,28 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             // run by run never gets cleared (James, 2026-09-13). Same screen
             // as the run's own review — it takes an empty eventId to mean
             // "every run".
+            // The kennel catalogue (3.1): run packages, memberships,
+            // haberdashery — what is on sale, what it costs, and what
+            // promotional credit it grants.
+            if (can(KennelFeature.manageProducts))
+              _adminButton(
+                icon: MaterialIcons.local_offer,
+                iconTopPadding: 4,
+                iconSize: 46,
+                labelTopPadding: 7,
+                label: 'Products',
+                onPressed: () async {
+                  await Navigator.push<dynamic>(
+                    context,
+                    MaterialPageRoute<dynamic>(
+                      builder: (BuildContext context) => ProductEditorPage(
+                        kennelId: agg.kennel.kennelId,
+                        kennelName: agg.kennel.kennelShortName,
+                      ),
+                    ),
+                  );
+                },
+              ),
             if (can(KennelFeature.reviewPhotos))
               _adminButton(
                 icon: MaterialIcons.photo_library,
