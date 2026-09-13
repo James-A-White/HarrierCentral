@@ -48,6 +48,7 @@ class ScannableRunsQuery {
              evt.${e.colKennelId}       AS kennelId,
              evt.${e.colEventStartDatetimeGmt} AS startGmt,
              evt.${e.colEventStartDatetime}    AS startLocal,
+             evt.${e.colLocationOneLineDesc}   AS locationDesc,
              evt.${e.colHcLatitude}     AS lat,
              evt.${e.colHcLongitude}    AS lng,
              k.${k.colKennelUniqueShortName} AS slug
@@ -87,6 +88,7 @@ class ScannableRunsQuery {
           kennelSlug: (r['slug'] as String?) ?? '',
           startUtc: start,
           startWallClock: _wallClock(r['startLocal']),
+          locationOneLine: (r['locationDesc'] as String?)?.trim(),
           startLat: (r['lat'] as num?)?.toDouble(),
           startLng: (r['lng'] as num?)?.toDouble(),
           trail: trail,

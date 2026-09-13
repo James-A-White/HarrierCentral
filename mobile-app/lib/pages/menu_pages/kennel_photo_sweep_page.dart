@@ -226,6 +226,16 @@ class KennelPhotoSweepPage extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                  if ((r.run.locationOneLine ?? '').isNotEmpty)
+                    Text(
+                      r.run.locationOneLine!,
+                      style: ts_body.copyWith(
+                        fontSize: 13,
+                        color: Colors.white70,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   const SizedBox(height: 2),
                   Text(
                     '${r.eligible} eligible  ·  ${r.added} added',

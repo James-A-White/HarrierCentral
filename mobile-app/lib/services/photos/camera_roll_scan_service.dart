@@ -17,6 +17,7 @@ class ScannableRun {
     required this.kennelSlug,
     required this.startUtc,
     this.startWallClock,
+    this.locationOneLine,
     this.startLat,
     this.startLng,
     this.trail = const <LatLng>[],
@@ -39,6 +40,11 @@ class ScannableRun {
   /// HC.EventStartDatetime carries a spurious +00:00 on about two thirds of
   /// rows so the two must never be derived from each other (/hc-event-datetimes).
   final DateTime? startWallClock;
+
+  /// The run's own one-line location ("The Victoria", "Linkebeek train
+  /// station") — what a hasher recognises a run by when the number and the
+  /// name do not ring a bell.
+  final String? locationOneLine;
 
   final double? startLat;
   final double? startLng;
