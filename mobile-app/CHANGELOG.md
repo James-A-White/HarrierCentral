@@ -1,3 +1,24 @@
+## 3.0.34+1351 (2026-09-13)
+
+### Fixes
+- **A button on the trail-trim panel was invisible.** "Stop everyone's
+  tracking" was drawn in the same red as the button it sat on, so it looked
+  like a blank red bar. It now reads "Stop tracking" in white, like every
+  other button.
+- **The trim panel's buttons no longer disagree with each other.** They were
+  built from two different kinds of button, so they had different corner
+  shapes and different text sizes side by side. They now match each other and
+  the rest of the app.
+- **Setting an official start or end could claim success when it had not
+  worked.** If the marker could not reach the server the panel still said it
+  was set, which looked like the start and end simply refusing to appear. It
+  now tells you the boundary was not set.
+
+### Improvements
+- **Close is now the top button on the full-screen map**, set apart from the
+  controls below it, rather than sitting second under the compass where it
+  was easy to miss.
+
 ## 3.0.33+1348 (2026-09-13)
 
 ### New Features
