@@ -119,11 +119,11 @@ class ProductService {
         if (productId != null && productId.isNotEmpty) 'productId': productId,
         'productType': productType,
         'name': name,
-        ?'description': description,
+        'description': ?description,
         'priceCharged': priceCharged,
         'promotionalCredit': promotionalCredit,
         'unitCost': unitCost,
-        ?'runCount': runCount,
+        'runCount': ?runCount,
         'isActive': isActive ? 1 : 0,
         'sortOrder': sortOrder,
         'accessToken': Utilities.generateToken(

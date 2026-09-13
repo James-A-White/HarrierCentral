@@ -1,5 +1,4 @@
 import 'package:harrier_central/imports.dart';
-import 'package:harrier_central/services/products/product_service.dart';
 
 /// Manage a kennel's catalogue (3.1): run packages, memberships,
 /// haberdashery. What is on sale, what it costs, and what promotional credit
