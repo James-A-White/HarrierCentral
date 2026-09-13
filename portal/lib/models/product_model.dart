@@ -100,24 +100,57 @@ class ProductModel {
       .where((String s) => s.isNotEmpty)
       .toList(growable: false);
 
+  /// The amounts a charity collection (or any variable-price product) offers,
+  /// from [productDetailsJson] `amounts`. Empty when the product has one fixed
+  /// price.
+  ///
+  ///   {"amounts":[5,10,20],"allowOther":true}
+  List<double> get suggestedAmounts {
+    final Object? v = _details['amounts'];
+    if (v is! List) return const <double>[];
+    return v
+        .map((Object? e) => e is num ? e.toDouble() : double.tryParse('$e'))
+        .whereType<double>()
+        .where((double d) => d > 0)
+        .toList(growable: false);
+  }
+
+  /// Whether the hasher may type their own amount — the "Other" option.
+  ///
+  /// A collection with neither suggested amounts nor this flag is just a fixed
+  /// price, which is a legitimate way to run one.
+  bool get allowCustomAmount => _details['allowOther'] == true;
+
+  /// True when this product has no single price, so a payment against it has
+  /// to carry the amount rather than read it off the catalogue.
+  bool get hasVariableAmount =>
+      suggestedAmounts.isNotEmpty || allowCustomAmount;
+
+  /// [productDetailsJson] decoded, or an empty map. Never throws: a malformed
+  /// blob must not take the whole catalogue screen down.
+  Map<String, dynamic> get _details {
+    final String raw = productDetailsJson ?? '';
+    if (raw.trim().isEmpty) return const <String, dynamic>{};
+    try {
+      final Object? decoded = jsonDecode(raw);
+      return decoded is Map<String, dynamic>
+          ? decoded
+          : const <String, dynamic>{};
+    } catch (_) {
+      return const <String, dynamic>{};
+    }
+  }
+
   /// Sizes out of [productDetailsJson], empty when the item has none or the
   /// JSON is not the shape we expect. Never throws: a malformed blob must not
   /// take the whole catalogue screen down.
   List<String> get sizes {
-    final String raw = productDetailsJson ?? '';
-    if (raw.trim().isEmpty) return const <String>[];
-    try {
-      final Object? decoded = jsonDecode(raw);
-      if (decoded is! Map<String, dynamic>) return const <String>[];
-      final Object? s = decoded['sizes'];
-      if (s is! List) return const <String>[];
-      return s
-          .map((Object? e) => e?.toString() ?? '')
-          .where((String e) => e.isNotEmpty)
-          .toList(growable: false);
-    } catch (_) {
-      return const <String>[];
-    }
+    final Object? v = _details['sizes'];
+    if (v is! List) return const <String>[];
+    return v
+        .map((Object? e) => e?.toString() ?? '')
+        .where((String e) => e.isNotEmpty)
+        .toList(growable: false);
   }
 }
 

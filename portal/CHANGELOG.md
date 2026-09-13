@@ -5,16 +5,25 @@
 ## 2.0.75+710 (2026-09-13)
 
 ### New Features
-- **Products.** A kennel's catalogue now has its own screen, reached from
-  the admin buttons beside Edit Website. List what is on sale, add a run
-  package, a membership, a piece of haberdashery or an away weekend, and
-  record what each costs you to supply so the margin is visible.
-  Haberdashery carries its sizes, its photos and the supplier's details,
-  and the supplier's details stay here: they are never sent to anyone's
-  phone.
+- **Kennel Products.** The catalogue now has its own tab group, sitting
+  alongside Edit Kennel and Edit Website under a gift box. Six tabs, one per
+  product group: Memberships, Run Packages, Haberdashery, Trips & Events,
+  Bar & Refreshments, and Charity & Donation.
+- The tab you are on decides what you are creating, so a shirt cannot end up
+  filed under memberships. Haberdashery asks for sizes, run packages ask how
+  many runs are included, and neither question appears where it makes no
+  sense.
+- Every product shows what it costs the kennel next to what it earns, so the
+  margin is visible without working it out. Supplier details for haberdashery
+  are kept here and are never sent to anyone's phone.
 - Nothing in the catalogue can be deleted. Retiring something is "Take off
-  sale", and the confirmation tells you how many have sold, because a
+  sale", and the confirmation tells you how many have already sold, because a
   deleted product would break the link from every payment made against it.
+- **Collections can offer a choice of amounts.** A charity product takes a list
+  of suggested amounts and an "Other" option letting the hasher type their own,
+  so one collection covers the person giving a fiver and the person giving
+  fifty. Where a product offers a choice, the list is shown in place of a price,
+  because there is no single price to show.
 
 ## 2.0.74+709 (2026-09-13)
 

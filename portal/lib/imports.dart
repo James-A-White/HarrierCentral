@@ -40,8 +40,6 @@ export 'package:hcportal/admin_pages/promotions/promotion_form.dart';
 export 'package:hcportal/admin_pages/promotions/promotion_list_page.dart';
 export 'package:hcportal/admin_pages/hc_admin_tools/hc_admin_tools_page.dart';
 export 'package:hcportal/admin_pages/newsflash/newsflash_dialog.dart';
-export 'package:hcportal/admin_pages/products/product_controller.dart';
-export 'package:hcportal/admin_pages/products/products_page.dart';
 export 'package:hcportal/admin_pages/newsflash/newsflash_management_controller.dart';
 export 'package:hcportal/admin_pages/newsflash/newsflash_management_page.dart';
 export 'package:hcportal/models/newsflash_admin_model.dart';

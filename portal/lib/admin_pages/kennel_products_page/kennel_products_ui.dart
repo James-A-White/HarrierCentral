@@ -1,18 +1,26 @@
 import 'package:hcportal/imports.dart';
 
-const Color _kPageBg = Color(0xFFF1F5F9);
+import 'kennel_products_controller.dart';
+import 'kennel_products_enums.dart';
+
 const Color _kBody = Color(0xFF1F2937);
 const Color _kMuted = Color(0xFF6B7280);
 const Color _kAccent = Color(0xFF1E40AF);
 const Color _kDanger = Color(0xFFDC2626);
+const Color _kLine = Color(0xFFE2E8F0);
 
-/// The kennel's product catalogue: run packages, memberships, haberdashery.
+// ---------------------------------------------------------------------------
+// Entry widget
+// ---------------------------------------------------------------------------
+
+/// Kennel Products: the catalogue, one tab per product group.
 ///
-/// Nothing here deletes. Retiring a product is "Take off sale", because the
-/// mobile sync deletes removed rows from every phone, which would orphan the
-/// payments made against it.
-class ProductsPage extends StatelessWidget {
-  const ProductsPage({
+/// Sits alongside Edit Kennel and Edit Website as its own tab group. There are
+/// no `part` files for the tabs, unlike those two, because every group renders
+/// identically and differs only by which ProductType it lists. Twelve
+/// near-identical files would be twelve places to fix one bug.
+class KennelProductsEditPage extends GetView<KennelProductsController> {
+  const KennelProductsEditPage({
     required this.publicKennelId,
     required this.kennelName,
     super.key,
@@ -21,120 +29,197 @@ class ProductsPage extends StatelessWidget {
   final String publicKennelId;
   final String kennelName;
 
-  void _ensureController() {
-    if (!Get.isRegistered<ProductController>()) {
-      Get.put(ProductController(publicKennelId, kennelName));
+  @override
+  Widget build(BuildContext context) {
+    if (!Get.isRegistered<KennelProductsController>()) {
+      Get.put(
+        KennelProductsController(
+          publicKennelId: publicKennelId,
+          kennelName: kennelName,
+        ),
+        permanent: true,
+      );
     }
+    return GetBuilder<KennelProductsController>(
+      id: 'productsPageBuilder',
+      builder: (_) => _ProductsScaffold(controller: controller),
+    );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Scaffold
+// ---------------------------------------------------------------------------
+
+class _ProductsScaffold extends StatelessWidget {
+  const _ProductsScaffold({required this.controller});
+
+  final KennelProductsController controller;
 
   @override
   Widget build(BuildContext context) {
-    _ensureController();
-    final ProductController c = Get.find<ProductController>();
-
-    return Scaffold(
-      backgroundColor: _kPageBg,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back<void>(),
-        ),
-        title: Text(
-          'Products — $kennelName',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: HcButton.primary(
-              label: 'Add product',
-              icon: Icons.add,
-              onPressed: () => _openForm(context, c, null),
-            ),
-          ),
-        ],
+    return Container(
+      color: Colors.white,
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          controller.updateSizeWithDebounce(
+            constraints.maxWidth,
+            constraints.maxHeight,
+          );
+          return Scaffold(appBar: _buildAppBar(), body: _buildBody());
+        },
       ),
-      body: Obx(() {
-        if (c.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            _filterBar(c),
-            Expanded(
-              child: c.products.isEmpty
-                  ? _empty(context, c)
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                      itemCount: c.products.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (BuildContext ctx, int i) =>
-                          _tile(ctx, c, c.products[i]),
-                    ),
-            ),
-          ],
-        );
-      }),
     );
   }
 
-  Widget _filterBar(ProductController c) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-    child: Row(
-      children: <Widget>[
-        Switch(
-          value: c.activeOnly.value,
-          onChanged: (bool v) => unawaited(c.toggleActiveOnly(v)),
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      leading: GestureDetector(
+        onTap: () => Get.back<void>(),
+        child: const Icon(
+          MaterialCommunityIcons.arrow_left,
+          color: Colors.black,
         ),
-        const SizedBox(width: 8),
-        const Text(
-          'Only show what is on sale',
-          style: TextStyle(fontSize: 14, color: _kBody),
-        ),
-        const Spacer(),
-        Text(
-          '${c.products.length} product${c.products.length == 1 ? '' : 's'}',
-          style: const TextStyle(fontSize: 13, color: _kMuted),
+      ),
+      title: Text(
+        'Products — ${controller.kennelName}',
+        style: headingStyleBlack,
+      ),
+      actions: <Widget>[
+        Obx(
+          () => Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Row(
+              children: <Widget>[
+                Switch(
+                  value: controller.activeOnly.value,
+                  onChanged: (bool v) =>
+                      unawaited(controller.toggleActiveOnly(v)),
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  'On sale only',
+                  style: TextStyle(fontSize: 13, color: _kBody),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
-    ),
-  );
+    );
+  }
 
-  Widget _empty(BuildContext context, ProductController c) => Center(
+  Widget _buildBody() {
+    return DefaultTabController(
+      length: KennelProductsTabType.values.length,
+      child: TabRailScaffold(
+        controller: controller,
+        railColor: railColorKennelProducts,
+        narrowTabBar: ResponsiveTabBar<KennelProductsController>(
+          controller: controller,
+          formKey: GlobalKey<FormState>(debugLabel: 'productsNavKey'),
+          tabBarColor: railColorKennelProducts,
+        ),
+        tabBarView: TabBarView(
+          controller: controller.tabController,
+          children: _buildTabBodies(),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildTabBodies() {
+    return KennelProductsTabType.values.map((KennelProductsTabType tab) {
+      return TabPageStandardLayout(
+        title: tab.title,
+        icon: tab.icon,
+        description: tab.description,
+        formController: controller,
+        showCloseTabGroupButton: true,
+        tabLocked: controller.tabLocked[tab.index],
+        handlesOwnScrolling: true,
+        child: _ProductGroupTab(controller: controller, tab: tab),
+      );
+    }).toList();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// One product group
+// ---------------------------------------------------------------------------
+
+class _ProductGroupTab extends StatelessWidget {
+  const _ProductGroupTab({required this.controller, required this.tab});
+
+  final KennelProductsController controller;
+  final KennelProductsTabType tab;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      final List<ProductModel> items = controller.productsFor(tab);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
+            child: Row(
+              children: <Widget>[
+                Text(
+                  items.isEmpty
+                      ? 'Nothing here yet'
+                      : '${items.length} '
+                            '${items.length == 1 ? 'product' : 'products'}',
+                  style: const TextStyle(fontSize: 13, color: _kMuted),
+                ),
+                const Spacer(),
+                HcButton.primary(
+                  label: 'Add ${tab.title.toLowerCase()}',
+                  icon: Icons.add,
+                  onPressed: () => _openForm(context, null),
+                ),
+              ],
+            ),
+          ),
+          if (items.isEmpty)
+            _empty()
+          else
+            ...items.map((ProductModel p) => _tile(context, p)),
+        ],
+      );
+    });
+  }
+
+  Widget _empty() => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 40),
     child: Column(
-      mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Icon(Icons.inventory_2_outlined, size: 48, color: _kMuted),
+        Icon(tab.icon, size: 42, color: _kMuted),
         const SizedBox(height: 12),
-        const Text(
-          'Nothing in the catalogue yet.',
-          style: TextStyle(fontSize: 16, color: _kBody),
+        Text(
+          'No ${tab.title.toLowerCase()} in the catalogue.',
+          style: const TextStyle(fontSize: 15, color: _kBody),
         ),
         const SizedBox(height: 4),
         const Text(
-          'Add a run package, a membership or a piece of haberdashery.',
+          'Add one and it reaches every phone on the next sync.',
           style: TextStyle(fontSize: 13, color: _kMuted),
-        ),
-        const SizedBox(height: 16),
-        HcButton.primary(
-          label: 'Add product',
-          icon: Icons.add,
-          onPressed: () => _openForm(context, c, null),
         ),
       ],
     ),
   );
 
-  Widget _tile(BuildContext context, ProductController c, ProductModel p) {
+  Widget _tile(BuildContext context, ProductModel p) {
     final List<String> sizes = p.sizes;
     return Card(
       elevation: 0,
+      margin: const EdgeInsets.only(bottom: 10),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        side: BorderSide(
-          color: p.isActive ? const Color(0xFFE2E8F0) : const Color(0xFFCBD5E1),
-        ),
+        side: const BorderSide(color: _kLine),
       ),
       color: p.isActive ? Colors.white : const Color(0xFFF8FAFC),
       child: Padding(
@@ -143,57 +228,61 @@ class ProductsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Flexible(
-                            child: Text(
-                              p.name,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: p.isActive ? _kBody : _kMuted,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          _chip(productTypeLabel(p.productType), _kAccent),
-                          if (!p.isActive) ...<Widget>[
-                            const SizedBox(width: 6),
-                            _chip('Off sale', _kMuted),
-                          ],
-                        ],
-                      ),
-                      if ((p.description ?? '').trim().isNotEmpty) ...<Widget>[
-                        const SizedBox(height: 4),
-                        Text(
-                          p.description!,
-                          style: const TextStyle(fontSize: 13, color: _kMuted),
-                        ),
-                      ],
-                    ],
+                Flexible(
+                  child: Text(
+                    p.name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: p.isActive ? _kBody : _kMuted,
+                    ),
                   ),
                 ),
+                if (!p.isActive) ...<Widget>[
+                  const SizedBox(width: 8),
+                  _chip('Off sale', _kMuted),
+                ],
+                if (p.hasBeenSold) ...<Widget>[
+                  const SizedBox(width: 6),
+                  _chip('${p.unitsSold} sold', _kAccent),
+                ],
               ],
             ),
+            if ((p.description ?? '').trim().isNotEmpty) ...<Widget>[
+              const SizedBox(height: 4),
+              Text(
+                p.description!,
+                style: const TextStyle(fontSize: 13, color: _kMuted),
+              ),
+            ],
             const SizedBox(height: 10),
             Wrap(
-              spacing: 20,
+              spacing: 22,
               runSpacing: 6,
               children: <Widget>[
-                _fact('Price', p.priceCharged.toStringAsFixed(2)),
+                // A variable-amount product has no single price, so showing
+                // one would be a lie. Show what it actually offers.
+                if (p.hasVariableAmount)
+                  _fact(
+                    'Amounts',
+                    <String>[
+                      ...p.suggestedAmounts.map(
+                        (double d) => d.toStringAsFixed(2),
+                      ),
+                      if (p.allowCustomAmount) 'Other',
+                    ].join(' · '),
+                  )
+                else
+                  _fact('Price', p.priceCharged.toStringAsFixed(2)),
                 if (p.promotionalCredit != 0)
                   _fact('Credit', p.promotionalCredit.toStringAsFixed(2)),
                 _fact('Cost', p.unitCost.toStringAsFixed(2)),
                 _fact('Margin', p.margin.toStringAsFixed(2)),
                 if (p.runCount != null) _fact('Runs', '${p.runCount}'),
                 if (sizes.isNotEmpty) _fact('Sizes', sizes.join(', ')),
-                _fact('Sold', '${p.unitsSold}'),
+                if (p.photoUrlList.isNotEmpty)
+                  _fact('Photos', '${p.photoUrlList.length}'),
               ],
             ),
             const SizedBox(height: 10),
@@ -202,18 +291,18 @@ class ProductsPage extends StatelessWidget {
               children: <Widget>[
                 HcButton.text(
                   label: 'Edit',
-                  onPressed: () => _openForm(context, c, p),
+                  onPressed: () => _openForm(context, p),
                 ),
                 const SizedBox(width: 8),
                 if (p.isActive)
                   HcButton.secondary(
                     label: 'Take off sale',
-                    onPressed: () => unawaited(_confirmOffSale(c, p)),
+                    onPressed: () => unawaited(_confirmOffSale(p)),
                   )
                 else
                   HcButton.secondary(
                     label: 'Put on sale',
-                    onPressed: () => unawaited(c.setOnSale(p, true)),
+                    onPressed: () => unawaited(controller.setOnSale(p, true)),
                   ),
               ],
             ),
@@ -251,7 +340,7 @@ class ProductsPage extends StatelessWidget {
     ],
   );
 
-  Future<void> _confirmOffSale(ProductController c, ProductModel p) async {
+  Future<void> _confirmOffSale(ProductModel p) async {
     final bool? ok = await Get.defaultDialog<bool>(
       title: 'Take off sale',
       titleStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
@@ -280,20 +369,20 @@ class ProductsPage extends StatelessWidget {
         ),
       ],
     );
-    if (ok ?? false) await c.setOnSale(p, false);
+    if (ok ?? false) await controller.setOnSale(p, false);
   }
 
-  void _openForm(
-    BuildContext context,
-    ProductController c,
-    ProductModel? existing,
-  ) {
+  void _openForm(BuildContext context, ProductModel? existing) {
     unawaited(
       Get.dialog<void>(
         Dialog(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
-            child: _ProductForm(controller: c, existing: existing),
+            child: _ProductForm(
+              controller: controller,
+              tab: tab,
+              existing: existing,
+            ),
           ),
         ),
       ),
@@ -301,18 +390,27 @@ class ProductsPage extends StatelessWidget {
   }
 }
 
-class _ProductForm extends StatefulWidget {
-  const _ProductForm({required this.controller, this.existing});
+// ---------------------------------------------------------------------------
+// Add / edit dialog
+// ---------------------------------------------------------------------------
 
-  final ProductController controller;
+class _ProductForm extends StatefulWidget {
+  const _ProductForm({
+    required this.controller,
+    required this.tab,
+    this.existing,
+  });
+
+  final KennelProductsController controller;
+  final KennelProductsTabType tab;
   final ProductModel? existing;
 
   @override
   State<_ProductForm> createState() => _ProductFormState();
 }
 
-/// A self-contained dialog form: TextEditingControllers and a FormState key,
-/// no business logic. This is the one StatefulWidget shape the project allows.
+/// A self-contained dialog form: text controllers and a form key, no business
+/// logic. This is the one StatefulWidget shape the project allows.
 class _ProductFormState extends State<_ProductForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -326,9 +424,10 @@ class _ProductFormState extends State<_ProductForm> {
   late final TextEditingController _photoUrls;
   late final TextEditingController _sourceJson;
   late final TextEditingController _sortOrder;
+  late final TextEditingController _amounts;
 
-  late int _type;
   late bool _isActive;
+  late bool _allowOther;
   bool _saving = false;
 
   @override
@@ -351,8 +450,17 @@ class _ProductFormState extends State<_ProductForm> {
     _photoUrls = TextEditingController(text: p?.photoUrls ?? '');
     _sourceJson = TextEditingController(text: p?.sourceJson ?? '');
     _sortOrder = TextEditingController(text: '${p?.sortOrder ?? 0}');
-    _type = p?.productType ?? 4;
+    _amounts = TextEditingController(
+      text: (p?.suggestedAmounts ?? <double>[])
+          .map((double d) => d.toStringAsFixed(2))
+          .join(', '),
+    );
     _isActive = p?.isActive ?? true;
+    // Default ON for a collection: asking for a fixed donation is the unusual
+    // case, so a new charity product lets people choose unless told otherwise.
+    _allowOther =
+        p?.allowCustomAmount ??
+        (widget.tab == KennelProductsTabType.charityAndDonation);
   }
 
   @override
@@ -368,6 +476,7 @@ class _ProductFormState extends State<_ProductForm> {
       _photoUrls,
       _sourceJson,
       _sortOrder,
+      _amounts,
     ]) {
       t.dispose();
     }
@@ -377,26 +486,39 @@ class _ProductFormState extends State<_ProductForm> {
   double _money(TextEditingController t) =>
       double.tryParse(t.text.trim().replaceAll(',', '.')) ?? 0;
 
-  /// Sizes are typed comma separated because that is how a person writes them.
-  /// They are STORED as a JSON array, so the comma never has to survive a
-  /// round trip. The pipe rule applies to PhotoUrls, which is a delimited
-  /// string, not to this.
+  /// Sizes are typed comma separated because that is how a person writes them,
+  /// and STORED as a JSON array, so the comma never has to survive a round
+  /// trip. The pipe rule applies to PhotoUrls, which is a delimited string.
   String? _detailsJson() {
+    final Map<String, dynamic> out = <String, dynamic>{};
+
     final List<String> sizes = _sizes.text
         .split(',')
         .map((String s) => s.trim())
         .where((String s) => s.isNotEmpty)
         .toList();
-    if (sizes.isEmpty) return null;
-    return jsonEncode(<String, dynamic>{'sizes': sizes});
+    if (sizes.isNotEmpty) out['sizes'] = sizes;
+
+    final List<double> amounts = _amounts.text
+        .split(',')
+        .map((String s) => double.tryParse(s.trim().replaceAll(',', '.')))
+        .whereType<double>()
+        .where((double d) => d > 0)
+        .toList();
+    if (amounts.isNotEmpty) out['amounts'] = amounts;
+    if (_allowOther) out['allowOther'] = true;
+
+    return out.isEmpty ? null : jsonEncode(out);
   }
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
-    final bool ok = await widget.controller.save(
+    final bool ok = await widget.controller.saveProduct(
       productId: widget.existing?.productId,
-      productType: _type,
+      // The tab decides the type, so nothing can be filed under the wrong
+      // group. There is no type picker here on purpose.
+      productType: widget.tab.productType,
       name: _name.text.trim(),
       description: _description.text.trim().isEmpty
           ? null
@@ -420,8 +542,13 @@ class _ProductFormState extends State<_ProductForm> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isHaberdashery = _type == 3;
-    final bool isRunPackage = _type == 4;
+    final bool isHaberdashery =
+        widget.tab == KennelProductsTabType.haberdashery;
+    final bool isRunPackage = widget.tab == KennelProductsTabType.runPackages;
+    // A collection has no single price: the hasher picks from suggested
+    // amounts or types their own, and the amount lands on the payment.
+    final bool isCollection =
+        widget.tab == KennelProductsTabType.charityAndDonation;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -431,30 +558,23 @@ class _ProductFormState extends State<_ProductForm> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(
-              widget.existing == null ? 'Add product' : 'Edit product',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _kBody,
-              ),
+            Row(
+              children: <Widget>[
+                Icon(widget.tab.icon, size: 20, color: _kAccent),
+                const SizedBox(width: 8),
+                Text(
+                  widget.existing == null
+                      ? 'Add to ${widget.tab.title}'
+                      : 'Edit ${widget.tab.title.toLowerCase()}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: _kBody,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<int>(
-              initialValue: _type,
-              decoration: const InputDecoration(
-                labelText: 'Type *',
-                border: OutlineInputBorder(),
-              ),
-              items: productTypeLabels.entries
-                  .map(
-                    (MapEntry<int, String> e) =>
-                        DropdownMenuItem<int>(value: e.key, child: Text(e.value)),
-                  )
-                  .toList(),
-              onChanged: (int? v) => setState(() => _type = v ?? _type),
-            ),
-            const SizedBox(height: 12),
             TextFormField(
               controller: _name,
               decoration: const InputDecoration(
@@ -476,7 +596,12 @@ class _ProductFormState extends State<_ProductForm> {
             const SizedBox(height: 12),
             Row(
               children: <Widget>[
-                Expanded(child: _moneyField(_price, 'Price charged *')),
+                Expanded(
+                  child: _moneyField(
+                    _price,
+                    isCollection ? 'Default amount' : 'Price charged *',
+                  ),
+                ),
                 const SizedBox(width: 10),
                 Expanded(child: _moneyField(_credit, 'Promotional credit')),
               ],
@@ -510,6 +635,33 @@ class _ProductFormState extends State<_ProductForm> {
                 ),
               ),
             ],
+            if (isCollection) ...<Widget>[
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _amounts,
+                decoration: const InputDecoration(
+                  labelText: 'Suggested amounts',
+                  helperText:
+                      'Comma separated, for example 5, 10, 20. Leave blank to '
+                      'offer no set amounts.',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _allowOther,
+                onChanged: (bool v) => setState(() => _allowOther = v),
+                title: const Text(
+                  'Allow "Other"',
+                  style: TextStyle(fontSize: 14, color: _kBody),
+                ),
+                subtitle: const Text(
+                  'Let the hasher type their own amount. With this off and no '
+                  'suggested amounts, the price above is the only option.',
+                  style: TextStyle(fontSize: 12, color: _kMuted),
+                ),
+              ),
+            ],
             if (isHaberdashery) ...<Widget>[
               const SizedBox(height: 12),
               TextFormField(
@@ -537,8 +689,7 @@ class _ProductFormState extends State<_ProductForm> {
               maxLines: 3,
               decoration: const InputDecoration(
                 labelText: 'Supplier (JSON)',
-                helperText:
-                    'Kennel admin only, never shown in the app. '
+                helperText: 'Portal only, never sent to a phone. '
                     '{"supplier":"…","phone":"…"}',
                 border: OutlineInputBorder(),
               ),
@@ -568,7 +719,7 @@ class _ProductFormState extends State<_ProductForm> {
                 style: TextStyle(fontSize: 12, color: _kMuted),
               ),
             ),
-            if ((widget.existing?.hasBeenSold ?? false)) ...<Widget>[
+            if (widget.existing?.hasBeenSold ?? false) ...<Widget>[
               const SizedBox(height: 4),
               Row(
                 children: <Widget>[

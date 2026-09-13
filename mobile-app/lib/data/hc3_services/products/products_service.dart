@@ -73,6 +73,43 @@ class ProductsTableHelper extends BaseTableHelper<AppDomainType>
           ''');
   }
 
+  /// Strip anything on the wire that this phone has no column for.
+  ///
+  /// ⚠ EVERY table helper must override this. BaseTableHelper returns an EMPTY
+  /// map, and BaseService.bulkUpdateDatabase calls it whenever the wire field
+  /// count differs from the local column count — which is always, the moment
+  /// the server sends a column the phone does not have. Without this override
+  /// every product row is inserted stripped to nothing. Products was the only
+  /// helper of eleven missing it (found 2026-09-13).
+  ///
+  /// productDetailsJson and photoUrls are DELIBERATELY not in this list. The
+  /// server sends them, but the phone has no shop yet, so it has no column for
+  /// them and drops them here. Adding them means adding columns to
+  /// [createTable], which means a DB_VERSION bump to force the reload.
+  @override
+  Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
+    const List<String> wanted = <String>[
+      'productId',
+      'kennelId',
+      'productType',
+      'name',
+      'description',
+      'priceCharged',
+      'promotionalCredit',
+      'unitCost',
+      'runCount',
+      'isActive',
+      'sortOrder',
+      'removed',
+      'updatedAt',
+    ];
+    final Map<String, dynamic> out = <String, dynamic>{};
+    for (final String key in wanted) {
+      if (inputMap.containsKey(key)) out[key] = inputMap[key];
+    }
+    return out;
+  }
+
   @override
   Future<void> createIndexes(
     Database db,
