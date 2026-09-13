@@ -65,6 +65,16 @@ class DrinksListState extends State<DrinksList>
 
   bool _isLoading = false;
 
+  /// Whether the last attempt to load actually reached the server.
+  ///
+  /// Without this the screen cannot tell "this run genuinely has no awards"
+  /// apart from "we never managed to ask", and it showed the first message for
+  /// both. Barbados reported an empty award list that filled in on a second
+  /// visit; their logs carry 35 failed connection checks and 77 failed syncs
+  /// in a week, so the screen was almost certainly right about the data it had
+  /// and wrong about what that meant (James, 2026-09-13).
+  bool _loadFailed = false;
+
   // ignore: non_constant_identifier_names
   final double LIST_ITEM_HEIGHT = 84.0;
   // ignore: non_constant_identifier_names
@@ -73,14 +83,25 @@ class DrinksListState extends State<DrinksList>
   final List<DrinksResults> _awards = <DrinksResults>[];
 
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (Utilities.isConnected()) {
+    if (!Utilities.isConnected()) {
+      // Was a silent no-op: no sync, no spinner, no message — so the screen
+      // fell through to "No awards yet for this Trail" and stated as fact
+      // something it had never checked.
+      setStateIfMounted(() {
+        _isLoading = false;
+        _loadFailed = true;
+      });
+      return;
+    }
+    {
       if (showLoadingIndicator) {
         setStateIfMounted(() {
           _isLoading = true;
         });
       }
 
-      await tableModel.syncEventAdminService.updateFromBackend(
+      final bool synced = await tableModel.syncEventAdminService
+          .updateFromBackend(
         EnumDataTables.hashers.flag |
             EnumDataTables.payments.flag |
             EnumDataTables.hasherEventMap.flag |
@@ -95,8 +116,28 @@ class DrinksListState extends State<DrinksList>
 
       setStateIfMounted(() {
         _isLoading = false;
+        // updateFromBackend returns false when it could not reach the server.
+        // An empty list after a FAILED sync is not evidence of no awards.
+        _loadFailed = !synced && _awards.isEmpty;
       });
     }
+  }
+
+  /// The refresh button. Checks the connection first and says so plainly when
+  /// there is none, rather than spinning and landing back on an empty list.
+  Future<void> _manualRefresh() async {
+    if (!Utilities.isConnected()) {
+      await Utilities.showAlert(
+        'No connection',
+        'A connection is required to get the current run counts. Check your '
+            'signal or Wi-Fi and try again.',
+        'OK',
+      );
+      setStateIfMounted(() => _loadFailed = true);
+      return;
+    }
+    await _refreshSqlTablesFromBackend(true);
+    await _refreshDrinksFromTable(false);
   }
 
   @override
@@ -107,6 +148,13 @@ class DrinksListState extends State<DrinksList>
       backgroundColor: themeAppBarBackground,
       iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       title: Text('Drink chug-a-lug', style: ts_appBarTitle),
+      actions: <Widget>[
+        IconButton(
+          tooltip: 'Refresh',
+          icon: const Icon(Icons.refresh, color: Colors.white),
+          onPressed: () => unawaited(_manualRefresh()),
+        ),
+      ],
     );
 
     unawaited(initStateAsync());
@@ -207,12 +255,49 @@ class DrinksListState extends State<DrinksList>
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(30.0),
-                    child: Text(
-                      'No awards yet for this Trail',
-                      textAlign: TextAlign.center,
-                      style: ts_headingVeryLarge.copyWith(
-                        color: themeBackgroundColor,
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(
+                          _loadFailed
+                              ? Icons.cloud_off
+                              : Icons.emoji_events_outlined,
+                          size: 52,
+                          color: themeBackgroundColor,
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          // Two different facts, which used to share one
+                          // message. "No awards" is a statement about the run;
+                          // "couldn't load" is a statement about the phone.
+                          _loadFailed
+                              ? 'Could not load the awards'
+                              : 'No awards yet for this Trail',
+                          textAlign: TextAlign.center,
+                          style: ts_headingVeryLarge.copyWith(
+                            color: themeBackgroundColor,
+                          ),
+                        ),
+                        if (_loadFailed) ...<Widget>[
+                          const SizedBox(height: 10),
+                          Text(
+                            'A connection is required to get the current run '
+                            'counts. This run may well have awards — they just '
+                            'could not be fetched.',
+                            textAlign: TextAlign.center,
+                            style: ts_body.copyWith(
+                              color: themeBackgroundColor,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          ElevatedButton.icon(
+                            onPressed: () => unawaited(_manualRefresh()),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Try again'),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 )
