@@ -43,13 +43,13 @@ DECLARE @seed TABLE (
     KennelId          UNIQUEIDENTIFIER,
     ProductType       SMALLINT,
     Name              NVARCHAR(200),
-    Description       NVARCHAR(1000),
+    Description       NVARCHAR(4000),
     PriceCharged      SMALLMONEY,
     PromotionalCredit SMALLMONEY,
     UnitCost          SMALLMONEY,
-    SizeOptions       NVARCHAR(200),
+    ProductDetailsJson NVARCHAR(4000),
     PhotoUrls         NVARCHAR(2000),
-    SourceJson        NVARCHAR(MAX),
+    SourceJson        NVARCHAR(4000),
     IsActive          SMALLINT,
     SortOrder         INT
 );
@@ -72,12 +72,15 @@ INSERT @seed VALUES
  0, 0, 0, NULL, NULL, NULL, 0, 10),
 
 -- ---------------------------------------------------------------------
--- 2. Test kennel — annual membership. Test data, so a round number is fine.
+-- 2. Test kennel — annual membership, priced at 35 to MATCH the kennel's
+--    existing HC.Kennel.MembershipPrice. Two different numbers for the same
+--    membership on the same kennel is the one thing worth avoiding here.
+--    See the note at the foot of this file.
 -- ---------------------------------------------------------------------
 ('87f619f0-ec16-4057-9b9c-5615b1d4b23d', 'ef20cb1f-3e47-46d2-902b-5fad69f19f9d', 2,
  N'Annual Membership',
  N'Twelve months'' membership. Members pay the member run price.',
- 10, 0, 0, NULL, NULL, NULL, 1, 10),
+ 35, 0, 0, NULL, NULL, NULL, 1, 10),
 
 -- ---------------------------------------------------------------------
 -- 3. Brussels Manneke Piss H3 — EUR 25 membership.
@@ -88,8 +91,9 @@ INSERT @seed VALUES
 --    description. There is no column that could enforce it and inventing
 --    one for a single club's door policy would be the wrong trade.
 --
---    ⚠ Nothing in the schema says 25 is euros — see the note at the foot
---    of this file.
+--    25 is euros without anything having to say so: Brussels resolves
+--    through City -> Region -> Country to EUR, and the app already reads
+--    the symbol that way.
 -- ---------------------------------------------------------------------
 ('d4ed8933-3ff5-4024-9a3e-e32d967d2ef4', 'd1d51d20-5c09-458a-ad0f-d22a8b5ba019', 2,
  N'Annual Membership',
@@ -97,27 +101,28 @@ INSERT @seed VALUES
  25, 0, 0, NULL, NULL, NULL, 1, 10),
 
 -- ---------------------------------------------------------------------
--- 4. Test kennel — a shirt, to exercise SizeOptions, PhotoUrls and
+-- 4. Test kennel — a shirt, to exercise ProductDetailsJson, PhotoUrls and
 --    SourceJson. Sold at 20 against a 12 unit cost, so the accounting
---    section has a margin to show.
+--    section has a margin to show. Sizes live in the details JSON; the size
+--    a hasher actually picks lands on HC.Payment.ProductVariant.
 -- ---------------------------------------------------------------------
 ('b3b779a0-ffdb-43f0-b703-16a16dfe1805', 'ef20cb1f-3e47-46d2-902b-5fad69f19f9d', 3,
  N'Hash Shirt',
  N'Cotton hash shirt with the kennel logo on the chest and the receding hare on the back.',
  20, 0, 12,
- N'S|M|L|XL|XXL',
+ N'{"sizes":["S","M","L","XL","XXL"]}',
  NULL,
  N'{"supplier":"Example Print Co","contact":"Jo Bloggs","phone":"+44 20 7946 0000","email":"orders@example.invalid","minimumOrder":25,"leadTimeDays":14,"notes":"Artwork held on file. Reorder by email quoting HC-SHIRT-01."}',
  1, 20);
 
 INSERT HC.Product (id, KennelId, ProductType, Name, Description,
                    PriceCharged, PromotionalCredit, UnitCost, RunCount,
-                   SizeOptions, PhotoUrls, SourceJson,
+                   ProductDetailsJson, PhotoUrls, SourceJson,
                    IsActive, SortOrder, CreatedByUserId,
                    createdAt, updatedAt, updatedAtBias, Removed)
 SELECT s.id, s.KennelId, s.ProductType, s.Name, s.Description,
        s.PriceCharged, s.PromotionalCredit, s.UnitCost, NULL,
-       s.SizeOptions, s.PhotoUrls, s.SourceJson,
+       s.ProductDetailsJson, s.PhotoUrls, s.SourceJson,
        s.IsActive, s.SortOrder, NULL,
        @now, @now, 0, 0
 FROM @seed s
@@ -132,7 +137,7 @@ SELECT LEFT(k.KennelName, 34)      AS kennel,
        p.Name                      AS name,
        p.PriceCharged              AS price,
        p.UnitCost                  AS cost,
-       ISNULL(p.SizeOptions, '-')  AS sizes,
+       ISNULL(JSON_VALUE(p.ProductDetailsJson, '$.sizes[0]'), '-') AS firstSize,
        p.IsActive                  AS onSale
 FROM HC.Product p
 JOIN HC.Kennel k ON k.id = p.KennelId
@@ -141,15 +146,38 @@ ORDER BY k.KennelName, p.SortOrder, p.Name;
 GO
 
 -- =====================================================================
--- ⚠ OPEN: none of these prices carries a currency.
+-- CURRENCY — resolved, nothing to add.
 --
---   HC.Product has no currency column and cannot inherit one: of 390 live
---   kennels exactly ONE has CurrencyCode set and six have
---   DefaultEventCurrencyType. So "EUR 25" is 25 of nothing as far as the
---   schema is concerned, and the phone will render it in whatever symbol
---   the app happens to default to.
+--   HC.Product needs no currency column. Every one of the 390 live kennels
+--   resolves City -> Region -> Country to a CurrencyCode, CurrencySymbol
+--   and DigitsAfterDecimal, and the app ALREADY reads it that way:
+--   common_queries.dart does COALESCE(kennel.CurrencySymbol,
+--   country.CurrencySymbol, '$'). Brussels comes back EUR, Raleigh USD,
+--   the test kennel GBP. The symbol carries a '^' marking where the amount
+--   goes.
 --
---   This is pre-existing — HC.Event prices have the same hole — so it is
---   not a reason to hold the catalogue. It is recorded here because the
---   first product with a stated currency has now been written.
+--   So a product inherits its currency exactly as an event price already
+--   does, with no new column and no backfill.
+--
+-- =====================================================================
+-- ⚠ OPEN: TWO PLACES NOW HOLD A MEMBERSHIP PRICE.
+--
+--   HC.Kennel.MembershipPrice already exists and is what
+--   hcapp_processPayment charges today. A membership row in this catalogue
+--   is a second home for the same number, and nothing yet says which wins.
+--
+--   Nothing breaks on this script — seeding a product does not change what
+--   anyone is charged — but 3.1 has to pick one. The suggestion is that the
+--   product wins where a kennel has an active membership product, with
+--   Kennel.MembershipPrice as the fallback for the 390 kennels that do not.
+--
+--   Note the two disagree RIGHT NOW for Brussels: the product says 25,
+--   HC.Kennel.MembershipPrice says 0. Until processPayment prefers the
+--   product, a Brussels membership charge still takes 0. Left alone
+--   deliberately: changing a real club's charging config was not asked for.
+--
+--   The TERM is not affected and is not duplicated. It stays on the kennel
+--   (MembershipRenewalMode + MembershipDurationInMonths), where the expiry
+--   maths already lives. All 390 live kennels are mode 1, rolling, 12
+--   months.
 -- =====================================================================

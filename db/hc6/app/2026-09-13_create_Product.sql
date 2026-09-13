@@ -42,32 +42,44 @@ BEGIN
             CONSTRAINT [DF_Product_ProductType] DEFAULT (0),
 
         [Name]              NVARCHAR(200)    NOT NULL,
-        [Description]       NVARCHAR(1000)   NULL,
+        [Description]       NVARCHAR(4000)   NULL,
 
-        -- ---------------- haberdashery ----------------
-        -- What sizes this item is offered in, '|'-delimited: 'S|M|L|XL|XXL'.
-        -- NULL for anything sold in one size, and for every non-haberdashery
-        -- product.
+        -- ---------------- per-type detail ----------------
+        -- Everything that differs BY PRODUCT TYPE and is only ever
+        -- displayed, never computed with. Sizes today; colour, fabric and
+        -- fit for haberdashery next; venue and what's included for an away
+        -- weekend after that.
         --
-        -- A LIST, not a row per size. One row per size would triple the
-        -- catalogue, repeat the name, description and photos on every row,
-        -- and mean editing five rows to change one picture. The cost of the
-        -- list is that it cannot price or stock a size separately — if an
-        -- XXL ever costs more than an S, this has to become a row per size.
-        -- It does not today.
+        --   {"sizes":["S","M","L","XL","XXL"]}
         --
-        -- The size a hasher actually BOUGHT is not here. It is on the
-        -- payment (HC.Payment.ProductVariant below): this column is the
-        -- offer, that one is the sale.
-        [SizeOptions]       NVARCHAR(200)    NULL,
+        -- JSON rather than a column per attribute, because the attributes
+        -- are different for every product type and a column per type would
+        -- leave most of them NULL on most rows.
+        --
+        -- ⚠ THE LINE: if the SERVER COMPUTES WITH IT, IT IS A COLUMN.
+        -- RunCount is a column because the credit rule divides by it.
+        -- Sizes are JSON because nothing but a picker ever reads them.
+        -- A membership term is NEITHER — it already lives on HC.Kennel
+        -- (MembershipRenewalMode + MembershipDurationInMonths), which is
+        -- what hcapp_processPayment uses to advance the expiry date.
+        -- Putting a term here too would let a product say "12 months" on a
+        -- kennel configured for a fixed shared anniversary, and the two
+        -- would silently disagree.
+        --
+        -- SYNCS. The phone builds the size picker from it.
+        [ProductDetailsJson] NVARCHAR(4000)  NULL
+            CONSTRAINT [CK_Product_ProductDetailsJson]
+            CHECK ([ProductDetailsJson] IS NULL OR ISJSON([ProductDetailsJson]) = 1),
 
         -- Product photos, '|'-delimited.
         --
         -- '|' and not a comma, per the project's delimited-list rule: a URL
         -- may legally contain a comma and a signed blob URL is full of
         -- punctuation, so a comma-split can silently cut one URL in two.
-        -- Bounded rather than MAX on purpose — this row syncs to every
-        -- phone, so 2000 chars (roughly eight URLs) is a deliberate ceiling.
+        -- A column rather than part of the JSON above because photos belong
+        -- to every product type, not to one. Bounded on purpose — this row
+        -- syncs to every phone, so 2000 chars (roughly eight URLs) is a
+        -- deliberate ceiling.
         [PhotoUrls]         NVARCHAR(2000)   NULL,
 
         -- Where the item came from: printer or supplier name, contact,
@@ -75,15 +87,17 @@ BEGIN
         -- to reorder. JSON because none of it is ever queried and the shape
         -- differs per supplier; the CHECK stops malformed text getting in.
         --
-        -- ⚠ DELIBERATELY NOT SYNCED. hcapp_syncUserData names its columns,
-        -- and this one is left out: a supplier's phone number is kennel
-        -- admin data and has no business on 400 kennels' worth of phones.
-        -- Because the table syncs globally, what syncs is now a per-COLUMN
-        -- decision, not a per-table one.
-        [SourceJson]        NVARCHAR(MAX)    NULL
+        -- ⚠ DELIBERATELY NOT SYNCED, and that is the whole reason it is a
+        -- SECOND json column rather than part of ProductDetailsJson above.
+        -- hcapp_syncUserData names its columns and leaves this one out: a
+        -- supplier's phone number is kennel admin data and has no business
+        -- on 400 kennels' worth of phones. The split between the two JSON
+        -- columns IS the sync boundary — details go to phones, source never
+        -- does.
+        [SourceJson]        NVARCHAR(4000)   NULL
             CONSTRAINT [CK_Product_SourceJson]
             CHECK ([SourceJson] IS NULL OR ISJSON([SourceJson]) = 1),
-        -- ----------------------------------------------
+        -- -------------------------------------------------
 
         -- What the hasher pays.
         [PriceCharged]      SMALLMONEY       NOT NULL

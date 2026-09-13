@@ -5,11 +5,17 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addEditProduct]
     @productId         UNIQUEIDENTIFIER = NULL,   -- NULL = create
     @productType       SMALLINT         = 0,
     @name              NVARCHAR(200)    = NULL,
-    @description       NVARCHAR(1000)   = NULL,
+    @description       NVARCHAR(4000)   = NULL,
     @priceCharged      SMALLMONEY       = 0,
     @promotionalCredit SMALLMONEY       = 0,
     @unitCost          SMALLMONEY       = 0,
     @runCount          SMALLINT         = NULL,
+    -- Per-type display detail, e.g. {"sizes":["S","M","L"]}. SYNCS.
+    @productDetailsJson NVARCHAR(4000)  = NULL,
+    -- '|'-delimited product photos.
+    @photoUrls         NVARCHAR(2000)   = NULL,
+    -- Supplier detail. Does NOT sync — kennel admin data only.
+    @sourceJson        NVARCHAR(4000)   = NULL,
     @isActive          SMALLINT         = 1,
     @sortOrder         INT              = 0
 AS
@@ -108,6 +114,24 @@ BEGIN
     RETURN;
 END
 
+-- Malformed JSON would be caught by the table CHECK, but that surfaces as
+-- an unhelpful constraint violation in the CATCH. Say so plainly instead,
+-- before any transaction is open.
+IF (@productDetailsJson IS NOT NULL AND ISJSON(@productDetailsJson) = 0)
+   OR (@sourceJson IS NOT NULL AND ISJSON(@sourceJson) = 0)
+BEGIN
+    SET @errorCode = 1345; SET @errorType = 2; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, kennelId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Malformed product JSON',
+            'productDetailsJson or sourceJson is not valid JSON', @procName, @userId, @kennelId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Could not save' AS errorTitle,
+           'The product details could not be saved. Please try again.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 -- Editing something that is not this kennel's is a no, not a silent create.
 IF (@productId IS NOT NULL
     AND NOT EXISTS (SELECT 1 FROM HC.Product
@@ -136,10 +160,12 @@ BEGIN TRY
         SET @productId = NEWID();
         INSERT HC.Product (id, KennelId, ProductType, Name, Description,
                            PriceCharged, PromotionalCredit, UnitCost, RunCount,
+                           ProductDetailsJson, PhotoUrls, SourceJson,
                            IsActive, SortOrder, CreatedByUserId, createdAt,
                            updatedAt, updatedAtBias, Removed)
         VALUES (@productId, @kennelId, @productType, LTRIM(RTRIM(@name)), @description,
                 @priceCharged, @promotionalCredit, @unitCost, @runCount,
+                @productDetailsJson, @photoUrls, @sourceJson,
                 @isActive, @sortOrder, @userId, @now, @now, 0, 0);
     END
     ELSE
@@ -154,6 +180,9 @@ BEGIN TRY
                PromotionalCredit = @promotionalCredit,
                UnitCost          = @unitCost,
                RunCount          = @runCount,
+               ProductDetailsJson = @productDetailsJson,
+               PhotoUrls         = @photoUrls,
+               SourceJson        = @sourceJson,
                IsActive          = @isActive,
                SortOrder         = @sortOrder,
                updatedAt         = @now
