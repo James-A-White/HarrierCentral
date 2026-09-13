@@ -55,11 +55,12 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       // foreground. onMessage still fires — the app shows its own in-app UI
       // (listening banner, toast). Without this, visible song pushes pop up as
       // iOS banners even while the user is looking at the songbook.
-      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-        alert: false,
-        badge: false,
-        sound: false,
-      );
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+            alert: false,
+            badge: false,
+            sound: false,
+          );
 
       if (!(getBoolPref(BoolPrefsEnum.notificationPreferencesRequested) ??
           false)) {
@@ -141,7 +142,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
       // Kennel-thread rows contribute to the global badge separately.
       for (final summary in serverChatSummary) {
-        if (summary.isKennelThread && (summary.publicKennelId ?? '').isNotEmpty) {
+        if (summary.isKennelThread &&
+            (summary.publicKennelId ?? '').isNotEmpty) {
           unreadEventCounts[summary.publicKennelId!] = summary.badgeCount.obs;
           if ((summary.messageCount ?? 0) > 0) {
             withMessages.add(summary.publicKennelId!.asUuid);
@@ -153,18 +155,32 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         ..clear()
         ..addAll(withMessages);
 
-      // Keep the display-bearing rows (those that carry event data) for the
-      // Unseen Chats list, newest-first.
+      // Every thread that HAS something in it, read or not (James,
+      // 2026-09-13). A chat used to vanish from this list the moment it was
+      // read, which made the one you had just read the hardest to find again
+      // — you had to remember which run it was on. A read thread stays,
+      // simply without a badge.
+      //
+      // Sorted by when the thread last had a message, NOT by the run's start
+      // time: people talk about a run before and long after it, and a list
+      // that keeps read threads needs a real most-recent order to stay
+      // useful. Falls back to the run's start where a thread somehow has no
+      // last-message time.
       final withData =
           serverChatSummary
-              .where((s) =>
-                  s.badgeCount > 0 && (s.eventId != null || s.isKennelThread))
+              .where(
+                (s) =>
+                    (s.messageCount ?? 0) > 0 &&
+                    (s.eventId != null || s.isKennelThread),
+              )
               .toList()
-            ..sort(
-              (a, b) => (b.eventStartDatetimeGmt ?? '').compareTo(
-                a.eventStartDatetimeGmt ?? '',
-              ),
-            );
+            ..sort((a, b) {
+              final String ak =
+                  a.lastMessageAt ?? a.eventStartDatetimeGmt ?? '';
+              final String bk =
+                  b.lastMessageAt ?? b.eventStartDatetimeGmt ?? '';
+              return bk.compareTo(ak);
+            });
       unreadChatRuns.value = withData;
     }
 
@@ -262,7 +278,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
             if (kDebugMode) {
               debugPrint('Connection error: ${e.toString()}');
             }
-            BootLogger.logError('[NotificationService] FCM token save failed', e, s);
+            BootLogger.logError(
+              '[NotificationService] FCM token save failed',
+              e,
+              s,
+            );
           }
         }
 
@@ -302,7 +322,9 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   void _setupFirebaseListeners() {
-    _openedAppSubscription = FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+    _openedAppSubscription = FirebaseMessaging.onMessageOpenedApp.listen((
+      RemoteMessage message,
+    ) async {
       await _handleNotificationClick(message);
       if (kDebugMode) {
         debugPrint('Message opened app received: ${message.data}');
@@ -345,13 +367,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     final String? silentType = message.data['Type'] as String?;
     if (silentType == 'song_selected') {
       final String? eventId = message.data['EventId'] as String?;
-      final String? songId  = message.data['SongId']  as String?;
+      final String? songId = message.data['SongId'] as String?;
       if (eventId != null && songId != null) {
         SongSessionNotifier.ensure().onSongSelected(
           eventId: eventId.toLowerCase(),
           songId: songId.toLowerCase(),
           songTitle: message.data['SongTitle'] as String? ?? '',
-          selectedByName: message.data['SelectedByName'] as String? ?? 'Someone',
+          selectedByName:
+              message.data['SelectedByName'] as String? ?? 'Someone',
         );
         Get.until((route) => route.settings.name == '/main');
         _navigateToSongbook(eventId.toLowerCase());
@@ -422,7 +445,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           if (kDebugMode) {
             debugPrint("ChatController not found: $e");
           }
-          BootLogger.logError('[NotificationService] chat message dispatch failed', e, s);
+          BootLogger.logError(
+            '[NotificationService] chat message dispatch failed',
+            e,
+            s,
+          );
         }
         break;
 
@@ -576,14 +603,19 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
     if (changed) _recalculateGlobalBadgeCount();
 
-    // Drop the matching row from the Unseen Chats list.
-    final int before = unreadChatRuns.length;
-    unreadChatRuns.removeWhere(
-      (s) => isKennelThread
+    // Clear the badge on the row but KEEP it in the list (James, 2026-09-13):
+    // reading a chat used to delete it from the list, which made the chat you
+    // had just read the hardest one to find again. It stays, unbadged, in its
+    // place in the most-recent order.
+    for (int i = 0; i < unreadChatRuns.length; i++) {
+      final EventChatSummary s = unreadChatRuns[i];
+      final bool match = isKennelThread
           ? (s.isKennelThread && (s.publicKennelId ?? '').asUuid == id)
-          : (s.publicEventId.asUuid == id),
-    );
-    if (unreadChatRuns.length != before) changed = true;
+          : (s.publicEventId.asUuid == id);
+      if (!match || s.badgeCount == 0) continue;
+      unreadChatRuns[i] = s.withBadgeCount(0);
+      changed = true;
+    }
 
     if (changed && Get.isRegistered<FutureRunListPageController>()) {
       Get.find<FutureRunListPageController>().refreshRunListUi();
@@ -752,9 +784,10 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
   void _handleSongSelected(RemoteMessage message) {
     final String? eventId = message.data['EventId'] as String?;
-    final String? songId  = message.data['SongId']  as String?;
-    final String songTitle     = message.data['SongTitle']      as String? ?? '';
-    final String selectedByName = message.data['SelectedByName'] as String? ?? 'Someone';
+    final String? songId = message.data['SongId'] as String?;
+    final String songTitle = message.data['SongTitle'] as String? ?? '';
+    final String selectedByName =
+        message.data['SelectedByName'] as String? ?? 'Someone';
 
     if (eventId == null || songId == null) return;
 
@@ -763,7 +796,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
     SongSessionNotifier.ensure().onSongSelected(
       eventId: eid,
-      songId:  sid,
+      songId: sid,
       songTitle: songTitle,
       selectedByName: selectedByName,
     );
@@ -771,14 +804,15 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     // If the user is already on the interactive songbook for this event,
     // the ever() reaction in SongsPageController handles the update directly.
     // Otherwise, show an in-app toast so they can navigate there.
-    final bool onSongbook =
-        Get.isRegistered<SongsPageController>(tag: eid);
+    final bool onSongbook = Get.isRegistered<SongsPageController>(tag: eid);
     if (!onSongbook) {
       _showSongToast(eid, songTitle, selectedByName);
     }
 
     if (kDebugMode) {
-      debugPrint('[NotificationService] song_selected: "$songTitle" by $selectedByName (onSongbook=$onSongbook)');
+      debugPrint(
+        '[NotificationService] song_selected: "$songTitle" by $selectedByName (onSongbook=$onSongbook)',
+      );
     }
   }
 
@@ -805,14 +839,16 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   void _navigateToSongbook(String eventId) {
-    Get.to<void>(() => AppScaffold(
-      appBar: AppBar(
-        backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text('Songbook', style: ts_appBarTitle),
+    Get.to<void>(
+      () => AppScaffold(
+        appBar: AppBar(
+          backgroundColor: themeAppBarBackground,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: Text('Songbook', style: ts_appBarTitle),
+        ),
+        body: SongsPage(eventId: eventId),
       ),
-      body: SongsPage(eventId: eventId),
-    ));
+    );
   }
 }
 

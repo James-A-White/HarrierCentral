@@ -262,11 +262,17 @@ SELECT
     CAST(NULL AS UNIQUEIDENTIFIER) AS PublicKennelId,   -- run threads: no kennel-thread identity
     k.KennelShortName,
     k.KennelLogo,
-    t.MsgCount              AS MessageCount
+    t.MsgCount              AS MessageCount,
+    -- When the thread last had something said in it. The chat list sorts on
+    -- this: a run's START time is not when people talked about it, and the
+    -- list now keeps threads after they are read, so it needs a real
+    -- most-recent order (James, 2026-09-13).
+    t.LastMessageAt         AS LastMessageAt
 FROM (
     SELECT em.EventId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
-           COUNT(*)                     AS MsgCount
+           COUNT(*)                     AS MsgCount,
+           MAX(em.createdAt)            AS LastMessageAt
     FROM HC.EventMessage em
     WHERE em.EventId IS NOT NULL AND em.Removed = 0
     GROUP BY em.EventId
@@ -311,7 +317,8 @@ UNION ALL
 -- with NO badge row yet sees the full thread count as unread. Fully-read
 -- threads are returned too (BadgeCount = 0) so the kennel card can draw a
 -- solid "has chats" icon vs an outline "no chats yet" icon — the app's
--- Unseen Chats list filters on BadgeCount > 0 itself. BadgeCount is forced
+-- chat list keeps showing a thread AFTER it is read (a chat you have read
+-- is the hardest one to find again — James, 2026-09-13). BadgeCount is forced
 -- to 0 when the kennel notification preference is ignore (2).
 SELECT
     CASE WHEN hkm.KennelNotificationPreference <> 2
@@ -327,11 +334,13 @@ SELECT
     k.PublicKennelId                               AS PublicKennelId,
     k.KennelShortName,
     k.KennelLogo,
-    t.MsgCount                                     AS MessageCount
+    t.MsgCount                                     AS MessageCount,
+    t.LastMessageAt                                AS LastMessageAt
 FROM (
     SELECT em.KennelId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
-           COUNT(*)                     AS MsgCount
+           COUNT(*)                     AS MsgCount,
+           MAX(em.createdAt)            AS LastMessageAt
     FROM HC.EventMessage em
     WHERE em.KennelId IS NOT NULL AND em.EventId IS NULL AND em.Removed = 0
     GROUP BY em.KennelId

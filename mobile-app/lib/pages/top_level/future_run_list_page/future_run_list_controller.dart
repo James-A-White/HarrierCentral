@@ -148,7 +148,8 @@ class FutureRunListPageController extends GetxController {
   /// The middle description text: the current filter state (no past/future
   /// wording — not enough room in the bar), or the chats label.
   String get barTitle {
-    if (isChatsMode) return 'Unseen Chats';
+    // Not "Unseen" any more: read threads stay listed (James, 2026-09-13).
+    if (isChatsMode) return 'Chats';
     return futureSectionTitle;
   }
 
@@ -159,19 +160,13 @@ class FutureRunListPageController extends GetxController {
     if (!showsInlinePast || pastRuns.isEmpty) {
       return filteredRuns;
     }
-    return <dynamic>[
-      ...pastRuns,
-      const PastRunsDivider(),
-      ...filteredRuns,
-    ];
+    return <dynamic>[...pastRuns, const PastRunsDivider(), ...filteredRuns];
   }
 
   /// Index the list should open at: the divider, so the next run sits just
   /// below it and the past runs are scrollable above. 0 when there's no past.
   int get initialScrollIndex =>
-      (showsInlinePast && pastRuns.isNotEmpty)
-      ? pastRuns.length
-      : 0;
+      (showsInlinePast && pastRuns.isNotEmpty) ? pastRuns.length : 0;
 
   /// Toggles a filter chip and re-filters. In normal mode the chips are pure
   /// in-memory filters over already-loaded data, so this just re-filters and
@@ -317,26 +312,40 @@ class FutureRunListPageController extends GetxController {
     );
 
     IveCoreUtilities.logTiming('initState called', appModel.appStartTime);
-    debugPrint('[BOOT] FutureRunListController.onInit: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] FutureRunListController.onInit: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     searchController.text = '';
     searchRunsText.value = '';
 
     _dataChangeSub = Get.find<DataChangeService>().stream.listen(_onDataChange);
 
-    debugPrint('[BOOT] FutureRunListController.onInit: firing onInitAsync: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] FutureRunListController.onInit: firing onInitAsync: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     unawaited(onInitAsync());
   }
 
   Future<void> onInitAsync() async {
-    debugPrint('[BOOT] onInitAsync: start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] onInitAsync: start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     // do an immediate refresh from table to quickly display data already cached in the app
-    debugPrint('[BOOT] onInitAsync: refreshFromTable start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] onInitAsync: refreshFromTable start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await refreshFromTable(true);
-    debugPrint('[BOOT] onInitAsync: refreshFromTable done: ${DateTime.now().millisecondsSinceEpoch}ms — runCount=${allRuns?.length ?? 0}');
+    debugPrint(
+      '[BOOT] onInitAsync: refreshFromTable done: ${DateTime.now().millisecondsSinceEpoch}ms — runCount=${allRuns?.length ?? 0}',
+    );
     // then do any updates that require a trip to the server.
-    debugPrint('[BOOT] onInitAsync: Permission.location.isGranted check: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] onInitAsync: Permission.location.isGranted check: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     appModel.hasLocationPermissions = await Permission.location.isGranted;
-    debugPrint('[BOOT] onInitAsync: hasLocationPermissions=${appModel.hasLocationPermissions}: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] onInitAsync: hasLocationPermissions=${appModel.hasLocationPermissions}: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     //await refreshFromBackend();
     //await refreshFromTable(true);
@@ -344,28 +353,42 @@ class FutureRunListPageController extends GetxController {
 
     // NotificationService is registered in initServices(). If Firebase was not
     // ready at boot time, register it now on first use.
-    debugPrint('[BOOT] onInitAsync: Firebase.apps.isNotEmpty=${Firebase.apps.isNotEmpty}: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] onInitAsync: Firebase.apps.isNotEmpty=${Firebase.apps.isNotEmpty}: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     if (Firebase.apps.isNotEmpty && !Get.isRegistered<NotificationService>()) {
-      debugPrint('[BOOT] onInitAsync: registering NotificationService: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] onInitAsync: registering NotificationService: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
       await Get.putAsync<NotificationService>(
         () => NotificationService().init(),
         permanent: false,
       );
-      debugPrint('[BOOT] onInitAsync: NotificationService registered: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] onInitAsync: NotificationService registered: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
     }
 
     if (Firebase.apps.isNotEmpty) {
-      debugPrint('[BOOT] onInitAsync: getInitialMessage start: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] onInitAsync: getInitialMessage start: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
       final msg = await FirebaseMessaging.instance.getInitialMessage();
-      debugPrint('[BOOT] onInitAsync: getInitialMessage done: ${DateTime.now().millisecondsSinceEpoch}ms — msg=${msg != null ? "present" : "null"}');
+      debugPrint(
+        '[BOOT] onInitAsync: getInitialMessage done: ${DateTime.now().millisecondsSinceEpoch}ms — msg=${msg != null ? "present" : "null"}',
+      );
       if (msg != null) {
         await _processMessage(msg.data);
       }
     }
     // _updateTotalNotificationCounter();
-    debugPrint('[BOOT] onInitAsync: calling update(runList, mainNavPage): ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] onInitAsync: calling update(runList, mainNavPage): ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     update([UpdateIds.runList, UpdateIds.mainNavPage]);
-    debugPrint('[BOOT] onInitAsync: COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] onInitAsync: COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
   }
 
   void _onDataChange(DataChangeEvent event) {
@@ -489,7 +512,11 @@ class FutureRunListPageController extends GetxController {
     );
     if ((eventId != null) && (allRuns != null)) {
       dynamic runs = allRuns!
-          .where((dynamic a) => normalizeUuid(a.event?.eventId as String?) == normalizeUuid(eventId))
+          .where(
+            (dynamic a) =>
+                normalizeUuid(a.event?.eventId as String?) ==
+                normalizeUuid(eventId),
+          )
           .toList();
 
       if ((runs != null) && (runs.length > 0)) {
@@ -600,9 +627,13 @@ class FutureRunListPageController extends GetxController {
   }
 
   Future<void> refreshFromTable(bool forceRefresh) async {
-    debugPrint('[BOOT] refreshFromTable: forceRefresh=$forceRefresh, allRuns=${allRuns?.length ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] refreshFromTable: forceRefresh=$forceRefresh, allRuns=${allRuns?.length ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     if (forceRefresh || (allRuns == null) || (allRuns!.isEmpty)) {
-      debugPrint('[BOOT] refreshFromTable: calling getRunDetailsAggregates: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] refreshFromTable: calling getRunDetailsAggregates: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
       final fresh = await QueryRuns.getRunDetailsAggregates(
         true,
         runsTimeScope: runsTimeScope.value,
@@ -615,11 +646,17 @@ class FutureRunListPageController extends GetxController {
       if (!(fresh.isEmpty && (allRuns?.isNotEmpty ?? false))) {
         allRuns = fresh;
       }
-      debugPrint('[BOOT] refreshFromTable: getRunDetailsAggregates done: ${DateTime.now().millisecondsSinceEpoch}ms — ${allRuns?.length ?? 0} runs');
+      debugPrint(
+        '[BOOT] refreshFromTable: getRunDetailsAggregates done: ${DateTime.now().millisecondsSinceEpoch}ms — ${allRuns?.length ?? 0} runs',
+      );
       await _loadPastRuns();
-      debugPrint('[BOOT] refreshFromTable: calling filterRuns: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] refreshFromTable: calling filterRuns: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
       filterRuns(false);
-      debugPrint('[BOOT] refreshFromTable: filterRuns done: ${DateTime.now().millisecondsSinceEpoch}ms — filteredRuns=${filteredRuns.length}');
+      debugPrint(
+        '[BOOT] refreshFromTable: filterRuns done: ${DateTime.now().millisecondsSinceEpoch}ms — filteredRuns=${filteredRuns.length}',
+      );
     }
     return;
   }
@@ -650,7 +687,9 @@ class FutureRunListPageController extends GetxController {
   /// Amsterdam and FILTH hashes that are not on a Wednesday or Thursday
   ///
   void filterRuns(bool searchTextChanged) {
-    debugPrint('[BOOT] filterRuns: start, searchTextChanged=$searchTextChanged, allRuns=${allRuns?.length ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] filterRuns: start, searchTextChanged=$searchTextChanged, allRuns=${allRuns?.length ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     showRsvpInstructions = true;
 
     // Chats mode is server-driven: render the runs the badge SP returned
@@ -692,18 +731,26 @@ class FutureRunListPageController extends GetxController {
         useDatesForAllYears: multiYearDateFilter.value,
       );
       preFilteredRuns.value = _applyChipFilters(timeFiltered);
-      debugPrint('[BOOT] filterRuns: doRunsFilter done: ${DateTime.now().millisecondsSinceEpoch}ms — preFiltered=${preFilteredRuns.length}');
+      debugPrint(
+        '[BOOT] filterRuns: doRunsFilter done: ${DateTime.now().millisecondsSinceEpoch}ms — preFiltered=${preFilteredRuns.length}',
+      );
     }
 
-    debugPrint('[BOOT] filterRuns: doRunsSearchTextFilter start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] filterRuns: doRunsSearchTextFilter start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     filteredRuns.value = QueryRuns.doRunsSearchTextFilter(
       searchRunsText.value,
       preFilteredRuns,
     );
-    debugPrint('[BOOT] filterRuns: doRunsSearchTextFilter done: ${DateTime.now().millisecondsSinceEpoch}ms — filtered=${filteredRuns.length}');
+    debugPrint(
+      '[BOOT] filterRuns: doRunsSearchTextFilter done: ${DateTime.now().millisecondsSinceEpoch}ms — filtered=${filteredRuns.length}',
+    );
 
     if (runsTimeScope.value == RunsTimeScope.future) {
-      debugPrint('[BOOT] filterRuns: sort start: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] filterRuns: sort start: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
       filteredRuns.sort((dynamic a, dynamic b) {
         // start by sorting by run classification, closest runs should be listed first, then runs
         // from Kennels the user is following, then the rest
@@ -736,13 +783,17 @@ class FutureRunListPageController extends GetxController {
         return result;
       });
 
-      debugPrint('[BOOT] filterRuns: sort done: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] filterRuns: sort done: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
 
       int lastInsertedClassification = 4;
 
       final int listLength = filteredRuns.length;
       resultCount.value = filteredRuns.length;
-      debugPrint('[BOOT] filterRuns: header-insertion loop start: listLength=$listLength: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] filterRuns: header-insertion loop start: listLength=$listLength: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
 
       for (int i = listLength - 1; i >= 0; i--) {
         if (filteredRuns[i].extensions.runClassification == 1) {
@@ -769,7 +820,9 @@ class FutureRunListPageController extends GetxController {
       }
 
       filteredRuns.insert(0, 1);
-      debugPrint('[BOOT] filterRuns: header-insertion done: ${DateTime.now().millisecondsSinceEpoch}ms — finalListLength=${filteredRuns.length}');
+      debugPrint(
+        '[BOOT] filterRuns: header-insertion done: ${DateTime.now().millisecondsSinceEpoch}ms — finalListLength=${filteredRuns.length}',
+      );
     } else {
       // filteredRuns.sort((dynamic a, dynamic b) {
       //   int result = _toDateOnly(
@@ -825,9 +878,13 @@ class FutureRunListPageController extends GetxController {
       scrollToInitialAnchor();
     }
 
-    debugPrint('[BOOT] filterRuns: update(runList) start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] filterRuns: update(runList) start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     update([UpdateIds.runList]);
-    debugPrint('[BOOT] filterRuns: COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] filterRuns: COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
   }
 
   Future<void> clearTables({
@@ -933,7 +990,9 @@ class FutureRunListPageController extends GetxController {
 
   Future<void> _triggerFlash(Set<String> ids) async {
     flashingRunIds.addAll(ids);
-    await Future.delayed(const Duration(milliseconds: 450)); // 150ms in + 300ms hold
+    await Future.delayed(
+      const Duration(milliseconds: 450),
+    ); // 150ms in + 300ms hold
     flashingRunIds.removeWhere(ids.contains);
   }
 
@@ -1021,7 +1080,8 @@ class FutureRunListPageController extends GetxController {
       EnumDataTables.hasherEventMap,
       EnumDataTables.payments,
     ];
-    final int syncFlags = EnumDataTables.hasherEventMap.flag |
+    final int syncFlags =
+        EnumDataTables.hasherEventMap.flag |
         EnumDataTables.payments.flag |
         EnumDataTables.events.flag;
 
@@ -1058,7 +1118,8 @@ class FutureRunListPageController extends GetxController {
         fetchOk = await tableModel.syncUserDataService.updateFromBackend(
           syncFlags,
           true,
-          debugText: 'future_run_list_page: full reload (Events, HEM, Payments)',
+          debugText:
+              'future_run_list_page: full reload (Events, HEM, Payments)',
         );
       } catch (e) {
         debugPrint('[RUNS] refreshFromBackend full reload fetch threw: $e');
@@ -1087,7 +1148,8 @@ class FutureRunListPageController extends GetxController {
       await tableModel.syncUserDataService.updateFromBackend(
         syncFlags,
         true,
-        debugText: 'future_run_list_page: delta refresh (Events, HEM, Payments)',
+        debugText:
+            'future_run_list_page: delta refresh (Events, HEM, Payments)',
       );
     }
 

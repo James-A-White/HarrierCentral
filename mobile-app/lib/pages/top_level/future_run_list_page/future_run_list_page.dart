@@ -257,56 +257,58 @@ class FutureRunsListPage extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.only(top: 7.0),
                           child: Center(
-                          child: Column(
-                            children: [
-                              // Obx so the title repaints on scroll (when
-                              // isViewingPastSection flips) — the rest of the
-                              // header only rebuilds via GetBuilder.
-                              // Filter-state description; when scrolled into the
-                              // past section it mirrors the divider label.
-                              Obx(
-                                () => AutoSizeText(
-                                  controller.barTitle,
-                                  minFontSize: 5,
-                                  maxFontSize: 24,
-                                  maxLines: 1,
-                                  style: ts_titleLarge,
+                            child: Column(
+                              children: [
+                                // Obx so the title repaints on scroll (when
+                                // isViewingPastSection flips) — the rest of the
+                                // header only rebuilds via GetBuilder.
+                                // Filter-state description; when scrolled into the
+                                // past section it mirrors the divider label.
+                                Obx(
+                                  () => AutoSizeText(
+                                    controller.barTitle,
+                                    minFontSize: 5,
+                                    maxFontSize: 24,
+                                    maxLines: 1,
+                                    style: ts_titleLarge,
+                                  ),
                                 ),
-                              ),
-                              if (controller.runsTimeScope.value ==
-                                  RunsTimeScope.range)
-                                AutoSizeText(
-                                  ((controller.dateFilterStart.value ==
-                                              controller.dateFilterEnd.value) &&
-                                          (controller
-                                              .multiYearDateFilter
-                                              .value))
-                                      ? DateFormat('d MMM').format(
-                                          controller.dateFilterStart.value,
-                                        )
-                                      : ((controller.dateFilterStart.value ==
+                                if (controller.runsTimeScope.value ==
+                                    RunsTimeScope.range)
+                                  AutoSizeText(
+                                    ((controller.dateFilterStart.value ==
                                                 controller
                                                     .dateFilterEnd
                                                     .value) &&
-                                            (!controller
+                                            (controller
                                                 .multiYearDateFilter
                                                 .value))
-                                      ? DateFormat('d MMM yy').format(
-                                          controller.dateFilterStart.value,
-                                        )
-                                      : controller.multiYearDateFilter.value
-                                      ? '${DateFormat('d MMM').format(controller.dateFilterStart.value)} \u2794 ${DateFormat('d MMM').format(controller.dateFilterEnd.value)}'
-                                      : '${DateFormat('d MMM yy').format(controller.dateFilterStart.value)} \u2794 ${DateFormat('d MMM yy').format(controller.dateFilterEnd.value)}',
-                                  minFontSize: 5,
-                                  maxFontSize: 16,
-                                  maxLines: 1,
+                                        ? DateFormat('d MMM').format(
+                                            controller.dateFilterStart.value,
+                                          )
+                                        : ((controller.dateFilterStart.value ==
+                                                  controller
+                                                      .dateFilterEnd
+                                                      .value) &&
+                                              (!controller
+                                                  .multiYearDateFilter
+                                                  .value))
+                                        ? DateFormat('d MMM yy').format(
+                                            controller.dateFilterStart.value,
+                                          )
+                                        : controller.multiYearDateFilter.value
+                                        ? '${DateFormat('d MMM').format(controller.dateFilterStart.value)} \u2794 ${DateFormat('d MMM').format(controller.dateFilterEnd.value)}'
+                                        : '${DateFormat('d MMM yy').format(controller.dateFilterStart.value)} \u2794 ${DateFormat('d MMM yy').format(controller.dateFilterEnd.value)}',
+                                    minFontSize: 5,
+                                    maxFontSize: 16,
+                                    maxLines: 1,
 
-                                  style: ts_titleLarge,
-                                ),
-                            ],
+                                    style: ts_titleLarge,
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -433,7 +435,8 @@ class FutureRunsListPage extends StatelessWidget {
     // always at least the perpetual far-future run, so an empty list here is a
     // mid-load transient (filterRuns hasn't produced results yet) — show the
     // loading spinner instead of flashing the empty message (the boot flicker).
-    final bool showLoadingNotEmpty = noRunsAvaiable &&
+    final bool showLoadingNotEmpty =
+        noRunsAvaiable &&
         !listController.hasActiveRunFilter &&
         !listController.isChatsMode;
 
@@ -453,348 +456,353 @@ class FutureRunsListPage extends StatelessWidget {
             ),
             displacement: 40.0,
             child: Column(
-          children: [
-            // if (controller.showOnlyEventsWithMessages.value)
-            //   Container(
-            //     padding: EdgeInsets.only(top: 5, bottom: 5),
-            //     child: ElevatedButton(
-            //       onPressed: () {
-            //         controller.resetNotificationCounters();
-            //       },
-            //       child: Text(
-            //         'Clear all notifications',
-            //         style: ts_button,
-            //       ),
-            //     ),
-            //   ),
-            Expanded(
-              child: Stack(
-                // Tight constraints so the ScrollablePositionedList fills the
-                // viewport. Without this it gets loose constraints from the
-                // Stack and collapses to the height of the few items it builds,
-                // leaving everything below as empty background.
-                fit: StackFit.expand,
-                children: [
-                  showLoadingNotEmpty
-                      ? const Center(
-                          child: HcAppCircularProgressIndicator(
-                            key: Key('runs-filter-loading'),
-                          ),
-                        )
-                      : noRunsAvaiable
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Padding(
+              children: [
+                // if (controller.showOnlyEventsWithMessages.value)
+                //   Container(
+                //     padding: EdgeInsets.only(top: 5, bottom: 5),
+                //     child: ElevatedButton(
+                //       onPressed: () {
+                //         controller.resetNotificationCounters();
+                //       },
+                //       child: Text(
+                //         'Clear all notifications',
+                //         style: ts_button,
+                //       ),
+                //     ),
+                //   ),
+                Expanded(
+                  child: Stack(
+                    // Tight constraints so the ScrollablePositionedList fills the
+                    // viewport. Without this it gets loose constraints from the
+                    // Stack and collapses to the height of the few items it builds,
+                    // leaving everything below as empty background.
+                    fit: StackFit.expand,
+                    children: [
+                      showLoadingNotEmpty
+                          ? const Center(
+                              child: HcAppCircularProgressIndicator(
+                                key: Key('runs-filter-loading'),
+                              ),
+                            )
+                          : noRunsAvaiable
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 25,
+                                    right: 25,
+                                    bottom: 30,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      noRunsTitle,
+                                      style: ts_headingVeryLarge,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 25.0,
+                                    right: 25.0,
+                                    bottom: 30,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      noRunsDescription,
+                                      style: ts_title,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                                // Padding(
+                                //   padding: const EdgeInsets.only(top: 0.0),
+                                //   child: TextButton(
+                                //     style: text_button_style,
+                                //     child: Text('Reload runs', style: ts_button),
+                                //     onPressed: () async {
+                                //       await controller.refreshFromBackend(
+                                //         clearLocalTables: true,
+                                //       );
+                                //     },
+                                //   ),
+                                // ),
+                              ],
+                            )
+                          : ScrollablePositionedList.builder(
+                              itemScrollController:
+                                  listController.itemScrollController,
+                              itemPositionsListener:
+                                  listController.itemPositionsListener,
+                              initialScrollIndex:
+                                  listController.initialScrollIndex,
                               padding: const EdgeInsets.only(
-                                left: 25,
-                                right: 25,
-                                bottom: 30,
+                                left: 10,
+                                right: 10,
+                                bottom: 50,
                               ),
-                              child: Center(
-                                child: Text(
-                                  noRunsTitle,
-                                  style: ts_headingVeryLarge,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: 25.0,
-                                right: 25.0,
-                                bottom: 30,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  noRunsDescription,
-                                  style: ts_title,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                            // Padding(
-                            //   padding: const EdgeInsets.only(top: 0.0),
-                            //   child: TextButton(
-                            //     style: text_button_style,
-                            //     child: Text('Reload runs', style: ts_button),
-                            //     onPressed: () async {
-                            //       await controller.refreshFromBackend(
-                            //         clearLocalTables: true,
-                            //       );
-                            //     },
-                            //   ),
-                            // ),
-                          ],
-                        )
-                      : ScrollablePositionedList.builder(
-                          itemScrollController:
-                              listController.itemScrollController,
-                          itemPositionsListener:
-                              listController.itemPositionsListener,
-                          initialScrollIndex:
-                              listController.initialScrollIndex,
-                          padding: const EdgeInsets.only(
-                            left: 10,
-                            right: 10,
-                            bottom: 50,
-                          ),
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: items.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            if (items[index] is PastRunsDivider) {
-                              return _pastRunsDivider();
-                            }
-                            if (items[index] is int) {
-                              return Column(
-                                key: ValueKey(
-                                  'hdr-${items[index]}',
-                                ),
-                                children: <Widget>[
-                                  Container(
-                                    margin: const EdgeInsets.only(top: 10),
-                                    padding: const EdgeInsets.only(top: 2.0),
-                                    color: themeButtonColors,
-                                    height: 40.0,
-                                    alignment: Alignment.center,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        if ((items[index] ==
-                                                2) &&
-                                            (Utilities.isConnected())) ...<
-                                          Widget
-                                        >[const SizedBox(width: 36.0)],
-                                        if ((items[index] ==
-                                                1) &&
-                                            listController
-                                                .showRsvpInstructions) ...<
-                                          Widget
-                                        >[const SizedBox(width: 36.0)],
-                                        Text(
-                                          items[index] ==
-                                                  1
-                                              ? listController
-                                                        .showRsvpInstructions
-                                                    ? 'Learn about RSVPs →'
-                                                    : 'My upcoming runs'
-                                              : items[index] ==
-                                                    2
-                                              ? _getDistancePreferenceString(
-                                                  'Runs within ',
-                                                )
-                                              : items[index] ==
-                                                    3
-                                              ? 'Runs from Kennels I follow'
-                                              : 'All other upcoming runs',
-                                          textAlign: TextAlign.center,
-                                          //textScaleFactor: deviceInfo.textClamp15,
-                                          style: ts_titleLarge,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount: items.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                if (items[index] is PastRunsDivider) {
+                                  return _pastRunsDivider();
+                                }
+                                if (items[index] is int) {
+                                  return Column(
+                                    key: ValueKey('hdr-${items[index]}'),
+                                    children: <Widget>[
+                                      Container(
+                                        margin: const EdgeInsets.only(top: 10),
+                                        padding: const EdgeInsets.only(
+                                          top: 2.0,
                                         ),
-                                        if ((items[index] ==
-                                                1) &&
-                                            listController
-                                                .showRsvpInstructions) ...<
-                                          Widget
-                                        >[
-                                          GestureDetector(
-                                            onTap: () async {
-                                              await Utilities.showAlert(
-                                                'Why should I RSVP?',
-                                                'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
-                                                'OK',
-                                              );
-                                            },
-                                            child: const Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 8.0,
-                                              ),
-                                              child: Icon(
-                                                FontAwesome.graduation_cap,
-                                                size: 28.0,
-                                              ),
+                                        color: themeButtonColors,
+                                        height: 40.0,
+                                        alignment: Alignment.center,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            if ((items[index] == 2) &&
+                                                (Utilities.isConnected())) ...<
+                                              Widget
+                                            >[const SizedBox(width: 36.0)],
+                                            if ((items[index] == 1) &&
+                                                listController
+                                                    .showRsvpInstructions) ...<
+                                              Widget
+                                            >[const SizedBox(width: 36.0)],
+                                            Text(
+                                              items[index] == 1
+                                                  ? listController
+                                                            .showRsvpInstructions
+                                                        ? 'Learn about RSVPs →'
+                                                        : 'My upcoming runs'
+                                                  : items[index] == 2
+                                                  ? _getDistancePreferenceString(
+                                                      'Runs within ',
+                                                    )
+                                                  : items[index] == 3
+                                                  ? 'Runs from Kennels I follow'
+                                                  : 'All other upcoming runs',
+                                              textAlign: TextAlign.center,
+                                              //textScaleFactor: deviceInfo.textClamp15,
+                                              style: ts_titleLarge,
                                             ),
-                                          ),
-                                        ],
-                                        if ((items[index] ==
-                                                2) &&
-                                            (Utilities.isConnected())) ...<
-                                          Widget
-                                        >[
-                                          GestureDetector(
-                                            onTap: () async {
-                                              bool success = false;
+                                            if ((items[index] == 1) &&
+                                                listController
+                                                    .showRsvpInstructions) ...<
+                                              Widget
+                                            >[
+                                              GestureDetector(
+                                                onTap: () async {
+                                                  await Utilities.showAlert(
+                                                    'Why should I RSVP?',
+                                                    'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
+                                                    'OK',
+                                                  );
+                                                },
+                                                child: const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 8.0,
+                                                  ),
+                                                  child: Icon(
+                                                    FontAwesome.graduation_cap,
+                                                    size: 28.0,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            if ((items[index] == 2) &&
+                                                (Utilities.isConnected())) ...<
+                                              Widget
+                                            >[
+                                              GestureDetector(
+                                                onTap: () async {
+                                                  bool success = false;
 
-                                              if (!await Permission
-                                                  .location
-                                                  .isGranted) {
-                                                final bool?
-                                                allow = await Utilities.showAlert(
-                                                  'Location Services Required',
-                                                  'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
-                                                  'Yes',
-                                                  showCancelButton: true,
-                                                  cancelButtonText: 'No',
-                                                );
+                                                  if (!await Permission
+                                                      .location
+                                                      .isGranted) {
+                                                    final bool?
+                                                    allow = await Utilities.showAlert(
+                                                      'Location Services Required',
+                                                      'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
+                                                      'Yes',
+                                                      showCancelButton: true,
+                                                      cancelButtonText: 'No',
+                                                    );
 
-                                                if (allow ?? false) {
-                                                  final PermissionStatus ps =
-                                                      await Permission.location
+                                                    if (allow ?? false) {
+                                                      final PermissionStatus
+                                                      ps = await Permission
+                                                          .location
                                                           .request();
 
-                                                  if (ps.isPermanentlyDenied) {
-                                                    final bool? openSettings =
-                                                        await Utilities.showAlert(
-                                                          'Phone Settings',
-                                                          'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
-                                                          'Open Settings',
-                                                          showCancelButton:
-                                                              true,
-                                                          cancelButtonText:
-                                                              'Cancel',
-                                                        );
-                                                    if (openSettings ?? false) {
-                                                      await openAppSettings();
+                                                      if (ps
+                                                          .isPermanentlyDenied) {
+                                                        final bool?
+                                                        openSettings =
+                                                            await Utilities.showAlert(
+                                                              'Phone Settings',
+                                                              'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+                                                              'Open Settings',
+                                                              showCancelButton:
+                                                                  true,
+                                                              cancelButtonText:
+                                                                  'Cancel',
+                                                            );
+                                                        if (openSettings ??
+                                                            false) {
+                                                          await openAppSettings();
 
-                                                      success =
-                                                          await Utilities.showAlert(
-                                                            'Success?',
-                                                            'Were you able to change the settings to enable location services?',
-                                                            'Yes',
-                                                            showCancelButton:
-                                                                true,
-                                                            cancelButtonText:
-                                                                'No',
-                                                          ) ??
-                                                          false;
-                                                    }
-                                                  }
-
-                                                  if ((ps.isGranted) ||
-                                                      success) {
-                                                    if (await Permission
-                                                        .location
-                                                        .serviceStatus
-                                                        .isEnabled) {
-                                                      appModel.hasLocationPermissions =
-                                                          true;
-
-                                                      final locService =
-                                                          Get.isRegistered<LocationService>()
-                                                              ? Get.find<LocationService>()
-                                                              : Get.put(LocationService());
-                                                      if (locService
-                                                          .initialized) {
-                                                        await Utilities.showAlert(
-                                                          'Location Services Enabled',
-                                                          'Location Services have been enabled.',
-                                                          'OK',
-                                                        );
-                                                        if (context.mounted) {
-                                                          await _showConfigureDistancePopup(
-                                                            context,
-                                                          );
+                                                          success =
+                                                              await Utilities.showAlert(
+                                                                'Success?',
+                                                                'Were you able to change the settings to enable location services?',
+                                                                'Yes',
+                                                                showCancelButton:
+                                                                    true,
+                                                                cancelButtonText:
+                                                                    'No',
+                                                              ) ??
+                                                              false;
                                                         }
                                                       }
 
-                                                      // await Utilities.subscribeToGeoLocationStream().then((
-                                                      //   void _,
-                                                      // ) async {
-                                                      //   await Utilities.showAlert(
-                                                      //     'Location Services Enabled',
-                                                      //     'Location Services have been enabled.',
-                                                      //     'OK',
-                                                      //   );
-                                                      //   if (context.mounted) {
-                                                      //     _showConfigureDistancePopup(
-                                                      //       context,
-                                                      //     );
-                                                      //   }
-                                                      // });
+                                                      if ((ps.isGranted) ||
+                                                          success) {
+                                                        if (await Permission
+                                                            .location
+                                                            .serviceStatus
+                                                            .isEnabled) {
+                                                          appModel.hasLocationPermissions =
+                                                              true;
+
+                                                          final locService =
+                                                              Get.isRegistered<
+                                                                LocationService
+                                                              >()
+                                                              ? Get.find<
+                                                                  LocationService
+                                                                >()
+                                                              : Get.put(
+                                                                  LocationService(),
+                                                                );
+                                                          if (locService
+                                                              .initialized) {
+                                                            await Utilities.showAlert(
+                                                              'Location Services Enabled',
+                                                              'Location Services have been enabled.',
+                                                              'OK',
+                                                            );
+                                                            if (context
+                                                                .mounted) {
+                                                              await _showConfigureDistancePopup(
+                                                                context,
+                                                              );
+                                                            }
+                                                          }
+
+                                                          // await Utilities.subscribeToGeoLocationStream().then((
+                                                          //   void _,
+                                                          // ) async {
+                                                          //   await Utilities.showAlert(
+                                                          //     'Location Services Enabled',
+                                                          //     'Location Services have been enabled.',
+                                                          //     'OK',
+                                                          //   );
+                                                          //   if (context.mounted) {
+                                                          //     _showConfigureDistancePopup(
+                                                          //       context,
+                                                          //     );
+                                                          //   }
+                                                          // });
+                                                        }
+                                                      }
+                                                    }
+                                                  } else {
+                                                    if (context.mounted) {
+                                                      await _showConfigureDistancePopup(
+                                                        context,
+                                                      );
                                                     }
                                                   }
-                                                }
-                                              } else {
-                                                if (context.mounted) {
-                                                  await _showConfigureDistancePopup(
-                                                    context,
-                                                  );
-                                                }
-                                              }
-                                            },
-                                            child: const Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 8.0,
+                                                },
+                                                child: const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 8.0,
+                                                  ),
+                                                  child: Icon(
+                                                    FontAwesome.gear,
+                                                    size: 28.0,
+                                                  ),
+                                                ),
                                               ),
-                                              child: Icon(
-                                                FontAwesome.gear,
-                                                size: 28.0,
-                                              ),
-                                            ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      // add some text if no runs are found within the distance filter
+                                      if ((items[index] == 2) &&
+                                          (index + 1 < items.length) &&
+                                          (items[index + 1] == 3)) ...<Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 22.0,
+                                            bottom: 10.0,
                                           ),
-                                        ],
+                                          child: Text(
+                                            '${_getDistancePreferenceString('[No runs found within ')}]',
+                                            style: ts_headingLarge,
+                                          ),
+                                        ),
                                       ],
-                                    ),
-                                  ),
-                                  // add some text if no runs are found within the distance filter
-                                  if ((items[index] == 2) &&
-                                      (index + 1 < items.length) &&
-                                      (items[index + 1] == 3)) ...<Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        top: 22.0,
-                                        bottom: 10.0,
-                                      ),
-                                      child: Text(
-                                        '${_getDistancePreferenceString('[No runs found within ')}]',
-                                        style: ts_headingLarge,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              );
-                            } else if (items[index] is EventChatSummary) {
-                              return _chatRunRow(
-                                items[index] as EventChatSummary,
-                              );
-                            } else {
-                              final run = items[index]
-                                  as RunDetailsAggregate;
-                              return RunListItem(
-                                key: ValueKey(
-                                  'run-${normalizeUuid(run.event.eventId)}',
-                                ),
-                                futureRun: run,
-                                // Rows above the divider are the past section.
-                                isPastRun: listController.showsInlinePast &&
-                                    index < listController.pastRuns.length,
-                                onItemTapped: () async {
-                                  await listController.openRun(
-                                    run,
-                                    openToTab: RunTab.details,
+                                    ],
                                   );
-                                },
-                              );
-                            }
-                          },
+                                } else if (items[index] is EventChatSummary) {
+                                  return _chatRunRow(
+                                    items[index] as EventChatSummary,
+                                  );
+                                } else {
+                                  final run =
+                                      items[index] as RunDetailsAggregate;
+                                  return RunListItem(
+                                    key: ValueKey(
+                                      'run-${normalizeUuid(run.event.eventId)}',
+                                    ),
+                                    futureRun: run,
+                                    // Rows above the divider are the past section.
+                                    isPastRun:
+                                        listController.showsInlinePast &&
+                                        index < listController.pastRuns.length,
+                                    onItemTapped: () async {
+                                      await listController.openRun(
+                                        run,
+                                        openToTab: RunTab.details,
+                                      );
+                                    },
+                                  );
+                                }
+                              },
+                            ),
+                      // Floating "View Map" over the top-right of the scrolling
+                      // list, shown while the Map chip is on.
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Obx(
+                          () => controller.filterMap.value
+                              ? _viewMapFloatingButton()
+                              : const SizedBox.shrink(),
                         ),
-                  // Floating "View Map" over the top-right of the scrolling
-                  // list, shown while the Map chip is on.
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Obx(
-                      () => controller.filterMap.value
-                          ? _viewMapFloatingButton()
-                          : const SizedBox.shrink(),
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
           ),
         ),
       ],
@@ -808,8 +816,8 @@ class FutureRunsListPage extends StatelessWidget {
     final String title = s.isKennelThread
         ? '${s.kennelShortName ?? s.eventName ?? 'Kennel'} Kennel Chat'
         : (s.kennelShortName != null && s.eventNumber != null)
-            ? '${s.kennelShortName} #${s.eventNumber}'
-            : (s.eventName ?? 'Run');
+        ? '${s.kennelShortName} #${s.eventNumber}'
+        : (s.eventName ?? 'Run');
     String dateStr = '';
     final gmt = s.eventStartDatetimeGmt;
     if (gmt != null && gmt.isNotEmpty) {
@@ -839,24 +847,28 @@ class FutureRunsListPage extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-            if (dateStr.isNotEmpty)
-              Text(dateStr, style: ts_footnoteBlack),
+            if (dateStr.isNotEmpty) Text(dateStr, style: ts_footnoteBlack),
           ],
         ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Text(
-            '${s.badgeCount}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+        // A read thread keeps its place in the list and simply loses the
+        // badge (James, 2026-09-13) — a chevron says it is still a thread you
+        // can open, rather than leaving a hole where the badge was.
+        trailing: s.badgeCount > 0
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  '${s.badgeCount}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+            : const Icon(Icons.chevron_right, color: Colors.black38),
         onTap: () async {
           final bool kennelThread = s.isKennelThread;
           if (!kennelThread && s.eventId == null) return;
@@ -874,8 +886,9 @@ class FutureRunsListPage extends StatelessWidget {
               ),
               body: ChatPage(
                 eventId: kennelThread ? s.kennelId! : s.eventId!,
-                publicEventId:
-                    kennelThread ? s.publicKennelId! : s.publicEventId,
+                publicEventId: kennelThread
+                    ? s.publicKennelId!
+                    : s.publicEventId,
                 isKennelThread: kennelThread,
               ),
             ),
@@ -1500,6 +1513,10 @@ class EventChatSummary {
   /// from "no chats yet" (no row at all). Null for event rows.
   final int? messageCount;
 
+  /// When the thread last had a message. What the chat list sorts on — a
+  /// run's start time is not when people talked about it.
+  final String? lastMessageAt;
+
   EventChatSummary({
     required this.publicEventId,
     required this.badgeCount,
@@ -1513,11 +1530,31 @@ class EventChatSummary {
     this.kennelShortName,
     this.kennelLogo,
     this.messageCount,
+    this.lastMessageAt,
   });
 
   /// Kennel-thread rows (kennel-level chat) carry kennelId/publicKennelId and
   /// have NO event identity.
   bool get isKennelThread => eventId == null && kennelId != null;
+
+  /// The same thread with a different unread count — used when a chat is
+  /// opened, so the row loses its badge but STAYS in the list (James,
+  /// 2026-09-13). Everything else about the thread is unchanged.
+  EventChatSummary withBadgeCount(int newBadgeCount) => EventChatSummary(
+    publicEventId: publicEventId,
+    badgeCount: newBadgeCount,
+    eventId: eventId,
+    eventName: eventName,
+    eventNumber: eventNumber,
+    eventStartDatetimeGmt: eventStartDatetimeGmt,
+    eventImage: eventImage,
+    kennelId: kennelId,
+    publicKennelId: publicKennelId,
+    kennelShortName: kennelShortName,
+    kennelLogo: kennelLogo,
+    messageCount: messageCount,
+    lastMessageAt: lastMessageAt,
+  );
 
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
     return EventChatSummary(
@@ -1533,6 +1570,7 @@ class EventChatSummary {
       kennelShortName: json['KennelShortName'] as String?,
       kennelLogo: json['KennelLogo'] as String?,
       messageCount: (json['MessageCount'] as num?)?.toInt(),
+      lastMessageAt: json['LastMessageAt']?.toString(),
     );
   }
 

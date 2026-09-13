@@ -344,7 +344,9 @@ enum RunsToDisplay {
   ),
   unreadChats(
     2,
-    'Unseen Chats',
+    // Read threads stay listed now, so "Unseen" would be a lie (James,
+    // 2026-09-13). The enum name is left alone — it is referenced widely.
+    'Chats',
     3,
     0, // previous: skip myRuns → allRuns
     false,
