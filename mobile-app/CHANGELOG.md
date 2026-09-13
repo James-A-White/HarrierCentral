@@ -1,3 +1,18 @@
+## 3.1.0+1355 (2026-09-13)
+
+Build 1354 went to 3.0.35 the same afternoon, so this is 1355.
+
+### Fixes
+- **Setting a run's official start or end shows up straight away.** The
+  boundary was always being saved, but the map kept drawing the previous
+  window for a while afterwards, so it looked as though nothing had
+  happened. Clearing the window had the same problem.
+
+### Improvements
+- **The full-screen map now uses the same Official window panel as the run's
+  Map tab**, with Start and End side by side and Clear window and Stop
+  tracking on their own rows.
+
 ## 3.1.0+1353 (2026-09-13)
 
 **Fixes the build that would not start.** 3.1.0+1350 and +1352 stopped on
