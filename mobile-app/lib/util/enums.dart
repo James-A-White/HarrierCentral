@@ -991,13 +991,23 @@ const EnumProductType productTypeRunPackage = EnumProductType(4);
 const EnumProductType productTypeAwayWeekend = EnumProductType(5);
 
 /// What a catalogue entry can be, in the order the editor offers them.
+///
+/// NOT productTypeEvent. A single run is bound to its event and its price
+/// already lives there — and varies run to run, by member and non-member.
+/// A catalogue row could not hold that price, so it would be a stub that
+/// exists only to be joined to, and a second place where a run's price
+/// appears to live. Runs keep their existing logic; the catalogue is for
+/// things NOT bound to a specific event (James, 2026-09-13).
+///
+/// productTypeEvent still exists and is still right on HC.Payment — 91,535
+/// payments carry it. It says what a payment was FOR, which is not the same
+/// question as what a kennel can put on sale.
 const List<({EnumProductType type, String label})> productTypeChoices =
     <({EnumProductType type, String label})>[
   (type: productTypeRunPackage, label: 'Run package'),
   (type: productTypeMembership, label: 'Membership'),
   (type: productTypeHaberdashery, label: 'Haberdashery'),
   (type: productTypeAwayWeekend, label: 'Away weekend'),
-  (type: productTypeEvent, label: 'Single run'),
 ];
 
 String productTypeLabel(int value) {
