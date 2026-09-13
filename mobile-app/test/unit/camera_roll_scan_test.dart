@@ -88,8 +88,23 @@ void main() {
     test('falls back to a radius around the start when there is no trail', () {
       final ScannableRun r = run(lat: 51.5, lng: -0.1);
       expect(CameraRollScanService.withinGeofence(51.5010, -0.1010, r), isTrue);
-      // ~5 km away
-      expect(CameraRollScanService.withinGeofence(51.5450, -0.1000, r), isFalse);
+
+      // 10 km from 2026-09-13, widened from 2 km: a point-to-point or a coach
+      // out of town leaves the old radius behind entirely. ~5 km used to be
+      // rejected and is now accepted.
+      expect(
+        CameraRollScanService.withinGeofence(51.5450, -0.1000, r),
+        isTrue,
+        reason: '~5 km from the start is inside the 10 km fallback',
+      );
+
+      // The boundary still exists, which is the point of keeping this test.
+      // ~22 km north is the rest of the county, not the trail.
+      expect(
+        CameraRollScanService.withinGeofence(51.7000, -0.1000, r),
+        isFalse,
+        reason: 'the fallback is wider, not absent',
+      );
     });
 
     test('a run with neither a trail nor a location judges nothing', () {
@@ -103,12 +118,13 @@ void main() {
     });
 
     test('the trail is preferred over the start when both are known', () {
-      // At the far end of the trail but 1 km from the start: the start radius
-      // would also accept this, so use a point the START would reject and the
-      // TRAIL accepts — proving which rule ran.
+      // A point the START rule would REJECT and the TRAIL rule accepts, which
+      // is what proves which rule ran. The start fallback is now 10 km, so this
+      // has to reach beyond that: ~22 km north, with the trail running all the
+      // way there. Before the widening ~4.4 km was enough.
       final List<LatLng> longTrail = <LatLng>[
         const LatLng(51.5000, -0.1000),
-        const LatLng(51.5400, -0.1000), // ~4.4 km north, outside startRadius
+        const LatLng(51.7000, -0.1000), // ~22 km north, outside startRadius
       ];
       final ScannableRun r = ScannableRun(
         eventId: 'e',
@@ -121,7 +137,14 @@ void main() {
         startLng: -0.1,
         trail: longTrail,
       );
-      expect(CameraRollScanService.withinGeofence(51.5400, -0.1001, r), isTrue);
+      // Beside the trail's FAR point — the geofence measures to trail points,
+      // not along the line between them — and ~22 km from the start, so only
+      // the trail rule can be accepting it.
+      expect(
+        CameraRollScanService.withinGeofence(51.7000, -0.1001, r),
+        isTrue,
+        reason: 'near the trail but far outside the 10 km start fallback',
+      );
     });
   });
 }
