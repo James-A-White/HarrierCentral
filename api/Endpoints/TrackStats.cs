@@ -54,6 +54,19 @@ namespace HcWebApi.Endpoints
         private const double MinRealClimbM = 4;
 
         /// <summary>
+        /// Nobody runs at 36 km/h. A leg implying more is a GPS fix that
+        /// teleported, or a phone left tracking in a car on the way home —
+        /// either way it is not trail, so neither its metres nor its seconds
+        /// count.
+        ///
+        /// Without this the first backfill produced a median of 8.5 km (right)
+        /// beside a mean of 22 km and a longest of 8,645 km (a teleport across
+        /// the world). Seven tracks over 50 km were dragging every average
+        /// (2026-09-13).
+        /// </summary>
+        private const double MaxLegSpeedMps = 10;
+
+        /// <summary>
         /// Measure a track. Points must be in ascending time order — which is
         /// what the archiver sorts them into and what the codec's deltas
         /// assume. Returns null when there is nothing measurable.
@@ -95,8 +108,10 @@ namespace HcWebApi.Endpoints
                 if (seconds <= 0 || seconds > MaxLegSeconds) continue;
 
                 double metres = HaversineMetres(a.Latitude, a.Longitude, b.Latitude, b.Longitude);
+                double speed = metres / seconds;
+                if (speed > MaxLegSpeedMps) continue;
                 distance += metres;
-                if (metres / seconds >= MovingSpeedMps) movingSeconds += seconds;
+                if (speed >= MovingSpeedMps) movingSeconds += seconds;
 
                 // Climb is measured against the last altitude we BELIEVED, not
                 // the previous point, so a long steady ascent still counts

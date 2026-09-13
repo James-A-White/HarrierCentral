@@ -72,11 +72,18 @@ BEGIN
     -- can. PERSISTED so it is indexable and free to read — which materialises
     -- a value on all 136k rows, so it belongs inside the disabled window with
     -- the rest.
-    ALTER TABLE [HC].[HasherEventMap] ADD [TrackPaceSecPerKm] AS (
-        CASE WHEN [TrackDistanceM] > 0 AND [TrackMovingSeconds] > 0
-             THEN CONVERT(INT, ([TrackMovingSeconds] * 1000.0) / [TrackDistanceM])
-        END
-    ) PERSISTED;
+    --
+    -- Through EXEC deliberately: SQL Server compiles a whole batch before it
+    -- runs any of it, so a computed column naming a column added earlier in
+    -- the SAME batch fails to compile ("Invalid column name"). Deferring the
+    -- compile is what lets both live in one batch — and they must, because a
+    -- GO between them would put the DISABLE and the ENABLE in different
+    -- batches with no way to re-enable if the middle one failed.
+    EXEC ('ALTER TABLE [HC].[HasherEventMap] ADD [TrackPaceSecPerKm] AS (
+              CASE WHEN [TrackDistanceM] > 0 AND [TrackMovingSeconds] > 0
+                   THEN CONVERT(INT, ([TrackMovingSeconds] * 1000.0) / [TrackDistanceM])
+              END
+          ) PERSISTED;');
 
     ENABLE TRIGGER [HC].[trgUpdateModifiedOnDateForHasherEventMap]
         ON [HC].[HasherEventMap];
@@ -84,6 +91,19 @@ BEGIN
     PRINT 'HasherEventMap track statistic columns added (incl. TrackPaceSecPerKm)';
 END
 ELSE PRINT 'HasherEventMap track statistic columns already exist';
+GO
+
+-- Belt and braces: whatever the batch above did, the sync trigger on a table
+-- every phone replicates must not be left disabled. Harmless when it is
+-- already enabled.
+IF EXISTS (SELECT 1 FROM sys.triggers
+           WHERE name = 'trgUpdateModifiedOnDateForHasherEventMap'
+             AND is_disabled = 1)
+BEGIN
+    ENABLE TRIGGER [HC].[trgUpdateModifiedOnDateForHasherEventMap]
+        ON [HC].[HasherEventMap];
+    PRINT 'Trigger was left disabled — re-enabled.';
+END
 GO
 
 -- Proof the ALTER did not stamp the table: this must come back 0.
