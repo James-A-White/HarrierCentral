@@ -449,6 +449,25 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 550 — 3.1: the catalogue moved onto JSON. HC.Product lost its
+    // four price columns and gained pricingJson + productDetailsJson.
+    //
+    // Intentionally EMPTY, for the same reason as 540 below: a ten-version
+    // jump routes every upgrading device through _handleDbUpgrade, which wipes
+    // and reloads, so the new shape is CREATED rather than migrated onto. A
+    // phone on 540 cannot be migrated to 550 in any case — the server stopped
+    // sending priceCharged, and that column is NOT NULL locally.
+    //
+    // The record still has to exist. The guard in
+    // MainNavigationPageController requires one per DB_VERSION, and without it
+    // the app shows "Database Version Mismatch" and stops. That is exactly
+    // what happened on 3.1.0+1350 and +1352 (James, 2026-09-13).
+    MigrationsModel(
+      dbVersion: 550,
+      appliedAtInt: 0,
+      migrationText: '',
+    ),
+
     // MIGRATION 540 — 3.1: UNIQUE index on every synced table's server id.
     // Intentionally EMPTY. A ten-version jump sends every upgrading device
     // through _handleDbUpgrade instead, which wipes and reloads, so the
