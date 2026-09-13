@@ -44,6 +44,47 @@ BEGIN
         [Name]              NVARCHAR(200)    NOT NULL,
         [Description]       NVARCHAR(1000)   NULL,
 
+        -- ---------------- haberdashery ----------------
+        -- What sizes this item is offered in, '|'-delimited: 'S|M|L|XL|XXL'.
+        -- NULL for anything sold in one size, and for every non-haberdashery
+        -- product.
+        --
+        -- A LIST, not a row per size. One row per size would triple the
+        -- catalogue, repeat the name, description and photos on every row,
+        -- and mean editing five rows to change one picture. The cost of the
+        -- list is that it cannot price or stock a size separately — if an
+        -- XXL ever costs more than an S, this has to become a row per size.
+        -- It does not today.
+        --
+        -- The size a hasher actually BOUGHT is not here. It is on the
+        -- payment (HC.Payment.ProductVariant below): this column is the
+        -- offer, that one is the sale.
+        [SizeOptions]       NVARCHAR(200)    NULL,
+
+        -- Product photos, '|'-delimited.
+        --
+        -- '|' and not a comma, per the project's delimited-list rule: a URL
+        -- may legally contain a comma and a signed blob URL is full of
+        -- punctuation, so a comma-split can silently cut one URL in two.
+        -- Bounded rather than MAX on purpose — this row syncs to every
+        -- phone, so 2000 chars (roughly eight URLs) is a deliberate ceiling.
+        [PhotoUrls]         NVARCHAR(2000)   NULL,
+
+        -- Where the item came from: printer or supplier name, contact,
+        -- phone, lead time, minimum order, whatever the Haberdasher needs
+        -- to reorder. JSON because none of it is ever queried and the shape
+        -- differs per supplier; the CHECK stops malformed text getting in.
+        --
+        -- ⚠ DELIBERATELY NOT SYNCED. hcapp_syncUserData names its columns,
+        -- and this one is left out: a supplier's phone number is kennel
+        -- admin data and has no business on 400 kennels' worth of phones.
+        -- Because the table syncs globally, what syncs is now a per-COLUMN
+        -- decision, not a per-table one.
+        [SourceJson]        NVARCHAR(MAX)    NULL
+            CONSTRAINT [CK_Product_SourceJson]
+            CHECK ([SourceJson] IS NULL OR ISJSON([SourceJson]) = 1),
+        -- ----------------------------------------------
+
         -- What the hasher pays.
         [PriceCharged]      SMALLMONEY       NOT NULL
             CONSTRAINT [DF_Product_PriceCharged] DEFAULT (0),
@@ -99,23 +140,34 @@ END
 ELSE PRINT 'HC.Product already exists';
 GO
 
--- The payment points at what was sold. Nullable: every one of the 91,540
--- payments that exist predates the catalogue, and an ordinary run fee may
--- never have a product behind it.
+-- The payment points at what was sold, and says WHICH ONE of it. Both are
+-- nullable: every one of the 91,540 payments that exist predates the
+-- catalogue, and an ordinary run fee may never have a product behind it.
+--
+-- ProductVariant is the size (or colour) the hasher actually took, chosen
+-- from the product's SizeOptions. Without it the catalogue can say a shirt
+-- is offered in five sizes but nothing can say three larges were sold, so
+-- the Haberdasher cannot pack the order and the treasurer cannot reorder.
 --
 -- ⚠ HC.Payment IS SYNCED. Disable its UpdatedAt trigger for the ALTER or
--- every row is stamped and the whole table re-syncs to every phone.
+-- every row is stamped and the whole table re-syncs to every phone. Both
+-- columns go in under ONE disable — a second ALTER later is a second risk.
 IF COL_LENGTH('HC.Payment', 'ProductId') IS NULL
+   OR COL_LENGTH('HC.Payment', 'ProductVariant') IS NULL
 BEGIN
     DISABLE TRIGGER [HC].[trgUpdateModifiedOnDateForPayment] ON [HC].[Payment];
 
-    ALTER TABLE [HC].[Payment] ADD [ProductId] UNIQUEIDENTIFIER NULL;
+    IF COL_LENGTH('HC.Payment', 'ProductId') IS NULL
+        ALTER TABLE [HC].[Payment] ADD [ProductId] UNIQUEIDENTIFIER NULL;
+
+    IF COL_LENGTH('HC.Payment', 'ProductVariant') IS NULL
+        ALTER TABLE [HC].[Payment] ADD [ProductVariant] NVARCHAR(50) NULL;
 
     ENABLE TRIGGER [HC].[trgUpdateModifiedOnDateForPayment] ON [HC].[Payment];
 
-    PRINT 'HC.Payment.ProductId added';
+    PRINT 'HC.Payment.ProductId / ProductVariant added';
 END
-ELSE PRINT 'HC.Payment.ProductId already exists';
+ELSE PRINT 'HC.Payment.ProductId and ProductVariant already exist';
 GO
 
 -- Whatever happened above, the sync trigger must not be left disabled.

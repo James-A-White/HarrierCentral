@@ -305,6 +305,12 @@ BEGIN
         p.PromotionalCredit                                                 AS promotionalCredit,
         p.UnitCost                                                          AS unitCost,
         p.RunCount                                                          AS runCount,
+        p.SizeOptions                                                       AS sizeOptions,
+        p.PhotoUrls                                                         AS photoUrls,
+        -- p.SourceJson is DELIBERATELY ABSENT. It holds the supplier's name
+        -- and phone number, which is kennel admin data; this rowset goes to
+        -- every phone for every kennel, so it must not carry it. Because
+        -- HC.Product syncs globally, what syncs is a per-COLUMN decision.
         p.IsActive                                                          AS isActive,
         p.SortOrder                                                         AS sortOrder,
         p.Removed                                                           AS removed,
