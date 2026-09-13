@@ -8,10 +8,8 @@ class KennelProduct {
     required this.productType,
     required this.name,
     this.description,
-    this.priceCharged = 0,
-    this.promotionalCredit = 0,
-    this.unitCost = 0,
-    this.runCount,
+    this.pricingJson,
+    this.productDetailsJson,
     this.isActive = true,
     this.sortOrder = 0,
   });
@@ -24,10 +22,8 @@ class KennelProduct {
       productType: (r[h.colProductType] as num?)?.toInt() ?? 0,
       name: (r[h.colName] as String?) ?? '',
       description: r[h.colDescription] as String?,
-      priceCharged: (r[h.colPriceCharged] as num?)?.toDouble() ?? 0,
-      promotionalCredit: (r[h.colPromotionalCredit] as num?)?.toDouble() ?? 0,
-      unitCost: (r[h.colUnitCost] as num?)?.toDouble() ?? 0,
-      runCount: (r[h.colRunCount] as num?)?.toInt(),
+      pricingJson: r[h.colPricingJson] as String?,
+      productDetailsJson: r[h.colProductDetailsJson] as String?,
       isActive: ((r[h.colIsActive] as num?)?.toInt() ?? 1) != 0,
       sortOrder: (r[h.colSortOrder] as num?)?.toInt() ?? 0,
     );
@@ -39,17 +35,17 @@ class KennelProduct {
   final String name;
   final String? description;
 
-  /// What the hasher pays.
-  final double priceCharged;
+  /// How this product is priced, as JSON. One price, a member and non-member
+  /// price, a choice of amounts, a price per size, or a deposit and a balance
+  /// — four numeric columns could express exactly one of those.
+  ///
+  ///   {"mode":"fixed","price":20,"unitCost":12}
+  ///   {"mode":"choice","amounts":[5,10,20],"allowOther":true}
+  final String? pricingJson;
 
-  /// Credit granted on top of the cash — a package is "pay 70, get 7".
-  final double promotionalCredit;
-
-  /// What it costs the kennel to supply. Price minus this is the margin.
-  final double unitCost;
-
-  /// How many runs a package is worth. Null for anything not counted in runs.
-  final int? runCount;
+  /// The product group's own rules, as JSON: photos always, plus sizes,
+  /// colours, dates, capacity and so on depending on the group.
+  final String? productDetailsJson;
 
   /// On sale. NOT the same as removed — a product that has been sold is never
   /// removed, or the sync would delete it from every phone and break the link
@@ -58,8 +54,54 @@ class KennelProduct {
 
   final int sortOrder;
 
-  /// What the kennel actually gives away on this line.
-  double get totalValue => priceCharged + promotionalCredit;
+  Map<String, dynamic> _decode(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return const <String, dynamic>{};
+    try {
+      final Object? d = jsonDecode(raw);
+      return d is Map<String, dynamic> ? d : const <String, dynamic>{};
+    } catch (_) {
+      return const <String, dynamic>{};
+    }
+  }
+
+  Map<String, dynamic> get pricing => _decode(pricingJson);
+  Map<String, dynamic> get details => _decode(productDetailsJson);
+
+  String get pricingMode => (pricing['mode'] as String?) ?? 'fixed';
+
+  /// A single headline price, where the mode has one. Null for a mode that
+  /// genuinely has no single price, such as a collection offering a choice —
+  /// showing a number there would be an invention.
+  double? get headlinePrice {
+    final Object? v = switch (pricingMode) {
+      'fixed' => pricing['price'],
+      'memberTiered' => pricing['memberPrice'],
+      'deposit' => pricing['total'],
+      'perVariant' => pricing['default'],
+      _ => null,
+    };
+    if (v is num) return v.toDouble();
+    return double.tryParse('${v ?? ''}');
+  }
+
+  double get promotionalCredit {
+    final Object? v = pricing['promotionalCredit'];
+    return v is num ? v.toDouble() : (double.tryParse('${v ?? ''}') ?? 0);
+  }
+
+  int? get runsIncluded {
+    final Object? v = pricing['runsIncluded'];
+    return v is num ? v.toInt() : int.tryParse('${v ?? ''}');
+  }
+
+  List<String> get photos {
+    final Object? v = details['photos'];
+    if (v is! List) return const <String>[];
+    return v
+        .map((Object? e) => (e?.toString() ?? '').trim())
+        .where((String e) => e.isNotEmpty)
+        .toList(growable: false);
+  }
 }
 
 /// Reading the catalogue from the phone, and writing it back to the server.
@@ -99,10 +141,8 @@ class ProductService {
     required int productType,
     required String name,
     String? description,
-    required double priceCharged,
-    required double promotionalCredit,
-    required double unitCost,
-    int? runCount,
+    String? pricingJson,
+    String? productDetailsJson,
     required bool isActive,
     int sortOrder = 0,
   }) async {
@@ -120,10 +160,8 @@ class ProductService {
         'productType': productType,
         'name': name,
         'description': ?description,
-        'priceCharged': priceCharged,
-        'promotionalCredit': promotionalCredit,
-        'unitCost': unitCost,
-        'runCount': ?runCount,
+        'pricingJson': ?pricingJson,
+        'productDetailsJson': ?productDetailsJson,
         'isActive': isActive ? 1 : 0,
         'sortOrder': sortOrder,
         'accessToken': Utilities.generateToken(

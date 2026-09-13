@@ -13,43 +13,49 @@ void main() {
     'productType': 3,
     'name': 'Hash Shirt',
     'description': 'Cotton hash shirt',
-    'priceCharged': 20.0,
-    'promotionalCredit': 0.0,
-    'unitCost': 12.0,
-    'runCount': null,
+    'pricingJson': '{"mode":"fixed","price":20,"unitCost":12}',
+    'productDetailsJson': '{"photos":[],"sizes":["S","M"]}',
     'isActive': 1,
     'sortOrder': 20,
     'removed': 0,
     'updatedAt': '2026-09-13 13:00:00.000000',
-    // Sent by the server, no column on the phone yet:
-    'productDetailsJson': '{"sizes":["S","M"]}',
-    'photoUrls': 'a.jpg|b.jpg',
+    // Not sent by the server and never should be — supplier detail.
+    'sourceJson': '{"supplier":"Example Print Co"}',
   };
 
   test('keeps every column the phone actually has', () {
     final Map<String, dynamic> out = helper.normalizeMap(wireRow());
     expect(out['productId'], 'b3b779a0-ffdb-43f0-b703-16a16dfe1805');
     expect(out['name'], 'Hash Shirt');
-    expect(out['priceCharged'], 20.0);
+    expect(out['pricingJson'], '{"mode":"fixed","price":20,"unitCost":12}');
     expect(out['isActive'], 1);
     expect(out['updatedAt'], '2026-09-13 13:00:00.000000');
-    expect(out.length, 13);
+    expect(out.length, 11);
   });
 
-  test('drops wire fields the phone has no column for', () {
+  test('keeps both JSON fields — the phone needs them for a shop', () {
     final Map<String, dynamic> out = helper.normalizeMap(wireRow());
-    expect(out.containsKey('productDetailsJson'), isFalse);
-    expect(out.containsKey('photoUrls'), isFalse);
+    expect(out.containsKey('pricingJson'), isTrue);
+    expect(out.containsKey('productDetailsJson'), isTrue);
+  });
+
+  test('never lets supplier detail onto the phone', () {
+    final Map<String, dynamic> out = helper.normalizeMap(wireRow());
+    expect(out.containsKey('sourceJson'), isFalse);
+  });
+
+  test('drops the price columns that no longer exist', () {
+    final Map<String, dynamic> out = helper.normalizeMap(<String, dynamic>{
+      'productId': 'x',
+      'priceCharged': 20.0,
+      'runCount': 11,
+    });
+    expect(out.containsKey('priceCharged'), isFalse);
+    expect(out.containsKey('runCount'), isFalse);
   });
 
   test('is not the empty map — the bug this guards against', () {
     expect(helper.normalizeMap(wireRow()), isNotEmpty);
-  });
-
-  test('a null runCount is kept, not silently dropped', () {
-    final Map<String, dynamic> out = helper.normalizeMap(wireRow());
-    expect(out.containsKey('runCount'), isTrue);
-    expect(out['runCount'], isNull);
   });
 
   test('a short row from an older server does not invent keys', () {

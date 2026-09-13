@@ -6,14 +6,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addEditProduct]
     @productType       SMALLINT         = 0,
     @name              NVARCHAR(200)    = NULL,
     @description       NVARCHAR(4000)   = NULL,
-    @priceCharged      SMALLMONEY       = 0,
-    @promotionalCredit SMALLMONEY       = 0,
-    @unitCost          SMALLMONEY       = 0,
-    @runCount          SMALLINT         = NULL,
-    -- Per-type display detail, e.g. {"sizes":["S","M","L"]}. SYNCS.
+    -- How this product is priced. One json field so a product can express the
+    -- model it actually has. SYNCS.
+    @pricingJson       NVARCHAR(4000)   = NULL,
+    -- Per-type rules, e.g. {"photos":[…],"sizes":["S","M"]}. SYNCS.
     @productDetailsJson NVARCHAR(4000)  = NULL,
-    -- '|'-delimited product photos.
-    @photoUrls         NVARCHAR(2000)   = NULL,
     -- Supplier detail. Does NOT sync — kennel admin data only.
     @sourceJson        NVARCHAR(4000)   = NULL,
     @isActive          SMALLINT         = 1,
@@ -118,6 +115,7 @@ END
 -- an unhelpful constraint violation in the CATCH. Say so plainly instead,
 -- before any transaction is open.
 IF (@productDetailsJson IS NOT NULL AND ISJSON(@productDetailsJson) = 0)
+   OR (@pricingJson IS NOT NULL AND ISJSON(@pricingJson) = 0)
    OR (@sourceJson IS NOT NULL AND ISJSON(@sourceJson) = 0)
 BEGIN
     SET @errorCode = 1345; SET @errorType = 2; SET @errorId = NEWID();
@@ -159,30 +157,26 @@ BEGIN TRY
     BEGIN
         SET @productId = NEWID();
         INSERT HC.Product (id, KennelId, ProductType, Name, Description,
-                           PriceCharged, PromotionalCredit, UnitCost, RunCount,
-                           ProductDetailsJson, PhotoUrls, SourceJson,
+                           PricingJson, ProductDetailsJson, SourceJson,
                            IsActive, SortOrder, CreatedByUserId, createdAt,
                            updatedAt, updatedAtBias, Removed)
         VALUES (@productId, @kennelId, @productType, LTRIM(RTRIM(@name)), @description,
-                @priceCharged, @promotionalCredit, @unitCost, @runCount,
-                @productDetailsJson, @photoUrls, @sourceJson,
+                @pricingJson, @productDetailsJson, @sourceJson,
                 @isActive, @sortOrder, @userId, @now, @now, 0, 0);
     END
     ELSE
     BEGIN
-        -- updatedAt is set explicitly: HC.Product carries no trigger, the same
-        -- as HC.Song, so a write that forgets it would never reach a phone.
+        -- updatedAt is still set explicitly, but it is no longer load-bearing:
+        -- HC.trgUpdateModifiedOnDateForProduct stamps it either way and adds
+        -- the updatedAtBias offset. Setting it here just means the value in
+        -- the row matches the transaction rather than the trigger's clock.
         UPDATE HC.Product
            SET ProductType       = @productType,
                Name              = LTRIM(RTRIM(@name)),
                Description       = @description,
-               PriceCharged      = @priceCharged,
-               PromotionalCredit = @promotionalCredit,
-               UnitCost          = @unitCost,
-               RunCount          = @runCount,
+               PricingJson        = @pricingJson,
                ProductDetailsJson = @productDetailsJson,
-               PhotoUrls         = @photoUrls,
-               SourceJson        = @sourceJson,
+               SourceJson         = @sourceJson,
                IsActive          = @isActive,
                SortOrder         = @sortOrder,
                updatedAt         = @now

@@ -261,9 +261,10 @@ class _ProductGroupTab extends StatelessWidget {
               spacing: 22,
               runSpacing: 6,
               children: <Widget>[
-                // A variable-amount product has no single price, so showing
-                // one would be a lie. Show what it actually offers.
-                if (p.hasVariableAmount)
+                // Show what the product ACTUALLY offers. A collection with a
+                // choice of amounts has no single price, and printing one
+                // would be an invention.
+                if (p.headlinePrice == null)
                   _fact(
                     'Amounts',
                     <String>[
@@ -273,16 +274,24 @@ class _ProductGroupTab extends StatelessWidget {
                       if (p.allowCustomAmount) 'Other',
                     ].join(' · '),
                   )
+                else if (p.pricingMode == 'memberTiered')
+                  _fact(
+                    'Member / guest',
+                    '${p.headlinePrice!.toStringAsFixed(2)} / '
+                        '${(p.nonMemberPrice ?? 0).toStringAsFixed(2)}',
+                  )
                 else
-                  _fact('Price', p.priceCharged.toStringAsFixed(2)),
+                  _fact('Price', p.headlinePrice!.toStringAsFixed(2)),
                 if (p.promotionalCredit != 0)
                   _fact('Credit', p.promotionalCredit.toStringAsFixed(2)),
-                _fact('Cost', p.unitCost.toStringAsFixed(2)),
-                _fact('Margin', p.margin.toStringAsFixed(2)),
-                if (p.runCount != null) _fact('Runs', '${p.runCount}'),
+                if (p.unitCost != 0)
+                  _fact('Cost', p.unitCost.toStringAsFixed(2)),
+                if (p.margin != null && p.unitCost != 0)
+                  _fact('Margin', p.margin!.toStringAsFixed(2)),
+                if (p.runsIncluded != null) _fact('Runs', '${p.runsIncluded}'),
                 if (sizes.isNotEmpty) _fact('Sizes', sizes.join(', ')),
-                if (p.photoUrlList.isNotEmpty)
-                  _fact('Photos', '${p.photoUrlList.length}'),
+                if (p.photos.isNotEmpty) _fact('Photos', '${p.photos.length}'),
+                _fact('Pricing', pricingModeFromKey(p.pricingMode).label),
               ],
             ),
             const SizedBox(height: 10),
@@ -411,24 +420,30 @@ class _ProductForm extends StatefulWidget {
 
 /// A self-contained dialog form: text controllers and a form key, no business
 /// logic. This is the one StatefulWidget shape the project allows.
+///
+/// Every field below the name and description is rendered from
+/// product_schema.dart rather than written out here, so a new rule for a group
+/// is one entry in that file and needs no change to this widget.
 class _ProductFormState extends State<_ProductForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _name;
   late final TextEditingController _description;
-  late final TextEditingController _price;
-  late final TextEditingController _credit;
-  late final TextEditingController _cost;
-  late final TextEditingController _runCount;
-  late final TextEditingController _sizes;
-  late final TextEditingController _photoUrls;
-  late final TextEditingController _sourceJson;
   late final TextEditingController _sortOrder;
-  late final TextEditingController _amounts;
+  late final TextEditingController _sourceJson;
 
+  /// One controller per schema field, keyed as `<section>.<fieldKey>` so the
+  /// pricing and details sections cannot collide on a shared key name.
+  final Map<String, TextEditingController> _fields =
+      <String, TextEditingController>{};
+  final Map<String, bool> _flags = <String, bool>{};
+
+  late PricingMode _mode;
   late bool _isActive;
-  late bool _allowOther;
   bool _saving = false;
+
+  static const String _pricing = 'pricing';
+  static const String _details = 'details';
 
   @override
   void initState() {
@@ -436,31 +451,56 @@ class _ProductFormState extends State<_ProductForm> {
     final ProductModel? p = widget.existing;
     _name = TextEditingController(text: p?.name ?? '');
     _description = TextEditingController(text: p?.description ?? '');
-    _price = TextEditingController(
-      text: p == null ? '' : p.priceCharged.toStringAsFixed(2),
-    );
-    _credit = TextEditingController(
-      text: p == null ? '' : p.promotionalCredit.toStringAsFixed(2),
-    );
-    _cost = TextEditingController(
-      text: p == null ? '' : p.unitCost.toStringAsFixed(2),
-    );
-    _runCount = TextEditingController(text: p?.runCount?.toString() ?? '');
-    _sizes = TextEditingController(text: (p?.sizes ?? <String>[]).join(', '));
-    _photoUrls = TextEditingController(text: p?.photoUrls ?? '');
-    _sourceJson = TextEditingController(text: p?.sourceJson ?? '');
     _sortOrder = TextEditingController(text: '${p?.sortOrder ?? 0}');
-    _amounts = TextEditingController(
-      text: (p?.suggestedAmounts ?? <double>[])
-          .map((double d) => d.toStringAsFixed(2))
-          .join(', '),
-    );
+    _sourceJson = TextEditingController(text: p?.sourceJson ?? '');
     _isActive = p?.isActive ?? true;
-    // Default ON for a collection: asking for a fixed donation is the unusual
-    // case, so a new charity product lets people choose unless told otherwise.
-    _allowOther =
-        p?.allowCustomAmount ??
-        (widget.tab == KennelProductsTabType.charityAndDonation);
+    _mode = p == null
+        ? defaultPricingModeFor(widget.tab.productType)
+        : pricingModeFromKey(p.pricingMode);
+    _seed(_pricing, _pricingFields, p?.pricing ?? const <String, dynamic>{});
+    _seed(_details, _detailFields, p?.details ?? const <String, dynamic>{});
+  }
+
+  List<ProductField> get _pricingFields => <ProductField>[
+    ..._mode.fields,
+    ...pricingCommonFields,
+  ];
+
+  List<ProductField> get _detailFields => fieldsForType(widget.tab.productType);
+
+  /// Build a controller (or a flag) per field from whatever the product holds.
+  void _seed(
+    String section,
+    List<ProductField> fields,
+    Map<String, dynamic> from,
+  ) {
+    for (final ProductField f in fields) {
+      final String id = '$section.${f.key}';
+      final Object? v = from[f.key];
+      if (f.kind == ProductFieldKind.boolean) {
+        _flags.putIfAbsent(
+          id,
+          () => v is bool ? v : (from.containsKey(f.key) ? false : f.defaultOn),
+        );
+        continue;
+      }
+      if (_fields.containsKey(id)) continue;
+      _fields[id] = TextEditingController(text: _asText(f.kind, v));
+    }
+  }
+
+  String _asText(ProductFieldKind kind, Object? v) {
+    if (v == null) return '';
+    return switch (kind) {
+      ProductFieldKind.textList => v is List ? v.join('\n') : '$v',
+      ProductFieldKind.moneyList => v is List
+          ? v
+                .map((Object? e) => e is num ? e.toStringAsFixed(2) : '$e')
+                .join('\n')
+          : '$v',
+      ProductFieldKind.money => v is num ? v.toStringAsFixed(2) : '$v',
+      _ => '$v',
+    };
   }
 
   @override
@@ -468,52 +508,70 @@ class _ProductFormState extends State<_ProductForm> {
     for (final TextEditingController t in <TextEditingController>[
       _name,
       _description,
-      _price,
-      _credit,
-      _cost,
-      _runCount,
-      _sizes,
-      _photoUrls,
-      _sourceJson,
       _sortOrder,
-      _amounts,
+      _sourceJson,
+      ..._fields.values,
     ]) {
       t.dispose();
     }
     super.dispose();
   }
 
-  double _money(TextEditingController t) =>
-      double.tryParse(t.text.trim().replaceAll(',', '.')) ?? 0;
-
-  /// Sizes are typed comma separated because that is how a person writes them,
-  /// and STORED as a JSON array, so the comma never has to survive a round
-  /// trip. The pipe rule applies to PhotoUrls, which is a delimited string.
-  String? _detailsJson() {
+  /// Collect one section back into a JSON map, omitting anything left blank so
+  /// the stored object holds only what was actually set.
+  Map<String, dynamic> _collect(String section, List<ProductField> fields) {
     final Map<String, dynamic> out = <String, dynamic>{};
-
-    final List<String> sizes = _sizes.text
-        .split(',')
-        .map((String s) => s.trim())
-        .where((String s) => s.isNotEmpty)
-        .toList();
-    if (sizes.isNotEmpty) out['sizes'] = sizes;
-
-    final List<double> amounts = _amounts.text
-        .split(',')
-        .map((String s) => double.tryParse(s.trim().replaceAll(',', '.')))
-        .whereType<double>()
-        .where((double d) => d > 0)
-        .toList();
-    if (amounts.isNotEmpty) out['amounts'] = amounts;
-    if (_allowOther) out['allowOther'] = true;
-
-    return out.isEmpty ? null : jsonEncode(out);
+    for (final ProductField f in fields) {
+      final String id = '$section.${f.key}';
+      if (f.kind == ProductFieldKind.boolean) {
+        if (_flags[id] ?? false) out[f.key] = true;
+        continue;
+      }
+      final String raw = (_fields[id]?.text ?? '').trim();
+      if (raw.isEmpty) continue;
+      switch (f.kind) {
+        case ProductFieldKind.money:
+          final double? d = double.tryParse(raw.replaceAll(',', '.'));
+          if (d != null) out[f.key] = d;
+        case ProductFieldKind.integer:
+          final int? i = int.tryParse(raw);
+          if (i != null) out[f.key] = i;
+        case ProductFieldKind.textList:
+          final List<String> l = raw
+              .split(RegExp(r'[\n,]'))
+              .map((String e) => e.trim())
+              .where((String e) => e.isNotEmpty)
+              .toList();
+          if (l.isNotEmpty) out[f.key] = l;
+        case ProductFieldKind.moneyList:
+          final List<double> l = raw
+              .split(RegExp(r'[\n,]'))
+              .map((String e) => double.tryParse(e.trim().replaceAll(',', '.')))
+              .whereType<double>()
+              .where((double d) => d > 0)
+              .toList();
+          if (l.isNotEmpty) out[f.key] = l;
+        case ProductFieldKind.boolean:
+          break;
+        case ProductFieldKind.text:
+        case ProductFieldKind.multiline:
+        case ProductFieldKind.date:
+          out[f.key] = raw;
+      }
+    }
+    return out;
   }
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
+
+    final Map<String, dynamic> pricing = <String, dynamic>{
+      'mode': _mode.key,
+      ..._collect(_pricing, _pricingFields),
+    };
+    final Map<String, dynamic> details = _collect(_details, _detailFields);
+
     final bool ok = await widget.controller.saveProduct(
       productId: widget.existing?.productId,
       // The tab decides the type, so nothing can be filed under the wrong
@@ -523,12 +581,8 @@ class _ProductFormState extends State<_ProductForm> {
       description: _description.text.trim().isEmpty
           ? null
           : _description.text.trim(),
-      priceCharged: _money(_price),
-      promotionalCredit: _money(_credit),
-      unitCost: _money(_cost),
-      runCount: int.tryParse(_runCount.text.trim()),
-      productDetailsJson: _detailsJson(),
-      photoUrls: _photoUrls.text.trim().isEmpty ? null : _photoUrls.text.trim(),
+      pricingJson: jsonEncode(pricing),
+      productDetailsJson: details.isEmpty ? null : jsonEncode(details),
       sourceJson: _sourceJson.text.trim().isEmpty
           ? null
           : _sourceJson.text.trim(),
@@ -542,13 +596,9 @@ class _ProductFormState extends State<_ProductForm> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isHaberdashery =
-        widget.tab == KennelProductsTabType.haberdashery;
-    final bool isRunPackage = widget.tab == KennelProductsTabType.runPackages;
-    // A collection has no single price: the hasher picks from suggested
-    // amounts or types their own, and the amount lands on the payment.
-    final bool isCollection =
-        widget.tab == KennelProductsTabType.charityAndDonation;
+    final List<PricingMode> modes =
+        pricingModesForType[widget.tab.productType] ??
+        const <PricingMode>[PricingMode.fixed];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -593,93 +643,58 @@ class _ProductFormState extends State<_ProductForm> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: _moneyField(
-                    _price,
-                    isCollection ? 'Default amount' : 'Price charged *',
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(child: _moneyField(_credit, 'Promotional credit')),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: <Widget>[
-                Expanded(child: _moneyField(_cost, 'Unit cost')),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                    controller: _sortOrder,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Sort order',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (isRunPackage) ...<Widget>[
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _runCount,
-                keyboardType: TextInputType.number,
+
+            _section('Pricing'),
+            if (modes.length > 1) ...<Widget>[
+              DropdownButtonFormField<PricingMode>(
+                initialValue: _mode,
                 decoration: const InputDecoration(
-                  labelText: 'Runs included',
-                  helperText: 'How many runs this package is worth',
+                  labelText: 'How it is priced',
                   border: OutlineInputBorder(),
+                ),
+                items: modes
+                    .map(
+                      (PricingMode m) => DropdownMenuItem<PricingMode>(
+                        value: m,
+                        child: Text(m.label),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (PricingMode? m) {
+                  if (m == null || m == _mode) return;
+                  // Seed the new mode's fields before switching, so nothing
+                  // already typed is lost and no controller is missing.
+                  setState(() {
+                    _mode = m;
+                    _seed(
+                      _pricing,
+                      _pricingFields,
+                      widget.existing?.pricing ?? const <String, dynamic>{},
+                    );
+                  });
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 6, bottom: 4),
+                child: Text(
+                  _mode.blurb,
+                  style: const TextStyle(fontSize: 12, color: _kMuted),
                 ),
               ),
             ],
-            if (isCollection) ...<Widget>[
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _amounts,
-                decoration: const InputDecoration(
-                  labelText: 'Suggested amounts',
-                  helperText:
-                      'Comma separated, for example 5, 10, 20. Leave blank to '
-                      'offer no set amounts.',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                value: _allowOther,
-                onChanged: (bool v) => setState(() => _allowOther = v),
-                title: const Text(
-                  'Allow "Other"',
-                  style: TextStyle(fontSize: 14, color: _kBody),
-                ),
-                subtitle: const Text(
-                  'Let the hasher type their own amount. With this off and no '
-                  'suggested amounts, the price above is the only option.',
-                  style: TextStyle(fontSize: 12, color: _kMuted),
-                ),
-              ),
+            ..._renderFields(_pricing, _pricingFields),
+
+            if (_detailFields.isNotEmpty) ...<Widget>[
+              _section(widget.tab.title),
+              ..._renderFields(_details, _detailFields),
             ],
-            if (isHaberdashery) ...<Widget>[
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _sizes,
-                decoration: const InputDecoration(
-                  labelText: 'Sizes',
-                  helperText: 'Comma separated, for example S, M, L, XL, XXL',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
+
+            _section('Admin'),
             TextFormField(
-              controller: _photoUrls,
-              maxLines: 2,
+              controller: _sortOrder,
+              keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: 'Photo URLs',
-                helperText: 'Separate several with a pipe: a.jpg|b.jpg',
+                labelText: 'Sort order',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -693,16 +708,7 @@ class _ProductFormState extends State<_ProductForm> {
                     '{"supplier":"…","phone":"…"}',
                 border: OutlineInputBorder(),
               ),
-              validator: (String? v) {
-                final String t = (v ?? '').trim();
-                if (t.isEmpty) return null;
-                try {
-                  jsonDecode(t);
-                  return null;
-                } catch (_) {
-                  return 'That is not valid JSON';
-                }
-              },
+              validator: _jsonValidator,
             ),
             const SizedBox(height: 12),
             SwitchListTile(
@@ -759,12 +765,88 @@ class _ProductFormState extends State<_ProductForm> {
     );
   }
 
-  Widget _moneyField(TextEditingController c, String label) => TextFormField(
-    controller: c,
-    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-    decoration: InputDecoration(
-      labelText: label,
-      border: const OutlineInputBorder(),
+  String? _jsonValidator(String? v) {
+    final String t = (v ?? '').trim();
+    if (t.isEmpty) return null;
+    try {
+      jsonDecode(t);
+      return null;
+    } catch (_) {
+      return 'That is not valid JSON';
+    }
+  }
+
+  Widget _section(String title) => Padding(
+    padding: const EdgeInsets.only(top: 20, bottom: 10),
+    child: Row(
+      children: <Widget>[
+        Text(
+          title.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.8,
+            color: _kMuted,
+          ),
+        ),
+        const SizedBox(width: 10),
+        const Expanded(child: Divider(color: _kLine)),
+      ],
     ),
   );
+
+  List<Widget> _renderFields(String section, List<ProductField> fields) {
+    final List<Widget> out = <Widget>[];
+    for (final ProductField f in fields) {
+      final String id = '$section.${f.key}';
+      if (f.kind == ProductFieldKind.boolean) {
+        out.add(
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _flags[id] ?? false,
+            onChanged: (bool v) => setState(() => _flags[id] = v),
+            title: Text(
+              f.label,
+              style: const TextStyle(fontSize: 14, color: _kBody),
+            ),
+            subtitle: f.helper == null
+                ? null
+                : Text(
+                    f.helper!,
+                    style: const TextStyle(fontSize: 12, color: _kMuted),
+                  ),
+          ),
+        );
+        continue;
+      }
+      final bool multi =
+          f.kind == ProductFieldKind.textList ||
+          f.kind == ProductFieldKind.moneyList ||
+          f.kind == ProductFieldKind.multiline;
+      out.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: TextFormField(
+            controller: _fields[id],
+            maxLines: multi ? 3 : 1,
+            keyboardType: switch (f.kind) {
+              ProductFieldKind.money => const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              ProductFieldKind.integer => TextInputType.number,
+              _ => TextInputType.text,
+            },
+            decoration: InputDecoration(
+              labelText: f.label,
+              helperText: f.helper,
+              helperMaxLines: 3,
+              hintText: f.kind == ProductFieldKind.date ? 'YYYY-MM-DD' : null,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+        ),
+      );
+    }
+    return out;
+  }
 }

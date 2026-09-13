@@ -44,6 +44,7 @@ export 'package:hcportal/admin_pages/newsflash/newsflash_management_controller.d
 export 'package:hcportal/admin_pages/newsflash/newsflash_management_page.dart';
 export 'package:hcportal/models/newsflash_admin_model.dart';
 export 'package:hcportal/models/product_model.dart';
+export 'package:hcportal/models/product_schema.dart';
 export 'package:hcportal/models/newsflash_model.dart';
 export 'package:hcportal/models/newsflash_reader_model.dart';
 export 'package:hcportal/queries/location_query.dart';

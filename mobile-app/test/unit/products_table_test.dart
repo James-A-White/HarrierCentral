@@ -27,9 +27,9 @@ void main() {
         helper.colKennelId: 'kennel-1',
         helper.colProductType: 4,
         helper.colName: name,
-        helper.colPriceCharged: 70.0,
-        helper.colPromotionalCredit: 7.0,
-        helper.colUnitCost: 0.0,
+        helper.colPricingJson:
+            '{"mode":"fixed","price":70,"promotionalCredit":7,"runsIncluded":11}',
+        helper.colProductDetailsJson: '{"photos":[]}',
         helper.colIsActive: 1,
         helper.colSortOrder: 0,
         helper.colRemoved: 0,

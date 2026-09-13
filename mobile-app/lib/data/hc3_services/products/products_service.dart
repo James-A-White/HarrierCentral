@@ -37,10 +37,13 @@ class ProductsTableHelper extends BaseTableHelper<AppDomainType>
   final String colProductType = 'productType';
   final String colName = 'name';
   final String colDescription = 'description';
-  final String colPriceCharged = 'priceCharged';
-  final String colPromotionalCredit = 'promotionalCredit';
-  final String colUnitCost = 'unitCost';
-  final String colRunCount = 'runCount';
+  // Pricing and the group's rules are JSON, not columns. A product may be one
+  // price, a member and non-member price, a choice of amounts, a price per
+  // size, or a deposit and a balance, and four numeric columns could express
+  // exactly one of those (James, 2026-09-13). Nothing on the phone sums the
+  // catalogue — payments carry the money actually taken.
+  final String colPricingJson = 'pricingJson';
+  final String colProductDetailsJson = 'productDetailsJson';
   final String colIsActive = 'isActive';
   final String colSortOrder = 'sortOrder';
 
@@ -60,10 +63,8 @@ class ProductsTableHelper extends BaseTableHelper<AppDomainType>
             $colProductType INT NOT NULL,
             $colName TEXT NOT NULL,
             $colDescription TEXT,
-            $colPriceCharged REAL NOT NULL,
-            $colPromotionalCredit REAL NOT NULL,
-            $colUnitCost REAL NOT NULL,
-            $colRunCount INT,
+            $colPricingJson TEXT,
+            $colProductDetailsJson TEXT,
             $colIsActive INT NOT NULL,
             $colSortOrder INT NOT NULL,
             $colRemoved INT NOT NULL,
@@ -82,10 +83,10 @@ class ProductsTableHelper extends BaseTableHelper<AppDomainType>
   /// every product row is inserted stripped to nothing. Products was the only
   /// helper of eleven missing it (found 2026-09-13).
   ///
-  /// productDetailsJson and photoUrls are DELIBERATELY not in this list. The
-  /// server sends them, but the phone has no shop yet, so it has no column for
-  /// them and drops them here. Adding them means adding columns to
-  /// [createTable], which means a DB_VERSION bump to force the reload.
+  /// Both JSON fields ARE in this list as of 2026-09-13 — the phone needs the
+  /// pricing model and the group's rules to render a shop. SourceJson is not,
+  /// and never will be: the server does not send it, because a supplier's
+  /// phone number has no business on a hasher's device.
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
     const List<String> wanted = <String>[
@@ -94,10 +95,8 @@ class ProductsTableHelper extends BaseTableHelper<AppDomainType>
       'productType',
       'name',
       'description',
-      'priceCharged',
-      'promotionalCredit',
-      'unitCost',
-      'runCount',
+      'pricingJson',
+      'productDetailsJson',
       'isActive',
       'sortOrder',
       'removed',

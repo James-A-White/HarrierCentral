@@ -100,15 +100,13 @@ BEGIN TRY
         p.ProductType        AS productType,
         p.Name               AS name,
         p.Description        AS description,
-        p.PriceCharged       AS priceCharged,
-        p.PromotionalCredit  AS promotionalCredit,
-        p.UnitCost           AS unitCost,
-        -- What the kennel keeps on each sale. Computed here rather than in
-        -- the client so every surface reports the same margin.
-        p.PriceCharged - p.UnitCost AS margin,
-        p.RunCount           AS runCount,
+        -- Pricing is one json field: a product may be one price, a member
+        -- and non-member price, a choice of amounts, a price per size, or a
+        -- deposit and a balance. Margin is no longer computed here — there
+        -- is not always a single price to subtract a cost from, so the
+        -- client derives it from the mode.
+        p.PricingJson        AS pricingJson,
         p.ProductDetailsJson AS productDetailsJson,
-        p.PhotoUrls          AS photoUrls,
         p.SourceJson         AS sourceJson,
         p.IsActive           AS isActive,
         p.SortOrder          AS sortOrder,

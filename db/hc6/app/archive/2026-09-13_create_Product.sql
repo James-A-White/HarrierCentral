@@ -131,9 +131,11 @@ BEGIN
         [createdAt]         DATETIMEOFFSET(7) NOT NULL
             CONSTRAINT [DF_Product_createdAt] DEFAULT (SYSDATETIMEOFFSET()),
 
-        -- Sync bookkeeping, mirroring HC.Song: the writers set updatedAt
-        -- explicitly (this table has no trigger), and updatedAtBias keeps a
-        -- page boundary deterministic when many rows share a timestamp.
+        -- Sync bookkeeping. ⚠ SUPERSEDED 2026-09-13: this table now HAS an
+        -- UpdatedAt trigger (2026-09-13_create_Product_updatedAt_trigger.sql),
+        -- because "the writers set it explicitly" is a promise every future
+        -- writer has to keep and the failure is silent. Any ALTER ADD COLUMN
+        -- here must now disable that trigger first.
         [updatedAt]         DATETIMEOFFSET(7) NOT NULL
             CONSTRAINT [DF_Product_updatedAt] DEFAULT (SYSDATETIMEOFFSET()),
         [updatedAtBias]     INT              NOT NULL

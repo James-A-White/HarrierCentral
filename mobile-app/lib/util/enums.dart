@@ -1019,6 +1019,17 @@ const List<({EnumProductType type, String label})> productTypeChoices =
   (type: productTypeCharityDonation, label: 'Charity & Donation'),
 ];
 
+/// Plain-English name for a PricingJson "mode". Kept beside the product type
+/// labels so both clients name the same thing the same way.
+String productPricingModeLabel(String mode) => switch (mode) {
+  'fixed' => 'One price',
+  'memberTiered' => 'Member / non-member',
+  'choice' => 'Choice of amounts',
+  'perVariant' => 'Price per size',
+  'deposit' => 'Deposit + balance',
+  _ => 'Priced in the portal',
+};
+
 String productTypeLabel(int value) {
   for (final c in productTypeChoices) {
     if (c.type.value == value) return c.label;

@@ -301,12 +301,12 @@ BEGIN
         p.ProductType                                                       AS productType,
         p.Name                                                              AS name,
         p.Description                                                       AS description,
-        p.PriceCharged                                                      AS priceCharged,
-        p.PromotionalCredit                                                 AS promotionalCredit,
-        p.UnitCost                                                          AS unitCost,
-        p.RunCount                                                          AS runCount,
+        -- Pricing is ONE json field, not four columns: a product may be one
+        -- price, a member and non-member price, a choice of amounts, a price
+        -- per size, or a deposit and a balance. Nothing sums the catalogue —
+        -- the accounting sums HC.Payment, whose amount columns are untouched.
+        p.PricingJson                                                       AS pricingJson,
         p.ProductDetailsJson                                                AS productDetailsJson,
-        p.PhotoUrls                                                         AS photoUrls,
         -- p.SourceJson is DELIBERATELY ABSENT. It holds the supplier's name
         -- and phone number, which is kennel admin data; this rowset goes to
         -- every phone for every kennel, so it must not carry it. Because

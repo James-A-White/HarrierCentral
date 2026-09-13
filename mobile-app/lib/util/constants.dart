@@ -212,15 +212,21 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-// 540, not 531: a gap of TEN or more is what makes _handleExistingUser treat
-// the local database as too far behind and run _handleDbUpgrade — wipe,
-// re-authorise, full reload (the test is `installedDbVersion + 9 < DB_VERSION`).
+// A gap of TEN or more is what makes _handleExistingUser treat the local
+// database as too far behind and run _handleDbUpgrade — wipe, re-authorise,
+// full reload (the test is `installedDbVersion + 9 < DB_VERSION`).
 //
-// 3.1 needs that reload rather than a migration: the UNIQUE index on each
-// table's server id has to land on FRESH schema, and the wipe also clears the
-// duplicate rows already stuck on people's phones, which no migration could
-// find reliably (James, 2026-09-02).
-const int DB_VERSION = 540;
+// 530 -> 540 (2026-09-02): 3.1 needs a reload rather than a migration, because
+// the UNIQUE index on each table's server id has to land on FRESH schema, and
+// the wipe also clears the duplicate rows already stuck on people's phones,
+// which no migration could find reliably (James).
+//
+// 540 -> 550 (2026-09-13): the products table lost its four price columns and
+// gained pricingJson + productDetailsJson. A 3.1 phone already carries the old
+// shape, and the server no longer sends priceCharged at all — which would fail
+// the NOT NULL on that column — so those phones must rebuild, not migrate.
+// Only internal testers are on 540, so the cost is one reload each.
+const int DB_VERSION = 550;
 
 const double CLEAR_LATLONG = -2.0;
 

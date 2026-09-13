@@ -50,6 +50,7 @@ class ProductEditorController extends GetxController {
     required double unitCost,
     int? runCount,
     required bool isActive,
+    String? productDetailsJson,
   }) async {
     busy.value = true;
     status.value = '';
@@ -60,10 +61,19 @@ class ProductEditorController extends GetxController {
         productType: productType,
         name: name,
         description: description.isEmpty ? null : description,
-        priceCharged: priceCharged,
-        promotionalCredit: promotionalCredit,
-        unitCost: unitCost,
-        runCount: runCount,
+        // The phone only writes the "fixed" pricing mode. Member/non-member
+        // prices, a choice of amounts, a price per size and deposit-plus-
+        // balance are set in the portal, which has the room to edit them
+        // properly. Editing such a product here would silently flatten it, so
+        // the list marks those read-only instead.
+        pricingJson: jsonEncode(<String, dynamic>{
+          'mode': 'fixed',
+          'price': priceCharged,
+          if (unitCost != 0) 'unitCost': unitCost,
+          if (promotionalCredit != 0) 'promotionalCredit': promotionalCredit,
+          if (runCount != null) 'runsIncluded': runCount,
+        }),
+        productDetailsJson: productDetailsJson,
         isActive: isActive,
       );
       if (id == null) {
@@ -155,10 +165,15 @@ class ProductEditorPage extends StatelessWidget {
     ProductEditorController c,
     KennelProduct p,
   ) {
-    final String money = p.promotionalCredit > 0
-        ? '${p.priceCharged.toStringAsFixed(2)}  +  '
+    final double? headline = p.headlinePrice;
+    final String money = headline == null
+        // A mode with no single price, such as a collection offering a choice.
+        // Naming the mode is honest; inventing a number is not.
+        ? productPricingModeLabel(p.pricingMode)
+        : p.promotionalCredit > 0
+        ? '${headline.toStringAsFixed(2)}  +  '
               '${p.promotionalCredit.toStringAsFixed(2)} credit'
-        : p.priceCharged.toStringAsFixed(2);
+        : headline.toStringAsFixed(2);
     return InkWell(
       onTap: () => _edit(context, c, p),
       child: Container(
@@ -248,16 +263,17 @@ class _ProductFormState extends State<_ProductForm> {
     text: widget.existing?.description ?? '',
   );
   late final TextEditingController _price = TextEditingController(
-    text: (widget.existing?.priceCharged ?? 0).toStringAsFixed(2),
+    text: (widget.existing?.headlinePrice ?? 0).toStringAsFixed(2),
   );
   late final TextEditingController _promo = TextEditingController(
     text: (widget.existing?.promotionalCredit ?? 0).toStringAsFixed(2),
   );
   late final TextEditingController _cost = TextEditingController(
-    text: (widget.existing?.unitCost ?? 0).toStringAsFixed(2),
+    text: ((widget.existing?.pricing['unitCost'] as num?)?.toDouble() ?? 0)
+        .toStringAsFixed(2),
   );
   late final TextEditingController _runs = TextEditingController(
-    text: widget.existing?.runCount?.toString() ?? '',
+    text: widget.existing?.runsIncluded?.toString() ?? '',
   );
   late int _type = widget.existing?.productType ?? productTypeRunPackage.value;
   late bool _isActive = widget.existing?.isActive ?? true;
