@@ -1,0 +1,44 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_addEditProduct",
+  "version": "1.0.0",
+  "description": "Creates or edits one catalogue entry from the portal Products view. Portal twin of hcapp_addEditProduct: same table and rules, portal auth instead of device auth. Never deletes — taking something off sale is isActive = 0.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Portal device-bound auth" },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Short-lived portal access token" },
+    { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Kennel.PublicKennelId", "description": "Routing: which kennel owns the product" },
+    { "name": "productId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Product.id", "description": "NULL creates; otherwise edits that product, which must belong to this kennel" },
+    { "name": "productType", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Product.ProductType", "description": "2 membership, 3 haberdashery, 4 run package, 5 away weekend" },
+    { "name": "name", "type": "NVARCHAR(200)", "nullable": true, "mapsToColumn": "Product.Name", "description": "Required in practice; a blank name is rejected" },
+    { "name": "description", "type": "NVARCHAR(4000)", "nullable": true, "mapsToColumn": "Product.Description", "description": "Free text shown to the hasher" },
+    { "name": "priceCharged", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "Product.PriceCharged", "description": "What the hasher pays" },
+    { "name": "promotionalCredit", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "Product.PromotionalCredit", "description": "Credit granted on top of the cash" },
+    { "name": "unitCost", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "Product.UnitCost", "description": "What it costs the kennel to supply" },
+    { "name": "runCount", "type": "SMALLINT", "nullable": true, "mapsToColumn": "Product.RunCount", "description": "Runs a package is worth; NULL otherwise" },
+    { "name": "productDetailsJson", "type": "NVARCHAR(4000)", "nullable": true, "mapsToColumn": "Product.ProductDetailsJson", "description": "Per-type display detail. Rejected if not valid JSON" },
+    { "name": "photoUrls", "type": "NVARCHAR(2000)", "nullable": true, "mapsToColumn": "Product.PhotoUrls", "description": "Pipe-delimited product photo URLs, never comma-delimited" },
+    { "name": "sourceJson", "type": "NVARCHAR(4000)", "nullable": true, "mapsToColumn": "Product.SourceJson", "description": "Supplier detail. Rejected if not valid JSON. Never syncs to phones" },
+    { "name": "isActive", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Product.IsActive", "description": "On sale. Setting 0 is how a product is retired; the row keeps syncing" },
+    { "name": "sortOrder", "type": "INT", "nullable": false, "mapsToColumn": "Product.SortOrder", "description": "Display order within the kennel" }
+  ],
+  "rowsets": [
+    { "index": 0, "name": "SuccessEnvelope", "description": "Success = 1 with NULL ErrorMessage, or Success = 0 with the reason.", "columns": [
+      { "name": "Success", "type": "INT", "nullable": false, "description": "1 or 0" },
+      { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Reason when Success = 0" }
+    ]},
+    { "index": 1, "name": "ProductId", "description": "Only present when Success = 1.", "columns": [
+      { "name": "productId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The created or edited product id" }
+    ]}
+  ],
+  "sideEffects": [
+    "Inserts or updates one HC.Product row",
+    "Sets Product.updatedAt explicitly; HC.Product has no UpdatedAt trigger, so omitting it would stop the row reaching phones"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "This SP must never delete a product; retirement is isActive = 0"
+  ]
+}

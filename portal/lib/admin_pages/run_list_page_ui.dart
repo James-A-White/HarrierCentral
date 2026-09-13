@@ -2,6 +2,8 @@
 
 import 'package:hcportal/admin_pages/checkin_sheet/checkin_sheet_ui.dart';
 import 'package:hcportal/admin_pages/kennel_page_new/kennel_page_new_ui.dart';
+import 'package:hcportal/admin_pages/kennel_products_page/kennel_products_controller.dart';
+import 'package:hcportal/admin_pages/kennel_products_page/kennel_products_ui.dart';
 import 'package:hcportal/admin_pages/kennel_website_page/kennel_website_page_controller.dart';
 import 'package:hcportal/admin_pages/kennel_website_page/kennel_website_page_ui.dart';
 import 'package:hcportal/admin_pages/run_list_detail_panel.dart';
@@ -631,6 +633,29 @@ class RunListPage extends StatelessWidget {
               }
             },
           ),
+        // Gated on the 'manageProducts' function key, resolved server-side in
+        // hcportal_getLandingPageData so this button and the SP's own
+        // CheckKennelPermission gate cannot drift apart.
+        if (k.canManageProducts == 1)
+          (
+            label: 'Products',
+            icon: Icons.card_giftcard,
+            isPrimary: false,
+            onTap: () async {
+              // The controller is registered permanent: true inside the page,
+              // so GetX never disposes it. Deleting after the page returns is
+              // what stops the next kennel opening on this one's catalogue.
+              await Get.delete<KennelProductsController>(force: true);
+              await Get.to<KennelProductsEditPage>(
+                () => KennelProductsEditPage(
+                  key: UniqueKey(),
+                  publicKennelId: k.publicKennelId,
+                  kennelName: k.kennelShortName,
+                ),
+              );
+              await Get.delete<KennelProductsController>(force: true);
+            },
+          ),
         if (k.canEditWebsite == 1)
           (
             label: 'Edit Website',
@@ -919,6 +944,25 @@ class RunListPage extends StatelessWidget {
                     force: true,
                   );
                 }
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+          // Parity with the admin rail: a kennel with no runs yet is exactly
+          // when someone sets up the catalogue, so Products belongs here too.
+          if (formController.kennel.canManageProducts == 1) ...[
+            _appBarBtn(
+              'Products',
+              onPressed: () async {
+                await Get.delete<KennelProductsController>(force: true);
+                await Get.to<KennelProductsEditPage>(
+                  () => KennelProductsEditPage(
+                    key: UniqueKey(),
+                    publicKennelId: formController.kennel.publicKennelId,
+                    kennelName: formController.kennel.kennelShortName,
+                  ),
+                );
+                await Get.delete<KennelProductsController>(force: true);
               },
             ),
             const SizedBox(height: 16),

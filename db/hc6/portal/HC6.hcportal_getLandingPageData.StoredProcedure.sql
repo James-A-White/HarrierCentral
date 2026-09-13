@@ -145,6 +145,25 @@ BEGIN TRY
                           WHEN kr.Allowed = 0 THEN COALESCE(gr.Allowed, 0)
                           ELSE COALESCE(gr.Allowed, 0) END = 1
            ) THEN 1 ELSE 0 END as canDesignWebsite
+    -- May the current user manage THIS kennel's product catalogue? Same
+    -- effective-grant logic again, for FunctionKey 'manageProducts' — GM,
+    -- VGM, Hash Cash, Haberdasher, or the ManageHashCash flag. Gates the
+    -- Products button on the run list page. The UI gate and the SP gate
+    -- (HC6.CheckKennelPermission in hcportal_getKennelProducts) must agree,
+    -- or the button appears and the server then refuses it.
+    , CASE WHEN (hkm.AppAccessFlags & 0x40000000) <> 0 THEN 1
+           WHEN EXISTS (
+               SELECT 1 FROM HC.PermissionFunction f
+               JOIN HC.PermissionRole g
+                 ON ((g.GrantorType = 'mmRole'  AND (hkm.MismanagementRoles & g.Bit) <> 0)
+                  OR (g.GrantorType = 'appFlag' AND (hkm.AppAccessFlags     & g.Bit) <> 0))
+               LEFT JOIN HC.RolePermission kr ON kr.FunctionId = f.id AND kr.GrantorId = g.id AND kr.KennelId = k.id
+               LEFT JOIN HC.RolePermission gr ON gr.FunctionId = f.id AND gr.GrantorId = g.id AND gr.KennelId IS NULL
+               WHERE f.FunctionKey = 'manageProducts'
+                 AND CASE WHEN kr.Allowed = 1 THEN 1 WHEN kr.Allowed = -1 THEN 0
+                          WHEN kr.Allowed = 0 THEN COALESCE(gr.Allowed, 0)
+                          ELSE COALESCE(gr.Allowed, 0) END = 1
+           ) THEN 1 ELSE 0 END as canManageProducts
     FROM
     HC.Hasher h
     INNER JOIN HC.HasherKennelMap hkm on hkm.UserId = h.id

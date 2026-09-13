@@ -29,6 +29,10 @@ abstract class HasherKennelsModel with _$HasherKennelsModel {
     // this kennel, computed server-side in hcportal_getLandingPageData. 1 = allowed.
     @Default(0) int canEditWebsite,
     @Default(0) int canDesignWebsite,
+    // May this user manage the kennel's product catalogue? Computed
+    // server-side in hcportal_getLandingPageData from the 'manageProducts'
+    // function key, so the button and the SP gate cannot drift apart.
+    @Default(0) int canManageProducts,
     required int defaultTags1,
     required int defaultTags2,
     required int defaultTags3,
