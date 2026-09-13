@@ -78,6 +78,44 @@ namespace HcWebApi.Endpoints
             int storedCount = written.Stored;
             int resumeDeleted = written.ResumeDeleted;
 
+            // Record the GPS settings on the attendance row, once. Written only
+            // when it differs from what is there, so the usual batch costs
+            // nothing; a mid-run change to the setting overwrites, which is the
+            // honest answer to "what was this recorded with" when it changed.
+            // updatedAt is assigned to itself: the sync trigger skips its stamp
+            // only for writes to the four track columns, and this is not one of
+            // them, so a plain write would re-sync the row every time.
+            if (!string.IsNullOrWhiteSpace(payload.Gps) && storedCount > 0)
+            {
+                try
+                {
+                    string? connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString");
+                    if (!string.IsNullOrWhiteSpace(connectionString))
+                    {
+                        using Microsoft.Data.SqlClient.SqlConnection gpsConn = new(connectionString);
+                        await gpsConn.OpenAsync();
+                        using Microsoft.Data.SqlClient.SqlCommand gpsCmd = new(
+                            "UPDATE HC.HasherEventMap " +
+                            "   SET TrackGpsSettings = @gps, updatedAt = updatedAt " +
+                            " WHERE EventId = @eventId AND UserId = @userId AND removed = 0 " +
+                            "   AND (TrackGpsSettings IS NULL OR TrackGpsSettings <> @gps);",
+                            gpsConn)
+                        { CommandTimeout = 10 };
+                        gpsCmd.Parameters.Add("@gps", System.Data.SqlDbType.NVarChar, 400).Value =
+                            payload.Gps!.Length > 400 ? payload.Gps!.Substring(0, 400) : payload.Gps!;
+                        gpsCmd.Parameters.Add("@eventId", System.Data.SqlDbType.UniqueIdentifier).Value = Guid.Parse(payload.EventId);
+                        gpsCmd.Parameters.Add("@userId", System.Data.SqlDbType.UniqueIdentifier).Value = Guid.Parse(payload.UserId);
+                        await gpsCmd.ExecuteNonQueryAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Never fail an upload of real positions over a note about
+                    // the settings they were captured with.
+                    _log.LogWarning(ex, "StorePositions: could not record GPS settings.");
+                }
+            }
+
             // Piggyback the event-level "tracking ended" flag (set by an admin
             // via EndEventTracking) on the response: every phone still
             // uploading points sees it within one flush interval and stops its
@@ -135,6 +173,11 @@ namespace HcWebApi.Endpoints
             // prior terminator (On Inn) rows for this user+event. Optional —
             // absent/false from older clients, and ignored by older servers.
             [JsonProperty("resumed")] public bool Resumed { get; set; }
+            // The GPS parameters the phone actually used, as a JSON string
+            // (2026-09-13). Stored against the track so a tier's name can be
+            // interpreted later — the tiers have been redefined between builds.
+            // Optional: absent from older clients, ignored by older servers.
+            [JsonProperty("gps")] public string? Gps { get; set; }
         }
 
         internal class PositionItem

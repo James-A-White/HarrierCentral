@@ -287,6 +287,30 @@ BEGIN TRY
 
 		UNION ALL
 
+		-- PackTrack: individual tracks captured — one per runner per run, so a
+		-- run twelve people tracked counts twelve (James, 2026-09-13). Dated by
+		-- the track's FIRST POINT, which is when it was actually captured;
+		-- updatedAt would date it by the nightly archive instead, bunching
+		-- every one of a day's tracks into the small hours of the next.
+		SELECT
+			'PackTrack' AS dataType,
+			10 AS id,
+			SUM(CASE WHEN hem.TrackFirstPointAt >= b.hr1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN hem.TrackFirstPointAt >= b.hr2 AND hem.TrackFirstPointAt < b.hr1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN hem.TrackFirstPointAt >= b.d1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN hem.TrackFirstPointAt >= b.d2 AND hem.TrackFirstPointAt < b.d1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN hem.TrackFirstPointAt >= b.w1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN hem.TrackFirstPointAt >= b.w2 AND hem.TrackFirstPointAt < b.w1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN hem.TrackFirstPointAt >= b.m1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN hem.TrackFirstPointAt >= b.m2 AND hem.TrackFirstPointAt < b.m1 THEN 1 ELSE 0 END)
+		FROM HC.HasherEventMap hem WITH (NOLOCK)
+		CROSS JOIN DateBounds b
+		WHERE hem.removed = 0
+			AND hem.TrackPointCount > 0
+			AND hem.TrackFirstPointAt >= b.m2
+
+		UNION ALL
+
 		-- Push (FCM notifications dispatched to mobile devices only)
 		SELECT
 			'Push' AS dataType,

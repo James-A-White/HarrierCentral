@@ -66,6 +66,33 @@ Duration _trackingAndroidInterval() {
   }
 }
 
+/// The GPS parameters ACTUALLY in force for tracking, as JSON, to be stored
+/// against the track (2026-09-13).
+///
+/// The tier's NAME is not enough. These tiers have been redefined between
+/// builds — the Android cadence went from 15s/15s/15min to 15s/1min/15min —
+/// so "Balanced" does not say what a track was recorded with unless the build
+/// is recorded beside it. Hence the resolved values AND the build number.
+String trackingGpsSettingsJson() {
+  final int tier = getIntPref(IntPrefsEnum.trackingQuality) ?? 2;
+  const List<String> names = <String>['Power Saver', 'Balanced', 'Best'];
+  return jsonEncode(<String, dynamic>{
+    'tier': tier,
+    'tierName': tier >= 0 && tier < names.length ? names[tier] : 'Best',
+    'accuracy': _trackingAccuracy().name,
+    'distanceFilterM': _trackingDistanceFilter(),
+    // iOS has no update interval — it reports on movement — so it is recorded
+    // as absent there rather than as a number that does nothing.
+    'intervalSec': Platform.isAndroid
+        ? _trackingAndroidInterval().inSeconds
+        : null,
+    'platform': Platform.isAndroid ? 'android' : 'ios',
+    // "3.0.32+1347" — stamped at boot. The build is what makes the tier names
+    // above mean something later.
+    'build': getStringPref(StringPrefsEnum.lastSessionErrorLogVersion) ?? '',
+  });
+}
+
 class LocationService extends GetxService {
   /// Returns the registered service, registering one if it has gone.
   ///

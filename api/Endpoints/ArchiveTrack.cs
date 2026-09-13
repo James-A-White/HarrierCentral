@@ -306,6 +306,10 @@ namespace HcWebApi.Endpoints
             byte[] blob = TrackArchiveCodec.Encode(points);
             DateTime firstAt = DateTimeOffset.FromUnixTimeMilliseconds(points[0].TimestampMs).UtcDateTime;
             DateTime lastAt = DateTimeOffset.FromUnixTimeMilliseconds(points[^1].TimestampMs).UtcDateTime;
+            // Measured here because the points are already decoded and in
+            // order: doing it later would mean decoding every blob again, and
+            // SQL cannot measure a gzipped delta stream at all (2026-09-13).
+            TrackStats? stats = TrackStats.Measure(points);
 
             // A replace, never an append: the row ends up holding exactly this
             // track however many times it is archived. TrackPointCount is
@@ -323,6 +327,13 @@ namespace HcWebApi.Endpoints
                 "   SET TrackGzip = @blob, TrackPointCount = @count, " +
                 "       TrackFirstPointAt = ISNULL(TrackFirstPointAt, @firstAt), " +
                 "       TrackLastPointAt  = ISNULL(TrackLastPointAt,  @lastAt), " +
+                "       TrackDistanceM = @distanceM, " +
+                "       TrackMovingSeconds = @movingSec, " +
+                "       TrackElevationGainM = @climbM, " +
+                "       TrackStartLat = @startLat, TrackStartLng = @startLng, " +
+                "       TrackEndLat   = @endLat,   TrackEndLng   = @endLng, " +
+                "       TrackMinLat   = @minLat,   TrackMinLng   = @minLng, " +
+                "       TrackMaxLat   = @maxLat,   TrackMaxLng   = @maxLng, " +
                 "       updatedAt = SYSDATETIME() " +
                 " WHERE EventId = @eventId AND UserId = @userId AND removed = 0;",
                 conn) { CommandTimeout = 10 };
@@ -330,6 +341,19 @@ namespace HcWebApi.Endpoints
             cmd.Parameters.Add("@count", SqlDbType.Int).Value = points.Count;
             cmd.Parameters.Add("@firstAt", SqlDbType.DateTime2).Value = firstAt;
             cmd.Parameters.Add("@lastAt", SqlDbType.DateTime2).Value = lastAt;
+            // A track that measures to nothing (one usable fix, or every point
+            // a typed mark) writes NULLs rather than a misleading zero.
+            cmd.Parameters.Add("@distanceM", SqlDbType.Int).Value = (object?)stats?.DistanceM ?? DBNull.Value;
+            cmd.Parameters.Add("@movingSec", SqlDbType.Int).Value = (object?)stats?.MovingSeconds ?? DBNull.Value;
+            cmd.Parameters.Add("@climbM", SqlDbType.Int).Value = (object?)stats?.ElevationGainM ?? DBNull.Value;
+            cmd.Parameters.Add("@startLat", SqlDbType.Decimal).Value = (object?)stats?.StartLat ?? DBNull.Value;
+            cmd.Parameters.Add("@startLng", SqlDbType.Decimal).Value = (object?)stats?.StartLng ?? DBNull.Value;
+            cmd.Parameters.Add("@endLat", SqlDbType.Decimal).Value = (object?)stats?.EndLat ?? DBNull.Value;
+            cmd.Parameters.Add("@endLng", SqlDbType.Decimal).Value = (object?)stats?.EndLng ?? DBNull.Value;
+            cmd.Parameters.Add("@minLat", SqlDbType.Decimal).Value = (object?)stats?.MinLat ?? DBNull.Value;
+            cmd.Parameters.Add("@minLng", SqlDbType.Decimal).Value = (object?)stats?.MinLng ?? DBNull.Value;
+            cmd.Parameters.Add("@maxLat", SqlDbType.Decimal).Value = (object?)stats?.MaxLat ?? DBNull.Value;
+            cmd.Parameters.Add("@maxLng", SqlDbType.Decimal).Value = (object?)stats?.MaxLng ?? DBNull.Value;
             cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventId;
             cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = userId;
             int rows = await cmd.ExecuteNonQueryAsync();

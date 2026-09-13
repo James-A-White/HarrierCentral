@@ -347,6 +347,42 @@ BEGIN TRY
 	END
 
 	-- =============================================
+	-- CATEGORY 10: PackTrack — one row per captured track
+	-- =============================================
+	IF (@categoryId = 10)
+	BEGIN
+		SELECT
+			hem.TrackFirstPointAt                         AS updatedAt,
+			COALESCE(h.HashName, h.DisplayName, '')       AS hashName,
+			COALESCE(k.KennelShortName, '')               AS kennel,
+			e.EventNumber                                 AS runNumber,
+			COALESCE(e.EventName, '')                     AS runName,
+			hem.TrackPointCount                           AS points,
+			hem.TrackDistanceM                            AS distanceM,
+			hem.TrackMovingSeconds                        AS movingSeconds,
+			hem.TrackPaceSecPerKm                         AS paceSecPerKm,
+			hem.TrackElevationGainM                       AS elevationGainM,
+			hem.TrackGpsSettings                          AS gpsSettings,
+			-- The public map for the run. Per RUN, not per runner: the web page
+			-- is addressed by kennel slug and run number and shows everyone who
+			-- tracked it (James, 2026-09-13). Blank for an uncounted run, which
+			-- has no such page.
+			CASE WHEN e.IsCountedRun = 1 AND NULLIF(k.KennelUniqueShortName, '') IS NOT NULL
+				 THEN CONCAT('https://www.hashruns.org/', k.KennelUniqueShortName,
+							 '/', e.EventNumber, '/packtrack')
+			END                                           AS publicUrl
+		FROM HC.HasherEventMap hem WITH (NOLOCK)
+		INNER JOIN HC.Event  e WITH (NOLOCK) ON e.id = hem.EventId
+		LEFT OUTER JOIN HC.Kennel k WITH (NOLOCK) ON k.id = e.KennelId
+		LEFT OUTER JOIN HC.Hasher h WITH (NOLOCK) ON h.id = hem.UserId
+		WHERE hem.removed = 0
+			AND hem.TrackPointCount > 0
+			AND hem.TrackFirstPointAt > @cutoffDate
+		ORDER BY hem.TrackFirstPointAt DESC
+		OPTION (RECOMPILE)
+	END
+
+	-- =============================================
 	-- CATEGORY 100: Version Adoption
 	-- =============================================
 	IF (@categoryId = 100)

@@ -303,6 +303,12 @@ class RunPointBuffer {
       'userId': userId,
       'positions': batch.map((p) => p.toJson()).toList(),
       if (carriesResumedFlag) 'resumed': true,
+      // What the GPS was actually set to for this track (2026-09-13). Sent on
+      // every batch rather than once, because a batch can be the first the
+      // server sees after a restart, and because the setting can be changed
+      // mid-run; the server only writes it when it differs, so the cost is one
+      // extra field on the wire.
+      'gps': trackingGpsSettingsJson(),
     });
 
     // Simple retry with backoff for transient errors
