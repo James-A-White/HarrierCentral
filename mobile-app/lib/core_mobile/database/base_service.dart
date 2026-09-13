@@ -646,7 +646,28 @@ class BaseService<TDomain> {
           // did our query of the localDb return a record based on the remoteDbId?
           if (localDbRecord.isEmpty) {
             // no, the record does not yet exist, so add a new one
-            batch.insert(tableName, fieldsOnTheWire);
+            // INSERT OR REPLACE, not a plain insert. The UNIQUE index on the
+            // remote id (3.1) turns the double-insert race from SILENT
+            // DUPLICATION into a thrown constraint violation, so without this
+            // sync would start failing loudly on exactly the bug the index is
+            // meant to fix.
+            //
+            // The race: this pre-scan found no local row, but an overlapping
+            // apply — a write SP's sync rowset, applied outside the
+            // AsyncSerializer — inserted one before this batch commits. Both
+            // rows carry the same server data, so replacing is right: the
+            // server is the truth and the newest read of it wins.
+            //
+            // It costs the row's LOCAL-ONLY columns (TrackIndex's bounds,
+            // simplified path and distance on the attendance row), because
+            // REPLACE deletes the old row rather than merging. Those are
+            // derived and refill themselves on the next look — see
+            // TrackIndex.ensureIndexed.
+            batch.insert(
+              tableName,
+              fieldsOnTheWire,
+              conflictAlgorithm: ConflictAlgorithm.replace,
+            );
             insertCounter++;
           } else {
             // get the internal SQFLite primary key of the record we want to update

@@ -449,6 +449,17 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 540 — 3.1: UNIQUE index on every synced table's server id.
+    // Intentionally EMPTY. A ten-version jump sends every upgrading device
+    // through _handleDbUpgrade instead, which wipes and reloads, so the
+    // constraints are created with the tables rather than retro-fitted onto
+    // rows that may already contain the duplicates they forbid.
+    MigrationsModel(
+      dbVersion: 540,
+      appliedAtInt: 0,
+      migrationText: '',
+    ),
+
     // MIGRATION 530 — how far each trail actually is (E5.F7.S1, James
     // 2026-09-12): the trails map shows a total for what is on screen. Local
     // only, like the bounds and the simplified path — TrackIndex measures it

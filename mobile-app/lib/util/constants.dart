@@ -212,7 +212,15 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 530;
+// 540, not 531: a gap of TEN or more is what makes _handleExistingUser treat
+// the local database as too far behind and run _handleDbUpgrade — wipe,
+// re-authorise, full reload (the test is `installedDbVersion + 9 < DB_VERSION`).
+//
+// 3.1 needs that reload rather than a migration: the UNIQUE index on each
+// table's server id has to land on FRESH schema, and the wipe also clears the
+// duplicate rows already stuck on people's phones, which no migration could
+// find reliably (James, 2026-09-02).
+const int DB_VERSION = 540;
 
 const double CLEAR_LATLONG = -2.0;
 

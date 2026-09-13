@@ -113,7 +113,16 @@ class PaymentsTableHelper extends BaseTableHelper<AppDomainType>
     dynamic appDomainType,
   ) async {
     await db.execute(
-      'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);',
+      // UNIQUE, not a plain index (3.1, James 2026-09-02): the local tables
+      // had no unique constraint on the server id, so two overlapping applies
+      // could both pre-scan, both miss, and both insert the same row. Once
+      // doubled it is sticky — the pre-scan keeps one twin and deltas only
+      // ever update that one, so it never heals. The constraint is the
+      // backstop; serialising the applies is the intent.
+      // Paired with INSERT OR REPLACE in BaseService.bulkUpdateDatabase and a
+      // +10 DB_VERSION bump, which recreates every table so this lands on
+      // fresh schema with no dedupe migration.
+      'CREATE UNIQUE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);',
     );
     await db.execute(
       'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);',
