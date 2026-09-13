@@ -2,6 +2,20 @@
 
 ---
 
+## 2.0.74+709 (2026-09-13)
+
+### New Features
+- **PackTrack counter on Usage Data.** Counts the individual tracks
+  captured — one per runner per run — over the hour, day, week and month,
+  like the other activity rows.
+- **Click it for the detail**: hash name, kennel, run, distance, moving
+  time, pace, climb, the GPS settings the track was recorded with, and a
+  link to the run's public map.
+
+### Improvements
+- **A URL in any drill-down is now a link** you can open in a new tab,
+  rather than an address to read off the screen and retype.
+
 ## 2.0.73+708 (2026-09-12)
 
 ### Fixes
