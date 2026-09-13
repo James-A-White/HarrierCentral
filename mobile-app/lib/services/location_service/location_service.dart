@@ -893,7 +893,12 @@ class LocationService extends GetxService {
   /// run. All clients and GetPositions treat data before AST / after AEN as
   /// out-of-bounds. Reversible: move = drop a newer marker (newest wins);
   /// clear = delete it via DeletePositions.
-  Future<void> markBoundaryAt({
+  /// Returns true when the marker actually reached the server.
+  ///
+  /// One-shot: there is no retry timer behind this buffer, so a false here
+  /// means the boundary was NOT set and the caller must say so rather than
+  /// claim success.
+  Future<bool> markBoundaryAt({
     required HashRunPointTypes boundaryType,
     required int timestampMs,
     required String overrideEventId,
@@ -922,8 +927,9 @@ class LocationService extends GetxService {
       userId: overrideUserId,
     );
     buf.enqueue(point);
-    await buf.flush();
+    final bool sent = await buf.flush();
     buf.dispose();
+    return sent;
   }
 
   // Private method to handle location updates from the stream/one-time fetch.
