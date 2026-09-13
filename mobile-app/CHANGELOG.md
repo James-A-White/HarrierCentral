@@ -1,3 +1,19 @@
+## 3.1.0+1353 (2026-09-13)
+
+**Fixes the build that would not start.** 3.1.0+1350 and +1352 stopped on
+"Database Version Mismatch" and could not get past it. The missing record is
+added, and a test now catches that mistake before a build is ever cut rather
+than after it reaches a phone.
+
+Everything in 3.0.35 is here too:
+
+### Fixes
+- **The award list no longer says a run has no awards when it simply could
+  not load**, and offers a Try again button plus a toolbar refresh.
+- **Opening a run's admin screens no longer empties them when the refresh
+  fails.** The app now fetches first and only clears the old data once the
+  new data is in hand. Attendee and RSVP lists are covered by the same fix.
+
 ## 3.1.0+1352 (2026-09-13)
 
 Everything in 3.0.34, on the 3.1 catalogue train. 1351 was skipped: that
