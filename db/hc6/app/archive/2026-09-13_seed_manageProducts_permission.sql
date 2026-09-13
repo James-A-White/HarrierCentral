@@ -32,13 +32,18 @@ SET NOCOUNT ON;
 
 DECLARE @functionId INT;
 
+-- id is an IDENTITY column, so it is never supplied: let SQL Server assign it
+-- and read it back. SortOrder 46 puts this at the end of Kennel Tools, after
+-- manageKennelSettings (45).
 IF NOT EXISTS (SELECT 1 FROM HC.PermissionFunction WHERE FunctionKey = 'manageProducts')
 BEGIN
-    -- Explicit id: the table is seeded data with stable ids quoted by the
-    -- grant rows below, not an identity nobody looks at.
-    SET @functionId = (SELECT ISNULL(MAX(id), 0) + 1 FROM HC.PermissionFunction);
-    INSERT HC.PermissionFunction (id, FunctionKey)
-    VALUES (@functionId, 'manageProducts');
+    -- Surfaces 3 = app AND portal (manageKennelSettings is 3; editWebsite,
+    -- portal-only, is 2). The catalogue is edited from both clients, so 3.
+    -- AreaKey matches PermissionArea.kennelTools in kennel_permissions.dart.
+    INSERT HC.PermissionFunction
+        (FunctionKey, DisplayName, FeatureArea, HareScoped, SortOrder, Surfaces, AreaKey)
+    VALUES ('manageProducts', 'Manage products (catalogue)', 'Kennel Tools', 0, 46, 3, 'kennelTools');
+    SET @functionId = CONVERT(INT, SCOPE_IDENTITY());
     PRINT CONCAT('PermissionFunction manageProducts added as id ', @functionId);
 END
 ELSE
