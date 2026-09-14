@@ -1,3 +1,13 @@
+## 3.1.0+1361 (2026-09-15)
+### Fixes
+- Chat room notification buttons were grey text on a grey background. They are
+  now white on red when chosen and white on dark when not.
+- The pin is larger and clearer, and an unpinned chat shows a pin with a line
+  through it rather than a faint outline.
+- **Server fix (no app change needed)**: changing a chat room's notification
+  setting failed with "could not be saved". A database rule written before chat
+  rooms existed refused every room write.
+
 ## 3.1.0+1359 (2026-09-15)
 ### New Features
 - **Pinned chats**: Chats you pin stay at the top of the chat list. Your home
