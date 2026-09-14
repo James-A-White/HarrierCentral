@@ -165,6 +165,14 @@ BEGIN
         COALESCE(h.Photo, '')                                               AS photo,
         COALESCE(h.NameDisplayPreference, 0)                                AS dispPref,
         COALESCE(h.IncludeInGlobalHashDirectory, 0)                         AS includeInGlobalHashDirectory,
+        -- Chat-room pin preferences (E9.F1.S8). This rowset is GLOBAL — every
+        -- hasher updated since the watermark — so the values are masked to the
+        -- CALLER. Another hasher's pin preferences are none of this device's
+        -- business, and broadcasting them would ship 10,284 rows of noise.
+        CASE WHEN h.id = @userId THEN COALESCE(h.UnpinnedMismanagementRooms, 0)
+             ELSE 0 END                                                     AS unpinnedMismanagementRooms,
+        CASE WHEN h.id = @userId THEN COALESCE(h.UnpinnedAppAccessRooms, 0)
+             ELSE 0 END                                                     AS unpinnedAppAccessRooms,
         CONVERT(NVARCHAR(50), CAST(COALESCE(h.updatedAt, GETDATE()) AS DATETIME2)) AS updatedAt,
         COALESCE(h.Removed, 0)                                              AS removed
     FROM HC.Hasher h
@@ -437,6 +445,10 @@ BEGIN
         0                                                                   AS authorizedDeviceCount,
         hkm.KennelUserPhoto                                                 AS kennelUserPhoto,
         hkm.KennelHashName                                                  AS kennelHashName,
+        -- Pinned chat (E9.F1.S8). NULL means "use the default", which is
+        -- pinned for the home kennel; the phone applies that rule so the
+        -- default can change without a backfill.
+        hkm.Pinned                                                          AS pinned,
         hkm.removed                                                         AS removed,
         CONVERT(NVARCHAR(50), CAST(hkm.updatedAt AS DATETIME2))             AS updatedAt
     FROM HC.HasherKennelMap hkm
@@ -496,6 +508,9 @@ BEGIN
         evt.KennelId                                                        AS hemEventKennelId,
         hkm.KennelUserPhoto                                                 AS hemKennelUserPhoto,
         hkm.KennelHashName                                                  AS hemKennelHashName,
+        -- Pinned chat (E9.F1.S8). A run never auto-pins and a run pin never
+        -- expires, so two states are enough.
+        COALESCE(hem.Pinned, 0)                                             AS pinned,
         hem.removed                                                         AS removed,
         CONVERT(NVARCHAR(50), CAST(hem.updatedAt AS DATETIME2))             AS updatedAt
     FROM HC.HasherEventMap hem

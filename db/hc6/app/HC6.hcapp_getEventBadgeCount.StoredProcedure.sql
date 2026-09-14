@@ -267,7 +267,9 @@ SELECT
     -- this: a run's START time is not when people talked about it, and the
     -- list now keeps threads after they are read, so it needs a real
     -- most-recent order (James, 2026-09-13).
-    t.LastMessageAt         AS LastMessageAt
+    t.LastMessageAt         AS LastMessageAt,
+    -- Pinned (E9.F1.S8). A run never auto-pins, so absent means 0.
+    ISNULL(hem.Pinned, 0)   AS Pinned
 FROM (
     SELECT em.EventId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -291,7 +293,7 @@ OUTER APPLY (
     WHERE h.KennelId = e.KennelId AND h.UserId = @userId
 ) AS hkm
 OUTER APPLY (
-    SELECT TOP 1 1 AS Found, h.EventNotificationPreference
+    SELECT TOP 1 1 AS Found, h.EventNotificationPreference, h.Pinned
     FROM HC.HasherEventMap h
     WHERE h.EventId = e.id AND h.UserId = @userId
 ) AS hem
@@ -335,7 +337,13 @@ SELECT
     k.KennelShortName,
     k.KennelLogo,
     t.MsgCount                                     AS MessageCount,
-    t.LastMessageAt                                AS LastMessageAt
+    t.LastMessageAt                                AS LastMessageAt,
+    -- Pinned (E9.F1.S8), tri-state resolved here: an explicit 0/1 is the
+    -- hasher's choice, and NULL falls back to the default, which is pinned
+    -- for the home kennel only (James, 2026-09-14).
+    CASE WHEN hkm.Pinned IS NOT NULL THEN hkm.Pinned
+         WHEN hkm.IsHomeKennel = 1   THEN 1
+         ELSE 0 END                                AS Pinned
 FROM (
     SELECT em.KennelId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -350,7 +358,7 @@ INNER JOIN HC.Kennel k ON k.id = t.KennelId
 -- fan out into duplicate rows for the same kennel thread; it also filters
 -- to followed kennels (no HKM row ⇒ no row).
 CROSS APPLY (
-    SELECT TOP 1 h.KennelNotificationPreference
+    SELECT TOP 1 h.KennelNotificationPreference, h.Pinned, h.IsHomeKennel
     FROM HC.HasherKennelMap h
     WHERE h.KennelId = t.KennelId AND h.UserId = @userId
 ) AS hkm
