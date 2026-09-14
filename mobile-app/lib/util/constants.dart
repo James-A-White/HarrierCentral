@@ -226,6 +226,19 @@ const String DB_NAME = 'HcDb.db';
 // shape, and the server no longer sends priceCharged at all — which would fail
 // the NOT NULL on that column — so those phones must rebuild, not migrate.
 // Only internal testers are on 540, so the cost is one reload each.
+// ⚠ THE TWO TRAINS MUST STAY 20 APART. 3.1 is 551, 3.0.x is 531.
+//
+// A device upgrading from 3.0.x to 3.1 has to WIPE AND RELOAD rather than
+// migrate, because this train's local schema (the JSON product catalogue, the
+// UNIQUE indexes) is not reachable by ALTER from that one. The boot check is
+//     (installedDbVersion + 9) < DB_VERSION     app_boot_service.dart
+// so the crossing only reloads while the gap stays above 9.
+//
+// Therefore: bumping this train means bumping the OTHER by the same amount, in
+// the same change. Bump only one and the gap closes; the crossing silently
+// becomes an in-place migration onto a schema that does not exist, which is
+// the "Database Version Mismatch" that blocked 3.1.0+1350 and +1352
+// (James, 2026-09-15).
 const int DB_VERSION = 551;
 
 const double CLEAR_LATLONG = -2.0;
