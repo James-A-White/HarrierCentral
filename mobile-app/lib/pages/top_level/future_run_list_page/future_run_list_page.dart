@@ -841,7 +841,10 @@ class FutureRunsListPage extends StatelessWidget {
   /// run name/number, date, and the unread-message count. Taps straight into the
   /// chat, so it works even for runs that aren't synced locally.
   Widget _chatRunRow(EventChatSummary s) {
-    final String title = s.isKennelThread
+    // A room has no kennel, no run number and no date — its name IS the row.
+    final String title = s.isRoomThread
+        ? (s.eventName ?? 'Chat room')
+        : s.isKennelThread
         ? '${s.kennelShortName ?? s.eventName ?? 'Kennel'} Kennel Chat'
         : (s.kennelShortName != null && s.eventNumber != null)
         ? '${s.kennelShortName} #${s.eventNumber}'
@@ -858,7 +861,12 @@ class FutureRunsListPage extends StatelessWidget {
       elevation: 3,
       margin: const EdgeInsets.only(top: 10.0),
       child: ListTile(
-        leading: KennelLogo(
+        leading: s.isRoomThread
+            ? SizedBox(
+                width: 48,
+                child: Icon(Icons.forum_outlined, color: hc_red, size: 30),
+              )
+            : KennelLogo(
           kennelId: s.kennelId,
           kennelLogoUrl: s.kennelLogo,
           kennelShortName: s.kennelShortName ?? '',
@@ -868,9 +876,18 @@ class FutureRunsListPage extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if ((s.eventName ?? '').isNotEmpty)
+            if (!s.isRoomThread && (s.eventName ?? '').isNotEmpty)
               Text(
                 s.eventName!,
+                style: ts_footnoteBlack,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            if (s.isRoomThread)
+              Text(
+                s.messageCount == 0
+                    ? 'No messages yet'
+                    : 'Harrier Central chat room',
                 style: ts_footnoteBlack,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -881,7 +898,9 @@ class FutureRunsListPage extends StatelessWidget {
         // A read thread keeps its place in the list and simply loses the
         // badge (James, 2026-09-13) — a chevron says it is still a thread you
         // can open, rather than leaving a hole where the badge was.
-        trailing: s.badgeCount > 0
+        trailing: s.pinned && s.badgeCount == 0
+            ? const Icon(Icons.push_pin, color: Colors.black38, size: 18)
+            : s.badgeCount > 0
             ? Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
@@ -898,6 +917,22 @@ class FutureRunsListPage extends StatelessWidget {
               )
             : const Icon(Icons.chevron_right, color: Colors.black38),
         onTap: () async {
+          // A room is named by its type alone — no event, no kennel.
+          if (s.isRoomThread) {
+            await Get.to(
+              () => ChatScaffold.room(
+                roomType: s.roomType!,
+                title: title,
+                key: UniqueKey(),
+              ),
+            );
+            if (Get.isRegistered<NotificationService>()) {
+              unawaited(
+                Get.find<NotificationService>().getEventChatMessageCounts(),
+              );
+            }
+            return;
+          }
           final bool kennelThread = s.isKennelThread;
           if (!kennelThread && s.eventId == null) return;
           if (kennelThread && (s.publicKennelId ?? '').isEmpty) return;
@@ -1537,6 +1572,10 @@ class EventChatSummary {
   /// run's start time is not when people talked about it.
   final String? lastMessageAt;
 
+  /// A platform-wide room (admins, GMs, RAs...) rather than a run or kennel
+  /// thread. Null for the other two kinds.
+  final int? roomType;
+
   /// Pinned chats sort above everything else (E9.F1.S8). Resolved by the SP,
   /// so the tri-state kennel default (pinned for the home kennel) is already
   /// applied and the app does not re-derive it.
@@ -1546,6 +1585,7 @@ class EventChatSummary {
     required this.publicEventId,
     required this.badgeCount,
     this.pinned = false,
+    this.roomType,
     this.eventId,
     this.eventName,
     this.eventNumber,
@@ -1562,6 +1602,9 @@ class EventChatSummary {
   /// Kennel-thread rows (kennel-level chat) carry kennelId/publicKennelId and
   /// have NO event identity.
   bool get isKennelThread => eventId == null && kennelId != null;
+
+  /// A platform-wide room — no run, no kennel, just a room type.
+  bool get isRoomThread => roomType != null;
 
   /// The same thread with a different unread count — used when a chat is
   /// opened, so the row loses its badge but STAYS in the list (James,
@@ -1580,6 +1623,8 @@ class EventChatSummary {
     kennelLogo: kennelLogo,
     messageCount: messageCount,
     lastMessageAt: lastMessageAt,
+    pinned: pinned,
+    roomType: roomType,
   );
 
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
@@ -1599,6 +1644,7 @@ class EventChatSummary {
       lastMessageAt: json['LastMessageAt']?.toString(),
       // SMALLINT on the wire, but the `== true` guard costs nothing.
       pinned: json['Pinned'] == true || json['Pinned'] == 1,
+      roomType: (json['RoomType'] as num?)?.toInt(),
     );
   }
 

@@ -287,7 +287,26 @@ class SettingsPage extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 4,
             children: <Widget>[
-              Text(room.roomName, style: ts_body, textAlign: TextAlign.center),
+              // Tappable, so a quiet UNPINNED room can still be opened from
+              // here — otherwise the only way in would be to pin it first and
+              // go looking in the chat list (James, 2026-09-15).
+              InkWell(
+                onTap: () => Get.to(
+                  () => ChatScaffold.room(
+                    roomType: room.roomType,
+                    title: room.roomName,
+                    key: UniqueKey(),
+                  ),
+                ),
+                child: Text(
+                  room.roomName,
+                  style: ts_body.copyWith(
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.white54,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               IconButton(
                 visualDensity: VisualDensity.compact,
                 tooltip: room.pinned ? 'Unpin from the chat list'

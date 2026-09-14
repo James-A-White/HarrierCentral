@@ -269,7 +269,8 @@ SELECT
     -- most-recent order (James, 2026-09-13).
     t.LastMessageAt         AS LastMessageAt,
     -- Pinned (E9.F1.S8). A run never auto-pins, so absent means 0.
-    ISNULL(hem.Pinned, 0)   AS Pinned
+    ISNULL(hem.Pinned, 0)   AS Pinned,
+    CAST(NULL AS INT)       AS RoomType
 FROM (
     SELECT em.EventId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -343,7 +344,8 @@ SELECT
     -- for the home kennel only (James, 2026-09-14).
     CASE WHEN hkm.Pinned IS NOT NULL THEN hkm.Pinned
          WHEN hkm.IsHomeKennel = 1   THEN 1
-         ELSE 0 END                                AS Pinned
+         ELSE 0 END                                AS Pinned,
+    CAST(NULL AS INT)                              AS RoomType
 FROM (
     SELECT em.KennelId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -367,7 +369,112 @@ OUTER APPLY (
     FROM HC.EventMessageBadgeCounts b
     WHERE b.KennelId = t.KennelId AND b.UserId = @userId AND b.EventId IS NULL
     ORDER BY b.Removed, b.LastSequenceCount DESC
-) AS embc;
+) AS embc
+
+UNION ALL
+
+-- ---------------------------------------------------------------
+-- PINNED kennel threads that have NO messages yet (E9.F1.S8).
+--
+-- A SEPARATE arm rather than loosening the one above, and deliberately so:
+-- that arm is driven by HC.EventMessage, so a kennel nobody has posted in
+-- produces no row at all. Auto-pinning the home kennel would then do nothing
+-- visible for the 292 hashers who have one, because only 1 of 390 kennels
+-- has ever had a kennel-chat message.
+--
+-- Restructuring that arm to be driven from HasherKennelMap would have put
+-- every existing kennel thread through new join logic. This set is DISJOINT
+-- from it (NOT EXISTS any message), so nothing already working changes shape
+-- and no row can appear twice.
+-- ---------------------------------------------------------------
+SELECT
+    0                                              AS BadgeCount,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicEventId,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS EventId,
+    k.KennelName                                   AS EventName,
+    0                                              AS EventNumber,
+    CAST(NULL AS DATETIMEOFFSET(7))                AS EventStartDatetimeGmt,
+    CAST(NULL AS NVARCHAR(500))                    AS EventImage,
+    k.id                                           AS KennelId,
+    k.PublicKennelId                               AS PublicKennelId,
+    k.KennelShortName,
+    k.KennelLogo,
+    0                                              AS MessageCount,
+    CAST(NULL AS DATETIMEOFFSET(7))                AS LastMessageAt,
+    1                                              AS Pinned,
+    CAST(NULL AS INT)                              AS RoomType
+FROM HC.Kennel k
+CROSS APPLY (
+    -- TOP 1 for the same reason as above: HasherKennelMap is not guaranteed
+    -- unique per (user, kennel).
+    SELECT TOP 1 h.Pinned, h.IsHomeKennel
+    FROM HC.HasherKennelMap h
+    WHERE h.KennelId = k.id AND h.UserId = @userId
+    ORDER BY h.Pinned DESC
+) AS hkm
+WHERE k.Removed = 0
+  AND (CASE WHEN hkm.Pinned IS NOT NULL THEN hkm.Pinned
+            WHEN hkm.IsHomeKennel = 1   THEN 1
+            ELSE 0 END) = 1
+  AND NOT EXISTS (
+        SELECT 1 FROM HC.EventMessage em
+        WHERE em.KennelId = k.id AND em.EventId IS NULL AND em.Removed = 0)
+
+UNION ALL
+
+-- ---------------------------------------------------------------
+-- PLATFORM-WIDE ROOMS (E9.F1.S8) — admins, GMs, RAs and whatever the
+-- catalogue grows. Driven from HC6.ChatRoomCatalog() rather than from
+-- messages, so a room appears the moment a hasher's role grants it, with no
+-- message needed. Every one of these is empty today; being listed is how
+-- they get used at all.
+--
+-- Opted-out rooms (ParticipationState 2) are omitted entirely — that state
+-- means "do not participate", and the room is not to be listed. Unpinned is
+-- NOT the same thing and still appears.
+-- ---------------------------------------------------------------
+SELECT
+    CASE WHEN ISNULL(embc.ParticipationState, 0) = 2 THEN 0
+         ELSE ISNULL(t.MaxSeq, 0) - ISNULL(embc.LastSequenceCount, 0)
+    END                                            AS BadgeCount,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicEventId,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS EventId,
+    c.RoomName                                     AS EventName,
+    0                                              AS EventNumber,
+    CAST(NULL AS DATETIMEOFFSET(7))                AS EventStartDatetimeGmt,
+    CAST(NULL AS NVARCHAR(500))                    AS EventImage,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS KennelId,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicKennelId,
+    CAST(NULL AS NVARCHAR(250))                    AS KennelShortName,
+    CAST(NULL AS NVARCHAR(500))                    AS KennelLogo,
+    ISNULL(t.MsgCount, 0)                          AS MessageCount,
+    t.LastMessageAt                                AS LastMessageAt,
+    -- Rooms default to pinned; the mirrors store the deviations.
+    CASE WHEN (c.GrantColumn = 'mm'
+               AND (ISNULL(hs.UnpinnedMismanagementRooms, 0) & c.GrantMask) <> 0)
+           OR (c.GrantColumn = 'flags'
+               AND (ISNULL(hs.UnpinnedAppAccessRooms, 0) & c.GrantMask) <> 0)
+         THEN 0 ELSE 1 END                         AS Pinned,
+    c.RoomType                                     AS RoomType
+FROM HC6.ChatRoomCatalog() c
+LEFT JOIN HC.Hasher hs ON hs.id = @userId
+OUTER APPLY (
+    SELECT MAX(em.MessageSequenceCount) AS MaxSeq,
+           COUNT(*)                     AS MsgCount,
+           MAX(em.createdAt)            AS LastMessageAt
+    FROM HC.EventMessage em
+    WHERE em.EventId IS NULL AND em.KennelId IS NULL AND em.ThreadId IS NULL
+      AND em.MessageType = c.RoomType AND em.Removed = 0
+) AS t
+OUTER APPLY (
+    SELECT TOP 1 b.LastSequenceCount, b.ParticipationState
+    FROM HC.EventMessageBadgeCounts b
+    WHERE b.UserId = @userId AND b.EventId IS NULL AND b.KennelId IS NULL
+      AND b.ThreadId IS NULL AND b.MessageType = c.RoomType
+    ORDER BY b.Removed, b.LastSequenceCount DESC
+) AS embc
+WHERE HC6.UserMayEnterChatRoom(@userId, c.RoomType) = 1
+  AND ISNULL(embc.ParticipationState, 0) <> 2;
 
 END TRY
 BEGIN CATCH
