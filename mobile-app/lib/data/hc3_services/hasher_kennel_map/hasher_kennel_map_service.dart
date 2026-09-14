@@ -43,6 +43,8 @@ class HasherKennelMapTableHelper extends BaseTableHelper<AppDomainType>
   final String colFollowing = 'following';
   final String colIsMember = 'isMember';
   final String colIsHomeKennel = 'isHomeKennel';
+  /// Tri-state: NULL = default (pinned when isHomeKennel), 0/1 = explicit.
+  final String colPinned = 'pinned';
   final String colKennelNotificationPreference = 'kennelNotificationPreference';
   final String colKennelEmailAlertPreference = 'kennelEmailAlertPreference';
   final String colAuthorizedDeviceList = 'authorizedDeviceList';
@@ -82,6 +84,7 @@ class HasherKennelMapTableHelper extends BaseTableHelper<AppDomainType>
             $colFollowing INT NOT NULL,
             $colIsMember INT NOT NULL,
             $colIsHomeKennel INT NOT NULL,
+            $colPinned INT,
             $colKennelNotificationPreference INT NOT NULL,
             $colKennelEmailAlertPreference INT NOT NULL,
             $colAuthorizedDeviceList TEXT,

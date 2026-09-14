@@ -64,6 +64,7 @@ class SettingsPageController extends GetxController {
       roomName: room.roomName,
       unreadCount: room.unreadCount,
       participationState: value,
+      pinned: room.pinned,
     );
 
     savingRoomType.value = room.roomType;

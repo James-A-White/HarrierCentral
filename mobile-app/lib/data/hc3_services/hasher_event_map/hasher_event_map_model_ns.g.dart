@@ -53,6 +53,7 @@ _HasherEventMapModel _$HasherEventMapModelFromJson(Map<String, dynamic> json) =>
           ?.toInt(),
       hemKennelUserPhoto: json['hemKennelUserPhoto'] as String?,
       hemKennelHashName: json['hemKennelHashName'] as String?,
+      pinned: (json['pinned'] as num?)?.toInt(),
       removed: (json['removed'] as num?)?.toInt(),
       updatedAt: json['updatedAt'] == null
           ? null
@@ -100,6 +101,7 @@ Map<String, dynamic> _$HasherEventMapModelToJson(
   'hemEventIsCountedAndVisible': instance.hemEventIsCountedAndVisible,
   'hemKennelUserPhoto': instance.hemKennelUserPhoto,
   'hemKennelHashName': instance.hemKennelHashName,
+  'pinned': instance.pinned,
   'removed': instance.removed,
   'updatedAt': instance.updatedAt?.toIso8601String(),
 };

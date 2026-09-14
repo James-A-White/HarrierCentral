@@ -73,17 +73,11 @@ Future<void> openChatThread({
   required bool isKennelThread,
 }) async {
   await Get.to(
-    () => Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        backgroundColor: themeButtonColors,
-        foregroundColor: Colors.white,
-      ),
-      body: ChatPage(
-        eventId: threadId,
-        publicEventId: publicThreadId,
-        isKennelThread: isKennelThread,
-      ),
+    () => ChatScaffold(
+      title: title,
+      eventId: threadId,
+      publicEventId: publicThreadId,
+      isKennelThread: isKennelThread,
     ),
   );
   if (Get.isRegistered<NotificationService>()) {

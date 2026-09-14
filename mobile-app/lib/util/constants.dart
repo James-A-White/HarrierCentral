@@ -226,7 +226,7 @@ const String DB_NAME = 'HcDb.db';
 // shape, and the server no longer sends priceCharged at all — which would fail
 // the NOT NULL on that column — so those phones must rebuild, not migrate.
 // Only internal testers are on 540, so the cost is one reload each.
-const int DB_VERSION = 550;
+const int DB_VERSION = 551;
 
 const double CLEAR_LATLONG = -2.0;
 

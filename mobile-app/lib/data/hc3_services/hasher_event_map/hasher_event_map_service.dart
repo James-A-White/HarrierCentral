@@ -52,6 +52,9 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
   final String colNotesShared = 'notesShared';
   // The hasher's own PackTrack trail, as archived on the server (user sync
   // only): gzipped delta-coded points, base64 on the wire and in this column.
+  /// Pinned chat (E9.F1.S8). Two-state; a run never auto-pins, and a run pin
+  /// never expires — the system does not undo what the hasher did.
+  final String colPinned = 'pinned';
   final String colTrackGzip = 'trackGzip';
   final String colTrackPointCount = 'trackPointCount';
   final String colTrackFirstPointAt = 'trackFirstPointAt';
@@ -112,6 +115,7 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
             $colNotes TEXT,
             $colNotesVisibility INT,
             $colNotesShared INT,
+            $colPinned INT,
             $colTrackGzip TEXT,
             $colTrackPointCount INT,
             $colTrackFirstPointAt TEXT,

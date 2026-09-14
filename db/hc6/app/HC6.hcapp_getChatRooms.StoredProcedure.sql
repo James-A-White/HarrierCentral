@@ -31,7 +31,7 @@ AS
 --
 -- Returns: rowset 0 — one row per room the hasher may enter:
 --   roomType, roomName, sortOrder, unreadCount, newestSequenceCount,
---   participationState
+--   participationState, pinned
 -- Author: Harrier Central
 -- Created: 2026-09-14
 -- HC5 Source: none (new)
@@ -79,8 +79,16 @@ BEGIN TRY
                  WHERE em.EventId IS NULL AND em.KennelId IS NULL AND em.ThreadId IS NULL
                    AND em.MessageType = c.RoomType
                    AND em.Removed = 0), 0)           AS newestSequenceCount,
-        ISNULL(b.ParticipationState, 0)              AS participationState
+        ISNULL(b.ParticipationState, 0)              AS participationState,
+        -- Rooms default to PINNED; the mirrors store the deviations, so a
+        -- SET bit means the hasher turned that room off (E9.F1.S8).
+        CASE WHEN (c.GrantColumn = 'mm'
+                   AND (ISNULL(hs.UnpinnedMismanagementRooms, 0) & c.GrantMask) <> 0)
+               OR (c.GrantColumn = 'flags'
+                   AND (ISNULL(hs.UnpinnedAppAccessRooms, 0) & c.GrantMask) <> 0)
+             THEN 0 ELSE 1 END                       AS pinned
     FROM HC6.ChatRoomCatalog() c
+    LEFT JOIN HC.Hasher hs ON hs.id = @userId
     -- The badge row is per hasher per room. LEFT JOIN because a room never
     -- opened has no row yet, and that must read as "nothing read", not as
     -- "no room".

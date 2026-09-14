@@ -449,6 +449,28 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 551 — pinned chats (E9.F1.S8). Pin lives on records that
+    // already sync, so it survives a reload and follows the hasher between
+    // devices. A real ALTER rather than an empty record: 551 is one step from
+    // 550, so an upgrading device migrates in place and keeps its data.
+    //
+    // hem/hkm pinned exist in all three domains (one CREATE TABLE each); only
+    // the user sync fills them. hashers is common-only.
+    MigrationsModel(
+      dbVersion: 551,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colPinned} INT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colPinned} INT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colPinned} INT;
+        ALTER TABLE ${EnumDataTables.hasherKennelMap.commonTableName} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colPinned} INT;
+        ALTER TABLE ${EnumDataTables.hasherKennelMap.kennelTableName} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colPinned} INT;
+        ALTER TABLE ${EnumDataTables.hasherKennelMap.eventTableName} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colPinned} INT;
+        ALTER TABLE ${EnumDataTables.hashers.commonTableName} ADD COLUMN ${tableModel.hashersTableHelper.colUnpinnedMismanagementRooms} INT;
+        ALTER TABLE ${EnumDataTables.hashers.commonTableName} ADD COLUMN ${tableModel.hashersTableHelper.colUnpinnedAppAccessRooms} INT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
     // MIGRATION 550 — 3.1: the catalogue moved onto JSON. HC.Product lost its
     // four price columns and gained pricingJson + productDetailsJson.
     //

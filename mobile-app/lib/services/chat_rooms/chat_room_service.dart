@@ -20,6 +20,7 @@ class ChatRoom {
     required this.roomName,
     required this.unreadCount,
     required this.participationState,
+    required this.pinned,
   });
 
   /// Matches HC.EventMessage.MessageType, so it is permanent once a room has
@@ -34,6 +35,9 @@ class ChatRoom {
   /// and a fourth state would not need a build.
   final int participationState;
 
+  /// Rooms default to pinned; the server sends the resolved answer.
+  final bool pinned;
+
   bool get wantsPush => participationState == kRoomParticipatePush;
   bool get isOptedOut => participationState == kRoomOptOut;
 
@@ -43,6 +47,7 @@ class ChatRoom {
     unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
     participationState:
         (json['participationState'] as num?)?.toInt() ?? kRoomParticipatePush,
+    pinned: json['pinned'] == true || json['pinned'] == 1,
   );
 }
 
@@ -131,5 +136,127 @@ class ChatRoomService {
     } catch (_) {
       return false;
     }
+  }
+}
+
+/// Pinning a chat. One SP for all three kinds, because the pin icon is one
+/// control (E9.F1.S8).
+///
+/// Pin lives on the server, on records that already sync — HasherEventMap,
+/// HasherKennelMap and Hasher — so it survives a reload and follows the
+/// hasher between devices. The local row is updated optimistically so the
+/// icon moves at once; the next sync carries the server's truth.
+class ChatPinService {
+  const ChatPinService();
+
+  static Future<bool> setPin({
+    String? eventId,
+    String? kennelId,
+    int? roomType,
+    required bool pinned,
+  }) async {
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    if (userId.isEmpty || deviceId.isEmpty) return false;
+
+    final result = await ServiceCommon.sendHttpPost(() {
+      return jsonEncode(<String, dynamic>{
+        'queryType': 'setChatPin',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_setChatPin',
+          paramString: deviceSecret,
+        ),
+        // Exactly one of these three; the SP refuses anything else. Every key
+        // sent becomes an SP parameter, so the nulls must be omitted rather
+        // than passed.
+        'eventId': ?eventId,
+        'kennelId': ?kennelId,
+        'roomType': ?roomType,
+        'pinned': pinned ? 1 : 0,
+      });
+    });
+
+    if (result.startsWith(ERROR_PREFIX)) return false;
+    try {
+      final outer = jsonDecode(result) as List<dynamic>;
+      if (outer.isEmpty) return false;
+      final rows = outer[0] as List<dynamic>;
+      if (rows.isEmpty) return false;
+      final row = rows[0] as Map<String, dynamic>;
+      final ok = row['Success'] == 1 || row['Success'] == true;
+      if (ok) await _writeLocal(eventId, kennelId, pinned);
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Mirrors the change into the local row so the list re-sorts immediately
+  /// instead of waiting for a sync. Rooms are not written here — their pin
+  /// lives in a bitfield on the hasher row and the room list is re-fetched.
+  static Future<void> _writeLocal(
+    String? eventId,
+    String? kennelId,
+    bool pinned,
+  ) async {
+    final String me = normalizeUuid(currentUserId);
+    if (eventId != null) {
+      final h = tableModel.hasherEventMapTableHelper;
+      await database.update(
+        EnumDataTables.hasherEventMap.commonTableName,
+        <String, Object?>{h.colPinned: pinned ? 1 : 0},
+        where: '${h.colUserId} = ? AND ${h.colEventId} = ?',
+        whereArgs: <Object?>[me, normalizeUuid(eventId)],
+      );
+    } else if (kennelId != null) {
+      final h = tableModel.hasherKennelMapTableHelper;
+      await database.update(
+        EnumDataTables.hasherKennelMap.commonTableName,
+        <String, Object?>{h.colPinned: pinned ? 1 : 0},
+        where: '${h.colUserId} = ? AND ${h.colKennelId} = ?',
+        whereArgs: <Object?>[me, normalizeUuid(kennelId)],
+      );
+    }
+  }
+
+  /// Whether this chat is pinned right now, read from the LOCAL row so the
+  /// icon is right offline and on first paint.
+  ///
+  /// The kennel default lives here rather than in the column: NULL means "use
+  /// the default", which is pinned for the home kennel (James, 2026-09-14).
+  /// Keeping it a rule means the default can change without a backfill.
+  static Future<bool> isPinned({String? eventId, String? kennelId}) async {
+    final String me = normalizeUuid(currentUserId);
+    try {
+      if (eventId != null) {
+        final h = tableModel.hasherEventMapTableHelper;
+        final rows = await database.rawQuery(
+          'SELECT ${h.colPinned} FROM ${EnumDataTables.hasherEventMap.commonTableName} '
+          'WHERE ${h.colUserId} = ? AND ${h.colEventId} = ? LIMIT 1',
+          <Object?>[me, normalizeUuid(eventId)],
+        );
+        if (rows.isEmpty) return false;
+        return (rows.first[h.colPinned] as int?) == 1;
+      }
+      if (kennelId != null) {
+        final h = tableModel.hasherKennelMapTableHelper;
+        final rows = await database.rawQuery(
+          'SELECT ${h.colPinned}, ${h.colIsHomeKennel} FROM '
+          '${EnumDataTables.hasherKennelMap.commonTableName} '
+          'WHERE ${h.colUserId} = ? AND ${h.colKennelId} = ? LIMIT 1',
+          <Object?>[me, normalizeUuid(kennelId)],
+        );
+        if (rows.isEmpty) return false;
+        final int? explicit = rows.first[h.colPinned] as int?;
+        if (explicit != null) return explicit == 1;
+        return (rows.first[h.colIsHomeKennel] as int?) == 1;
+      }
+    } catch (_) {
+      return false;
+    }
+    return false;
   }
 }
