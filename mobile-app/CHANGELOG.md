@@ -1,3 +1,8 @@
+## 3.1.0+1363 (2026-09-15)
+### Fixes
+- Opening a chat and leaving again before it finished loading could throw an
+  error in the background. Found in the logs rather than reported.
+
 ## 3.1.0+1361 (2026-09-15)
 ### Fixes
 - Chat room notification buttons were grey text on a grey background. They are
