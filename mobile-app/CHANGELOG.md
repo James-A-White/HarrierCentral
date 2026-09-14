@@ -1,3 +1,14 @@
+## 3.0.37+1360 (2026-09-15)
+### New Features
+- **Pinned chats**: Chats you pin stay at the top of the chat list. Your home
+  kennel's chat and your role chat rooms are pinned for you automatically, and
+  the pin icon in any chat's title bar turns it on or off.
+- **Chat rooms**: The rooms your roles give you — Harrier Central Admins,
+  Grand Masters, Hash Cash, Religious Advisors, Hare Raisers — appear in the
+  chat list, with their own settings for notifications and pinning.
+### Fixes
+- "Mark all read" now clears the badges and leaves the chats in the list.
+
 ## 3.0.36+1356 (2026-09-13)
 
 ### Fixes
