@@ -1,6 +1,7 @@
-CREATE OR ALTER PROCEDURE [HC6].[hcapp_getAdminMessages]
+CREATE OR ALTER PROCEDURE [HC6].[hcapp_getRoomMessages]
     @deviceId           UNIQUEIDENTIFIER = NULL,
     @accessToken        NVARCHAR(1000)   = NULL,
+    @roomType           INT              = NULL,
     @sinceSequenceCount INT              = NULL,
     -- 1 marks everything read up to the newest message returned. The app
     -- sends 1 when the channel is on screen and 0 when it is only counting
@@ -8,18 +9,18 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getAdminMessages]
     @markRead           SMALLINT         = 0
 AS
 -- =====================================================================
--- Procedure: HC6.hcapp_getAdminMessages
--- Description: Reads the platform-wide Harrier Central admin channel, and
---   optionally marks it read. The twin of hcapp_sendAdminMessage.
+-- Procedure: HC6.hcapp_getRoomMessages
+-- Description: Reads one platform-wide chat room, and optionally marks it
+--   read. The twin of hcapp_sendRoomMessage.
 --
---   The thread is the EventMessage rows with EventId AND KennelId both
---   NULL and MessageType = 1. See the send SP's header for why that needed
---   no new table and no new column.
+--   The thread is the EventMessage rows with EventId, KennelId AND ThreadId
+--   all NULL and MessageType = @roomType. ThreadId is in every predicate
+--   because it is reserved for one-to-one DMs — without it a DM would
+--   eventually be read back as part of a room.
 --
--- Authorization: SuperAdmin (AppAccessFlags & 0x40000000) on ANY kennel —
---   the same test as sending. A non-admin gets an error rather than an
---   empty list, so the app never renders the room to someone who cannot be
---   in it.
+-- Authorization: HC6.UserMayEnterChatRoom, the same gate as sending. A
+--   hasher without the role gets an error rather than an empty list, so the
+--   app never renders a room to someone who cannot be in it.
 --
 -- Returns:
 --   Rowset 0: messages, newest first, in the shape the chat UI already
@@ -53,31 +54,24 @@ BEGIN
     RETURN;
 END
 
-IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap hkm
-               WHERE hkm.UserId = @userId AND hkm.removed = 0
-                 AND hkm.AppAccessFlags & 0x40000000 <> 0)
+IF (@roomType IS NULL OR HC6.UserMayEnterChatRoom(@userId, @roomType) = 0)
 BEGIN
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not an admin',
-            'Reader holds SuperAdmin on no kennel', @procName, @userId);
+            'Reader does not hold the role this room is for', @procName, @userId);
     SELECT @errorId AS errorId, 13 AS errorType, 1944 AS errorCode,
            'Not authorised' AS errorTitle,
-           'The admin channel is for Harrier Central administrators.' AS errorUserMessage,
+           'That chat room is for the hashers who hold its role.' AS errorUserMessage,
            @procName AS errorProc;
     RETURN;
 END
 
 BEGIN TRY
 
--- The global room this SP speaks for. Role rooms take 2, 3, ...; DMs will
--- carry a ThreadId alongside. Whole key:
--- db/hc6/app/archive/2026-09-14_chat_thread_keys.sql
-DECLARE @roomType INT = 1;
-
 DECLARE @newestSeq INT =
     (SELECT MAX(em.MessageSequenceCount) FROM HC.EventMessage em
-      WHERE em.EventId IS NULL AND em.KennelId IS NULL
+      WHERE em.EventId IS NULL AND em.KennelId IS NULL AND em.ThreadId IS NULL
         AND em.MessageType = @roomType AND em.Removed = 0);
 
 -- Same full key as the MERGE below. EventId/KennelId NULL alone would read
@@ -103,6 +97,7 @@ FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
 WHERE msg.EventId IS NULL
   AND msg.KennelId IS NULL
+  AND msg.ThreadId IS NULL
   AND msg.MessageType = @roomType
   AND msg.Removed = 0
   AND h.Removed = 0
@@ -112,7 +107,7 @@ ORDER BY msg.createdAt DESC;
 -- Badge BEFORE the mark, so the caller learns what it had to clear.
 SELECT
     (SELECT COUNT(*) FROM HC.EventMessage em
-      WHERE em.EventId IS NULL AND em.KennelId IS NULL
+      WHERE em.EventId IS NULL AND em.KennelId IS NULL AND em.ThreadId IS NULL
         AND em.MessageType = @roomType AND em.Removed = 0
         AND em.UserId <> @userId
         AND em.MessageSequenceCount > @lastRead)      AS unreadCount,
@@ -144,7 +139,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in hcapp_getAdminMessages',
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId), 'Unhandled error in hcapp_getRoomMessages',
             ERROR_MESSAGE(), @procName, @userId);
     THROW;
 END CATCH

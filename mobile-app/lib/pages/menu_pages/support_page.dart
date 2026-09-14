@@ -33,19 +33,60 @@ class SupportPageState extends State<SupportPage> {
   void initState() {
     super.initState();
     _loadSecretCode();
-    unawaited(_loadAdminChannelAccess());
+    unawaited(_loadChatRooms());
   }
 
-  /// Whether to offer the Harrier Central admin channel. Read from the LOCAL
-  /// HasherKennelMap, so the page decides without a round trip and behaves
-  /// offline. The SPs check the same bit themselves — this only decides
-  /// whether the button is drawn.
-  bool _showAdminChannel = false;
+  /// The rooms this hasher may enter, as the SERVER lists them. Not a
+  /// hard-coded set: a room added to HC6.ChatRoomCatalog() appears here with
+  /// no app release. The SPs check membership themselves — this only decides
+  /// what is drawn.
+  List<ChatRoom>? _rooms;
 
-  Future<void> _loadAdminChannelAccess() async {
-    final bool may = await AdminChannelService.currentUserMayUse();
-    if (mounted) setState(() => _showAdminChannel = may);
+  /// Null [_rooms] with this set means the call failed, which is NOT the same
+  /// as holding no roles. Most hashers are in no room at all, and drawing a
+  /// failure as "you have none" is the same trap as flashing "No runs" while
+  /// the cache loads.
+  bool _roomsFailed = false;
+
+  Future<void> _loadChatRooms() async {
+    final List<ChatRoom>? rooms = await ChatRoomService.fetchRooms();
+    if (!mounted) return;
+    setState(() {
+      _rooms = rooms;
+      _roomsFailed = rooms == null;
+    });
   }
+
+  Future<void> _openRoom(ChatRoom room) async {
+    // Delete first AND after: the controller is Get.put by the page, so a
+    // stale one would otherwise be reused for the next room opened.
+    await Get.delete<ChatPageController>(force: true);
+    await Get.to<ChatPage>(
+      () => ChatPage.room(roomType: room.roomType, key: UniqueKey()),
+    );
+    await Get.delete<ChatPageController>(force: true);
+    // Unread counts move while the room is open, so re-read them on the way
+    // back rather than leaving a stale badge on the button.
+    unawaited(_loadChatRooms());
+  }
+
+  Widget _roomButton(ChatRoom room) => Padding(
+    padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+    child: SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.forum_outlined, color: Colors.white),
+        label: Text(
+          room.unreadCount > 0
+              ? '${room.roomName}  (${room.unreadCount})'
+              : room.roomName,
+          style: ts_button,
+          textAlign: TextAlign.center,
+        ),
+        onPressed: () => _openRoom(room),
+      ),
+    ),
+  );
 
   // qrSecretCode now lives in the keychain (async) — load it after first frame.
   Future<void> _loadSecretCode() async {
@@ -142,42 +183,44 @@ class SupportPageState extends State<SupportPage> {
                         ),
                         child: Column(
                           children: <Widget>[
-                            // Harrier Central admin channel — one room for the
-                            // people who run the platform, not scoped to any
-                            // kennel. Sits above the QR code because someone
-                            // opening Support to ask a question should see it
-                            // before they see their own secret code.
-                            if (_showAdminChannel) ...<Widget>[
+                            // Platform-wide chat rooms — the rooms this
+                            // hasher's roles put them in, listed by the
+                            // server. Above the QR code because someone
+                            // opening Support to ask a question should see
+                            // them before their own secret code.
+                            if (_roomsFailed) ...<Widget>[
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    icon: const Icon(Icons.forum_outlined),
-                                    label: const Text('Admin channel'),
-                                    onPressed: () async {
-                                      // Delete first AND after: the controller
-                                      // is Get.put by the page, so a stale one
-                                      // would otherwise be reused.
-                                      await Get.delete<ChatPageController>(
-                                        force: true,
-                                      );
-                                      await Get.to<ChatPage>(
-                                        () => ChatPage.adminChannel(
-                                          key: UniqueKey(),
-                                        ),
-                                      );
-                                      await Get.delete<ChatPageController>(
-                                        force: true,
-                                      );
-                                    },
-                                  ),
+                                child: Text(
+                                  'Chat rooms could not be loaded. A connection '
+                                  'is required to see them.',
+                                  textAlign: TextAlign.center,
+                                  style: ts_body.copyWith(fontSize: 13),
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(Icons.refresh,
+                                        color: Colors.white),
+                                    label: Text('Try again', style: ts_button),
+                                    onPressed: () => unawaited(_loadChatRooms()),
+                                  ),
+                                ),
+                              ),
+                              const Divider(color: Colors.white24),
+                              const SizedBox(height: 10),
+                            ] else if (_rooms != null && _rooms!.isNotEmpty) ...<Widget>[
+                              for (final ChatRoom room in _rooms!)
+                                _roomButton(room),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
                                 child: Text(
-                                  'Talk to the other Harrier Central admins.',
+                                  _rooms!.length == 1
+                                      ? 'Talk to the other hashers who share your role.'
+                                      : 'Talk to the other hashers who share your roles.',
                                   textAlign: TextAlign.center,
                                   style: ts_body.copyWith(fontSize: 13),
                                 ),

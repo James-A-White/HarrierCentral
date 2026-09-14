@@ -1,32 +1,30 @@
-CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendAdminMessage]
+CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendRoomMessage]
     @deviceId       UNIQUEIDENTIFIER = NULL,
     @accessToken    NVARCHAR(1000)   = NULL,
+    @roomType       INT              = NULL,
     @messageId      UNIQUEIDENTIFIER = NULL,
     @messageContent NVARCHAR(500)    = NULL
 AS
 -- =====================================================================
--- Procedure: HC6.hcapp_sendAdminMessage
--- Description: Sends a message to the platform-wide Harrier Central admin
---   channel — one room, not scoped to any kennel or run.
+-- Procedure: HC6.hcapp_sendRoomMessage
+-- Description: Posts to a platform-wide chat room — one of the rooms in
+--   HC6.ChatRoomCatalog(), not scoped to any kennel or run.
 --
---   NO NEW TABLE AND NO NEW COLUMN. HC.EventMessage already carries two
---   kinds of message and tells them apart by which key is set: event chat
---   has EventId, kennel chat has KennelId, and BOTH columns are nullable.
---   The admin channel is simply the third kind — both keys NULL, with
---   MessageType = 1 saying which it is. MessageType already exists and is
---   0 on all 1,227 existing rows, so nothing already stored changes
---   meaning (James, 2026-09-13).
+--   NO NEW TABLE AND NO NEW COLUMN FOR THE MESSAGE. HC.EventMessage already
+--   carries two kinds of message and tells them apart by which key is set:
+--   event chat has EventId, kennel chat has KennelId, and BOTH are nullable.
+--   A room is the third kind — both NULL, with MessageType naming WHICH
+--   room. MessageType already existed and is 0 on all 1,227 stored rows, so
+--   nothing already there changes meaning (James, 2026-09-13/14).
 --
--- Authorization: SuperAdmin (AppAccessFlags & 0x40000000) on ANY kennel.
---   Deliberately the narrowest of the three audiences considered: 290
---   people rather than the 414 holding admin somewhere. A room of 414 is a
---   town square, and widening later is a one-line change to this test
---   whereas narrowing it after 400 people have been talking is not.
+--   ThreadId stays NULL here and is reserved for one-to-one DMs, so it is
+--   written into every predicate that selects room rows — without it a DM
+--   would eventually leak into a room's history.
 --
---   Note this is NOT HC6.CheckKennelPermission: that answers "may this
---   user do X in kennel K", and this channel belongs to no kennel. The
---   SuperAdmin bit is checked directly, which is the same bit
---   CheckKennelPermission itself treats as the all-features bypass.
+-- Authorization: HC6.UserMayEnterChatRoom — the one gate, shared with
+--   hcapp_getRoomMessages and hcapp_getChatRooms so the three cannot drift.
+--   NOT HC6.CheckKennelPermission: that answers "may this user do X in
+--   kennel K", and a room belongs to no kennel.
 --
 -- Returns: rowset 0 — the message, in the same shape the chat UI already
 --   reads for kennel and event threads.
@@ -58,13 +56,14 @@ BEGIN
     RETURN;
 END
 
-IF (@messageId IS NULL
+IF (@roomType IS NULL
+    OR @messageId IS NULL
     OR NULLIF(LTRIM(RTRIM(ISNULL(@messageContent, ''))), '') IS NULL)
 BEGIN
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing fields',
-            'messageId or messageContent was empty', @procName, @userId);
+            'roomType, messageId or messageContent was empty', @procName, @userId);
     SELECT @errorId AS errorId, 2 AS errorType, 1941 AS errorCode,
            'Missing fields' AS errorTitle,
            'The message could not be sent. Please try again.' AS errorUserMessage,
@@ -72,26 +71,21 @@ BEGIN
     RETURN;
 END
 
--- Authorization. ValidateAppAuth proved WHO, not what they may do.
-IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap hkm
-               WHERE hkm.UserId = @userId AND hkm.removed = 0
-                 AND hkm.AppAccessFlags & 0x40000000 <> 0)
+-- Authorization. ValidateAppAuth proved WHO, not what they may do. An
+-- unknown @roomType returns 0 here, so a bad room is refused rather than
+-- opening an empty one.
+IF (HC6.UserMayEnterChatRoom(@userId, @roomType) = 0)
 BEGIN
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not an admin',
-            'Sender holds SuperAdmin on no kennel', @procName, @userId);
+            'Sender does not hold the role this room is for', @procName, @userId);
     SELECT @errorId AS errorId, 13 AS errorType, 1942 AS errorCode,
            'Not authorised' AS errorTitle,
-           'The admin channel is for Harrier Central administrators.' AS errorUserMessage,
+           'That chat room is for the hashers who hold its role.' AS errorUserMessage,
            @procName AS errorProc;
     RETURN;
 END
-
--- The global room this SP speaks for. Role rooms (RAs, Hash Flashes) take
--- 2, 3, ... and DMs will carry a ThreadId alongside. See
--- db/hc6/app/archive/2026-09-14_chat_thread_keys.sql for the whole key.
-DECLARE @roomType INT = 1;
 
 DECLARE @publicHasherId UNIQUEIDENTIFIER;
 SELECT @publicHasherId = h.PublicHasherId FROM HC.Hasher h WHERE h.id = @userId;
@@ -99,7 +93,7 @@ SELECT @publicHasherId = h.PublicHasherId FROM HC.Hasher h WHERE h.id = @userId;
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    -- EventId and KennelId both NULL; MessageType 1 is what says "admin".
+    -- EventId, KennelId and ThreadId all NULL; MessageType names the room.
     INSERT INTO HC.EventMessage
         ([id], [EventId], [KennelId], [UserId], [PublicHasherId],
          [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageType])
@@ -140,7 +134,7 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error in hcapp_sendAdminMessage',
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error in hcapp_sendRoomMessage',
             ERROR_MESSAGE(), @procName, @userId);
     SELECT @errorId AS errorId, 5 AS errorType, 1943 AS errorCode,
            'Unexpected error' AS errorTitle,

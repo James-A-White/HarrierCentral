@@ -13,7 +13,7 @@ class ChatPageController extends GetxController {
     required this.eventId,
     required this.publicEventId,
     this.isKennelThread = false,
-    this.isAdminThread = false,
+    this.roomType,
   });
 
   /// For a KENNEL thread, [eventId] carries the kennel id and [publicEventId]
@@ -23,19 +23,24 @@ class ChatPageController extends GetxController {
   final String publicEventId;
   final bool isKennelThread;
 
-  /// The platform-wide Harrier Central admin room. Belongs to no kennel and
-  /// no run, so [eventId] and [publicEventId] are both empty for it.
+  /// A platform-wide room from HC6.ChatRoomCatalog() — admins, GMs, RAs and
+  /// so on. Belongs to no kennel and no run, so [eventId] and [publicEventId]
+  /// are both empty for it, and the room is named by this id alone.
   ///
-  /// Added as a separate flag rather than turning [isKennelThread] into an
-  /// enum: that flag reaches NotificationService and the run list too, and a
+  /// Held as the SERVER's room id rather than an app-side enum, so a room
+  /// added to the catalog needs no change here at all. Null for the two
+  /// existing thread kinds.
+  ///
+  /// Added alongside [isKennelThread] rather than turning it into an enum:
+  /// that flag reaches NotificationService and the run list too, and a
   /// working chat with 1,227 real messages is not worth a sweeping refactor
-  /// for a room 290 people will use (James, 2026-09-13). The two flags are
-  /// collapsed into ONE [_ThreadKind] immediately below, so every decision
-  /// below switches on a single value and a fourth kind cannot be half-added.
-  final bool isAdminThread;
+  /// (James, 2026-09-13). Both collapse into ONE [_ThreadKind] immediately
+  /// below, so every decision switches on a single value and a fourth kind
+  /// cannot be half-added.
+  final int? roomType;
 
-  _ThreadKind get _kind => isAdminThread
-      ? _ThreadKind.admin
+  _ThreadKind get _kind => roomType != null
+      ? _ThreadKind.room
       : isKennelThread
       ? _ThreadKind.kennel
       : _ThreadKind.event;
@@ -45,31 +50,31 @@ class ChatPageController extends GetxController {
   String? get _idKey => switch (_kind) {
     _ThreadKind.event => 'eventId',
     _ThreadKind.kennel => 'kennelId',
-    _ThreadKind.admin => null,
+    _ThreadKind.room => null,
   };
 
   String get _getQueryType => switch (_kind) {
     _ThreadKind.event => 'getEventMessages',
     _ThreadKind.kennel => 'getKennelMessages',
-    _ThreadKind.admin => 'getAdminMessages',
+    _ThreadKind.room => 'getRoomMessages',
   };
 
   String get _getProcName => switch (_kind) {
     _ThreadKind.event => 'hcapp_getEventMessages',
     _ThreadKind.kennel => 'hcapp_getKennelMessages',
-    _ThreadKind.admin => 'hcapp_getAdminMessages',
+    _ThreadKind.room => 'hcapp_getRoomMessages',
   };
 
   String get _sendQueryType => switch (_kind) {
     _ThreadKind.event => 'sendEventMessage',
     _ThreadKind.kennel => 'sendKennelMessage',
-    _ThreadKind.admin => 'sendAdminMessage',
+    _ThreadKind.room => 'sendRoomMessage',
   };
 
   String get _sendProcName => switch (_kind) {
     _ThreadKind.event => 'hcapp_sendEventMessage',
     _ThreadKind.kennel => 'hcapp_sendKennelMessage',
-    _ThreadKind.admin => 'hcapp_sendAdminMessage',
+    _ThreadKind.room => 'hcapp_sendRoomMessage',
   };
 
   final chatController = core.InMemoryChatController();
@@ -135,9 +140,9 @@ class ChatPageController extends GetxController {
     // race-free where a post-close server refetch is not: markEventChatRead is
     // fired-and-forgotten above, so a refetch can beat its write and read back
     // the stale count. The SP remains the durable server-side backstop.
-    if (!isAdminThread && Get.isRegistered<NotificationService>()) {
-      // The admin room has no publicEventId to key a local badge on, and its
-      // GET marks it read server-side via @markRead.
+    if (roomType == null && Get.isRegistered<NotificationService>()) {
+      // A room has no publicEventId to key a local badge on, and its GET
+      // marks it read server-side via @markRead.
       Get.find<NotificationService>()
           .clearUnreadForThread(publicEventId, isKennelThread: isKennelThread);
     }
@@ -222,12 +227,12 @@ class ChatPageController extends GetxController {
   }
 
   Future<void> _markEventChatRead() async {
-    // The admin room has no id to name, so there is no separate mark-read SP
-    // for it — hcapp_getAdminMessages does the job with @markRead. Without
-    // this guard `_idKey!` below is a null check on null, thrown inside the
-    // unawaited() call in onInitAsync and surfacing as an unhandled async
-    // error every single time the room is opened.
-    if (isAdminThread) return;
+    // A room has no id to name, so there is no separate mark-read SP for it
+    // — hcapp_getRoomMessages does the job with @markRead. Without this guard
+    // `_idKey!` below is a null check on null, thrown inside the unawaited()
+    // call in onInitAsync and surfacing as an unhandled async error every
+    // single time the room is opened.
+    if (roomType != null) return;
 
     final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
@@ -261,8 +266,10 @@ class ChatPageController extends GetxController {
       'queryType': _getQueryType,
       'deviceId': deviceId,
       ?_idKey: eventId,
-      // The admin room is marked read by the same call that reads it.
-      if (isAdminThread) 'markRead': 1,
+      // A room is named by its type, and is marked read by the same call
+      // that reads it.
+      if (roomType != null) 'roomType': roomType,
+      if (roomType != null) 'markRead': 1,
     };
     if (sinceSequenceCount != null) {
       body['sinceSequenceCount'] = sinceSequenceCount;
@@ -412,9 +419,16 @@ class ChatPageController extends GetxController {
           paramString: deviceSecret,
         ),
         ?_idKey: eventId,
+        if (roomType != null) 'roomType': roomType,
         'messageId': uuid,
         'messageContent': text,
-        'messageReleasabilityFlags': kChatReleasabilityAll,
+        // Every body key becomes an SP parameter in the shim, so a key the
+        // SP does not declare is a "too many arguments" failure, not an
+        // ignored extra. A room has no kennel or run to be releasable to —
+        // hcapp_sendRoomMessage stores the all-audiences value itself rather
+        // than accepting a parameter it would never branch on.
+        if (roomType == null)
+          'messageReleasabilityFlags': kChatReleasabilityAll,
       }),
     );
 
@@ -434,4 +448,4 @@ class ChatPageController extends GetxController {
 
 /// The three kinds of thread [ChatPageController] serves. Private: callers
 /// pass the public flags, and this is how the controller reasons about them.
-enum _ThreadKind { event, kennel, admin }
+enum _ThreadKind { event, kennel, room }
