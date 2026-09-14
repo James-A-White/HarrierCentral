@@ -222,6 +222,13 @@ class ChatPageController extends GetxController {
   }
 
   Future<void> _markEventChatRead() async {
+    // The admin room has no id to name, so there is no separate mark-read SP
+    // for it — hcapp_getAdminMessages does the job with @markRead. Without
+    // this guard `_idKey!` below is a null check on null, thrown inside the
+    // unawaited() call in onInitAsync and surfacing as an unhandled async
+    // error every single time the room is opened.
+    if (isAdminThread) return;
+
     final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
