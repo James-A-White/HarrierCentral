@@ -184,6 +184,14 @@ class ChatPageController extends GetxController {
     try {
       final sinceSeq = _lastKnownSequenceCount;
       final result = await _getEventMessages(sinceSequenceCount: sinceSeq);
+      // The page can be gone by the time the fetch lands — open a chat and
+      // leave again inside the round trip and the InMemoryChatController has
+      // been closed, so setMessages throws "Cannot add new events after
+      // calling close" into the void. Seen on 3.1.0+1358 while opening and
+      // closing rooms quickly (2026-09-14). isClosed is the GetxController's
+      // own disposal flag, checked after EVERY await below, because each one
+      // is a fresh chance for the page to have gone.
+      if (isClosed) return;
       if (result == null || result.startsWith(ERROR_PREFIX)) return;
       final outerItem = jsonDecode(result) as List<dynamic>;
       final rawMessages = outerItem[0] as List<dynamic>;
@@ -193,6 +201,7 @@ class ChatPageController extends GetxController {
       if (newSeq != null) _lastKnownSequenceCount = newSeq;
 
       final messages = _parseMessages(rawMessages);
+      if (isClosed) return;
       if (sinceSeq == null) {
         await chatController.setMessages(messages);
       } else {
@@ -201,6 +210,7 @@ class ChatPageController extends GetxController {
         // Guard against re-inserting optimistically-added sent messages whose
         // sequence count the sender never received back from the server.
         for (final msg in messages) {
+          if (isClosed) return;
           if (!chatController.messages.any((m) => m.id == msg.id)) {
             await chatController.insertMessage(msg);
           }
@@ -208,7 +218,7 @@ class ChatPageController extends GetxController {
       }
     } finally {
       _isFetching = false;
-      if (_pendingFetch) {
+      if (_pendingFetch && !isClosed) {
         _pendingFetch = false;
         unawaited(_fetchDelta());
       }
@@ -433,6 +443,9 @@ class ChatPageController extends GetxController {
     );
 
     final failed = result.startsWith(ERROR_PREFIX);
+    // Same disposal race as _fetchDelta: send, leave, and the reply lands on
+    // a closed controller.
+    if (isClosed) return;
     final sent = chatController.messages.where((m) => m.id == uuid).firstOrNull;
     if (sent is core.TextMessage) {
       await chatController.updateMessage(
