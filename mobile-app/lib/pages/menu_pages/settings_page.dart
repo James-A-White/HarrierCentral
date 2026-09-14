@@ -307,16 +307,31 @@ class SettingsPage extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                tooltip: room.pinned ? 'Unpin from the chat list'
-                                     : 'Pin to the top of the chat list',
-                icon: Icon(
-                  room.pinned ? Icons.push_pin : Icons.push_pin_outlined,
-                  size: 20,
-                  color: room.pinned ? Colors.white : Colors.white60,
+              // Big enough to read as a control rather than decoration, and
+              // on its own dark disc so it stands off the leaves.
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => unawaited(controller.toggleRoomPin(room)),
+                  child: Tooltip(
+                    message: room.pinned
+                        ? 'Pinned — tap to unpin'
+                        : 'Not pinned — tap to pin',
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.45),
+                        border: Border.all(
+                          color: room.pinned ? Colors.white : Colors.white38,
+                          width: room.pinned ? 2 : 1,
+                        ),
+                      ),
+                      child: PinGlyph(pinned: room.pinned, size: 22),
+                    ),
+                  ),
                 ),
-                onPressed: () => unawaited(controller.toggleRoomPin(room)),
               ),
             ],
           ),
@@ -347,6 +362,10 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  /// Deliberately NOT a ChoiceChip. The app's chip theme overrode both the
+  /// background and the label colour, so the unselected state came out grey
+  /// text on a grey pill — unreadable, and on the jungle background worse
+  /// (James, 2026-09-15). Built from a Container so the contrast is ours.
   Widget _participationChip(
     SettingsPageController controller,
     ChatRoom room,
@@ -354,24 +373,33 @@ class SettingsPage extends StatelessWidget {
     String label,
   ) {
     final bool selected = room.participationState == state;
-    return ChoiceChip(
-      label: Text(
-        label,
-        // The chip sits on the jungle background: an unselected chip is dark,
-        // so its label has to be light. ts_footnoteBlack and friends are
-        // black and would vanish here.
-        style: ts_body.copyWith(
-          fontSize: 13,
-          color: selected ? Colors.white : Colors.white70,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => unawaited(controller.setParticipation(room, state)),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+          decoration: BoxDecoration(
+            // Selected is the app's red with white on it; unselected is a
+            // near-solid dark pill so white text reads against the leaves.
+            color: selected ? hc_red : Colors.black.withValues(alpha: 0.55),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? Colors.white : Colors.white54,
+              width: selected ? 2 : 1,
+            ),
+          ),
+          child: Text(
+            label,
+            style: ts_body.copyWith(
+              fontSize: 14,
+              color: Colors.white,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
         ),
       ),
-      selected: selected,
-      showCheckmark: false,
-      selectedColor: hc_red,
-      backgroundColor: Colors.black.withValues(alpha: 0.28),
-      side: BorderSide(color: selected ? hc_red : Colors.white24),
-      onSelected: (_) =>
-          unawaited(controller.setParticipation(room, state)),
     );
   }
 

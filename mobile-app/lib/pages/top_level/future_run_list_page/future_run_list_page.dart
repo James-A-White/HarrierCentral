@@ -899,7 +899,9 @@ class FutureRunsListPage extends StatelessWidget {
         // badge (James, 2026-09-13) — a chevron says it is still a thread you
         // can open, rather than leaving a hole where the badge was.
         trailing: s.pinned && s.badgeCount == 0
-            ? const Icon(Icons.push_pin, color: Colors.black38, size: 18)
+            // The row sits on a WHITE card, so this one is dark — the glyph
+            // takes the colour rather than assuming the jungle.
+            ? const PinGlyph(pinned: true, size: 18, color: Colors.black54)
             : s.badgeCount > 0
             ? Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
