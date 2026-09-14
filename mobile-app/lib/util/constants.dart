@@ -212,6 +212,19 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
+// ⚠ THE TWO TRAINS MUST STAY 20 APART. 3.0.x is 531, 3.1 is 551.
+//
+// A device upgrading from 3.0.x to 3.1 has to WIPE AND RELOAD rather than
+// migrate, because 3.1's local schema (the JSON product catalogue, the UNIQUE
+// indexes) is not reachable by ALTER from this one. The boot check is
+//     (installedDbVersion + 9) < DB_VERSION     app_boot_service.dart
+// so the crossing only reloads while the gap stays above 9.
+//
+// Therefore: bumping one train means bumping the OTHER by the same amount, in
+// the same change. Bump only this one and the gap closes; the crossing
+// silently becomes an in-place migration onto a schema that does not exist,
+// which is the "Database Version Mismatch" that blocked 3.1.0+1350 and +1352
+// (James, 2026-09-15).
 const int DB_VERSION = 531;
 
 const double CLEAR_LATLONG = -2.0;
