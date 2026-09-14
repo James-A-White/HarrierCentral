@@ -93,6 +93,36 @@ IF COL_LENGTH('HC.EventMessageBadgeCounts', 'ThreadId') IS NULL
 GO
 
 -- ---------------------------------------------------------------------
+-- 2b. Participation, per hasher per room (James, 2026-09-14). THREE states,
+--     not a mute boolean:
+--
+--       0  participate, with push notifications   (the default)
+--       1  participate, no push — badges only
+--       2  do not participate — the room is not even listed
+--
+--     This row is already the per-user, per-room record, so the preference
+--     belongs on it rather than anywhere new. DEFAULT 0 means a room added
+--     to the catalog later starts switched on for everyone eligible, which
+--     is what makes a new room discoverable at all; someone who wants quiet
+--     sets 1 or 2 and that choice survives, because the row persists.
+--
+--     State 2 hides the room from the list but NOT from the settings
+--     console — otherwise opting out would be a one-way door with no way
+--     back. hcapp_getChatRooms takes @includeOptedOut for exactly that.
+--
+--     ⚠ Honest limit: nothing pushes for a global room yet — the API shim's
+--     notification switch has no case for room messages — so state 0 and
+--     state 1 behave identically TODAY. The distinction is stored and
+--     returned so the preference is already correct when push is built, and
+--     so nobody has to re-answer the question later.
+-- ---------------------------------------------------------------------
+IF COL_LENGTH('HC.EventMessageBadgeCounts', 'ParticipationState') IS NULL
+    ALTER TABLE HC.EventMessageBadgeCounts
+        ADD ParticipationState SMALLINT NOT NULL
+            CONSTRAINT DF_EventMessageBadgeCounts_ParticipationState DEFAULT (0);
+GO
+
+-- ---------------------------------------------------------------------
 -- 3. Number messages per thread, where "thread" now means all four kinds.
 --
 --    The bug this also fixes: the join was

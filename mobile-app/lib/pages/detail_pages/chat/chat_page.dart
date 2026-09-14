@@ -7,16 +7,17 @@ class ChatPage extends StatelessWidget {
     required this.eventId,
     required this.publicEventId,
     this.isKennelThread = false,
-    this.isAdminThread = false,
+    this.roomType,
     super.key,
   });
 
-  /// The platform-wide Harrier Central admin room. Belongs to no kennel and no
-  /// run, so [eventId] and [publicEventId] are both empty for it.
-  factory ChatPage.adminChannel({Key? key}) => ChatPage(
+  /// A platform-wide room from HC6.ChatRoomCatalog(). Belongs to no kennel
+  /// and no run, so [eventId] and [publicEventId] are both empty for it, and
+  /// [roomType] is the server's id for the room.
+  factory ChatPage.room({required int roomType, Key? key}) => ChatPage(
     eventId: '',
     publicEventId: '',
-    isAdminThread: true,
+    roomType: roomType,
     key: key,
   );
 
@@ -24,14 +25,14 @@ class ChatPage extends StatelessWidget {
   final String eventId;
   final String publicEventId;
   final bool isKennelThread;
-  final bool isAdminThread;
+  final int? roomType;
 
   late final ChatPageController controller = Get.put(
     ChatPageController(
       eventId: eventId,
       publicEventId: publicEventId,
       isKennelThread: isKennelThread,
-      isAdminThread: isAdminThread,
+      roomType: roomType,
     ),
   );
 

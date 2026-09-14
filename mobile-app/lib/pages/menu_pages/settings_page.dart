@@ -11,6 +11,15 @@ class SettingsPageController extends GetxController {
   final RxBool isSaving = false.obs;
   final RxBool isLoading = true.obs;
 
+  /// The platform-wide chat rooms this hasher's roles put them in, as the
+  /// SERVER lists them — including ones they have opted out of, which the
+  /// chat list hides. Without the opted-out ones this screen could not offer
+  /// a way back in.
+  final RxList<ChatRoom> chatRooms = <ChatRoom>[].obs;
+  final RxBool chatRoomsLoading = true.obs;
+  final RxBool chatRoomsFailed = false.obs;
+  final RxInt savingRoomType = (-1).obs;
+
   HashersModel? _hasher;
 
   /// The bits of hasherPreferences this page owns. Everything else (the
@@ -29,6 +38,49 @@ class SettingsPageController extends GetxController {
     savePhotosToCameraRoll.value =
         (stored & hasherPref_cameraRollSaveDisabled) == 0;
     unawaited(_loadHasher());
+    unawaited(loadChatRooms());
+  }
+
+  Future<void> loadChatRooms() async {
+    chatRoomsLoading.value = true;
+    final List<ChatRoom>? rooms =
+        await ChatRoomService.fetchRooms(includeOptedOut: true);
+    chatRoomsFailed.value = rooms == null;
+    chatRooms.value = rooms ?? <ChatRoom>[];
+    chatRoomsLoading.value = false;
+  }
+
+  /// Optimistic, then reconciled: the chip moves at once because a round trip
+  /// makes a settings toggle feel broken, but a failure puts it back rather
+  /// than leaving the screen claiming something the server never stored.
+  Future<void> setParticipation(ChatRoom room, int state) async {
+    if (room.participationState == state) return;
+    final int previous = room.participationState;
+    final int index = chatRooms.indexWhere((r) => r.roomType == room.roomType);
+    if (index < 0) return;
+
+    void apply(int value) => chatRooms[index] = ChatRoom(
+      roomType: room.roomType,
+      roomName: room.roomName,
+      unreadCount: room.unreadCount,
+      participationState: value,
+    );
+
+    savingRoomType.value = room.roomType;
+    apply(state);
+    final bool ok = await ChatRoomService.setParticipation(
+      roomType: room.roomType,
+      participationState: state,
+    );
+    if (!ok) {
+      apply(previous);
+      Get.snackbar(
+        'Not saved',
+        'That chat room setting could not be saved. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+    savingRoomType.value = -1;
   }
 
   /// addEditUser requires the profile identity fields — read them from the
@@ -117,6 +169,137 @@ class SettingsPageController extends GetxController {
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
+
+  /// The hasher's platform-wide chat rooms and how they take part in each.
+  ///
+  /// Drawn only when there is something to draw: most hashers hold no role
+  /// and belong to no room, and an empty "Chat Rooms" heading would be a
+  /// section that never does anything. A failure says so rather than showing
+  /// an empty list, which would read as "you were removed from your rooms".
+  Widget _chatRoomsSection(SettingsPageController controller) {
+    if (controller.chatRoomsLoading.value) return const SizedBox.shrink();
+    if (!controller.chatRoomsFailed.value && controller.chatRooms.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        const FancyDivider(
+          key: Key('settings_chat_rooms_divider'),
+          innerColor: Colors.white,
+          topMargin: 20.0,
+          bottomMargin: 10.0,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Chat Rooms',
+            style: ts_headingLarge,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        if (controller.chatRoomsFailed.value) ...<Widget>[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              'Your chat rooms could not be loaded. A connection is required '
+              'to change these settings.',
+              style: ts_body,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: Text('Try again', style: ts_button),
+              onPressed: () => unawaited(controller.loadChatRooms()),
+            ),
+          ),
+        ] else ...<Widget>[
+          Padding(
+            padding: const EdgeInsets.only(left: 8, right: 8, bottom: 12),
+            child: Text(
+              'These rooms come with the roles you hold. Choose how much you '
+              'want to hear from each one.',
+              style: ts_body,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          for (final ChatRoom room in controller.chatRooms)
+            _chatRoomRow(controller, room),
+          const SizedBox(height: 10),
+        ],
+      ],
+    );
+  }
+
+  Widget _chatRoomRow(SettingsPageController controller, ChatRoom room) {
+    final bool busy =
+        controller.savingRoomType.value == room.roomType ||
+        controller.isLoading.value;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, right: 8, bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text(room.roomName, style: ts_body, textAlign: TextAlign.center),
+          const SizedBox(height: 6),
+          // Wrap, not Row: three labelled choices are wider than a phone at a
+          // large text size, and a Wrap takes a second line where a Row
+          // overflows.
+          AbsorbPointer(
+            absorbing: busy,
+            child: Opacity(
+              opacity: busy ? 0.5 : 1.0,
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: <Widget>[
+                  _participationChip(controller, room, kRoomParticipatePush,
+                      'Notify me'),
+                  _participationChip(controller, room,
+                      kRoomParticipateBadgesOnly, 'Badge only'),
+                  _participationChip(controller, room, kRoomOptOut, 'Leave'),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _participationChip(
+    SettingsPageController controller,
+    ChatRoom room,
+    int state,
+    String label,
+  ) {
+    final bool selected = room.participationState == state;
+    return ChoiceChip(
+      label: Text(
+        label,
+        // The chip sits on the jungle background: an unselected chip is dark,
+        // so its label has to be light. ts_footnoteBlack and friends are
+        // black and would vanish here.
+        style: ts_body.copyWith(
+          fontSize: 13,
+          color: selected ? Colors.white : Colors.white70,
+        ),
+      ),
+      selected: selected,
+      showCheckmark: false,
+      selectedColor: hc_red,
+      backgroundColor: Colors.black.withValues(alpha: 0.28),
+      side: BorderSide(color: selected ? hc_red : Colors.white24),
+      onSelected: (_) =>
+          unawaited(controller.setParticipation(room, state)),
+    );
+  }
 
   Widget _sectionSpinner(SettingsPageController controller) {
     if (!controller.isSaving.value) return const SizedBox.shrink();
@@ -434,6 +617,8 @@ class SettingsPage extends StatelessWidget {
                             ],
                           ),
                         ),
+                        // ------------------------- Chat Rooms
+                        _chatRoomsSection(controller),
                       ],
                     ),
                   ),
