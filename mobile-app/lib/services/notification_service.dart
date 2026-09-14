@@ -170,8 +170,13 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           serverChatSummary
               .where(
                 (s) =>
-                    (s.messageCount ?? 0) > 0 &&
-                    (s.eventId != null || s.isKennelThread),
+                    // A PINNED thread stays listed even with nothing in it —
+                    // that is what makes the home kennel and the role rooms
+                    // discoverable, since almost none of them has a message
+                    // yet (E9.F1.S8). Everything else still needs traffic to
+                    // earn a row.
+                    ((s.messageCount ?? 0) > 0 || s.pinned) &&
+                    (s.eventId != null || s.isKennelThread || s.isRoomThread),
               )
               .toList()
             ..sort((a, b) {
@@ -730,8 +735,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       for (final key in unreadEventCounts.keys) key: 0.obs,
     }.obs;
 
-    // clientChatCounts.clear();
-    // clientChatCounts.addAll({for (final key in unreadEventCounts.keys) key: 0});
+    // The double-tick RESETS BADGES AND LEAVES THE ROWS (James, 2026-09-15).
+    // The rows carry their own badgeCount, so zeroing the map above is not
+    // enough — without this the list still shows every badge it just claimed
+    // to clear. withBadgeCount exists for exactly this: same thread, no
+    // badge, still listed.
+    unreadChatRuns.value = unreadChatRuns
+        .map((EventChatSummary s) => s.withBadgeCount(0))
+        .toList();
 
     _recalculateGlobalBadgeCount();
 

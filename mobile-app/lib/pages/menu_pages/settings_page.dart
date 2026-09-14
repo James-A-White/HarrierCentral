@@ -50,6 +50,38 @@ class SettingsPageController extends GetxController {
     chatRoomsLoading.value = false;
   }
 
+  /// Pin or unpin a room from the settings console. Same optimistic-then-
+  /// revert shape as [setParticipation].
+  Future<void> toggleRoomPin(ChatRoom room) async {
+    final int index = chatRooms.indexWhere((r) => r.roomType == room.roomType);
+    if (index < 0) return;
+    final bool next = !room.pinned;
+
+    void apply(bool value) => chatRooms[index] = ChatRoom(
+      roomType: room.roomType,
+      roomName: room.roomName,
+      unreadCount: room.unreadCount,
+      participationState: room.participationState,
+      pinned: value,
+    );
+
+    savingRoomType.value = room.roomType;
+    apply(next);
+    final bool ok = await ChatPinService.setPin(
+      roomType: room.roomType,
+      pinned: next,
+    );
+    if (!ok) {
+      apply(!next);
+      Get.snackbar(
+        'Not saved',
+        'That chat room could not be ${next ? 'pinned' : 'unpinned'}. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+    savingRoomType.value = -1;
+  }
+
   /// Optimistic, then reconciled: the chip moves at once because a round trip
   /// makes a settings toggle feel broken, but a failure puts it back rather
   /// than leaving the screen claiming something the server never stored.
@@ -246,7 +278,48 @@ class SettingsPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Text(room.roomName, style: ts_body, textAlign: TextAlign.center),
+          // The name and the pin sit together, because this screen is the
+          // durable way BACK: an unpinned room only reappears in the chat list
+          // when it has unread, so for a quiet room there would otherwise be
+          // nowhere to re-pin it (James, 2026-09-15).
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
+            children: <Widget>[
+              // Tappable, so a quiet UNPINNED room can still be opened from
+              // here — otherwise the only way in would be to pin it first and
+              // go looking in the chat list (James, 2026-09-15).
+              InkWell(
+                onTap: () => Get.to(
+                  () => ChatScaffold.room(
+                    roomType: room.roomType,
+                    title: room.roomName,
+                    key: UniqueKey(),
+                  ),
+                ),
+                child: Text(
+                  room.roomName,
+                  style: ts_body.copyWith(
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.white54,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                tooltip: room.pinned ? 'Unpin from the chat list'
+                                     : 'Pin to the top of the chat list',
+                icon: Icon(
+                  room.pinned ? Icons.push_pin : Icons.push_pin_outlined,
+                  size: 20,
+                  color: room.pinned ? Colors.white : Colors.white60,
+                ),
+                onPressed: () => unawaited(controller.toggleRoomPin(room)),
+              ),
+            ],
+          ),
           const SizedBox(height: 6),
           // Wrap, not Row: three labelled choices are wider than a phone at a
           // large text size, and a Wrap takes a second line where a Row
