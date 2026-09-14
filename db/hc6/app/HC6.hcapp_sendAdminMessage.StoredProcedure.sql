@@ -88,6 +88,11 @@ BEGIN
     RETURN;
 END
 
+-- The global room this SP speaks for. Role rooms (RAs, Hash Flashes) take
+-- 2, 3, ... and DMs will carry a ThreadId alongside. See
+-- db/hc6/app/archive/2026-09-14_chat_thread_keys.sql for the whole key.
+DECLARE @roomType INT = 1;
+
 DECLARE @publicHasherId UNIQUEIDENTIFIER;
 SELECT @publicHasherId = h.PublicHasherId FROM HC.Hasher h WHERE h.id = @userId;
 
@@ -100,27 +105,34 @@ BEGIN TRY
          [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageType])
     VALUES
         (@messageId, NULL, NULL, @userId, @publicHasherId,
-         '', @messageContent, 63, 1);
+         '', @messageContent, 63, @roomType);
 
     DECLARE @seq INT;
     SELECT @seq = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;
 
     -- The sender never sees their own message as unread.
     --
-    -- MERGE ON an IS NULL predicate rather than `Target.KennelId =
+    -- MERGE ON IS NULL predicates rather than `Target.KennelId =
     -- Source.KennelId`: the kennel version compares a column to a value,
     -- and NULL = NULL is never true, so that form would insert a duplicate
     -- badge row on every single message.
+    --
+    -- MessageType and ThreadId are part of the match, not decoration. Every
+    -- global room and every future DM has EventId and KennelId both NULL,
+    -- so without them a hasher would hold ONE badge row shared by this room,
+    -- every role room, and every private conversation they ever have.
     MERGE INTO HC.EventMessageBadgeCounts AS Target
     USING (VALUES (@userId, @seq)) AS Source (UserId, LastSequenceCount)
     ON (Target.UserId = Source.UserId
         AND Target.EventId IS NULL
-        AND Target.KennelId IS NULL)
+        AND Target.KennelId IS NULL
+        AND Target.ThreadId IS NULL
+        AND Target.MessageType = @roomType)
     WHEN MATCHED THEN
         UPDATE SET Target.LastSequenceCount = Source.LastSequenceCount
     WHEN NOT MATCHED BY TARGET THEN
-        INSERT (UserId, EventId, KennelId, LastSequenceCount)
-        VALUES (Source.UserId, NULL, NULL, Source.LastSequenceCount);
+        INSERT (UserId, EventId, KennelId, MessageType, LastSequenceCount)
+        VALUES (Source.UserId, NULL, NULL, @roomType, Source.LastSequenceCount);
 
     COMMIT TRANSACTION;
 END TRY
