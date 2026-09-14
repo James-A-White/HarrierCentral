@@ -129,9 +129,14 @@ class _ChatScaffoldState extends State<ChatScaffold> {
           // app having undone the hasher's choice.
           if (_pinKnown)
             IconButton(
-              tooltip: _pinned ? 'Unpin this chat' : 'Pin this chat',
-              icon: Icon(
-                _pinned ? Icons.push_pin : Icons.push_pin_outlined,
+              tooltip: _pinned ? 'Pinned — tap to unpin'
+                               : 'Not pinned — tap to pin',
+              // Same glyph as the settings console and the chat list, so
+              // "pinned" looks like one thing across the app. An outline pin
+              // was too close to the filled one to tell apart at a glance.
+              icon: PinGlyph(
+                pinned: _pinned,
+                size: 24,
                 color: Colors.white,
               ),
               onPressed: _saving ? null : () => unawaited(_togglePin()),
