@@ -1,3 +1,16 @@
+## 3.1.0+1358 (2026-09-14)
+### New Features
+- **Chat rooms**: Five platform-wide rooms — Harrier Central Admins, Grand
+  Masters, Hash Cash, Religious Advisors and Hare Raisers — listed on the
+  Support page for whichever roles you hold.
+- **Room settings**: Settings now lets you choose, per room, whether to be
+  notified, badged only, or to leave it entirely.
+### Improvements
+- Kennel admin buttons line up in columns and reflow by screen width, whatever
+  your permissions allow you to see.
+- Photo import reaches 10km from the start when there is no track to match against.
+- The Android photo icon is the current Google Photos mark rather than the 2015 one.
+
 ## 3.1.0+1357 (2026-09-13)
 
 Build 1356 went to 3.0.36 the same evening, so this is 1357.
