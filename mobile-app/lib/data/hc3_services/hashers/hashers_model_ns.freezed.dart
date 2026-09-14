@@ -15,7 +15,15 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HashersModel implements DiagnosticableTreeMixin {
 
- String get hasherId; String? get firstName; String? get lastName; String get dispName; String? get hashName; String? get photo; int get dispPref; int get includeInGlobalHashDirectory; int? get removed; DateTime? get updatedAt; String? get homeKennelId;
+ String get hasherId; String? get firstName; String? get lastName; String get dispName; String? get hashName; String? get photo; int get dispPref; int get includeInGlobalHashDirectory;/// Chat rooms this hasher has turned OFF (E9.F1.S8). Mirrors of the two
+/// grant bitfields on HasherKennelMap — same bit, same meaning — but held
+/// here because a room is global while those fields are per-kennel.
+///
+/// They store DEVIATIONS, not pins: every room defaults to pinned, so 0
+/// means "all of them pinned" and a set bit means "I turned that one off".
+/// The sync masks these to the calling hasher, so they are 0 on every
+/// other hasher's row.
+ int? get unpinnedMismanagementRooms; int? get unpinnedAppAccessRooms; int? get removed; DateTime? get updatedAt; String? get homeKennelId;
 /// Create a copy of HashersModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,21 +37,21 @@ $HashersModelCopyWith<HashersModel> get copyWith => _$HashersModelCopyWithImpl<H
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'HashersModel'))
-    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('dispName', dispName))..add(DiagnosticsProperty('hashName', hashName))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('dispPref', dispPref))..add(DiagnosticsProperty('includeInGlobalHashDirectory', includeInGlobalHashDirectory))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt))..add(DiagnosticsProperty('homeKennelId', homeKennelId));
+    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('dispName', dispName))..add(DiagnosticsProperty('hashName', hashName))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('dispPref', dispPref))..add(DiagnosticsProperty('includeInGlobalHashDirectory', includeInGlobalHashDirectory))..add(DiagnosticsProperty('unpinnedMismanagementRooms', unpinnedMismanagementRooms))..add(DiagnosticsProperty('unpinnedAppAccessRooms', unpinnedAppAccessRooms))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt))..add(DiagnosticsProperty('homeKennelId', homeKennelId));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HashersModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dispName, dispName) || other.dispName == dispName)&&(identical(other.hashName, hashName) || other.hashName == hashName)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.dispPref, dispPref) || other.dispPref == dispPref)&&(identical(other.includeInGlobalHashDirectory, includeInGlobalHashDirectory) || other.includeInGlobalHashDirectory == includeInGlobalHashDirectory)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.homeKennelId, homeKennelId) || other.homeKennelId == homeKennelId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HashersModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dispName, dispName) || other.dispName == dispName)&&(identical(other.hashName, hashName) || other.hashName == hashName)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.dispPref, dispPref) || other.dispPref == dispPref)&&(identical(other.includeInGlobalHashDirectory, includeInGlobalHashDirectory) || other.includeInGlobalHashDirectory == includeInGlobalHashDirectory)&&(identical(other.unpinnedMismanagementRooms, unpinnedMismanagementRooms) || other.unpinnedMismanagementRooms == unpinnedMismanagementRooms)&&(identical(other.unpinnedAppAccessRooms, unpinnedAppAccessRooms) || other.unpinnedAppAccessRooms == unpinnedAppAccessRooms)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.homeKennelId, homeKennelId) || other.homeKennelId == homeKennelId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hasherId,firstName,lastName,dispName,hashName,photo,dispPref,includeInGlobalHashDirectory,removed,updatedAt,homeKennelId);
+int get hashCode => Object.hash(runtimeType,hasherId,firstName,lastName,dispName,hashName,photo,dispPref,includeInGlobalHashDirectory,unpinnedMismanagementRooms,unpinnedAppAccessRooms,removed,updatedAt,homeKennelId);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, removed: $removed, updatedAt: $updatedAt, homeKennelId: $homeKennelId)';
+  return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, unpinnedMismanagementRooms: $unpinnedMismanagementRooms, unpinnedAppAccessRooms: $unpinnedAppAccessRooms, removed: $removed, updatedAt: $updatedAt, homeKennelId: $homeKennelId)';
 }
 
 
@@ -54,7 +62,7 @@ abstract mixin class $HashersModelCopyWith<$Res>  {
   factory $HashersModelCopyWith(HashersModel value, $Res Function(HashersModel) _then) = _$HashersModelCopyWithImpl;
 @useResult
 $Res call({
- String hasherId, String? firstName, String? lastName, String dispName, String? hashName, String? photo, int dispPref, int includeInGlobalHashDirectory, int? removed, DateTime? updatedAt, String? homeKennelId
+ String hasherId, String? firstName, String? lastName, String dispName, String? hashName, String? photo, int dispPref, int includeInGlobalHashDirectory, int? unpinnedMismanagementRooms, int? unpinnedAppAccessRooms, int? removed, DateTime? updatedAt, String? homeKennelId
 });
 
 
@@ -71,7 +79,7 @@ class _$HashersModelCopyWithImpl<$Res>
 
 /// Create a copy of HashersModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? hasherId = null,Object? firstName = freezed,Object? lastName = freezed,Object? dispName = null,Object? hashName = freezed,Object? photo = freezed,Object? dispPref = null,Object? includeInGlobalHashDirectory = null,Object? removed = freezed,Object? updatedAt = freezed,Object? homeKennelId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? hasherId = null,Object? firstName = freezed,Object? lastName = freezed,Object? dispName = null,Object? hashName = freezed,Object? photo = freezed,Object? dispPref = null,Object? includeInGlobalHashDirectory = null,Object? unpinnedMismanagementRooms = freezed,Object? unpinnedAppAccessRooms = freezed,Object? removed = freezed,Object? updatedAt = freezed,Object? homeKennelId = freezed,}) {
   return _then(_self.copyWith(
 hasherId: null == hasherId ? _self.hasherId : hasherId // ignore: cast_nullable_to_non_nullable
 as String,firstName: freezed == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -81,7 +89,9 @@ as String,hashName: freezed == hashName ? _self.hashName : hashName // ignore: c
 as String?,photo: freezed == photo ? _self.photo : photo // ignore: cast_nullable_to_non_nullable
 as String?,dispPref: null == dispPref ? _self.dispPref : dispPref // ignore: cast_nullable_to_non_nullable
 as int,includeInGlobalHashDirectory: null == includeInGlobalHashDirectory ? _self.includeInGlobalHashDirectory : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
-as int,removed: freezed == removed ? _self.removed : removed // ignore: cast_nullable_to_non_nullable
+as int,unpinnedMismanagementRooms: freezed == unpinnedMismanagementRooms ? _self.unpinnedMismanagementRooms : unpinnedMismanagementRooms // ignore: cast_nullable_to_non_nullable
+as int?,unpinnedAppAccessRooms: freezed == unpinnedAppAccessRooms ? _self.unpinnedAppAccessRooms : unpinnedAppAccessRooms // ignore: cast_nullable_to_non_nullable
+as int?,removed: freezed == removed ? _self.removed : removed // ignore: cast_nullable_to_non_nullable
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,homeKennelId: freezed == homeKennelId ? _self.homeKennelId : homeKennelId // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -169,10 +179,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String hasherId,  String? firstName,  String? lastName,  String dispName,  String? hashName,  String? photo,  int dispPref,  int includeInGlobalHashDirectory,  int? removed,  DateTime? updatedAt,  String? homeKennelId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String hasherId,  String? firstName,  String? lastName,  String dispName,  String? hashName,  String? photo,  int dispPref,  int includeInGlobalHashDirectory,  int? unpinnedMismanagementRooms,  int? unpinnedAppAccessRooms,  int? removed,  DateTime? updatedAt,  String? homeKennelId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HashersModel() when $default != null:
-return $default(_that.hasherId,_that.firstName,_that.lastName,_that.dispName,_that.hashName,_that.photo,_that.dispPref,_that.includeInGlobalHashDirectory,_that.removed,_that.updatedAt,_that.homeKennelId);case _:
+return $default(_that.hasherId,_that.firstName,_that.lastName,_that.dispName,_that.hashName,_that.photo,_that.dispPref,_that.includeInGlobalHashDirectory,_that.unpinnedMismanagementRooms,_that.unpinnedAppAccessRooms,_that.removed,_that.updatedAt,_that.homeKennelId);case _:
   return orElse();
 
 }
@@ -190,10 +200,10 @@ return $default(_that.hasherId,_that.firstName,_that.lastName,_that.dispName,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String hasherId,  String? firstName,  String? lastName,  String dispName,  String? hashName,  String? photo,  int dispPref,  int includeInGlobalHashDirectory,  int? removed,  DateTime? updatedAt,  String? homeKennelId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String hasherId,  String? firstName,  String? lastName,  String dispName,  String? hashName,  String? photo,  int dispPref,  int includeInGlobalHashDirectory,  int? unpinnedMismanagementRooms,  int? unpinnedAppAccessRooms,  int? removed,  DateTime? updatedAt,  String? homeKennelId)  $default,) {final _that = this;
 switch (_that) {
 case _HashersModel():
-return $default(_that.hasherId,_that.firstName,_that.lastName,_that.dispName,_that.hashName,_that.photo,_that.dispPref,_that.includeInGlobalHashDirectory,_that.removed,_that.updatedAt,_that.homeKennelId);case _:
+return $default(_that.hasherId,_that.firstName,_that.lastName,_that.dispName,_that.hashName,_that.photo,_that.dispPref,_that.includeInGlobalHashDirectory,_that.unpinnedMismanagementRooms,_that.unpinnedAppAccessRooms,_that.removed,_that.updatedAt,_that.homeKennelId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +220,10 @@ return $default(_that.hasherId,_that.firstName,_that.lastName,_that.dispName,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String hasherId,  String? firstName,  String? lastName,  String dispName,  String? hashName,  String? photo,  int dispPref,  int includeInGlobalHashDirectory,  int? removed,  DateTime? updatedAt,  String? homeKennelId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String hasherId,  String? firstName,  String? lastName,  String dispName,  String? hashName,  String? photo,  int dispPref,  int includeInGlobalHashDirectory,  int? unpinnedMismanagementRooms,  int? unpinnedAppAccessRooms,  int? removed,  DateTime? updatedAt,  String? homeKennelId)?  $default,) {final _that = this;
 switch (_that) {
 case _HashersModel() when $default != null:
-return $default(_that.hasherId,_that.firstName,_that.lastName,_that.dispName,_that.hashName,_that.photo,_that.dispPref,_that.includeInGlobalHashDirectory,_that.removed,_that.updatedAt,_that.homeKennelId);case _:
+return $default(_that.hasherId,_that.firstName,_that.lastName,_that.dispName,_that.hashName,_that.photo,_that.dispPref,_that.includeInGlobalHashDirectory,_that.unpinnedMismanagementRooms,_that.unpinnedAppAccessRooms,_that.removed,_that.updatedAt,_that.homeKennelId);case _:
   return null;
 
 }
@@ -225,7 +235,7 @@ return $default(_that.hasherId,_that.firstName,_that.lastName,_that.dispName,_th
 @JsonSerializable()
 
 class _HashersModel with DiagnosticableTreeMixin implements HashersModel {
-   _HashersModel({required this.hasherId, this.firstName, this.lastName, required this.dispName, this.hashName, this.photo, required this.dispPref, required this.includeInGlobalHashDirectory, this.removed, this.updatedAt, this.homeKennelId});
+   _HashersModel({required this.hasherId, this.firstName, this.lastName, required this.dispName, this.hashName, this.photo, required this.dispPref, required this.includeInGlobalHashDirectory, this.unpinnedMismanagementRooms, this.unpinnedAppAccessRooms, this.removed, this.updatedAt, this.homeKennelId});
   factory _HashersModel.fromJson(Map<String, dynamic> json) => _$HashersModelFromJson(json);
 
 @override final  String hasherId;
@@ -236,6 +246,16 @@ class _HashersModel with DiagnosticableTreeMixin implements HashersModel {
 @override final  String? photo;
 @override final  int dispPref;
 @override final  int includeInGlobalHashDirectory;
+/// Chat rooms this hasher has turned OFF (E9.F1.S8). Mirrors of the two
+/// grant bitfields on HasherKennelMap — same bit, same meaning — but held
+/// here because a room is global while those fields are per-kennel.
+///
+/// They store DEVIATIONS, not pins: every room defaults to pinned, so 0
+/// means "all of them pinned" and a set bit means "I turned that one off".
+/// The sync masks these to the calling hasher, so they are 0 on every
+/// other hasher's row.
+@override final  int? unpinnedMismanagementRooms;
+@override final  int? unpinnedAppAccessRooms;
 @override final  int? removed;
 @override final  DateTime? updatedAt;
 @override final  String? homeKennelId;
@@ -254,21 +274,21 @@ Map<String, dynamic> toJson() {
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'HashersModel'))
-    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('dispName', dispName))..add(DiagnosticsProperty('hashName', hashName))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('dispPref', dispPref))..add(DiagnosticsProperty('includeInGlobalHashDirectory', includeInGlobalHashDirectory))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt))..add(DiagnosticsProperty('homeKennelId', homeKennelId));
+    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('dispName', dispName))..add(DiagnosticsProperty('hashName', hashName))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('dispPref', dispPref))..add(DiagnosticsProperty('includeInGlobalHashDirectory', includeInGlobalHashDirectory))..add(DiagnosticsProperty('unpinnedMismanagementRooms', unpinnedMismanagementRooms))..add(DiagnosticsProperty('unpinnedAppAccessRooms', unpinnedAppAccessRooms))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt))..add(DiagnosticsProperty('homeKennelId', homeKennelId));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HashersModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dispName, dispName) || other.dispName == dispName)&&(identical(other.hashName, hashName) || other.hashName == hashName)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.dispPref, dispPref) || other.dispPref == dispPref)&&(identical(other.includeInGlobalHashDirectory, includeInGlobalHashDirectory) || other.includeInGlobalHashDirectory == includeInGlobalHashDirectory)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.homeKennelId, homeKennelId) || other.homeKennelId == homeKennelId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HashersModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dispName, dispName) || other.dispName == dispName)&&(identical(other.hashName, hashName) || other.hashName == hashName)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.dispPref, dispPref) || other.dispPref == dispPref)&&(identical(other.includeInGlobalHashDirectory, includeInGlobalHashDirectory) || other.includeInGlobalHashDirectory == includeInGlobalHashDirectory)&&(identical(other.unpinnedMismanagementRooms, unpinnedMismanagementRooms) || other.unpinnedMismanagementRooms == unpinnedMismanagementRooms)&&(identical(other.unpinnedAppAccessRooms, unpinnedAppAccessRooms) || other.unpinnedAppAccessRooms == unpinnedAppAccessRooms)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.homeKennelId, homeKennelId) || other.homeKennelId == homeKennelId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hasherId,firstName,lastName,dispName,hashName,photo,dispPref,includeInGlobalHashDirectory,removed,updatedAt,homeKennelId);
+int get hashCode => Object.hash(runtimeType,hasherId,firstName,lastName,dispName,hashName,photo,dispPref,includeInGlobalHashDirectory,unpinnedMismanagementRooms,unpinnedAppAccessRooms,removed,updatedAt,homeKennelId);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, removed: $removed, updatedAt: $updatedAt, homeKennelId: $homeKennelId)';
+  return 'HashersModel(hasherId: $hasherId, firstName: $firstName, lastName: $lastName, dispName: $dispName, hashName: $hashName, photo: $photo, dispPref: $dispPref, includeInGlobalHashDirectory: $includeInGlobalHashDirectory, unpinnedMismanagementRooms: $unpinnedMismanagementRooms, unpinnedAppAccessRooms: $unpinnedAppAccessRooms, removed: $removed, updatedAt: $updatedAt, homeKennelId: $homeKennelId)';
 }
 
 
@@ -279,7 +299,7 @@ abstract mixin class _$HashersModelCopyWith<$Res> implements $HashersModelCopyWi
   factory _$HashersModelCopyWith(_HashersModel value, $Res Function(_HashersModel) _then) = __$HashersModelCopyWithImpl;
 @override @useResult
 $Res call({
- String hasherId, String? firstName, String? lastName, String dispName, String? hashName, String? photo, int dispPref, int includeInGlobalHashDirectory, int? removed, DateTime? updatedAt, String? homeKennelId
+ String hasherId, String? firstName, String? lastName, String dispName, String? hashName, String? photo, int dispPref, int includeInGlobalHashDirectory, int? unpinnedMismanagementRooms, int? unpinnedAppAccessRooms, int? removed, DateTime? updatedAt, String? homeKennelId
 });
 
 
@@ -296,7 +316,7 @@ class __$HashersModelCopyWithImpl<$Res>
 
 /// Create a copy of HashersModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? hasherId = null,Object? firstName = freezed,Object? lastName = freezed,Object? dispName = null,Object? hashName = freezed,Object? photo = freezed,Object? dispPref = null,Object? includeInGlobalHashDirectory = null,Object? removed = freezed,Object? updatedAt = freezed,Object? homeKennelId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? hasherId = null,Object? firstName = freezed,Object? lastName = freezed,Object? dispName = null,Object? hashName = freezed,Object? photo = freezed,Object? dispPref = null,Object? includeInGlobalHashDirectory = null,Object? unpinnedMismanagementRooms = freezed,Object? unpinnedAppAccessRooms = freezed,Object? removed = freezed,Object? updatedAt = freezed,Object? homeKennelId = freezed,}) {
   return _then(_HashersModel(
 hasherId: null == hasherId ? _self.hasherId : hasherId // ignore: cast_nullable_to_non_nullable
 as String,firstName: freezed == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -306,7 +326,9 @@ as String,hashName: freezed == hashName ? _self.hashName : hashName // ignore: c
 as String?,photo: freezed == photo ? _self.photo : photo // ignore: cast_nullable_to_non_nullable
 as String?,dispPref: null == dispPref ? _self.dispPref : dispPref // ignore: cast_nullable_to_non_nullable
 as int,includeInGlobalHashDirectory: null == includeInGlobalHashDirectory ? _self.includeInGlobalHashDirectory : includeInGlobalHashDirectory // ignore: cast_nullable_to_non_nullable
-as int,removed: freezed == removed ? _self.removed : removed // ignore: cast_nullable_to_non_nullable
+as int,unpinnedMismanagementRooms: freezed == unpinnedMismanagementRooms ? _self.unpinnedMismanagementRooms : unpinnedMismanagementRooms // ignore: cast_nullable_to_non_nullable
+as int?,unpinnedAppAccessRooms: freezed == unpinnedAppAccessRooms ? _self.unpinnedAppAccessRooms : unpinnedAppAccessRooms // ignore: cast_nullable_to_non_nullable
+as int?,removed: freezed == removed ? _self.removed : removed // ignore: cast_nullable_to_non_nullable
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,homeKennelId: freezed == homeKennelId ? _self.homeKennelId : homeKennelId // ignore: cast_nullable_to_non_nullable
 as String?,

@@ -178,6 +178,7 @@ export 'package:harrier_central/database/tables.dart';
 
 // pages/detail_pages
 export 'package:harrier_central/pages/detail_pages/chat/chat_page.dart';
+export 'package:harrier_central/pages/detail_pages/chat/chat_scaffold.dart';
 export 'package:harrier_central/services/chat_rooms/chat_room_service.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_page_controller.dart';
 export 'package:harrier_central/pages/detail_pages/kennel_admin_controller.dart';

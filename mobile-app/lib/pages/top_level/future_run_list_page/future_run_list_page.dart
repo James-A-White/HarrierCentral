@@ -906,19 +906,11 @@ class FutureRunsListPage extends StatelessWidget {
           // standalone from here it needs its own Scaffold + AppBar so there's
           // a back button and the input stays above the keyboard.
           await Get.to(
-            () => Scaffold(
-              appBar: AppBar(
-                title: Text(title),
-                backgroundColor: themeButtonColors,
-                foregroundColor: Colors.white,
-              ),
-              body: ChatPage(
-                eventId: kennelThread ? s.kennelId! : s.eventId!,
-                publicEventId: kennelThread
-                    ? s.publicKennelId!
-                    : s.publicEventId,
-                isKennelThread: kennelThread,
-              ),
+            () => ChatScaffold(
+              title: title,
+              eventId: kennelThread ? s.kennelId! : s.eventId!,
+              publicEventId: kennelThread ? s.publicKennelId! : s.publicEventId,
+              isKennelThread: kennelThread,
             ),
           );
           // Refresh unread counts after leaving the chat so the badge and this
@@ -1545,9 +1537,15 @@ class EventChatSummary {
   /// run's start time is not when people talked about it.
   final String? lastMessageAt;
 
+  /// Pinned chats sort above everything else (E9.F1.S8). Resolved by the SP,
+  /// so the tri-state kennel default (pinned for the home kennel) is already
+  /// applied and the app does not re-derive it.
+  final bool pinned;
+
   EventChatSummary({
     required this.publicEventId,
     required this.badgeCount,
+    this.pinned = false,
     this.eventId,
     this.eventName,
     this.eventNumber,
@@ -1599,6 +1597,8 @@ class EventChatSummary {
       kennelLogo: json['KennelLogo'] as String?,
       messageCount: (json['MessageCount'] as num?)?.toInt(),
       lastMessageAt: json['LastMessageAt']?.toString(),
+      // SMALLINT on the wire, but the `== true` guard costs nothing.
+      pinned: json['Pinned'] == true || json['Pinned'] == 1,
     );
   }
 

@@ -175,6 +175,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
               )
               .toList()
             ..sort((a, b) {
+              // Pinned chats sit above everything else (E9.F1.S8) — your home
+              // kennel and your role rooms by default, plus whatever you
+              // pinned by hand. Within each group the existing order stands:
+              // most recently spoken in first.
+              if (a.pinned != b.pinned) return a.pinned ? -1 : 1;
               final String ak =
                   a.lastMessageAt ?? a.eventStartDatetimeGmt ?? '';
               final String bk =

@@ -61,8 +61,15 @@ class SupportPageState extends State<SupportPage> {
     // Delete first AND after: the controller is Get.put by the page, so a
     // stale one would otherwise be reused for the next room opened.
     await Get.delete<ChatPageController>(force: true);
-    await Get.to<ChatPage>(
-      () => ChatPage.room(roomType: room.roomType, key: UniqueKey()),
+    // ChatScaffold, not ChatPage: pushed bare, a room had no app bar and no
+    // back button at all (shipped that way in 3.1.0+1358). The wrapper also
+    // carries the pin icon.
+    await Get.to<ChatScaffold>(
+      () => ChatScaffold.room(
+        roomType: room.roomType,
+        title: room.roomName,
+        key: UniqueKey(),
+      ),
     );
     await Get.delete<ChatPageController>(force: true);
     // Unread counts move while the room is open, so re-read them on the way

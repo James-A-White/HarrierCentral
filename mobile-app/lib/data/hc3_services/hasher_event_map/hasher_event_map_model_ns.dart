@@ -54,6 +54,9 @@ abstract class HasherEventMapModel
     int? hemEventIsCountedAndVisible,
     String? hemKennelUserPhoto,
     String? hemKennelHashName,
+    /// Pinned chat (E9.F1.S8). Two states only: a run never auto-pins, and a
+    /// run pin never expires — the system does not undo what the hasher did.
+    int? pinned,
     int? removed,
     DateTime? updatedAt,
   }) = _HasherEventMapModel;

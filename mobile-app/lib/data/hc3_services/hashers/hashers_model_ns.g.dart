@@ -17,6 +17,9 @@ _HashersModel _$HashersModelFromJson(Map<String, dynamic> json) =>
       dispPref: (json['dispPref'] as num).toInt(),
       includeInGlobalHashDirectory:
           (json['includeInGlobalHashDirectory'] as num).toInt(),
+      unpinnedMismanagementRooms: (json['unpinnedMismanagementRooms'] as num?)
+          ?.toInt(),
+      unpinnedAppAccessRooms: (json['unpinnedAppAccessRooms'] as num?)?.toInt(),
       removed: (json['removed'] as num?)?.toInt(),
       updatedAt: json['updatedAt'] == null
           ? null
@@ -34,6 +37,8 @@ Map<String, dynamic> _$HashersModelToJson(_HashersModel instance) =>
       'photo': instance.photo,
       'dispPref': instance.dispPref,
       'includeInGlobalHashDirectory': instance.includeInGlobalHashDirectory,
+      'unpinnedMismanagementRooms': instance.unpinnedMismanagementRooms,
+      'unpinnedAppAccessRooms': instance.unpinnedAppAccessRooms,
       'removed': instance.removed,
       'updatedAt': instance.updatedAt?.toIso8601String(),
       'homeKennelId': instance.homeKennelId,

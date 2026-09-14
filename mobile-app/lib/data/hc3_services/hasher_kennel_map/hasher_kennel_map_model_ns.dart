@@ -41,6 +41,10 @@ abstract class HasherKennelMapModel
     required int mismanagementRoles,
     String? kennelUserPhoto,
     String? kennelHashName,
+    /// Pinned chat, TRI-STATE (E9.F1.S8): null means "use the default",
+    /// which is pinned for the home kennel and unpinned otherwise. 0 and 1
+    /// are the hasher's explicit choice and override the default.
+    int? pinned,
     DateTime? updatedAt,
     int? removed,
   }) = _HasherKennelMapModel;

@@ -37,6 +37,10 @@ class HashersTableHelper extends BaseTableHelper<AppDomainType>
   final String colQrCode = 'qrCode';
   final String colHomeKennelId = 'homeKennelId';
   final String colIncludeInGlobalHashDirectory = 'includeInGlobalHashDirectory';
+  /// Chat rooms this hasher turned OFF — deviations, not pins (E9.F1.S8).
+  /// 0 means every room they are in is pinned, which is the default.
+  final String colUnpinnedMismanagementRooms = 'unpinnedMismanagementRooms';
+  final String colUnpinnedAppAccessRooms = 'unpinnedAppAccessRooms';
   final String colPreferences = 'preferences';
 
   @override
@@ -58,6 +62,8 @@ class HashersTableHelper extends BaseTableHelper<AppDomainType>
             $colHomeKennelId TEXT,
             $colDispPref INT NOT NULL,
             $colIncludeInGlobalHashDirectory INT NOT NULL,
+            $colUnpinnedMismanagementRooms INT,
+            $colUnpinnedAppAccessRooms INT,
             $colRemoved INT NOT NULL,
             $colUpdatedAt TEXT NOT NULL,
             $colUpdatedAtValue INT NULL
