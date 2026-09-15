@@ -1,3 +1,10 @@
+## 3.1.0+1368 (2026-09-15)
+### New Features
+- **Links open the app**: a hashruns.org run link — from a WhatsApp notice, a
+  QR code, or anywhere — now opens Harrier Central straight to that run's
+  check-in tab. If the run's kennel isn't one you follow, the app offers to
+  follow it first.
+
 ## 3.1.0+1367 (2026-09-15)
 ### Improvements
 - "Post this run to WhatsApp" and "Announce elsewhere" are now on the run's
