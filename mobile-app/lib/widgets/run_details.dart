@@ -966,28 +966,14 @@ class RunDetails extends StatelessWidget {
           // written by RunAnnouncement; WhatsApp gets its own button because
           // it is where hashing actually happens, and everything else shares
           // the second one.
+          // A SPLIT button (E9.F6, James 2026-09-15): the main part is the
+          // kennel's own messaging app, the chevron holds the others plus
+          // "Other apps…". One kennel is on Telegram, one on Signal; the
+          // button should say so rather than assume WhatsApp for everyone.
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 0.0),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.chat, color: Colors.white, size: 26),
-              label: Text(
-                'Post this run to WhatsApp',
-                style: ts_button,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              onPressed: () =>
-                  RunAnnouncement(event: event, kennel: kennel).postToWhatsApp(),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-            child: TextButton.icon(
-              icon: const Icon(Icons.campaign_outlined, color: Colors.white, size: 22),
-              label: Text('Announce elsewhere…', style: ts_button),
-              onPressed: () =>
-                  RunAnnouncement(event: event, kennel: kennel).shareAnywhere(),
+            child: _AnnounceSplitButton(
+              announcement: RunAnnouncement(event: event, kennel: kennel),
             ),
           ),
           // The same door as the kennel's "Share my photos", but for THIS run
@@ -1556,6 +1542,79 @@ class _MyNotesSection extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+}
+
+
+/// "Post this run to <kennel's app>" with a chevron for the other platforms.
+///
+/// Built from a Row of two buttons rather than a MenuAnchor-per-button so the
+/// main action stays a plain red button like every other on the page, and
+/// the chevron is visibly a second control.
+class _AnnounceSplitButton extends StatelessWidget {
+  const _AnnounceSplitButton({required this.announcement});
+  final RunAnnouncement announcement;
+
+  @override
+  Widget build(BuildContext context) {
+    final MessagingPlatform main = announcement.preferred;
+    final List<MessagingPlatform> others = MessagingPlatform.values
+        .where((MessagingPlatform p) => p != main)
+        .toList();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.horizontal(left: Radius.circular(10)),
+            ),
+          ),
+          icon: const Icon(Icons.chat, color: Colors.white, size: 24),
+          label: Text(
+            'Post this run to ${main.label}',
+            style: ts_button,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          onPressed: () => announcement.sendVia(main),
+        ),
+        // A 1px light seam so the two halves read as one control with a
+        // hinge, not two buttons that happen to touch.
+        Container(width: 1, height: 44, color: Colors.white38),
+        MenuAnchor(
+          builder: (BuildContext c, MenuController m, Widget? _) =>
+              ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              minimumSize: const Size(44, 44),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.horizontal(right: Radius.circular(10)),
+              ),
+            ),
+            onPressed: () => m.isOpen ? m.close() : m.open(),
+            child: const Icon(Icons.expand_more, color: Colors.white),
+          ),
+          menuChildren: <Widget>[
+            for (final MessagingPlatform p in others)
+              MenuItemButton(
+                leadingIcon: const Icon(Icons.chat_bubble_outline),
+                onPressed: () => announcement.sendVia(p),
+                child: Text(p.opensWithNotice ? p.label : '${p.label} (via share sheet)'),
+              ),
+            const Divider(height: 8),
+            MenuItemButton(
+              leadingIcon: const Icon(Icons.campaign_outlined),
+              onPressed: announcement.shareAnywhere,
+              child: const Text('Other apps…'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

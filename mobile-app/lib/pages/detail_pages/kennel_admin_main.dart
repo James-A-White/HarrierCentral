@@ -1012,6 +1012,58 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           );
         }),
 
+        // Join-the-group button (E9.F6). The invite link is for JOINING —
+        // the kennel reaching the hasher, the mirror of "Post this run". It
+        // is deliberately not a post target: no platform lets an outside app
+        // open a specific group with a message, so a button promising that
+        // would lie for nearly every kennel.
+        if (((agg.kennel.messagingGroupInviteUrl ?? '').trim().isNotEmpty) &&
+            agg.kennel.messagingGroupInviteUrl!.toLowerCase().startsWith('http'))
+          Column(
+            children: <Widget>[
+              Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                width: _buttonWidth,
+                height: _buttonHeight,
+                child: StyleForConnected(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        const SizedBox(
+                          width: 45.0,
+                          child: Icon(Icons.group_add, color: Colors.white, size: 28),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 0),
+                            child: Text(
+                              'Join the ${agg.kennel.kennelShortName} '
+                              '${MessagingPlatform.fromCode(agg.kennel.defaultMessagingPlatform).label} group',
+                              style: ts_button,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    onPressed: () async {
+                      if (Utilities.isConnected(showDialog: true)) {
+                        await launchUrl(
+                          Uri.parse(agg.kennel.messagingGroupInviteUrl!.trim()),
+                          mode: LaunchMode.externalApplication,
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+
         // Website button
         if (((agg.kennel.kennelWebsiteUrl ?? '').isNotEmpty) &&
             agg.kennel.kennelWebsiteUrl!.trim().isNotEmpty)

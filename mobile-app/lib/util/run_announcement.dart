@@ -3,6 +3,32 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:harrier_central/imports.dart';
 
+/// The messaging apps a kennel can prefer. Codes match
+/// HC.Kennel.DefaultMessagingPlatform; WhatsApp is the server default.
+enum MessagingPlatform {
+  whatsApp(1, 'WhatsApp'),
+  telegram(2, 'Telegram'),
+  signal(3, 'Signal'),
+  messenger(4, 'Messenger'),
+  weChat(5, 'WeChat');
+
+  const MessagingPlatform(this.code, this.label);
+  final int code;
+  final String label;
+
+  static MessagingPlatform fromCode(int? code) => MessagingPlatform.values
+      .firstWhere((MessagingPlatform p) => p.code == code,
+          orElse: () => MessagingPlatform.whatsApp);
+
+  /// Whether the app can hand the NOTICE straight to this platform.
+  ///
+  /// The five are not equal, and the honest word for the difference is
+  /// "scheme": WhatsApp and Telegram accept pre-filled text; Messenger takes
+  /// a link only; Signal and WeChat have no compose scheme at all, so for
+  /// them the best possible is the OS share sheet with one fewer decision.
+  bool get opensWithNotice => this == whatsApp || this == telegram;
+}
+
 /// The run announcement — the message a hare raiser would otherwise type by
 /// hand into the kennel's WhatsApp group — and the two ways of sending it.
 ///
@@ -110,6 +136,43 @@ class RunAnnouncement {
     b.writeln('Details, map & RSVP: $url');
     b.write('via Harrier Central');
     return b.toString();
+  }
+
+  /// The kennel's preferred platform (E9.F6). Drives the main button; the
+  /// others sit behind its chevron.
+  MessagingPlatform get preferred =>
+      MessagingPlatform.fromCode(kennel.defaultMessagingPlatform);
+
+  /// Sends via whichever platform is asked for, doing the most that platform
+  /// allows. Returns true when the app itself took the message.
+  Future<bool> sendVia(MessagingPlatform platform) async {
+    switch (platform) {
+      case MessagingPlatform.whatsApp:
+        return postToWhatsApp();
+      case MessagingPlatform.telegram:
+        return _launchOrShare(
+          Uri.parse('tg://msg?text=${Uri.encodeComponent(text)}'),
+        );
+      case MessagingPlatform.messenger:
+        // Messenger's share takes a LINK only; the notice text is dropped.
+        return _launchOrShare(
+          Uri.parse('fb-messenger://share?link=${Uri.encodeComponent(url)}'),
+        );
+      case MessagingPlatform.signal:
+      case MessagingPlatform.weChat:
+        await shareAnywhere();
+        return false;
+    }
+  }
+
+  Future<bool> _launchOrShare(Uri uri) async {
+    try {
+      if (await canLaunchUrl(uri)) {
+        if (await launchUrl(uri, mode: LaunchMode.externalApplication)) return true;
+      }
+    } catch (_) {}
+    await shareAnywhere();
+    return false;
   }
 
   /// Opens WhatsApp with the message pre-filled; the admin picks the group

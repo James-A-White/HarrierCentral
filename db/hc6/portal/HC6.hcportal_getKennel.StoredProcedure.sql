@@ -96,6 +96,8 @@ BEGIN TRY
 		, k.PublishToGoogleCalendarAddresses as publishToGoogleCalendarAddresses
 		, k.KennelMismanagementTeam as mismanagementTeam
 		, k.KennelWebsiteUrl as kennelWebsiteUrl
+		, COALESCE(k.DefaultMessagingPlatform, 1) as defaultMessagingPlatform
+		, k.MessagingGroupInviteUrl as messagingGroupInviteUrl
 		, k.KennelCoverPhoto as kennelCoverPhoto
 		, c.CityName as cityName
 		, r.RegionName as regionName

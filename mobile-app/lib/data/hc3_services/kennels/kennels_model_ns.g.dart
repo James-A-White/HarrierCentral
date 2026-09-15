@@ -26,6 +26,8 @@ _KennelsModel _$KennelsModelFromJson(
   permissionOverrideJson: json['permissionOverrideJson'] as String?,
   kennelCoverPhoto: json['kennelCoverPhoto'] as String?,
   kennelWebsiteUrl: json['kennelWebsiteUrl'] as String?,
+  defaultMessagingPlatform: (json['defaultMessagingPlatform'] as num?)?.toInt(),
+  messagingGroupInviteUrl: json['messagingGroupInviteUrl'] as String?,
   defaultEventCurrencyType: json['defaultEventCurrencyType'] as String?,
   integrationType: json['integrationType'] as String?,
   kennelInboundIntegrationId: (json['kennelInboundIntegrationId'] as num?)
@@ -119,6 +121,8 @@ Map<String, dynamic> _$KennelsModelToJson(
   'permissionOverrideJson': instance.permissionOverrideJson,
   'kennelCoverPhoto': instance.kennelCoverPhoto,
   'kennelWebsiteUrl': instance.kennelWebsiteUrl,
+  'defaultMessagingPlatform': instance.defaultMessagingPlatform,
+  'messagingGroupInviteUrl': instance.messagingGroupInviteUrl,
   'defaultEventCurrencyType': instance.defaultEventCurrencyType,
   'integrationType': instance.integrationType,
   'kennelInboundIntegrationId': instance.kennelInboundIntegrationId,

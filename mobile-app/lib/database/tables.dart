@@ -449,6 +449,17 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 552 — a kennel's messaging platform and group invite link
+    // (E9.F6). Common domain only; the kennel row syncs globally.
+    MigrationsModel(
+      dbVersion: 552,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colDefaultMessagingPlatform} INT;
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colMessagingGroupInviteUrl} TEXT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
     // MIGRATION 551 — pinned chats (E9.F1.S8). Pin lives on records that
     // already sync, so it survives a reload and follows the hasher between
     // devices. A real ALTER rather than an empty record: 551 is one step from
