@@ -47,6 +47,19 @@ class ChatPage extends StatelessWidget {
         onSurface: const Color(0xFF1E293B),
       ),
       shape: const BorderRadius.all(Radius.circular(18)),
+      // Bigger text throughout (James, 2026-09-15). ChatTypography.standard
+      // is 16/14/12 for body and 14/12/10 for labels — fine on a desk, small
+      // on a phone held at arm's length after a run. Each step up by 3, which
+      // keeps the relative scale the layout is built around rather than
+      // enlarging one line and leaving the rest behind.
+      typography: base.typography.copyWith(
+        bodyLarge: base.typography.bodyLarge.copyWith(fontSize: 19),
+        bodyMedium: base.typography.bodyMedium.copyWith(fontSize: 17),
+        bodySmall: base.typography.bodySmall.copyWith(fontSize: 15),
+        labelLarge: base.typography.labelLarge.copyWith(fontSize: 17),
+        labelMedium: base.typography.labelMedium.copyWith(fontSize: 15),
+        labelSmall: base.typography.labelSmall.copyWith(fontSize: 13),
+      ),
     );
   }();
 

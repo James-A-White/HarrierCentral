@@ -30,6 +30,12 @@ AS
 --   anything is not the same as belonging in the Haberdashers' room. A
 --   super admin who is also an RA is in the RA room because they are an RA.
 --
+--   A room's mask may name more than one bit, so several roles can share one
+--   room: `(MismanagementRoles & GrantMask) <> 0` means any of them grants
+--   it. Grand Masters is GM|VGM and Web & Social Media is WebMeister|Social.
+--   Masks must stay DISJOINT between rooms — the pin mirrors key on the mask,
+--   so a bit in two rooms would make unpinning one unpin the other.
+--
 --   Rooms chosen from the active-holder counts on 2026-09-14 (people /
 --   opened the app in 30 days): GM 72/26, Hash Cash 64/26, RA 58/15, Hare
 --   Raiser 46/17. The thin tail was left out on purpose — Haberdasher is
@@ -46,9 +52,16 @@ RETURN
     FROM (VALUES
         --  Type  Name                       Column   Mask          Sort
             (1,  N'Harrier Central Admins',  'flags', 0x40000000,   10),
-            (2,  N'Grand Masters',           'mm',    0x00000002,   20),
+            -- GM + VGM together (James, 2026-09-15): 72 GMs and 87 once the
+            -- vice GMs are in. A mask may name SEVERAL bits — the test is
+            -- `& mask <> 0`, so any one of them grants the room.
+            (2,  N'Grand Masters',           'mm',    0x00000006,   20),
             (3,  N'Hash Cash',               'mm',    0x00000400,   30),
             (4,  N'Religious Advisors',      'mm',    0x00000008,   40),
-            (5,  N'Hare Raisers',            'mm',    0x00000200,   50)
+            (5,  N'Hare Raisers',            'mm',    0x00000200,   50),
+            -- Web Meister (32) + Social Media (8) = 39. NOTE there is also a
+            -- separate Communications role (0x00100000, 13 people) which is
+            -- NOT included — add 0x00100000 to this mask if it should be.
+            (6,  N'Web & Social Media',      'mm',    0x02001000,   60)
         ) AS c (RoomType, RoomName, GrantColumn, GrantMask, SortOrder);
 GO
