@@ -1,5 +1,7 @@
 import 'package:flutter_chat_core/flutter_chat_core.dart' as core;
+import 'package:flutter/gestures.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:harrier_central/imports.dart';
 
 class ChatPage extends StatelessWidget {
@@ -81,6 +83,25 @@ class ChatPage extends StatelessWidget {
       theme: _chatTheme,
       timeFormat: _timeFormat,
       builders: core.Builders(
+        // Links in a bubble are tappable, and a hashruns.org run link opens
+        // the run IN the app. The stock bubble renders plain text — there is
+        // no url_launcher anywhere in flutter_chat_ui 2.11 — and even if it
+        // launched, iOS never routes a universal link back into the app that
+        // owns the domain: it opens Safari. So in-app links go through
+        // DeepLinkService directly (James, 2026-09-15: "links in the chat
+        // are still opening HashRuns.org in Safari").
+        textMessageBuilder: (
+          context,
+          message,
+          index, {
+          required isSentByMe,
+          groupStatus,
+        }) => _LinkAwareTextMessage(
+          message: message,
+          isSentByMe: isSentByMe,
+          theme: _chatTheme,
+          timeFormat: _timeFormat,
+        ),
         chatMessageBuilder: (
           context,
           message,
@@ -123,6 +144,107 @@ class ChatPage extends StatelessWidget {
             child: child,
           );
         },
+      ),
+    );
+  }
+}
+
+
+/// The text bubble, with links. Mirrors SimpleTextMessage's shape and
+/// colours from the same ChatTheme so nothing else on the page changes.
+///
+/// A StatefulWidget only because TapGestureRecognizers have to be disposed;
+/// there is no business logic here (see CLAUDE.md on Stateless→Stateful).
+class _LinkAwareTextMessage extends StatefulWidget {
+  const _LinkAwareTextMessage({
+    required this.message,
+    required this.isSentByMe,
+    required this.theme,
+    required this.timeFormat,
+  });
+
+  final core.TextMessage message;
+  final bool isSentByMe;
+  final core.ChatTheme theme;
+  final DateFormat timeFormat;
+
+  @override
+  State<_LinkAwareTextMessage> createState() => _LinkAwareTextMessageState();
+}
+
+class _LinkAwareTextMessageState extends State<_LinkAwareTextMessage> {
+  final List<TapGestureRecognizer> _recognizers = <TapGestureRecognizer>[];
+
+  @override
+  void dispose() {
+    for (final TapGestureRecognizer r in _recognizers) {
+      r.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _openLink(Uri uri) async {
+    // Ours → the run, in the app. Anything else → the browser.
+    if (DeepLinkService.parse(uri) != null) {
+      await DeepLinkService.instance.open(uri);
+      return;
+    }
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final core.ChatTheme t = widget.theme;
+    final bool mine = widget.isSentByMe;
+    final Color bg = mine ? t.colors.primary : t.colors.surfaceContainer;
+    final Color fg = mine ? t.colors.onPrimary : t.colors.onSurface;
+    final TextStyle body = t.typography.bodyMedium.copyWith(color: fg);
+    final TextStyle link = body.copyWith(
+      decoration: TextDecoration.underline,
+      decorationColor: fg,
+      fontWeight: FontWeight.w600,
+    );
+    final TextStyle time = t.typography.labelSmall.copyWith(
+      color: fg.withValues(alpha: 0.7),
+    );
+
+    for (final TapGestureRecognizer r in _recognizers) {
+      r.dispose();
+    }
+    _recognizers.clear();
+
+    final List<InlineSpan> spans = <InlineSpan>[];
+    for (final TextRun run in splitLinks(widget.message.text)) {
+      if (run.isLink) {
+        final TapGestureRecognizer r = TapGestureRecognizer()
+          ..onTap = () => unawaited(_openLink(run.url!));
+        _recognizers.add(r);
+        spans.add(TextSpan(text: run.text, style: link, recognizer: r));
+      } else {
+        spans.add(TextSpan(text: run.text, style: body));
+      }
+    }
+
+    final DateTime? sent = widget.message.resolvedTime;
+    return ClipRRect(
+      borderRadius: t.shape,
+      child: Container(
+        color: bg,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            RichText(text: TextSpan(children: spans)),
+            if (sent != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(widget.timeFormat.format(sent.toLocal()), style: time),
+              ),
+          ],
+        ),
       ),
     );
   }
