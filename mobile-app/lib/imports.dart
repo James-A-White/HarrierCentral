@@ -178,6 +178,7 @@ export 'package:harrier_central/database/tables.dart';
 
 // pages/detail_pages
 export 'package:harrier_central/pages/detail_pages/chat/chat_page.dart';
+export 'package:harrier_central/services/deep_link/deep_link_service.dart';
 export 'package:harrier_central/util/run_announcement.dart';
 export 'package:harrier_central/widgets/pin_glyph.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_scaffold.dart';

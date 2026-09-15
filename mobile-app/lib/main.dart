@@ -132,6 +132,10 @@ Future<void> main() async {
   await initServices(); // GetX DI registration (see services_init.dart)
 
   runApp(RestartWidget(key: restartKey, child: RootApp()));
+  // Universal / App Links: hashruns.org URLs open here instead of a browser.
+  // Started after runApp so a cold-start link is captured, but the service
+  // itself waits for login and the run list before it navigates anywhere.
+  unawaited(DeepLinkService.instance.start());
 }
 
 /// Android media access, Play-policy compliant (rejection of 2026-08-29).

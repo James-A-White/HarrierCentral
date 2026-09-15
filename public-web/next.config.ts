@@ -29,6 +29,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Universal links. The file has no extension, so without this Next
+        // serves it as application/octet-stream and Apple's CDN rejects it.
+        source: "/.well-known/apple-app-site-association",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
         source: "/(.*)",
         headers: [
           { key: "X-Content-Type-Options",  value: "nosniff" },
