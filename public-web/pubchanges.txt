@@ -1,3 +1,6 @@
+0.21.48
+    • Universal links: next-run links open the app
+
 0.21.47
     • Universal links: .well-known association files so hashruns.org run links open the app
     • AASA served as application/json; .well-known excluded from tenant rewriting

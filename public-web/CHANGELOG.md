@@ -1,5 +1,8 @@
 # public-web Changelog
 
+## 0.21.48 (2026-09-15)
+- Universal links: `/<slug>/next-run` now opens the app (the app resolves the kennel's next run itself)
+
 ## 0.21.47 (2026-09-15)
 - Universal links: `.well-known/apple-app-site-association` and `assetlinks.json` so hashruns.org run links open the Harrier Central app
 - AASA served as `application/json`; `.well-known` excluded from tenant rewriting
