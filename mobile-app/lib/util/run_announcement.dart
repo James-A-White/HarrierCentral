@@ -135,6 +135,55 @@ class RunAnnouncement {
     return false;
   }
 
+  /// A two-row chooser — WhatsApp, or everything else — for the places that
+  /// have ONE share button and no room for two. Returns after the send.
+  Future<void> chooseAndSend(BuildContext context) async {
+    final bool? whatsApp = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext c) => SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const SizedBox(height: 12),
+            Text(
+              'Announce this run',
+              style: ts_titleMedium.copyWith(color: Colors.black87),
+            ),
+            ListTile(
+              leading: Icon(Icons.chat, color: hc_blue, size: 30),
+              title: const Text('Post to WhatsApp',
+                  style: TextStyle(color: Colors.black87, fontSize: 17, fontWeight: FontWeight.w600)),
+              subtitle: const Text('The notice, ready to send to the kennel group',
+                  style: TextStyle(color: Colors.black54, fontSize: 14)),
+              onTap: () => Navigator.of(c).pop(true),
+            ),
+            ListTile(
+              leading: Icon(Icons.campaign_outlined, color: hc_blue, size: 30),
+              title: const Text('Announce elsewhere',
+                  style: TextStyle(color: Colors.black87, fontSize: 17, fontWeight: FontWeight.w600)),
+              subtitle: const Text('Signal, Telegram, SMS, email…',
+                  style: TextStyle(color: Colors.black54, fontSize: 14)),
+              onTap: () => Navigator.of(c).pop(false),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (whatsApp == null) return;
+    if (whatsApp) {
+      await postToWhatsApp();
+    } else {
+      await shareAnywhere();
+    }
+  }
+
   /// The OS share sheet — Signal, Telegram, SMS, email, and WhatsApp too if
   /// that is where the user points it.
   Future<void> shareAnywhere() async {

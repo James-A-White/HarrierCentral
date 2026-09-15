@@ -11,6 +11,7 @@ class QrGroup extends StatelessWidget {
     required this.url,
     required this.helpTitle,
     required this.helpText,
+    this.onShare,
   });
 
   final String title;
@@ -19,6 +20,9 @@ class QrGroup extends StatelessWidget {
   final BuildContext context;
   final String helpTitle;
   final String helpText;
+  /// When set, the share button runs this instead of sharing the bare URL —
+  /// the run's QR group uses it to send the full announcement.
+  final Future<void> Function()? onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +110,11 @@ class QrGroup extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () async {
-                      await SharePlus.instance.share(ShareParams(text: url));
+                      if (onShare != null) {
+                        await onShare!();
+                      } else {
+                        await SharePlus.instance.share(ShareParams(text: url));
+                      }
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(left: 0.0),

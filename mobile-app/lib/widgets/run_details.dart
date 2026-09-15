@@ -959,6 +959,37 @@ class RunDetails extends StatelessWidget {
             innerColor: Colors.white,
             topMargin: 30.0,
           ),
+          // Announce the run. On the run's OWN page, because that is where a
+          // hare raiser looks: the share sheet already existed behind a small
+          // icon on the map tab and nobody found it there (James, 2026-09-15,
+          // "I don't see the share button anywhere on a run"). The notice is
+          // written by RunAnnouncement; WhatsApp gets its own button because
+          // it is where hashing actually happens, and everything else shares
+          // the second one.
+          Padding(
+            padding: const EdgeInsets.only(top: 15.0, bottom: 0.0),
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.chat, color: Colors.white, size: 26),
+              label: Text(
+                'Post this run to WhatsApp',
+                style: ts_button,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              onPressed: () =>
+                  RunAnnouncement(event: event, kennel: kennel).postToWhatsApp(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
+            child: TextButton.icon(
+              icon: const Icon(Icons.campaign_outlined, color: Colors.white, size: 22),
+              label: Text('Announce elsewhere…', style: ts_button),
+              onPressed: () =>
+                  RunAnnouncement(event: event, kennel: kennel).shareAnywhere(),
+            ),
+          ),
           // The same door as the kennel's "Share my photos", but for THIS run
           // (James, 2026-09-13). One already existed as a floating button on
           // the Photos tab, which is no use to somebody who has not thought to

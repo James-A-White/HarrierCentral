@@ -48,6 +48,11 @@ class RunQrShareSection extends StatelessWidget {
               title: 'Run #${event.eventNumber}',
               description: 'this run',
               url: thisRunUrlForQr,
+              // Sharing THIS run sends the full notice — date, hares, venue,
+              // price and the link — with WhatsApp offered first, not a bare
+              // URL (James, 2026-09-15). The QR code itself is unchanged.
+              onShare: () => RunAnnouncement(event: event, kennel: kennel)
+                  .chooseAndSend(context),
               helpTitle: 'URL for Hash #${event.eventNumber}',
               helpText:
                   "Here's a permanent link to Hash #${event.eventNumber} (${event.eventName}).\r\n\r\nShare it with others to spread the word about this hash!",
