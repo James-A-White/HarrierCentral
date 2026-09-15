@@ -96,6 +96,12 @@ class DeepLinkService {
     );
   }
 
+  /// A link tapped INSIDE the app — in a chat bubble, say. iOS never routes
+  /// a universal link back to the app that owns the domain (it opens Safari),
+  /// so anything in-app that wants a hashruns.org run to open as a run has to
+  /// come through here rather than through url_launcher.
+  Future<void> open(Uri uri) => _handle(uri);
+
   void _receive(Uri uri, String how) {
     debugPrint('[DEEPLINK] received $how: $uri');
     _pending = uri;
