@@ -1,3 +1,10 @@
+## 3.1.0+1364 (2026-09-15)
+### Improvements
+- Chat text is larger throughout — messages, sender names and times.
+- **Server change (already live, no app update needed)**: Vice GMs now share
+  the Grand Masters room, and a new Web & Social Media room has been added for
+  Web Meisters and Social Media.
+
 ## 3.1.0+1363 (2026-09-15)
 ### Fixes
 - Opening a chat and leaving again before it finished loading could throw an
