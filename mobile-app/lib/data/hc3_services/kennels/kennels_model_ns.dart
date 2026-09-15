@@ -23,6 +23,12 @@ abstract class KennelsModel with _$KennelsModel implements BaseModel {
     String? permissionOverrideJson,
     String? kennelCoverPhoto,
     String? kennelWebsiteUrl,
+    /// Which messaging app "Post this run" opens for this kennel (E9.F6):
+    /// 1 WhatsApp · 2 Telegram · 3 Signal · 4 Messenger · 5 WeChat.
+    /// Null reads as WhatsApp, which is also the server default.
+    int? defaultMessagingPlatform,
+    /// The group's invite link, for joining — never a post target.
+    String? messagingGroupInviteUrl,
     String? defaultEventCurrencyType,
     String? integrationType,
     int? kennelInboundIntegrationId,

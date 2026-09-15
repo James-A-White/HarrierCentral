@@ -449,6 +449,29 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 532 — a kennel's messaging platform and group invite link
+
+    // (E9.F6). Same ALTERs as 3.1's 552, under this train's own number; the
+
+    // trains stay 20 apart (see DB_VERSION).
+
+    MigrationsModel(
+
+      dbVersion: 532,
+
+      migrationText: '''
+
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colDefaultMessagingPlatform} INT;
+
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colMessagingGroupInviteUrl} TEXT;
+
+      ''',
+
+      appliedAtInt: 0,
+
+    ),
+
+
     // MIGRATION 531 — pinned chats (E9.F1.S8). Pin lives on records that
 
     // already sync, so it survives a reload and follows the hasher between

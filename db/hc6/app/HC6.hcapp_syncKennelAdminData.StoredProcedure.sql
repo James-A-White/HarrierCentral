@@ -171,6 +171,10 @@ BEGIN
         k.KennelPinColor                                                    AS kennelPinColor,
         k.KennelCoverPhoto                                                  AS kennelCoverPhoto,
         k.KennelWebsiteUrl                                                  AS kennelWebsiteUrl,
+        -- Messaging (E9.F6): which app "Post this run" opens, and the group's
+        -- invite link for joining. 1 = WhatsApp, the default for every kennel.
+        COALESCE(k.DefaultMessagingPlatform, 1)                             AS defaultMessagingPlatform,
+        k.MessagingGroupInviteUrl                                           AS messagingGroupInviteUrl,
         COALESCE(k.KennelMismanagementTeam, '')                             AS kennelMismanagementTeam,
         k.DefaultEventCurrencyType                                          AS defaultEventCurrencyType,
         k.IntegrationType                                                   AS integrationType,

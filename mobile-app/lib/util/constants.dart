@@ -225,7 +225,7 @@ const String DB_NAME = 'HcDb.db';
 // silently becomes an in-place migration onto a schema that does not exist,
 // which is the "Database Version Mismatch" that blocked 3.1.0+1350 and +1352
 // (James, 2026-09-15).
-const int DB_VERSION = 531;
+const int DB_VERSION = 532;
 
 const double CLEAR_LATLONG = -2.0;
 

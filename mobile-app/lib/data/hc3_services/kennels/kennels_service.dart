@@ -32,6 +32,8 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
   final String colDisseminateAllowWebLinks = 'disseminateAllowWebLinks';
   final String colKennelCoverPhoto = 'kennelCoverPhoto';
   final String colKennelWebsiteUrl = 'kennelWebsiteUrl';
+  final String colDefaultMessagingPlatform = 'defaultMessagingPlatform';
+  final String colMessagingGroupInviteUrl = 'messagingGroupInviteUrl';
   final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
   final String colIntegrationType = 'integrationType';
   final String colKennelInboundIntegrationId = 'kennelInboundIntegrationId';
@@ -111,6 +113,8 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
             $colDisseminateAllowWebLinks INT DEFAULT 0 NOT NULL,
             $colKennelCoverPhoto TEXT,
             $colKennelWebsiteUrl TEXT,
+            $colDefaultMessagingPlatform INT,
+            $colMessagingGroupInviteUrl TEXT,
             $colDefaultEventCurrencyType TEXT,
             $colIntegrationType TEXT,
             $colKennelInboundIntegrationId INT,

@@ -24,6 +24,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_editKennel]
 	@kennelPinColor SMALLINT = NULL,
 	@kennelCoverPhoto NVARCHAR(500) = NULL,
 	@kennelWebsiteUrl NVARCHAR(500) = NULL,
+	@defaultMessagingPlatform SMALLINT = NULL,
+	@messagingGroupInviteUrl NVARCHAR(500) = NULL,
 	@kennelEventsUrl NVARCHAR(500) = NULL,
 	@kennelHcEventsUrl NVARCHAR(500) = NULL,
 	@kennelMismanagementTeam NVARCHAR(4000) = NULL,
@@ -247,6 +249,9 @@ BEGIN TRY
 		KennelPinColor = COALESCE(@kennelPinColor, KennelPinColor),
 		KennelCoverPhoto = COALESCE(@kennelCoverPhoto, KennelCoverPhoto),
 		KennelWebsiteUrl = COALESCE(@kennelWebsiteUrl, KennelWebsiteUrl),
+		DefaultMessagingPlatform = COALESCE(@defaultMessagingPlatform, DefaultMessagingPlatform),
+		-- An empty string clears the invite link; NULL means "not sent".
+		MessagingGroupInviteUrl = COALESCE(NULLIF(@messagingGroupInviteUrl, ''), CASE WHEN @messagingGroupInviteUrl = '' THEN NULL ELSE MessagingGroupInviteUrl END),
 		KennelEventsUrl = COALESCE(@kennelEventsUrl, KennelEventsUrl),
 		KennelHcEventsUrl = COALESCE(@kennelHcEventsUrl, KennelHcEventsUrl),
 		KennelMismanagementTeam = COALESCE(@kennelMismanagementTeam, KennelMismanagementTeam),
