@@ -1,3 +1,10 @@
+## 3.1.0+1365 (2026-09-15)
+### New Features
+- **Post a run to WhatsApp**: from a run's share sheet, or offered the moment
+  you save a run. The notice — date, hares, venue, price and the link — opens
+  in your own WhatsApp ready to send; you pick the group. Also "Announce
+  elsewhere" for Signal, Telegram, SMS or email.
+
 ## 3.1.0+1364 (2026-09-15)
 ### Improvements
 - Chat text is larger throughout — messages, sender names and times.
