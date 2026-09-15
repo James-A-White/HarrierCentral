@@ -1,3 +1,9 @@
+## 3.1.0+1366 (2026-09-15)
+### Fixes
+- "Post to WhatsApp" now opens WhatsApp directly on iOS. In 1365 it fell back
+  to the general share sheet because the app had not declared the WhatsApp
+  scheme in the right place.
+
 ## 3.1.0+1365 (2026-09-15)
 ### New Features
 - **Post a run to WhatsApp**: from a run's share sheet, or offered the moment
