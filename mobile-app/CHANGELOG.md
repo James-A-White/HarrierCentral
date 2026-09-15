@@ -1,3 +1,9 @@
+## 3.1.0+1372 (2026-09-15)
+### Android
+- First Android build of the 3.1 track for Play internal testing: chat rooms
+  and pinning, "Post this run" to your kennel's messaging app, and
+  hashruns.org links that open the app.
+
 ## 3.1.0+1371 (2026-09-15)
 ### Fixes
 - A hashruns.org link now opens the app only, not the app and a web page.
