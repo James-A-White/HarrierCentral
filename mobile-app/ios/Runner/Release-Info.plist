@@ -28,6 +28,8 @@
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
+		<!-- Run announcements: lets canLaunchUrl see WhatsApp. -->
+		<string>whatsapp</string>
 		<string>comgooglemaps</string>
 		<string>baidumap</string>
 		<string>iosamap</string>
