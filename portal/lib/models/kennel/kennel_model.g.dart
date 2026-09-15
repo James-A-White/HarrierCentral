@@ -94,6 +94,9 @@ _KennelModel _$KennelModelFromJson(Map<String, dynamic> json) => _KennelModel(
   websiteBodyFont: json['websiteBodyFont'] as String?,
   kennelAdminEmailList: json['kennelAdminEmailList'] as String?,
   kennelWebsiteUrl: json['kennelWebsiteUrl'] as String?,
+  defaultMessagingPlatform:
+      (json['defaultMessagingPlatform'] as num?)?.toInt() ?? 1,
+  messagingGroupInviteUrl: json['messagingGroupInviteUrl'] as String?,
   kennelEventsUrl: json['kennelEventsUrl'] as String?,
   kennelHcEventsUrl: json['kennelHcEventsUrl'] as String?,
   bankScheme: json['bankScheme'] as String?,
@@ -214,6 +217,8 @@ Map<String, dynamic> _$KennelModelToJson(
   'websiteBodyFont': instance.websiteBodyFont,
   'kennelAdminEmailList': instance.kennelAdminEmailList,
   'kennelWebsiteUrl': instance.kennelWebsiteUrl,
+  'defaultMessagingPlatform': instance.defaultMessagingPlatform,
+  'messagingGroupInviteUrl': instance.messagingGroupInviteUrl,
   'kennelEventsUrl': instance.kennelEventsUrl,
   'kennelHcEventsUrl': instance.kennelHcEventsUrl,
   'bankScheme': instance.bankScheme,

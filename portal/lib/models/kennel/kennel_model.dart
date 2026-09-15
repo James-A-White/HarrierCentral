@@ -92,6 +92,11 @@ abstract class KennelModel with _$KennelModel {
     String? websiteBodyFont,
     String? kennelAdminEmailList,
     String? kennelWebsiteUrl,
+    /// Which messaging app the run page's "Post this run" opens (E9.F6):
+    /// 1 WhatsApp · 2 Telegram · 3 Signal · 4 Messenger · 5 WeChat.
+    @Default(1) int defaultMessagingPlatform,
+    /// The group's invite link, for joining — never a post target.
+    String? messagingGroupInviteUrl,
     String? kennelEventsUrl,
     String? kennelHcEventsUrl,
     String? bankScheme,
