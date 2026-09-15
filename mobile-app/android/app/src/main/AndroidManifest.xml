@@ -117,6 +117,22 @@
                 <data android:mimeType="text/xml"/>
                 <data android:mimeType="application/xml"/>
             </intent-filter>
+            <!-- App Links: https://www.hashruns.org/<slug>/<run> opens the app.
+                 autoVerify makes Android check
+                 https://www.hashruns.org/.well-known/assetlinks.json at install,
+                 and without a verified match the link opens the browser as
+                 before, silently. The pattern claims every two-or-more-segment
+                 path because pathPattern cannot say "second segment numeric";
+                 DeepLinkService bounces the rest to an in-app browser tab. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"/>
+                <data android:host="www.hashruns.org"/>
+                <data android:host="hashruns.org"/>
+                <data android:pathPattern="/.*/.*"/>
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.harriercentral.app",
+      "sha256_cert_fingerprints": [
+        "80:9E:08:8D:32:6D:B7:B4:B8:91:F1:15:D8:6C:29:C9:8E:6E:CD:35:94:2B:4A:AC:D9:9B:39:B9:F3:11:42:81"
+      ]
+    }
+  }
+]
