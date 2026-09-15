@@ -1,3 +1,9 @@
+## 3.1.0+1371 (2026-09-15)
+### Fixes
+- A hashruns.org link now opens the app only, not the app and a web page.
+  The "next run" link opens the kennel's next run directly, and a link no
+  longer opens the run twice.
+
 ## 3.1.0+1370 (2026-09-15)
 ### Fixes
 - Links in a chat are now tappable. A hashruns.org run link opens the run
