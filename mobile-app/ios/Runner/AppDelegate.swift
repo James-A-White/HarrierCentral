@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
 import MetricKit
+import app_links
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -12,6 +13,17 @@ import MetricKit
     didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+
+    // Universal links: CLAIM them. app_links 7 defaults to `.never`, which
+    // delivers the URL to Dart but tells iOS the app did not handle it — and
+    // iOS's rule for an unhandled universal link is to open it in Safari. That
+    // is the "opens the app and then a browser" James saw on 3.1.0+1371:
+    // the session log shows the link parsed at +0.0 s and the app pushed to
+    // the background at +1.1 s, with nothing in our code opening anything.
+    // `.availability` returns true whenever there is a webpage URL, which is
+    // every universal link; which paths reach us at all is decided by the
+    // association file, and DeepLinkService bounces anything it cannot read.
+    AppLinks.shared.defaultUrlHandling = .availability
 
     // Apple Watch companion bridge — mirrors PackTrack session state to the
     // watch and executes mark commands sent from it. No-op when unsupported.

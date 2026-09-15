@@ -162,5 +162,11 @@
 	</array>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<false/>
+	<!-- Universal links are handled by app_links (DeepLinkService), which is the
+	     ONE handler. Flutter's built-in deep linking has been on by default since
+	     3.24 and would push the same URL into the Navigator as a route the app
+	     does not have. -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 </dict>
 </plist>

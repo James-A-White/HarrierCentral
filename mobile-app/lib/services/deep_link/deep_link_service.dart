@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:app_links/app_links.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:harrier_central/imports.dart';
 
 /// Where a hashruns.org link points, once parsed.
@@ -226,11 +223,16 @@ class DeepLinkService {
     // built one; a link that is still unactionable after 45 s is dropped,
     // because by then the person has moved on and a surprise navigation
     // would be worse than nothing.
-    final bool ready = await _waitUntilReady(const Duration(seconds: 45));
+    // Two minutes, not 45 s: a fresh install shows the version promo and
+    // waits for a tap, and a cold start behind a login can take longer than
+    // that. The drop is a breadcrumb so the uploaded log says it happened —
+    // the first report of a lost link was invisible because it was not.
+    final bool ready = await _waitUntilReady(const Duration(seconds: 120));
     if (!ready) {
-      debugPrint('[DEEPLINK] app never became ready; dropping $uri');
+      _crumb('app never became ready in 120 s; dropping $uri');
       return;
     }
+    _crumb('app ready, resolving');
 
     final String? eventId = await _resolveEventId(target);
     if (eventId == null) {
