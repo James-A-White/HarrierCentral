@@ -1,3 +1,7 @@
+0.21.47
+    • Universal links: .well-known association files so hashruns.org run links open the app
+    • AASA served as application/json; .well-known excluded from tenant rewriting
+
 0.21.46
     • No mark is a trail vertex — photos, checks and trim boundaries are held aside by the filter (fixes the straight lines at the ends of trimmed tracks)
 

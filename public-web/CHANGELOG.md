@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.47 (2026-09-15)
+- Universal links: `.well-known/apple-app-site-association` and `assetlinks.json` so hashruns.org run links open the Harrier Central app
+- AASA served as `application/json`; `.well-known` excluded from tenant rewriting
+
 ## 0.21.46 (2026-09-10)
 
 - No mark is ever a vertex of a trail: photos, checks and the admin's trim
