@@ -1,3 +1,9 @@
+## 3.1.0+1367 (2026-09-15)
+### Improvements
+- "Post this run to WhatsApp" and "Announce elsewhere" are now on the run's
+  own page, and the QR page's share for a run sends the full notice rather
+  than a bare link.
+
 ## 3.1.0+1366 (2026-09-15)
 ### Fixes
 - "Post to WhatsApp" now opens WhatsApp directly on iOS. In 1365 it fell back
