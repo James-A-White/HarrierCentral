@@ -1,3 +1,11 @@
+## 3.1.0+1369 (2026-09-15)
+### New Features
+- **Your kennel's messaging app**: "Post this run" now opens whichever app the
+  kennel has chosen — WhatsApp by default — with the others one tap behind
+  the chevron beside it.
+- **Join the group**: kennels that publish a group invite link get a "Join
+  the group" button on their kennel page.
+
 ## 3.1.0+1368 (2026-09-15)
 ### New Features
 - **Links open the app**: a hashruns.org run link — from a WhatsApp notice, a
