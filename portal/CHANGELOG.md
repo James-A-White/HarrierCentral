@@ -1,5 +1,9 @@
 # Harrier Central Portal — Changelog
 
+## 2.0.76+711 (2026-09-15)
+### New Features
+- **Kennel messaging**: choose the kennel's messaging app (WhatsApp by default) and publish its group invite link, on the Other tab.
+
 ---
 
 ## 2.0.75+710 (2026-09-13)

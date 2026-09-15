@@ -1,3 +1,6 @@
+2.0.76+711
+    • Kennel messaging: choose the kennel's messaging app (WhatsApp default) and publish its group invite link — Other tab, Messaging section
+
 2.0.72+707
     • Device Health: every session keeps its graph; error lines listed; correct summary on merged uploads
     • Device Health: open/foreground/background time and battery start → end per session
