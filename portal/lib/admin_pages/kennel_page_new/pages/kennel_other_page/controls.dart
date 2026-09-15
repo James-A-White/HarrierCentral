@@ -26,6 +26,8 @@ extension KennelOtherControlsExtension on KennelPageFormController {
 
     // Sharing settings
     _registerDisseminateHashRunsControl(tabKey, tabIndex);
+    _registerMessagingPlatformControl(tabKey, tabIndex);
+    _registerGroupInviteUrlControl(tabKey, tabIndex);
     _registerDisseminateAllowWebLinksControl(tabKey, tabIndex);
 
     // Integration settings
@@ -90,6 +92,91 @@ extension KennelOtherControlsExtension on KennelPageFormController {
   // ---------------------------------------------------------------------------
   // Sharing Controls
   // ---------------------------------------------------------------------------
+
+  /// Registers the kennel's messaging platform dropdown (E9.F6). Drives the
+  /// app's "Post this run to …" button; the other platforms sit behind its
+  /// chevron. Codes match HC.Kennel.DefaultMessagingPlatform.
+  void _registerMessagingPlatformControl(String tabKey, int tabIndex) {
+    final fieldKey = '${tabKey}_messagingPlatform';
+    final current = originalData.defaultMessagingPlatform.clamp(1, 5);
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.dropdown,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Messaging App',
+        MaterialCommunityIcons.message_text_outline,
+        'The app your kennel talks on. In Harrier Central, "Post this run" '
+            'opens THIS app with the run notice ready to send; the others are '
+            'one tap further.\n\n'
+            'WhatsApp and Telegram receive the notice pre-filled. Messenger '
+            'can only take the link. Signal and WeChat have no way for another '
+            'app to hand them a message, so for those the phone\'s share sheet '
+            'opens instead.',
+      ),
+      editedFieldValue: current.toString(),
+      originalFieldValue: current.toString(),
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Messaging app',
+      includeOverrideButton: false,
+      tabIndex: tabIndex,
+      dropdownItems: const {
+        1: 'WhatsApp',
+        2: 'Telegram',
+        3: 'Signal',
+        4: 'Facebook Messenger',
+        5: 'WeChat',
+      },
+      updateEditedValue: (String? value) {
+        final intValue = (int.tryParse(value ?? '1') ?? 1).clamp(1, 5);
+        messagingPlatform.value = intValue;
+        editedData.value = editedData.value.copyWith(
+          defaultMessagingPlatform: intValue,
+        );
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+      onUndo: () {
+        messagingPlatform.value = originalData.defaultMessagingPlatform.clamp(1, 5);
+      },
+    );
+  }
+
+  /// Registers the group invite link (E9.F6). For JOINING — it becomes a
+  /// "Join the kennel group" button on the kennel page. It is not a place
+  /// the app can post into; no platform allows that from outside.
+  void _registerGroupInviteUrlControl(String tabKey, int tabIndex) {
+    final fieldKey = '${tabKey}_messagingGroupInviteUrl';
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.string,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Group Invite Link',
+        MaterialCommunityIcons.account_multiple_plus,
+        'The invite link to your kennel\'s chat group — the kind you get from '
+            '"Invite via link" in WhatsApp, Telegram or Signal.\n\n'
+            'Hashers see a "Join the group" button on your kennel page. Leave '
+            'it blank if your group is invitation-only.',
+      ),
+      editedFieldValue: editedData.value.messagingGroupInviteUrl,
+      originalFieldValue: originalData.messagingGroupInviteUrl,
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Group invite link',
+      maxStringLength: 500,
+      minStringLength: 0,
+      maxLines: 1,
+      includeOverrideButton: false,
+      textController: textControllers[fieldKey] = TextEditingController(),
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        editedData.value =
+            editedData.value.copyWith(messagingGroupInviteUrl: value ?? '');
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+    );
+  }
 
   /// Registers the disseminate on HashRuns.org control (switch).
   void _registerDisseminateHashRunsControl(String tabKey, int tabIndex) {

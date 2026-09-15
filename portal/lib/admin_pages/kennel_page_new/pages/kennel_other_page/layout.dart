@@ -42,6 +42,10 @@ class KennelOtherTabContent extends StatelessWidget {
               HelperWidgets().categoryLabelWidget('Sharing Runs'),
               _buildSharingSection(isMobileScreen),
 
+              // Messaging Section (E9.F6)
+              HelperWidgets().categoryLabelWidget('Messaging'),
+              _buildMessagingSection(isMobileScreen),
+
               // Integrations Section
               HelperWidgets().categoryLabelWidget('Integrations'),
               _buildIntegrationsSection(isMobileScreen),
@@ -93,6 +97,78 @@ class KennelOtherTabContent extends StatelessWidget {
           label: 'Enable copy web link',
         ),
       ],
+    );
+  }
+
+  /// Builds the Messaging section: the kennel's app, and its group invite
+  /// link (E9.F6).
+  Widget _buildMessagingSection(bool isMobileScreen) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildMessagingPlatformDropdown(isMobileScreen),
+        const SizedBox(height: 10),
+        _buildGroupInviteUrlField(),
+      ],
+    );
+  }
+
+  Widget _buildMessagingPlatformDropdown(bool isMobileScreen) {
+    final controlKey = '${KennelTabType.other.key}_messagingPlatform';
+    final uiControl = controller.uiControls[controlKey];
+    if (uiControl == null) return const SizedBox.shrink();
+
+    return MouseRegion(
+      onEnter: (_) => controller.setSidebarData(controlKey),
+      onExit: (_) =>
+          controller.setSidebarData('${KennelTabType.other.key}_generic'),
+      child: SizedBox(
+        width: isMobileScreen ? double.infinity : 300,
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            labelText: 'Messaging app',
+            border: OutlineInputBorder(),
+          ),
+          child: Obx(
+            () => DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                value: controller.messagingPlatform.value.clamp(1, 5),
+                isDense: true,
+                isExpanded: true,
+                items: const [
+                  DropdownMenuItem(value: 1, child: Text('WhatsApp')),
+                  DropdownMenuItem(value: 2, child: Text('Telegram')),
+                  DropdownMenuItem(value: 3, child: Text('Signal')),
+                  DropdownMenuItem(value: 4, child: Text('Facebook Messenger')),
+                  DropdownMenuItem(value: 5, child: Text('WeChat')),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  uiControl.updateEditedValue(value.toString());
+                  controller.checkIfFormIsDirty();
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGroupInviteUrlField() {
+    final controlKey = '${KennelTabType.other.key}_messagingGroupInviteUrl';
+    final uiControl = controller.uiControls[controlKey];
+    if (uiControl == null) return const SizedBox.shrink();
+
+    return MouseRegion(
+      onEnter: (_) => controller.setSidebarData(controlKey),
+      onExit: (_) =>
+          controller.setSidebarData('${KennelTabType.other.key}_generic'),
+      child: EditableOverrideTextField(
+        controller: controller,
+        uiControl: uiControl,
+        onChanged: (_) => controller.checkIfFormIsDirty(),
+      ),
     );
   }
 

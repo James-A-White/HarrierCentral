@@ -148,6 +148,10 @@ class KennelPageFormController extends TabUiController
   /// Show runs on Hashruns.org (0 = off, 5 = on).
   final RxBool disseminateHashRunsDotOrg = false.obs;
 
+  /// The kennel's messaging app, 1..5 (E9.F6). Mirrors
+  /// editedData.defaultMessagingPlatform for the dropdown.
+  final RxInt messagingPlatform = 1.obs;
+
   /// Enable copy web link sharing.
   final RxBool disseminateAllowWebLinks = false.obs;
 
@@ -394,6 +398,7 @@ class KennelPageFormController extends TabUiController
     defaultRunStartTime.value = originalData.defaultRunStartTime;
     disseminateHashRunsDotOrg.value =
         originalData.disseminateHashRunsDotOrg > 0;
+    messagingPlatform.value = originalData.defaultMessagingPlatform.clamp(1, 5);
     disseminateAllowWebLinks.value = originalData.disseminateAllowWebLinks > 0;
     disseminateOnGlobalGoogleCalendar.value =
         originalData.disseminateOnGlobalGoogleCalendar > 0;
