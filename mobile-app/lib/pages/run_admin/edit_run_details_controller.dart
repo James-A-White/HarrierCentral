@@ -465,6 +465,9 @@ class EditRunDetailsController extends GetxController
 
     if (isNewRun) {
       if (currentTab.value == EditingTabEnum.other) {
+        // A brand-new run is the one most worth announcing. Offer before the
+        // editor goes, while the aggregate is still to hand.
+        await _offerWhatsAppPost();
         Navigator.of(navigatorKey.currentContext!).pop();
         return;
       }
@@ -486,6 +489,48 @@ class EditRunDetailsController extends GetxController
     if (didAddressChange) {
       await _offerAutoLocateAfterAddressChange();
     }
+    await _offerWhatsAppPost();
+  }
+
+  /// The publish moment. A saved run is worth nothing until the kennel hears
+  /// about it, and today that means WhatsApp — so the offer sits right where
+  /// the admin already is, with the notice already written. Declining costs
+  /// one tap; the same notice is always available from the run's share
+  /// sheet later (James, 2026-09-15).
+  ///
+  /// Hidden runs are not offered: announcing something the kennel cannot
+  /// open would be an invitation to a locked door.
+  Future<void> _offerWhatsAppPost() async {
+    if (!isVisible) return;
+    final BuildContext? ctx = navigatorKey.currentContext;
+    if (ctx == null) return;
+
+    final bool? post = await showDialog<bool>(
+      context: ctx,
+      builder: (BuildContext c) => AlertDialog(
+        title: const Text('Post to WhatsApp?'),
+        content: const Text(
+          'Send the run notice — date, hares, venue, price and the link — '
+          'to the kennel group. WhatsApp opens with it ready; you pick the '
+          'group and tap send.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(false),
+            child: const Text('Not now'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(true),
+            child: const Text('Post'),
+          ),
+        ],
+      ),
+    );
+    if (post != true) return;
+    await RunAnnouncement(
+      event: eventAggregate.event,
+      kennel: eventAggregate.kennel,
+    ).postToWhatsApp();
   }
 
   /// A new address usually means the map pin is now wrong, so offer to move it.
