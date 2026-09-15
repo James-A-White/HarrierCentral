@@ -85,10 +85,6 @@ class RunShareLinks {
   /// sheet; when only the map link exists (uncounted run) it skips the sheet
   /// and goes straight to the OS share sheet.
   Future<void> showShareSheet(BuildContext context) async {
-    if (trailTvUrl == null) {
-      await shareMap();
-      return;
-    }
     final _ShareTarget? choice = await showModalBottomSheet<_ShareTarget>(
       context: context,
       backgroundColor: Colors.white,
@@ -114,6 +110,25 @@ class RunShareLinks {
                 style: ts_titleMedium.copyWith(color: Colors.black87),
               ),
               const SizedBox(height: 4),
+              // The announcement first: it is what a hare raiser opens this
+              // sheet for. Everything below is for once the run is on.
+              _row(
+                context,
+                icon: Icons.chat,
+                title: 'Post to WhatsApp',
+                subtitle:
+                    'The run notice, ready to send to the kennel group — '
+                    'date, hares, venue, price and the link.',
+                target: _ShareTarget.whatsApp,
+              ),
+              _row(
+                context,
+                icon: Icons.campaign_outlined,
+                title: 'Announce elsewhere',
+                subtitle: 'The same notice via Signal, Telegram, SMS, email…',
+                target: _ShareTarget.announce,
+              ),
+              const Divider(height: 16),
               _row(
                 context,
                 icon: Icons.map_outlined,
@@ -121,23 +136,25 @@ class RunShareLinks {
                 subtitle: 'Follow live or replay on any phone',
                 target: _ShareTarget.map,
               ),
-              _row(
-                context,
-                icon: Icons.tv,
-                title: 'Trail TV',
-                subtitle:
-                    'Big-screen event wall — live tracks, photos, leaderboard. '
-                    'Cast it at the pub.',
-                target: _ShareTarget.trailTv,
-              ),
-              _row(
-                context,
-                icon: Icons.photo_library_outlined,
-                title: 'Photos',
-                subtitle:
-                    'The run gallery — opens in any browser, no app needed.',
-                target: _ShareTarget.photos,
-              ),
+              if (trailTvUrl != null)
+                _row(
+                  context,
+                  icon: Icons.tv,
+                  title: 'Trail TV',
+                  subtitle:
+                      'Big-screen event wall — live tracks, photos, leaderboard. '
+                      'Cast it at the pub.',
+                  target: _ShareTarget.trailTv,
+                ),
+              if (photosUrl != null)
+                _row(
+                  context,
+                  icon: Icons.photo_library_outlined,
+                  title: 'Photos',
+                  subtitle:
+                      'The run gallery — opens in any browser, no app needed.',
+                  target: _ShareTarget.photos,
+                ),
               const SizedBox(height: 8),
             ],
           ),
@@ -145,6 +162,10 @@ class RunShareLinks {
       ),
     );
     switch (choice) {
+      case _ShareTarget.whatsApp:
+        await RunAnnouncement(event: run.event, kennel: run.kennel).postToWhatsApp();
+      case _ShareTarget.announce:
+        await RunAnnouncement(event: run.event, kennel: run.kennel).shareAnywhere();
       case _ShareTarget.map:
         await shareMap();
       case _ShareTarget.trailTv:
@@ -182,4 +203,4 @@ class RunShareLinks {
   }
 }
 
-enum _ShareTarget { map, trailTv, photos }
+enum _ShareTarget { whatsApp, announce, map, trailTv, photos }

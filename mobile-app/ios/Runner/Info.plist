@@ -67,5 +67,12 @@
 	<array>
 		<string>com.google.firebase.messaging-interop-events</string>
 	</array>
+	<!-- canLaunchUrl('whatsapp://…') is only allowed to answer for schemes
+	     listed here; without this it says "no" even with WhatsApp installed,
+	     and the run announcement falls back to the share sheet. -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+	</array>
 </dict>
 </plist>
