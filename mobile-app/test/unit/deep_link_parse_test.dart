@@ -30,9 +30,19 @@ void main() {
           reason: 'no Trail TV in the app — the run page is the right landing');
     });
 
+    test('the next-run link, in both spellings, is the kennel\'s next run', () {
+      for (final String spelling in <String>['nextrun', 'next-run', 'NextRun']) {
+        final t = p('https://www.hashruns.org/lh3/$spelling');
+        expect(t, isNotNull, reason: spelling);
+        expect(t!.nextRun, isTrue, reason: spelling);
+        expect(t.kennelSlug, 'lh3');
+        expect(t.runNumber, isNull);
+      }
+    });
+
     test("kennel pages are the website's, not runs", () {
       for (final String page in <String>[
-        'songs', 'about', 'runs', 'next-run', 'events', 'legacy', 'photos',
+        'songs', 'about', 'runs', 'events', 'legacy', 'photos',
       ]) {
         expect(p('https://www.hashruns.org/lh3/$page'), isNull, reason: page);
       }

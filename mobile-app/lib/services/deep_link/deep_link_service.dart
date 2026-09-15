@@ -13,6 +13,7 @@ class DeepLinkTarget {
     this.kennelSlug,
     this.runNumber,
     this.publicEventId,
+    this.nextRun = false,
     this.tab = RunTab.rsvp,
   });
 
@@ -24,9 +25,16 @@ class DeepLinkTarget {
   const DeepLinkTarget.legacy(String publicEventId)
     : this._(publicEventId: publicEventId);
 
+  /// `/<slug>/nextrun` (the QR spelling) or `/<slug>/next-run` (the web's):
+  /// whatever the kennel is running next. Resolved on the phone from the
+  /// synced events, so it lands on the run itself, not a listing.
+  const DeepLinkTarget.nextRun(String slug)
+    : this._(kennelSlug: slug, nextRun: true);
+
   final String? kennelSlug;
   final int? runNumber;
   final String? publicEventId;
+  final bool nextRun;
 
   /// Check-in by default (James, 2026-09-15: "opens the app to the check-in
   /// page to that specific run"). The map and photo sub-pages open on their
@@ -38,6 +46,8 @@ class DeepLinkTarget {
   @override
   String toString() => isLegacy
       ? 'DeepLinkTarget(legacy $publicEventId)'
+      : nextRun
+      ? 'DeepLinkTarget($kennelSlug/next run)'
       : 'DeepLinkTarget($kennelSlug/$runNumber → ${tab.name})';
 }
 
@@ -65,8 +75,13 @@ class DeepLinkService {
   /// shape of a run URL, so they would otherwise parse as "run number
   /// 'songs'". They are the website's, not ours to open.
   static const Set<String> _kennelPages = <String>{
-    'songs', 'about', 'runs', 'next-run', 'events', 'legacy', 'photos',
+    'songs', 'about', 'runs', 'events', 'legacy', 'photos',
   };
+
+  /// Both spellings: the printed QR codes say `nextrun`, the website's route
+  /// is `next-run`. A link that opens the app and then cannot be read is the
+  /// worst outcome — the app appears AND a browser does — so both are read.
+  static const Set<String> _nextRunPages = <String>{'nextrun', 'next-run'};
 
   final AppLinks _links = AppLinks();
   StreamSubscription<Uri>? _sub;
@@ -77,6 +92,13 @@ class DeepLinkService {
   /// meant.
   Uri? _pending;
   bool _handling = false;
+
+  /// The launch link arrives TWICE on iOS: once from getInitialLink() and
+  /// again when uriLinkStream is subscribed — the plugin re-emits the initial
+  /// link on subscribe (AppLinksIosPlugin.swift, initialLinkSent). Without
+  /// this the run opened twice, one page on top of the other.
+  Uri? _lastHandled;
+  DateTime? _lastHandledAt;
 
   /// Call once, right after runApp. Safe to call before any widget exists:
   /// nothing here needs a context until a link actually arrives, and even
@@ -103,9 +125,23 @@ class DeepLinkService {
   Future<void> open(Uri uri) => _handle(uri);
 
   void _receive(Uri uri, String how) {
-    debugPrint('[DEEPLINK] received $how: $uri');
+    if (uri == _lastHandled &&
+        _lastHandledAt != null &&
+        DateTime.now().difference(_lastHandledAt!) < const Duration(seconds: 10)) {
+      _crumb('duplicate delivery ignored ($how): $uri');
+      return;
+    }
+    _crumb('received $how: $uri');
     _pending = uri;
     unawaited(_drain());
+  }
+
+  /// Breadcrumbs go through BootLogger so they reach the UPLOADED session log.
+  /// debugPrint does not, and the first report of "it opened the app and a
+  /// web page" could not be diagnosed for exactly that reason.
+  void _crumb(String s) {
+    debugPrint('[DEEPLINK] $s');
+    BootLogger.logBreadcrumb('[DEEPLINK] $s');
   }
 
   // ---------------------------------------------------------------------
@@ -136,6 +172,7 @@ class DeepLinkService {
 
     final String slug = seg[0].toLowerCase();
     final String second = seg[1].toLowerCase();
+    if (_nextRunPages.contains(second)) return DeepLinkTarget.nextRun(slug);
     if (_kennelPages.contains(second)) return null;
     final int? number = int.tryParse(second);
     if (number == null || number <= 0) return null;
@@ -166,6 +203,8 @@ class DeepLinkService {
       while (_pending != null) {
         final Uri uri = _pending!;
         _pending = null;
+        _lastHandled = uri;
+        _lastHandledAt = DateTime.now();
         await _handle(uri);
       }
     } finally {
@@ -176,10 +215,11 @@ class DeepLinkService {
   Future<void> _handle(Uri uri) async {
     final DeepLinkTarget? target = parse(uri);
     if (target == null) {
-      debugPrint('[DEEPLINK] not a run link, bouncing to the site: $uri');
+      _crumb('not a run link, bouncing to the site: $uri');
       await _openInBrowser(uri);
       return;
     }
+    _crumb('parsed $target');
 
     // A cold-start link arrives before the database is open or the run list
     // exists. Wait for the app to be usable rather than acting on a half-
@@ -196,6 +236,7 @@ class DeepLinkService {
     if (eventId == null) {
       // Nothing local and no way to get it — hand back to the website, which
       // can always show the run.
+      _crumb('could not resolve $target locally, bouncing to the site');
       await _openInBrowser(uri);
       return;
     }
@@ -235,6 +276,15 @@ class DeepLinkService {
     final String kennelName =
         (kennel[kh.colKennelShortName] as String?) ?? t.kennelSlug!;
 
+    if (t.nextRun) {
+      final String? next = await _nextEventId(kennelId);
+      if (next != null) return next;
+      final bool follow = await _offerToFollow(kennelName);
+      if (!follow) return null;
+      await _followAndReplicate(kennelId);
+      return _nextEventId(kennelId);
+    }
+
     String? eventId = await _eventIdByNumber(kennelId, t.runNumber!);
     if (eventId != null) return eventId;
 
@@ -266,6 +316,21 @@ class DeepLinkService {
       'WHERE lower(${eh.colKennelId}) = ? AND ${eh.colEventNumber} = ? '
       'AND ${eh.colRemoved} = 0 LIMIT 1',
       <Object?>[kennelId, number],
+    );
+    return rows.isEmpty ? null : normalizeUuid(rows.first[eh.colEventId] as String);
+  }
+
+  /// The kennel's next visible run — by the true UTC instant, per
+  /// /hc-event-datetimes, never the raw wall-clock column.
+  Future<String?> _nextEventId(String kennelId) async {
+    final eh = tableModel.eventsTableHelper;
+    final rows = await database.rawQuery(
+      'SELECT ${eh.colEventId} FROM ${EnumDataTables.events.commonTableName} '
+      'WHERE lower(${eh.colKennelId}) = ? AND ${eh.colRemoved} = 0 '
+      'AND ${eh.colIsVisible} = 1 '
+      'AND ${eh.colEventStartDatetimeGmt} >= ? '
+      'ORDER BY ${eh.colEventStartDatetimeGmt} ASC LIMIT 1',
+      <Object?>[kennelId, DateTime.now().toUtc().toIso8601String()],
     );
     return rows.isEmpty ? null : normalizeUuid(rows.first[eh.colEventId] as String);
   }
@@ -340,7 +405,7 @@ class DeepLinkService {
       await _openInBrowser(uri);
       return;
     }
-    debugPrint('[DEEPLINK] opening run $eventId on ${tab.name}');
+    _crumb('opening run $eventId on ${tab.name}');
     await Get.to<void>(
       () => RunDetailsPage(futureRun: runs.first, openToTab: tab),
     );

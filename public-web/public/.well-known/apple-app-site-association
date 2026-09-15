@@ -9,7 +9,6 @@
           { "/": "/*/songs",       "exclude": true, "comment": "kennel pages, not runs" },
           { "/": "/*/about",       "exclude": true },
           { "/": "/*/runs",        "exclude": true },
-          { "/": "/*/next-run",    "exclude": true },
           { "/": "/*/events",      "exclude": true },
           { "/": "/*/legacy",      "exclude": true },
           { "/": "/*/photos",      "exclude": true },
