@@ -1,3 +1,9 @@
+## 3.1.0+1373 (2026-09-15)
+### Fixes
+- A hashruns.org link opens the app and nothing else. Previously the app
+  opened and Safari followed a second later, because the app was telling iOS
+  it had not handled the link.
+
 ## 3.1.0+1372 (2026-09-15)
 ### Android
 - First Android build of the 3.1 track for Play internal testing: chat rooms
