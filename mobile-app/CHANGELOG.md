@@ -1,3 +1,8 @@
+## 3.1.0+1370 (2026-09-15)
+### Fixes
+- Links in a chat are now tappable. A hashruns.org run link opens the run
+  inside the app; other links open the browser.
+
 ## 3.1.0+1369 (2026-09-15)
 ### New Features
 - **Your kennel's messaging app**: "Post this run" now opens whichever app the
