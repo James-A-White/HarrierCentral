@@ -114,8 +114,8 @@ class RunShareLinks {
               // sheet for. Everything below is for once the run is on.
               _row(
                 context,
-                icon: Icons.chat,
-                title: 'Post to WhatsApp',
+                leading: MessagingPlatformGlyph(_announcement.preferred, size: 30),
+                title: 'Share on ${_announcement.preferred.label}',
                 subtitle:
                     'The run notice, ready to send to the kennel group — '
                     'date, hares, venue, price and the link.',
@@ -123,7 +123,7 @@ class RunShareLinks {
               ),
               _row(
                 context,
-                icon: Icons.campaign_outlined,
+                leading: Icon(Icons.campaign_outlined, color: hc_blue, size: 30),
                 title: 'Announce elsewhere',
                 subtitle: 'The same notice via Signal, Telegram, SMS, email…',
                 target: _ShareTarget.announce,
@@ -163,9 +163,10 @@ class RunShareLinks {
     );
     switch (choice) {
       case _ShareTarget.whatsApp:
-        await RunAnnouncement(event: run.event, kennel: run.kennel).postToWhatsApp();
+        // The kennel's own app, whichever it is — the row said so.
+        await _announcement.sendVia(_announcement.preferred);
       case _ShareTarget.announce:
-        await RunAnnouncement(event: run.event, kennel: run.kennel).shareAnywhere();
+        await _announcement.shareAnywhere();
       case _ShareTarget.map:
         await shareMap();
       case _ShareTarget.trailTv:
@@ -177,15 +178,19 @@ class RunShareLinks {
     }
   }
 
+  RunAnnouncement get _announcement =>
+      RunAnnouncement(event: run.event, kennel: run.kennel);
+
   Widget _row(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    Widget? leading,
     required String title,
     required String subtitle,
     required _ShareTarget target,
   }) {
     return ListTile(
-      leading: Icon(icon, color: hc_blue, size: 30),
+      leading: leading ?? Icon(icon, color: hc_blue, size: 30),
       title: Text(
         title,
         style: const TextStyle(

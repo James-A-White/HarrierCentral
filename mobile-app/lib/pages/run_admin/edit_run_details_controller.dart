@@ -505,14 +505,28 @@ class EditRunDetailsController extends GetxController
     final BuildContext? ctx = navigatorKey.currentContext;
     if (ctx == null) return;
 
+    final RunAnnouncement announcement = RunAnnouncement(
+      event: eventAggregate.event,
+      kennel: eventAggregate.kennel,
+    );
+    final MessagingPlatform platform = announcement.preferred;
     final bool? post = await showDialog<bool>(
       context: ctx,
       builder: (BuildContext c) => AlertDialog(
-        title: const Text('Post to WhatsApp?'),
-        content: const Text(
-          'Send the run notice — date, hares, venue, price and the link — '
-          'to the kennel group. WhatsApp opens with it ready; you pick the '
-          'group and tap send.',
+        title: Row(
+          children: <Widget>[
+            MessagingPlatformGlyph(platform, size: 26),
+            const SizedBox(width: 10),
+            Expanded(child: Text('Share on ${platform.label}?')),
+          ],
+        ),
+        content: Text(
+          platform.opensWithNotice
+              ? 'Send the run notice — date, hares, venue, price and the '
+                  'link — to the kennel group. ${platform.label} opens with '
+                  'it ready; you pick the group and tap send.'
+              : 'Send the run notice — date, hares, venue, price and the '
+                  'link — to the kennel group via the share sheet.',
         ),
         actions: <Widget>[
           TextButton(
@@ -521,16 +535,13 @@ class EditRunDetailsController extends GetxController
           ),
           TextButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Post'),
+            child: const Text('Share'),
           ),
         ],
       ),
     );
     if (post != true) return;
-    await RunAnnouncement(
-      event: eventAggregate.event,
-      kennel: eventAggregate.kennel,
-    ).postToWhatsApp();
+    await announcement.sendVia(platform);
   }
 
   /// A new address usually means the map pin is now wrong, so offer to move it.

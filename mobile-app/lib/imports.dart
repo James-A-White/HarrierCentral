@@ -181,6 +181,7 @@ export 'package:harrier_central/pages/detail_pages/chat/chat_page.dart';
 export 'package:harrier_central/services/deep_link/deep_link_service.dart';
 export 'package:harrier_central/util/link_text.dart';
 export 'package:harrier_central/util/run_announcement.dart';
+export 'package:harrier_central/widgets/messaging_platform_glyph.dart';
 export 'package:harrier_central/widgets/pin_glyph.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_scaffold.dart';
 export 'package:harrier_central/services/chat_rooms/chat_room_service.dart';
