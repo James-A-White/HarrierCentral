@@ -195,7 +195,7 @@ too. `/login` is a reserved slug.
   one row; the admin-typed-the-wrong-email case surfaces as "that's not me"
   on the confirmation and is handled by asking the kennel to fix the record.
 
-## The five tabs (2026-09-16, "replicate the main pages of the app")
+## The five tabs (2026-09-16, "replicate the main pages of the app") — LIVE, web 0.21.50 / API 1.0.50
 
 `/me/runs` · `/me/kennels` · `/me/map` · `/me/history` · `/me/songs`, behind
 the member cookie (`app/me/layout.tsx` redirects to `/login?next=` otherwise),
