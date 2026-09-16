@@ -9,9 +9,15 @@ AS
 --              Region nor a Country row, and a kennel in Edinburgh is only
 --              findable by that word through KennelSearchTags
 --              (reference_search_tags_columns). Public read; no auth.
--- Parameters:  @q - the words typed; NULL/empty returns the 50 most
---              recently active kennels.
--- Returns:     Rowset 0: up to 50 kennels.
+--              Which kennels: the app's browse rule (query_kennels.dart) —
+--              KennelStatus NOT IN (-1 Defunct, 4 Inactive-Hidden), so
+--              Active (2), Inactive-Visible (1) and Mismanagement Only (0)
+--              are all listed. DomainValues.KennelStatusEnum is the
+--              source of truth for those numbers; comments elsewhere that
+--              say 1 = Active are wrong.
+-- Parameters:  @q - the words typed; NULL/empty returns every eligible
+--              kennel (353 on 2026-09-16), by name.
+-- Returns:     Rowset 0: the kennels.
 -- Author:      Harrier Central
 -- Created:     2026-09-16
 -- HC5 Source:  none
@@ -20,7 +26,7 @@ SET NOCOUNT ON;
 DECLARE @procName NVARCHAR(128) = OBJECT_NAME(@@PROCID);
 BEGIN TRY
     DECLARE @term NVARCHAR(102) = '%' + LTRIM(RTRIM(COALESCE(@q, ''))) + '%';
-    SELECT TOP 50
+    SELECT
         k.PublicKennelId,
         k.KennelUniqueShortName                                  AS KennelSlug,
         k.KennelShortName,
@@ -37,7 +43,7 @@ BEGIN TRY
     LEFT JOIN HC.Region  rgn ON rgn.id = k.ProvinceStateId
     LEFT JOIN HC.Country ctr ON ctr.id = k.CountryId
     WHERE k.deleted = 0 AND k.removed = 0
-      AND k.KennelStatus IN (1, 2)
+      AND COALESCE(k.KennelStatus, 2) NOT IN (-1, 4)
       AND (
             @term = '%%'
          OR k.KennelName            LIKE @term
@@ -51,7 +57,7 @@ BEGIN TRY
          OR REPLACE(COALESCE(rgn.RegionSearchTags,  ''), ',', ' ') LIKE @term
          OR REPLACE(COALESCE(ctr.CountrySearchTags, ''), ',', ' ') LIKE @term
           )
-    ORDER BY LastRunGmt DESC, k.KennelShortName;
+    ORDER BY CASE WHEN @term = '%%' THEN 0 ELSE 1 END, k.KennelName;
 END TRY
 BEGIN CATCH
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
