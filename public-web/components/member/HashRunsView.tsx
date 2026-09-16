@@ -10,7 +10,7 @@
  * the app's own icons. The list opens scrolled to the divider, as the app
  * does. Distances need the browser's location, asked for once.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MyRun } from "@/lib/member-api";
@@ -124,6 +124,15 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   const dividerRef = useRef<HTMLLIElement>(null);
   const anchored = useRef(false);
 
+  // Past runs are revealed lazily, newest first: the last PAST_PAGE sit
+  // above the divider, and scrolling up to the top uncovers the next page
+  // of older ones. Prepending above the viewport would jump the page on
+  // Safari (no scroll anchoring), so the height added is scrolled back.
+  const PAST_PAGE = 20;
+  const [pastShown, setPastShown] = useState(PAST_PAGE);
+  const topSentinel = useRef<HTMLLIElement>(null);
+  const pendingHeight = useRef<number | null>(null);
+
   // Where am I — once, for "Runs within N km" and "X km from here".
   useEffect(() => {
     if (!navigator.geolocation) { setMe("denied"); return; }
@@ -178,6 +187,31 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
     requestAnimationFrame(() => dividerRef.current?.scrollIntoView({ block: "start" }));
   }, [past.length]);
 
+  // Reset the window when the list itself changes (search, chips).
+  useEffect(() => { setPastShown(PAST_PAGE); }, [query, filterMy, filterEvents]);
+
+  const visiblePast = useMemo(() => past.slice(Math.max(0, past.length - pastShown)), [past, pastShown]);
+  const morePast = past.length > pastShown;
+
+  useEffect(() => {
+    const el = topSentinel.current;
+    if (!el || !morePast) return;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      pendingHeight.current = document.documentElement.scrollHeight;
+      setPastShown((n) => n + PAST_PAGE);
+    }, { rootMargin: "400px 0px 0px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [morePast, pastShown]);
+
+  useLayoutEffect(() => {
+    if (pendingHeight.current == null) return;
+    const delta = document.documentElement.scrollHeight - pendingHeight.current;
+    pendingHeight.current = null;
+    if (delta > 0) window.scrollBy(0, delta);
+  }, [visiblePast.length]);
+
   async function rsvp(run: MyRun, answer: Answer) {
     setBusy(run.PublicEventId); setError(null); setMenuFor(null);
     try {
@@ -225,7 +259,12 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
       {error && <p className="mx-3 mt-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold" style={{ color: HC_RED }}>{error}</p>}
 
       <ul className="space-y-2 px-2.5 pb-12 pt-2">
-        {past.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} busy={busy === r.PublicEventId} />)}
+        {morePast && (
+          <li ref={topSentinel} className="py-3 text-center text-sm text-white/80" aria-live="polite">
+            Loading older runs… ({past.length - pastShown} more)
+          </li>
+        )}
+        {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} busy={busy === r.PublicEventId} />)}
 
         {past.length > 0 && (
           <li ref={dividerRef} className="scroll-mt-[190px]">
