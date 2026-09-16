@@ -1,3 +1,11 @@
+## 3.1.0+1376 (2026-09-16)
+### Improvements
+- The run notice puts a blank line between its links, a 🗺️ on the details
+  link, and says "I'll be there" rather than "I'm in".
+- The bottom tab is called "Map". The main map shows the phone as a blue dot
+  with a compass arrow, live, replacing the static marker at the boot-time
+  position; centre-on-me goes to the live fix. Android build included.
+
 ## 3.1.0+1374 (2026-09-16)
 ### New Features
 - The run notice now ends with an "I'm in" and a "Can't make it" link.
