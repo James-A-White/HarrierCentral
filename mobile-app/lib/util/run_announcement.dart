@@ -61,6 +61,16 @@ class RunAnnouncement {
       ? '$BASE_HASHRUNS_DOT_ORG_URL${kennel.kennelUniqueShortName}/${event.eventNumber}'
       : '$BASE_HASHRUNS_DOT_ORG_URL#/RID?publicEventId=${event.publicEventId}';
 
+  /// The same link with the answer on the end: `?RSVP=Yes` / `?RSVP=No`.
+  /// Tapping it opens the app, records the RSVP, and lands on the check-in
+  /// tab showing the tick and who else is coming (James, 2026-09-16). The
+  /// legacy form already has a query inside its fragment, so the answer is
+  /// appended with `&` there; DeepLinkService reads both shapes.
+  String rsvpUrl(EnumRsvpState state) {
+    final String answer = state == rsvpYes ? 'Yes' : 'No';
+    return _isCounted ? '$url?RSVP=$answer' : '$url&RSVP=$answer';
+  }
+
   String get _title {
     final String num = _isCounted && event.eventNumber > 0
         ? ' #${event.eventNumber}'
@@ -133,7 +143,9 @@ class RunAnnouncement {
     }
 
     b.writeln();
-    b.writeln('Details, map & RSVP: $url');
+    b.writeln('Details & map: $url');
+    b.writeln("✅ I'm in: ${rsvpUrl(rsvpYes)}");
+    b.writeln("❌ Can't make it: ${rsvpUrl(rsvpNo)}");
     b.write('via Harrier Central');
     return b.toString();
   }

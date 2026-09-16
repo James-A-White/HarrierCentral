@@ -86,8 +86,33 @@ void main() {
           reason: 'the LOCAL wall-clock, formatted as-is — not converted');
       expect(lines[2], '🐰 Hares: Run2Eat');
       expect(lines[3], '📍 The Victoria, London');
-      expect(t, contains('Details, map & RSVP: https://www.hashruns.org/lh3/2851'));
+      expect(t, contains('Details & map: https://www.hashruns.org/lh3/2851\n'));
       expect(t, endsWith('via Harrier Central'));
+    });
+
+    test('the RSVP links carry the answer as a query on the run URL', () {
+      final RunAnnouncement a = RunAnnouncement(event: event(), kennel: kennel());
+      expect(a.rsvpUrl(rsvpYes), 'https://www.hashruns.org/lh3/2851?RSVP=Yes');
+      expect(a.rsvpUrl(rsvpNo), 'https://www.hashruns.org/lh3/2851?RSVP=No');
+      final List<String> lines = a.text.split('\n');
+      expect(lines, contains("✅ I'm in: https://www.hashruns.org/lh3/2851?RSVP=Yes"));
+      expect(lines, contains("❌ Can't make it: https://www.hashruns.org/lh3/2851?RSVP=No"));
+      expect(
+        lines.indexWhere((String l) => l.startsWith('Details')),
+        lessThan(lines.indexWhere((String l) => l.startsWith('✅'))),
+        reason: 'the plain link comes first so WhatsApp previews the run, not the answer',
+      );
+    });
+
+    test('an uncounted run appends the answer to the legacy fragment query', () {
+      final RunAnnouncement a = RunAnnouncement(
+        event: event(counted: 0, number: 0),
+        kennel: kennel(),
+      );
+      expect(a.rsvpUrl(rsvpYes),
+          'https://www.hashruns.org/#/RID?publicEventId=pub-e1&RSVP=Yes');
+      expect(DeepLinkService.parse(Uri.parse(a.rsvpUrl(rsvpNo)))!.rsvp, rsvpNo,
+          reason: 'what the notice writes, the app must read back');
     });
 
     test('lines with nothing to say are absent, not blank', () {
