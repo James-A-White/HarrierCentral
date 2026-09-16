@@ -213,3 +213,144 @@ export async function getRunPack(s: MemberSession, publicEventId: string): Promi
   if (!me) return null;
   return { me, pack: (rowsets[2] ?? []) as unknown as PackMember[] };
 }
+
+// ── The five tabs (E9.F7.S5/S8/S9/S10/S11) ────────────────────────────────────
+
+/** publicWeb_getMyRuns row: the GlobalRunRow shape plus My* columns. */
+export interface MyRun {
+  PublicEventId: string;
+  EventNumber: number;
+  EventName: string;
+  EventStartDatetime: string;
+  EventEndDatetime: string | null;
+  EventStartDatetimeGmt: string | null;
+  KennelIANATimezone: string | null;
+  EventTypeName: string | null;
+  EventPriceForMembers: number | null;
+  EventPriceForNonMembers: number | null;
+  EventCurrencyType: string | null;
+  Hares: string | null;
+  LocationOneLineDesc: string | null;
+  LocationStreet: string | null;
+  LocationCity: string | null;
+  LocationPostCode: string | null;
+  LocationRegion: string | null;
+  LocationCountry: string | null;
+  Latitude: number | null;
+  Longitude: number | null;
+  EventDescription: string | null;
+  EventImage: string | null;
+  EventUrl: string | null;
+  IsCountedRun: number;
+  KennelSlug: string;
+  KennelShortName: string;
+  KennelName: string;
+  KennelLogo: string | null;
+  PrimaryColor: string | null;
+  AccentColor: string | null;
+  PublicKennelId: string;
+  KennelWebsiteDomain: string | null;
+  MyRsvpState: number;
+  MyAttendenceState: number;
+  MyIsHare: number;
+  IsPast: number;
+  GoingCount: number;
+  TrackRunnerCount: number | null;
+  PhotoCount: number | null;
+  MessageCount: number | null;
+}
+
+export interface MyKennel {
+  PublicKennelId: string;
+  KennelSlug: string;
+  KennelShortName: string;
+  KennelName: string;
+  KennelLogo: string | null;
+  KennelStatus: number | null;
+  City: string | null;
+  Region: string | null;
+  Country: string | null;
+  KennelWebsiteDomain: string | null;
+  Following: number;
+  IsHomeKennel: number;
+  IsMember: number;
+  MembershipExpirationDate: string | null;
+  MemberSince: string | null;
+  DateOfLastRun: string | null;
+  Runs: number;
+  Haring: number;
+  IsEstimate: number;
+  NextRunGmt: string | null;
+  NextRunLocal: string | null;
+  NextRunNumber: number | null;
+  NextRunName: string | null;
+  NextRunPublicEventId: string | null;
+}
+
+export interface HistoryTotals { Runs: number; Haring: number; Kennels: number; IsEstimate: number }
+export interface HistoryKennel {
+  PublicKennelId: string; KennelSlug: string; KennelShortName: string; KennelName: string; KennelLogo: string | null;
+  Following: number; IsHomeKennel: number; MemberSince: string | null; DateOfLastRun: string | null;
+  Runs: number; Haring: number; IsEstimate: number;
+}
+export interface HistoryRun {
+  PublicEventId: string; EventNumber: number; EventName: string; EventStartDatetime: string; EventStartDatetimeGmt: string | null;
+  IsCountedRun: number; LocationOneLineDesc: string | null; LocationCity: string | null; Hares: string | null;
+  TrackRunnerCount: number | null; PhotoCount: number | null;
+  PublicKennelId: string; KennelSlug: string; KennelShortName: string; KennelLogo: string | null;
+  IsHare: number | null; AttendenceState: number | null; MyRunNumber: number | null;
+}
+export interface MyHistory { totals: HistoryTotals; kennels: HistoryKennel[]; runs: HistoryRun[] }
+
+export interface KennelSearchRow {
+  PublicKennelId: string; KennelSlug: string; KennelShortName: string; KennelName: string; KennelLogo: string | null;
+  KennelStatus: number | null; City: string | null; Region: string | null; Country: string | null; LastRunGmt: string | null;
+}
+
+function tokenFor(s: MemberSession, proc: string): string {
+  return hcToken(s.userId, proc, { paramString: s.deviceSecret, timeWindow: s.timeWindow });
+}
+
+export async function getMyRuns(s: MemberSession): Promise<MyRun[]> {
+  const rowsets = await callAdminApi("getMyRuns", { deviceId: s.deviceId, accessToken: tokenFor(s, "publicWeb_getMyRuns") });
+  if (envelopeOf(rowsets).success !== 1) return [];
+  return (rowsets[1] ?? []) as unknown as MyRun[];
+}
+
+export async function getMyKennels(s: MemberSession): Promise<MyKennel[]> {
+  const rowsets = await callAdminApi("getMyKennels", { deviceId: s.deviceId, accessToken: tokenFor(s, "publicWeb_getMyKennels") });
+  if (envelopeOf(rowsets).success !== 1) return [];
+  return (rowsets[1] ?? []) as unknown as MyKennel[];
+}
+
+export async function getMyHistory(s: MemberSession): Promise<MyHistory | null> {
+  const rowsets = await callAdminApi("getMyHistory", { deviceId: s.deviceId, accessToken: tokenFor(s, "publicWeb_getMyHistory") });
+  if (envelopeOf(rowsets).success !== 1) return null;
+  const t = (rowsets[1]?.[0] ?? { Runs: 0, Haring: 0, Kennels: 0, IsEstimate: 0 }) as unknown as HistoryTotals;
+  return {
+    totals: { Runs: Number(t.Runs) || 0, Haring: Number(t.Haring) || 0, Kennels: Number(t.Kennels) || 0, IsEstimate: Number(t.IsEstimate) || 0 },
+    kennels: (rowsets[2] ?? []) as unknown as HistoryKennel[],
+    runs: (rowsets[3] ?? []) as unknown as HistoryRun[],
+  };
+}
+
+export async function setKennelFollowing(s: MemberSession, publicKennelId: string, following: boolean): Promise<{ ok: boolean; message?: string }> {
+  const rowsets = await callAdminApi("setKennelFollowing", {
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "hcapp_joinKennel"),
+    publicKennelId,
+    following: following ? "1" : "0",
+  });
+  return envelopeOf(rowsets).success === 1 ? { ok: true } : { ok: false, message: userMessageOf(rowsets) };
+}
+
+/** Public directory search through the anonymous GET shim. */
+export async function searchKennels(q: string): Promise<KennelSearchRow[]> {
+  const url = new URL(`${API_BASE}/api/PublicWebApi`);
+  url.searchParams.set("queryType", "searchKennels");
+  url.searchParams.set("q", q);
+  const res = await fetch(url.toString(), { cache: "no-store" });
+  if (!res.ok) return [];
+  const rowsets = (await res.json()) as Rowsets;
+  return (rowsets?.[0] ?? []) as unknown as KennelSearchRow[];
+}

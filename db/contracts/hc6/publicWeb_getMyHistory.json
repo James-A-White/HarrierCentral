@@ -1,0 +1,283 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getMyHistory",
+  "version": "1.0.0",
+  "description": "The app's History tab: grand totals, per-kennel counts, every attended/hared run with MyRunNumber (historical count + position among counted attended runs by local date). ValidateAppAuth sp 113.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The browser's device id"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Token for this SP's name (or the inner SP's), paramString = deviceSecret"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "success 1/0, errorCode, errorType",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Totals",
+      "description": "One row",
+      "columns": [
+        {
+          "name": "Runs",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Haring",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Kennels",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsEstimate",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Kennels",
+      "description": "Runs > 0 only, by runs desc",
+      "columns": [
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Following",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsHomeKennel",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MemberSince",
+          "type": "DATETIMEOFFSET",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "DateOfLastRun",
+          "type": "DATETIMEOFFSET",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Runs",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Haring",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsEstimate",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "Runs",
+      "description": "Newest first",
+      "columns": [
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "EventNumber",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "EventName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "EventStartDatetime",
+          "type": "DATETIME2(7)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "EventStartDatetimeGmt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsCountedRun",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LocationOneLineDesc",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LocationCity",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Hares",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "TrackRunnerCount",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "PhotoCount",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsHare",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "AttendenceState",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MyRunNumber",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "NULL for uncounted or not-attended (hared only)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

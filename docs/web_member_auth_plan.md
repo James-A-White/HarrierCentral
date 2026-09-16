@@ -194,3 +194,14 @@ too. `/login` is a reserved slug.
 - **Two people, one email.** Email is unique on `HC.Hasher`, so a match is
   one row; the admin-typed-the-wrong-email case surfaces as "that's not me"
   on the confirmation and is handled by asking the kennel to fix the record.
+
+## The five tabs (2026-09-16, "replicate the main pages of the app")
+
+`/me/runs` · `/me/kennels` · `/me/map` · `/me/history` · `/me/songs`, behind
+the member cookie (`app/me/layout.tsx` redirects to `/login?next=` otherwise),
+rendered per request, never cached. Four member SPs under `ValidateAppAuth`
+(`getMyRuns` 111, `getMyKennels` 112, `getMyHistory` 113) plus
+`setKennelFollowing` (→ `hcapp_joinKennel` self-mode) and the public
+`searchKennels` (four `*SearchTags` columns). `PublicWebAdminApi` allow-list
+gained four more names. What the web does not do, and says so on the page:
+check-in at the start, PackTrack recording, push, chat, payments.

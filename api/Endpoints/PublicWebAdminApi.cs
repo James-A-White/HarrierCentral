@@ -40,6 +40,10 @@ namespace HcWebApi.Endpoints
             "getPasskey",
             "recordPasskeyLogin",
             "createMember",
+            "getMyRuns",
+            "getMyKennels",
+            "getMyHistory",
+            "setKennelFollowing",
         };
 
         private readonly ILogger<PublicWebAdminApi> _log;
@@ -64,6 +68,10 @@ namespace HcWebApi.Endpoints
             "getPasskey",
             "recordPasskeyLogin",
             "createMember",
+            "getMyRuns",
+            "getMyKennels",
+            "getMyHistory",
+            "setKennelFollowing",
         };
 
         [Function("PublicWebAdminApi")]

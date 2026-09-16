@@ -1,0 +1,79 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_setKennelFollowing",
+  "version": "1.0.0",
+  "description": "Follow/unfollow from the web: maps PublicKennelId, finds the caller from the device row, EXECs hcapp_joinKennel self-mode with only @isFollowing. Token for 'hcapp_joinKennel'.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The browser's device id"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Token for this SP's name (or the inner SP's), paramString = deviceSecret"
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": ""
+    },
+    {
+      "name": "following",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "HasherKennelMap.Following",
+      "description": "0 or 1"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "success 1/0, errorCode, errorType",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "1230 kennel not found; otherwise hcapp_joinKennel's rowsets"
+    }
+  ],
+  "sideEffects": [
+    "Everything hcapp_joinKennel does in self-mode"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
