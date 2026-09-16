@@ -8,7 +8,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { KennelSearchRow, MyKennel } from "@/lib/member-api";
-import { formatRunDate, relativeTime } from "@/lib/member-format";
+import { relativeTime } from "@/lib/member-format";
+import { HC_BLUE, HC_RED, appDate, card, mutedText, titleText } from "@/components/member/app-look";
 
 export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
   const [kennels, setKennels] = useState<MyKennel[]>(initialKennels);
@@ -63,19 +64,18 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold">Kennels</h1>
         <input
-          className="mt-3 w-full rounded-xl border border-white/15 bg-black/30 px-4 py-2.5 text-base text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="mt-3 w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-base text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-700"
           placeholder="Find a kennel — name, city, country, “Scotland”…"
           value={q} onChange={(e) => setQ(e.target.value)}
         />
       </div>
 
-      {error && <p className="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{error}</p>}
+      {error && <p className="rounded-lg bg-white px-3 py-2 text-sm font-semibold" style={{ color: HC_RED }}>{error}</p>}
 
       {results !== null && (
         <section>
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-white/90">
             {searching ? "Searching…" : `${results.length} found`}
           </h2>
           <ul className="space-y-2">
@@ -83,11 +83,11 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
               const m = mine.get(k.PublicKennelId.toLowerCase());
               const isFollowing = !!m && (m.Following === 1 || m.IsHomeKennel === 1);
               return (
-                <li key={k.PublicKennelId} className="flex items-center gap-3 rounded-2xl bg-black/30 p-3">
+                <li key={k.PublicKennelId} className={`${card} flex items-center gap-3 p-3`}>
                   <Logo logo={k.KennelLogo} name={k.KennelName} />
                   <div className="min-w-0 flex-1">
-                    <Link href={`/${k.KennelSlug}`} className="block truncate font-bold hover:underline">{k.KennelName}</Link>
-                    <p className="truncate text-sm text-zinc-400">{[k.City, k.Region, k.Country].filter(Boolean).join(", ")}</p>
+                    <Link href={`/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>{k.KennelName}</Link>
+                    <p className={`${mutedText} truncate`}>{[k.City, k.Region, k.Country].filter(Boolean).join(", ")}</p>
                   </div>
                   <FollowButton following={isFollowing} busy={busy === k.PublicKennelId} onClick={() => setFollowing(k.PublicKennelId, !isFollowing, k)} />
                 </li>
@@ -98,8 +98,8 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
       )}
 
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">Following</h2>
-        {following.length === 0 && <p className="text-zinc-300">You don&apos;t follow any kennel yet — search above.</p>}
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-white/90">Following</h2>
+        {following.length === 0 && <p className="text-white/80">You don&apos;t follow any kennel yet — search above.</p>}
         <ul className="space-y-2">
           {following.map((k) => <KennelCard key={k.PublicKennelId} k={k} busy={busy === k.PublicKennelId} onToggle={() => setFollowing(k.PublicKennelId, false)} />)}
         </ul>
@@ -107,7 +107,7 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
 
       {ranWith.length > 0 && (
         <section>
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">Ran with</h2>
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-white/90">Ran with</h2>
           <ul className="space-y-2">
             {ranWith.map((k) => <KennelCard key={k.PublicKennelId} k={k} busy={busy === k.PublicKennelId} onToggle={() => setFollowing(k.PublicKennelId, true)} />)}
           </ul>
@@ -122,14 +122,14 @@ function Logo({ logo, name }: { logo: string | null; name: string }) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={logo} alt={name} className="h-12 w-12 shrink-0 object-contain" />;
   }
-  return <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-red-600 text-lg font-bold text-white">{name.charAt(0).toUpperCase()}</div>;
+  return <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-lg font-bold text-white" style={{ backgroundColor: HC_RED }}>{name.charAt(0).toUpperCase()}</div>;
 }
 
 function FollowButton({ following, busy, onClick }: { following: boolean; busy: boolean; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} disabled={busy}
       className="shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-50"
-      style={following ? { backgroundColor: "rgba(255,255,255,0.12)", color: "#fff" } : { backgroundColor: "#dc2626", color: "#fff" }}>
+      style={following ? { backgroundColor: "#e4e4e7", color: "#27272a" } : { backgroundColor: HC_RED, color: "#fff" }}>
       {following ? "Following" : "Follow"}
     </button>
   );
@@ -137,28 +137,28 @@ function FollowButton({ following, busy, onClick }: { following: boolean; busy: 
 
 function KennelCard({ k, busy, onToggle }: { k: MyKennel; busy: boolean; onToggle: () => void }) {
   const isFollowing = k.Following === 1 || k.IsHomeKennel === 1;
-  const next = k.NextRunGmt && k.NextRunLocal
-    ? formatRunDate({ EventStartDatetime: k.NextRunLocal, EventStartDatetimeGmt: k.NextRunGmt, KennelIANATimezone: null })
-    : null;
   return (
-    <li className="rounded-2xl bg-black/30 p-4">
+    <li className={`${card} p-3`}>
       <div className="flex items-start gap-3">
         <Logo logo={k.KennelLogo} name={k.KennelName} />
         <div className="min-w-0 flex-1">
-          <Link href={`/${k.KennelSlug}`} className="block truncate text-base font-bold hover:underline">
-            {k.KennelName}{k.IsHomeKennel === 1 && <span className="ml-2 rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold">Home</span>}
+          <Link href={`/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>
+            {k.KennelName}{k.IsHomeKennel === 1 && <span className="ml-2 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-semibold text-zinc-700">Home</span>}
           </Link>
-          <p className="truncate text-sm text-zinc-400">{[k.City, k.Country].filter(Boolean).join(", ")}</p>
-          <p className="mt-1 text-sm text-zinc-300">
-            {k.IsEstimate ? "~" : ""}{k.Runs} run{k.Runs === 1 ? "" : "s"}{k.Haring > 0 && `, hared ${k.Haring}`}
-            {k.IsMember === 1 && " · member"}
+          <p className={`${mutedText} truncate`}>{[k.City, k.Country].filter(Boolean).join(", ")}</p>
+          <p className="text-[15px] font-semibold" style={{ color: HC_BLUE }}>
+            Runs: {k.IsEstimate ? "~" : ""}{k.Runs}, Times hared: {k.Haring}
           </p>
-          {k.NextRunPublicEventId && next && (
-            <p className="mt-1 text-sm text-zinc-400">
-              Next: <Link href={`/${k.KennelSlug}/${k.NextRunNumber}?back=/me/kennels`} className="underline underline-offset-2">#{k.NextRunNumber} {k.NextRunName}</Link>
-              {" "}· {next.short} <span className="text-zinc-500">({relativeTime(k.NextRunGmt!)})</span>
+          {k.DateOfLastRun && (
+            <p className="text-[15px] font-semibold" style={{ color: HC_BLUE }} suppressHydrationWarning>Last run: {appDate(k.DateOfLastRun).replace(/ at .*$/, "")}</p>
+          )}
+          {k.NextRunPublicEventId && k.NextRunGmt && k.NextRunLocal && (
+            <p className={mutedText} suppressHydrationWarning>
+              Next: <Link href={`/${k.KennelSlug}/${k.NextRunNumber}?back=/me/kennels`} className="underline underline-offset-2" style={{ color: HC_BLUE }}>#{k.NextRunNumber} {k.NextRunName}</Link>
+              {" "}· {relativeTime(k.NextRunGmt)}
             </p>
           )}
+          {k.IsMember === 1 && <p className={mutedText}>Member{k.MembershipExpirationDate ? ` until ${appDate(k.MembershipExpirationDate).replace(/ at .*$/, "")}` : ""}</p>}
         </div>
         {k.IsHomeKennel !== 1 && <FollowButton following={isFollowing} busy={busy} onClick={onToggle} />}
       </div>

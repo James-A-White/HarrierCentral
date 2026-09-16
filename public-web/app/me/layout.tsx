@@ -29,7 +29,7 @@ export default async function MemberLayout({ children }: { children: React.React
         <div className="fixed inset-0 -z-10 bg-repeat" style={{ backgroundImage: "url(/images/jungle_background.jpg)", backgroundSize: "1024px 1024px" }} />
         <div className="fixed inset-0 -z-[9]" style={{ backgroundColor: "#000000", opacity: 0.55 }} />
         <MemberTabBar hashName={session.hashName || session.displayName || "Hasher"} />
-        <main className="mx-auto w-full max-w-4xl px-4 pb-24 pt-6 md:px-6">{children}</main>
+        <main className="mx-auto w-full max-w-4xl px-3 pb-28 pt-3 sm:pb-16 sm:pt-4 md:px-6">{children}</main>
       </body>
     </html>
   );
