@@ -66,6 +66,15 @@ class Utilities {
       scanText = scanText.replaceAll(BASE_HASHRUNS_DOT_ORG_URL, '');
     }
 
+    // The web's sign-in QR carries the scan text in a URL —
+    // https://www.hashruns.org/login/UWP:<code> — so the phone's CAMERA opens
+    // the app (E9.F7.S7). Scanned from inside the app instead, the prefix
+    // above is gone and 'login/' is all that stands between us and the
+    // same UWP: text the portal's QR carries.
+    if (scanText.toLowerCase().startsWith('login/')) {
+      scanText = scanText.substring('login/'.length);
+    }
+
     String prefix = '';
     String content = '';
 
