@@ -1,3 +1,9 @@
+## 3.1.0+1378 (2026-09-16)
+### New Features
+- Sign in to hashruns.org from a computer by pointing the phone's camera at
+  the QR code on the page: the app approves it and the browser is in. The
+  in-app scanner reads the same code.
+
 ## 3.1.0+1376 (2026-09-16)
 ### Improvements
 - The run notice puts a blank line between its links, a 🗺️ on the details
