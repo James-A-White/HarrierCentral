@@ -1,3 +1,17 @@
+## 3.1.0+1374 (2026-09-16)
+### New Features
+- The run notice now ends with an "I'm in" and a "Can't make it" link.
+  Tapping one opens the app, records your RSVP and lands on the check-in tab
+  showing your tick and who else is coming. A link to a run that has already
+  started just opens the run.
+### Improvements
+- The run page's share control is one rounded button that says "Share on
+  WhatsApp" (or your kennel's app) with the app's own logo; the chevron lists
+  the other apps by their logos. The three action buttons are one size, and
+  read "Share my photos" and "<kennel> Links".
+- The QR share sheet, the announce sheet and the post-save offer name the
+  kennel's messaging app instead of always saying WhatsApp.
+
 ## 3.1.0+1373 (2026-09-15)
 ### Fixes
 - A hashruns.org link opens the app and nothing else. Previously the app
