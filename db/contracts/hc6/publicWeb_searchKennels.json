@@ -2,21 +2,21 @@
   "schema": "HC6",
   "name": "publicWeb_searchKennels",
   "version": "1.0.0",
-  "description": "Public kennel directory search: names, slug, city, region, country and the four *SearchTags columns. No auth; anonymous GET shim.",
+  "description": "Public kennel directory search: names, slug, city, region, country and the four *SearchTags columns. Eligibility = the app's browse rule, KennelStatus NOT IN (-1 Defunct, 4 Inactive-Hidden). Empty query returns every eligible kennel, by name. No auth; anonymous GET shim.",
   "parameters": [
     {
       "name": "q",
       "type": "NVARCHAR(100)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Words typed; empty = 50 most recently active"
+      "description": "Words typed; empty = every eligible kennel"
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Kennels",
-      "description": "Up to 50, most recently active first",
+      "description": "Eligible kennels, by name",
       "columns": [
         {
           "name": "PublicKennelId",
