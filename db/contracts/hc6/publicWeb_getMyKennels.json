@@ -1,0 +1,209 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getMyKennels",
+  "version": "1.0.0",
+  "description": "The app's Kennels tab: kennels followed / home / member / run with, counts (Hc + Historical), next run. ValidateAppAuth sp 112.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The browser's device id"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Token for this SP's name (or the inner SP's), paramString = deviceSecret"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "success 1/0, errorCode, errorType",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Kennels",
+      "description": "Home first, then following, then by runs",
+      "columns": [
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelStatus",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "City",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Region",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Country",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelWebsiteDomain",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Following",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsHomeKennel",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsMember",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MembershipExpirationDate",
+          "type": "DATETIMEOFFSET",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MemberSince",
+          "type": "DATETIMEOFFSET",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "DateOfLastRun",
+          "type": "DATETIMEOFFSET",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Runs",
+          "type": "INT",
+          "nullable": true,
+          "description": "HcTotalRunCount + HistoricalTotalRunCount"
+        },
+        {
+          "name": "Haring",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsEstimate",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "NextRunGmt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "NextRunLocal",
+          "type": "DATETIME2(7)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "NextRunNumber",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "NextRunName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "NextRunPublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

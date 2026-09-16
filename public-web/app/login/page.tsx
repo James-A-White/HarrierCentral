@@ -14,7 +14,7 @@ export const metadata: Metadata = {
  */
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; slug?: string }> }) {
   const { next, slug } = await searchParams;
-  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/me/runs";
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">

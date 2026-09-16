@@ -1,0 +1,93 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_searchKennels",
+  "version": "1.0.0",
+  "description": "Public kennel directory search: names, slug, city, region, country and the four *SearchTags columns. No auth; anonymous GET shim.",
+  "parameters": [
+    {
+      "name": "q",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Words typed; empty = 50 most recently active"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Kennels",
+      "description": "Up to 50, most recently active first",
+      "columns": [
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelStatus",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "City",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Region",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Country",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LastRunGmt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

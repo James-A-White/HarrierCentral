@@ -10,6 +10,7 @@
  * client island on an otherwise server-rendered page.
  */
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { MemberSignIn } from "@/components/member/MemberSignIn";
 
 interface PackMember { hasherId: string; name: string; photo: string; rsvpState: number; attendenceState: number; isHare: number }
@@ -110,9 +111,9 @@ export function RsvpPanel({ slug, kennelName, publicEventId, rsvpFromUrl, eventS
           {isPast ? "Who came" : "Are you coming?"}
         </h3>
         {signedIn && (
-          <span className="text-xs" style={{ color: "var(--kennel-text-muted)" }}>
-            Signed in{hashName ? ` as ${hashName}` : ""}
-          </span>
+          <Link href="/me/runs" className="text-xs underline underline-offset-2" style={{ color: "var(--kennel-text-muted)" }}>
+            {hashName ? `${hashName} · ` : ""}My runs →
+          </Link>
         )}
       </div>
 

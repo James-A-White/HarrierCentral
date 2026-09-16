@@ -1,0 +1,203 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getMyRuns",
+  "version": "1.0.0",
+  "description": "The app's Runs tab for a web member: next 365 days of runs for followed kennels plus attended runs from the last 10 days, GlobalRuns shape + My* columns. ValidateAppAuth sp 111.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The browser's device id"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Token for this SP's name (or the inner SP's), paramString = deviceSecret"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "success 1/0, errorCode, errorType",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Runs",
+      "description": "Chronological; the getGlobalRuns columns (fees, location, tags, kennel context) plus those listed",
+      "columns": [
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "EventNumber",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "EventName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "EventStartDatetime",
+          "type": "DATETIME2(7)",
+          "nullable": true,
+          "description": "local wall-clock"
+        },
+        {
+          "name": "EventStartDatetimeGmt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "instant"
+        },
+        {
+          "name": "KennelIANATimezone",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Hares",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LocationOneLineDesc",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Latitude",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Longitude",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MyRsvpState",
+          "type": "INT",
+          "nullable": true,
+          "description": "0 none, 1 no, 2 maybe, 3 yes"
+        },
+        {
+          "name": "MyAttendenceState",
+          "type": "INT",
+          "nullable": true,
+          "description": "20 = at hash"
+        },
+        {
+          "name": "MyIsHare",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsPast",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "GoingCount",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "TrackRunnerCount",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "PhotoCount",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MessageCount",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
