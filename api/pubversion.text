@@ -1,3 +1,6 @@
+1.0.50+48
+    • PublicWebAdminApi: getMyRuns, getMyKennels, getMyHistory, setKennelFollowing for the web member area (/me/*).
+
 1.0.49+47
     • PublicWebAdminApi: seven publicWeb_ queryTypes for the browser-as-a-device member sign-in and RSVP (confirmAuthentication, createMember, setRunRsvp, getRunPack, savePasskey, getPasskey, recordPasskeyLogin), all behind X-Internal-Secret.
 
