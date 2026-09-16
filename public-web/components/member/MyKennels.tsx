@@ -52,7 +52,9 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
           KennelName: fromSearch.KennelName, KennelLogo: fromSearch.KennelLogo, KennelStatus: fromSearch.KennelStatus,
           City: fromSearch.City, Region: fromSearch.Region, Country: fromSearch.Country, KennelWebsiteDomain: null,
           Following: 1, IsHomeKennel: 0, IsMember: 0, MembershipExpirationDate: null, MemberSince: null, DateOfLastRun: null,
-          Runs: 0, Haring: 0, IsEstimate: 0, NextRunGmt: null, NextRunLocal: null, NextRunNumber: null, NextRunName: null, NextRunPublicEventId: null,
+          Runs: 0, Haring: 0, IsEstimate: 0, KennelDescription: null, KennelWebsiteUrl: null, KennelMismanagementTeam: null,
+          MessagingGroupInviteUrl: null, DefaultMessagingPlatform: 1, AllowSelfPayment: 0, KennelCredit: 0, CurrencySymbol: null, DigitsAfterDecimal: 2,
+          NextRunGmt: null, NextRunLocal: null, NextRunNumber: null, NextRunName: null, NextRunPublicEventId: null,
         }];
       });
     } finally { setBusy(null); }
@@ -86,7 +88,7 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
                 <li key={k.PublicKennelId} className={`${card} flex items-center gap-3 p-3`}>
                   <Logo logo={k.KennelLogo} name={k.KennelName} />
                   <div className="min-w-0 flex-1">
-                    <Link href={`/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>{k.KennelName}</Link>
+                    <Link href={`/me/kennels/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>{k.KennelName}</Link>
                     <p className={`${mutedText} truncate`}>{[k.City, k.Region, k.Country].filter(Boolean).join(", ")}</p>
                   </div>
                   <FollowButton following={isFollowing} busy={busy === k.PublicKennelId} onClick={() => setFollowing(k.PublicKennelId, !isFollowing, k)} />
@@ -142,7 +144,7 @@ function KennelCard({ k, busy, onToggle }: { k: MyKennel; busy: boolean; onToggl
       <div className="flex items-start gap-3">
         <Logo logo={k.KennelLogo} name={k.KennelName} />
         <div className="min-w-0 flex-1">
-          <Link href={`/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>
+          <Link href={`/me/kennels/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>
             {k.KennelName}{k.IsHomeKennel === 1 && <span className="ml-2 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-semibold text-zinc-700">Home</span>}
           </Link>
           <p className={`${mutedText} truncate`}>{[k.City, k.Country].filter(Boolean).join(", ")}</p>

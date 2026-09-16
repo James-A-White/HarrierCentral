@@ -48,7 +48,7 @@ export default async function MyHistoryPage() {
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-lg font-bold text-white" style={{ backgroundColor: HC_RED }}>{k.KennelShortName.charAt(0)}</div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <Link href={`/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>
+                    <Link href={`/me/kennels/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>
                       {k.KennelName}{k.IsHomeKennel === 1 && <span className="ml-2 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-semibold text-zinc-700">Home</span>}
                     </Link>
                     <p className="text-[15px] font-semibold" style={{ color: HC_BLUE }}>

@@ -280,6 +280,15 @@ export interface MyKennel {
   Runs: number;
   Haring: number;
   IsEstimate: number;
+  KennelDescription: string | null;
+  KennelWebsiteUrl: string | null;
+  KennelMismanagementTeam: string | null;
+  MessagingGroupInviteUrl: string | null;
+  DefaultMessagingPlatform: number;
+  AllowSelfPayment: number;
+  KennelCredit: number;
+  CurrencySymbol: string | null;
+  DigitsAfterDecimal: number;
   NextRunGmt: string | null;
   NextRunLocal: string | null;
   NextRunNumber: number | null;

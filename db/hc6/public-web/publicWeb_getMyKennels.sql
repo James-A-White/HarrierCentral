@@ -12,7 +12,8 @@ AS
 --              historical part is an estimate.
 -- Parameters:  @deviceId / @accessToken - the browser's device credentials
 -- Returns:     Rowset 0: envelope. Rowset 1: kennels, home first, then by
---              runs there.
+--              runs there — plus the kennel page's fields (description,
+--              website, mismanagement, group invite, my credit).
 -- Author:      Harrier Central
 -- Created:     2026-09-16
 -- HC5 Source:  none
@@ -63,6 +64,16 @@ BEGIN TRY
         COALESCE(hkm.HcTotalRunCount, 0) + COALESCE(hkm.HistoricalTotalRunCount, 0) AS Runs,
         COALESCE(hkm.HcHaringCount, 0)   + COALESCE(hkm.HistoricalHaringCount, 0)   AS Haring,
         COALESCE(hkm.HistoricalCountIsEstimate, 0)              AS IsEstimate,
+        -- For the kennel page (E9.F7.S12): what the app's kennel screen shows.
+        k.KennelDescription,
+        k.KennelWebsiteUrl,
+        k.KennelMismanagementTeam,
+        k.MessagingGroupInviteUrl,
+        COALESCE(k.DefaultMessagingPlatform, 1)                 AS DefaultMessagingPlatform,
+        COALESCE(k.AllowSelfPayment, 0)                         AS AllowSelfPayment,
+        COALESCE(hkm.KennelCredit, 0)                           AS KennelCredit,
+        COALESCE(k.CurrencySymbol, ctr.CurrencySymbol, '$^')     AS CurrencySymbol,
+        COALESCE(k.DigitsAfterDecimal, ctr.DigitsAfterDecimal, 2) AS DigitsAfterDecimal,
         nxt.EventStartDatetimeGmt                               AS NextRunGmt,
         CAST(nxt.EventStartDatetime AS datetime2(7))            AS NextRunLocal,
         nxt.EventNumber                                         AS NextRunNumber,
