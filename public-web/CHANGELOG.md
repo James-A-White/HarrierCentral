@@ -1,5 +1,10 @@
 # public-web Changelog
 
+## 0.21.52 (2026-09-16)
+
+- The "Sign in" / "My hashing" button is on the hashruns.org home page header
+  (the header lives in the runs list, not the unused GlobalTabBar).
+
 ## 0.21.51 (2026-09-16)
 
 - Tapping a kennel in the member area now shows the app's kennel screen
