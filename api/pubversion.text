@@ -1,3 +1,6 @@
+1.0.49+47
+    • PublicWebAdminApi: seven publicWeb_ queryTypes for the browser-as-a-device member sign-in and RSVP (confirmAuthentication, createMember, setRunRsvp, getRunPack, savePasskey, getPasskey, recordPasskeyLogin), all behind X-Internal-Secret.
+
 1.0.48+46
     • Setting or clearing a run's official start/end takes effect immediately. The window was cached for five minutes with nothing to invalidate it, so the map kept drawing the old one and the change looked like it had not worked.
     • StorePositions drops the cached window when an AST/AEN boundary marker is written; DeletePositions does the same when the window is cleared.

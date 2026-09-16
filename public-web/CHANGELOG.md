@@ -1,5 +1,15 @@
 # public-web Changelog
 
+## 0.21.49 (2026-09-16)
+
+- Members without the app can now sign in and RSVP ("browser as a device"):
+  the run page carries an "Are you coming?" panel that reads the `?RSVP=`
+  link from the WhatsApp notice, records the answer, and shows who else is
+  coming. Sign in by a six-letter email code, or on a computer by pointing
+  the phone's camera at a QR code the app approves; an unknown email creates
+  the member for that kennel. Passkeys offered after every sign-in.
+- `/login` pages; `/login` is now a reserved slug.
+
 ## 0.21.48 (2026-09-15)
 - Universal links: `/<slug>/next-run` now opens the app (the app resolves the kennel's next run itself)
 

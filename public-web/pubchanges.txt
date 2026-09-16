@@ -1,3 +1,8 @@
+0.21.49
+    • Sign in without the app: email code, or scan a QR with the app on a computer; unknown email creates the member
+    • RSVP from the run page (reads ?RSVP= from the WhatsApp notice) and see who else is coming
+    • Passkeys offered after sign-in; /login pages
+
 0.21.48
     • Universal links: next-run links open the app
 
