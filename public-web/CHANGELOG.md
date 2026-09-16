@@ -1,5 +1,10 @@
 # public-web Changelog
 
+## 0.21.53 (2026-09-16)
+
+- The home header sign-in button, for real this time (0.21.52 was built
+  with the change stashed).
+
 ## 0.21.52 (2026-09-16)
 
 - The "Sign in" / "My hashing" button is on the hashruns.org home page header
