@@ -970,10 +970,16 @@ class RunDetails extends StatelessWidget {
           // kennel's own messaging app, the chevron holds the others plus
           // "Other apps…". One kennel is on Telegram, one on Signal; the
           // button should say so rather than assume WhatsApp for everyone.
+          // The three action buttons share one size (James, 2026-09-16:
+          // "make sure all buttons are the same width and same height") —
+          // a labelled button that is a different width from its neighbour
+          // reads as a different kind of thing, and these are not.
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 0.0),
-            child: _AnnounceSplitButton(
-              announcement: RunAnnouncement(event: event, kennel: kennel),
+            child: _RunActionSize(
+              child: _AnnounceSplitButton(
+                announcement: RunAnnouncement(event: event, kennel: kennel),
+              ),
             ),
           ),
           // The same door as the kennel's "Share my photos", but for THIS run
@@ -983,56 +989,59 @@ class RunDetails extends StatelessWidget {
           // that this is a labelled button you can read.
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 0.0),
-            child: ElevatedButton.icon(
-              icon: Image.asset(
-                Platform.isAndroid
-                    ? 'images/icons/android_gallery.png'
-                    : 'images/icons/ios_gallery.png',
-                height: 28,
-              ),
-              label: Text(
-                'Share my photos of this run',
-                style: ts_button,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              onPressed: () async {
-                final BuildContext? ctx = navigatorKey.currentContext;
-                if (ctx == null) return;
-                await Navigator.push<dynamic>(
-                  ctx,
-                  MaterialPageRoute<dynamic>(
-                    builder: (_) => RunPhotoSweepPage(
-                      eventId: event.eventId,
-                      eventName: event.eventName,
+            child: _RunActionSize(
+              child: ElevatedButton.icon(
+                style: _RunActionSize.buttonStyle,
+                icon: Image.asset(
+                  Platform.isAndroid
+                      ? 'images/icons/android_gallery.png'
+                      : 'images/icons/ios_gallery.png',
+                  height: 28,
+                ),
+                label: Text(
+                  'Share my photos',
+                  style: ts_button,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onPressed: () async {
+                  final BuildContext? ctx = navigatorKey.currentContext;
+                  if (ctx == null) return;
+                  await Navigator.push<dynamic>(
+                    ctx,
+                    MaterialPageRoute<dynamic>(
+                      builder: (_) => RunPhotoSweepPage(
+                        eventId: event.eventId,
+                        eventName: event.eventName,
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-            child: ElevatedButton(
-              // style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
-              child: Obx(
-                () => Text(
-                  runDetailsController.showQrCodes.value
-                      ? 'Hide Run Codes'
-                      : 'Share ${kennel.kennelShortName} Runs',
-                  style: ts_button,
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  //textScaleFactor: deviceInfo.textClamp50,
+            child: _RunActionSize(
+              child: ElevatedButton(
+                style: _RunActionSize.buttonStyle,
+                child: Obx(
+                  () => Text(
+                    runDetailsController.showQrCodes.value
+                        ? 'Hide ${kennel.kennelShortName} Links'
+                        : '${kennel.kennelShortName} Links',
+                    style: ts_button,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                onPressed: () async {
+                  runDetailsController.showQrCodes.value =
+                      !runDetailsController.showQrCodes.value;
+                },
               ),
-
-              onPressed: () async {
-                runDetailsController.showQrCodes.value =
-                    !runDetailsController.showQrCodes.value;
-              },
             ),
           ),
           Obx(() {
@@ -1551,11 +1560,41 @@ class _MyNotesSection extends StatelessWidget {
 /// Built from a Row of two buttons rather than a MenuAnchor-per-button so the
 /// main action stays a plain red button like every other on the page, and
 /// the chevron is visibly a second control.
+/// One size for the run page's action buttons: as wide as the screen allows
+/// up to a phone's worth, and one fixed height, so the split button and the
+/// two plain ones line up as a set.
+class _RunActionSize extends StatelessWidget {
+  const _RunActionSize({required this.child});
+  final Widget child;
+
+  static const double height = 52;
+  static const double maxWidth = 340;
+  static const double sideMargin = 24;
+  static const double radius = 10;
+
+  /// Plain buttons get the same corner as the split one, and no minimum of
+  /// their own — the SizedBox is the size.
+  static final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
+    minimumSize: Size.zero,
+    padding: const EdgeInsets.symmetric(horizontal: 14),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final double width = min(
+      MediaQuery.sizeOf(context).width - 2 * sideMargin,
+      maxWidth,
+    );
+    return Center(
+      child: SizedBox(width: width, height: height, child: child),
+    );
+  }
+}
+
 class _AnnounceSplitButton extends StatelessWidget {
   const _AnnounceSplitButton({required this.announcement});
   final RunAnnouncement announcement;
-
-  static const double _radius = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -1566,94 +1605,76 @@ class _AnnounceSplitButton extends StatelessWidget {
 
     // ONE rounded control, not two buttons pressed together (James,
     // 2026-09-16): a single clipped surface with four rounded corners, the
-    // two halves in an IntrinsicHeight so the chevron is exactly as tall as
-    // the label however many lines it takes, and a 1px seam between them.
-    return Center(
-      child: Material(
-        color: hc_red,
-        elevation: 2,
-        borderRadius: BorderRadius.circular(_radius),
-        clipBehavior: Clip.antiAlias,
-        child: IntrinsicHeight(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              InkWell(
-                onTap: () => announcement.sendVia(main),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 8, 16, 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      MessagingPlatformGlyph(main, size: 22, onDisc: true),
-                      const SizedBox(width: 10),
-                      Flexible(
-                        child: Text(
-                          'Share on ${main.label}',
-                          style: ts_button,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const VerticalDivider(
-                width: 1,
-                thickness: 1,
-                color: Colors.white54,
-              ),
-              MenuAnchor(
-                style: const MenuStyle(
-                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.white),
-                ),
-                builder: (BuildContext c, MenuController m, Widget? _) =>
-                    InkWell(
-                      onTap: () => m.isOpen ? m.close() : m.open(),
-                      child: const SizedBox(
-                        width: 46,
-                        child: Icon(
-                          Icons.expand_more,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                      ),
-                    ),
-                menuChildren: <Widget>[
-                  for (final MessagingPlatform p in others)
-                    MenuItemButton(
-                      leadingIcon: MessagingPlatformGlyph(p, size: 24),
-                      onPressed: () => announcement.sendVia(p),
+    // two halves stretched to the height the parent gives, and a 1px seam
+    // between them. The parent (_RunActionSize) decides the size.
+    return Material(
+      color: hc_red,
+      elevation: 2,
+      borderRadius: BorderRadius.circular(_RunActionSize.radius),
+      clipBehavior: Clip.antiAlias,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Expanded(
+            child: InkWell(
+              onTap: () => announcement.sendVia(main),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    MessagingPlatformGlyph(main, size: 22, onDisc: true),
+                    const SizedBox(width: 10),
+                    Flexible(
                       child: Text(
-                        p.opensWithNotice
-                            ? 'Share on ${p.label}'
-                            : '${p.label} (via share sheet)',
-                        style: const TextStyle(
-                          color: Colors.black87,
-                          fontSize: 16,
-                        ),
+                        'Share on ${main.label}',
+                        style: ts_button,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  const Divider(height: 8),
-                  MenuItemButton(
-                    leadingIcon: const Icon(
-                      Icons.ios_share,
-                      color: Colors.black54,
-                    ),
-                    onPressed: announcement.shareAnywhere,
-                    child: const Text(
-                      'Other apps…',
-                      style: TextStyle(color: Colors.black87, fontSize: 16),
-                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const VerticalDivider(width: 1, thickness: 1, color: Colors.white54),
+          MenuAnchor(
+            style: const MenuStyle(
+              backgroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+            ),
+            builder: (BuildContext c, MenuController m, Widget? _) => InkWell(
+              onTap: () => m.isOpen ? m.close() : m.open(),
+              child: const SizedBox(
+                width: 46,
+                child: Icon(Icons.expand_more, color: Colors.white, size: 28),
+              ),
+            ),
+            menuChildren: <Widget>[
+              for (final MessagingPlatform p in others)
+                MenuItemButton(
+                  leadingIcon: MessagingPlatformGlyph(p, size: 24),
+                  onPressed: () => announcement.sendVia(p),
+                  child: Text(
+                    p.opensWithNotice
+                        ? 'Share on ${p.label}'
+                        : '${p.label} (via share sheet)',
+                    style: const TextStyle(color: Colors.black87, fontSize: 16),
                   ),
-                ],
+                ),
+              const Divider(height: 8),
+              MenuItemButton(
+                leadingIcon: const Icon(Icons.ios_share, color: Colors.black54),
+                onPressed: announcement.shareAnywhere,
+                child: const Text(
+                  'Other apps…',
+                  style: TextStyle(color: Colors.black87, fontSize: 16),
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
