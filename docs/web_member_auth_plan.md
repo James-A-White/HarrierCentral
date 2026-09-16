@@ -1,7 +1,11 @@
 # Participate without the app — web member identity (E9.F7)
 
-Designed 2026-09-16 with James. Status: **built 2026-09-16, not deployed** —
-see "Deploy checklist" at the end. Built in one day, as asked: email code, QR
+Designed 2026-09-16 with James. Status: **LIVE 2026-09-16** — migration run,
+190 SPs deployed, API 1.0.49+47, public-web 0.21.49, `HC_MEMBER_SESSION_SECRET`
+set; app builds 3.1.0+1378 / 3.0.40+1379 (TestFlight internal, Play internal
+1379) carry the `/login/` handling. Smoke-tested live: `/login` 200, unknown
+email → `{sent:false, known:false}`, QR start/poll `{pending:true}`, pack
+without cookie 401, run page shows the panel with `?RSVP=Yes`. Built in one day, as asked: email code, QR
 via `/login/`, unknown-email signup, RSVP, pack list, passkeys.
 
 ## Why
@@ -165,7 +169,7 @@ too. `/login` is a reserved slug.
 | `WEBAUTHN_ORIGINS` | Optional; default `https://www.hashruns.org,https://hashruns.org`. |
 | `NEXT_PUBLIC_SITE_ORIGIN` | Optional; default `https://www.hashruns.org` (what the QR URL starts with). |
 
-## Deploy checklist (James decides when)
+## Deploy checklist (done 2026-09-16, kept for the next time)
 
 1. **James runs** `db/hc6/public-web/archive/2026-09-16_device_passkey.sql` (parked in archive/ so the deploy script never runs it), then archives it.
 2. `./tools/deploy_hc6.sh` (picks up `db/hc6/public-web/*.sql` and the changed `hcapp_authorizeDevice`).
