@@ -13,7 +13,7 @@ const TABS = [
   { label: "Runs",    title: "Hash Runs", href: "/me/runs",    icon: LayoutList },
   { label: "Kennels", title: "Kennels",   href: "/me/kennels", icon: Users },
   { label: "Map",     title: "Map",       href: "/me/map",     icon: MapIcon },
-  { label: "History", title: "History",   href: "/me/history", icon: History },
+  { label: "History", title: "Run Counts", href: "/me/history", icon: History },
   { label: "Songs",   title: "Songs",     href: "/me/songs",   icon: Music },
 ] as const;
 
