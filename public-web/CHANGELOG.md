@@ -1,5 +1,14 @@
 # public-web Changelog
 
+## 0.21.50 (2026-09-16)
+
+- Member area at `/me` — the app's five tabs for people signed in without the
+  app: Runs (my kennels' next year, RSVP inline), Kennels (follow/unfollow,
+  directory search), Map (pins + "Where am I?"), History (totals, per-kennel
+  counts and milestones, every run with my number), Songs. Styled to the
+  app: purple title bar, white cards, the app's RSVP checkboxes, light
+  bottom tab bar.
+
 ## 0.21.49 (2026-09-16)
 
 - Members without the app can now sign in and RSVP ("browser as a device"):

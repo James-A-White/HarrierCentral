@@ -1,3 +1,6 @@
+0.21.50
+    • Member area /me: Runs, Kennels, Map, History, Songs for signed-in members without the app, styled like the app
+
 0.21.49
     • Sign in without the app: email code, or scan a QR with the app on a computer; unknown email creates the member
     • RSVP from the run page (reads ?RSVP= from the WhatsApp notice) and see who else is coming
