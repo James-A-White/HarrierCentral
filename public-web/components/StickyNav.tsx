@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SignInLink } from "@/components/member/SignInLink";
 import { motion, AnimatePresence, useTransform, useMotionValueEvent } from "framer-motion";
 import { Menu, X, MapPin, ArrowRight, Globe } from "lucide-react";
 import Link from "next/link";
@@ -195,6 +196,9 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navIte
                 ))}
               </nav>
 
+              {/* Member area front door — desktop */}
+              <SignInLink className="hidden items-center gap-1.5 rounded-full border border-current/30 px-3 py-1.5 text-sm font-semibold transition-opacity hover:opacity-70 lg:flex" />
+
               {/* <Button
                 size="sm"
                 className="hidden rounded-full text-base font-semibold lg:flex"
@@ -268,6 +272,9 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navIte
                 >
                   Harrier Central
                 </a>
+              </div>
+              <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
+                <SignInLink className="flex items-center gap-2 rounded-xl px-3 py-3 text-xl font-medium dark:hover:bg-white/[0.06] hover:bg-zinc-100 transition-colors" />
               </div>
               {/* <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
                 <button

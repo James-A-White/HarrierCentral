@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutList, CalendarDays } from "lucide-react";
+import { SignInLink } from "@/components/member/SignInLink";
 
 const TABS = [
   { label: "Runs",     href: "/",         icon: LayoutList  },
@@ -48,6 +49,9 @@ export function GlobalTabBar() {
             );
           })}
         </div>
+
+        {/* The front door to the member area — pinned right. */}
+        <SignInLink className="absolute right-3 flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-zinc-200 hover:bg-white/20 hover:text-white sm:right-4 sm:text-sm" />
 
       </div>
     </header>
