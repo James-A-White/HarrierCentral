@@ -379,6 +379,7 @@ export 'package:harrier_central/widgets/run_list_item.dart';
 export 'package:harrier_central/widgets/run_qr_share_section.dart';
 export 'package:harrier_central/widgets/run_tabs.dart';
 export 'package:harrier_central/widgets/run_tracker_map.dart';
+export 'package:harrier_central/widgets/viewer_location_dot.dart';
 export 'package:harrier_central/widgets/style_for_connected.dart';
 export 'package:harrier_central/widgets/text_scale_factor_clamper.dart';
 export 'package:harrier_central/widgets/user_details_ui.dart';

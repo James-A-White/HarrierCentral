@@ -1,3 +1,4 @@
+import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
@@ -196,6 +197,40 @@ class _SearchBar extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Body
 // ---------------------------------------------------------------------------
+/// The phone's position as the shared blue dot (viewer_location_dot.dart),
+/// replacing the old static PNG marker that sat at the boot-time position.
+/// Own Obx: reads the live fix, so only this layer repaints on a GPS tick.
+class _PhoneLayer extends StatelessWidget {
+  const _PhoneLayer({required this.controller});
+  final RunAndKennelMapController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final Rx<Position?>? live = controller.livePosition;
+    return Obx(() {
+      if (!appModel.hasLocationPermissions) return const SizedBox.shrink();
+      final Position? pos = live?.value;
+      final double? lat = pos?.latitude ?? deviceInfo.deviceLat;
+      final double? lon = pos?.longitude ?? deviceInfo.deviceLon;
+      if (lat == null || lon == null) return const SizedBox.shrink();
+      return MarkerLayer(
+        rotate: true,
+        markers: <Marker>[
+          Marker(
+            height: ViewerLocationDot.size,
+            width: ViewerLocationDot.size,
+            rotate: true,
+            point: latlng.LatLng(lat, lon),
+            child: IgnorePointer(
+              child: ViewerLocationDot(heading: controller.deviceHeading),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+}
+
 class _RunLocationsBody extends StatelessWidget {
   const _RunLocationsBody({required this.controller});
 
@@ -284,33 +319,7 @@ class _RunLocationsBody extends StatelessWidget {
                       MarkerLayer(
                         // Pins stay upright when the map is rotated.
                         rotate: true,
-                        markers: <Marker>[
-                          if ((appModel.hasLocationPermissions) &&
-                              (deviceInfo.deviceLat != null) &&
-                              (deviceInfo.deviceLon != null)) ...<Marker>[
-                            Marker(
-                              height: 50.0,
-                              width: 50.0,
-                              point: latlng.LatLng(
-                                deviceInfo.deviceLat!,
-                                deviceInfo.deviceLon!,
-                              ),
-                              child: Container(
-                                padding: const EdgeInsets.all(1.0),
-                                height: 50.0,
-                                width: 50.0,
-                                child: IgnorePointer(
-                                  ignoring: true,
-                                  child: Image.asset(
-                                    'images/other/map_current_location.png',
-                                    height: 50.0,
-                                    width: 50.0,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+                        markers: <Marker>[],
                       ),
                       MarkerClusterLayerWidget(
                         options: MarkerClusterLayerOptions(
@@ -367,6 +376,9 @@ class _RunLocationsBody extends StatelessWidget {
                           },
                         ),
                       ),
+                      // The phone: blue dot + compass wedge, in its own Obx on
+                      // the live fix so a GPS update moves only this layer.
+                      _PhoneLayer(controller: controller),
                       // What the trails on screen add up to (E5.F7.S1, James
                       // 2026-09-12). A flutter_map child is just a stacked
                       // widget, so the panel rides above the layers and moves

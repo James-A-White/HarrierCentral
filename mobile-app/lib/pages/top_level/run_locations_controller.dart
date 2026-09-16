@@ -101,6 +101,47 @@ class RunAndKennelMapController extends GetxController {
   // DataChangeService subscription
   StreamSubscription<DataChangeEvent>? _dataChangeSub;
 
+  /// The phone's heading for the blue dot's wedge, and a precise GPS fix
+  /// while the map is on screen. Both cost battery, so they run only while
+  /// this map is the visible tab (the IndexedStack keeps every tab alive,
+  /// so "built" is not "showing") and the app is in the foreground. The
+  /// kennel-scoped map is pushed as its own page and so is showing whenever
+  /// it exists.
+  final CompassHeadingFeed _compass = CompassHeadingFeed();
+  RxnDouble get deviceHeading => _compass.heading;
+  Worker? _tabWorker;
+  bool _preciseHeld = false;
+
+  /// Reads the shared position the LocationService already owns. Never a
+  /// private geolocator stream: geolocator has ONE stream per app and the
+  /// first subscriber's settings win (see project_lost_compass_local_track).
+  Rx<Position?>? get livePosition => Get.isRegistered<LocationService>()
+      ? LocationService.ensure().lastKnownPosition
+      : null;
+
+  bool get _isShowing {
+    if (kennel != null) return true;
+    if (!Get.isRegistered<MainNavigationController>()) return true;
+    return Get.find<MainNavigationController>().currentPage.value == 2;
+  }
+
+  void _syncLiveFix() {
+    final bool want = _isShowing && appModel.hasLocationPermissions;
+    if (want && !_preciseHeld) {
+      _compass.start();
+      if (Get.isRegistered<LocationService>()) {
+        LocationService.ensure().requestPreciseStream();
+      }
+      _preciseHeld = true;
+    } else if (!want && _preciseHeld) {
+      _compass.stop();
+      if (Get.isRegistered<LocationService>()) {
+        LocationService.ensure().releasePreciseStream();
+      }
+      _preciseHeld = false;
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Computed initial center (called once before onInit finishes so the map
   // widget can use it as initialCenter)
@@ -174,6 +215,14 @@ class RunAndKennelMapController extends GetxController {
       });
     }
 
+    if (kennel == null && Get.isRegistered<MainNavigationController>()) {
+      _tabWorker = ever<int>(
+        Get.find<MainNavigationController>().currentPage,
+        (_) => _syncLiveFix(),
+      );
+    }
+    _syncLiveFix();
+
     unawaited(_initAsync());
   }
 
@@ -190,6 +239,12 @@ class RunAndKennelMapController extends GetxController {
 
   @override
   void onClose() {
+    _tabWorker?.dispose();
+    _compass.stop();
+    if (_preciseHeld && Get.isRegistered<LocationService>()) {
+      LocationService.ensure().releasePreciseStream();
+      _preciseHeld = false;
+    }
     unawaited(_dataChangeSub?.cancel());
     searchController.dispose();
     searchFocusNode.dispose();
@@ -533,11 +588,13 @@ class RunAndKennelMapController extends GetxController {
   // Center-on-location button
   // ---------------------------------------------------------------------------
   void centerOnCurrentDevice() {
-    if (deviceInfo.deviceLat != null && deviceInfo.deviceLon != null) {
-      mapController.move(
-        latlng.LatLng(deviceInfo.deviceLat!, deviceInfo.deviceLon!),
-        13.0,
-      );
+    // The live fix first — deviceInfo is the boot-time position and can be
+    // wherever the phone was when the app last started.
+    final Position? live = livePosition?.value;
+    final double? lat = live?.latitude ?? deviceInfo.deviceLat;
+    final double? lon = live?.longitude ?? deviceInfo.deviceLon;
+    if (lat != null && lon != null) {
+      mapController.move(latlng.LatLng(lat, lon), 13.0);
       onMapMoveEnd(mapController.camera.visibleBounds);
     }
   }

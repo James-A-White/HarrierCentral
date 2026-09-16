@@ -505,52 +505,9 @@ class RunTrackerMap extends StatelessWidget {
     );
   }
 
-  /// Web-style viewer location dot: a blue dot with a white ring, plus a
-  /// heading wedge when a device compass feed is available (null → dot only,
-  /// so it degrades cleanly until the compass source is wired in).
-  Widget _viewerDot(RunTrackerMapController controller) {
-    const blue = Color(0xFF2A7FFF);
-    // Own Obx: the compass updates deviceHeading many times a second. Reading it
-    // here (not in the map's top-level Obx) means a heading change rebuilds only
-    // this dot's wedge — never FlutterMap or the marker-cluster layer.
-    return Obx(() {
-      final heading = controller.deviceHeading.value;
-      return Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          if (heading != null)
-            Transform.rotate(
-              angle: heading * math.pi / 180.0,
-              child: SizedBox(
-                width: 44,
-                height: 44,
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Icon(
-                    Icons.navigation,
-                    size: 16,
-                    color: blue.withValues(alpha: 0.9),
-                  ),
-                ),
-              ),
-            ),
-          Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              color: blue,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: const [
-                BoxShadow(color: Colors.black26, blurRadius: 2),
-              ],
-            ),
-          ),
-        ],
-      );
-    });
-  }
+  /// The shared blue dot + compass wedge (viewer_location_dot.dart).
+  Widget _viewerDot(RunTrackerMapController controller) =>
+      ViewerLocationDot(heading: controller.deviceHeading);
 
   /// Viewer dot + GPS-accuracy halo as their own reactive layer. Reading
   /// [LocationService.lastKnownPosition] inside this Obx means every GPS fix
