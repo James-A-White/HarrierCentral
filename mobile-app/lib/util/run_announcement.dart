@@ -231,9 +231,9 @@ class RunAnnouncement {
               style: ts_titleMedium.copyWith(color: Colors.black87),
             ),
             ListTile(
-              leading: Icon(Icons.chat, color: hc_blue, size: 30),
-              title: const Text('Post to WhatsApp',
-                  style: TextStyle(color: Colors.black87, fontSize: 17, fontWeight: FontWeight.w600)),
+              leading: MessagingPlatformGlyph(preferred, size: 30),
+              title: Text('Share on ${preferred.label}',
+                  style: const TextStyle(color: Colors.black87, fontSize: 17, fontWeight: FontWeight.w600)),
               subtitle: const Text('The notice, ready to send to the kennel group',
                   style: TextStyle(color: Colors.black54, fontSize: 14)),
               onTap: () => Navigator.of(c).pop(true),
@@ -253,7 +253,7 @@ class RunAnnouncement {
     );
     if (whatsApp == null) return;
     if (whatsApp) {
-      await postToWhatsApp();
+      await sendVia(preferred);
     } else {
       await shareAnywhere();
     }

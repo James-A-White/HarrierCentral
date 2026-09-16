@@ -1546,7 +1546,6 @@ class _MyNotesSection extends StatelessWidget {
   }
 }
 
-
 /// "Post this run to <kennel's app>" with a chevron for the other platforms.
 ///
 /// Built from a Row of two buttons rather than a MenuAnchor-per-button so the
@@ -1556,6 +1555,8 @@ class _AnnounceSplitButton extends StatelessWidget {
   const _AnnounceSplitButton({required this.announcement});
   final RunAnnouncement announcement;
 
+  static const double _radius = 10;
+
   @override
   Widget build(BuildContext context) {
     final MessagingPlatform main = announcement.preferred;
@@ -1563,58 +1564,97 @@ class _AnnounceSplitButton extends StatelessWidget {
         .where((MessagingPlatform p) => p != main)
         .toList();
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.horizontal(left: Radius.circular(10)),
-            ),
-          ),
-          icon: const Icon(Icons.chat, color: Colors.white, size: 24),
-          label: Text(
-            'Post this run to ${main.label}',
-            style: ts_button,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          onPressed: () => announcement.sendVia(main),
-        ),
-        // A 1px light seam so the two halves read as one control with a
-        // hinge, not two buttons that happen to touch.
-        Container(width: 1, height: 44, color: Colors.white38),
-        MenuAnchor(
-          builder: (BuildContext c, MenuController m, Widget? _) =>
-              ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              minimumSize: const Size(44, 44),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.horizontal(right: Radius.circular(10)),
+    // ONE rounded control, not two buttons pressed together (James,
+    // 2026-09-16): a single clipped surface with four rounded corners, the
+    // two halves in an IntrinsicHeight so the chevron is exactly as tall as
+    // the label however many lines it takes, and a 1px seam between them.
+    return Center(
+      child: Material(
+        color: hc_red,
+        elevation: 2,
+        borderRadius: BorderRadius.circular(_radius),
+        clipBehavior: Clip.antiAlias,
+        child: IntrinsicHeight(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              InkWell(
+                onTap: () => announcement.sendVia(main),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 8, 16, 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      MessagingPlatformGlyph(main, size: 22, onDisc: true),
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: Text(
+                          'Share on ${main.label}',
+                          style: ts_button,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            onPressed: () => m.isOpen ? m.close() : m.open(),
-            child: const Icon(Icons.expand_more, color: Colors.white),
-          ),
-          menuChildren: <Widget>[
-            for (final MessagingPlatform p in others)
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.chat_bubble_outline),
-                onPressed: () => announcement.sendVia(p),
-                child: Text(p.opensWithNotice ? p.label : '${p.label} (via share sheet)'),
+              const VerticalDivider(
+                width: 1,
+                thickness: 1,
+                color: Colors.white54,
               ),
-            const Divider(height: 8),
-            MenuItemButton(
-              leadingIcon: const Icon(Icons.campaign_outlined),
-              onPressed: announcement.shareAnywhere,
-              child: const Text('Other apps…'),
-            ),
-          ],
+              MenuAnchor(
+                style: const MenuStyle(
+                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+                ),
+                builder: (BuildContext c, MenuController m, Widget? _) =>
+                    InkWell(
+                      onTap: () => m.isOpen ? m.close() : m.open(),
+                      child: const SizedBox(
+                        width: 46,
+                        child: Icon(
+                          Icons.expand_more,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                menuChildren: <Widget>[
+                  for (final MessagingPlatform p in others)
+                    MenuItemButton(
+                      leadingIcon: MessagingPlatformGlyph(p, size: 24),
+                      onPressed: () => announcement.sendVia(p),
+                      child: Text(
+                        p.opensWithNotice
+                            ? 'Share on ${p.label}'
+                            : '${p.label} (via share sheet)',
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  const Divider(height: 8),
+                  MenuItemButton(
+                    leadingIcon: const Icon(
+                      Icons.ios_share,
+                      color: Colors.black54,
+                    ),
+                    onPressed: announcement.shareAnywhere,
+                    child: const Text(
+                      'Other apps…',
+                      style: TextStyle(color: Colors.black87, fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 }
