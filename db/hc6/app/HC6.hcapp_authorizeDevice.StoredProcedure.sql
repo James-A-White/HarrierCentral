@@ -7,7 +7,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_authorizeDevice]
     @userId      UNIQUEIDENTIFIER = NULL,
     @deviceData  NVARCHAR(MAX),
     @apnsToken   NVARCHAR(500)  = NULL,
-    @fcmToken    NVARCHAR(500)  = NULL
+    @fcmToken    NVARCHAR(500)  = NULL,
+    @isMobile    SMALLINT       = 1
 
 AS
 -- =====================================================================
@@ -23,6 +24,11 @@ AS
 --   @hcVersion   - App version string e.g. '3.0.0'
 --   @scanText    - Invite code in 'URC:XXXXXX' format. Mutually exclusive
 --                  with @userId — one must be provided.
+--   @isMobile    - 1 (default) = the phone app; 0 = a browser signing in
+--                  with an emailed invite code (E9.F7, 2026-09-16). Only
+--                  the HC.Device.IsMobile flag differs — a browser must not
+--                  be offered push tokens or counted as a phone in Device
+--                  Health.
 --   @userId      - Direct user lookup by HC.Hasher.id. When provided,
 --                  @scanText is ignored for lookup.
 --   @deviceData  - JSON blob of device metadata stored in HC.Device
@@ -175,7 +181,7 @@ BEGIN TRY
         INSERT INTO HC.Device
             ([id], [DeviceSecret], [TimeWindow], [DeviceData], [UserId], [ApnsToken], [FcmToken], [IsMobile])
         VALUES
-            (@deviceId, @deviceSecret, @timeWindow, @deviceData, @userId, @apnsToken, @fcmToken, 1);  -- mobile app device
+            (@deviceId, @deviceSecret, @timeWindow, @deviceData, @userId, @apnsToken, @fcmToken, COALESCE(@isMobile, 1));
 
     COMMIT TRANSACTION;
 

@@ -66,6 +66,8 @@ interface RunDetailProps {
    * from the panel would be jarring.
    */
   packTrackHref?: string;
+  /** Rendered under the header — the RSVP panel on the public run page (E9.F7). */
+  memberPanel?: React.ReactNode;
 }
 
 function SectionDivider() {
@@ -173,7 +175,7 @@ function parseW3w(json: string | null): string | null {
   } catch { return null; }
 }
 
-export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight = 240, indentMap = false, packTrackHref }: RunDetailProps) {
+export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight = 240, indentMap = false, packTrackHref, memberPanel }: RunDetailProps) {
   const [copied, setCopied] = useState(false);
   const [hasPackTrack, setHasPackTrack] = useState(false);
   const [packTrackOpen, setPackTrackOpen] = useState(false);
@@ -228,6 +230,8 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
           </p>
         </div>
       </div>
+
+      {memberPanel}
 
       <SectionDivider />
 

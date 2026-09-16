@@ -1,0 +1,151 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getRunPack",
+  "version": "1.0.0",
+  "description": "A signed-in web member's own state for a run and who else is coming. ValidateAppAuth spNumber 109.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The browser's device id"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Token for this SP's name, paramString = deviceSecret"
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": ""
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "success 1/0, errorCode, errorType",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Me",
+      "description": "One row",
+      "columns": [
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "rsvpState",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "attendenceState",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "isHare",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "isPast",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Pack",
+      "description": "Hares, going, maybe, checked in \u2014 never 'not coming'",
+      "columns": [
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "name",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "rsvpState",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "attendenceState",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "isHare",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

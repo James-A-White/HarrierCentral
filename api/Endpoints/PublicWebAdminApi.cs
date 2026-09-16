@@ -28,6 +28,18 @@ namespace HcWebApi.Endpoints
             "savePageLayout",
             "getPageLayout",
             "redeemAdminToken",
+            // Member sign-in and RSVP on the public web (E9.F7, 2026-09-16).
+            // All six are called only by Next.js server routes and all six
+            // require the internal secret: two of them hand back device
+            // credentials, and the rest carry a device token that the SP
+            // validates itself — the secret is belt and braces there.
+            "confirmAuthentication",
+            "setRunRsvp",
+            "getRunPack",
+            "savePasskey",
+            "getPasskey",
+            "recordPasskeyLogin",
+            "createMember",
         };
 
         private readonly ILogger<PublicWebAdminApi> _log;
@@ -45,6 +57,13 @@ namespace HcWebApi.Endpoints
         {
             "savePageLayout",
             "getPageLayout",
+            "confirmAuthentication",
+            "setRunRsvp",
+            "getRunPack",
+            "savePasskey",
+            "getPasskey",
+            "recordPasskeyLogin",
+            "createMember",
         };
 
         [Function("PublicWebAdminApi")]

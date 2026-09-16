@@ -1,0 +1,61 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_recordPasskeyLogin",
+  "version": "1.0.0",
+  "description": "After a verified assertion: stores the new counter, stamps Device.LastLogin and writes a LaunchAndLogin row. Behind HC_INTERNAL_SECRET.",
+  "parameters": [
+    {
+      "name": "credentialId",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "Device.PasskeyCredentialId",
+      "description": ""
+    },
+    {
+      "name": "counter",
+      "type": "BIGINT",
+      "nullable": false,
+      "mapsToColumn": "Device.PasskeyCounter",
+      "description": ""
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "success 1/0, errorCode, errorType",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Updates HC.Device",
+    "Inserts HC.LaunchAndLogin"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
