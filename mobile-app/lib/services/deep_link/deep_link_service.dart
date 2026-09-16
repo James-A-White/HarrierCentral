@@ -12,15 +12,20 @@ class DeepLinkTarget {
     this.publicEventId,
     this.nextRun = false,
     this.tab = RunTab.rsvp,
+    this.rsvp,
   });
 
   /// `/<slug>/<number>[/…]` — the run page and its sub-pages.
-  const DeepLinkTarget.run(String slug, int number, {RunTab tab = RunTab.rsvp})
-    : this._(kennelSlug: slug, runNumber: number, tab: tab);
+  const DeepLinkTarget.run(
+    String slug,
+    int number, {
+    RunTab tab = RunTab.rsvp,
+    EnumRsvpState? rsvp,
+  }) : this._(kennelSlug: slug, runNumber: number, tab: tab, rsvp: rsvp);
 
   /// The legacy `#/RID?publicEventId=…` form the QR codes still carry.
-  const DeepLinkTarget.legacy(String publicEventId)
-    : this._(publicEventId: publicEventId);
+  const DeepLinkTarget.legacy(String publicEventId, {EnumRsvpState? rsvp})
+    : this._(publicEventId: publicEventId, rsvp: rsvp);
 
   /// `/<slug>/nextrun` (the QR spelling) or `/<slug>/next-run` (the web's):
   /// whatever the kennel is running next. Resolved on the phone from the
@@ -38,14 +43,27 @@ class DeepLinkTarget {
   /// own tab instead, because that is what the link was for.
   final RunTab tab;
 
+  /// `?RSVP=Yes` / `?RSVP=No` on the link (James, 2026-09-16): the WhatsApp
+  /// notice carries an "I'm in" and a "can't make it" link, and tapping one
+  /// answers for the hasher before the run opens. Null means the link said
+  /// nothing about it. Only Yes and No are read — the notice offers no
+  /// "maybe", and an unknown value must not be guessed at.
+  final EnumRsvpState? rsvp;
+
   bool get isLegacy => publicEventId != null;
+
+  String get _rsvpSuffix => rsvp == null
+      ? ''
+      : rsvp == rsvpYes
+      ? ' RSVP yes'
+      : ' RSVP no';
 
   @override
   String toString() => isLegacy
-      ? 'DeepLinkTarget(legacy $publicEventId)'
+      ? 'DeepLinkTarget(legacy $publicEventId$_rsvpSuffix)'
       : nextRun
-      ? 'DeepLinkTarget($kennelSlug/next run)'
-      : 'DeepLinkTarget($kennelSlug/$runNumber → ${tab.name})';
+      ? 'DeepLinkTarget($kennelSlug/next run$_rsvpSuffix)'
+      : 'DeepLinkTarget($kennelSlug/$runNumber → ${tab.name}$_rsvpSuffix)';
 }
 
 /// Opens hashruns.org links inside the app (E9.F3, James 2026-09-15).
@@ -157,8 +175,12 @@ class DeepLinkService {
     if (frag.startsWith('/RID')) {
       final int q = frag.indexOf('?');
       if (q >= 0) {
-        final String? id = Uri.splitQueryString(frag.substring(q + 1))['publicEventId'];
-        if (id != null && id.isNotEmpty) return DeepLinkTarget.legacy(id.toLowerCase());
+        final Map<String, String> fragQuery =
+            Uri.splitQueryString(frag.substring(q + 1));
+        final String? id = fragQuery['publicEventId'];
+        if (id != null && id.isNotEmpty) {
+          return DeepLinkTarget.legacy(id.toLowerCase(), rsvp: _rsvpOf(fragQuery));
+        }
       }
       return null;
     }
@@ -186,7 +208,28 @@ class DeepLinkService {
           tab = RunTab.details;
       }
     }
-    return DeepLinkTarget.run(slug, number, tab: tab);
+    return DeepLinkTarget.run(
+      slug,
+      number,
+      tab: tab,
+      rsvp: _rsvpOf(uri.queryParameters),
+    );
+  }
+
+  /// `RSVP=Yes` / `RSVP=No`, key and value case-insensitive — a link is typed
+  /// by people as often as it is pasted, and `?rsvp=yes` must not be a dead
+  /// tap. Anything else (a "maybe", a typo) is ignored rather than guessed.
+  static EnumRsvpState? _rsvpOf(Map<String, String> query) {
+    for (final MapEntry<String, String> e in query.entries) {
+      if (e.key.toLowerCase() != 'rsvp') continue;
+      switch (e.value.trim().toLowerCase()) {
+        case 'yes':
+          return rsvpYes;
+        case 'no':
+          return rsvpNo;
+      }
+    }
+    return null;
   }
 
   // ---------------------------------------------------------------------
@@ -242,7 +285,71 @@ class DeepLinkService {
       await _openInBrowser(uri);
       return;
     }
+    if (target.rsvp != null) await _applyRsvp(eventId, target.rsvp!);
     await _openRun(eventId, target.tab, uri);
+  }
+
+  /// Answers the link's RSVP on the server, then lets the run page open on
+  /// the check-in tab as usual — so the hasher sees their own green tick and
+  /// who else is coming, which is the confirmation. The server reply updates
+  /// the local HEM row through the normal sync path, so the page reads the
+  /// new state without a second round-trip.
+  ///
+  /// Skipped, with a word, when the run has already started: an RSVP to a
+  /// run that is over is not what anyone meant, and the page itself hides
+  /// the RSVP buttons on a past run for the same reason. Offline the service
+  /// returns nothing and the link degrades to "open the run" — the buttons
+  /// are right there.
+  Future<void> _applyRsvp(String eventId, EnumRsvpState rsvp) async {
+    final bool yes = rsvp == rsvpYes;
+    try {
+      if (await _hasStarted(eventId)) {
+        _crumb('RSVP ${rsvp.value} ignored: run $eventId has already started');
+        showHcSnackbar('That run has already started, so there is nothing to RSVP to.');
+        return;
+      }
+      if (currentUserId.isEmpty) return;
+      final List<dynamic> reply = await tableModel.hasherEventMapService.setEventRsvp(
+        eventId,
+        currentUserId,
+        AppDomainType.user,
+        rsvp.value,
+      );
+      if (reply.isEmpty) {
+        _crumb('RSVP ${rsvp.value} for $eventId did not reach the server');
+        showHcSnackbar(
+          "Couldn't send your RSVP — you're offline. Use the buttons on the run page.",
+          isError: true,
+        );
+        return;
+      }
+      _crumb('RSVP ${rsvp.value} recorded for $eventId');
+      final String serverMessage =
+          (reply.first is Map ? reply.first['serverMessage'] : null) ?? '';
+      showHcSnackbar(
+        serverMessage.isNotEmpty
+            ? serverMessage
+            : yes
+            ? "You're in — see you at the start."
+            : "Noted — you're marked as not coming.",
+      );
+    } catch (e, s) {
+      BootLogger.logError('[DeepLinkService._applyRsvp] eventId=$eventId', e, s);
+    }
+  }
+
+  /// By the true UTC instant, per /hc-event-datetimes.
+  Future<bool> _hasStarted(String eventId) async {
+    final eh = tableModel.eventsTableHelper;
+    final rows = await database.rawQuery(
+      'SELECT ${eh.colEventStartDatetimeGmt} AS gmt '
+      'FROM ${EnumDataTables.events.commonTableName} '
+      'WHERE lower(${eh.colEventId}) = ? LIMIT 1',
+      <Object?>[eventId.toLowerCase()],
+    );
+    if (rows.isEmpty) return false;
+    final DateTime? start = DateTime.tryParse('${rows.first['gmt']}');
+    return start != null && start.toUtc().isBefore(DateTime.now().toUtc());
   }
 
   Future<bool> _waitUntilReady(Duration limit) async {

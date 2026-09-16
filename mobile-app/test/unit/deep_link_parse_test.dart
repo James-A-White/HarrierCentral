@@ -23,6 +23,23 @@ void main() {
       expect(p('https://example.com/lh3/2851'), isNull);
     });
 
+    test('?RSVP=Yes / No is read from the query, any case, and nothing else is', () {
+      expect(p('https://www.hashruns.org/lh3/2851')!.rsvp, isNull);
+      expect(p('https://hashruns.org/CH3/1490?RSVP=Yes')!.rsvp, rsvpYes);
+      expect(p('https://hashruns.org/CH3/1490?RSVP=No')!.rsvp, rsvpNo);
+      expect(p('https://hashruns.org/ch3/1490?rsvp=yes')!.rsvp, rsvpYes,
+          reason: 'typed links are lower-case links');
+      expect(p('https://hashruns.org/ch3/1490?RSVP=Maybe')!.rsvp, isNull,
+          reason: 'the notice offers no maybe; an unknown answer is not guessed');
+      expect(p('https://hashruns.org/ch3/1490?RSVP=Yes')!.tab, RunTab.rsvp,
+          reason: 'an RSVP link lands where the tick and the pack are');
+      expect(p('https://hashruns.org/ch3/1490/packtrack?RSVP=Yes')!.rsvp, rsvpYes);
+      expect(p('https://www.hashruns.org/#/RID?publicEventId=ABC&RSVP=No')!.rsvp, rsvpNo,
+          reason: 'the legacy form keeps its query inside the fragment');
+      final t = p('https://hashruns.org/CH3/1490?RSVP=Yes')!;
+      expect(t.toString(), contains('RSVP yes'));
+    });
+
     test('sub-pages land on their own tab', () {
       expect(p('https://www.hashruns.org/lh3/2851/packtrack')!.tab, RunTab.map);
       expect(p('https://www.hashruns.org/lh3/2851/photos')!.tab, RunTab.photos);
