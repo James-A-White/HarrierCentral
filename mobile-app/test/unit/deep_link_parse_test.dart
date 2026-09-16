@@ -40,6 +40,17 @@ void main() {
       expect(t.toString(), contains('RSVP yes'));
     });
 
+    test('the web sign-in QR is a login, not a run in a kennel called login', () {
+      final t = p('https://www.hashruns.org/login/UWP:0f6c0a2e-9c8b-4a5f-9e7b-1d2c3b4a5f60');
+      expect(t, isNotNull);
+      expect(t!.isLogin, isTrue);
+      expect(t.loginScanData, 'UWP:0f6c0a2e-9c8b-4a5f-9e7b-1d2c3b4a5f60',
+          reason: 'verbatim — it is compared to what the browser generated');
+      expect(t.runNumber, isNull);
+      expect(p('https://www.hashruns.org/login/abc'), isNull, reason: 'only UWP: text is a sign-in');
+      expect(p('https://www.hashruns.org/login/UWP:'), isNull);
+    });
+
     test('sub-pages land on their own tab', () {
       expect(p('https://www.hashruns.org/lh3/2851/packtrack')!.tab, RunTab.map);
       expect(p('https://www.hashruns.org/lh3/2851/photos')!.tab, RunTab.photos);

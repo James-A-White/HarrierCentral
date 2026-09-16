@@ -13,7 +13,14 @@ class DeepLinkTarget {
     this.nextRun = false,
     this.tab = RunTab.rsvp,
     this.rsvp,
+    this.loginScanData,
   });
+
+  /// `/login/UWP:<authCode>` — a browser's sign-in QR, read by the phone's
+  /// camera (E9.F7.S7, James 2026-09-16). The app approves it exactly as it
+  /// approves the portal's QR from the in-app scanner; the browser is
+  /// polling for that approval and becomes a device the moment it lands.
+  const DeepLinkTarget.login(String scanData) : this._(loginScanData: scanData);
 
   /// `/<slug>/<number>[/…]` — the run page and its sub-pages.
   const DeepLinkTarget.run(
@@ -50,6 +57,10 @@ class DeepLinkTarget {
   /// "maybe", and an unknown value must not be guessed at.
   final EnumRsvpState? rsvp;
 
+  /// The `UWP:<authCode>` text a web sign-in QR carries. Null for run links.
+  final String? loginScanData;
+
+  bool get isLogin => loginScanData != null;
   bool get isLegacy => publicEventId != null;
 
   String get _rsvpSuffix => rsvp == null
@@ -59,7 +70,9 @@ class DeepLinkTarget {
       : ' RSVP no';
 
   @override
-  String toString() => isLegacy
+  String toString() => isLogin
+      ? 'DeepLinkTarget(web sign-in)'
+      : isLegacy
       ? 'DeepLinkTarget(legacy $publicEventId$_rsvpSuffix)'
       : nextRun
       ? 'DeepLinkTarget($kennelSlug/next run$_rsvpSuffix)'
@@ -190,6 +203,16 @@ class DeepLinkService {
     if (seg.length < 2) return null; // "/" and "/<slug>" are the website's.
 
     final String slug = seg[0].toLowerCase();
+    // A reserved slug: no kennel is called "login". The segment after it is
+    // the scan text verbatim (case matters — it is compared to what the
+    // browser generated, lower-cased on both sides by the SP).
+    if (slug == 'login') {
+      final String scan = seg[1];
+      return scan.toUpperCase().startsWith(QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN) &&
+              scan.length > QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN.length
+          ? DeepLinkTarget.login(scan)
+          : null;
+    }
     final String second = seg[1].toLowerCase();
     if (_nextRunPages.contains(second)) return DeepLinkTarget.nextRun(slug);
     if (_kennelPages.contains(second)) return null;
@@ -277,6 +300,11 @@ class DeepLinkService {
     }
     _crumb('app ready, resolving');
 
+    if (target.isLogin) {
+      await _approveWebSignIn(target.loginScanData!);
+      return;
+    }
+
     final String? eventId = await _resolveEventId(target);
     if (eventId == null) {
       // Nothing local and no way to get it — hand back to the website, which
@@ -350,6 +378,33 @@ class DeepLinkService {
     if (rows.isEmpty) return false;
     final DateTime? start = DateTime.tryParse('${rows.first['gmt']}');
     return start != null && start.toUtc().isBefore(DateTime.now().toUtc());
+  }
+
+  /// The same call the in-app scanner makes for the portal's QR
+  /// (user_qr_code_page.dart): hcapp_authenticateWebPortal with the scan
+  /// text, token bound to it. The browser is polling and signs itself in the
+  /// moment the row exists, so all the phone needs to say is that it did it.
+  Future<void> _approveWebSignIn(String scanData) async {
+    // The in-app scanner sends the CONTENT after the 'UWP:' prefix
+    // (validateScan splits it off), and the portal polls with that bare
+    // code, so the row holds the bare code. Same here, or the web's poll
+    // never matches.
+    final String code = scanData.substring(QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN.length);
+    try {
+      final SingleResultModel? r =
+          await AuthenticateWebPortalService().authenticateWebPortal(code);
+      final bool ok = r?.result != null && r!.result!.isNotEmpty;
+      _crumb('web sign-in ${ok ? 'approved' : 'NOT approved'}');
+      showHcSnackbar(
+        ok
+            ? 'Signed in on the web — you can put the phone down.'
+            : "Couldn't approve that sign-in. Try the code again on the web.",
+        isError: !ok,
+      );
+    } catch (e, s) {
+      BootLogger.logError('[DeepLinkService._approveWebSignIn]', e, s);
+      showHcSnackbar("Couldn't approve that sign-in.", isError: true);
+    }
   }
 
   Future<bool> _waitUntilReady(Duration limit) async {
