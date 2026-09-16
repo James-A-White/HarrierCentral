@@ -142,10 +142,16 @@ class RunAnnouncement {
       b.writeln(desc.length > 220 ? '${desc.substring(0, 217).trimRight()}…' : desc);
     }
 
+    // A blank line between the links so each reads as its own thing, and
+    // "I'll be there" rather than "I'm in" — plain words for hashers whose
+    // first language is not English (James, 2026-09-16).
     b.writeln();
-    b.writeln('Details & map: $url');
-    b.writeln("✅ I'm in: ${rsvpUrl(rsvpYes)}");
+    b.writeln('🗺️ Details & map: $url');
+    b.writeln();
+    b.writeln("✅ I'll be there: ${rsvpUrl(rsvpYes)}");
+    b.writeln();
     b.writeln("❌ Can't make it: ${rsvpUrl(rsvpNo)}");
+    b.writeln();
     b.write('via Harrier Central');
     return b.toString();
   }

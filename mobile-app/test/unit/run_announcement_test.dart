@@ -86,7 +86,7 @@ void main() {
           reason: 'the LOCAL wall-clock, formatted as-is — not converted');
       expect(lines[2], '🐰 Hares: Run2Eat');
       expect(lines[3], '📍 The Victoria, London');
-      expect(t, contains('Details & map: https://www.hashruns.org/lh3/2851\n'));
+      expect(t, contains('🗺️ Details & map: https://www.hashruns.org/lh3/2851\n'));
       expect(t, endsWith('via Harrier Central'));
     });
 
@@ -95,13 +95,16 @@ void main() {
       expect(a.rsvpUrl(rsvpYes), 'https://www.hashruns.org/lh3/2851?RSVP=Yes');
       expect(a.rsvpUrl(rsvpNo), 'https://www.hashruns.org/lh3/2851?RSVP=No');
       final List<String> lines = a.text.split('\n');
-      expect(lines, contains("✅ I'm in: https://www.hashruns.org/lh3/2851?RSVP=Yes"));
+      expect(lines, contains("✅ I'll be there: https://www.hashruns.org/lh3/2851?RSVP=Yes"));
       expect(lines, contains("❌ Can't make it: https://www.hashruns.org/lh3/2851?RSVP=No"));
       expect(
         lines.indexWhere((String l) => l.startsWith('Details')),
         lessThan(lines.indexWhere((String l) => l.startsWith('✅'))),
         reason: 'the plain link comes first so WhatsApp previews the run, not the answer',
       );
+      final int details = lines.indexWhere((String l) => l.startsWith('🗺️'));
+      expect(lines[details + 1], isEmpty, reason: 'a blank line between the links');
+      expect(lines[details + 3], isEmpty);
     });
 
     test('an uncounted run appends the answer to the legacy fragment query', () {
