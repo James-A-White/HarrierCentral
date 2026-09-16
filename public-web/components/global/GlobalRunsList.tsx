@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect, useRef, useTransition } from "react";
+import { SignInLink } from "@/components/member/SignInLink";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import {
@@ -737,8 +738,9 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
       {/* ── Left panel ────────────────────────────────────────────────────── */}
       <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-[468px] lg:pb-3 bg-transparent">
 
-        {/* Future / Past segmented control + view toggle */}
+        {/* Future / Past segmented control + view toggle, and the member front door */}
         <div className="px-3 pt-3 pb-2 shrink-0 flex items-center gap-2">
+          <SignInLink className="flex shrink-0 items-center gap-1 rounded-full bg-zinc-300/75 px-3 py-1.5 text-sm font-semibold text-zinc-800 hover:text-zinc-950" />
           <div className="flex flex-[2] rounded-full bg-zinc-300/75 p-1">
             {(["future", "past"] as const).map((t) => (
               <button
