@@ -59,6 +59,28 @@ a second thing to get wrong and a second place where "who is this?" drifts.
    Not a synced table, so no trigger dance.
 8. **Chat stays in the app.** It needs push, moderation and the store UGC
    posture; it is where the pull to install should come from.
+9. **Two doors, chosen by the person, not by a rule** (James, 2026-09-16 —
+   "three months is arbitrary and there's no way to know upfront"). On a
+   computer: the QR code first, "Send a code to my email instead" under it.
+   On a phone: the email box only — there is nothing to scan on a phone. No
+   recency lookup, no gate, no hint.
+10. **The QR is the portal's flow, reused, with the code carried in a URL.**
+    The public web shows `https://www.hashruns.org/login/UWP:<authCode>`;
+    the phone's camera opens the app through the universal link and
+    `DeepLinkService` calls `hcapp_authenticateWebPortal(scanData)` — the
+    same SP and the same `HC.WebPortalAuthenticationRequests` row the
+    portal uses. The browser polls a new `publicWeb_confirmAuthentication`
+    (same provisioning as `hcportal_confirmAuthentication`, behind
+    `HC_INTERNAL_SECRET` rather than the portal's service-account device).
+    **The portal is untouched**: it keeps `UWP:<code>`, the in-app scanner
+    reads both shapes for ever, and `/login` becomes a reserved slug. The
+    app build carrying `/login/` must ship before the web login goes live.
+11. **Passkeys last in the build order** (email code → QR → unknown-email
+    signup → RSVP → passkeys), so a slipped afternoon costs nothing above.
+    A passkey is stored on the browser's `HC.Device` row (credential id,
+    public key, counter); verification is `@simplewebauthn/server` in the
+    Next.js route. Bound to `hashruns.org` — a Tier 3 custom domain would
+    need its own registration or a bounce through hashruns.org.
 
 ## The flow
 
@@ -117,6 +139,12 @@ carry the device token. One small deploy (`func publish`).
 
 `resolveKennelAndEvent` already yields `PublicEventId`; the run page passes it
 and the `?RSVP=` value down.
+
+### Build order (one day, James 2026-09-16: "as many features as we can
+into that capability in a day and then wrap it up")
+
+1. Email code (S2) · 2. QR via `/login/` (S7, app + web) · 3. Unknown-email
+signup (S3) · 4. RSVP (S1) · 5. Passkeys (S6). Pack list (S4) if time.
 
 ### Slice one — RSVP only (James, 2026-09-16: "all I'm interested in is the
 RSVP capability so the WhatsApp works")
