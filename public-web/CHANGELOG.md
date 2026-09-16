@@ -1,5 +1,14 @@
 # public-web Changelog
 
+## 0.21.54 (2026-09-16)
+
+- Run Counts rebuilt to the app's screens: your photo and totals, By Kennel /
+  By Country with the big logo = count rows, and the "My runs for <kennel>"
+  and "My runs for <country>" drill-downs with the tick or hare, "My FILTH
+  run #115 and #63 time haring", and the Run fee / Paid / Credit left strip.
+  Same numbers as the app — they are the app's own queries.
+- Wall-clock times on member pages were an hour off in summer time.
+
 ## 0.21.53 (2026-09-16)
 
 - The home header sign-in button, for real this time (0.21.52 was built
