@@ -10,7 +10,6 @@ export default async function MyMapPage() {
   const runs = await getMyRuns(s).catch(() => []);
   return (
     <div>
-      <h1 className="mb-3 text-xl font-bold">Where my kennels are running</h1>
       <MyRunsMapLoader runs={runs.filter((r) => !r.IsPast)} />
     </div>
   );

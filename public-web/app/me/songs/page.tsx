@@ -17,7 +17,6 @@ export default async function MySongsPage() {
   const withSongs = books.filter((b) => b.songs.length > 0);
   return (
     <div className="space-y-10">
-      <h1 className="text-xl font-bold">Songs</h1>
       {withSongs.length === 0 && (
         <p className="text-zinc-300">
           None of the kennels you follow has published a songbook yet.{" "}

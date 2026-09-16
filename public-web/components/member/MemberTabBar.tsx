@@ -10,11 +10,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutList, Users, Map as MapIcon, History, Music } from "lucide-react";
 
 const TABS = [
-  { label: "Runs",    href: "/me/runs",    icon: LayoutList },
-  { label: "Kennels", href: "/me/kennels", icon: Users },
-  { label: "Map",     href: "/me/map",     icon: MapIcon },
-  { label: "History", href: "/me/history", icon: History },
-  { label: "Songs",   href: "/me/songs",   icon: Music },
+  { label: "Runs",    title: "Hash Runs", href: "/me/runs",    icon: LayoutList },
+  { label: "Kennels", title: "Kennels",   href: "/me/kennels", icon: Users },
+  { label: "Map",     title: "Map",       href: "/me/map",     icon: MapIcon },
+  { label: "History", title: "History",   href: "/me/history", icon: History },
+  { label: "Songs",   title: "Songs",     href: "/me/songs",   icon: Music },
 ] as const;
 
 export function MemberTabBar({ hashName }: { hashName: string }) {
@@ -27,39 +27,45 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
     router.refresh();
   }
 
-  return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/80 backdrop-blur-lg">
-      <div className="relative mx-auto flex h-14 max-w-[90rem] items-center justify-center px-2 sm:px-4">
-        <Link href="/" className="absolute left-3 hidden select-none text-sm font-semibold uppercase tracking-widest text-zinc-400 hover:text-white md:block">
-          hashruns.org
-        </Link>
+  const current = TABS.find((t) => pathname.startsWith(t.href));
+  const title = current?.title ?? "Harrier Central";
 
-        <nav className="flex gap-1 rounded-full bg-white/10 p-1">
+  return (
+    <>
+      {/* The app's purple app bar, with the tab's title. */}
+      <div className="sticky top-0 z-50 text-white" style={{ backgroundColor: "#580438" }}>
+        <div className="relative mx-auto flex h-12 max-w-[90rem] items-center justify-center px-3">
+          <Link href="/" className="absolute left-3 text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white">hashruns.org</Link>
+          <h1 className="text-lg font-semibold">{title}</h1>
+          <div className="absolute right-3 flex items-center gap-3 text-xs text-white/80">
+            <span className="hidden max-w-[10rem] truncate sm:inline">{hashName}</span>
+            <button type="button" onClick={signOut} className="underline underline-offset-2 hover:text-white">Sign out</button>
+          </div>
+        </div>
+      </div>
+
+      {/* The app's bottom tab bar: light, green icons, label under each. */}
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-300 bg-[#f6eef2]" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+        <ul className="mx-auto flex h-16 max-w-3xl items-stretch justify-around">
           {TABS.map((tab) => {
             const isActive = pathname.startsWith(tab.href);
             const Icon = tab.icon;
             return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={[
-                  "flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition-colors sm:px-5",
-                  isActive ? "bg-red-600 text-white shadow-sm" : "text-zinc-300 hover:bg-white/10 hover:text-white",
-                ].join(" ")}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </Link>
+              <li key={tab.href} className="flex-1">
+                <Link
+                  href={tab.href}
+                  className="flex h-full flex-col items-center justify-center gap-0.5 text-[12px] font-semibold"
+                  style={{ color: isActive ? "#0D4701" : "#3f3f46", opacity: isActive ? 1 : 0.8 }}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <Icon className="h-6 w-6 shrink-0" strokeWidth={isActive ? 2.5 : 1.75} fill={isActive ? "rgba(13,71,1,0.15)" : "none"} />
+                  <span>{tab.label}</span>
+                </Link>
+              </li>
             );
           })}
-        </nav>
-
-        <div className="absolute right-3 hidden items-center gap-3 text-xs text-zinc-400 md:flex">
-          <span className="max-w-[10rem] truncate">{hashName}</span>
-          <button type="button" onClick={signOut} className="underline underline-offset-2 hover:text-white">Sign out</button>
-        </div>
-      </div>
-    </header>
+        </ul>
+      </nav>
+    </>
   );
 }
