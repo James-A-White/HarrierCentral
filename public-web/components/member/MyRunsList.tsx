@@ -150,7 +150,7 @@ function RunCard({ run, children }: { run: MyRun; children?: React.ReactNode }) 
       <div className="flex items-start gap-3 px-2 py-2">
         <Logo run={run} />
         <div className="min-w-0 flex-1 leading-snug">
-          <Link href={`/${run.KennelSlug}`} className="text-[15px] font-semibold hover:underline" style={{ color: HC_BLUE }}>{run.KennelName}</Link>
+          <Link href={`/me/kennels/${run.KennelSlug}`} className="text-[15px] font-semibold hover:underline" style={{ color: HC_BLUE }}>{run.KennelName}</Link>
           <p className="text-[15px] font-bold text-zinc-900" suppressHydrationWarning>
             {run.IsCountedRun ? `Run #${run.EventNumber}, ` : "Run / Event "}{relativeTime(when)}
           </p>

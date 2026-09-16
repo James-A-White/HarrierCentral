@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Home } from "lucide-react";
-import { getKennelLandingData, getPageLayout } from "@/lib/api";
+import { getKennelLandingData, getPageLayout, getRunPhotos } from "@/lib/api";
 import { isNumeric, resolveKennelAndEvent } from "@/lib/run-resolve";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
@@ -11,6 +11,7 @@ import { PuckRenderer } from "@/components/puck/PuckRenderer";
 import { parseSiteConfig, deriveNavItems, getDefaultLayout } from "@/lib/page-layout";
 import { getIsCustomDomain } from "@/lib/server-utils";
 import { RsvpPanel } from "@/components/member/RsvpPanel";
+import { RunPhotoStrip } from "@/components/kennel/RunPhotoStrip";
 
 interface PageProps {
   params: Promise<{ slug: string; runNumber: string }>;
@@ -123,6 +124,8 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
   if (!event) notFound();
 
   const kennel = toKennelContext(kennelData);
+  // The app's Photos tab: approved photos of this run (E9.F7.S12).
+  const photos = await getRunPhotos(event.PublicEventId).catch(() => []);
 
   const backHref = back ?? `/${slug}`;
   const showKennelHomeBtn = !!back && back !== `/${slug}`;
@@ -204,6 +207,7 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
               />
             }
           />
+          <RunPhotoStrip photos={photos} />
         </main>
       </body>
     </html>

@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>16</b> epics</div>
     <div><b>80</b> features</div>
-    <div><b>289</b> stories</div>
+    <div><b>290</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -326,7 +326,7 @@
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 20 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 15 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">6 features · 24 stories</span></a>
-  <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 40 stories</span></a>
+  <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 41 stories</span></a>
   <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 22 stories</span></a>
   <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">5 features · 16 stories</span></a>
@@ -931,6 +931,7 @@
       <li class="story"><span class="s-id">E9.F7.S9</span><span class="s-text">As a <em>web member</em>, I want the app's Kennels tab — the kennels I follow, belong to or have run with, my counts there (the app's <code>Hc + Historical</code> formula, <code>~</code> when estimated), the next run, follow/unfollow, and a directory search — so that following a kennel does not need the app. <code>publicWeb_getMyKennels</code> (sp 112), <code>publicWeb_setKennelFollowing</code> (the app's <code>hcapp_joinKennel</code> in self-mode with only <code>@isFollowing</code>, so none of its role/flag paths are reachable), <code>publicWeb_searchKennels</code> (public; includes the four <code>*SearchTags</code> columns — "Scotland" finds Aberdeen, Edinburgh, Glasgow…). <em>Built 2026-09-16.</em>  <em>Live 2026-09-16</em> (web 0.21.50, API 1.0.50).</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E9.F7.S10</span><span class="s-text">As a <em>web member</em>, I want the app's Map tab — the upcoming runs of my kennels as pins, and me as a blue dot when I ask — so that "where is it" has an answer on the web. <code>/me/map</code>, react-leaflet, pins from <code>getMyRuns</code>, one-tap <code>navigator.geolocation</code> (no background location in a browser, and the page does not pretend). <em>Built 2026-09-16.</em>  <em>Live 2026-09-16</em> (web 0.21.50, API 1.0.50).</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E9.F7.S11</span><span class="s-text">As a <em>web member</em>, I want the app's Songs tab — the songbooks of the kennels I follow, one section each — so that the words are there in the circle without the app. <code>/me/songs</code> reuses <code>getSongs</code> and <code>SongsSection</code> per followed kennel. <em>Built 2026-09-16.</em>  <em>Live 2026-09-16</em> (web 0.21.50, API 1.0.50).</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F7.S12</span><span class="s-text">As a <em>web member</em>, I want tapping a kennel or a run to show what the app shows — the app's kennel screen (description, Location / Last run / Next run / Hash cash rows, the next runs with my RSVP, the mismanagement, and Open website · Join the group · Leaderboards · Songs) and the run page with its photos — so that the second level is not the kennel's marketing site (James, 2026-09-16: "when you click on a Kennel the user sees what they would see in the app"). <code>/me/kennels/[slug]</code> from <code>getKennelLandingData</code> + <code>getMyKennels</code> (widened with description, website, mismanagement, invite URL, credit with the country's currency symbol as fallback) + <code>getMyRuns</code> for my RSVP states, public <code>getEvents</code> when I do not follow it; the public run page gained a Photos grid from <code>getRunPhotos</code>. Kennel chat and the run art gallery are named as the app's. Mismanagement rows are CR-separated in the data. <em>Built 2026-09-16.</em></span><span class="chip c-build">Building</span></li>
     </ul>
   </div>
   <div class="feature">

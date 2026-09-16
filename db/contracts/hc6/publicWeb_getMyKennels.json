@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "publicWeb_getMyKennels",
   "version": "1.0.0",
-  "description": "The app's Kennels tab: kennels followed / home / member / run with, counts (Hc + Historical), next run. ValidateAppAuth sp 112.",
+  "description": "The app's Kennels tab: kennels followed / home / member / run with, counts (Hc + Historical), next run. ValidateAppAuth sp 112. 2026-09-16: plus the kennel page's fields (description, website, mismanagement, group invite, my credit).",
   "parameters": [
     {
       "name": "deviceId",
@@ -191,6 +191,60 @@
         {
           "name": "NextRunPublicEventId",
           "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelDescription",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelWebsiteUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelMismanagementTeam",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "CR-separated rows, tab between role and name"
+        },
+        {
+          "name": "MessagingGroupInviteUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "DefaultMessagingPlatform",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "1 WhatsApp \u2026 5 WeChat"
+        },
+        {
+          "name": "AllowSelfPayment",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelCredit",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": "my credit at the kennel"
+        },
+        {
+          "name": "CurrencySymbol",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "template with ^; kennel, else country, else $^"
+        },
+        {
+          "name": "DigitsAfterDecimal",
+          "type": "INT",
           "nullable": true,
           "description": ""
         }
