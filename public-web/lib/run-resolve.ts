@@ -31,6 +31,14 @@ export async function resolveKennelAndEvent(
     ...(pastResult?.events  ?? []),
   ];
 
-  const event = allEvents.find((e) => e.EventNumber === num) ?? null;
+  let event = allEvents.find((e) => e.EventNumber === num) ?? null;
+
+  // Older than two years — a run from the member's history, or an old QR.
+  // Only then fetch the kennel's whole past: it is thousands of rows for a
+  // busy kennel, so it is the fallback, never the first ask.
+  if (!event) {
+    const older = await getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 36500 });
+    event = (older?.events ?? []).find((e) => e.EventNumber === num) ?? null;
+  }
   return [kennelData, event];
 }
