@@ -32,8 +32,9 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
 
   return (
     <>
-      {/* The app's purple app bar, with the tab's title. */}
-      <div className="sticky top-0 z-50 text-white" style={{ backgroundColor: "#580438" }}>
+      {/* The app's purple app bar, with the tab's title. Fixed, not sticky:
+          the body's overflow-x: hidden makes sticky slide away on desktop. */}
+      <div className="fixed inset-x-0 top-0 z-50 text-white" style={{ backgroundColor: "#580438" }}>
         <div className="relative mx-auto flex h-12 max-w-[90rem] items-center justify-center px-3">
           <Link href="/" className="absolute left-3 text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white">hashruns.org</Link>
           <h1 className="text-lg font-semibold">{title}</h1>
