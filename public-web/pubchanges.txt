@@ -1,3 +1,6 @@
+0.21.51
+    • Member kennel page (the app's kennel screen), photos on run pages, and a Sign in / My hashing button in the navs
+
 0.21.50
     • Member area /me: Runs, Kennels, Map, History, Songs for signed-in members without the app, styled like the app
 

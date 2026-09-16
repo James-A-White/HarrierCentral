@@ -1,5 +1,15 @@
 # public-web Changelog
 
+## 0.21.51 (2026-09-16)
+
+- Tapping a kennel in the member area now shows the app's kennel screen
+  (`/me/kennels/<slug>`): description, Location / Last run / Next run /
+  Hash cash, the next runs with your RSVP, the mismanagement, and Open
+  website · Join the group · Leaderboards · Songs.
+- Run pages show the run's approved photos.
+- A "Sign in" / "My hashing" button in the hashruns.org tab bar and every
+  kennel site's nav.
+
 ## 0.21.50 (2026-09-16)
 
 - Member area at `/me` — the app's five tabs for people signed in without the
