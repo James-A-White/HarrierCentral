@@ -1,3 +1,19 @@
+## 3.0.38+1375 (2026-09-16)
+### New Features
+- "Share on WhatsApp" (or your kennel's messaging app) from the run page, the
+  run editor and the QR share sheet: the run notice — date, hares, venue,
+  price and the link — pre-filled, you pick the group and tap send.
+- The notice ends with an "I'm in" and a "Can't make it" link. Tapping one
+  opens the app, records your RSVP and lands on the check-in tab.
+- A hashruns.org run link opens the app straight to that run's check-in tab.
+- A "Join the group" button on the kennel page when the kennel has published
+  its group's invite link.
+### Improvements
+- The run page's share control is one rounded button with the app's own logo;
+  the chevron lists the other apps by their logos. The three action buttons
+  are one size, and read "Share my photos" and "<kennel> Links".
+- Chat text is larger. Links in a chat open inside the app.
+
 ## 3.0.37+1362 (2026-09-15)
 ### Fixes
 - Chat room notification buttons were grey text on a grey background. They are
