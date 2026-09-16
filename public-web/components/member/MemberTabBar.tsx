@@ -39,7 +39,7 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
           <Link href="/" className="absolute left-3 text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white">hashruns.org</Link>
           <h1 className="text-lg font-semibold">{title}</h1>
           <div className="absolute right-3 flex items-center gap-3 text-xs text-white/80">
-            <span className="hidden max-w-[10rem] truncate sm:inline">{hashName}</span>
+            <span className="hidden max-w-[12rem] truncate text-2xl font-semibold text-white sm:inline">{hashName}</span>
             <button type="button" onClick={signOut} className="underline underline-offset-2 hover:text-white">Sign out</button>
           </div>
         </div>
