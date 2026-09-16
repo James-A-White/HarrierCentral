@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getMyRuns",
-  "version": "1.0.0",
-  "description": "The app's Runs tab for a web member: next 365 days of runs for followed kennels plus attended runs from the last 10 days, GlobalRuns shape + My* columns. ValidateAppAuth sp 111.",
+  "version": "2.0.0",
+  "description": "The app's Runs tab, mirroring the phone's dataset after hcapp_syncUserData: followed kennels' runs (365 d ahead, 120 d back), every kennel's runs in the 10-day global window, and the member's own RSVP'd/attended runs anywhere. IsPast by the app's 6-hour rule. getGlobalRuns shape plus My* columns, bell/envelope preferences, Following, IsMember, activity counts, DistanceUnitsPref, EventGeographicScope, EventType. ValidateAppAuth sp 111.",
   "parameters": [
     {
       "name": "deviceId",
@@ -187,6 +187,54 @@
           "type": "INT",
           "nullable": true,
           "description": ""
+        },
+        {
+          "name": "MyNotificationPref",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HEM.EventNotificationPreference: 0 auto 1 on 2 ignore 3 mute 4 before run"
+        },
+        {
+          "name": "MyEmailAlertPref",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HEM.EventEmailAlertPreference"
+        },
+        {
+          "name": "Following",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsMember",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "membership not expired"
+        },
+        {
+          "name": "DownDownCount",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "DistanceUnitsPref",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "kennel else country; bit 0 set = miles"
+        },
+        {
+          "name": "EventGeographicScope",
+          "type": "INT",
+          "nullable": true,
+          "description": "1 normal run \u2026 7 other special event"
+        },
+        {
+          "name": "EventType",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "the scope's text"
         }
       ]
     }

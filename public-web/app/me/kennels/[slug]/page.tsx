@@ -46,8 +46,8 @@ export default async function MemberKennelPage({ params }: { params: Promise<{ s
       AccentColor: landing.AccentColor,
       PublicKennelId: landing.PublicKennelId,
       KennelWebsiteDomain: landing.CustomDomain,
-      MyRsvpState: 0, MyAttendenceState: 0, MyIsHare: 0, IsPast: 0, GoingCount: 0,
-      TrackRunnerCount: null, PhotoCount: null, MessageCount: null,
+      MyRsvpState: 0, MyAttendenceState: 0, MyIsHare: 0, MyNotificationPref: 0, MyEmailAlertPref: 0, Following: 0, IsMember: 0, IsPast: 0, GoingCount: 0,
+      TrackRunnerCount: null, PhotoCount: null, MessageCount: null, DownDownCount: null, DistanceUnitsPref: 0, EventGeographicScope: 1, EventType: null,
     }));
   }
 
