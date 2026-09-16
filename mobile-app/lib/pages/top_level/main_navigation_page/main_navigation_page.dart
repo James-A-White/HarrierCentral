@@ -428,7 +428,7 @@ class MainNavigationPage extends StatelessWidget {
                                   : themeBackgroundColor,
                             ),
                           ),
-                          label: 'Explore',
+                          label: 'Map',
                         ),
                         CurvedNavigationBarItem(
                           child: Padding(
