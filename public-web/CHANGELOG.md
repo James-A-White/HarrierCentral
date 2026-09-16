@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.56 (2026-09-16)
+
+- The Runs tab rebuilt to the app's screen: search, "Showing N future runs,
+  M past runs", the My / Events / map / calendar filter bar, past runs above
+  "↑ Past Runs ↑", then My upcoming runs · Runs within N km · Runs from
+  Kennels I follow · All other upcoming runs, with the app's cards and
+  icons. Past runs load lazily as you scroll up.
+
 ## 0.21.55 (2026-09-16)
 
 - Member title bar stays put (fixed, not sticky); hash name twice the size.
