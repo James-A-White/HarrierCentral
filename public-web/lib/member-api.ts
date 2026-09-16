@@ -253,11 +253,19 @@ export interface MyRun {
   MyRsvpState: number;
   MyAttendenceState: number;
   MyIsHare: number;
+  MyNotificationPref: number;
+  MyEmailAlertPref: number;
+  Following: number;
+  IsMember: number;
   IsPast: number;
   GoingCount: number;
   TrackRunnerCount: number | null;
   PhotoCount: number | null;
   MessageCount: number | null;
+  DownDownCount: number | null;
+  DistanceUnitsPref: number;
+  EventGeographicScope: number | null;
+  EventType: string | null;
 }
 
 export interface MyKennel {

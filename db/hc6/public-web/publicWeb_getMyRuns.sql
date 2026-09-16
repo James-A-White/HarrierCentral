@@ -4,15 +4,19 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getMyRuns]
 AS
 -- =====================================================================
 -- Procedure:   HC6.publicWeb_getMyRuns
--- Description: The app's Runs tab for a signed-in web member (E9.F7.S8):
---              the next year of runs for the kennels they follow, plus
---              the runs they attended in the last ten days (the app puts
---              attended-past above next), each with their own RSVP and
---              attendance state and a going count. Rows are the
---              publicWeb_getGlobalRuns shape so the web renders them with
---              the same cards, plus My* columns.
+-- Description: The app's Runs tab for a signed-in web member (E9.F7.S8),
+--              mirroring what the phone holds after hcapp_syncUserData:
+--              every run of the kennels they follow (a year each way),
+--              every kennel's runs in the ten-day global window, and their
+--              own RSVP'd / attended runs anywhere. The app's 6-hour rule
+--              decides past vs future (query_runs.dart showAsPastEvent).
+--              Rows are the publicWeb_getGlobalRuns shape plus the My*
+--              columns the card needs: RSVP, attendance, hare, the bell
+--              and envelope preferences, following, member, the activity
+--              counts, the distance units, and the geographic scope.
 -- Parameters:  @deviceId / @accessToken - the browser's device credentials
--- Returns:     Rowset 0: envelope. Rowset 1: runs, chronological.
+-- Returns:     Rowset 0: envelope. Rowset 1: runs, chronological, IsPast
+--              by the 6-hour rule.
 -- Author:      Harrier Central
 -- Created:     2026-09-16
 -- HC5 Source:  none
@@ -40,7 +44,12 @@ END
 
 BEGIN TRY
     DECLARE @now DATETIMEOFFSET(7) = SYSDATETIMEOFFSET() AT TIME ZONE 'UTC';
-    DECLARE @pastCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -10, @now);
+    -- The app's split: a run is "past" six hours after it started.
+    DECLARE @split DATETIMEOFFSET(7) = DATEADD(HOUR, -6, @now);
+    -- 120 days of past, not the phone's full history: the page carries every row.
+    DECLARE @pastCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -120, @now);
+    DECLARE @globalPast DATETIMEOFFSET(7) = DATEADD(DAY, -10, @now);
+    DECLARE @globalFuture DATETIMEOFFSET(7) = DATEADD(DAY, 10, @now);
     DECLARE @futureCutoff DATETIMEOFFSET(7) = DATEADD(DAY, 365, @now);
 
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
@@ -85,10 +94,17 @@ BEGIN TRY
         COALESCE(hem.RsvpState, 0)                                      AS MyRsvpState,
         COALESCE(hem.AttendenceState, 0)                                AS MyAttendenceState,
         COALESCE(hem.IsHare, 0)                                         AS MyIsHare,
-        CASE WHEN e.EventStartDateTimeGmt < @now THEN 1 ELSE 0 END      AS IsPast,
+        COALESCE(hem.EventNotificationPreference, 0)                    AS MyNotificationPref,
+        COALESCE(hem.EventEmailAlertPreference, 0)                      AS MyEmailAlertPref,
+        COALESCE(hkm.Following, 0)                                      AS Following,
+        CASE WHEN hkm.MembershipExpirationDate IS NOT NULL AND hkm.MembershipExpirationDate >= @now THEN 1 ELSE 0 END AS IsMember,
+        CASE WHEN e.EventStartDateTimeGmt < @split THEN 1 ELSE 0 END    AS IsPast,
         (SELECT COUNT(*) FROM HC.HasherEventMap g
            WHERE g.EventId = e.id AND (g.RsvpState = 3 OR g.AttendenceState >= 20)) AS GoingCount,
-        e.TrackRunnerCount, e.PhotoCount, e.MessageCount
+        e.TrackRunnerCount, e.PhotoCount, e.MessageCount, e.DownDownCount,
+        COALESCE(k.DistancePreference, ctr.DistancePreference, 0)      AS DistanceUnitsPref,
+        e.EventGeographicScope,
+        e.EventType
     FROM   HC.Event e
     JOIN   HC.Kennel k ON k.id = e.KennelId AND k.deleted = 0 AND k.removed = 0
     LEFT JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = @userId AND hkm.removed = 0
@@ -105,11 +121,14 @@ BEGIN TRY
         FROM DomainValues.TimeZoneMap GROUP BY WindowsTimeZone
     ) tzmap ON tzmap.WindowsTimeZone = tz.Timezone COLLATE DATABASE_DEFAULT
     WHERE e.IsVisible = 1 AND e.deleted = 0 AND e.removed = 0
+      AND e.EventStartDateTimeGmt >= @pastCutoff AND e.EventStartDateTimeGmt < @futureCutoff
       AND (
-            -- next year for the kennels I follow
-            (hkm.Following = 1 AND e.EventStartDateTimeGmt >= @now AND e.EventStartDateTimeGmt < @futureCutoff)
-            -- and what I attended in the last ten days, wherever it was
-         OR (hem.AttendenceState >= 20 AND e.EventStartDateTimeGmt >= @pastCutoff AND e.EventStartDateTimeGmt < @now)
+            -- the kennels I follow: a year each way
+            hkm.Following = 1
+            -- the ten-day global window every phone carries
+         OR (e.EventStartDateTimeGmt >= @globalPast AND e.EventStartDateTimeGmt < @globalFuture)
+            -- and anything I answered or attended, wherever it was
+         OR hem.RsvpState >= 2 OR hem.AttendenceState >= 20 OR hem.IsHare = 1
           )
     ORDER BY e.EventStartDateTimeGmt ASC;
 END TRY
