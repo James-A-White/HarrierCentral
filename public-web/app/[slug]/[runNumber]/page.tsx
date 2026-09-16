@@ -10,10 +10,11 @@ import { RunDetail } from "@/components/kennel/RunDetail";
 import { PuckRenderer } from "@/components/puck/PuckRenderer";
 import { parseSiteConfig, deriveNavItems, getDefaultLayout } from "@/lib/page-layout";
 import { getIsCustomDomain } from "@/lib/server-utils";
+import { RsvpPanel } from "@/components/member/RsvpPanel";
 
 interface PageProps {
   params: Promise<{ slug: string; runNumber: string }>;
-  searchParams: Promise<{ back?: string }>;
+  searchParams: Promise<{ back?: string; RSVP?: string; rsvp?: string }>;
 }
 
 // ── Metadata ───────────────────────────────────────────────────────────────────
@@ -58,7 +59,12 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function RunDetailPage({ params, searchParams }: PageProps) {
   const { slug, runNumber } = await params;
-  const { back } = await searchParams;
+  const sp = await searchParams;
+  const { back } = sp;
+  // ?RSVP=Yes|No from the WhatsApp notice (E9.F6.S5 / E9.F7.S1). The app
+  // reads the same query when it is installed; here the page does.
+  const rsvpRaw = (sp.RSVP ?? sp.rsvp ?? "").toLowerCase();
+  const rsvpFromUrl: "yes" | "no" | null = rsvpRaw === "yes" ? "yes" : rsvpRaw === "no" ? "no" : null;
 
   // ── Custom page path ────────────────────────────────────────────────────────
   if (!isNumeric(runNumber)) {
@@ -188,6 +194,15 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
             mapHeight={480}
             indentMap
             packTrackHref={`/${slug}/${runNumber}/packtrack`}
+            memberPanel={
+              <RsvpPanel
+                slug={slug}
+                kennelName={kennelData.KennelShortName}
+                publicEventId={event.PublicEventId.toLowerCase()}
+                rsvpFromUrl={rsvpFromUrl}
+                eventStartGmt={event.EventStartDatetimeGmt}
+              />
+            }
           />
         </main>
       </body>

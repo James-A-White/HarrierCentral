@@ -1,0 +1,79 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_setRunRsvp",
+  "version": "1.0.0",
+  "description": "Maps PublicEventId to EventId and EXECs hcapp_setEventRsvp for the calling browser-device. Token is generated for 'hcapp_setEventRsvp'.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The browser's device id"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Token for this SP's name, paramString = deviceSecret"
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": ""
+    },
+    {
+      "name": "rsvpState",
+      "type": "INT",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.RsvpState",
+      "description": "1 No, 2 Maybe, 3 Yes"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "success 1/0, errorCode, errorType",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Run not found (1200) or hcapp_setEventRsvp's own rowsets on success"
+    }
+  ],
+  "sideEffects": [
+    "Everything hcapp_setEventRsvp does"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getPasskey",
+  "version": "1.0.0",
+  "description": "Public key, counter and the bound device's credentials for a credential id. No token \u2014 the assertion is verified in code by the caller; reachable only behind HC_INTERNAL_SECRET.",
+  "parameters": [
+    {
+      "name": "credentialId",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "Device.PasskeyCredentialId",
+      "description": ""
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Passkey",
+      "description": "No rows = unknown",
+      "columns": [
+        {
+          "name": "deviceId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "deviceSecret",
+          "type": "NVARCHAR(150)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "timeWindow",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "publicKey",
+          "type": "NVARCHAR(2000)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "counter",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "transports",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Shim secret is the only gate",
+      "detail": "Returns a device secret with no SP-level auth; the WebAuthn assertion cannot be verified in SQL. Only PublicWebAdminApi with HC_INTERNAL_SECRET can reach it."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

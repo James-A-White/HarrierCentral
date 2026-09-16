@@ -1,0 +1,86 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_createMember",
+  "version": "1.0.0",
+  "description": "Web self-signup: resolves the kennel slug and EXECs hcapp_addEditUser in new-user mode, following the kennel. Email is proven afterwards by the invite code. Behind HC_INTERNAL_SECRET.",
+  "parameters": [
+    {
+      "name": "email",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.Email",
+      "description": ""
+    },
+    {
+      "name": "hashName",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.HashName",
+      "description": ""
+    },
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.FirstName",
+      "description": ""
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.LastName",
+      "description": ""
+    },
+    {
+      "name": "kennelSlug",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelUniqueShortName",
+      "description": ""
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "success 1/0, errorCode, errorType",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "10005 duplicate email (contractual), 1220 missing details; on success hcapp_addEditUser's profile rowset"
+    }
+  ],
+  "sideEffects": [
+    "Inserts HC.Hasher and HC.HasherKennelMap via hcapp_addEditUser"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

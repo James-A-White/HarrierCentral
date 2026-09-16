@@ -1,0 +1,98 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_confirmAuthentication",
+  "version": "1.0.0",
+  "description": "Web half of the QR sign-in: polls HC.WebPortalAuthenticationRequests for the app's approval, provisions the browser as HC.Device (IsMobile 0) and returns its credentials. Single-use, 5-minute TTL. Reachable only via PublicWebAdminApi behind HC_INTERNAL_SECRET.",
+  "parameters": [
+    {
+      "name": "newDeviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Device id the browser will use"
+    },
+    {
+      "name": "qrCodeData",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "WebPortalAuthenticationRequests.scanData",
+      "description": "The bare auth code the app recorded"
+    },
+    {
+      "name": "deviceInfo",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Device.DeviceData",
+      "description": "JSON with browserName/userAgent"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Credentials",
+      "description": "No rows until the phone has scanned; one row afterwards",
+      "columns": [
+        {
+          "name": "deviceId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "deviceSecret",
+          "type": "NVARCHAR(150)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "timeWindow",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Inserts HC.Device",
+    "Sets WebPortalAuthenticationRequests.Removed = 1"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

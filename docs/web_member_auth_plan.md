@@ -1,7 +1,8 @@
 # Participate without the app — web member identity (E9.F7)
 
-Designed 2026-09-16 with James. Status: **written up, not started** — the app is
-finished first, then this becomes the public-web focus.
+Designed 2026-09-16 with James. Status: **built 2026-09-16, not deployed** —
+see "Deploy checklist" at the end. Built in one day, as asked: email code, QR
+via `/login/`, unknown-email signup, RSVP, pack list, passkeys.
 
 ## Why
 
@@ -102,59 +103,76 @@ tap  ✅ I'll be there: hashruns.org/ch3/1490?RSVP=Yes
 Second run: one tap. The friction is paid once, at the moment the person
 wants something.
 
-## Pieces
+## What was built (2026-09-16)
 
-### Database (`db/hc6/public-web/`)
+The email path turned out to be **existing plumbing end to end**: the API's
+`EmailInviteCode` already emails the six-letter invite code, and
+`hcapp_authorizeDevice` already turns `URC:<code>` into a device row under
+the global pre-auth token. No OTP table, no widening of
+`HC.PublicWebAdminToken` after all — decision 7 above is superseded.
 
-| Object | Kind | Auth | Notes |
-|---|---|---|---|
-| `2026-xx-xx_web_member_login.sql` | run-once | — | Widen `HC.PublicWebAdminToken` (above). Archive after running. |
-| `publicWeb_requestLoginCode(@email, @kennelSlug, @ipAddress)` | write | none (rate-limited) | Inserts the challenge; returns `challengeId` + the plaintext code **to the server route only**, which emails it. Rate limits counted from the token table's own rows. |
-| `publicWeb_verifyLoginCode(@challengeId, @code, @deviceId, @deviceData, @hashName = NULL, @firstName = NULL, @lastName = NULL)` | write | none (challenge-bound) | Checks hash + expiry + attempts. Found hasher → device row → returns `{userId, deviceId, deviceSecret, timeWindow, hashName, known = 1}`. Unknown and no `@hashName` → `{known = 0}` and the challenge stays alive (marked verified). Unknown with `@hashName` → creates hasher + following HKM for the slug's kennel (mirror `hcapp_addEditUser`'s insert, `nonApi_ensureUserInviteCode`), then device row. Device row exactly as `hcapp_authorizeDevice`: `CRYPT_GEN_RANDOM(150)` secret, `TimeWindow` 30–44, `IsMobile = 0`. Delete-then-insert on `@deviceId`. |
-| `publicWeb_setRunRsvp(@deviceId, @accessToken, @publicEventId, @rsvpState)` | write | device token for `hcapp_setEventRsvp` | Maps `PublicEventId → EventId`, then `EXEC HC6.hcapp_setEventRsvp` with watermarks `'2000-01-01'`. The inner SP validates the token; the wrapper adds nothing but the id map. |
-| `publicWeb_getRunPack(@deviceId, @accessToken, @publicEventId)` | read | `HC6.ValidateAppAuth` | Own RSVP/attendance state + pack: hash name (per `NameDisplayPreference`), avatar URL, `RsvpState`, `IsHare`. |
+### Database (`db/hc6/public-web/`) — 7 new SPs, 1 changed, 1 run-once
 
-All four: TRY/CATCH, `HC.ErrorLog` in every CATCH, `ROLLBACK` before the log.
-`/hc-authorizations`: `ValidateAppAuth` is identity, not authorisation — the
-pack read is member-gated by design (any valid device), and RSVP writes only
-the caller's own row (`@hasherId = caller`).
+| Object | Auth | Notes |
+|---|---|---|
+| `hcapp_authorizeDevice` | global token | **Changed:** optional `@isMobile SMALLINT = 1`; the web passes 0. Non-breaking. |
+| `publicWeb_confirmAuthentication` | secret | Web half of the QR flow; provisions the device once the app has approved. |
+| `publicWeb_createMember` | secret | EXECs `hcapp_addEditUser` in new-user mode, following the slug's kennel. |
+| `publicWeb_setRunRsvp` | device token (inner SP) | Maps `PublicEventId`, EXECs `hcapp_setEventRsvp`. |
+| `publicWeb_getRunPack` | `ValidateAppAuth` (sp 109) | Own state + the pack. |
+| `publicWeb_savePasskey` | `ValidateAppAuth` (sp 110) | Passkey onto the caller's own device row. |
+| `publicWeb_getPasskey` | secret | Key + counter + device credentials for one credential id. |
+| `publicWeb_recordPasskeyLogin` | secret | Counter, LastLogin, LaunchAndLogin. |
+| `archive/2026-09-16_device_passkey.sql` | — | **Run-once, James runs it:** four nullable passkey columns + filtered unique index on `HC.Device`. Not a synced table. Archive after. |
+
+Contracts in `db/contracts/hc6/`. The `EmailInviteCode` endpoint's 60-minute
+code reuse is the spam guard on the SP side; the Next.js routes add per-IP
+and per-email limits on top.
 
 ### API (`api/Endpoints/PublicWebAdminApi.cs`)
 
-Add `requestLoginCode`, `verifyLoginCode`, `setRunRsvp`, `getRunPack` to
-`AllowedQueryTypes`. None in `SecretRequiredActions`: the first two are the
-public flow (rate-limited in the SP, like `redeemAdminToken`); the last two
-carry the device token. One small deploy (`func publish`).
+Seven names added to `AllowedQueryTypes` and to `SecretRequiredActions`.
+Needs a `func publish`.
 
-### Public web (`public-web/`)
+### Public web
 
 | Path | What |
 |---|---|
-| `lib/member-session.ts` | AES-GCM-encrypted cookie `hc_member` `{userId, deviceId, deviceSecret, timeWindow, hashName}`; `generateToken(userId, procName, deviceSecret, timeWindow)` — byte-for-byte the app's algorithm (`UPPER(userId#proc#blocks#param)`, base 1993-07-25 15:00 UTC). New env `HC_MEMBER_SESSION_SECRET` (32 bytes) and `HC_EMAIL_LOGICAPP_URL`. |
-| `app/api/member/request-code` | POST `{email, slug}` → SP → Logic App email. |
-| `app/api/member/verify-code` | POST `{challengeId, code, hashName?}` → SP → set cookie. |
-| `app/api/member/rsvp` | POST `{publicEventId, rsvp}` → `setRunRsvp` under the cookie's device. |
-| `app/api/member/pack?publicEventId=` | GET → `getRunPack`. |
-| `components/kennel/RsvpPanel.tsx` | Client component on the run page: reads `?RSVP=`; signed in → posts at once, shows tick + pack; signed out → "I'll be there / Can't make it" buttons open the email → code → (hash name) sheet, then completes the pending RSVP. Past runs: pack only, no buttons. |
+| `lib/member-session.ts` | AES-256-GCM cookie `hc_member` (365 d, or session-only when "not my device"); `hcToken()` — the app's algorithm, **parity-tested against `HC.CREATE_ACCESS_TOKEN_V2`**; signed short-lived values for challenges. |
+| `lib/member-api.ts` | The three doors: AppApiHC6 (device tokens), EmailInviteCode, PublicWebAdminApi (secret). |
+| `lib/member-routes.ts`, `lib/passkeys.ts` | Rate limiter, device-data (browserName for `HC.Device.OperatingSystem`), RP config. |
+| `app/api/member/*` | `request-code`, `verify-code`, `signup`, `qr/start`, `qr/poll`, `rsvp`, `pack`, `me`, `logout`, `passkey/{register,login}-{options,verify}`. |
+| `components/member/MemberSignIn.tsx` | The two doors. Computer: QR first, "send a code to my email" under it. Phone: email only. Unknown email → hash name → create. Then the passkey offer. |
+| `components/member/RsvpPanel.tsx` | On the run page under the header: reads `?RSVP=`, answers at once when signed in, else opens the sign-in and completes the pending answer; shows the tick and the pack. Past runs: pack only. |
+| `app/login/page.tsx`, `app/login/[scan]/page.tsx` | Standalone sign-in (`?next=`); the QR's URL lands here when the app is not installed. |
+| `RunDetail.memberPanel` | The slot. |
 
-`resolveKennelAndEvent` already yields `PublicEventId`; the run page passes it
-and the `?RSVP=` value down.
+### App (all three branches)
 
-### Build order (one day, James 2026-09-16: "as many features as we can
-into that capability in a day and then wrap it up")
+`DeepLinkService` reads `/login/UWP:<code>` and calls
+`hcapp_authenticateWebPortal` with the **bare** code (the in-app scanner
+strips the prefix, so the row holds the bare code and the web polls with it);
+`validateScan` strips `login/` so the in-app scanner reads the URL-form QR
+too. `/login` is a reserved slug.
 
-1. Email code (S2) · 2. QR via `/login/` (S7, app + web) · 3. Unknown-email
-signup (S3) · 4. RSVP (S1) · 5. Passkeys (S6). Pack list (S4) if time.
+### Environment (web app settings)
 
-### Slice one — RSVP only (James, 2026-09-16: "all I'm interested in is the
-RSVP capability so the WhatsApp works")
+| Variable | Purpose |
+|---|---|
+| `HC_MEMBER_SESSION_SECRET` | **New, required.** Any long random string; hashed to the AES key. |
+| `HC_INTERNAL_SECRET` | Already set. |
+| `WEBAUTHN_RP_ID` | Optional; default `hashruns.org`. |
+| `WEBAUTHN_ORIGINS` | Optional; default `https://www.hashruns.org,https://hashruns.org`. |
+| `NEXT_PUBLIC_SITE_ORIGIN` | Optional; default `https://www.hashruns.org` (what the QR URL starts with). |
 
-S1 + S2 + S3: web handles `?RSVP=`, email-code sign-in, unknown-email signup,
-RSVP recorded, own tick shown. The pack list (S4), history (S5) and passkeys
-(S6) are *not* in the slice; they are what the same identity makes cheap
-later. `getRunPack` is therefore also deferred — slice one needs only
-`requestLoginCode`, `verifyLoginCode`, `setRunRsvp` (three SPs, three
-allow-list lines, three routes, one panel).
+## Deploy checklist (James decides when)
+
+1. **James runs** `db/hc6/public-web/archive/2026-09-16_device_passkey.sql` (parked in archive/ so the deploy script never runs it), then archives it.
+2. `./tools/deploy_hc6.sh` (picks up `db/hc6/public-web/*.sql` and the changed `hcapp_authorizeDevice`).
+3. API: `func publish harriercentralpublicapi` (allow-list).
+4. Web app settings: add `HC_MEMBER_SESSION_SECRET`.
+5. Public web deploy (Dance baby).
+6. App builds carrying `/login/` (3.1 and 3.0.x) — the QR door needs them; the email door does not.
 
 ## Risks and how they are held
 
