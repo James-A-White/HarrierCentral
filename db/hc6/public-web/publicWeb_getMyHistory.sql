@@ -4,20 +4,23 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getMyHistory]
 AS
 -- =====================================================================
 -- Procedure:   HC6.publicWeb_getMyHistory
--- Description: The app's History tab for a signed-in web member
---              (E9.F7.S5): totals per kennel, every run attended or
---              hared, and the number that run was for them at that
---              kennel (historical count carried in, then counted runs
---              in order) — the "My LH3 run #97" the app shows, and the
---              basis for the milestone nudge.
+-- Description: The app's Run Counts tab for a signed-in web member
+--              (E9.F7.S5) — the app's own three queries
+--              (history_list_page.dart), moved server-side:
+--                By Kennel  = HasherKennelMap Historical* + Hc* per kennel
+--                By Country = HC runs grouped by the RUN's country
+--                             (Event.CountryId — a travelling kennel is
+--                             in several) merged with the historical
+--                             counts grouped by the KENNEL's country
+--                Totals     = the By Kennel rows summed
 -- Parameters:  @deviceId / @accessToken - the browser's device credentials
 -- Returns:     Rowset 0: envelope.
---              Rowset 1: grand totals — Runs, Haring, Kennels.
---              Rowset 2: per kennel — counts, home/following, since, last.
---              Rowset 3: runs attended, newest first, with MyRunNumber.
+--              Rowset 1: totals — Runs, Haring, Kennels, IsEstimate.
+--              Rowset 2: by kennel, runs desc.
+--              Rowset 3: by country, runs desc.
 -- Author:      Harrier Central
--- Created:     2026-09-16
--- HC5 Source:  none (app: hcapp_getMyKennelRunTotals + local HEM history)
+-- Created:     2026-09-16 (rewritten the same day to mirror the app)
+-- HC5 Source:  none
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -41,70 +44,87 @@ BEGIN
 END
 
 BEGIN TRY
+    DECLARE @now DATETIMEOFFSET(7) = SYSDATETIMEOFFSET();
+
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 
-    -- Rowset 1: grand totals
-    SELECT
-        SUM(COALESCE(hkm.HcTotalRunCount, 0) + COALESCE(hkm.HistoricalTotalRunCount, 0)) AS Runs,
-        SUM(COALESCE(hkm.HcHaringCount, 0)   + COALESCE(hkm.HistoricalHaringCount, 0))   AS Haring,
-        SUM(CASE WHEN COALESCE(hkm.HcTotalRunCount, 0) + COALESCE(hkm.HistoricalTotalRunCount, 0) > 0 THEN 1 ELSE 0 END) AS Kennels,
-        MAX(CASE WHEN COALESCE(hkm.HistoricalCountIsEstimate, 0) <> 0 THEN 1 ELSE 0 END) AS IsEstimate
-    FROM HC.HasherKennelMap hkm
-    WHERE hkm.UserId = @userId AND hkm.removed = 0;
-
-    -- Rowset 2: per kennel
+    -- ── By kennel (queryKennelStats) ─────────────────────────────────────
     SELECT
         k.PublicKennelId,
-        k.KennelUniqueShortName                                 AS KennelSlug,
+        k.KennelUniqueShortName                                          AS KennelSlug,
         k.KennelShortName,
         k.KennelName,
         k.KennelLogo,
-        COALESCE(hkm.Following, 0)                              AS Following,
-        COALESCE(hkm.IsHomeKennel, 0)                           AS IsHomeKennel,
-        hkm.MemberSince,
-        hkm.DateOfLastRun,
-        COALESCE(hkm.HcTotalRunCount, 0) + COALESCE(hkm.HistoricalTotalRunCount, 0) AS Runs,
-        COALESCE(hkm.HcHaringCount, 0)   + COALESCE(hkm.HistoricalHaringCount, 0)   AS Haring,
-        COALESCE(hkm.HistoricalCountIsEstimate, 0)              AS IsEstimate
+        COALESCE(hkm.HistoricalTotalRunCount, 0) + COALESCE(hkm.HcTotalRunCount, 0) AS TotalRuns,
+        COALESCE(hkm.HistoricalHaringCount, 0)   + COALESCE(hkm.HcHaringCount, 0)   AS TotalHaring,
+        COALESCE(hkm.HcTotalRunCount, 0)                                 AS HcRuns,
+        COALESCE(hkm.HcHaringCount, 0)                                   AS HcHaring,
+        COALESCE(hkm.HistoricalTotalRunCount, 0)                         AS HistoricalRuns,
+        COALESCE(hkm.HistoricalHaringCount, 0)                           AS HistoricalHaring,
+        COALESCE(hkm.HistoricalCountIsEstimate, 0)                       AS IsEstimate,
+        COALESCE(hkm.Following, 0)                                       AS Following,
+        COALESCE(hkm.KennelCredit, 0)                                    AS KennelCredit,
+        COALESCE(k.DigitsAfterDecimal, c.DigitsAfterDecimal, 2)          AS DigitsAfterDecimal,
+        COALESCE(k.CurrencySymbol, c.CurrencySymbol, '$^')               AS CurrencySymbol
+    INTO #byKennel
     FROM HC.HasherKennelMap hkm
     JOIN HC.Kennel k ON k.id = hkm.KennelId AND k.deleted = 0 AND k.removed = 0
+    LEFT JOIN HC.Country c ON c.id = k.CountryId
     WHERE hkm.UserId = @userId AND hkm.removed = 0
-      AND COALESCE(hkm.HcTotalRunCount, 0) + COALESCE(hkm.HistoricalTotalRunCount, 0) > 0
-    ORDER BY COALESCE(hkm.HcTotalRunCount, 0) + COALESCE(hkm.HistoricalTotalRunCount, 0) DESC, k.KennelShortName;
+      AND COALESCE(hkm.HistoricalTotalRunCount, 0) + COALESCE(hkm.HcTotalRunCount, 0) > 0;
 
-    -- Rowset 3: the runs. MyRunNumber = the kennel's historical count for me
-    -- plus my position among its counted runs I attended, in date order —
-    -- by the local wall-clock, which is how run numbers are assigned
-    -- (/hc-event-datetimes).
+    -- Rowset 1: totals = the by-kennel rows summed, as the app does
     SELECT
-        e.PublicEventId,
-        e.EventNumber,
-        e.EventName,
-        CAST(e.EventStartDatetime AS datetime2(7))              AS EventStartDatetime,
-        e.EventStartDatetimeGmt,
-        e.IsCountedRun,
-        e.LocationOneLineDesc,
-        e.SyncLocationCity                                      AS LocationCity,
-        e.Hares,
-        e.TrackRunnerCount, e.PhotoCount,
-        k.PublicKennelId,
-        k.KennelUniqueShortName                                 AS KennelSlug,
-        k.KennelShortName,
-        k.KennelLogo,
-        hem.IsHare,
-        hem.AttendenceState,
-        CASE WHEN e.IsCountedRun = 1 AND hem.AttendenceState >= 20
-             THEN COALESCE(hkm.HistoricalTotalRunCount, 0)
-                  + ROW_NUMBER() OVER (PARTITION BY k.id, CASE WHEN e.IsCountedRun = 1 AND hem.AttendenceState >= 20 THEN 1 ELSE 0 END
-                                       ORDER BY e.EventStartLocal ASC, e.EventNumber ASC)
-             ELSE NULL END                                      AS MyRunNumber
+        COALESCE(SUM(TotalRuns), 0)   AS Runs,
+        COALESCE(SUM(TotalHaring), 0) AS Haring,
+        COUNT(*)                      AS Kennels,
+        COALESCE(MAX(IsEstimate), 0)  AS IsEstimate
+    FROM #byKennel;
+
+    -- Rowset 2
+    SELECT * FROM #byKennel ORDER BY TotalRuns DESC, KennelShortName;
+
+    -- ── By country (queryCountryStats) ───────────────────────────────────
+    -- HC runs by the run's country…
+    SELECT
+        n.id AS CountryId,
+        COUNT(CASE WHEN hem.AttendenceState >= 20 THEN 1 END)                     AS RunCount,
+        COUNT(CASE WHEN hem.IsHare <> 0 AND hem.AttendenceState >= 20 THEN 1 END) AS HareCount
+    INTO #hc
     FROM HC.HasherEventMap hem
-    JOIN HC.Event  e ON e.id = hem.EventId AND e.deleted = 0 AND e.removed = 0
-    JOIN HC.Kennel k ON k.id = e.KennelId
-    LEFT JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = @userId AND hkm.removed = 0
+    JOIN HC.Event evt ON evt.id = hem.EventId
+    JOIN HC.Country n ON n.id = evt.CountryId
     WHERE hem.UserId = @userId
-      AND (hem.AttendenceState >= 20 OR hem.IsHare = 1)
-    ORDER BY e.EventStartDateTimeGmt DESC;
+      AND evt.removed = 0  -- no deleted filter: the app's local query has none, and the counts must match it
+      AND evt.IsCountedRun <> 0 AND evt.IsVisible <> 0
+      AND evt.EventStartDateTimeGmt <= @now
+    GROUP BY n.id;
+
+    -- …plus the historical counts by the kennel's country, merged by country.
+    SELECT
+        n.id AS CountryId,
+        SUM(COALESCE(hkm.HistoricalTotalRunCount, 0)) AS RunCount,
+        SUM(COALESCE(hkm.HistoricalHaringCount, 0))   AS HareCount
+    INTO #hist
+    FROM HC.HasherKennelMap hkm
+    JOIN HC.Kennel k ON k.id = hkm.KennelId
+    JOIN HC.Country n ON n.id = k.CountryId
+    WHERE hkm.UserId = @userId AND hkm.removed = 0
+    GROUP BY n.id;
+
+    -- Rowset 3
+    SELECT
+        n.id                                                    AS CountryId,
+        n.CountryName,
+        n.CountryCode,
+        n.FlagFile,
+        COALESCE(h.RunCount, 0)  + COALESCE(x.RunCount, 0)      AS RunCount,
+        COALESCE(h.HareCount, 0) + COALESCE(x.HareCount, 0)     AS HareCount
+    FROM HC.Country n
+    LEFT JOIN #hc   h ON h.CountryId = n.id
+    LEFT JOIN #hist x ON x.CountryId = n.id
+    WHERE COALESCE(h.RunCount, 0) + COALESCE(x.RunCount, 0) > 0
+    ORDER BY RunCount DESC, n.CountryName;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

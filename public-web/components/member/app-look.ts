@@ -22,7 +22,11 @@ export const blueText = "text-[15px] font-semibold";
 
 /** The app's date line: "Sat, Sep 19 at 12:00 PM". */
 export function appDate(local: string, gmt?: string | null, tz?: string | null): string {
-  const src = gmt && tz ? new Date(gmt) : new Date(local);
+  // A wall-clock string with no zone must not be parsed as the browser's
+  // local time (it came out an hour off in BST): pin it to UTC and format
+  // in UTC, so it reads back exactly as stored.
+  const naive = !/Z$|[+-]\d\d:\d\d$/.test(local);
+  const src = gmt && tz ? new Date(gmt) : new Date(naive ? `${local}Z` : local);
   const timeZone = gmt && tz ? tz : "UTC";
   const showYear = parseInt(src.toLocaleDateString("en-CA", { year: "numeric", timeZone }), 10) !== new Date().getFullYear();
   const day = src.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone, ...(showYear && { year: "numeric" }) });

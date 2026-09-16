@@ -299,17 +299,32 @@ export interface MyKennel {
 export interface HistoryTotals { Runs: number; Haring: number; Kennels: number; IsEstimate: number }
 export interface HistoryKennel {
   PublicKennelId: string; KennelSlug: string; KennelShortName: string; KennelName: string; KennelLogo: string | null;
-  Following: number; IsHomeKennel: number; MemberSince: string | null; DateOfLastRun: string | null;
-  Runs: number; Haring: number; IsEstimate: number;
+  TotalRuns: number; TotalHaring: number; HcRuns: number; HcHaring: number; HistoricalRuns: number; HistoricalHaring: number;
+  IsEstimate: number; Following: number; KennelCredit: number; DigitsAfterDecimal: number; CurrencySymbol: string;
 }
-export interface HistoryRun {
-  PublicEventId: string; EventNumber: number; EventName: string; EventStartDatetime: string; EventStartDatetimeGmt: string | null;
-  IsCountedRun: number; LocationOneLineDesc: string | null; LocationCity: string | null; Hares: string | null;
-  TrackRunnerCount: number | null; PhotoCount: number | null;
-  PublicKennelId: string; KennelSlug: string; KennelShortName: string; KennelLogo: string | null;
-  IsHare: number | null; AttendenceState: number | null; MyRunNumber: number | null;
+export interface HistoryCountry {
+  CountryId: string; CountryName: string; CountryCode: string | null; FlagFile: string | null; RunCount: number; HareCount: number;
 }
-export interface MyHistory { totals: HistoryTotals; kennels: HistoryKennel[]; runs: HistoryRun[] }
+export interface MyHistory { totals: HistoryTotals; kennels: HistoryKennel[]; countries: HistoryCountry[] }
+
+/** publicWeb_getMyRunsFor row — the app's UserRunHistoryModel. */
+export interface HistoryRunRow {
+  totalRunsThisKennel: number | null; totalHaringThisKennel: number | null;
+  publicEventId: string; eventName: string; eventNumber: number;
+  countryName: string; flagFile: string | null; countryCode: string | null;
+  kennelName: string; kennelShortName: string; kennelSlug: string; kennelLogo: string | null;
+  digitsAfterDecimal: number; currencySymbol: string; eventStartDatetime: string;
+  extrasDescription: string | null; extrasPrice: number | null; hemId: string | null;
+  attendenceState: number; isHare: number;
+  creditAmount: number | null; debitAmount: number | null; creditAvailable: number | null; paymentType: number | null; doPayForExtras: number | null;
+}
+export interface HistoryRunsHeader {
+  Kind: "kennel" | "country";
+  PublicKennelId: string | null; KennelSlug: string | null; KennelShortName: string | null; KennelName: string | null; KennelLogo: string | null;
+  HcRuns: number | null; HcHaring: number | null; KennelCredit: number | null; DigitsAfterDecimal: number | null; CurrencySymbol: string | null;
+  CountryId: string | null; CountryName: string | null; FlagFile: string | null;
+}
+export interface HistoryRuns { header: HistoryRunsHeader | null; runs: HistoryRunRow[] }
 
 export interface KennelSearchRow {
   PublicKennelId: string; KennelSlug: string; KennelShortName: string; KennelName: string; KennelLogo: string | null;
@@ -335,12 +350,24 @@ export async function getMyKennels(s: MemberSession): Promise<MyKennel[]> {
 export async function getMyHistory(s: MemberSession): Promise<MyHistory | null> {
   const rowsets = await callAdminApi("getMyHistory", { deviceId: s.deviceId, accessToken: tokenFor(s, "publicWeb_getMyHistory") });
   if (envelopeOf(rowsets).success !== 1) return null;
-  const t = (rowsets[1]?.[0] ?? { Runs: 0, Haring: 0, Kennels: 0, IsEstimate: 0 }) as unknown as HistoryTotals;
+  const t = (rowsets[1]?.[0] ?? {}) as Partial<HistoryTotals>;
   return {
     totals: { Runs: Number(t.Runs) || 0, Haring: Number(t.Haring) || 0, Kennels: Number(t.Kennels) || 0, IsEstimate: Number(t.IsEstimate) || 0 },
     kennels: (rowsets[2] ?? []) as unknown as HistoryKennel[],
-    runs: (rowsets[3] ?? []) as unknown as HistoryRun[],
+    countries: (rowsets[3] ?? []) as unknown as HistoryCountry[],
   };
+}
+
+export async function getMyRunsFor(s: MemberSession, p: { publicKennelId?: string; countryId?: string; allRuns: boolean }): Promise<HistoryRuns | null> {
+  const rowsets = await callAdminApi("getMyRunsFor", {
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "publicWeb_getMyRunsFor"),
+    publicKennelId: p.publicKennelId ?? null,
+    countryId: p.countryId ?? null,
+    allRuns: p.allRuns ? "1" : "0",
+  });
+  if (envelopeOf(rowsets).success !== 1) return null;
+  return { header: ((rowsets[1]?.[0] as unknown as HistoryRunsHeader) ?? null), runs: (rowsets[2] ?? []) as unknown as HistoryRunRow[] };
 }
 
 export async function setKennelFollowing(s: MemberSession, publicKennelId: string, following: boolean): Promise<{ ok: boolean; message?: string }> {

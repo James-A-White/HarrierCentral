@@ -1,0 +1,249 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getMyRunsFor",
+  "version": "1.0.0",
+  "description": "The app's 'My runs for <kennel|country>' drill-down (user_run_history_list_page / user_country_history_list_page), server-side: one row per run and per non-cancelled payment; @allRuns = 1 is the app's All Runs (attendance >= 0). The run's country is Event.CountryId. ValidateAppAuth sp 114.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The browser's device id"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Token for this SP's name, paramString = deviceSecret"
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "one of the two"
+    },
+    {
+      "name": "countryId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Country.id",
+      "description": "one of the two"
+    },
+    {
+      "name": "allRuns",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "0 my runs, 1 all runs"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "success 1/0, errorCode, errorType",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Header",
+      "description": "Kind = kennel (name, logo, HcRuns, HcHaring, KennelCredit, currency) or country (CountryId, CountryName, FlagFile)",
+      "columns": [
+        {
+          "name": "Kind",
+          "type": "NVARCHAR(10)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Runs",
+      "description": "Newest first; the app's UserRunHistoryModel columns",
+      "columns": [
+        {
+          "name": "totalRunsThisKennel",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "totalHaringThisKennel",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "publicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "eventNumber",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "countryName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "flagFile",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "countryCode",
+          "type": "NVARCHAR(10)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "kennelSlug",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "kennelLogo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "digitsAfterDecimal",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "currencySymbol",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "eventStartDatetime",
+          "type": "DATETIME2(7)",
+          "nullable": true,
+          "description": "local wall-clock"
+        },
+        {
+          "name": "extrasDescription",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "extrasPrice",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "hemId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "attendenceState",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "isHare",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "creditAmount",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "debitAmount",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "creditAvailable",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "paymentType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "doPayForExtras",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
