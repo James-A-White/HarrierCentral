@@ -1,3 +1,8 @@
+0.21.55
+    • Member bar fixed; bigger hash name
+    • Kennels search lists all eligible kennels
+    • Old runs from history no longer 404
+
 0.21.54
     • Run Counts and its drill-downs rebuilt to match the app (By Kennel / By Country, my runs for a kennel or country, payments)
     • Member-page times were an hour off in BST

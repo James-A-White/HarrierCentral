@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.55 (2026-09-16)
+
+- Member title bar stays put (fixed, not sticky); hash name twice the size.
+- Kennels search lists every eligible kennel (the app's rule: not Defunct,
+  not Inactive-Hidden) instead of the 50 most recently active.
+- A run older than two years opened from history no longer 404s.
+
 ## 0.21.54 (2026-09-16)
 
 - Run Counts rebuilt to the app's screens: your photo and totals, By Kennel /
