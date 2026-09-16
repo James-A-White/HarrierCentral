@@ -1,3 +1,11 @@
+## 3.0.39+1377 (2026-09-16)
+### Improvements
+- The run notice puts a blank line between its links, a 🗺️ on the details
+  link, and says "I'll be there" rather than "I'm in".
+- The bottom tab is called "Map". The main map shows the phone as a blue dot
+  with a compass arrow, live, replacing the static marker at the boot-time
+  position; centre-on-me goes to the live fix. Android build included.
+
 ## 3.0.38+1375 (2026-09-16)
 ### New Features
 - "Share on WhatsApp" (or your kennel's messaging app) from the run page, the
