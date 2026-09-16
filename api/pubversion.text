@@ -1,3 +1,6 @@
+1.0.51+49
+    • PublicWebAdminApi: getMyRunsFor (the web member history drill-down).
+
 1.0.50+48
     • PublicWebAdminApi: getMyRuns, getMyKennels, getMyHistory, setKennelFollowing for the web member area (/me/*).
 

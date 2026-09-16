@@ -44,6 +44,7 @@ namespace HcWebApi.Endpoints
             "getMyKennels",
             "getMyHistory",
             "setKennelFollowing",
+            "getMyRunsFor",
         };
 
         private readonly ILogger<PublicWebAdminApi> _log;
@@ -72,6 +73,7 @@ namespace HcWebApi.Endpoints
             "getMyKennels",
             "getMyHistory",
             "setKennelFollowing",
+            "getMyRunsFor",
         };
 
         [Function("PublicWebAdminApi")]
