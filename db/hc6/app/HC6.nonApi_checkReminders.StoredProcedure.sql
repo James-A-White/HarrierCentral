@@ -162,6 +162,8 @@ JOIN HC.Hasher h ON h.id = msg.UserId;
 --         not already checked in. RSVP (type 2): any token holder who
 --         hasn't RSVPd, no geo-fence applied.
 -- -----------------------------------------------------------------------
+DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
+
 SELECT hkm.UserId, d.FcmToken, msg.EventId, msg.id AS MessageId
 FROM #messages msg
 JOIN HC.HasherKennelMap hkm ON hkm.KennelId = msg.KennelId
@@ -170,13 +172,20 @@ LEFT JOIN HC.HasherEventMap hem
                              ON hem.UserId   = hkm.UserId
                             AND hem.EventId  = msg.EventId
 WHERE COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference, 0) IN (1, 3, 4)
+  -- One reminder per DEVICE, not per device row: a hasher accumulates rows
+  -- and each kept a live token. Retired rows and devices that have not
+  -- signed in for 180 days are skipped; the next sign-in re-arms them
+  -- (James, 2026-09-17). UNION below also de-duplicates the token.
+  AND d.FcmToken   IS NOT NULL
+  AND d.removed     = 0
+  AND d.LastLogin  >= @idleCutoff
   AND msg.lat      IS NOT NULL
   AND d.Latitude   IS NOT NULL
   AND COALESCE(hem.AttendenceState, 0) < 20
   AND msg.MessageType = 1
   AND d.GeoPoint.STDistance(GEOGRAPHY::Point(msg.lat, msg.lon, 4326)) <= (@radiusKm * 1000)
 
-UNION ALL
+UNION
 
 SELECT hkm.UserId, d.FcmToken, msg.EventId, msg.id
 FROM #messages msg
@@ -188,7 +197,9 @@ LEFT JOIN HC.HasherEventMap hem
 WHERE COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference, 0) IN (1, 3, 4)
   AND COALESCE(hem.RsvpState, 0) < 1
   AND msg.MessageType = 2
-  AND d.FcmToken IS NOT NULL;
+  AND d.FcmToken IS NOT NULL
+  AND d.removed    = 0
+  AND d.LastLogin >= @idleCutoff;
 
 -- -----------------------------------------------------------------------
 -- Step 5: Stamp reminder-sent timestamps on HC.Event so these events
