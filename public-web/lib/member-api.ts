@@ -544,3 +544,16 @@ export async function getAllSongs(s: MemberSession, songId?: string): Promise<So
   if (envelopeOf(rowsets).success !== 1) return [];
   return (rowsets[1] ?? []) as unknown as Song[];
 }
+
+/** What SendRunCountsReport needs; resolved server-side so the browser never sees it. */
+export interface ReportContext { KennelId: string; KennelName: string; UserName: string; EmailAddress: string | null }
+
+export async function getReportContext(s: MemberSession, publicKennelId?: string): Promise<ReportContext | null> {
+  const rowsets = await callAdminApi("getReportContext", {
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "publicWeb_getReportContext"),
+    publicKennelId: publicKennelId ?? null,
+  });
+  if (envelopeOf(rowsets).success !== 1) return null;
+  return (rowsets[1]?.[0] as unknown as ReportContext) ?? null;
+}

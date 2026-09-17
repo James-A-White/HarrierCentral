@@ -9,10 +9,12 @@
  * row per payment, as the app.
  */
 import { useState } from "react";
+import { Mail, MailPlus } from "lucide-react";
 import Link from "next/link";
 import type { HistoryRunRow, HistoryRunsHeader } from "@/lib/member-api";
-import { HC_GREEN, HC_PURPLE, HC_RED, appDate } from "@/components/member/app-look";
+import { HC_BLUE, HC_GREEN, HC_PURPLE, HC_RED, appDate } from "@/components/member/app-look";
 import { condensed, Toggle } from "@/components/member/RunCountsView";
+import { SpeedDial, type SpeedDialAction } from "@/components/member/SpeedDial";
 
 const AT_HASH = 20;
 
@@ -24,6 +26,42 @@ export function HistoryRunsView({ kind, id, header, initialRuns, showKennelLogo,
   const [runs, setRuns] = useState<HistoryRunRow[]>(initialRuns);
   const [cache, setCache] = useState<Record<string, HistoryRunRow[]>>({ mine: initialRuns });
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  /**
+   * The app's speed-dial actions: the run-counts report by email, for this
+   * kennel or for every kennel. A country page offers only the second, as
+   * the app does.
+   */
+  async function emailReport(publicKennelId?: string) {
+    setSending(true); setNotice(null);
+    try {
+      const r = await fetch("/api/member/run-counts-report", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(publicKennelId ? { publicKennelId } : {}),
+      });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; email?: string; error?: string };
+      setNotice(r.ok && j.ok
+        ? `Your run counts report has been emailed to ${j.email}. If you do not see it in the next few minutes, check your spam folder.`
+        : (j.error ?? "That report could not be sent. Please try again."));
+    } finally { setSending(false); }
+  }
+
+  const dialActions: SpeedDialAction[] = [
+    ...(kind === "kennel" ? [{
+      label: "Email run counts\n(this kennel)",
+      color: "#00695C",
+      icon: <Mail className="h-7 w-7" />,
+      onSelect: () => emailReport(id),
+    }] : []),
+    {
+      label: "Email run counts\n(all kennels)",
+      color: HC_BLUE,
+      icon: <MailPlus className="h-7 w-7" />,
+      onSelect: () => emailReport(),
+    },
+  ];
 
   async function switchTo(showAll: boolean) {
     setAll(showAll);
@@ -55,7 +93,7 @@ export function HistoryRunsView({ kind, id, header, initialRuns, showKennelLogo,
 
       {/* Header card — kennel only, as the app */}
       {kind === "kennel" && header && (
-        <div className="flex min-h-[90px] items-center gap-4 px-4 py-2 text-zinc-900/90" style={{ backgroundColor: "rgba(0,0,0,0.27)" }}>
+        <div className="flex min-h-[90px] items-center gap-4 bg-white px-4 py-2 text-zinc-900/[0.87]" style={{ boxShadow: "0 6px 10px rgba(0,0,0,0.275)" }}>
           {header.KennelLogo?.startsWith("https://") ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={header.KennelLogo} alt="" className="h-20 w-20 shrink-0 object-contain" />
@@ -86,6 +124,19 @@ export function HistoryRunsView({ kind, id, header, initialRuns, showKennelLogo,
         {runs.map((r, i) => <RunRow key={`${r.publicEventId}-${r.hemId ?? ""}-${i}`} r={r} showKennelLogo={showKennelLogo} showFlag={flagsWanted} />)}
         {!loading && runs.length === 0 && <li className="py-6 text-center text-zinc-700">No runs.</li>}
       </ul>
+
+      <SpeedDial actions={dialActions} busy={sending} />
+
+      {(sending || notice) && (
+        <div className="fixed inset-x-0 bottom-24 z-[60] mx-auto max-w-sm px-4">
+          <div className="rounded-xl bg-black/85 px-4 py-3 text-center text-[16px] text-white shadow-2xl">
+            {sending ? "Run counts being processed…" : notice}
+            {!sending && (
+              <button type="button" onClick={() => setNotice(null)} className="ml-3 underline underline-offset-2">OK</button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -113,7 +164,11 @@ function RunRow({ r, showKennelLogo, showFlag }: { r: HistoryRunRow; showKennelL
             <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>
           </div>
         ) : (
-          <div className="h-12 w-12 rounded-full border-2 border-zinc-400/60" />
+          /* Not at this hash: the app shows a red cross, not an empty circle
+             (James, 2026-09-17). Only ever seen under "All Runs". */
+          <div className="flex h-12 w-12 items-center justify-center rounded-full text-white" style={{ backgroundColor: "#D32F2F" }} title="I was not at this hash">
+            <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </div>
         )}
       </div>
       {showKennelLogo && (
