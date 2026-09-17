@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getChatMessages, getChatThreads, sendChatMessage, type ChatKind } from "@/lib/member-api";
 import { readMember } from "@/lib/member-session";
 import { bad, jsonBody } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 const KINDS: ChatKind[] = ["run", "kennel", "room"];
 const okId = (kind: ChatKind, id: string) => kind === "room" ? /^\d{1,6}$/.test(id) : /^[0-9a-f-]{36}$/.test(id);
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
     const r = await getChatMessages(s, kind, id, Number.isFinite(since) ? since : undefined, false);
     return r ? NextResponse.json(r) : bad("Couldn't load the chat.", 502);
   } catch (e) {
-    console.error("chat get:", e);
+    await logWebError({ source: "/api/member/chat", error: e, session: s });
     return bad("Couldn't load the chat just now.", 502);
   }
 }
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
     const r = await sendChatMessage(s, kind, id, messageId, text);
     return r.ok ? NextResponse.json({ ok: true }) : bad(r.message ?? "Couldn't send.", 502);
   } catch (e) {
-    console.error("chat send:", e);
+    await logWebError({ source: "/api/member/chat", error: e, session: s });
     return bad("Couldn't send just now.", 502);
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { emailInviteCode } from "@/lib/member-api";
 import { bad, ipOf, isEmail, jsonBody, limited } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /**
  * POST { email } → { sent: true, known: boolean }
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
     const known = await emailInviteCode(email);
     return NextResponse.json({ sent: known, known });
   } catch (e) {
-    console.error("request-code:", e);
+    await logWebError({ source: "/api/member/request-code", error: e });
     return bad("We couldn't send the code just now. Please try again.", 502);
   }
 }

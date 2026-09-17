@@ -4,6 +4,7 @@ import { callAdminApi } from "@/lib/member-api";
 import { setMemberCookie, verifyValue, type MemberSession } from "@/lib/member-session";
 import { CHALLENGE_COOKIE, EXPECTED_ORIGINS, RP_ID } from "@/lib/passkeys";
 import { bad, ipOf, jsonBody, limited } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /**
  * POST { response: AuthenticationResponseJSON, remember } → { ok, hashName }
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (e) {
-    console.error("login-verify:", e);
+    await logWebError({ source: "/api/member/passkey/login-verify", error: e });
     return bad("That passkey couldn't be verified.", 401);
   }
   if (!verification.verified) return bad("That passkey couldn't be verified.", 401);

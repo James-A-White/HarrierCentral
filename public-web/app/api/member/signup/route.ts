@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createMember, emailInviteCode } from "@/lib/member-api";
 import { bad, ipOf, isEmail, jsonBody, limited } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /**
  * POST { email, hashName, firstName?, lastName?, slug } → { sent: true }
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     const known = await emailInviteCode(email);
     return NextResponse.json({ sent: known, known, created: created.ok });
   } catch (e) {
-    console.error("signup:", e);
+    await logWebError({ source: "/api/member/signup", error: e });
     return bad("We couldn't create your account just now. Please try again.", 502);
   }
 }

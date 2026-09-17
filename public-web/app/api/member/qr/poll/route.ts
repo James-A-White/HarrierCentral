@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { confirmQrAuthentication } from "@/lib/member-api";
 import { setMemberCookie, verifyValue } from "@/lib/member-session";
 import { bad, deviceDataOf, jsonBody } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /** POST { ticket, remember } → { pending: true } | { ok: true, hashName } */
 export async function POST(req: NextRequest) {
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
     setMemberCookie(res, session);
     return res;
   } catch (e) {
-    console.error("qr/poll:", e);
+    await logWebError({ source: "/api/member/qr/poll", error: e });
     return bad("We couldn't complete the sign-in just now.", 502);
   }
 }

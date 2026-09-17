@@ -57,6 +57,7 @@ namespace HcWebApi.Endpoints
             "issuePasskeyInviteCode",
             "getAllSongs",
             "getReportContext",
+            "logWebError",
         };
 
         private readonly ILogger<PublicWebAdminApi> _log;
@@ -97,6 +98,7 @@ namespace HcWebApi.Endpoints
             "issuePasskeyInviteCode",
             "getAllSongs",
             "getReportContext",
+            "logWebError",
         };
 
         [Function("PublicWebAdminApi")]

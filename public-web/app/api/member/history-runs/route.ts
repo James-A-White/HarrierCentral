@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getMyRunsFor } from "@/lib/member-api";
 import { readMember } from "@/lib/member-session";
 import { bad } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /** GET ?kennel=<publicKennelId>|country=<countryId>&all=0|1 → the drill-down rows (the app's My Runs / All Runs). */
 export async function GET(req: NextRequest) {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
     const r = await getMyRunsFor(s, { publicKennelId: isId(kennel) ? kennel : undefined, countryId: isId(country) ? country : undefined, allRuns: q.get("all") === "1" });
     return NextResponse.json(r ?? { header: null, runs: [] });
   } catch (e) {
-    console.error("history-runs:", e);
+    await logWebError({ source: "/api/member/history-runs", error: e, session: s });
     return bad("Couldn't load the runs just now.", 502);
   }
 }

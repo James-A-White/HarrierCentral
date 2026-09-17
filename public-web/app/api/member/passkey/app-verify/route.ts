@@ -4,6 +4,7 @@ import { callAdminApi } from "@/lib/member-api";
 import { verifyValue } from "@/lib/member-session";
 import { APP_ORIGINS, RP_ID } from "@/lib/passkeys";
 import { bad, ipOf, jsonBody, limited } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /**
  * The app's first-install sign-in with a web passkey (E9.F7.S13), step 2:
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (e) {
-    console.error("app-verify:", e);
+    await logWebError({ source: "/api/member/passkey/app-verify", error: e });
     return bad("That passkey couldn't be verified.", 401);
   }
   if (!verification.verified) return bad("That passkey couldn't be verified.", 401);
