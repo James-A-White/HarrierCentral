@@ -2,20 +2,60 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["XKZ5B2J6V4.com.harriercentral.app"],
+        "appIDs": [
+          "XKZ5B2J6V4.com.harriercentral.app"
+        ],
         "components": [
-          { "/": "/",              "exclude": true, "comment": "global landing page stays on the web" },
-          { "/": "/api/*",         "exclude": true },
-          { "/": "/*/songs",       "exclude": true, "comment": "kennel pages, not runs" },
-          { "/": "/*/about",       "exclude": true },
-          { "/": "/*/runs",        "exclude": true },
-          { "/": "/*/events",      "exclude": true },
-          { "/": "/*/legacy",      "exclude": true },
-          { "/": "/*/photos",      "exclude": true },
-          { "/": "/*/*",           "comment": "/<kennel-slug>/<run-number> and its sub-pages open the app" },
-          { "/": "/",  "#": "/RID?*", "comment": "legacy hash-route run links from printed QR codes" }
+          {
+            "/": "/",
+            "exclude": true,
+            "comment": "global landing page stays on the web"
+          },
+          {
+            "/": "/api/*",
+            "exclude": true
+          },
+          {
+            "/": "/*/songs",
+            "exclude": true,
+            "comment": "kennel pages, not runs"
+          },
+          {
+            "/": "/*/about",
+            "exclude": true
+          },
+          {
+            "/": "/*/runs",
+            "exclude": true
+          },
+          {
+            "/": "/*/events",
+            "exclude": true
+          },
+          {
+            "/": "/*/legacy",
+            "exclude": true
+          },
+          {
+            "/": "/*/photos",
+            "exclude": true
+          },
+          {
+            "/": "/*/*",
+            "comment": "/<kennel-slug>/<run-number> and its sub-pages open the app"
+          },
+          {
+            "/": "/",
+            "#": "/RID?*",
+            "comment": "legacy hash-route run links from printed QR codes"
+          }
         ]
       }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "XKZ5B2J6V4.com.harriercentral.app"
     ]
   }
 }
