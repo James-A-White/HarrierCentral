@@ -1,3 +1,8 @@
+## 3.1.0+1383 (2026-09-17)
+### Improvements
+- **Run counts**: the overview at the top now says how many kennels in how many
+  countries you have hashed with, not only the totals.
+
 ## 3.1.0+1380 (2026-09-17)
 ### New Features
 - **Sign in with my passkey**: a fresh install signs in with the passkey made
