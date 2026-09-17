@@ -480,7 +480,13 @@ class QueryRuns {
 
       switch (userDistPrefs) {
         case hasherPref_0:
-          meters = 0;
+          // Rung 0 is "never set", not a choice: the profile offers 10 through
+          // 500 and no zero. Reading it as a zero radius meant a hasher who had
+          // never opened that setting saw no runs near them at all, and the
+          // kennel popup offered "Show runs within 0 mi" (James, 2026-09-17).
+          // 50 here is 50 km or 50 miles — the conversion happens downstream in
+          // RunQueryExtensionsModel, off the unit preference.
+          meters = 50000;
           break;
         case hasherPref_10:
           meters = 10000;
