@@ -7,7 +7,8 @@
  */
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutList, Users, Map as MapIcon, History, Music } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LayoutList, Users, Map as MapIcon, History, Music, MessageCircle } from "lucide-react";
 
 const TABS = [
   { label: "Runs",    title: "Hash Runs", href: "/me/runs",    icon: LayoutList },
@@ -20,6 +21,15 @@ const TABS = [
 export function MemberTabBar({ hashName }: { hashName: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [unread, setUnread] = useState(0);
+
+  // The app's chat bubble with the global badge: the sum of unread across threads.
+  useEffect(() => {
+    fetch("/api/member/chat?threads=1", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { threads?: { BadgeCount: number }[] } | null) => { if (j?.threads) setUnread(j.threads.reduce((n, t) => n + (t.BadgeCount || 0), 0)); })
+      .catch(() => undefined);
+  }, [pathname]);
 
   async function signOut() {
     await fetch("/api/member/logout", { method: "POST" });
@@ -39,6 +49,10 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
           <Link href="/" className="absolute left-3 text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white">hashruns.org</Link>
           <h1 className="text-lg font-semibold">{title}</h1>
           <div className="absolute right-3 flex items-center gap-3 text-xs text-white/80">
+            <Link href="/me/chat" aria-label={unread ? `Chats, ${unread} unread` : "Chats"} className="relative text-white">
+              <MessageCircle className="h-6 w-6" />
+              {unread > 0 && <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white">{unread}</span>}
+            </Link>
             <span className="hidden max-w-[12rem] truncate text-2xl font-semibold text-white sm:inline">{hashName}</span>
             <button type="button" onClick={signOut} className="underline underline-offset-2 hover:text-white">Sign out</button>
           </div>

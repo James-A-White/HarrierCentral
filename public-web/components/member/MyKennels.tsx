@@ -12,8 +12,9 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, X, Menu, Heart, ArrowDownWideNarrow, ArrowDownAZ, Building2, Globe, MessageCircle } from "lucide-react";
-import type { MyKennel } from "@/lib/member-api";
+import { Search, X, Menu, Heart, ArrowDownWideNarrow, ArrowDownAZ, Building2, Globe } from "lucide-react";
+import type { ChatThreadRow, MyKennel } from "@/lib/member-api";
+import { ChatBubble, indexThreads, type ThreadIndex } from "@/components/member/ChatBubble";
 import { HC_BLUE, HC_GREEN, HC_RED, bellIcon, envelopeIcon, formatDistance, haversine, isMetric, money } from "@/components/member/app-look";
 import { ChoicePopup, followChoices, kennelBellChoices, kennelEnvelopeChoices } from "@/components/member/ChoicePopup";
 
@@ -50,6 +51,7 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
   const [me, setMe] = useState<Me>(null);
   const [dialOpen, setDialOpen] = useState(false);
   const [popup, setPopup] = useState<Popup>(null);
+  const [threads, setThreads] = useState<ThreadIndex | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,6 +64,13 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
       () => setMe(null),
       { maximumAge: 300000, timeout: 8000 },
     );
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/member/chat?threads=1", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { threads?: ChatThreadRow[] } | null) => { if (j?.threads) setThreads(indexThreads(j.threads)); })
+      .catch(() => undefined);
   }, []);
 
   const distanceOf = (k: MyKennel): number | null =>
@@ -153,7 +162,7 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
       <ul className={`px-2 pb-24 ${error ? "" : "pt-12"}`}>
         {visible.map((k) => (
           <KennelCard
-            key={k.PublicKennelId} k={k} distance={distanceOf(k)} busy={busy === k.PublicKennelId}
+            key={k.PublicKennelId} k={k} distance={distanceOf(k)} busy={busy === k.PublicKennelId} threads={threads}
             onFollow={() => setPopup({ kind: "follow", k })}
             onBell={() => setPopup({ kind: "bell", k })}
             onEnvelope={() => setPopup({ kind: "envelope", k })}
@@ -203,8 +212,8 @@ function Dial({ label, color, active, onClick, children }: { label: string; colo
 }
 
 /** kennel_list_item.dart — the card. */
-function KennelCard({ k, distance, busy, onFollow, onBell, onEnvelope }: {
-  k: MyKennel; distance: number | null; busy: boolean; onFollow: () => void; onBell: () => void; onEnvelope: () => void;
+function KennelCard({ k, distance, busy, threads, onFollow, onBell, onEnvelope }: {
+  k: MyKennel; distance: number | null; busy: boolean; threads: ThreadIndex | null; onFollow: () => void; onBell: () => void; onEnvelope: () => void;
 }) {
   const href = `/me/kennels/${k.KennelSlug}`;
   const followIcon = k.Following === 1 ? "checkbox_yes" : k.Following === 2 ? "checkbox_no" : "checkbox_empty";
@@ -258,7 +267,7 @@ function KennelCard({ k, distance, busy, onFollow, onBell, onEnvelope }: {
           )}
         </div>
         {k.HasHkm === 1 && (
-          <Link href={href} className="shrink-0 text-zinc-500" aria-label="Kennel chat (in the app)" title="Kennel chat is in the Harrier Central app"><MessageCircle className="h-8 w-8" /></Link>
+          <ChatBubble kind="kennel" id={k.PublicKennelId} title={`${k.KennelShortName} Kennel Chat`} back="/me/kennels" threads={threads} />
         )}
       </div>
     </li>
