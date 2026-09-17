@@ -1,3 +1,6 @@
+1.0.53+51
+    • PublicWebAdminApi allows getChatThreads, getChatMessages, sendChatMessage and markChatRead — chat on the web (E9.F7.S15).
+
 1.0.52+50
     • PublicWebAdminApi allows setNotificationPrefs, getLeaderboard and getKennelArt — the app's Kennels tab and kennel page on the web (bell and envelope, Get a Life leaderboards, run art gallery).
 
