@@ -171,12 +171,13 @@ function RunRow({ r, showKennelLogo, showFlag }: { r: HistoryRunRow; showKennelL
           </div>
         )}
       </div>
+      {/* A kennel logo is never cropped or masked — see CLAUDE.md. */}
       {showKennelLogo && (
-        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-white">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center">
           {r.kennelLogo?.startsWith("https://")
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={r.kennelLogo} alt="" className="h-full w-full object-cover" />
-            : <div className="flex h-full w-full items-center justify-center font-bold" style={{ color: HC_RED }}>{r.kennelShortName.charAt(0)}</div>}
+            ? <img src={r.kennelLogo} alt="" className="max-h-full max-w-full object-contain" />
+            : <div className="flex h-full w-full items-center justify-center rounded-full bg-white font-bold" style={{ color: HC_RED }}>{r.kennelShortName.charAt(0)}</div>}
         </div>
       )}
       {showFlag && r.flagFile && (

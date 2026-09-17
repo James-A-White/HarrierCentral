@@ -67,12 +67,14 @@ function CountRow({ href, image, fallback, name, count, hared }: { href: string;
   return (
     <li>
       <Link href={href} className="flex items-center gap-2 pl-2">
-        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-white shadow">
+        {/* A kennel logo is never cropped or masked — see CLAUDE.md. Wide
+            logos letterbox inside the box rather than lose their ends. */}
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center">
           {image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={image} alt="" className="h-full w-full object-cover" />
+            <img src={image} alt="" className="max-h-full max-w-full object-contain" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-white" style={{ backgroundColor: HC_RED }}>{fallback}</div>
+            <div className="flex h-full w-full items-center justify-center rounded-full text-3xl font-bold text-white" style={{ backgroundColor: HC_RED }}>{fallback}</div>
           )}
         </div>
         <span className="font-condensed shrink-0 text-[32px] leading-none text-zinc-900" style={condensed}> = </span>
