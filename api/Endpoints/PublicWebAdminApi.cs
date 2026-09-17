@@ -45,6 +45,10 @@ namespace HcWebApi.Endpoints
             "getMyHistory",
             "setKennelFollowing",
             "getMyRunsFor",
+            // The app's Kennels tab and kennel page on the web (2026-09-17).
+            "setNotificationPrefs",
+            "getLeaderboard",
+            "getKennelArt",
         };
 
         private readonly ILogger<PublicWebAdminApi> _log;
@@ -74,6 +78,10 @@ namespace HcWebApi.Endpoints
             "getMyHistory",
             "setKennelFollowing",
             "getMyRunsFor",
+            // The app's Kennels tab and kennel page on the web (2026-09-17).
+            "setNotificationPrefs",
+            "getLeaderboard",
+            "getKennelArt",
         };
 
         [Function("PublicWebAdminApi")]

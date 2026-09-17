@@ -14,7 +14,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MyRun } from "@/lib/member-api";
-import { HC_BLUE, HC_RED, appDate } from "@/components/member/app-look";
+import { HC_BLUE, HC_RED, appDate, bellIcon, envelopeIcon, formatDistance, haversine, isMetric } from "@/components/member/app-look";
+import { ChoicePopup, runBellChoices, runEnvelopeChoices } from "@/components/member/ChoicePopup";
 import { relativeTime } from "@/lib/member-format";
 import { Search, X, PartyPopper, MapPinned, CalendarSearch, MessageCircle, MoreVertical, Map as MapIcon, Images, MessagesSquare, Beer, Info, Settings } from "lucide-react";
 
@@ -24,35 +25,12 @@ const BANNER = "#6C0243";
 /** A past card: themeButtonColors at 20% over white. */
 const PAST_TINT = "#E2CCD9";
 const RADII_KM = [0, 10, 25, 50, 75, 100, 150, 250];
-const METERS_TO_MILES = 0.000621371;
 
-type Answer = "yes" | "maybe" | "no";
+export type Answer = "yes" | "maybe" | "no";
+export type PrefKind = "bell" | "envelope";
 
 // ── The app's helpers, ported ────────────────────────────────────────────────
 
-function isMetric(pref: number): boolean { return (pref & 0x01) === 0; }
-
-/** Utilities.getDistance */
-function formatDistance(meters: number, metric: boolean): string {
-  if (metric) {
-    if (meters < 1000) return `${Math.round(meters)} meters`;
-    if (meters < 10000) return `${(meters / 1000).toFixed(1)} km`;
-    return `${Math.round(meters / 1000)} km`;
-  }
-  const miles = meters * METERS_TO_MILES;
-  if (miles < 3) return `${miles.toFixed(2)} miles`;
-  if (miles < 10) return `${miles.toFixed(1)} miles`;
-  return `${Math.round(miles)} miles`;
-}
-
-function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371000, toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
-
-/** Utilities.getEventScopeText — shown when the run is more than a normal run. */
 function scopeText(scope: number | null): string | null {
   switch (scope) {
     case 2: return "Special local event";
@@ -90,20 +68,6 @@ function stateIcon(run: MyRun): string {
   }
 }
 
-/** _getNotificationWidget: bell by EventNotificationPreference (0 auto, 1 on, 2 ignore, 3 mute, 4 before run). */
-function bellIcon(pref: number): string {
-  switch (pref) {
-    case 1: return "bell_gold_50px";
-    case 2: return "bell_silver_strike_out_50px";
-    case 4: return "bell_time_50px";
-    default: return "bell_silver_50px";
-  }
-}
-/** _getEmailWidget: envelope by EventEmailAlertPreference. */
-function envelopeIcon(pref: number): string {
-  return pref === 1 ? "envelope_gold_50px" : pref === 2 ? "envelope_silver_strike_out_50px" : "envelope_silver_50px";
-}
-
 function isMyRun(r: MyRun): boolean { return r.MyRsvpState >= RSVP_YES || r.MyAttendenceState >= AT_HASH; }
 function isEvent(r: MyRun): boolean { return (r.EventGeographicScope ?? 1) >= 2; }
 
@@ -119,6 +83,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   const [radiusKm, setRadiusKm] = useState(50);
   const [showRadius, setShowRadius] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [pref, setPref] = useState<{ kind: PrefKind; run: MyRun } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const dividerRef = useRef<HTMLLIElement>(null);
@@ -227,6 +192,20 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
 
   const noun = filterEvents ? "Events" : "Runs";
   const barTitle = `${filterMy ? "My" : "All"} ${noun}`;
+  // The bell and the envelope (E9.F7.S14): the app's own preference SP.
+  async function notify(run: MyRun, kind: PrefKind, value: number) {
+    setPref(null); setBusy(run.PublicEventId); setError(null);
+    try {
+      const r = await fetch("/api/member/notify", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicEventId: run.PublicEventId.toLowerCase(), [kind === "bell" ? "notification" : "email"]: value }),
+      });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!r.ok || !j.ok) { setError(j.error ?? "Couldn't update."); return; }
+      setRuns((rs) => rs.map((x) => x.PublicEventId === run.PublicEventId ? (kind === "bell" ? { ...x, MyNotificationPref: value } : { ...x, MyEmailAlertPref: value }) : x));
+    } finally { setBusy(null); }
+  }
+
   const radiusLabel = me && me !== "denied" ? formatDistance(radiusKm * 1000, isMetric(future[0]?.DistanceUnitsPref ?? 0)) : `${radiusKm} km`;
 
   return (
@@ -269,7 +248,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
             Loading older runs… ({past.length - pastShown} more)
           </li>
         )}
-        {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} busy={busy === r.PublicEventId} />)}
+        {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} busy={busy === r.PublicEventId} />)}
 
         {past.length > 0 && (
           <li ref={dividerRef} className="scroll-mt-[186px]">
@@ -316,12 +295,16 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
                 </p>
               )}
               <ul className="space-y-2">
-                {rows.map((r) => <RunCard key={r.PublicEventId} run={r} distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} busy={busy === r.PublicEventId} />)}
+                {rows.map((r) => <RunCard key={r.PublicEventId} run={r} distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} busy={busy === r.PublicEventId} />)}
               </ul>
             </li>
           );
         })}
       </ul>
+      {pref && (
+        <ChoicePopup title={pref.run.EventName} choices={pref.kind === "bell" ? runBellChoices : runEnvelopeChoices}
+          onPick={(v) => notify(pref.run, pref.kind, v)} onClose={() => setPref(null)} busy={!!busy} />
+      )}
     </div>
   );
 }
@@ -347,10 +330,11 @@ function Banner({ children, left, right }: { children: React.ReactNode; left?: R
   );
 }
 
-function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, busy }: {
-  run: MyRun; past?: boolean; distance: number | null; menuOpen: boolean; onMenu: () => void; onRsvp: (r: MyRun, a: Answer) => void; busy: boolean;
+export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref, busy, back = "/me/runs" }: {
+  run: MyRun; past?: boolean; distance: number | null; menuOpen: boolean; onMenu: () => void; onRsvp: (r: MyRun, a: Answer) => void;
+  onPref?: (r: MyRun, kind: PrefKind) => void; busy: boolean; back?: string;
 }) {
-  const href = `/${run.KennelSlug}/${run.EventNumber}?back=/me/runs`;
+  const href = `/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent(back)}`;
   const when = run.EventStartDatetimeGmt ?? run.EventStartDatetime;
   const scope = scopeText(run.EventGeographicScope);
   const metric = isMetric(run.DistanceUnitsPref ?? 0);
@@ -364,10 +348,14 @@ function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, busy }: {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`/images/icons/${stateIcon(run)}.png`} alt="" className="h-6 w-6 shrink-0" />
         <Link href={href} className="min-w-0 flex-1 truncate text-[20px] font-bold leading-tight text-zinc-900">{run.EventName}</Link>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`/images/icons/${envelopeIcon(run.MyEmailAlertPref)}.png`} alt="" title="Email alert (set in the app)" className="h-7 w-7 shrink-0" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`/images/icons/${bellIcon(run.MyNotificationPref)}.png`} alt="" title="Notifications (set in the app)" className="ml-1 h-7 w-7 shrink-0" />
+        <button type="button" onClick={() => onPref?.(run, "envelope")} disabled={busy || !onPref} aria-label="Email alert" className="shrink-0 disabled:opacity-60">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/images/icons/${envelopeIcon(run.MyEmailAlertPref)}.png`} alt="" className="h-7 w-7" />
+        </button>
+        <button type="button" onClick={() => onPref?.(run, "bell")} disabled={busy || !onPref} aria-label="Notifications" className="ml-1 shrink-0 disabled:opacity-60">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/images/icons/${bellIcon(run.MyNotificationPref)}.png`} alt="" className="h-7 w-7" />
+        </button>
       </div>
       <div className="mx-1.5 h-px bg-zinc-300" />
 

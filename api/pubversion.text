@@ -1,3 +1,6 @@
+1.0.52+50
+    • PublicWebAdminApi allows setNotificationPrefs, getLeaderboard and getKennelArt — the app's Kennels tab and kennel page on the web (bell and envelope, Get a Life leaderboards, run art gallery).
+
 1.0.51+49
     • PublicWebAdminApi: getMyRunsFor (the web member history drill-down).
 

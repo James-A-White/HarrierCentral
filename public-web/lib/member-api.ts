@@ -274,14 +274,26 @@ export interface MyKennel {
   KennelShortName: string;
   KennelName: string;
   KennelLogo: string | null;
+  KennelCoverPhoto: string | null;
   KennelStatus: number | null;
   City: string | null;
   Region: string | null;
   Country: string | null;
+  /** The app's location line: city, region when the country shows it, country. */
+  Location: string;
+  CityLat: number | null;
+  CityLon: number | null;
   KennelWebsiteDomain: string | null;
+  /** 1 when I have a HasherKennelMap row here (the app shows counts and chat only then). */
+  HasHkm: number;
+  /** 0 auto (within N km) · 1 always · 2 never — the app's EnumFollowType. */
   Following: number;
   IsHomeKennel: number;
   IsMember: number;
+  /** 0 auto · 1 on · 2 ignore · 3 mute · 4 on before the run. */
+  KennelNotificationPref: number;
+  /** 0 default · 1 on · 2 off. */
+  KennelEmailAlertPref: number;
   MembershipExpirationDate: string | null;
   MemberSince: string | null;
   DateOfLastRun: string | null;
@@ -297,11 +309,31 @@ export interface MyKennel {
   KennelCredit: number;
   CurrencySymbol: string | null;
   DigitsAfterDecimal: number;
+  DistanceUnitsPref: number;
+  DefaultPriceMembers: number;
+  DefaultPriceNonMembers: number;
+  ExcludeFromLeaderboard: number;
+  LastRunGmt: string | null;
+  LastRunLocal: string | null;
+  LastRunNumber: number | null;
   NextRunGmt: string | null;
   NextRunLocal: string | null;
   NextRunNumber: number | null;
   NextRunName: string | null;
   NextRunPublicEventId: string | null;
+  /** Lower-cased, space-led words for the app's comma / plus / not search. */
+  SearchText: string;
+}
+
+/** publicWeb_getLeaderboard row — the app's LeaderboardModel plus the home kennel's name. */
+export interface LeaderboardRow {
+  displayName: string; totalRunCount: number; totalHaringCount: number; ytdTotalRunCount: number; ytdHaringCount: number;
+  rollingYearTotalRunCount: number; rollingYearHaringCount: number; isHomeKennel: number; homeKennelShortName: string | null; isMe: number;
+}
+
+/** publicWeb_getKennelArt row — a run with an event image. */
+export interface KennelArtRow {
+  PublicEventId: string; EventNumber: number | null; EventName: string; EventImage: string; EventStartDatetime: string; EventStartDatetimeGmt: string; KennelSlug: string;
 }
 
 export interface HistoryTotals { Runs: number; Haring: number; Kennels: number; IsEstimate: number }
@@ -378,14 +410,50 @@ export async function getMyRunsFor(s: MemberSession, p: { publicKennelId?: strin
   return { header: ((rowsets[1]?.[0] as unknown as HistoryRunsHeader) ?? null), runs: (rowsets[2] ?? []) as unknown as HistoryRunRow[] };
 }
 
-export async function setKennelFollowing(s: MemberSession, publicKennelId: string, following: boolean): Promise<{ ok: boolean; message?: string }> {
+/**
+ * The app's kennel-card popup, through hcapp_joinKennel in self mode:
+ * following 0 (within N km) · 1 (always) · 2 (never); isHomeKennel 1 sets,
+ * 0 clears. Either may be omitted to keep it.
+ */
+export async function setKennelFollowing(s: MemberSession, publicKennelId: string, p: { following?: 0 | 1 | 2; isHomeKennel?: 0 | 1 }): Promise<{ ok: boolean; message?: string }> {
   const rowsets = await callAdminApi("setKennelFollowing", {
     deviceId: s.deviceId,
     accessToken: tokenFor(s, "hcapp_joinKennel"),
     publicKennelId,
-    following: following ? "1" : "0",
+    following: p.following == null ? null : String(p.following),
+    isHomeKennel: p.isHomeKennel == null ? null : String(p.isHomeKennel),
   });
   return envelopeOf(rowsets).success === 1 ? { ok: true } : { ok: false, message: userMessageOf(rowsets) };
+}
+
+/**
+ * The bell and the envelope (E9.F7.S14), through the app's own
+ * hcapp_setEmailAndNotificationPrefs: one of a kennel or a run;
+ * notification 0 auto · 1 on · 2 ignore · 3 mute · 4 before the run;
+ * email 1 on · 2 off; -1 (or omitted) leaves it as it is.
+ */
+export async function setNotificationPrefs(s: MemberSession, p: { publicKennelId?: string; publicEventId?: string; notification?: number; email?: number }): Promise<{ ok: boolean; message?: string }> {
+  const rowsets = await callAdminApi("setNotificationPrefs", {
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "hcapp_setEmailAndNotificationPrefs"),
+    publicKennelId: p.publicKennelId ?? null,
+    publicEventId: p.publicEventId ?? null,
+    notificationPreference: String(p.notification ?? -1),
+    emailPreference: String(p.email ?? -1),
+  });
+  return envelopeOf(rowsets).success === 1 ? { ok: true } : { ok: false, message: userMessageOf(rowsets) };
+}
+
+export async function getLeaderboard(s: MemberSession, publicKennelId: string): Promise<LeaderboardRow[]> {
+  const rowsets = await callAdminApi("getLeaderboard", { deviceId: s.deviceId, accessToken: tokenFor(s, "publicWeb_getLeaderboard"), publicKennelId });
+  if (envelopeOf(rowsets).success !== 1) return [];
+  return (rowsets[1] ?? []) as unknown as LeaderboardRow[];
+}
+
+export async function getKennelArt(s: MemberSession, publicKennelId: string): Promise<KennelArtRow[]> {
+  const rowsets = await callAdminApi("getKennelArt", { deviceId: s.deviceId, accessToken: tokenFor(s, "publicWeb_getKennelArt"), publicKennelId });
+  if (envelopeOf(rowsets).success !== 1) return [];
+  return (rowsets[1] ?? []) as unknown as KennelArtRow[];
 }
 
 /** Public directory search through the anonymous GET shim. */

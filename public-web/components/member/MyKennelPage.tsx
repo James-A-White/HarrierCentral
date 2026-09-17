@@ -1,220 +1,257 @@
 "use client";
 
 /**
- * The app's kennel screen (kennel_admin_main.dart) on the web: description,
- * info rows, next runs with my RSVP, mismanagement, and the buttons in the
- * app's order — Open website, Join the group, Leaderboards, Songs.
- * Run tools, kennel chat and the run art gallery stay in the app and are
- * named as such.
+ * The app's kennel screen (kennel_admin_main.dart) on the web, in the
+ * app's order, on the jungle: the sub-page bar with the kennel's short
+ * name; the logo and cover photo; the description with its links; the
+ * map on the kennel's city; the yellow-labelled rows — Location, Last run,
+ * Next run, Hash cash (members / non-members); the mismanagement; "Next N
+ * runs" with the same cards as the Runs tab (RSVP, bell, envelope); "Show
+ * <kennel> Links" opening the three QR groups; then the buttons — Join the
+ * group, Open website, Run art gallery, Leaderboards. The admin functions
+ * and "Share my photos" stay in the app.
  */
 import { useState } from "react";
 import Link from "next/link";
+import { UserPlus, QrCode } from "lucide-react";
 import type { MyKennel, MyRun } from "@/lib/member-api";
-import { relativeTime } from "@/lib/member-format";
-import { APP_BAR, HC_BLUE, HC_RED, appDate, card, cardDivider, mutedText, titleText } from "@/components/member/app-look";
+import { HC_BLUE, HC_RED, money } from "@/components/member/app-look";
 import { splitLinks } from "@/lib/link-text";
+import { RunCard, type Answer, type PrefKind } from "@/components/member/HashRunsView";
+import { ChoicePopup, runBellChoices, runEnvelopeChoices } from "@/components/member/ChoicePopup";
+import { KennelMap } from "@/components/member/KennelMap";
+import { QrGroup } from "@/components/member/QrGroup";
 
-const RSVP_YES = 3, RSVP_MAYBE = 2, RSVP_NO = 1, AT_HASH = 20;
+const RSVP = { no: 1, maybe: 2, yes: 3 } as const;
 const PLATFORM: Record<number, string> = { 1: "WhatsApp", 2: "Telegram", 3: "Signal", 4: "Messenger", 5: "WeChat" };
+const BASE_URL = "https://www.hashruns.org/";
 
-interface Landing {
-  PublicKennelId: string; KennelName: string; KennelShortName: string; KennelLogo: string | null;
-  KennelDescription: string | null; CustomDomain: string | null;
-}
-
-export function MyKennelPage({ slug, landing, kennel, nextRuns }: { slug: string; landing: Landing; kennel: MyKennel | null; nextRuns: MyRun[] }) {
-  const [following, setFollowing] = useState(!!kennel && (kennel.Following === 1 || kennel.IsHomeKennel === 1));
+export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nextRuns: MyRun[]; back: string }) {
   const [runs, setRuns] = useState(nextRuns);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [pref, setPref] = useState<{ kind: PrefKind; run: MyRun } | null>(null);
+  const [showLinks, setShowLinks] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function toggleFollow() {
-    setBusy("follow"); setError(null);
-    try {
-      const r = await fetch("/api/member/follow", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publicKennelId: landing.PublicKennelId.toLowerCase(), following: !following }),
-      });
-      const j = (await r.json()) as { ok?: boolean; error?: string };
-      if (!r.ok || !j.ok) { setError(j.error ?? "Couldn't update."); return; }
-      setFollowing(!following);
-    } finally { setBusy(null); }
-  }
+  const here = `/me/kennels/${kennel.KennelSlug}`;
+  const short = kennel.KennelShortName;
 
-  async function rsvp(run: MyRun, answer: "yes" | "maybe" | "no") {
-    setBusy(run.PublicEventId); setError(null);
+  async function rsvp(run: MyRun, answer: Answer) {
+    setMenuFor(null); setBusy(run.PublicEventId); setError(null);
     try {
       const r = await fetch("/api/member/rsvp", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ publicEventId: run.PublicEventId.toLowerCase(), rsvp: answer }),
       });
-      const j = (await r.json()) as { ok?: boolean; error?: string };
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!r.ok || !j.ok) { setError(j.error ?? "Couldn't save your RSVP."); return; }
-      const state = answer === "yes" ? RSVP_YES : answer === "maybe" ? RSVP_MAYBE : RSVP_NO;
-      setRuns((rs) => rs.map((x) => x.PublicEventId === run.PublicEventId ? { ...x, MyRsvpState: state } : x));
+      setRuns((rs) => rs.map((x) => x.PublicEventId === run.PublicEventId ? { ...x, MyRsvpState: RSVP[answer] } : x));
     } finally { setBusy(null); }
   }
 
-  const website = kennel?.KennelWebsiteUrl?.trim() || (landing.CustomDomain ? `https://${landing.CustomDomain}` : `/${slug}`);
-  const mm = parseMismanagement(kennel?.KennelMismanagementTeam ?? null);
-  const desc = (kennel?.KennelDescription ?? landing.KennelDescription ?? "").trim();
-  const credit = kennel && kennel.AllowSelfPayment === 1 ? money(kennel.KennelCredit, kennel.CurrencySymbol, kennel.DigitsAfterDecimal) : null;
+  async function notify(run: MyRun, kind: PrefKind, value: number) {
+    setPref(null); setBusy(run.PublicEventId); setError(null);
+    try {
+      const r = await fetch("/api/member/notify", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicEventId: run.PublicEventId.toLowerCase(), [kind === "bell" ? "notification" : "email"]: value }),
+      });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!r.ok || !j.ok) { setError(j.error ?? "Couldn't update."); return; }
+      setRuns((rs) => rs.map((x) => x.PublicEventId === run.PublicEventId ? (kind === "bell" ? { ...x, MyNotificationPref: value } : { ...x, MyEmailAlertPref: value }) : x));
+    } finally { setBusy(null); }
+  }
+
+  const desc = (kennel.KennelDescription ?? "").trim();
+  const mm = parseMismanagement(kennel.KennelMismanagementTeam);
+  const website = (kennel.KennelWebsiteUrl ?? "").trim();
+  const hasWebsite = website.toLowerCase().startsWith("http");
+  const invite = (kennel.MessagingGroupInviteUrl ?? "").trim();
+  const hasInvite = invite.toLowerCase().startsWith("http");
+  const priceMembers = Number(kennel.DefaultPriceMembers) || 0;
+  const priceNonMembers = Number(kennel.DefaultPriceNonMembers) || 0;
+  const hasMap = kennel.CityLat != null && kennel.CityLon != null;
 
   return (
-    <div className="space-y-4">
-      {/* Header — the app's: logo, name, follow. */}
-      <section className={`${card} p-3`}>
-        <div className="flex items-center gap-3">
-          {landing.KennelLogo?.startsWith("https://") ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={landing.KennelLogo} alt="" className="h-16 w-16 shrink-0 object-contain" />
-          ) : (
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg text-2xl font-bold text-white" style={{ backgroundColor: HC_RED }}>{landing.KennelShortName.charAt(0)}</div>
-          )}
-          <div className="min-w-0 flex-1">
-            <h2 className={titleText}>{landing.KennelName}</h2>
-            <p className={mutedText}>{landing.KennelShortName}{kennel?.IsHomeKennel === 1 ? " · your home kennel" : ""}{kennel?.IsMember === 1 ? " · member" : ""}</p>
-          </div>
-          {kennel?.IsHomeKennel !== 1 && (
-            <button type="button" onClick={toggleFollow} disabled={busy === "follow"}
-              className="shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold disabled:opacity-50"
-              style={following ? { backgroundColor: "#e4e4e7", color: "#27272a" } : { backgroundColor: HC_RED, color: "#fff" }}>
-              {following ? "Following" : "Follow"}
-            </button>
-          )}
-        </div>
-      </section>
+    <div className="-mx-3 -mt-3 pb-8 sm:-mt-4">
+      {/* The app's sub-page bar: back + kennel short name */}
+      <div className="flex items-center gap-3 px-3 py-3 text-white" style={{ backgroundColor: "#580438" }}>
+        <Link href={back} aria-label="Back" className="text-2xl leading-none">‹</Link>
+        <h2 className="min-w-0 flex-1 truncate text-center text-[22px] font-medium">{short}</h2>
+        <span className="w-4" />
+      </div>
 
-      {error && <p className="rounded-lg bg-white px-3 py-2 text-sm font-semibold" style={{ color: HC_RED }}>{error}</p>}
+      {error && <p className="mx-3 mt-3 rounded-lg bg-white px-3 py-2 text-sm font-semibold" style={{ color: HC_RED }}>{error}</p>}
 
-      {/* Description — plain text with links, as the app's Linkify. */}
+      {/* Logo and cover photo */}
+      <div className="flex flex-col items-center gap-3 px-3 pt-4">
+        {kennel.KennelLogo?.startsWith("https://") ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={kennel.KennelLogo} alt={kennel.KennelName} className="h-[120px] w-[120px] object-contain" />
+        ) : (
+          <div className="flex h-[120px] w-[120px] items-center justify-center rounded-full text-5xl font-bold text-white" style={{ backgroundColor: HC_RED }}>{kennel.KennelName.charAt(0)}</div>
+        )}
+        <h1 className="text-center text-[24px] font-semibold text-white">{kennel.KennelName}</h1>
+        {kennel.KennelCoverPhoto?.startsWith("https://") && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={kennel.KennelCoverPhoto} alt="" className="w-full rounded-md object-cover" style={{ maxHeight: 320 }} />
+        )}
+      </div>
+
       {desc && (
-        <section className={`${card} p-3`}>
-          <p className="whitespace-pre-line text-[15px] leading-relaxed text-zinc-800">
+        <>
+          <FancyDivider />
+          <p className="whitespace-pre-line px-4 text-[20px] leading-snug text-white">
             {splitLinks(desc).map((run, i) => run.url
-              ? <a key={i} href={run.url} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: HC_BLUE }}>{run.text}</a>
+              ? <a key={i} href={run.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2" style={{ color: "#facc15" }}>{run.text}</a>
               : <span key={i}>{run.text}</span>)}
           </p>
-        </section>
+        </>
       )}
 
-      {/* Info rows — the app's order. */}
-      <section className={`${card} p-3`}>
-        <Row label="Location:" value={dedupe([kennel?.City, kennel?.Region, kennel?.Country]).join(", ") || "—"} />
-        <Row label="Last run:" value={kennel?.DateOfLastRun ? appDate(kennel.DateOfLastRun).replace(/ at .*$/, "") : "—"} />
-        <Row label="Next run:" value={runs[0] ? `${appDate(runs[0].EventStartDatetime, runs[0].EventStartDatetimeGmt, runs[0].KennelIANATimezone)} (${relativeTime(runs[0].EventStartDatetimeGmt ?? runs[0].EventStartDatetime)})` : "None scheduled"} hydrate />
-        {credit !== null && <Row label="Hash cash:" value={credit} />}
-        {kennel && (kennel.Runs > 0 || kennel.Haring > 0) && (
-          <Row label="My runs:" value={`${kennel.IsEstimate ? "~" : ""}${kennel.Runs}, hared ${kennel.Haring}`} />
-        )}
-      </section>
+      <FancyDivider />
+      {hasMap && <KennelMap lat={Number(kennel.CityLat)} lon={Number(kennel.CityLon)} name={kennel.KennelName} />}
 
-      {/* Next runs with my RSVP — the app's "Next N runs". */}
-      <section>
-        <h2 className="mb-2 rounded-md py-1.5 text-center text-[17px] font-bold text-white" style={{ backgroundColor: APP_BAR }}>
-          {runs.length === 0 ? "No upcoming runs" : runs.length === 1 ? "Next run" : `Next ${runs.length} runs`}
-        </h2>
-        <ul className="space-y-2">
-          {runs.map((run) => (
-            <li key={run.PublicEventId} className={`${card} overflow-hidden`}>
-              <div className="flex items-center gap-2 px-2 pt-2 pb-1.5">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/images/icons/${stateIcon(run)}.png`} alt="" className="h-6 w-6 shrink-0" />
-                <Link href={`/${run.KennelSlug}/${run.EventNumber}?back=/me/kennels/${slug}`} className={`${titleText} min-w-0 flex-1 truncate hover:underline`}>{run.EventName}</Link>
-              </div>
-              <div className={cardDivider} />
-              <div className="px-3 py-2 leading-snug">
-                <p className="text-[15px] font-bold text-zinc-900" suppressHydrationWarning>
-                  {run.IsCountedRun ? `Run #${run.EventNumber}, ` : "Run / Event "}{relativeTime(run.EventStartDatetimeGmt ?? run.EventStartDatetime)}
-                </p>
-                <p className="text-[15px] text-zinc-800" suppressHydrationWarning>{appDate(run.EventStartDatetime, run.EventStartDatetimeGmt, run.KennelIANATimezone)}</p>
-                {run.Hares && <p className="text-[15px] text-zinc-800">Hares: {run.Hares}</p>}
-                <p className="text-[15px] text-zinc-800">{run.LocationOneLineDesc || "No location provided"}</p>
-              </div>
-              {following && (
-                <div className={`flex items-center gap-5 px-3 pb-2 pt-2 ${cardDivider}`}>
-                  <RsvpIcon icon="checkbox_yes" label="Going" active={run.MyRsvpState === RSVP_YES || run.MyAttendenceState >= AT_HASH} busy={busy === run.PublicEventId} onClick={() => rsvp(run, "yes")} />
-                  <RsvpIcon icon="checkbox_maybe" label="Maybe" active={run.MyRsvpState === RSVP_MAYBE} busy={busy === run.PublicEventId} onClick={() => rsvp(run, "maybe")} />
-                  <RsvpIcon icon="checkbox_no" label="Not going" active={run.MyRsvpState === RSVP_NO} busy={busy === run.PublicEventId} onClick={() => rsvp(run, "no")} />
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* The info rows: yellow label right-aligned, white value */}
+      <div className="mt-3 px-3">
+        <Row label="Location:" value={kennel.Location} />
+        <Row label="Last run:" value={kennel.LastRunLocal ? appDateTime(kennel.LastRunLocal) : "<no run found>"} hydrate />
+        <Row label="Next run:" value={kennel.NextRunLocal ? appDateTime(kennel.NextRunLocal) : "<no run found>"} hydrate />
+        <Row label="Hash cash:" value={priceMembers > 0 ? `${money(priceMembers, kennel.CurrencySymbol, kennel.DigitsAfterDecimal)}    (members)` : ""} />
+        {priceNonMembers > 0 && <Row label="" value={`${money(priceNonMembers, kennel.CurrencySymbol, kennel.DigitsAfterDecimal)}    (non-members)`} />}
+      </div>
 
-      {/* Mismanagement — role and name per line, as the app. */}
       {mm.length > 0 && (
-        <section className={`${card} p-3`}>
-          <h3 className="mb-1 text-[15px] font-bold text-zinc-900">Mismanagement</h3>
-          {mm.map((m, i) => <Row key={i} label={m.role} value={m.name} />)}
-        </section>
+        <>
+          <FancyDivider />
+          <div className="px-3">
+            {mm.map((m, i) => <Row key={i} label={`${m.role}:`} value={m.name} />)}
+          </div>
+        </>
       )}
 
-      {/* Buttons — the app's, in its order. */}
-      <section className="flex flex-col items-center gap-2">
-        <a href={website} target={website.startsWith("/") ? undefined : "_blank"} rel="noopener noreferrer" className="w-full max-w-sm rounded-full py-2.5 text-center text-base font-semibold text-white" style={{ backgroundColor: HC_RED }}>Open website</a>
-        {kennel?.MessagingGroupInviteUrl?.toLowerCase().startsWith("http") && (
-          <a href={kennel.MessagingGroupInviteUrl} target="_blank" rel="noopener noreferrer" className="w-full max-w-sm rounded-full py-2.5 text-center text-base font-semibold text-white" style={{ backgroundColor: HC_RED }}>
-            Join the {landing.KennelShortName} {PLATFORM[kennel.DefaultMessagingPlatform] ?? "WhatsApp"} group
-          </a>
+      {runs.length > 0 && (
+        <>
+          <FancyDivider />
+          <h3 className="px-3 text-center text-[24px] font-semibold text-white">{runs.length === 1 ? "Next run" : `Next ${runs.length} runs`}</h3>
+          <ul className="space-y-2.5 px-2 pt-2">
+            {runs.map((r) => (
+              <RunCard key={r.PublicEventId} run={r} distance={null} back={here}
+                menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)}
+                onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} busy={busy === r.PublicEventId} />
+            ))}
+          </ul>
+        </>
+      )}
+
+      {/* Show <kennel> Links → the QR groups */}
+      <FancyDivider />
+      <div className="flex flex-col items-center px-3">
+        <button type="button" onClick={() => setShowLinks((v) => !v)}
+          className="flex h-14 w-[300px] max-w-full items-center rounded-md text-white shadow" style={{ backgroundColor: HC_BLUE }}>
+          <span className="flex w-[45px] shrink-0 items-center justify-center"><QrCode className="h-7 w-7" /></span>
+          <span className="flex-1 pr-3 text-center text-[20px] font-semibold">{showLinks ? "Hide Links" : `Show ${short} Links`}</span>
+        </button>
+        {showLinks && (
+          <div className="w-full">
+            <QrGroup title={`Next ${short} Run`} description={`next ${short} run`} url={`${BASE_URL}${kennel.KennelSlug}/nextrun`}
+              helpTitle="URL for Next Hash"
+              helpText={`Want to know what's next for ${short}?\n\nThis link always points to the next ${short} Hash run — perfect for bookmarking or sharing with friends!`} />
+            <QrGroup title={`${short} upcoming Runs`} description={`${kennel.KennelName} upcoming runs`} url={`${BASE_URL}${kennel.KennelSlug}`}
+              helpTitle={`URL for upcoming ${short} runs`}
+              helpText={`This link opens a page with all upcoming ${short} runs.\n\nNavigate to this page and scroll down to see everything that's planned!`} />
+            {hasWebsite && (
+              <QrGroup title={`${short} Website`} description={`${short} Website`} url={website}
+                helpTitle={`${short} Website`} helpText={`The ${short} website: ${website}`} />
+            )}
+            <div className="h-10" />
+          </div>
         )}
-        <Link href={`/${slug}/stats`} className="w-full max-w-sm rounded-full py-2.5 text-center text-base font-semibold text-white" style={{ backgroundColor: HC_RED }}>Leaderboards</Link>
-        <Link href={`/${slug}/songs`} className="w-full max-w-sm rounded-full py-2.5 text-center text-base font-semibold text-white" style={{ backgroundColor: HC_RED }}>Songs</Link>
-        <p className="mt-2 text-center text-xs text-white/70">Kennel chat and the run art gallery are in the Harrier Central app.</p>
-      </section>
+      </div>
+
+      {/* The buttons, in the app's order */}
+      <div className="mt-6 flex flex-col items-center gap-4 px-3">
+        {hasInvite && (
+          <BigButton href={invite} external>
+            <span className="flex w-[45px] shrink-0 items-center justify-center"><UserPlus className="h-7 w-7" /></span>
+            <span className="flex-1 pr-3 text-left">Join the {short} {PLATFORM[kennel.DefaultMessagingPlatform] ?? "chat"} group</span>
+          </BigButton>
+        )}
+        {hasWebsite && (
+          <BigButton href={website} external>
+            <span className="flex w-[45px] shrink-0 items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/icons/visit_run_on_web.png" alt="" className="h-[30px] w-[30px]" />
+            </span>
+            <span className="flex-1 pr-3 text-left">Open website</span>
+          </BigButton>
+        )}
+        <BigButton href={`${here}/gallery`}>
+          <span className="flex w-[45px] shrink-0 items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/icons/painter_palette.png" alt="" className="h-[35px] w-[35px]" />
+          </span>
+          <span className="flex-1 pr-3 text-left">Run art gallery</span>
+        </BigButton>
+        <BigButton href={`${here}/leaderboard`}>
+          <span className="flex w-[45px] shrink-0 items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/icons/leaderboard_icon.png" alt="" className="h-[35px] w-[35px]" />
+          </span>
+          <span className="flex-1 pr-3 text-left">Leaderboards</span>
+        </BigButton>
+      </div>
+
+      {pref && (
+        <ChoicePopup title={pref.run.EventName} choices={pref.kind === "bell" ? runBellChoices : runEnvelopeChoices}
+          onPick={(v) => notify(pref.run, pref.kind, v)} onClose={() => setPref(null)} busy={!!busy} />
+      )}
     </div>
   );
 }
 
+/** ive_flutter_core's FancyDivider: a white rule with a notch in the middle. */
+export function FancyDivider() {
+  return (
+    <div className="my-5 flex items-center px-6" aria-hidden="true">
+      <span className="h-px flex-1 bg-white" />
+      <span className="mx-2 h-2.5 w-2.5 rotate-45 border border-white" />
+      <span className="h-px flex-1 bg-white" />
+    </div>
+  );
+}
+
+/** kennel_admin_main._infoRow: flex 3 label (yellow, right) · flex 7 value (white, demi). */
 function Row({ label, value, hydrate }: { label: string; value: string; hydrate?: boolean }) {
   return (
-    <div className="flex gap-2 py-0.5 text-[15px]" suppressHydrationWarning={hydrate}>
-      <span className="w-24 shrink-0 text-right font-semibold text-zinc-500">{label}</span>
-      <span className="min-w-0 flex-1 text-zinc-900">{value}</span>
+    <div className="grid grid-cols-10 gap-x-3 py-0.5 text-[16px] leading-snug">
+      <div className="col-span-3 text-right text-yellow-300">{label}</div>
+      <div className="col-span-7 whitespace-pre font-semibold text-white" suppressHydrationWarning={hydrate}>{value}</div>
     </div>
   );
 }
 
-function RsvpIcon({ icon, label, active, busy, onClick }: { icon: string; label: string; active: boolean; busy: boolean; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} disabled={busy} title={label} aria-label={label} aria-pressed={active} className="flex flex-col items-center gap-0.5 disabled:opacity-50">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/images/icons/${active ? icon : "checkbox_empty"}.png`} alt="" className="h-8 w-8" style={active ? undefined : { opacity: 0.55 }} />
-      <span className="text-[11px] text-zinc-600">{label}</span>
-    </button>
-  );
+function BigButton({ href, external, children }: { href: string; external?: boolean; children: React.ReactNode }) {
+  const cls = "flex h-14 w-[300px] max-w-full items-center rounded-md text-[20px] font-semibold text-white shadow";
+  return external
+    ? <a href={href} target="_blank" rel="noopener noreferrer" className={cls} style={{ backgroundColor: HC_RED }}>{children}</a>
+    : <Link href={href} className={cls} style={{ backgroundColor: HC_RED }}>{children}</Link>;
 }
 
-function stateIcon(run: MyRun): string {
-  if (run.MyAttendenceState >= AT_HASH) return run.MyIsHare === 1 ? "checkbox_on_in_hare" : "checkbox_on_in";
-  if (run.MyIsHare === 1) return "checkbox_hare";
-  if (run.MyRsvpState === RSVP_YES) return "checkbox_yes";
-  if (run.MyRsvpState === RSVP_MAYBE) return "checkbox_maybe";
-  if (run.MyRsvpState === RSVP_NO) return "checkbox_no";
-  return "checkbox_empty";
+/** DateFormat('E, MMM d,  h:mm a') on the kennel's local wall-clock. */
+function appDateTime(local: string): string {
+  const d = new Date(/Z$|[+-]\d\d:\d\d$/.test(local) ? local : `${local}Z`);
+  const day = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
+  return `${day},  ${time}`;
 }
 
-/** "London, London, United Kingdom" → "London, United Kingdom". */
-function dedupe(parts: (string | null | undefined)[]): string[] {
-  const out: string[] = [];
-  for (const p of parts) { if (p && out[out.length - 1]?.toLowerCase() !== p.toLowerCase()) out.push(p); }
-  return out;
-}
-
-/** "GM\tOpee\rVice GM\tOpee…" → rows. "none listed" → nothing, as the app. */
-function parseMismanagement(raw: string | null): { role: string; name: string }[] {
+export function parseMismanagement(raw: string | null): { role: string; name: string }[] {
   if (!raw || raw.toLowerCase().includes("none listed")) return [];
   // Rows are separated by CR alone in the data (tab between role and name).
   return raw.split(/\r\n|\r|\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
     const [role, ...rest] = l.split(/\t|: /);
     return { role: (role ?? "").trim(), name: rest.join(" ").trim() };
   }).filter((m) => m.role && m.name);
-}
-
-/** The app's money format: symbol template with ^ where the amount goes. */
-function money(v: number, symbol: string | null, digits: number): string {
-  const amount = (Number(v) || 0).toFixed(Math.max(0, Math.min(4, digits)));
-  const t = symbol && symbol.includes("^") ? symbol : `${symbol ?? ""}^`;
-  return t.replace("^", amount);
 }
