@@ -626,7 +626,9 @@ class KennelListItemState extends State<KennelListItem> {
     String distance = '50';
     switch (distPref) {
       case 0:
-        distance = '0';
+        // Never set — the profile has no zero option — so show the same 50 the
+        // run filter now falls back to, rather than "within 0 mi".
+        distance = '50';
         break;
       case 1:
         distance = '10';

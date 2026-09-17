@@ -1,3 +1,6 @@
+1.0.56+54
+    • PublicWebAdminApi allows logWebError — the public web's own failures now reach HC.ErrorLog instead of a console nobody reads.
+
 1.0.55+53
     • PublicWebAdminApi allows getAllSongs and getReportContext — the member songbook and the emailed run-counts report on the web.
 

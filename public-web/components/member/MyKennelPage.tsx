@@ -17,7 +17,7 @@ import { UserPlus, QrCode } from "lucide-react";
 import type { MyKennel, MyRun } from "@/lib/member-api";
 import { HC_BLUE, HC_RED, money } from "@/components/member/app-look";
 import { splitLinks } from "@/lib/link-text";
-import { RunCard, type Answer, type PrefKind } from "@/components/member/HashRunsView";
+import { RunCard, rsvpChoices, type Answer, type PrefKind } from "@/components/member/HashRunsView";
 import { ChoicePopup, runBellChoices, runEnvelopeChoices } from "@/components/member/ChoicePopup";
 import { KennelMap } from "@/components/member/KennelMap";
 import { QrGroup } from "@/components/member/QrGroup";
@@ -30,6 +30,7 @@ export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nex
   const [runs, setRuns] = useState(nextRuns);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [pref, setPref] = useState<{ kind: PrefKind; run: MyRun } | null>(null);
+  const [rsvpFor, setRsvpFor] = useState<MyRun | null>(null);
   const [showLinks, setShowLinks] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +39,7 @@ export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nex
   const short = kennel.KennelShortName;
 
   async function rsvp(run: MyRun, answer: Answer) {
-    setMenuFor(null); setBusy(run.PublicEventId); setError(null);
+    setMenuFor(null); setRsvpFor(null); setBusy(run.PublicEventId); setError(null);
     try {
       const r = await fetch("/api/member/rsvp", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -139,7 +140,7 @@ export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nex
             {runs.map((r) => (
               <RunCard key={r.PublicEventId} run={r} distance={null} back={here}
                 menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)}
-                onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} busy={busy === r.PublicEventId} />
+                onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} busy={busy === r.PublicEventId} />
             ))}
           </ul>
         </>
@@ -206,6 +207,11 @@ export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nex
       {pref && (
         <ChoicePopup title={pref.run.EventName} choices={pref.kind === "bell" ? runBellChoices : runEnvelopeChoices}
           onPick={(v) => notify(pref.run, pref.kind, v)} onClose={() => setPref(null)} busy={!!busy} />
+      )}
+
+      {rsvpFor && (
+        <ChoicePopup title={rsvpFor.EventName} choices={rsvpChoices}
+          onPick={(a) => rsvp(rsvpFor, a)} onClose={() => setRsvpFor(null)} busy={!!busy} />
       )}
     </div>
   );
