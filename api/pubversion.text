@@ -1,3 +1,6 @@
+1.0.55+53
+    • PublicWebAdminApi allows getAllSongs and getReportContext — the member songbook and the emailed run-counts report on the web.
+
 1.0.54+52
     • PublicWebAdminApi allows issuePasskeyInviteCode — the app's first-install sign-in with a web passkey (E9.F7.S13).
 

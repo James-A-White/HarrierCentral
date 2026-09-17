@@ -1,5 +1,19 @@
 # public-web Changelog
 
+## 0.21.62 (2026-09-17)
+
+- The Songs tab is the whole songbook in one searchable list rather than a
+  section per kennel, and a song opens inside the member area, so there is
+  always a way back. A kennel's own songbook stays on the kennel's pages.
+- The run history overview bar matches the app: a white band with the app's
+  shadow and lettering, and a new line saying how many kennels in how many
+  countries you have hashed with.
+- A run you were not at shows the app's red cross instead of an empty circle.
+- The run history drill-downs gain the app's floating action button: email my
+  run counts for this kennel, or for every kennel.
+- The chat balloon moved to the left of the member bar and matches the glyph
+  the app uses.
+
 ## 0.21.61 (2026-09-17)
 
 - A chat post reads its envelope wherever the app's send SP puts it (the push-recipient rowsets come first) — posting from the web works
