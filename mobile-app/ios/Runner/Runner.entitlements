@@ -11,6 +11,8 @@
 	<array>
 		<string>applinks:www.hashruns.org</string>
 		<string>applinks:hashruns.org</string>
+		<string>webcredentials:hashruns.org</string>
+		<string>webcredentials:www.hashruns.org</string>
 	</array>
 	<key>com.apple.developer.applesignin</key>
 	<array>

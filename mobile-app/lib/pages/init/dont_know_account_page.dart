@@ -60,16 +60,15 @@ class DontKnowAccountPage extends StatelessWidget {
                             "You've received an invite code from your kennel.",
                       ),
                       const SizedBox(height: 32),
-                      Text(
-                        'What to do',
-                        style: ts_headingLarge,
-                      ),
+                      Text('What to do', style: ts_headingLarge),
                       const SizedBox(height: 12),
                       Text(
                         'Ask your kennel mis-management team. They will be able to tell you whether an account already exists for you and, if so, provide you with an invite code to connect to it.',
                         style: ts_body,
                       ),
                       const SizedBox(height: 40),
+                      const PasskeySignInButton(),
+                      const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(

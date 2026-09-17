@@ -39,10 +39,10 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
 
     final List<HasherKennelMatch>? results =
         await FindMyAccountService.findHashersByHashName(
-      searchTerm: searchTerm,
-      lat: lat,
-      lon: lon,
-    );
+          searchTerm: searchTerm,
+          lat: lat,
+          lon: lon,
+        );
 
     if (!mounted) return;
     setState(() => _isSearching = false);
@@ -86,8 +86,10 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
         height: double.infinity,
         child: SafeArea(
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 28.0, vertical: 32.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 28.0,
+              vertical: 32.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -116,8 +118,7 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon:
-                        const Icon(Icons.search, color: Colors.white70),
+                    prefixIcon: const Icon(Icons.search, color: Colors.white70),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -173,6 +174,8 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                 const SizedBox(height: 40),
                 const Divider(color: Colors.white24),
                 const SizedBox(height: 16),
+                const PasskeySignInButton(),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

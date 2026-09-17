@@ -213,6 +213,8 @@ export 'package:harrier_central/pages/init/onboarding_flow_page.dart';
 export 'package:harrier_central/pages/init/new_account.dart';
 export 'package:harrier_central/pages/init/third_party_login.dart';
 export 'package:harrier_central/pages/init/use_invite_code_page.dart';
+export 'package:harrier_central/data/services/passkey_sign_in_service.dart';
+export 'package:harrier_central/widgets/passkey_sign_in_button.dart';
 
 // pages/kennel_admin
 export 'package:harrier_central/pages/kennel_admin/app_access_page.dart';
