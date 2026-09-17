@@ -12,6 +12,8 @@ export interface KennelPageData {
   statsRows?: KennelStatRow[];
   hasherCount?: number;
   isCustomDomain?: boolean;
+  /** Where a reader arrived from, so blocks can offer a way back (e.g. "/me/songs"). */
+  backHref?: string;
 }
 
 const KennelDataContext = createContext<KennelPageData | null>(null);

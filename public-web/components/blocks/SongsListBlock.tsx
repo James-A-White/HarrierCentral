@@ -5,7 +5,7 @@ import { useKennelData } from "@/components/puck/KennelDataContext";
 import { SongsSection } from "@/components/kennel/SongsSection";
 
 export function SongsListBlock() {
-  const { songs, slug } = useKennelData();
+  const { songs, slug, backHref } = useKennelData();
 
   if (!songs) {
     return (
@@ -27,5 +27,5 @@ export function SongsListBlock() {
     );
   }
 
-  return <SongsSection songs={songs} slug={slug} />;
+  return <SongsSection songs={songs} slug={slug} back={backHref} />;
 }
