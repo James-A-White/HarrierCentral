@@ -30,8 +30,8 @@ AS
 --   then refused.
 --
 -- Returns: rowset 0 — one row per room the hasher may enter:
---   roomType, roomName, sortOrder, unreadCount, newestSequenceCount,
---   participationState, pinned
+--   roomType, roomName, roomIcon, sortOrder, unreadCount,
+--   newestSequenceCount, participationState, pinned
 -- Author: Harrier Central
 -- Created: 2026-09-14
 -- HC5 Source: none (new)
@@ -65,6 +65,9 @@ BEGIN TRY
     SELECT
         c.RoomType                                   AS roomType,
         c.RoomName                                   AS roomName,
+        -- The room's coin, a full URL from the catalogue. NULL means no art
+        -- yet, and the client falls back to its own glyph.
+        c.IconUrl                                    AS roomIcon,
         c.SortOrder                                  AS sortOrder,
         -- Messages by OTHER people that this hasher has not reached yet.
         (SELECT COUNT(*)

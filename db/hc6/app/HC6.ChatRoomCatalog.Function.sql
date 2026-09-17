@@ -43,25 +43,42 @@ AS
 --   as a broken feature. Add them here when there is evidence anyone wants
 --   one; it is a one-line change.
 --
+-- IconUrl is the room's coin, a struck challenge-coin medallion whose metal
+--   is the role. It is a FULL URL and not a filename, so a client needs no
+--   knowledge of where the art lives: a new room's row carries its own
+--   picture, and the phone that shipped before the room existed draws it
+--   correctly. Same reasoning as the trail glyphs.
+--   Container: harriercentral / chat-room-icons (public blob read, immutable,
+--   256px PNG with alpha). The coins are already circles with a bright raised
+--   rim, so clients must draw them CONTAINED and must never circle-mask them
+--   — a mask shaves the rim and the coin goes flat at list size.
+--   NULL is allowed and means "no art yet"; clients fall back to their glyph.
+--
 -- Returns: one row per room.
 -- Author: Harrier Central
 -- Created: 2026-09-14
 -- =====================================================================
 RETURN
-    SELECT c.RoomType, c.RoomName, c.GrantColumn, c.GrantMask, c.SortOrder
+    SELECT c.RoomType, c.RoomName, c.GrantColumn, c.GrantMask, c.SortOrder, c.IconUrl
     FROM (VALUES
-        --  Type  Name                       Column   Mask          Sort
-            (1,  N'Harrier Central Admins',  'flags', 0x40000000,   10),
+        --  Type  Name                       Column   Mask          Sort  Icon
+            (1,  N'Harrier Central Admins',  'flags', 0x40000000,   10,
+                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/admins.png'),
             -- GM + VGM together (James, 2026-09-15): 72 GMs and 87 once the
             -- vice GMs are in. A mask may name SEVERAL bits — the test is
             -- `& mask <> 0`, so any one of them grants the room.
-            (2,  N'Grand Masters',           'mm',    0x00000006,   20),
-            (3,  N'Hash Cash',               'mm',    0x00000400,   30),
-            (4,  N'Religious Advisors',      'mm',    0x00000008,   40),
-            (5,  N'Hare Raisers',            'mm',    0x00000200,   50),
+            (2,  N'Grand Masters',           'mm',    0x00000006,   20,
+                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/grand-masters.png'),
+            (3,  N'Hash Cash',               'mm',    0x00000400,   30,
+                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/hash-cash.png'),
+            (4,  N'Religious Advisors',      'mm',    0x00000008,   40,
+                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/religious-advisors.png'),
+            (5,  N'Hare Raisers',            'mm',    0x00000200,   50,
+                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/hare-raisers.png'),
             -- Web Meister (32) + Social Media (8) = 39. NOTE there is also a
             -- separate Communications role (0x00100000, 13 people) which is
             -- NOT included — add 0x00100000 to this mask if it should be.
-            (6,  N'Web & Social Media',      'mm',    0x02001000,   60)
-        ) AS c (RoomType, RoomName, GrantColumn, GrantMask, SortOrder);
+            (6,  N'Web & Social Media',      'mm',    0x02001000,   60,
+                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/web-social.png')
+        ) AS c (RoomType, RoomName, GrantColumn, GrantMask, SortOrder, IconUrl);
 GO

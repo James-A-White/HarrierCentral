@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.65 (2026-09-17)
+
+- Each role chat room now carries its own coin in the chat list — a struck
+  medallion whose metal is the role, gold for the Grand Masters, copper for
+  Hash Cash and so on. The art comes from the room's row on the server, so a
+  room added later arrives with its picture and needs no web release.
+
 ## 0.21.64 (2026-09-17)
 
 - The Songs tab mirrors the app's screen: the white search bar, the four

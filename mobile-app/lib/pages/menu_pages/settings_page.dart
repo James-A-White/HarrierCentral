@@ -287,6 +287,9 @@ class SettingsPage extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 4,
             children: <Widget>[
+              // The room's coin, so this console and the chat list name the
+              // same room the same way.
+              ChatRoomCoin(iconUrl: room.roomIcon, size: 32),
               // Tappable, so a quiet UNPINNED room can still be opened from
               // here — otherwise the only way in would be to pin it first and
               // go looking in the chat list (James, 2026-09-15).

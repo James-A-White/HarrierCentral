@@ -21,12 +21,20 @@ class ChatRoom {
     required this.unreadCount,
     required this.participationState,
     required this.pinned,
+    this.roomIcon,
   });
 
   /// Matches HC.EventMessage.MessageType, so it is permanent once a room has
   /// traffic. The app never interprets it — it only hands it back.
   final int roomType;
   final String roomName;
+
+  /// The room's coin, a full URL from HC6.ChatRoomCatalog(). Null when the
+  /// room has no art yet, which is a normal answer and not a failure — the
+  /// same reasoning as [roomType]: the server owns what a room looks like, so
+  /// a room added after this build shipped still arrives with its picture.
+  final String? roomIcon;
+
   final int unreadCount;
 
   /// 0 participate with push · 1 participate, badges only · 2 opted out.
@@ -44,6 +52,7 @@ class ChatRoom {
   factory ChatRoom.fromJson(Map<String, dynamic> json) => ChatRoom(
     roomType: (json['roomType'] as num?)?.toInt() ?? 0,
     roomName: (json['roomName'] as String?) ?? '',
+    roomIcon: json['roomIcon'] as String?,
     unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
     participationState:
         (json['participationState'] as num?)?.toInt() ?? kRoomParticipatePush,

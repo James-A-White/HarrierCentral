@@ -1,3 +1,10 @@
+## 3.0.43+1384 (2026-09-17)
+### Improvements
+- **Chat rooms**: every role room now has its own coin — a struck medallion
+  whose metal is the role. The art is sent by the server on the room's own
+  row, so a room added later arrives with its picture and needs no app
+  release. A room with no art still shows the old glyph.
+
 ## 3.1.0+1383 (2026-09-17)
 ### Improvements
 - **Run counts**: the overview at the top now says how many kennels in how many

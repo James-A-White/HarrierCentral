@@ -481,6 +481,8 @@ export interface ChatThreadRow {
   EventStartDatetimeGmt: string | null; EventImage: string | null; PublicKennelId: string | null;
   KennelShortName: string | null; KennelLogo: string | null; MessageCount: number; LastMessageAt: string | null;
   Pinned: number; RoomType?: number | null;
+  /** A platform room's coin, from HC6.ChatRoomCatalog(). Null until it has art. */
+  RoomIcon?: string | null;
 }
 
 /** hcapp_get*Messages row (flutter_chat_core shape). */
