@@ -1,5 +1,18 @@
 # public-web Changelog
 
+## 0.21.64 (2026-09-17)
+
+- The Songs tab mirrors the app's screen: the white search bar, the four
+  naughty chips, and the app's cards, fonts and ratings.
+- Answering a run happens on the card. Tapping the state box opens the app's
+  list — "I'll be there!", "I might be there", "I won't make it" — instead of
+  leaving for the run page.
+- "Runs within" follows your own distance preference, 50 km or 50 miles, and
+  no longer defaults to zero and finds nothing.
+- Kennel logos are never cropped or masked anywhere on the site.
+- The site reports its own errors to the same log as the app and the stored
+  procedures, so a web bug is visible in the same sweep.
+
 ## 0.21.63 (2026-09-17)
 
 - Kennel logos are never cropped or masked. The Run Counts list and the run

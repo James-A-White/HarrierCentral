@@ -1,6 +1,6 @@
 {
   "name": "public-web",
-  "version": "0.21.63",
+  "version": "0.21.64",
   "private": true,
   "scripts": {
     "dev": "next dev",
