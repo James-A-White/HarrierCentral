@@ -65,6 +65,14 @@ BEGIN
     RETURN;
 END
 
+-- This device's own identity, read once for the scoped clearing below.
+DECLARE @idfv    NVARCHAR(100);
+DECLARE @isApple SMALLINT;
+SELECT @idfv    = JSON_VALUE(CAST(d.DeviceData AS NVARCHAR(MAX)), '$.identifierForVendor'),
+       @isApple = CASE WHEN d.OperatingSystem IN ('iOS', 'iPadOS') THEN 1 ELSE 0 END
+FROM HC.Device d
+WHERE d.id = @deviceId;
+
 BEGIN TRY
     BEGIN TRANSACTION;
 
@@ -76,6 +84,48 @@ BEGIN TRY
             FcmTokenCreatedAt = CASE WHEN @fcmToken IS NOT NULL THEN SYSUTCDATETIME() ELSE FcmTokenCreatedAt END,
             FcmTokenDeleted   = CASE WHEN @fcmToken IS NOT NULL THEN NULL              ELSE FcmTokenDeleted   END
         WHERE id = @deviceId;
+
+        -- ---------------------------------------------------------------
+        -- Retire the same DEVICE's older rows (2026-09-17). A hasher
+        -- accumulates HC.Device rows because re-authorisation mints a new
+        -- one whenever the stored device id is lost, and every old row kept
+        -- a live token: one hasher was receiving 43 copies of one chat
+        -- message. Clearing is scoped to the same physical device, never to
+        -- the hasher — an admin registering her browser must not silence
+        -- her phone, and two phones must not silence each other (James,
+        -- 2026-09-17).
+        -- ---------------------------------------------------------------
+        IF (@fcmToken IS NOT NULL)
+        BEGIN
+            -- (a) The same token STRING. Firebase mints one per app install
+            -- per device, so an identical string on another row is by
+            -- definition the same install. Deliberately not scoped to the
+            -- hasher: if someone else signed in on this handset before, the
+            -- install is ours now and must not keep receiving theirs.
+            UPDATE HC.Device
+            SET FcmToken        = NULL,
+                FcmTokenDeleted = SYSUTCDATETIME()
+            WHERE FcmToken = @fcmToken
+              AND id      <> @deviceId;
+
+            -- (b) Apple only: identifierForVendor is stable for this app on
+            -- this device, so an older row of the SAME hasher carrying the
+            -- SAME identifier is this very phone under a re-minted device
+            -- id. Android is excluded on purpose — its payload carries only
+            -- the build fingerprint, manufacturer and model, identical
+            -- across two handsets of one model, so matching on it would
+            -- silence a second phone. Browsers carry no such identifier.
+            IF (@idfv IS NOT NULL AND @isApple = 1)
+                UPDATE d
+                SET d.FcmToken        = NULL,
+                    d.FcmTokenDeleted = SYSUTCDATETIME()
+                FROM HC.Device d
+                WHERE d.id      <> @deviceId
+                  AND d.UserId   = @userId
+                  AND d.FcmToken IS NOT NULL
+                  AND d.OperatingSystem IN ('iOS', 'iPadOS')
+                  AND JSON_VALUE(CAST(d.DeviceData AS NVARCHAR(MAX)), '$.identifierForVendor') = @idfv;
+        END
 
     COMMIT TRANSACTION;
 

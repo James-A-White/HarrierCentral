@@ -147,18 +147,33 @@ INNER JOIN HC.Hasher h ON msg.UserId = h.id
 WHERE msg.id = @messageId AND msg.removed = 0 AND h.Removed = 0;
 
 -- ---------------------------------------------------------------
--- Rowset 1: full push recipients. Kennel-level preference only (no event
--- override exists); onBeforeRun(4) has no event window here -> full push.
+-- Push recipients (rewritten 2026-09-17 — see hcapp_sendEventMessage for
+-- the full reasoning). Only a hasher who actually chose a kennel
+-- notification setting is pushed: 0 means never touched and is not
+-- consent, which is the gate nonApi_checkReminders has always used
+-- (`IN (1, 3, 4)`). One push per device, not per device row: DISTINCT on
+-- the token, no retired rows, and nothing to a device that has not signed
+-- in for 180 days (James, 2026-09-17; the next sign-in re-arms it).
+-- A kennel message is not tied to a run, so "on before the run" (4) has no
+-- window to sit inside and is treated as on, as it always was here.
 -- ---------------------------------------------------------------
-SELECT
+DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
+
+SELECT DISTINCT
     hkm.UserId,
-    device.FcmToken
+    device.FcmToken,
+    COALESCE(hkm.KennelNotificationPreference, 0) AS Pref
+INTO #pushAudience
 FROM HC.HasherKennelMap hkm
-INNER JOIN HC.Hasher h      ON hkm.UserId    = h.id
-INNER JOIN HC.Device device ON device.UserId = h.id
+INNER JOIN HC.Hasher h      ON h.id          = hkm.UserId
+INNER JOIN HC.Device device ON device.UserId = hkm.UserId
 WHERE hkm.KennelId = @kennelId
-  AND device.FcmToken IS NOT NULL
-  AND hkm.KennelNotificationPreference IN (0, 1, 4)
+  AND hkm.removed  = 0
+  AND h.Removed    = 0
+  AND device.FcmToken  IS NOT NULL
+  AND device.removed   = 0
+  AND device.LastLogin >= @idleCutoff
+  AND COALESCE(hkm.KennelNotificationPreference, 0) IN (1, 3, 4)
   AND (
       @sendToEveryone       != 0
    OR (@sendToMismanagement != 0 AND hkm.MismanagementRoles != 0)
@@ -166,17 +181,10 @@ WHERE hkm.KennelId = @kennelId
    OR (@sendToFollowers     != 0 AND hkm.Following = 1)
   );
 
--- ---------------------------------------------------------------
--- Rowset 2: silent in-app recipients (followers/members not in rowset 1,
--- not opted out)
--- ---------------------------------------------------------------
-SELECT
-    hkm.UserId,
-    device.FcmToken
-FROM HC.HasherKennelMap hkm
-INNER JOIN HC.Device device ON hkm.UserId = device.UserId
-WHERE hkm.KennelId = @kennelId
-  AND (hkm.Following != 0 OR hkm.MembershipExpirationDate > GETDATE())
-  AND device.FcmToken IS NOT NULL
-  AND hkm.KennelNotificationPreference != 2
-  AND hkm.KennelNotificationPreference NOT IN (0, 1, 4);
+-- Rowset 1: visible push notification recipients
+SELECT DISTINCT UserId, FcmToken FROM #pushAudience WHERE Pref IN (1, 4);
+
+-- Rowset 2: silent (data-only) recipients — "on but muted"
+SELECT DISTINCT UserId, FcmToken FROM #pushAudience WHERE Pref = 3;
+
+DROP TABLE #pushAudience;

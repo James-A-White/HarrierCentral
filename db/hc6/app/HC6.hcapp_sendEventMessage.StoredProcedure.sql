@@ -225,23 +225,45 @@ INNER JOIN HC.Hasher h ON msg.UserId = h.id
 WHERE msg.id = @messageId AND msg.removed = 0 AND h.Removed = 0;
 
 -- ---------------------------------------------------------------
--- Rowset 1: full push notification recipients
+-- Push recipients (rewritten 2026-09-17 — James: "they are going to way
+-- too many people").
+--
+-- WHO. Only a hasher who actually CHOSE a notification setting. The
+-- effective preference is the event override, else the kennel setting.
+-- 0 means "never touched it" and is NOT consent — it is not even a choice
+-- the bell offers. This is the same gate nonApi_checkReminders has always
+-- used (`IN (1, 3, 4)`); chat was the outlier, treating 0 as yes and so
+-- pushing the whole kennel roster for every message.
+--     1 on              -> visible push
+--     4 on before run   -> visible inside the run window, silent outside
+--     3 on but muted    -> silent push, so the badge still moves
+--     0 never set, 2 off-> nothing at all
+--
+-- WHERE. One push per DEVICE, not per device row. A hasher accumulates
+-- device rows (re-authorisation mints a new one whenever the keychain
+-- entry is lost), and every row kept its own live token: one hasher was
+-- getting 43 copies of a single message. So DISTINCT on the token, skip
+-- retired rows, and skip devices that have not signed in for 180 days
+-- (James's cut-off; the next sign-in re-arms them automatically).
 -- ---------------------------------------------------------------
-SELECT
+DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
+
+SELECT DISTINCT
     hkm.UserId,
-    device.FcmToken
+    device.FcmToken,
+    COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) AS Pref
+INTO #pushAudience
 FROM HC.HasherKennelMap hkm
-INNER JOIN HC.Hasher h      ON hkm.UserId  = h.id
-INNER JOIN HC.Event evt     ON evt.id       = @eventId
-INNER JOIN HC.Device device ON device.UserId = h.id
-LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = evt.id AND hem.UserId = h.id
-WHERE evt.id = @eventId
-  AND hkm.KennelId = @kennelId
+INNER JOIN HC.Hasher h      ON h.id          = hkm.UserId
+INNER JOIN HC.Device device ON device.UserId = hkm.UserId
+LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
+WHERE hkm.KennelId = @kennelId
+  AND hkm.removed  = 0
+  AND h.Removed    = 0
   AND device.FcmToken IS NOT NULL
-  AND (
-      COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) IN (0, 1)
-      OR (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) = 4 AND @isWithinWindow = 1)
-  )
+  AND device.removed   = 0
+  AND device.LastLogin >= @idleCutoff
+  AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) IN (1, 3, 4)
   AND (
       @sendToEveryone      != 0
    OR (@sendToMismanagement != 0 AND hkm.MismanagementRoles  != 0)
@@ -252,39 +274,23 @@ WHERE evt.id = @eventId
   );
 
 -- ---------------------------------------------------------------
--- Rowset 2: in-app notification recipients (following but not in rowset 1)
+-- Rowset 1: visible push notification recipients
 -- ---------------------------------------------------------------
-SELECT
-    hkm.UserId,
-    device.FcmToken
-FROM HC.HasherKennelMap hkm
-INNER JOIN HC.Device device ON hkm.UserId = device.UserId
-LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
-WHERE hkm.KennelId = @kennelId
-  AND (hkm.Following != 0 OR hkm.MembershipExpirationDate > GETDATE())
-  AND device.FcmToken IS NOT NULL
-  AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) != 2
-  AND hkm.UserId NOT IN (
-      SELECT hkm2.UserId
-      FROM HC.HasherKennelMap hkm2
-      INNER JOIN HC.Hasher h2      ON hkm2.UserId   = h2.id
-      INNER JOIN HC.Event evt2     ON evt2.id         = @eventId
-      INNER JOIN HC.Device dev2    ON dev2.UserId     = h2.id
-      LEFT OUTER JOIN HC.HasherEventMap hem2 ON hem2.EventId = evt2.id AND hem2.UserId = h2.id
-      WHERE evt2.id = @eventId AND hkm2.KennelId = @kennelId AND dev2.FcmToken IS NOT NULL
-        AND (
-            COALESCE(NULLIF(hem2.EventNotificationPreference, 0), hkm2.KennelNotificationPreference) IN (0, 1)
-            OR (COALESCE(NULLIF(hem2.EventNotificationPreference, 0), hkm2.KennelNotificationPreference) = 4 AND @isWithinWindow = 1)
-        )
-        AND (
-            @sendToEveryone      != 0
-         OR (@sendToMismanagement != 0 AND hkm2.MismanagementRoles != 0)
-         OR (@sendToMembers       != 0 AND hkm2.MembershipExpirationDate > GETDATE())
-         OR (@sendToFollowers     != 0 AND hkm2.Following = 1)
-         OR (@sendToRsvps         != 0 AND hem2.RsvpState >= 2)
-         OR (@sendToHares         != 0 AND hem2.IsHare    != 0)
-        )
-  );
+SELECT DISTINCT UserId, FcmToken
+FROM #pushAudience
+WHERE Pref = 1
+   OR (Pref = 4 AND @isWithinWindow = 1);
+
+-- ---------------------------------------------------------------
+-- Rowset 2: silent (data-only) recipients — badge moves, nothing buzzes.
+-- "On but muted", and "on before the run" while the run is still far off.
+-- ---------------------------------------------------------------
+SELECT DISTINCT UserId, FcmToken
+FROM #pushAudience
+WHERE Pref = 3
+   OR (Pref = 4 AND @isWithinWindow = 0);
+
+DROP TABLE #pushAudience;
 
 END TRY
 BEGIN CATCH
