@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutList, Users, Map as MapIcon, History, Music, MessageCircle } from "lucide-react";
+import { LayoutList, Users, Map as MapIcon, History, Music, MessageSquare } from "lucide-react";
 
 const TABS = [
   { label: "Runs",    title: "Hash Runs", href: "/me/runs",    icon: LayoutList },
@@ -46,13 +46,18 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
           the body's overflow-x: hidden makes sticky slide away on desktop. */}
       <div className="fixed inset-x-0 top-0 z-50 text-white" style={{ backgroundColor: "#580438" }}>
         <div className="relative mx-auto flex h-12 max-w-[90rem] items-center justify-center px-3">
-          <Link href="/" className="absolute left-3 text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white">hashruns.org</Link>
-          <h1 className="text-lg font-semibold">{title}</h1>
-          <div className="absolute right-3 flex items-center gap-3 text-xs text-white/80">
+          {/* The app puts the chat balloon on the LEFT of the bar, beside the
+              menu, and draws it as Icons.chat_bubble_outline — a squared
+              balloon, not a circle (James, 2026-09-17). */}
+          <div className="absolute left-3 flex items-center gap-3">
+            <Link href="/" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white">hashruns.org</Link>
             <Link href="/me/chat" aria-label={unread ? `Chats, ${unread} unread` : "Chats"} className="relative text-white">
-              <MessageCircle className="h-6 w-6" />
+              <MessageSquare className="h-6 w-6" />
               {unread > 0 && <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white">{unread}</span>}
             </Link>
+          </div>
+          <h1 className="text-lg font-semibold">{title}</h1>
+          <div className="absolute right-3 flex items-center gap-3 text-xs text-white/80">
             <span className="hidden max-w-[12rem] truncate text-2xl font-semibold text-white sm:inline">{hashName}</span>
             <button type="button" onClick={signOut} className="underline underline-offset-2 hover:text-white">Sign out</button>
           </div>
