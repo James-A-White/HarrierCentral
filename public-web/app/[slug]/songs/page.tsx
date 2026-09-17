@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getKennelLandingData, getSongs, getPageLayout } from "@/lib/api";
 import { toKennelContext } from "@/lib/kennel-utils";
@@ -9,6 +11,12 @@ import { getIsCustomDomain } from "@/lib/server-utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ back?: string }>;
+}
+
+/** Only ever follow an in-site path back, never an absolute URL. */
+function safeBack(back: string | undefined): string | null {
+  return back && back.startsWith("/") && !back.startsWith("//") ? back : null;
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -28,8 +36,9 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 
-export default async function SongsPage({ params }: PageProps) {
-  const { slug } = await params;
+export default async function SongsPage({ params, searchParams }: PageProps) {
+  const [{ slug }, sp] = await Promise.all([params, searchParams]);
+  const back = safeBack(sp.back);
   const kennelData = await getKennelLandingData(slug);
   if (!kennelData) notFound();
 
@@ -65,9 +74,21 @@ export default async function SongsPage({ params }: PageProps) {
         <KennelBackground kennel={kennel} />
         <StickyNav kennel={kennel} slug={slug} alwaysVisible navItems={navItems} />
         <div className="pt-20 pb-24">
+          {back && (
+            <div className="mx-auto w-full max-w-3xl px-4 pb-4 md:px-6">
+              <Link
+                href={back}
+                className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
+                style={{ color: "var(--kennel-text-body)" }}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {back === "/me/songs" ? "Back to my songs" : "Back"}
+              </Link>
+            </div>
+          )}
           <PuckRenderer
             data={pageLayout}
-            pageData={{ kennelData, slug, futureRuns: [], pastRuns: [], songs, isCustomDomain }}
+            pageData={{ kennelData, slug, futureRuns: [], pastRuns: [], songs, isCustomDomain, backHref: back ?? undefined }}
           />
         </div>
       </body>

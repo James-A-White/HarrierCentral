@@ -55,6 +55,7 @@ namespace HcWebApi.Endpoints
             "sendChatMessage",
             "markChatRead",
             "issuePasskeyInviteCode",
+            "getAllSongs",
         };
 
         private readonly ILogger<PublicWebAdminApi> _log;
@@ -93,6 +94,7 @@ namespace HcWebApi.Endpoints
             "sendChatMessage",
             "markChatRead",
             "issuePasskeyInviteCode",
+            "getAllSongs",
         };
 
         [Function("PublicWebAdminApi")]

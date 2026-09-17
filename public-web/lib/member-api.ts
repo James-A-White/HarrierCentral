@@ -11,6 +11,7 @@
  * Server only.
  */
 import { GUID_EMPTY, hcToken, type MemberSession } from "@/lib/member-session";
+import type { Song } from "@/lib/api";
 
 const API_BASE = process.env.HC_API_URL ?? "http://localhost:7071";
 const WEB_VERSION = "<web>";
@@ -528,4 +529,18 @@ export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: stri
 
 export async function markChatRead(s: MemberSession, kind: "run" | "kennel", id: string): Promise<void> {
   await callAdminApi("markChatRead", { deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_READ_PROC[kind]), kind, ...chatIds(kind, id) }).catch(() => undefined);
+}
+
+/**
+ * The app's Songs tab: the whole catalogue, ungrouped (a kennel's own
+ * songbook belongs on that kennel's pages). Pass a songId for just one.
+ */
+export async function getAllSongs(s: MemberSession, songId?: string): Promise<Song[]> {
+  const rowsets = await callAdminApi("getAllSongs", {
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "publicWeb_getAllSongs"),
+    songId: songId ?? null,
+  });
+  if (envelopeOf(rowsets).success !== 1) return [];
+  return (rowsets[1] ?? []) as unknown as Song[];
 }

@@ -10,6 +10,12 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface PageProps {
   params: Promise<{ slug: string; songId: string }>;
+  searchParams: Promise<{ back?: string }>;
+}
+
+/** Only ever follow an in-site path back, never an absolute URL. */
+function safeBack(back: string | undefined): string | null {
+  return back && back.startsWith("/") && !back.startsWith("//") ? back : null;
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -52,8 +58,11 @@ function BawdyBadge({ rating }: { rating: number | null }) {
   );
 }
 
-export default async function SongDetailPage({ params }: PageProps) {
-  const { slug, songId } = await params;
+export default async function SongDetailPage({ params, searchParams }: PageProps) {
+  const [{ slug, songId }, sp] = await Promise.all([params, searchParams]);
+  // Reached from the member songbook, a kennel's songbook, or a bare link:
+  // go back where the reader actually came from, not always to this kennel.
+  const back = safeBack(sp.back);
 
   const kennelData = await getKennelLandingData(slug);
   if (!kennelData) notFound();
@@ -86,12 +95,12 @@ export default async function SongDetailPage({ params }: PageProps) {
         {/* Back link */}
         <div className="pt-20 pb-4 mx-auto w-full max-w-3xl px-4 md:px-6">
           <Link
-            href={`/${slug}/songs`}
+            href={back ?? `/${slug}/songs`}
             className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
             style={{ color: "var(--kennel-text-body)" }}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to songs
+            {back === "/me/songs" ? "Back to my songs" : "Back to songs"}
           </Link>
         </div>
 

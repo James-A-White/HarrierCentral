@@ -7,6 +7,10 @@ import Link from "next/link";
 import type { Song } from "@/lib/api";
 
 interface SongsSectionProps {
+  /** Where the reader came from; carried onto each song so it can offer a way back. */
+  back?: string;
+  /** Route each song sits under. Defaults to the kennel's own songbook. */
+  linkBase?: string;
   songs: Song[];
   slug: string;
 }
@@ -30,7 +34,7 @@ function BawdyRating({ rating }: { rating: number | null }) {
   );
 }
 
-function SongRow({ song, slug, index }: { song: Song; slug: string; index: number }) {
+function SongRow({ song, slug, index, back, linkBase }: { song: Song; slug: string; index: number; back?: string; linkBase?: string }) {
   return (
     <motion.div
       className="border-b dark:border-white/[0.07] border-zinc-100 last:border-0"
@@ -44,7 +48,7 @@ function SongRow({ song, slug, index }: { song: Song; slug: string; index: numbe
       }}
     >
       <Link
-        href={`/${slug}/songs/${song.id}`}
+        href={`${linkBase ?? `/${slug}/songs`}/${song.id}${back ? `?back=${encodeURIComponent(back)}` : ""}`}
         className="flex items-center gap-4 py-4 group"
       >
         <div className="flex-1 min-w-0">
@@ -85,7 +89,7 @@ function SongRow({ song, slug, index }: { song: Song; slug: string; index: numbe
   );
 }
 
-export function SongsSection({ songs, slug }: SongsSectionProps) {
+export function SongsSection({ songs, slug, back, linkBase }: SongsSectionProps) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -145,7 +149,7 @@ export function SongsSection({ songs, slug }: SongsSectionProps) {
             </p>
           ) : (
             filtered.map((song, i) => (
-              <SongRow key={song.id} song={song} slug={slug} index={i} />
+              <SongRow key={song.id} song={song} slug={slug} index={i} back={back} linkBase={linkBase} />
             ))
           )}
         </div>
