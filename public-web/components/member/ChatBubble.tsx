@@ -8,6 +8,7 @@ import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import type { ChatKind, ChatThreadRow } from "@/lib/member-api";
 import { HC_RED } from "@/components/member/app-look";
+import { chatHref } from "@/lib/chat-links";
 
 export type ThreadIndex = Map<string, ChatThreadRow>;
 
@@ -21,9 +22,6 @@ export function indexThreads(threads: ChatThreadRow[]): ThreadIndex {
   return m;
 }
 
-export function chatHref(kind: ChatKind, id: string, title: string, back: string): string {
-  return `/me/chat/${kind}/${encodeURIComponent(id.toLowerCase())}?title=${encodeURIComponent(title)}&back=${encodeURIComponent(back)}`;
-}
 
 export function ChatBubble({ kind, id, title, back, threads, className = "h-8 w-8" }: {
   kind: ChatKind; id: string; title: string; back: string; threads: ThreadIndex | null; className?: string;

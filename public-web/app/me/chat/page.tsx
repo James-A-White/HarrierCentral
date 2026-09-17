@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getChatThreads } from "@/lib/member-api";
 import { requireMember } from "@/lib/member-server";
-import { chatHref } from "@/components/member/ChatBubble";
+import { chatHref } from "@/lib/chat-links";
 import { HC_RED } from "@/components/member/app-look";
 
 export const metadata: Metadata = { title: "Chats" };
