@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.57 (2026-09-17)
+
+- The Runs tab's search, count and filter bars stay pinned under the title bar while the list scrolls, as in the app
+- Member pages set in Avenir Next where the device has it, Nunito Sans otherwise; the condensed face (Run Counts, history rows) in Avenir Next Condensed or Roboto Condensed
+
+
 ## 0.21.56 (2026-09-16)
 
 - The Runs tab rebuilt to the app's screen: search, "Showing N future runs,
