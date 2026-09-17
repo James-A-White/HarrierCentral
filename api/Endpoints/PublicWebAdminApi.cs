@@ -49,6 +49,11 @@ namespace HcWebApi.Endpoints
             "setNotificationPrefs",
             "getLeaderboard",
             "getKennelArt",
+            // Chat on the web (E9.F7.S15, 2026-09-17).
+            "getChatThreads",
+            "getChatMessages",
+            "sendChatMessage",
+            "markChatRead",
         };
 
         private readonly ILogger<PublicWebAdminApi> _log;
@@ -82,6 +87,10 @@ namespace HcWebApi.Endpoints
             "setNotificationPrefs",
             "getLeaderboard",
             "getKennelArt",
+            "getChatThreads",
+            "getChatMessages",
+            "sendChatMessage",
+            "markChatRead",
         };
 
         [Function("PublicWebAdminApi")]

@@ -16,8 +16,10 @@ import { useRouter } from "next/navigation";
 import type { MyRun } from "@/lib/member-api";
 import { HC_BLUE, HC_RED, appDate, bellIcon, envelopeIcon, formatDistance, haversine, isMetric } from "@/components/member/app-look";
 import { ChoicePopup, runBellChoices, runEnvelopeChoices } from "@/components/member/ChoicePopup";
+import { ChatBubble, indexThreads, type ThreadIndex } from "@/components/member/ChatBubble";
+import type { ChatThreadRow } from "@/lib/member-api";
 import { relativeTime } from "@/lib/member-format";
-import { Search, X, PartyPopper, MapPinned, CalendarSearch, MessageCircle, MoreVertical, Map as MapIcon, Images, MessagesSquare, Beer, Info, Settings } from "lucide-react";
+import { Search, X, PartyPopper, MapPinned, CalendarSearch, MoreVertical, Map as MapIcon, Images, MessagesSquare, Beer, Info, Settings } from "lucide-react";
 
 const RSVP_YES = 3, RSVP_MAYBE = 2, RSVP_NO = 1, AT_HASH = 20, ON_IN = 30;
 /** themeButtonColors: the app's section banner colour. */
@@ -84,6 +86,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   const [showRadius, setShowRadius] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [pref, setPref] = useState<{ kind: PrefKind; run: MyRun } | null>(null);
+  const [threads, setThreads] = useState<ThreadIndex | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const dividerRef = useRef<HTMLLIElement>(null);
@@ -192,6 +195,14 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
 
   const noun = filterEvents ? "Events" : "Runs";
   const barTitle = `${filterMy ? "My" : "All"} ${noun}`;
+  // The three-state chat bubbles: the app's badge list, fetched once.
+  useEffect(() => {
+    fetch("/api/member/chat?threads=1", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { threads?: ChatThreadRow[] } | null) => { if (j?.threads) setThreads(indexThreads(j.threads)); })
+      .catch(() => undefined);
+  }, []);
+
   // The bell and the envelope (E9.F7.S14): the app's own preference SP.
   async function notify(run: MyRun, kind: PrefKind, value: number) {
     setPref(null); setBusy(run.PublicEventId); setError(null);
@@ -248,7 +259,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
             Loading older runs… ({past.length - pastShown} more)
           </li>
         )}
-        {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} busy={busy === r.PublicEventId} />)}
+        {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} threads={threads} busy={busy === r.PublicEventId} />)}
 
         {past.length > 0 && (
           <li ref={dividerRef} className="scroll-mt-[186px]">
@@ -295,7 +306,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
                 </p>
               )}
               <ul className="space-y-2">
-                {rows.map((r) => <RunCard key={r.PublicEventId} run={r} distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} busy={busy === r.PublicEventId} />)}
+                {rows.map((r) => <RunCard key={r.PublicEventId} run={r} distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} threads={threads} busy={busy === r.PublicEventId} />)}
               </ul>
             </li>
           );
@@ -330,9 +341,9 @@ function Banner({ children, left, right }: { children: React.ReactNode; left?: R
   );
 }
 
-export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref, busy, back = "/me/runs" }: {
+export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref, busy, back = "/me/runs", threads = null }: {
   run: MyRun; past?: boolean; distance: number | null; menuOpen: boolean; onMenu: () => void; onRsvp: (r: MyRun, a: Answer) => void;
-  onPref?: (r: MyRun, kind: PrefKind) => void; busy: boolean; back?: string;
+  onPref?: (r: MyRun, kind: PrefKind) => void; busy: boolean; back?: string; threads?: ThreadIndex | null;
 }) {
   const href = `/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent(back)}`;
   const when = run.EventStartDatetimeGmt ?? run.EventStartDatetime;
@@ -389,7 +400,7 @@ export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref,
           )}
         </div>
         <div className="flex shrink-0 flex-col items-center gap-3 pt-4 text-zinc-500">
-          <Link href={href} aria-label="Run chat (in the app)" title="Trail chat is in the Harrier Central app"><MessageCircle className="h-8 w-8" /></Link>
+          <ChatBubble kind="run" id={run.PublicEventId} title={run.EventName} back={back} threads={threads} />
           <button type="button" aria-label="More" onClick={onMenu} disabled={busy}><MoreVertical className="h-8 w-8" /></button>
         </div>
       </div>

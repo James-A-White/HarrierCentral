@@ -467,3 +467,60 @@ export async function searchKennels(q: string): Promise<KennelSearchRow[]> {
   const rowsets = (await res.json()) as Rowsets;
   return (rowsets?.[0] ?? []) as unknown as KennelSearchRow[];
 }
+
+// ── Chat (E9.F7.S15) — the app's own message SPs behind publicWeb_ wrappers ──
+
+export type ChatKind = "run" | "kennel" | "room";
+
+/** hcapp_getEventBadgeCount list mode — one row per run, kennel or room thread. */
+export interface ChatThreadRow {
+  BadgeCount: number; PublicEventId: string | null; EventName: string | null; EventNumber: number | null;
+  EventStartDatetimeGmt: string | null; EventImage: string | null; PublicKennelId: string | null;
+  KennelShortName: string | null; KennelLogo: string | null; MessageCount: number; LastMessageAt: string | null;
+  Pinned: number; RoomType?: number | null;
+}
+
+/** hcapp_get*Messages row (flutter_chat_core shape). */
+export interface ChatMessageRow {
+  id: string; type: string; text: string; roomId: string | null; createdAt: number;
+  authorId: string; authorFirstName: string; authorImageUrl: string | null; sequenceCount: number;
+}
+
+const CHAT_GET_PROC: Record<ChatKind, string> = { run: "hcapp_getEventMessages", kennel: "hcapp_getKennelMessages", room: "hcapp_getRoomMessages" };
+const CHAT_SEND_PROC: Record<ChatKind, string> = { run: "hcapp_sendEventMessage", kennel: "hcapp_sendKennelMessage", room: "hcapp_sendRoomMessage" };
+const CHAT_READ_PROC: Record<ChatKind, string> = { run: "hcapp_markEventChatRead", kennel: "hcapp_markKennelChatRead", room: "hcapp_getRoomMessages" };
+
+function chatIds(kind: ChatKind, id: string) {
+  return { publicEventId: kind === "run" ? id : null, publicKennelId: kind === "kennel" ? id : null, roomType: kind === "room" ? id : null };
+}
+
+export async function getChatThreads(s: MemberSession): Promise<{ me: string; threads: ChatThreadRow[] }> {
+  const rowsets = await callAdminApi("getChatThreads", { deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_getEventBadgeCount") });
+  const env = (rowsets[0]?.[0] ?? {}) as { success?: number; Me?: string };
+  if (env.success !== 1) return { me: "", threads: [] };
+  // The badge SP returns its thread rows as the next rowset that carries BadgeCount.
+  const rows = (rowsets.slice(1).find((r) => r.length > 0 && "BadgeCount" in (r[0] as object)) ?? []) as unknown as ChatThreadRow[];
+  return { me: (env.Me ?? "").toUpperCase(), threads: rows.filter((t) => t.PublicEventId || t.PublicKennelId || t.RoomType != null) };
+}
+
+export async function getChatMessages(s: MemberSession, kind: ChatKind, id: string, since?: number, markRead?: boolean): Promise<{ me: string; messages: ChatMessageRow[] } | null> {
+  const rowsets = await callAdminApi("getChatMessages", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_GET_PROC[kind]), kind, ...chatIds(kind, id),
+    sinceSequenceCount: since == null ? null : String(since), markRead: markRead ? "1" : "0",
+  });
+  const env = (rowsets[0]?.[0] ?? {}) as { success?: number; Me?: string };
+  if (env.success !== 1) return null;
+  const rows = (rowsets.slice(1).find((r) => r.length > 0 && "sequenceCount" in (r[0] as object)) ?? []) as unknown as ChatMessageRow[];
+  return { me: (env.Me ?? "").toUpperCase(), messages: rows };
+}
+
+export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: string, messageId: string, text: string): Promise<{ ok: boolean; message?: string }> {
+  const rowsets = await callAdminApi("sendChatMessage", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_SEND_PROC[kind]), kind, ...chatIds(kind, id), messageId, messageContent: text,
+  });
+  return envelopeOf(rowsets).success === 1 ? { ok: true } : { ok: false, message: userMessageOf(rowsets) };
+}
+
+export async function markChatRead(s: MemberSession, kind: "run" | "kennel", id: string): Promise<void> {
+  await callAdminApi("markChatRead", { deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_READ_PROC[kind]), kind, ...chatIds(kind, id) }).catch(() => undefined);
+}
