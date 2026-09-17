@@ -5,7 +5,7 @@
  * red solid with the count, read = grey solid, none = grey outline.
  */
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import type { ChatKind, ChatThreadRow } from "@/lib/member-api";
 import { HC_RED } from "@/components/member/app-look";
 import { chatHref } from "@/lib/chat-links";
@@ -31,7 +31,7 @@ export function ChatBubble({ kind, id, title, back, threads, className = "h-8 w-
   const any = (t?.MessageCount ?? 0) > 0;
   return (
     <Link href={chatHref(kind, id, title, back)} aria-label={unread ? `${unread} unread chat messages` : "Chat"} className="relative shrink-0 text-zinc-500">
-      <MessageCircle className={className} fill={unread ? HC_RED : any ? "#a1a1aa" : "none"} stroke={unread ? HC_RED : "#a1a1aa"} />
+      <MessageSquare className={className} fill={unread ? HC_RED : any ? "#a1a1aa" : "none"} stroke={unread ? HC_RED : "#a1a1aa"} />
       {unread > 0 && (
         <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[11px] font-bold text-white ring-2 ring-white" style={{ backgroundColor: HC_RED }}>{unread}</span>
       )}
