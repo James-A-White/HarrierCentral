@@ -1,4 +1,4 @@
-## 3.0.43+1383 (2026-09-17)
+## 3.0.43+1384 (2026-09-17)
 ### Improvements
 - **Chat rooms**: every role room now has its own coin — a struck medallion
   whose metal is the role. The art is sent by the server on the room's own
