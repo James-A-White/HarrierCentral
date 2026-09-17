@@ -1,169 +1,273 @@
 "use client";
 
 /**
- * The app's Kennels tab on the web (E9.F7.S9): the kennels I follow,
- * belong to, or have run with, with my counts there; a search of the
- * directory (names, places and the *SearchTags); follow / unfollow.
+ * The app's Kennels tab (kennel_list_page.dart + kennel_list_item.dart),
+ * screen for screen: the white search bar, every eligible kennel as a
+ * white card — the follow checkbox, the red home icon, the name in the
+ * condensed face, the envelope and the bell in the header; the logo, the
+ * location, "N km from here", "Runs: N, Times hared: M", "Last run" and
+ * the credit line in the body, the chat bubble on the right — and the red
+ * speed dial for the app's five sorts. Search is the app's: comma = and,
+ * plus = or, "not " negates, each term matched at a word start.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import type { KennelSearchRow, MyKennel } from "@/lib/member-api";
-import { relativeTime } from "@/lib/member-format";
-import { HC_BLUE, HC_RED, appDate, card, mutedText, titleText } from "@/components/member/app-look";
+import { Search, X, Menu, Heart, ArrowDownWideNarrow, ArrowDownAZ, Building2, Globe, MessageCircle } from "lucide-react";
+import type { MyKennel } from "@/lib/member-api";
+import { HC_BLUE, HC_GREEN, HC_RED, bellIcon, envelopeIcon, formatDistance, haversine, isMetric, money } from "@/components/member/app-look";
+import { ChoicePopup, followChoices, kennelBellChoices, kennelEnvelopeChoices } from "@/components/member/ChoicePopup";
+
+type SortBy = "following" | "distance" | "name" | "city" | "country";
+type Popup = { kind: "follow" | "bell" | "envelope"; k: MyKennel } | null;
+type Me = { lat: number; lon: number } | null;
+
+/** QueryKennels.doFilter — the app's search grammar over SearchText. */
+export function filterKennels(query: string, list: MyKennel[]): MyKennel[] {
+  const terms = query.trim().toLowerCase().split(",").map((t) => t.trim()).filter(Boolean);
+  let out = list;
+  for (let term of terms) {
+    let negate = false;
+    if (term.startsWith("not ")) { negate = true; term = term.slice(4); }
+    const ors = term.split("+").map((o) => o.trim()).filter(Boolean);
+    if (ors.length === 0) continue;
+    out = out.filter((k) => {
+      const text = k.SearchText ?? "";
+      const plain = text.normalize("NFD").replace(/[̀-ͯ]/g, "");
+      for (const o of ors) {
+        const needle = ` ${o}`;
+        if (text.includes(needle) || plain.includes(needle)) return !negate;
+      }
+      return negate;
+    });
+  }
+  return out;
+}
 
 export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
   const [kennels, setKennels] = useState<MyKennel[]>(initialKennels);
-  const [q, setQ] = useState("");
-  const [results, setResults] = useState<KennelSearchRow[] | null>(null);
-  const [searching, setSearching] = useState(false);
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortBy>("following");
+  const [me, setMe] = useState<Me>(null);
+  const [dialOpen, setDialOpen] = useState(false);
+  const [popup, setPopup] = useState<Popup>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // The app has the phone's location; the browser asks once. Without it
+  // there is no distance line and no "Sort by distance", as in the app.
   useEffect(() => {
-    if (q.trim().length < 2) { setResults(null); return; }
-    const h = window.setTimeout(async () => {
-      setSearching(true);
-      try {
-        const r = await fetch(`/api/member/kennel-search?q=${encodeURIComponent(q.trim())}`);
-        const j = (await r.json()) as { kennels: KennelSearchRow[] };
-        setResults(j.kennels ?? []);
-      } finally { setSearching(false); }
-    }, 300);
-    return () => window.clearTimeout(h);
-  }, [q]);
+    if (!("geolocation" in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      (p) => setMe({ lat: p.coords.latitude, lon: p.coords.longitude }),
+      () => setMe(null),
+      { maximumAge: 300000, timeout: 8000 },
+    );
+  }, []);
 
-  const mine = new Map(kennels.map((k) => [k.PublicKennelId.toLowerCase(), k]));
+  const distanceOf = (k: MyKennel): number | null =>
+    me && k.CityLat != null && k.CityLon != null ? haversine(me.lat, me.lon, Number(k.CityLat), Number(k.CityLon)) : null;
 
-  async function setFollowing(publicKennelId: string, following: boolean, fromSearch?: KennelSearchRow) {
-    setBusy(publicKennelId); setError(null);
+  const visible = useMemo(() => {
+    const list = filterKennels(query, kennels);
+    const dist = (k: MyKennel) => distanceOf(k) ?? 0;
+    const name = (k: MyKennel) => k.KennelName.trim().toLowerCase();
+    const sorted = [...list];
+    // Every sort keeps the home kennel first, as the app.
+    const home = (a: MyKennel, b: MyKennel) => (a.IsHomeKennel === 1 ? -1 : b.IsHomeKennel === 1 ? 1 : 0);
+    switch (sortBy) {
+      case "distance": sorted.sort((a, b) => home(a, b) || dist(a) - dist(b)); break;
+      case "name": sorted.sort((a, b) => home(a, b) || name(a).localeCompare(name(b))); break;
+      case "city": sorted.sort((a, b) => home(a, b) || (a.City ?? "").localeCompare(b.City ?? "")); break;
+      case "country": sorted.sort((a, b) => home(a, b) || (a.Country ?? "").localeCompare(b.Country ?? "") || (a.Region ?? "").localeCompare(b.Region ?? "") || (a.City ?? "").localeCompare(b.City ?? "")); break;
+      default: {
+        // following: home, then always (1) · auto (0) · never (2), then distance or name
+        const rank = (k: MyKennel) => (k.Following === 1 ? 0 : k.Following === 2 ? 2 : 1);
+        sorted.sort((a, b) => home(a, b) || rank(a) - rank(b) || (me ? dist(a) - dist(b) : name(a).localeCompare(name(b))));
+      }
+    }
+    return sorted;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kennels, query, sortBy, me]);
+
+  function patch(id: string, fn: (k: MyKennel) => MyKennel) {
+    setKennels((ks) => ks.map((k) => (k.PublicKennelId === id ? fn(k) : k)));
+  }
+
+  async function post(url: string, body: object): Promise<boolean> {
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+    if (!r.ok || !j.ok) { setError(j.error ?? "Couldn't update."); return false; }
+    return true;
+  }
+
+  async function follow(k: MyKennel, v: { following?: 0 | 1 | 2; isHomeKennel?: 0 | 1 }) {
+    setPopup(null); setBusy(k.PublicKennelId); setError(null);
     try {
-      const r = await fetch("/api/member/follow", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publicKennelId: publicKennelId.toLowerCase(), following }),
-      });
-      const j = (await r.json()) as { ok?: boolean; error?: string };
-      if (!r.ok || !j.ok) { setError(j.error ?? "Couldn't update."); return; }
-      setKennels((ks) => {
-        const existing = ks.find((k) => k.PublicKennelId.toLowerCase() === publicKennelId.toLowerCase());
-        if (existing) return ks.map((k) => k === existing ? { ...k, Following: following ? 1 : 0 } : k);
-        if (!following || !fromSearch) return ks;
-        return [...ks, {
-          PublicKennelId: fromSearch.PublicKennelId, KennelSlug: fromSearch.KennelSlug, KennelShortName: fromSearch.KennelShortName,
-          KennelName: fromSearch.KennelName, KennelLogo: fromSearch.KennelLogo, KennelStatus: fromSearch.KennelStatus,
-          City: fromSearch.City, Region: fromSearch.Region, Country: fromSearch.Country, KennelWebsiteDomain: null,
-          Following: 1, IsHomeKennel: 0, IsMember: 0, MembershipExpirationDate: null, MemberSince: null, DateOfLastRun: null,
-          Runs: 0, Haring: 0, IsEstimate: 0, KennelDescription: null, KennelWebsiteUrl: null, KennelMismanagementTeam: null,
-          MessagingGroupInviteUrl: null, DefaultMessagingPlatform: 1, AllowSelfPayment: 0, KennelCredit: 0, CurrencySymbol: null, DigitsAfterDecimal: 2,
-          NextRunGmt: null, NextRunLocal: null, NextRunNumber: null, NextRunName: null, NextRunPublicEventId: null,
-        }];
-      });
+      if (!(await post("/api/member/follow", { publicKennelId: k.PublicKennelId.toLowerCase(), ...v }))) return;
+      if (v.isHomeKennel === 1) {
+        // Setting a home kennel implies following it and clears any other.
+        setKennels((ks) => ks.map((x) => x.PublicKennelId === k.PublicKennelId ? { ...x, IsHomeKennel: 1, Following: 1, HasHkm: 1 } : { ...x, IsHomeKennel: 0 }));
+      } else if (v.isHomeKennel === 0) {
+        patch(k.PublicKennelId, (x) => ({ ...x, IsHomeKennel: 0 }));
+      } else {
+        patch(k.PublicKennelId, (x) => ({ ...x, Following: v.following ?? x.Following, HasHkm: 1 }));
+      }
     } finally { setBusy(null); }
   }
 
-  const following = kennels.filter((k) => k.Following === 1 || k.IsHomeKennel === 1);
-  const ranWith = kennels.filter((k) => !(k.Following === 1 || k.IsHomeKennel === 1));
+  async function notify(k: MyKennel, field: "notification" | "email", value: number) {
+    setPopup(null); setBusy(k.PublicKennelId); setError(null);
+    try {
+      if (!(await post("/api/member/notify", { publicKennelId: k.PublicKennelId.toLowerCase(), [field]: value }))) return;
+      patch(k.PublicKennelId, (x) => field === "notification" ? { ...x, KennelNotificationPref: value, HasHkm: 1 } : { ...x, KennelEmailAlertPref: value, HasHkm: 1 });
+    } finally { setBusy(null); }
+  }
+
+  const radiusText = (() => {
+    const km = Number(typeof window !== "undefined" ? localStorage.getItem("hc_radius_km") : null) || 50;
+    const metric = isMetric(visible[0]?.DistanceUnitsPref ?? 0);
+    return formatDistance(km * 1000, metric);
+  })();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <input
-          className="mt-3 w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-base text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-700"
-          placeholder="Find a kennel — name, city, country, “Scotland”…"
-          value={q} onChange={(e) => setQ(e.target.value)}
-        />
+    <div className="-mx-3 -mt-3 sm:-mt-4">
+      {/* The app's search bar, pinned under the title bar */}
+      <div className="fixed inset-x-0 top-12 z-40 bg-white shadow">
+        <div className="mx-auto flex h-12 max-w-3xl items-center gap-3 px-3">
+          <Search className="h-6 w-6 shrink-0 text-black" />
+          <input
+            value={query} onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search..." aria-label="Search kennels"
+            className="min-w-0 flex-1 bg-transparent text-[18px] text-zinc-900 placeholder:text-zinc-500 focus:outline-none"
+          />
+          {query ? (
+            <button type="button" onClick={() => setQuery("")} aria-label="Clear search"><X className="h-6 w-6 text-zinc-700" /></button>
+          ) : (
+            <span className="text-[18px] text-zinc-600">{visible.length}</span>
+          )}
+        </div>
       </div>
 
-      {error && <p className="rounded-lg bg-white px-3 py-2 text-sm font-semibold" style={{ color: HC_RED }}>{error}</p>}
+      {error && <p className="mx-3 mt-14 rounded-lg bg-white px-3 py-2 text-sm font-semibold" style={{ color: HC_RED }}>{error}</p>}
 
-      {results !== null && (
-        <section>
-          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-white/90">
-            {searching ? "Searching…" : `${results.length} found`}
-          </h2>
-          <ul className="space-y-2">
-            {results.map((k) => {
-              const m = mine.get(k.PublicKennelId.toLowerCase());
-              const isFollowing = !!m && (m.Following === 1 || m.IsHomeKennel === 1);
-              return (
-                <li key={k.PublicKennelId} className={`${card} flex items-center gap-3 p-3`}>
-                  <Logo logo={k.KennelLogo} name={k.KennelName} />
-                  <div className="min-w-0 flex-1">
-                    <Link href={`/me/kennels/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>{k.KennelName}</Link>
-                    <p className={`${mutedText} truncate`}>{[k.City, k.Region, k.Country].filter(Boolean).join(", ")}</p>
-                  </div>
-                  <FollowButton following={isFollowing} busy={busy === k.PublicKennelId} onClick={() => setFollowing(k.PublicKennelId, !isFollowing, k)} />
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+      <ul className={`px-2 pb-24 ${error ? "" : "pt-12"}`}>
+        {visible.map((k) => (
+          <KennelCard
+            key={k.PublicKennelId} k={k} distance={distanceOf(k)} busy={busy === k.PublicKennelId}
+            onFollow={() => setPopup({ kind: "follow", k })}
+            onBell={() => setPopup({ kind: "bell", k })}
+            onEnvelope={() => setPopup({ kind: "envelope", k })}
+          />
+        ))}
+        {visible.length === 0 && <li className="py-8 text-center text-white/90">No kennels match.</li>}
+      </ul>
+
+      {/* The app's red speed dial: Sort by following · distance · name · city · country */}
+      <div className="fixed bottom-20 right-4 z-40 flex flex-col items-end gap-3">
+        {dialOpen && (
+          <>
+            <Dial label="Sort by following status" color={HC_RED} active={sortBy === "following"} onClick={() => { setSortBy("following"); setDialOpen(false); }}><Heart className="h-6 w-6" /></Dial>
+            {me && <Dial label="Sort by distance" color="#03A9F4" active={sortBy === "distance"} onClick={() => { setSortBy("distance"); setDialOpen(false); }}><ArrowDownWideNarrow className="h-6 w-6" /></Dial>}
+            <Dial label="Sort by Kennel name" color="#F48FB1" active={sortBy === "name"} onClick={() => { setSortBy("name"); setDialOpen(false); }}><ArrowDownAZ className="h-6 w-6" /></Dial>
+            <Dial label="Sort by city name" color="#8BC34A" active={sortBy === "city"} onClick={() => { setSortBy("city"); setDialOpen(false); }}><Building2 className="h-6 w-6" /></Dial>
+            <Dial label="Sort by country/region name" color="#8BC34A" active={sortBy === "country"} onClick={() => { setSortBy("country"); setDialOpen(false); }}><Globe className="h-6 w-6" /></Dial>
+          </>
+        )}
+        <button type="button" aria-label="Sort" onClick={() => setDialOpen((o) => !o)}
+          className="flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl" style={{ backgroundColor: HC_RED }}>
+          {dialOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
+        </button>
+      </div>
+      {dialOpen && <div className="fixed inset-0 z-30 bg-black/40" onClick={() => setDialOpen(false)} />}
+
+      {popup?.kind === "follow" && (
+        <ChoicePopup title={popup.k.KennelShortName} choices={followChoices(radiusText, popup.k.IsHomeKennel === 1)} onPick={(v) => follow(popup.k, v)} onClose={() => setPopup(null)} busy={!!busy} />
       )}
-
-      <section>
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-white/90">Following</h2>
-        {following.length === 0 && <p className="text-white/80">You don&apos;t follow any kennel yet — search above.</p>}
-        <ul className="space-y-2">
-          {following.map((k) => <KennelCard key={k.PublicKennelId} k={k} busy={busy === k.PublicKennelId} onToggle={() => setFollowing(k.PublicKennelId, false)} />)}
-        </ul>
-      </section>
-
-      {ranWith.length > 0 && (
-        <section>
-          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-white/90">Ran with</h2>
-          <ul className="space-y-2">
-            {ranWith.map((k) => <KennelCard key={k.PublicKennelId} k={k} busy={busy === k.PublicKennelId} onToggle={() => setFollowing(k.PublicKennelId, true)} />)}
-          </ul>
-        </section>
+      {popup?.kind === "bell" && (
+        <ChoicePopup title={`${popup.k.KennelShortName} notifications`} choices={kennelBellChoices} onPick={(v) => notify(popup.k, "notification", v)} onClose={() => setPopup(null)} busy={!!busy} />
+      )}
+      {popup?.kind === "envelope" && (
+        <ChoicePopup title={`${popup.k.KennelShortName} email alerts`} choices={kennelEnvelopeChoices} onPick={(v) => notify(popup.k, "email", v)} onClose={() => setPopup(null)} busy={!!busy} />
       )}
     </div>
   );
 }
 
-function Logo({ logo, name }: { logo: string | null; name: string }) {
-  if (logo?.startsWith("https://")) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={logo} alt={name} className="h-12 w-12 shrink-0 object-contain" />;
-  }
-  return <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-lg font-bold text-white" style={{ backgroundColor: HC_RED }}>{name.charAt(0).toUpperCase()}</div>;
-}
-
-function FollowButton({ following, busy, onClick }: { following: boolean; busy: boolean; onClick: () => void }) {
+function Dial({ label, color, active, onClick, children }: { label: string; color: string; active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} disabled={busy}
-      className="shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-50"
-      style={following ? { backgroundColor: "#e4e4e7", color: "#27272a" } : { backgroundColor: HC_RED, color: "#fff" }}>
-      {following ? "Following" : "Follow"}
+    <button type="button" onClick={onClick} className="flex items-center gap-3">
+      <span className={`rounded-md bg-white px-3 py-1.5 text-[18px] text-zinc-900 shadow ${active ? "font-bold" : ""}`}>{label}</span>
+      <span className="flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg" style={{ backgroundColor: color }}>{children}</span>
     </button>
   );
 }
 
-function KennelCard({ k, busy, onToggle }: { k: MyKennel; busy: boolean; onToggle: () => void }) {
-  const isFollowing = k.Following === 1 || k.IsHomeKennel === 1;
+/** kennel_list_item.dart — the card. */
+function KennelCard({ k, distance, busy, onFollow, onBell, onEnvelope }: {
+  k: MyKennel; distance: number | null; busy: boolean; onFollow: () => void; onBell: () => void; onEnvelope: () => void;
+}) {
+  const href = `/me/kennels/${k.KennelSlug}`;
+  const followIcon = k.Following === 1 ? "checkbox_yes" : k.Following === 2 ? "checkbox_no" : "checkbox_empty";
+  const credit = Number(k.KennelCredit) || 0;
+  const lastRun = k.DateOfLastRun ? appDay(k.DateOfLastRun) : null;
+
   return (
-    <li className={`${card} p-3`}>
-      <div className="flex items-start gap-3">
-        <Logo logo={k.KennelLogo} name={k.KennelName} />
-        <div className="min-w-0 flex-1">
-          <Link href={`/me/kennels/${k.KennelSlug}`} className={`${titleText} block truncate hover:underline`}>
-            {k.KennelName}{k.IsHomeKennel === 1 && <span className="ml-2 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-semibold text-zinc-700">Home</span>}
-          </Link>
-          <p className={`${mutedText} truncate`}>{[k.City, k.Country].filter(Boolean).join(", ")}</p>
-          <p className="text-[15px] font-semibold" style={{ color: HC_BLUE }}>
-            Runs: {k.IsEstimate ? "~" : ""}{k.Runs}, Times hared: {k.Haring}
-          </p>
-          {k.DateOfLastRun && (
-            <p className="text-[15px] font-semibold" style={{ color: HC_BLUE }} suppressHydrationWarning>Last run: {appDate(k.DateOfLastRun).replace(/ at .*$/, "")}</p>
+    <li className="mt-2.5 overflow-hidden rounded-md bg-white text-zinc-900 shadow">
+      {/* Header: follow checkbox · home · name · envelope · bell */}
+      <div className="flex items-center gap-1 pr-2">
+        <button type="button" onClick={onFollow} disabled={busy} aria-label="Following" className="flex h-12 w-12 shrink-0 items-center justify-center disabled:opacity-50">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/images/icons/${followIcon}.png`} alt="" className="h-6 w-6" />
+        </button>
+        {k.IsHomeKennel === 1 && (
+          <svg viewBox="0 0 24 24" className="h-[35px] w-[35px] shrink-0" fill={HC_RED} aria-label="Home kennel"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3L12 3z" /></svg>
+        )}
+        <Link href={href} className="font-condensed min-w-0 flex-1 truncate text-[20px] font-semibold leading-none text-zinc-900" style={{ fontWeight: 600 }}>{k.KennelName}</Link>
+        <button type="button" onClick={onEnvelope} disabled={busy} aria-label="Email alerts" className="flex h-10 w-10 shrink-0 items-center justify-center disabled:opacity-50">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/images/icons/${envelopeIcon(k.KennelEmailAlertPref)}.png`} alt="" className="h-6 w-6" />
+        </button>
+        <button type="button" onClick={onBell} disabled={busy} aria-label="Notifications" className="flex h-10 w-10 shrink-0 items-center justify-center disabled:opacity-50">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/images/icons/${bellIcon(k.KennelNotificationPref)}.png`} alt="" className="h-6 w-6" />
+        </button>
+      </div>
+      <div className="h-px bg-zinc-300" />
+
+      {/* Body: logo · lines · chat */}
+      <div className="flex items-center gap-2.5 py-2 pl-1.5 pr-2">
+        <Link href={href} className="shrink-0">
+          {k.KennelLogo?.startsWith("https://") ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={k.KennelLogo} alt={k.KennelName} className="h-[85px] w-[85px] object-contain" />
+          ) : (
+            <div className="flex h-[85px] w-[85px] items-center justify-center rounded-full text-3xl font-bold text-white" style={{ backgroundColor: HC_RED }}>{k.KennelName.charAt(0)}</div>
           )}
-          {k.NextRunPublicEventId && k.NextRunGmt && k.NextRunLocal && (
-            <p className={mutedText} suppressHydrationWarning>
-              Next: <Link href={`/${k.KennelSlug}/${k.NextRunNumber}?back=/me/kennels`} className="underline underline-offset-2" style={{ color: HC_BLUE }}>#{k.NextRunNumber} {k.NextRunName}</Link>
-              {" "}· {relativeTime(k.NextRunGmt)}
-            </p>
+        </Link>
+        <div className="min-w-0 flex-1 text-[16px] leading-snug">
+          <div className="truncate">{k.Location}</div>
+          {distance != null && <div className="truncate">{formatDistance(distance, isMetric(k.DistanceUnitsPref))} from here</div>}
+          {k.HasHkm === 1 && (
+            <div className="font-semibold" style={{ color: HC_BLUE }}>Runs: {k.IsEstimate ? "~" : ""}{k.Runs}, Times hared: {k.Haring}</div>
           )}
-          {k.IsMember === 1 && <p className={mutedText}>Member{k.MembershipExpirationDate ? ` until ${appDate(k.MembershipExpirationDate).replace(/ at .*$/, "")}` : ""}</p>}
+          {k.HasHkm === 1 && lastRun && <div className="font-semibold" style={{ color: HC_BLUE }} suppressHydrationWarning>Last run: {lastRun}</div>}
+          {k.HasHkm === 1 && k.AllowSelfPayment === 1 && credit !== 0 && (
+            <div className="font-semibold" style={{ color: credit >= 0 ? HC_GREEN : HC_RED }}>
+              {credit >= 0 ? "Credit available: " : "Funds owed: "}{money(Math.abs(credit), k.CurrencySymbol, k.DigitsAfterDecimal)}
+            </div>
+          )}
         </div>
-        {k.IsHomeKennel !== 1 && <FollowButton following={isFollowing} busy={busy} onClick={onToggle} />}
+        {k.HasHkm === 1 && (
+          <Link href={href} className="shrink-0 text-zinc-500" aria-label="Kennel chat (in the app)" title="Kennel chat is in the Harrier Central app"><MessageCircle className="h-8 w-8" /></Link>
+        )}
       </div>
     </li>
   );
+}
+
+/** DateFormat('E, MMM d') this year, 'E, MMM d, yyyy' otherwise — the app's last-run line. */
+function appDay(iso: string): string {
+  const d = new Date(iso);
+  const showYear = d.getFullYear() !== new Date().getFullYear();
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", ...(showYear && { year: "numeric" }) });
 }

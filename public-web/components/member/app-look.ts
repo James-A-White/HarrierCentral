@@ -33,3 +33,48 @@ export function appDate(local: string, gmt?: string | null, tz?: string | null):
   const time = src.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone });
   return `${day} at ${time}`;
 }
+
+// ── Distance, as the app (Utilities.getDistance) ─────────────────────────────
+
+/** Kennel / country DistancePreference: bit 0 clear = metric. */
+export function isMetric(pref: number): boolean { return (pref & 0x01) === 0; }
+
+export function formatDistance(meters: number, metric: boolean): string {
+  if (metric) {
+    const km = meters / 1000;
+    return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km)} km`;
+  }
+  const miles = meters * 0.000621371;
+  return miles < 10 ? `${miles.toFixed(1)} miles` : `${Math.round(miles)} miles`;
+}
+
+/** Great-circle distance in metres. */
+export function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000, toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// ── The bell and the envelope (run_list_item / kennel_list_item) ─────────────
+
+/** _getNotificationWidget: bell by notification preference (1 on · 2 ignore · 3 mute · 4 before the run). */
+export function bellIcon(pref: number): string {
+  switch (pref) {
+    case 1: return "bell_gold_50px";
+    case 2: return "bell_silver_strike_out_50px";
+    case 4: return "bell_time_50px";
+    default: return "bell_silver_50px";
+  }
+}
+/** _getEmailWidget: envelope by email-alert preference (1 on · 2 off). */
+export function envelopeIcon(pref: number): string {
+  return pref === 1 ? "envelope_gold_50px" : pref === 2 ? "envelope_silver_strike_out_50px" : "envelope_silver_50px";
+}
+
+/** The app's money format: the symbol carries a ^ where the amount goes ("£^", "^ kr"). */
+export function money(v: number, symbol: string | null, digits: number): string {
+  const amount = (Number(v) || 0).toFixed(Math.max(0, Math.min(4, digits)));
+  const t = symbol && symbol.includes("^") ? symbol : `${symbol ?? ""}^`;
+  return t.replace("^", amount);
+}
