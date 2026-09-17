@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.58 (2026-09-17)
+
+- The Kennels tab rebuilt to the app's screen: every eligible kennel, the search bar with the app's comma / plus / not grammar, white cards with the follow checkbox, the red home icon, the envelope and the bell, the logo, location, distance, "Runs: N, Times hared: M", last run and credit, and the red speed dial for the five sorts
+- The kennel page rebuilt to the app's: logo and cover photo, description, map, the Location / Last run / Next run / Hash cash rows, the mismanagement, "Next N runs" with the same cards as the Runs tab, "Show <kennel> Links" with the three QR groups, then Join the group, Open website, Run art gallery and Leaderboards
+- The bell and the envelope are editable on kennel cards and run cards — the app's own preference SP behind them
+- Get a Life (Leaderboards) and Run Artwork pages for every kennel
+
+
 ## 0.21.57 (2026-09-17)
 
 - The Runs tab's search, count and filter bars stay pinned under the title bar while the list scrolls, as in the app
