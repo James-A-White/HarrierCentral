@@ -1,3 +1,6 @@
+0.21.63
+    • Kennel logos are never cropped or masked — the Run Counts list and run history rows were putting them behind a circular mask that ate the ends of wide logos.
+
 0.21.62
     • The Songs tab is the whole songbook in one searchable list rather than a section per kennel, and a song opens inside the member area, so there is always a way back. A kennel's own songbook stays on the kennel's pages.
     • The run history overview bar matches the app: a white band with the app's shadow and lettering, and a new line saying how many kennels in how many countries you have hashed with.

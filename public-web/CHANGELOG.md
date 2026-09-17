@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.63 (2026-09-17)
+
+- Kennel logos are never cropped or masked. The Run Counts list and the run
+  history rows were drawing them behind a circular mask that ate the ends of
+  wide logos; they now show whole.
+
 ## 0.21.62 (2026-09-17)
 
 - The Songs tab is the whole songbook in one searchable list rather than a
