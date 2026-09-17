@@ -1,5 +1,10 @@
 # public-web Changelog
 
+## 0.21.59 (2026-09-17)
+
+- Run Counts and the history drill-down at the app's sizes: the translucent header band, the 140 px pill tabs, 80 px logos, 32 px condensed counts; historical run and haring counts on the drill-down header
+
+
 ## 0.21.58 (2026-09-17)
 
 - The Kennels tab rebuilt to the app's screen: every eligible kennel, the search bar with the app's comma / plus / not grammar, white cards with the follow checkbox, the red home icon, the envelope and the bell, the logo, location, distance, "Runs: N, Times hared: M", last run and credit, and the red speed dial for the five sorts
