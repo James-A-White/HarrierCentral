@@ -566,6 +566,28 @@ against the leaves.
 (James, 2026-09-12, after the photo-sweep carousel shipped on a black
 background and the sweep pages on plain grey.)
 
+**Never crop or mask a kennel logo (web and Flutter):**
+
+A kennel's logo is its identity and its members designed it. It is shown
+whole, always, on every surface: run cards, kennel cards, run history, chat
+lists, kennel pages, the web and the app alike. Never put it behind a
+circular mask, never square it off, never let a container clip it.
+
+- Fit it with `object-contain` (CSS) or `BoxFit.contain` (Flutter), inside a
+  box it is free to letterbox within. Never `object-cover` / `BoxFit.cover`,
+  which crops whatever does not fit.
+- Never pair a logo with `rounded-full` + `overflow-hidden`, `ClipOval`,
+  `CircleAvatar`, or `shape: BoxShape.circle`. Wide logos are common and a
+  circle eats their ends: CHEastEnders lost both sides this way on the web's
+  Run Counts list (James, 2026-09-17).
+- Rounding the CONTAINER is fine as long as the logo inside is contained and
+  fully visible. It is the clipping of the image that is banned, not the
+  corner radius of a card.
+
+This applies only to kennel logos and kennel cover art. Hasher profile
+photos are portraits and are still drawn as circles, and country flags keep
+the circular treatment the app already gives them.
+
 **Button text on red buttons (Flutter/Dart):**
 
 The app's `TextButton`/`ElevatedButton` themes render default buttons with a
