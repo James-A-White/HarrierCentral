@@ -378,7 +378,7 @@ class HistoryListPageState extends State<HistoryListPage>
     return Stack(
       children: <Widget>[
         Container(
-          margin: const EdgeInsets.only(top: 85),
+          margin: const EdgeInsets.only(top: 105),
           decoration: Backgrounds.defaultHcBackgroundLight(),
           padding: const EdgeInsets.only(top: 0.0),
           child: _runCountsListByKennel.isEmpty
@@ -490,7 +490,7 @@ class HistoryListPageState extends State<HistoryListPage>
                 ),
               ],
             ),
-            height: 100,
+            height: 120,
             width: MediaQuery.sizeOf(context).width,
             child: Row(
               children: <Widget>[
@@ -524,6 +524,21 @@ class HistoryListPageState extends State<HistoryListPage>
                           ),
                           Text(
                             'Total times hared: $_totalHaring',
+                            style: ts_titleMedium.copyWith(
+                              height: 1.2,
+                              color: Colors.black87,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                          // How far the hashing has spread, not just how much
+                          // of it there has been (James, 2026-09-17). Both
+                          // lists are filled by setupInitialValues() before
+                          // this builds, whichever tab is showing.
+                          Text(
+                            '${_runCountsListByKennel.length} '
+                            '${_runCountsListByKennel.length == 1 ? 'kennel' : 'kennels'} '
+                            'in ${_runCountsListByCountry.length} '
+                            '${_runCountsListByCountry.length == 1 ? 'country' : 'countries'}',
                             style: ts_titleMedium.copyWith(
                               height: 1.2,
                               color: Colors.black87,
