@@ -1,3 +1,7 @@
+0.21.61
+    • A chat post reads its envelope wherever the app's send SP puts it (the push-recipient rowsets come first) — posting from the web works
+    • The app's first-install sign-in with a web passkey (E9.F7.S13): app-options / app-verify routes, a fresh invite code for the verified hasher; webcredentials in the AASA and get_login_creds in assetlinks
+
 0.21.60
     • Chat on the web: run, kennel and room threads through the app's own message SPs — the chat list at /me/chat with the rooms and every thread with messages, the thread page with the app's blue and slate bubbles, ten-second polling and a composer; the three-state chat bubble on run and kennel cards; the global unread badge in the title bar
 
