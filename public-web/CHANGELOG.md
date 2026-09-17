@@ -1,5 +1,10 @@
 # public-web Changelog
 
+## 0.21.60 (2026-09-17)
+
+- Chat on the web: run, kennel and room threads through the app's own message SPs — the chat list at /me/chat with the rooms and every thread with messages, the thread page with the app's blue and slate bubbles, ten-second polling and a composer; the three-state chat bubble on run and kennel cards; the global unread badge in the title bar
+
+
 ## 0.21.59 (2026-09-17)
 
 - Run Counts and the history drill-down at the app's sizes: the translucent header band, the 140 px pill tabs, 80 px logos, 32 px condensed counts; historical run and haring counts on the drill-down header
