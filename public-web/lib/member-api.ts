@@ -265,6 +265,8 @@ export interface MyRun {
   MessageCount: number | null;
   DownDownCount: number | null;
   DistanceUnitsPref: number;
+  /** The hasher's own preference bitfield: 0x03 unit, 0x3C >> 2 radius rung. */
+  HasherPreferences: number;
   EventGeographicScope: number | null;
   EventType: string | null;
 }

@@ -37,7 +37,26 @@ const RSVP_YES = 3, RSVP_MAYBE = 2, RSVP_NO = 1, AT_HASH = 20, ON_IN = 30;
 const BANNER = "#6C0243";
 /** A past card: themeButtonColors at 20% over white. */
 const PAST_TINT = "#E2CCD9";
-const RADII_KM = [0, 10, 25, 50, 75, 100, 150, 250];
+/**
+ * The app's ladder (kennel_list_item.getDistanceString), in the hasher's OWN
+ * unit: 50 means 50 km to someone on kilometres and 50 miles to someone on
+ * miles. 0 is kept so the section can be switched off, but is never the
+ * default — the hasher preference bitfield is 0 until somebody touches it,
+ * and reading that as "within 0 km" is what left this showing nothing
+ * (James, 2026-09-17).
+ */
+const RADII = [0, 10, 25, 50, 75, 100, 150, 200];
+const DEFAULT_RADIUS = 50;
+const MILE_IN_METRES = 1609.344;
+
+/** Preferences & 0x03 — 2 means kilometres, anything else miles. */
+function prefIsMetric(prefs: number): boolean { return (prefs & 0x03) === 2; }
+
+/** Preferences & 0x3C >> 2 indexes the ladder; rung 0 means "never set". */
+function prefRadius(prefs: number): number {
+  const rung = (prefs & 0x3c) >> 2;
+  return RADII[rung] && rung > 0 ? RADII[rung] : DEFAULT_RADIUS;
+}
 
 export type Answer = "yes" | "maybe" | "no";
 export type PrefKind = "bell" | "envelope";
@@ -93,7 +112,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   const [filterMy, setFilterMy] = useState(false);
   const [filterEvents, setFilterEvents] = useState(false);
   const [me, setMe] = useState<{ lat: number; lon: number } | null | "denied">(null);
-  const [radiusKm, setRadiusKm] = useState(50);
+  const [radius, setRadius] = useState(DEFAULT_RADIUS);
   const [showRadius, setShowRadius] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [pref, setPref] = useState<{ kind: PrefKind; run: MyRun } | null>(null);
@@ -101,6 +120,11 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   const [threads, setThreads] = useState<ThreadIndex | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const prefs = runs[0]?.HasherPreferences ?? 0;
+  const metric = prefIsMetric(prefs);
+  const prefsRef = useRef(prefs);
+  prefsRef.current = prefs;
+  const radiusMetres = radius * (metric ? 1000 : MILE_IN_METRES);
   const dividerRef = useRef<HTMLLIElement>(null);
   const anchored = useRef(false);
 
@@ -124,8 +148,18 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   }, []);
 
   // The app's radius preference lives in Hasher.Preferences; on the web it is remembered per browser.
-  useEffect(() => { try { const v = Number(localStorage.getItem("hc_radius_km")); if (RADII_KM.includes(v)) setRadiusKm(v); } catch {} }, []);
-  const chooseRadius = (km: number) => { setRadiusKm(km); setShowRadius(false); try { localStorage.setItem("hc_radius_km", String(km)); } catch {} };
+  // A stored choice wins; otherwise take the hasher's own rung, else 50.
+  // getItem returns null when unset and Number(null) is 0, which used to be
+  // accepted straight into the radius and silenced the section.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("hc_radius");
+      const v = raw === null ? NaN : Number(raw);
+      if (Number.isFinite(v) && RADII.includes(v)) { setRadius(v); return; }
+    } catch { /* private window */ }
+    setRadius(prefRadius(prefsRef.current));
+  }, []);
+  const chooseRadius = (v: number) => { setRadius(v); setShowRadius(false); try { localStorage.setItem("hc_radius", String(v)); } catch {} };
 
   const distanceOf = useCallback((r: MyRun): number | null => {
     if (!me || me === "denied" || r.Latitude == null || r.Longitude == null) return null;
@@ -153,12 +187,12 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
     for (const r of future) {
       const d = distanceOf(r);
       if (isMyRun(r)) s[1].push(r);
-      else if (d != null && radiusKm > 0 && d <= radiusKm * 1000) s[2].push(r);
+      else if (d != null && radius > 0 && d <= radiusMetres) s[2].push(r);
       else if (r.Following === 1) s[3].push(r);
       else s[4].push(r);
     }
     return s;
-  }, [future, distanceOf, radiusKm]);
+  }, [future, distanceOf, radius, radiusMetres]);
 
   // Open on the divider, past runs above — the app's initial anchor.
   useEffect(() => {
@@ -229,7 +263,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
     } finally { setBusy(null); }
   }
 
-  const radiusLabel = me && me !== "denied" ? formatDistance(radiusKm * 1000, isMetric(future[0]?.DistanceUnitsPref ?? 0)) : `${radiusKm} km`;
+  const radiusLabel = `${radius} ${metric ? "km" : "miles"}`;
 
   return (
     <div className="-mx-3 -mt-[12px] sm:-mt-[16px] md:-mx-6">
@@ -303,11 +337,11 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
               </Banner>
               {n === 2 && showRadius && (
                 <div className="flex flex-wrap justify-center gap-2 py-1">
-                  {RADII_KM.map((km) => (
+                  {RADII.map((km) => (
                     <button key={km} type="button" onClick={() => chooseRadius(km)}
                       className="rounded-full px-3 py-1 text-sm font-semibold"
-                      style={km === radiusKm ? { backgroundColor: HC_RED, color: "#fff" } : { backgroundColor: "#fff", color: "#18181b" }}>
-                      {km === 0 ? "Off" : `${km} km`}
+                      style={km === radius ? { backgroundColor: HC_RED, color: "#fff" } : { backgroundColor: "#fff", color: "#18181b" }}>
+                      {km === 0 ? "Off" : `${km} ${metric ? "km" : "miles"}`}
                     </button>
                   ))}
                 </div>

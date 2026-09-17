@@ -103,9 +103,15 @@ BEGIN TRY
            WHERE g.EventId = e.id AND (g.RsvpState = 3 OR g.AttendenceState >= 20)) AS GoingCount,
         e.TrackRunnerCount, e.PhotoCount, e.MessageCount, e.DownDownCount,
         COALESCE(k.DistancePreference, ctr.DistancePreference, 0)      AS DistanceUnitsPref,
+        -- The HASHER's own preference bitfield, which is what the app reads
+        -- for "runs within N": bits 0x03 pick the unit (2 = km, else miles)
+        -- and bits 0x3C >> 2 index the ladder 0/10/25/50/75/100/150/200.
+        -- DistanceUnitsPref above is the KENNEL's, a different thing.
+        COALESCE(me.Preferences, 0)                                    AS HasherPreferences,
         e.EventGeographicScope,
         e.EventType
     FROM   HC.Event e
+    LEFT JOIN HC.Hasher      me  ON me.id = @userId
     JOIN   HC.Kennel k ON k.id = e.KennelId AND k.deleted = 0 AND k.removed = 0
     LEFT JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = @userId AND hkm.removed = 0
     LEFT JOIN HC.HasherEventMap  hem ON hem.EventId = e.id AND hem.UserId = @userId
