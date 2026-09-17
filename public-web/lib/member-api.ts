@@ -361,7 +361,8 @@ export interface HistoryRunRow {
 export interface HistoryRunsHeader {
   Kind: "kennel" | "country";
   PublicKennelId: string | null; KennelSlug: string | null; KennelShortName: string | null; KennelName: string | null; KennelLogo: string | null;
-  HcRuns: number | null; HcHaring: number | null; KennelCredit: number | null; DigitsAfterDecimal: number | null; CurrencySymbol: string | null;
+  HcRuns: number | null; HcHaring: number | null; HistoricalRuns: number | null; HistoricalHaring: number | null; IsEstimate: number | null;
+  KennelCredit: number | null; DigitsAfterDecimal: number | null; CurrencySymbol: string | null;
   CountryId: string | null; CountryName: string | null; FlagFile: string | null;
 }
 export interface HistoryRuns { header: HistoryRunsHeader | null; runs: HistoryRunRow[] }

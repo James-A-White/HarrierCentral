@@ -12,7 +12,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { HistoryRunRow, HistoryRunsHeader } from "@/lib/member-api";
 import { HC_GREEN, HC_PURPLE, HC_RED, appDate } from "@/components/member/app-look";
-import { condensed } from "@/components/member/RunCountsView";
+import { condensed, Toggle } from "@/components/member/RunCountsView";
 
 const AT_HASH = 20;
 
@@ -55,26 +55,28 @@ export function HistoryRunsView({ kind, id, header, initialRuns, showKennelLogo,
 
       {/* Header card — kennel only, as the app */}
       {kind === "kennel" && header && (
-        <div className="flex items-center gap-4 bg-white px-3 py-3 text-zinc-900">
+        <div className="flex min-h-[90px] items-center gap-4 px-4 py-2 text-zinc-900/90" style={{ backgroundColor: "rgba(0,0,0,0.27)" }}>
           {header.KennelLogo?.startsWith("https://") ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={header.KennelLogo} alt="" className="h-20 w-20 shrink-0 object-contain" />
           ) : (
             <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-2xl font-bold text-white" style={{ backgroundColor: HC_RED }}>{(header.KennelShortName ?? "?").charAt(0)}</div>
           )}
-          <div className="min-w-0 leading-snug">
-            <div className="text-[19px] font-bold">{header.KennelName}</div>
-            <div className="text-[17px]">My verified run count: {header.HcRuns ?? 0}</div>
-            <div className="text-[17px]">My verified haring count: {header.HcHaring ?? 0}</div>
-            <div className="text-[17px]">Kennel credit: {money(header.KennelCredit ?? 0, header.CurrencySymbol, header.DigitsAfterDecimal ?? 2)}</div>
+          <div className="min-w-0 text-[16px] font-semibold leading-[1.25]">
+            <div className="font-bold">{header.KennelName}</div>
+            <div>My verified run count: {header.HcRuns ?? 0}</div>
+            <div>My verified haring count: {header.HcHaring ?? 0}</div>
+            <div>Kennel credit: {money(header.KennelCredit ?? 0, header.CurrencySymbol, header.DigitsAfterDecimal ?? 2)}</div>
+            {(header.HistoricalRuns ?? 0) > 0 && <div>Historical run count: {header.IsEstimate ? "~" : ""}{header.HistoricalRuns}</div>}
+            {(header.HistoricalHaring ?? 0) > 0 && <div>Historical haring count {header.IsEstimate ? "~" : ""}{header.HistoricalHaring}</div>}
           </div>
         </div>
       )}
 
-      <div className="px-3 pt-4">
-        <div className="mx-auto mb-3 flex max-w-sm items-center justify-around">
-          <Toggle active={!all} onClick={() => switchTo(false)}>My Runs</Toggle>
-          <Toggle active={all} onClick={() => switchTo(true)}>All Runs</Toggle>
+      <div className="px-3 pt-3">
+        <div className="mx-auto mb-2 flex w-[240px] items-center">
+          <Toggle width={120} active={!all} onClick={() => switchTo(false)}>My Runs</Toggle>
+          <Toggle width={120} active={all} onClick={() => switchTo(true)}>All Runs</Toggle>
         </div>
       </div>
 
@@ -85,16 +87,6 @@ export function HistoryRunsView({ kind, id, header, initialRuns, showKennelLogo,
         {!loading && runs.length === 0 && <li className="py-6 text-center text-zinc-700">No runs.</li>}
       </ul>
     </div>
-  );
-}
-
-function Toggle({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button type="button" onClick={onClick}
-      className="rounded-full px-8 py-2 text-[22px] font-semibold transition-colors"
-      style={active ? { backgroundColor: HC_RED, color: "#fff" } : { color: "#18181b" }}>
-      {children}
-    </button>
   );
 }
 
@@ -138,10 +130,10 @@ function RunRow({ r, showKennelLogo, showFlag }: { r: HistoryRunRow; showKennelL
       )}
       <div className="w-0.5 self-stretch bg-zinc-400/60" />
       <div className="font-condensed min-w-0 flex-1 leading-tight text-zinc-900" style={condensed}>
-        <Link href={`/${r.kennelSlug}/${r.eventNumber}?back=/me/history`} className="block truncate text-[19px] hover:underline">{r.eventName}</Link>
-        <div className="truncate text-[17px] font-semibold" suppressHydrationWarning>Run #{r.eventNumber} on {appDate(r.eventStartDatetime)}</div>
+        <Link href={`/${r.kennelSlug}/${r.eventNumber}?back=/me/history`} className="block truncate text-[18px] hover:underline">{r.eventName}</Link>
+        <div className="truncate text-[16px]" suppressHydrationWarning>Run #{r.eventNumber} on {appDate(r.eventStartDatetime)}</div>
         {attended && r.totalRunsThisKennel ? (
-          <div className="text-[17px] font-semibold">
+          <div className="text-[16px]">
             <span style={{ color: HC_GREEN }}>My {r.kennelShortName} run #{r.totalRunsThisKennel}</span>
             {isHare && r.totalHaringThisKennel ? <span style={{ color: HC_PURPLE }}> and #{r.totalHaringThisKennel} time haring</span> : null}
           </div>
