@@ -15,7 +15,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MyRun } from "@/lib/member-api";
 import { HC_BLUE, HC_RED, appDate, bellIcon, envelopeIcon, formatDistance, haversine, isMetric } from "@/components/member/app-look";
-import { ChoicePopup, runBellChoices, runEnvelopeChoices } from "@/components/member/ChoicePopup";
+import { ChoicePopup, runBellChoices, runEnvelopeChoices, type Choice } from "@/components/member/ChoicePopup";
+
+/**
+ * run_list_item._showRsvpOptionsPopup — the app's wording and its checkbox
+ * art. The app also folds a notification/email toggle into this same list;
+ * the web has those as their own buttons on the card, so this stays RSVP.
+ */
+export const rsvpChoices: Choice<Answer>[] = [
+  { title: "I'll be there!", icon: "checkbox_yes", value: "yes" },
+  { title: "I might be there", icon: "checkbox_maybe", value: "maybe" },
+  { title: "I won't make it", icon: "checkbox_no", value: "no" },
+];
 import { ChatBubble, indexThreads, type ThreadIndex } from "@/components/member/ChatBubble";
 import type { ChatThreadRow } from "@/lib/member-api";
 import { relativeTime } from "@/lib/member-format";
@@ -86,6 +97,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   const [showRadius, setShowRadius] = useState(false);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [pref, setPref] = useState<{ kind: PrefKind; run: MyRun } | null>(null);
+  const [rsvpFor, setRsvpFor] = useState<MyRun | null>(null);
   const [threads, setThreads] = useState<ThreadIndex | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -259,7 +271,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
             Loading older runs… ({past.length - pastShown} more)
           </li>
         )}
-        {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} threads={threads} busy={busy === r.PublicEventId} />)}
+        {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} threads={threads} busy={busy === r.PublicEventId} />)}
 
         {past.length > 0 && (
           <li ref={dividerRef} className="scroll-mt-[186px]">
@@ -306,7 +318,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
                 </p>
               )}
               <ul className="space-y-2">
-                {rows.map((r) => <RunCard key={r.PublicEventId} run={r} distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} threads={threads} busy={busy === r.PublicEventId} />)}
+                {rows.map((r) => <RunCard key={r.PublicEventId} run={r} distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} threads={threads} busy={busy === r.PublicEventId} />)}
               </ul>
             </li>
           );
@@ -315,6 +327,13 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
       {pref && (
         <ChoicePopup title={pref.run.EventName} choices={pref.kind === "bell" ? runBellChoices : runEnvelopeChoices}
           onPick={(v) => notify(pref.run, pref.kind, v)} onClose={() => setPref(null)} busy={!!busy} />
+      )}
+
+      {/* Tapping the state box answers the run, as in the app — it does not
+          navigate anywhere (James, 2026-09-17). */}
+      {rsvpFor && (
+        <ChoicePopup title={rsvpFor.EventName} choices={rsvpChoices}
+          onPick={(a) => rsvp(rsvpFor, a)} onClose={() => setRsvpFor(null)} busy={!!busy} />
       )}
     </div>
   );
@@ -341,9 +360,9 @@ function Banner({ children, left, right }: { children: React.ReactNode; left?: R
   );
 }
 
-export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref, busy, back = "/me/runs", threads = null }: {
+export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref, onState, busy, back = "/me/runs", threads = null }: {
   run: MyRun; past?: boolean; distance: number | null; menuOpen: boolean; onMenu: () => void; onRsvp: (r: MyRun, a: Answer) => void;
-  onPref?: (r: MyRun, kind: PrefKind) => void; busy: boolean; back?: string; threads?: ThreadIndex | null;
+  onPref?: (r: MyRun, kind: PrefKind) => void; onState?: (r: MyRun) => void; busy: boolean; back?: string; threads?: ThreadIndex | null;
 }) {
   const href = `/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent(back)}`;
   const when = run.EventStartDatetimeGmt ?? run.EventStartDatetime;
@@ -356,8 +375,19 @@ export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref,
     <li className="relative overflow-hidden rounded-md shadow" style={{ backgroundColor: past ? PAST_TINT : "#fff" }}>
       {/* Header: state · title · envelope · bell */}
       <div className="flex items-center gap-1 px-1.5 pt-1.5 pb-1">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`/images/icons/${stateIcon(run)}.png`} alt="" className="h-6 w-6 shrink-0" />
+        {/* The app hangs an invisible 56x56 hit target over this box and
+            opens the RSVP list from it, and only when the run is still to
+            come. Same here: answer the run in place, never navigate. */}
+        <button
+          type="button"
+          onClick={() => onState?.(run)}
+          disabled={past || busy || !onState}
+          aria-label={past ? "This run has been" : `Answer ${run.EventName}`}
+          className="-m-1.5 flex h-11 w-11 shrink-0 items-center justify-center p-1.5 disabled:cursor-default"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/images/icons/${stateIcon(run)}.png`} alt="" className="h-6 w-6" />
+        </button>
         <Link href={href} className="min-w-0 flex-1 truncate text-[20px] font-bold leading-tight text-zinc-900">{run.EventName}</Link>
         <button type="button" onClick={() => onPref?.(run, "envelope")} disabled={busy || !onPref} aria-label="Email alert" className="shrink-0 disabled:opacity-60">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -411,8 +441,8 @@ export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref,
           {!past && (
             <>
               <MenuItem icon="checkbox_yes" label="I'll be there!" onClick={() => onRsvp(run, "yes")} />
-              <MenuItem icon="checkbox_maybe" label="I might come" onClick={() => onRsvp(run, "maybe")} />
-              <MenuItem icon="checkbox_no" label="I'm not coming" onClick={() => onRsvp(run, "no")} />
+              <MenuItem icon="checkbox_maybe" label="I might be there" onClick={() => onRsvp(run, "maybe")} />
+              <MenuItem icon="checkbox_no" label="I won't make it" onClick={() => onRsvp(run, "no")} />
             </>
           )}
           <Link href={href} className={`block px-4 py-2.5 hover:bg-zinc-100 ${past ? "" : "border-t border-zinc-200"}`}>Run details</Link>
