@@ -20,17 +20,18 @@ export default async function MyHistoryPage() {
   return (
     <div className="-mx-3 -mt-3 sm:-mt-4">
       <LightBackground />
-      <div className="flex items-center gap-4 bg-white px-3 py-3 text-zinc-900">
+      {/* The app's header band: 100 px, translucent black, black87 text */}
+      <div className="flex h-[100px] items-center gap-5 px-5 text-zinc-900/90" style={{ backgroundColor: "rgba(0,0,0,0.27)" }}>
         {s.photo?.startsWith("http") ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={s.photo} alt="" className="h-[92px] w-[92px] shrink-0 object-cover" />
+          <img src={s.photo} alt="" className="h-20 w-20 shrink-0 rounded-full object-cover" />
         ) : (
-          <div className="flex h-[92px] w-[92px] shrink-0 items-center justify-center bg-zinc-200 text-3xl font-bold text-zinc-500">{(s.hashName || "?").charAt(0)}</div>
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-3xl font-bold text-zinc-500">{(s.hashName || "?").charAt(0)}</div>
         )}
-        <div className="leading-snug">
-          <div className="text-[19px] font-bold">My total run counts</div>
-          <div className="text-[17px]">Total runs: {tilde}{h.totals.Runs}</div>
-          <div className="text-[17px]">Total times hared: {tilde}{h.totals.Haring}</div>
+        <div className="text-[17px] leading-[1.2]">
+          <div className="font-bold">My total run counts</div>
+          <div className="font-semibold">Total runs: {tilde}{h.totals.Runs}</div>
+          <div className="font-semibold">Total times hared: {tilde}{h.totals.Haring}</div>
         </div>
       </div>
       <div className="px-3 pt-5">

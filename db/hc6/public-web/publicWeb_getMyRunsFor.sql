@@ -84,6 +84,9 @@ BEGIN TRY
             k.KennelLogo,
             COALESCE(hkm.HcTotalRunCount, 0)                         AS HcRuns,
             COALESCE(hkm.HcHaringCount, 0)                           AS HcHaring,
+            COALESCE(hkm.HistoricalTotalRunCount, 0)                 AS HistoricalRuns,
+            COALESCE(hkm.HistoricalHaringCount, 0)                   AS HistoricalHaring,
+            COALESCE(hkm.HistoricalCountIsEstimate, 0)               AS IsEstimate,
             COALESCE(hkm.KennelCredit, 0)                            AS KennelCredit,
             COALESCE(k.DigitsAfterDecimal, c.DigitsAfterDecimal, 2)  AS DigitsAfterDecimal,
             COALESCE(k.CurrencySymbol, c.CurrencySymbol, '$^')       AS CurrencySymbol,
@@ -96,7 +99,7 @@ BEGIN TRY
         SELECT
             'country' AS Kind,
             NULL AS PublicKennelId, NULL AS KennelSlug, NULL AS KennelShortName, NULL AS KennelName, NULL AS KennelLogo,
-            NULL AS HcRuns, NULL AS HcHaring, NULL AS KennelCredit, NULL AS DigitsAfterDecimal, NULL AS CurrencySymbol,
+            NULL AS HcRuns, NULL AS HcHaring, NULL AS HistoricalRuns, NULL AS HistoricalHaring, NULL AS IsEstimate, NULL AS KennelCredit, NULL AS DigitsAfterDecimal, NULL AS CurrencySymbol,
             n.id AS CountryId, n.CountryName, n.FlagFile
         FROM HC.Country n WHERE n.id = @countryId;
 

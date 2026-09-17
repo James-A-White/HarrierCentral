@@ -12,18 +12,18 @@ import type { HistoryCountry, HistoryKennel } from "@/lib/member-api";
 import { HC_RED } from "@/components/member/app-look";
 
 /** The app's condensed face; the class carries the family (see globals.css). */
-export const condensed: React.CSSProperties = { fontWeight: 700 };
+export const condensed: React.CSSProperties = { fontWeight: 600 };
 
 export function RunCountsView({ kennels, countries }: { kennels: HistoryKennel[]; countries: HistoryCountry[] }) {
   const [mode, setMode] = useState<"kennel" | "country">("kennel");
   return (
     <div>
-      <div className="mx-auto mb-5 flex max-w-sm items-center justify-around">
+      <div className="mx-auto mb-4 flex w-[280px] items-center">
         <Toggle active={mode === "kennel"} onClick={() => setMode("kennel")}>By Kennel</Toggle>
         <Toggle active={mode === "country"} onClick={() => setMode("country")}>By Country</Toggle>
       </div>
 
-      <ul className="space-y-7">
+      <ul className="space-y-5">
         {mode === "kennel"
           ? kennels.map((k) => (
               <CountRow
@@ -52,11 +52,12 @@ export function RunCountsView({ kennels, countries }: { kennels: HistoryKennel[]
   );
 }
 
-function Toggle({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+/** The app's TabBar: a 140 px tab each, the red pill indicator under the selected one. */
+export function Toggle({ active, onClick, children, width = 140 }: { active: boolean; onClick: () => void; children: React.ReactNode; width?: number }) {
   return (
     <button type="button" onClick={onClick}
-      className="rounded-full px-8 py-2 text-[22px] font-semibold transition-colors"
-      style={active ? { backgroundColor: HC_RED, color: "#fff" } : { color: "#18181b" }}>
+      className="rounded-full py-2 text-[17px] font-semibold transition-colors"
+      style={{ width, ...(active ? { backgroundColor: HC_RED, color: "#fff" } : { color: "#000" }) }}>
       {children}
     </button>
   );
@@ -65,8 +66,8 @@ function Toggle({ active, onClick, children }: { active: boolean; onClick: () =>
 function CountRow({ href, image, fallback, name, count, hared }: { href: string; image: string | null; fallback: string; name: string; count: string; hared: number }) {
   return (
     <li>
-      <Link href={href} className="flex items-center gap-3">
-        <div className="h-[88px] w-[88px] shrink-0 overflow-hidden rounded-full bg-white shadow">
+      <Link href={href} className="flex items-center gap-2 pl-2">
+        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-white shadow">
           {image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={image} alt="" className="h-full w-full object-cover" />
@@ -74,11 +75,11 @@ function CountRow({ href, image, fallback, name, count, hared }: { href: string;
             <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-white" style={{ backgroundColor: HC_RED }}>{fallback}</div>
           )}
         </div>
-        <span className="shrink-0 text-4xl font-bold text-zinc-900">=</span>
+        <span className="font-condensed shrink-0 text-[32px] leading-none text-zinc-900" style={condensed}> = </span>
         <div className="font-condensed min-w-0 leading-tight text-zinc-900" style={condensed}>
-          <div className="text-[22px] leading-[1.05]">{name}</div>
-          <div className="text-[44px] leading-none">{count}</div>
-          {hared > 0 && <div className="text-[20px] font-semibold">({hared} times hared)</div>}
+          <div className="text-[20px] leading-[1.05]">{name}</div>
+          <div className="text-[32px] leading-none">{count}</div>
+          {hared > 0 ? <div className="text-[18px] leading-tight">({hared} times hared)</div> : <div className="h-5" />}
         </div>
       </Link>
     </li>
