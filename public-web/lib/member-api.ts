@@ -518,7 +518,12 @@ export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: stri
   const rowsets = await callAdminApi("sendChatMessage", {
     deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_SEND_PROC[kind]), kind, ...chatIds(kind, id), messageId, messageContent: text,
   });
-  return envelopeOf(rowsets).success === 1 ? { ok: true } : { ok: false, message: userMessageOf(rowsets) };
+  // The app's send SPs emit their push-recipient SELECTs as rowsets before
+  // anything else, so the envelope is wherever a `success` column sits.
+  const env = rowsets.map((r) => r?.[0] as { success?: number; errorUserMessage?: string } | undefined).filter((r) => r && "success" in r);
+  if (env.some((r) => r?.success === 1)) return { ok: true };
+  const msg = rowsets.map((r) => r?.[0] as { errorUserMessage?: string } | undefined).find((r) => r?.errorUserMessage)?.errorUserMessage;
+  return { ok: false, message: msg ?? "Couldn't send." };
 }
 
 export async function markChatRead(s: MemberSession, kind: "run" | "kennel", id: string): Promise<void> {
