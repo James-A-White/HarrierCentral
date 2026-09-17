@@ -49,6 +49,13 @@ BEGIN TRY
         EXEC HC6.hcapp_sendKennelMessage @deviceId = @deviceId, @accessToken = @accessToken, @kennelId = @kennelId, @messageId = @messageId, @messageTitle = NULL, @messageContent = @messageContent;
     ELSE
         EXEC HC6.hcapp_sendRoomMessage   @deviceId = @deviceId, @accessToken = @accessToken, @roomType = @roomType, @messageId = @messageId, @messageContent = @messageContent;
+
+    -- The app's send SPs return no rowset on success (the app reads the
+    -- message back through sync); the web reads an envelope, so give it one
+    -- when the message landed. On failure the app SP's own envelope comes
+    -- first and this one sits behind it.
+    IF EXISTS (SELECT 1 FROM HC.EventMessage em WHERE em.id = @messageId)
+        SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
