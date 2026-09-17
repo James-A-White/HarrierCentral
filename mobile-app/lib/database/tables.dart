@@ -512,6 +512,73 @@ class Tables {
       migrationText: '',
     ),
 
+    // MIGRATION 532 — a kennel's messaging platform and group invite link
+
+    // (E9.F6). Same ALTERs as 3.1's 552, under this train's own number; the
+
+    // trains stay 20 apart (see DB_VERSION).
+
+    MigrationsModel(
+
+      dbVersion: 532,
+
+      migrationText: '''
+
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colDefaultMessagingPlatform} INT;
+
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colMessagingGroupInviteUrl} TEXT;
+
+      ''',
+
+      appliedAtInt: 0,
+
+    ),
+
+
+    // MIGRATION 531 — pinned chats (E9.F1.S8). Pin lives on records that
+
+    // already sync, so it survives a reload and follows the hasher between
+
+    // devices.
+
+    //
+
+    // The SAME columns as 3.1's migration 551, under this train's own number:
+
+    // the two trains have separate DB_VERSION lineages (3.0.x is on 530, 3.1
+
+    // on 550), and carrying 3.1's number across is exactly the mismatch that
+
+    // blocked 3.1.0+1350. Same ALTERs, different version — that is all.
+
+    MigrationsModel(
+
+      dbVersion: 531,
+
+      migrationText: '''
+
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colPinned} INT;
+
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colPinned} INT;
+
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colPinned} INT;
+
+        ALTER TABLE ${EnumDataTables.hasherKennelMap.commonTableName} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colPinned} INT;
+
+        ALTER TABLE ${EnumDataTables.hasherKennelMap.kennelTableName} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colPinned} INT;
+
+        ALTER TABLE ${EnumDataTables.hasherKennelMap.eventTableName} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colPinned} INT;
+
+        ALTER TABLE ${EnumDataTables.hashers.commonTableName} ADD COLUMN ${tableModel.hashersTableHelper.colUnpinnedMismanagementRooms} INT;
+
+        ALTER TABLE ${EnumDataTables.hashers.commonTableName} ADD COLUMN ${tableModel.hashersTableHelper.colUnpinnedAppAccessRooms} INT;
+
+      ''',
+
+      appliedAtInt: 0,
+
+    ),
+
     // MIGRATION 530 — how far each trail actually is (E5.F7.S1, James
     // 2026-09-12): the trails map shows a total for what is on screen. Local
     // only, like the bounds and the simplified path — TrackIndex measures it

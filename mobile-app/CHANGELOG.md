@@ -3,6 +3,83 @@
 - **Run counts**: the overview at the top now says how many kennels in how many
   countries you have hashed with, not only the totals.
 
+## 3.0.42+1382 (2026-09-17)
+### Improvements
+- **Run counts**: the overview at the top now says how many kennels in how many
+  countries you have hashed with, not only the totals.
+
+## 3.0.41+1381 (2026-09-17)
+### New Features
+- **Sign in with my passkey**: a fresh install signs in with the passkey made
+  on hashruns.org, one tap on the account pages, no invite code to type. The
+  web verifies the passkey and hands the app a code; the app takes its usual
+  authorisation path with it.
+
+## 3.0.40+1379 (2026-09-16)
+### New Features
+- Sign in to hashruns.org from a computer by pointing the phone's camera at
+  the QR code on the page: the app approves it and the browser is in. The
+  in-app scanner reads the same code.
+
+## 3.0.39+1377 (2026-09-16)
+### Improvements
+- The run notice puts a blank line between its links, a 🗺️ on the details
+  link, and says "I'll be there" rather than "I'm in".
+- The bottom tab is called "Map". The main map shows the phone as a blue dot
+  with a compass arrow, live, replacing the static marker at the boot-time
+  position; centre-on-me goes to the live fix. Android build included.
+
+## 3.0.38+1375 (2026-09-16)
+### New Features
+- "Share on WhatsApp" (or your kennel's messaging app) from the run page, the
+  run editor and the QR share sheet: the run notice — date, hares, venue,
+  price and the link — pre-filled, you pick the group and tap send.
+- The notice ends with an "I'm in" and a "Can't make it" link. Tapping one
+  opens the app, records your RSVP and lands on the check-in tab.
+- A hashruns.org run link opens the app straight to that run's check-in tab.
+- A "Join the group" button on the kennel page when the kennel has published
+  its group's invite link.
+### Improvements
+- The run page's share control is one rounded button with the app's own logo;
+  the chevron lists the other apps by their logos. The three action buttons
+  are one size, and read "Share my photos" and "<kennel> Links".
+- Chat text is larger. Links in a chat open inside the app.
+
+## 3.0.37+1362 (2026-09-15)
+### Fixes
+- Chat room notification buttons were grey text on a grey background. They are
+  now white on red when chosen and white on dark when not.
+- The pin is larger and clearer, and an unpinned chat shows a pin with a line
+  through it rather than a faint outline.
+- **Server fix (no app change needed)**: changing a chat room's notification
+  setting failed with "could not be saved".
+
+## 3.0.37+1360 (2026-09-15)
+### New Features
+- **Pinned chats**: Chats you pin stay at the top of the chat list. Your home
+  kennel's chat and your role chat rooms are pinned for you automatically, and
+  the pin icon in any chat's title bar turns it on or off.
+- **Chat rooms**: The rooms your roles give you — Harrier Central Admins,
+  Grand Masters, Hash Cash, Religious Advisors, Hare Raisers — appear in the
+  chat list, with their own settings for notifications and pinning.
+### Fixes
+- "Mark all read" now clears the badges and leaves the chats in the list.
+
+## 3.0.36+1356 (2026-09-13)
+
+### Fixes
+- **A crash on the runs list.** On the App Store build it fired 61 times over
+  one weekend across five phones, and once it started it repeated on every
+  frame until the screen was left. The list is rebuilt whenever runs are
+  filtered, searched or refreshed, and it was reusing the old list's layout
+  after the contents had changed underneath it.
+
+Not reproducible to order, so this is a fix by diagnosis rather than one
+watched failing and then passing. If anyone still sees the runs list
+misbehave after a sync lands, that is worth knowing.
+
+## 3.0.35+1354 (2026-09-13)
+
 ## 3.1.0+1380 (2026-09-17)
 ### New Features
 - **Sign in with my passkey**: a fresh install signs in with the passkey made

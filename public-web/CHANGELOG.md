@@ -1,5 +1,125 @@
 # public-web Changelog
 
+## 0.21.63 (2026-09-17)
+
+- Kennel logos are never cropped or masked. The Run Counts list and the run
+  history rows were drawing them behind a circular mask that ate the ends of
+  wide logos; they now show whole.
+
+## 0.21.62 (2026-09-17)
+
+- The Songs tab is the whole songbook in one searchable list rather than a
+  section per kennel, and a song opens inside the member area, so there is
+  always a way back. A kennel's own songbook stays on the kennel's pages.
+- The run history overview bar matches the app: a white band with the app's
+  shadow and lettering, and a new line saying how many kennels in how many
+  countries you have hashed with.
+- A run you were not at shows the app's red cross instead of an empty circle.
+- The run history drill-downs gain the app's floating action button: email my
+  run counts for this kennel, or for every kennel.
+- The chat balloon moved to the left of the member bar and matches the glyph
+  the app uses.
+
+## 0.21.61 (2026-09-17)
+
+- A chat post reads its envelope wherever the app's send SP puts it (the push-recipient rowsets come first) — posting from the web works
+- The app's first-install sign-in with a web passkey (E9.F7.S13): app-options / app-verify routes, a fresh invite code for the verified hasher; webcredentials in the AASA and get_login_creds in assetlinks
+
+
+## 0.21.60 (2026-09-17)
+
+- Chat on the web: run, kennel and room threads through the app's own message SPs — the chat list at /me/chat with the rooms and every thread with messages, the thread page with the app's blue and slate bubbles, ten-second polling and a composer; the three-state chat bubble on run and kennel cards; the global unread badge in the title bar
+
+
+## 0.21.59 (2026-09-17)
+
+- Run Counts and the history drill-down at the app's sizes: the translucent header band, the 140 px pill tabs, 80 px logos, 32 px condensed counts; historical run and haring counts on the drill-down header
+
+
+## 0.21.58 (2026-09-17)
+
+- The Kennels tab rebuilt to the app's screen: every eligible kennel, the search bar with the app's comma / plus / not grammar, white cards with the follow checkbox, the red home icon, the envelope and the bell, the logo, location, distance, "Runs: N, Times hared: M", last run and credit, and the red speed dial for the five sorts
+- The kennel page rebuilt to the app's: logo and cover photo, description, map, the Location / Last run / Next run / Hash cash rows, the mismanagement, "Next N runs" with the same cards as the Runs tab, "Show <kennel> Links" with the three QR groups, then Join the group, Open website, Run art gallery and Leaderboards
+- The bell and the envelope are editable on kennel cards and run cards — the app's own preference SP behind them
+- Get a Life (Leaderboards) and Run Artwork pages for every kennel
+
+
+## 0.21.57 (2026-09-17)
+
+- The Runs tab's search, count and filter bars stay pinned under the title bar while the list scrolls, as in the app
+- Member pages set in Avenir Next where the device has it, Nunito Sans otherwise; the condensed face (Run Counts, history rows) in Avenir Next Condensed or Roboto Condensed
+
+
+## 0.21.56 (2026-09-16)
+
+- The Runs tab rebuilt to the app's screen: search, "Showing N future runs,
+  M past runs", the My / Events / map / calendar filter bar, past runs above
+  "↑ Past Runs ↑", then My upcoming runs · Runs within N km · Runs from
+  Kennels I follow · All other upcoming runs, with the app's cards and
+  icons. Past runs load lazily as you scroll up.
+
+## 0.21.55 (2026-09-16)
+
+- Member title bar stays put (fixed, not sticky); hash name twice the size.
+- Kennels search lists every eligible kennel (the app's rule: not Defunct,
+  not Inactive-Hidden) instead of the 50 most recently active.
+- A run older than two years opened from history no longer 404s.
+
+## 0.21.54 (2026-09-16)
+
+- Run Counts rebuilt to the app's screens: your photo and totals, By Kennel /
+  By Country with the big logo = count rows, and the "My runs for <kennel>"
+  and "My runs for <country>" drill-downs with the tick or hare, "My FILTH
+  run #115 and #63 time haring", and the Run fee / Paid / Credit left strip.
+  Same numbers as the app — they are the app's own queries.
+- Wall-clock times on member pages were an hour off in summer time.
+
+## 0.21.53 (2026-09-16)
+
+- The home header sign-in button, for real this time (0.21.52 was built
+  with the change stashed).
+
+## 0.21.52 (2026-09-16)
+
+- The "Sign in" / "My hashing" button is on the hashruns.org home page header
+  (the header lives in the runs list, not the unused GlobalTabBar).
+
+## 0.21.51 (2026-09-16)
+
+- Tapping a kennel in the member area now shows the app's kennel screen
+  (`/me/kennels/<slug>`): description, Location / Last run / Next run /
+  Hash cash, the next runs with your RSVP, the mismanagement, and Open
+  website · Join the group · Leaderboards · Songs.
+- Run pages show the run's approved photos.
+- A "Sign in" / "My hashing" button in the hashruns.org tab bar and every
+  kennel site's nav.
+
+## 0.21.50 (2026-09-16)
+
+- Member area at `/me` — the app's five tabs for people signed in without the
+  app: Runs (my kennels' next year, RSVP inline), Kennels (follow/unfollow,
+  directory search), Map (pins + "Where am I?"), History (totals, per-kennel
+  counts and milestones, every run with my number), Songs. Styled to the
+  app: purple title bar, white cards, the app's RSVP checkboxes, light
+  bottom tab bar.
+
+## 0.21.49 (2026-09-16)
+
+- Members without the app can now sign in and RSVP ("browser as a device"):
+  the run page carries an "Are you coming?" panel that reads the `?RSVP=`
+  link from the WhatsApp notice, records the answer, and shows who else is
+  coming. Sign in by a six-letter email code, or on a computer by pointing
+  the phone's camera at a QR code the app approves; an unknown email creates
+  the member for that kennel. Passkeys offered after every sign-in.
+- `/login` pages; `/login` is now a reserved slug.
+
+## 0.21.48 (2026-09-15)
+- Universal links: `/<slug>/next-run` now opens the app (the app resolves the kennel's next run itself)
+
+## 0.21.47 (2026-09-15)
+- Universal links: `.well-known/apple-app-site-association` and `assetlinks.json` so hashruns.org run links open the Harrier Central app
+- AASA served as `application/json`; `.well-known` excluded from tenant rewriting
+
 ## 0.21.46 (2026-09-10)
 
 - No mark is ever a vertex of a trail: photos, checks and the admin's trim
