@@ -35,7 +35,8 @@ AS
 --     has ANY messages —
 --     { BadgeCount, PublicEventId, EventId, EventName, EventNumber,
 --       EventStartDatetimeGmt, EventImage, KennelId, PublicKennelId,
---       KennelShortName, KennelLogo, MessageCount }. Extra columns let the
+--       KennelShortName, KennelLogo, MessageCount, Pinned, RoomType,
+--       RoomIcon }. Extra columns let the
 --     app render the Unseen Chats list for events that aren't locally
 --     synced. First two columns unchanged. Rows may carry BadgeCount = 0
 --     (fully read, or notifications set to ignore for that thread) —
@@ -50,6 +51,10 @@ AS
 --       COALESCE(NULLIF(hem.EventNotificationPreference, 0),
 --                hkm.KennelNotificationPreference, 0). Silver Bell (mute=3)
 --       still badges — in-app only is exactly what a badge is.
+--     RoomType is non-NULL only on a platform-wide room row, and RoomIcon
+--     is that room's coin from HC6.ChatRoomCatalog() — a full URL, NULL
+--     when the room has no art yet. Clients draw it CONTAINED and never
+--     circle-masked: the coin is already a circle and a mask shaves its rim.
 --   On error (rowset 0): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-05-10
@@ -270,7 +275,8 @@ SELECT
     t.LastMessageAt         AS LastMessageAt,
     -- Pinned (E9.F1.S8). A run never auto-pins, so absent means 0.
     ISNULL(hem.Pinned, 0)   AS Pinned,
-    CAST(NULL AS INT)       AS RoomType
+    CAST(NULL AS INT)       AS RoomType,
+    CAST(NULL AS NVARCHAR(500)) AS RoomIcon
 FROM (
     SELECT em.EventId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -345,7 +351,8 @@ SELECT
     CASE WHEN hkm.Pinned IS NOT NULL THEN hkm.Pinned
          WHEN hkm.IsHomeKennel = 1   THEN 1
          ELSE 0 END                                AS Pinned,
-    CAST(NULL AS INT)                              AS RoomType
+    CAST(NULL AS INT)                              AS RoomType,
+    CAST(NULL AS NVARCHAR(500))                    AS RoomIcon
 FROM (
     SELECT em.KennelId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -402,7 +409,8 @@ SELECT
     0                                              AS MessageCount,
     CAST(NULL AS DATETIMEOFFSET(7))                AS LastMessageAt,
     1                                              AS Pinned,
-    CAST(NULL AS INT)                              AS RoomType
+    CAST(NULL AS INT)                              AS RoomType,
+    CAST(NULL AS NVARCHAR(500))                    AS RoomIcon
 FROM HC.Kennel k
 CROSS APPLY (
     -- TOP 1 for the same reason as above: HasherKennelMap is not guaranteed
@@ -455,7 +463,10 @@ SELECT
            OR (c.GrantColumn = 'flags'
                AND (ISNULL(hs.UnpinnedAppAccessRooms, 0) & c.GrantMask) <> 0)
          THEN 0 ELSE 1 END                         AS Pinned,
-    c.RoomType                                     AS RoomType
+    c.RoomType                                     AS RoomType,
+    -- The room's coin. NULL means no art yet; the client falls back to its
+    -- own glyph rather than showing a hole.
+    c.IconUrl                                      AS RoomIcon
 FROM HC6.ChatRoomCatalog() c
 LEFT JOIN HC.Hasher hs ON hs.id = @userId
 OUTER APPLY (

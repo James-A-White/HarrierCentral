@@ -862,10 +862,7 @@ class FutureRunsListPage extends StatelessWidget {
       margin: const EdgeInsets.only(top: 10.0),
       child: ListTile(
         leading: s.isRoomThread
-            ? SizedBox(
-                width: 48,
-                child: Icon(Icons.forum_outlined, color: hc_red, size: 30),
-              )
+            ? ChatRoomCoin(iconUrl: s.roomIcon, size: 44)
             : KennelLogo(
           kennelId: s.kennelId,
           kennelLogoUrl: s.kennelLogo,
@@ -1578,6 +1575,10 @@ class EventChatSummary {
   /// thread. Null for the other two kinds.
   final int? roomType;
 
+  /// The room's coin, a full URL from HC6.ChatRoomCatalog(). Null for run and
+  /// kennel threads, and null for a room that has no art yet.
+  final String? roomIcon;
+
   /// Pinned chats sort above everything else (E9.F1.S8). Resolved by the SP,
   /// so the tri-state kennel default (pinned for the home kennel) is already
   /// applied and the app does not re-derive it.
@@ -1588,6 +1589,7 @@ class EventChatSummary {
     required this.badgeCount,
     this.pinned = false,
     this.roomType,
+    this.roomIcon,
     this.eventId,
     this.eventName,
     this.eventNumber,
@@ -1627,6 +1629,7 @@ class EventChatSummary {
     lastMessageAt: lastMessageAt,
     pinned: pinned,
     roomType: roomType,
+    roomIcon: roomIcon,
   );
 
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
@@ -1647,6 +1650,7 @@ class EventChatSummary {
       // SMALLINT on the wire, but the `== true` guard costs nothing.
       pinned: json['Pinned'] == true || json['Pinned'] == 1,
       roomType: (json['RoomType'] as num?)?.toInt(),
+      roomIcon: json['RoomIcon'] as String?,
     );
   }
 

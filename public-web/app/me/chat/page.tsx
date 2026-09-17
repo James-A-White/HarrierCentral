@@ -32,7 +32,7 @@ export default async function ChatListPage() {
           <h3 className="px-3 pb-1 pt-4 text-[15px] font-bold uppercase tracking-wide text-white/90">Chat rooms</h3>
           <ul className="space-y-2 px-2">
             {rooms.map((t) => (
-              <Row key={`room-${t.RoomType}`} href={chatHref("room", String(t.RoomType), t.EventName ?? "Room", "/me/chat")} title={t.EventName ?? "Room"} sub={`${t.MessageCount} message${t.MessageCount === 1 ? "" : "s"}`} badge={t.BadgeCount} />
+              <Row key={`room-${t.RoomType}`} href={chatHref("room", String(t.RoomType), t.EventName ?? "Room", "/me/chat")} title={t.EventName ?? "Room"} sub={`${t.MessageCount} message${t.MessageCount === 1 ? "" : "s"}`} badge={t.BadgeCount} logo={t.RoomIcon} />
             ))}
           </ul>
         </>
@@ -60,6 +60,9 @@ function Row({ href, title, sub, badge, logo }: { href: string; title: string; s
     <li>
       <Link href={href} className="flex items-center gap-3 rounded-md bg-white px-3 py-2.5 text-zinc-900 shadow">
         {logo?.startsWith("https://") ? (
+          // Contained, never masked: a kennel logo must not be cropped, and a
+          // room's coin is already a circle whose raised rim is what makes it
+          // readable at 48px — a circular mask shaves it off.
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logo} alt="" className="h-12 w-12 shrink-0 object-contain" />
         ) : (
