@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRunPack } from "@/lib/member-api";
 import { readMember } from "@/lib/member-session";
 import { bad } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /** GET ?publicEventId= → { pack } — own state and who else is coming. */
 export async function GET(req: NextRequest) {
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
   try {
     return NextResponse.json({ pack: await getRunPack(s, publicEventId) });
   } catch (e) {
-    console.error("pack:", e);
+    await logWebError({ source: "/api/member/pack", error: e, session: s });
     return bad("Couldn't load the pack just now.", 502);
   }
 }

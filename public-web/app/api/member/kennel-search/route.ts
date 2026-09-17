@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchKennels } from "@/lib/member-api";
+import { logWebError } from "@/lib/web-log";
 
 /** GET ?q= → { kennels } — public directory, no sign-in needed. */
 export async function GET(req: NextRequest) {
@@ -7,7 +8,7 @@ export async function GET(req: NextRequest) {
   try {
     return NextResponse.json({ kennels: await searchKennels(q) });
   } catch (e) {
-    console.error("kennel-search:", e);
+    await logWebError({ source: "/api/member/kennel-search", error: e });
     return NextResponse.json({ kennels: [] }, { status: 502 });
   }
 }

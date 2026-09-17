@@ -4,6 +4,7 @@ import { callAdminApi } from "@/lib/member-api";
 import { hcToken, readMember, verifyValue } from "@/lib/member-session";
 import { CHALLENGE_COOKIE, EXPECTED_ORIGINS, RP_ID } from "@/lib/passkeys";
 import { bad, jsonBody } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /** POST <RegistrationResponseJSON> → { ok } — verifies and binds the passkey to this browser's device row. */
 export async function POST(req: NextRequest) {
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
       requireUserVerification: false,
     });
   } catch (e) {
-    console.error("register-verify:", e);
+    await logWebError({ source: "/api/member/passkey/register-verify", error: e, session: s });
     return bad("That passkey couldn't be verified.", 400);
   }
   if (!verification.verified || !verification.registrationInfo) return bad("That passkey couldn't be verified.", 400);

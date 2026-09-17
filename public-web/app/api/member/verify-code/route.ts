@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { authorizeBrowserByCode } from "@/lib/member-api";
 import { setMemberCookie } from "@/lib/member-session";
 import { bad, deviceDataOf, ipOf, jsonBody, limited } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /**
  * POST { code, remember } → { ok, hashName }
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
     setMemberCookie(res, session);
     return res;
   } catch (e) {
-    console.error("verify-code:", e);
+    await logWebError({ source: "/api/member/verify-code", error: e });
     return bad("We couldn't check the code just now. Please try again.", 502);
   }
 }

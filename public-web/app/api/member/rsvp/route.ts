@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRunPack, setRunRsvp } from "@/lib/member-api";
 import { readMember } from "@/lib/member-session";
 import { bad, jsonBody } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /** POST { publicEventId, rsvp: 'yes'|'no'|'maybe' } → { ok, message?, pack } */
 export async function POST(req: NextRequest) {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
     const pack = await getRunPack(s, publicEventId).catch(() => null);
     return NextResponse.json({ ok: true, message: r.message, pack });
   } catch (e) {
-    console.error("rsvp:", e);
+    await logWebError({ source: "/api/member/rsvp", error: e, session: s });
     return bad("Couldn't save your RSVP just now. Please try again.", 502);
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getReportContext } from "@/lib/member-api";
 import { hcToken, readMember } from "@/lib/member-session";
 import { bad, ipOf, jsonBody, limited } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 const REPORT_URL = `${process.env.HC_API_URL ?? "https://harriercentralpublicapi.azurewebsites.net"}/api/SendRunCountsReport`;
 
@@ -47,12 +48,12 @@ export async function POST(req: NextRequest) {
       signal: AbortSignal.timeout(30_000),
     });
     if (!res.ok) {
-      console.error("run-counts-report:", res.status, (await res.text()).slice(0, 200));
+      await logWebError({ source: "/api/member/run-counts-report", error: `SendRunCountsReport answered ${res.status}`, detail: (await res.text()).slice(0, 500), session: s });
       return bad("The report could not be sent just now. Please try again.", 502);
     }
     return NextResponse.json({ ok: true, email: ctx.EmailAddress });
   } catch (e) {
-    console.error("run-counts-report:", e);
+    await logWebError({ source: "/api/member/run-counts-report", error: e, session: s });
     return bad("The report could not be sent just now. Please try again.", 502);
   }
 }

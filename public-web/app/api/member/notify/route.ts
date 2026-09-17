@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { setNotificationPrefs } from "@/lib/member-api";
 import { readMember } from "@/lib/member-session";
 import { bad, jsonBody } from "@/lib/member-routes";
+import { logWebError } from "@/lib/web-log";
 
 /**
  * POST { publicKennelId? | publicEventId?, notification?: 0..4, email?: 1|2 }
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     const r = await setNotificationPrefs(s, { publicKennelId: kennel || undefined, publicEventId: event || undefined, notification, email });
     return r.ok ? NextResponse.json({ ok: true }) : bad(r.message ?? "Couldn't update.", 502);
   } catch (e) {
-    console.error("notify:", e);
+    await logWebError({ source: "/api/member/notify", error: e, session: s });
     return bad("Couldn't update just now.", 502);
   }
 }
