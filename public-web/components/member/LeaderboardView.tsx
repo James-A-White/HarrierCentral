@@ -10,7 +10,6 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { LeaderboardRow } from "@/lib/member-api";
-import { HC_RED } from "@/components/member/app-look";
 
 type Tab = "365" | "year" | "total";
 type Col = 0 | 1 | 2;
@@ -99,9 +98,7 @@ export function LeaderboardView({ rows, kennelShortName, back }: { rows: Leaderb
           ))}
         </ul>
       )}
-      <p className="px-3 pt-4 text-center text-[14px] text-white/60" style={{ color: "rgba(255,255,255,0.6)" }}>
-        Hashers with a run in the last year. <span style={{ color: HC_RED }} className="sr-only">.</span>
-      </p>
+      <p className="px-3 pt-4 text-center text-[14px] text-white/60">Hashers with a run in the last year.</p>
     </div>
   );
 }
