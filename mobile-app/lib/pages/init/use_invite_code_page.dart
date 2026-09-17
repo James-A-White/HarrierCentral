@@ -3,7 +3,11 @@ import 'package:harrier_central/imports.dart';
 class UseInviteCodePage extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const UseInviteCodePage({super.key});
+  const UseInviteCodePage({super.key, this.initialCode});
+
+  /// A code obtained without typing — the passkey sign-in (E9.F7.S13) —
+  /// which the page submits on its own as soon as it is shown.
+  final String? initialCode;
 
   @override
   UseInviteCodePageState createState() => UseInviteCodePageState();
@@ -35,7 +39,9 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
                 decoration: Backgrounds.defaultHcBackground(),
                 height: MediaQuery.sizeOf(context).height,
                 width: MediaQuery.sizeOf(context).width,
-                child: const UseInviteCodePageContent(),
+                child: UseInviteCodePageContent(
+                  initialCode: widget.initialCode,
+                ),
               ),
             ),
             resizeToAvoidBottomInset: false,
@@ -54,7 +60,9 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
 }
 
 class UseInviteCodePageContent extends StatefulWidget {
-  const UseInviteCodePageContent({super.key});
+  const UseInviteCodePageContent({super.key, this.initialCode});
+
+  final String? initialCode;
 
   @override
   UseInviteCodePageContentState createState() =>
@@ -107,7 +115,14 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
       formats: [BarcodeFormat.qrCode],
     );
 
-    _inviteCodeTextController = TextEditingController();
+    _inviteCodeTextController = TextEditingController(
+      text: widget.initialCode ?? '',
+    );
+    if ((widget.initialCode ?? '').isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _submitInviteCode();
+      });
+    }
     _inviteCodeDecoration = InputDecoration(
       labelText: 'Invite Code',
       fillColor: hc_red,
@@ -175,6 +190,124 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
       }
       return true;
     }());
+  }
+
+  /// The Get Started button — also run unprompted when the page opened with
+  /// a code from the passkey sign-in.
+  Future<void> _submitInviteCode() async {
+    if (_formKey.currentState!.validate()) {
+      // If the form is valid, display a snackbar. In the real world,
+      // you'd often call a server or save the information in a database.
+      setStateIfMounted(() {
+        _isLoading = true;
+      });
+
+      final AuthorizeDeviceService srv = AuthorizeDeviceService();
+      final Map<String, String> result = await srv.authorizeDevice(
+        scanText: normalizeInviteCode(_inviteCodeTextController.text),
+      );
+
+      setStateIfMounted(() {
+        _isLoading = false;
+      });
+
+      if (result['result'] != 'failed') {
+        final String userName =
+            getStringPref(StringPrefsEnum.displayName) ?? '<no name>';
+
+        String? profilePhotoUrl = getStringPref(
+          StringPrefsEnum.profilePhotoUrl,
+        );
+        profilePhotoUrl ??= bundledAvatarUrl(Random.secure().nextInt(49) + 1);
+
+        await Utilities.showAlert(
+          'Success!',
+          'The app has been successfully set up for $userName.',
+          'OK',
+        );
+
+        Navigator.pop(navigatorKey.currentContext!);
+        if (!mounted) return;
+        await Navigator.pushReplacement<dynamic, dynamic>(
+          navigatorKey.currentContext!,
+          MaterialPageRoute<dynamic>(
+            builder: (BuildContext context) => ChooseProfileImage(
+              isForThisDevice: true,
+              fileNamePrefix:
+                  getStringPref(StringPrefsEnum.supportCode) ?? '<no code>',
+              currentProfileImage: profilePhotoUrl,
+              popToCaller: false,
+            ),
+          ),
+        );
+      } else {
+        final int? errorCode = int.tryParse(result['errorCode'] ?? '');
+
+        if (errorCode == DB_ERROR_ACCOUNT_REMOVED) {
+          // The code was entered CORRECTLY — it resolved to
+          // a real account that has since been removed. Never
+          // ask them to retype it; that is an endless loop.
+          // They may still have a second, live account (a
+          // kennel admin may have created one for them), so
+          // send them to look themselves up.
+          await Utilities.showAlert(
+            'Let\'s find your account',
+            'That invite code is no longer active.'
+                '\r\n\r\nEnter your hash name or email address '
+                'and we\'ll find your account.',
+            'Continue',
+          );
+          if (!mounted) return;
+          await OnboardingFlowController.start(
+            OnboardingDestination.findMyAccount,
+          );
+          return;
+        }
+
+        if (errorCode == DB_ERROR_INVITE_CODE_NOT_FOUND) {
+          _notFoundAttempts++;
+
+          // After a couple of misses, also offer a way on —
+          // by then it is more likely the code is stale than
+          // mistyped. Retrying stays the default action.
+          if (_notFoundAttempts >= 2) {
+            final bool findAccount =
+                await Utilities.showAlert(
+                  'Code not found',
+                  'We couldn\'t find that invite code.'
+                      '\r\n\r\nIf you\'re sure it\'s right it may '
+                      'have expired — we can look up your '
+                      'account instead.',
+                  'Find my account',
+                  showCancelButton: true,
+                ) ??
+                false;
+            if (findAccount) {
+              if (!mounted) return;
+              await OnboardingFlowController.start(
+                OnboardingDestination.findMyAccount,
+              );
+              return;
+            }
+          } else {
+            await Utilities.showAlert(
+              'Code not found',
+              'We couldn\'t find that invite code. Please '
+                  'check it and try again.',
+              'OK',
+            );
+          }
+          return;
+        }
+
+        await Utilities.showAlert(
+          'Setup failed',
+          result['message'] ??
+              'We could not set up your device. Please check your invite code and try again.',
+          'OK',
+        );
+      }
+    }
   }
 
   @override
@@ -384,139 +517,13 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               child: TextButton(
                                 style: text_button_style,
                                 child: Text('Get Started!', style: ts_button),
-                                onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          // If the form is valid, display a snackbar. In the real world,
-                          // you'd often call a server or save the information in a database.
-                          setStateIfMounted(() {
-                            _isLoading = true;
-                          });
-
-                          final AuthorizeDeviceService srv =
-                              AuthorizeDeviceService();
-                          final Map<String, String> result = await srv
-                              .authorizeDevice(
-                                scanText: normalizeInviteCode(
-                                  _inviteCodeTextController.text,
-                                ),
-                              );
-
-                          setStateIfMounted(() {
-                            _isLoading = false;
-                          });
-
-                          if (result['result'] != 'failed') {
-                            final String userName =
-                                getStringPref(StringPrefsEnum.displayName) ??
-                                '<no name>';
-
-                            String? profilePhotoUrl = getStringPref(
-                              StringPrefsEnum.profilePhotoUrl,
-                            );
-                            profilePhotoUrl ??=
-                                bundledAvatarUrl(Random.secure().nextInt(49) + 1);
-
-                            await Utilities.showAlert(
-                              'Success!',
-                              'The app has been successfully set up for $userName.',
-                              'OK',
-                            );
-
-                            Navigator.pop(navigatorKey.currentContext!);
-                            if (!mounted) return;
-                            await Navigator.pushReplacement<dynamic, dynamic>(
-                              navigatorKey.currentContext!,
-                              MaterialPageRoute<dynamic>(
-                                builder: (BuildContext context) =>
-                                    ChooseProfileImage(
-                                      isForThisDevice: true,
-                                      fileNamePrefix:
-                                          getStringPref(
-                                            StringPrefsEnum.supportCode,
-                                          ) ??
-                                          '<no code>',
-                                      currentProfileImage: profilePhotoUrl,
-                                      popToCaller: false,
-                                    ),
+                                onPressed: _submitInviteCode,
                               ),
-                            );
-                          } else {
-                            final int? errorCode = int.tryParse(
-                              result['errorCode'] ?? '',
-                            );
-
-                            if (errorCode == DB_ERROR_ACCOUNT_REMOVED) {
-                              // The code was entered CORRECTLY — it resolved to
-                              // a real account that has since been removed. Never
-                              // ask them to retype it; that is an endless loop.
-                              // They may still have a second, live account (a
-                              // kennel admin may have created one for them), so
-                              // send them to look themselves up.
-                              await Utilities.showAlert(
-                                'Let\'s find your account',
-                                'That invite code is no longer active.'
-                                '\r\n\r\nEnter your hash name or email address '
-                                'and we\'ll find your account.',
-                                'Continue',
-                              );
-                              if (!mounted) return;
-                              await OnboardingFlowController.start(
-                                OnboardingDestination.findMyAccount,
-                              );
-                              return;
-                            }
-
-                            if (errorCode == DB_ERROR_INVITE_CODE_NOT_FOUND) {
-                              _notFoundAttempts++;
-
-                              // After a couple of misses, also offer a way on —
-                              // by then it is more likely the code is stale than
-                              // mistyped. Retrying stays the default action.
-                              if (_notFoundAttempts >= 2) {
-                                final bool findAccount =
-                                    await Utilities.showAlert(
-                                      'Code not found',
-                                      'We couldn\'t find that invite code.'
-                                      '\r\n\r\nIf you\'re sure it\'s right it may '
-                                      'have expired — we can look up your '
-                                      'account instead.',
-                                      'Find my account',
-                                      showCancelButton: true,
-                                    ) ??
-                                    false;
-                                if (findAccount) {
-                                  if (!mounted) return;
-                                  await OnboardingFlowController.start(
-                                    OnboardingDestination.findMyAccount,
-                                  );
-                                  return;
-                                }
-                              } else {
-                                await Utilities.showAlert(
-                                  'Code not found',
-                                  'We couldn\'t find that invite code. Please '
-                                  'check it and try again.',
-                                  'OK',
-                                );
-                              }
-                              return;
-                            }
-
-                            await Utilities.showAlert(
-                              'Setup failed',
-                              result['message'] ??
-                                  'We could not set up your device. Please check your invite code and try again.',
-                              'OK',
-                            );
-                          }
-                        }
-                      },
-                    ),
+                            ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
               const SizedBox(height: 20, width: 10),
               SizedBox(
                 width: double.infinity,

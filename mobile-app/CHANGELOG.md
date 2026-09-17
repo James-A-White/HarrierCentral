@@ -1,3 +1,10 @@
+## 3.0.41+1381 (2026-09-17)
+### New Features
+- **Sign in with my passkey**: a fresh install signs in with the passkey made
+  on hashruns.org, one tap on the account pages, no invite code to type. The
+  web verifies the passkey and hands the app a code; the app takes its usual
+  authorisation path with it.
+
 ## 3.0.40+1379 (2026-09-16)
 ### New Features
 - Sign in to hashruns.org from a computer by pointing the phone's camera at
