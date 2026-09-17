@@ -1,3 +1,6 @@
+1.0.54+52
+    • PublicWebAdminApi allows issuePasskeyInviteCode — the app's first-install sign-in with a web passkey (E9.F7.S13).
+
 1.0.53+51
     • PublicWebAdminApi allows getChatThreads, getChatMessages, sendChatMessage and markChatRead — chat on the web (E9.F7.S15).
 
