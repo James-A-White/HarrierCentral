@@ -11,11 +11,8 @@ import Link from "next/link";
 import type { HistoryCountry, HistoryKennel } from "@/lib/member-api";
 import { HC_RED } from "@/components/member/app-look";
 
-export const condensed: React.CSSProperties = {
-  fontFamily: '"Avenir Next Condensed", "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif',
-  fontStretch: "condensed",
-  fontWeight: 700,
-};
+/** The app's condensed face; the class carries the family (see globals.css). */
+export const condensed: React.CSSProperties = { fontWeight: 700 };
 
 export function RunCountsView({ kennels, countries }: { kennels: HistoryKennel[]; countries: HistoryCountry[] }) {
   const [mode, setMode] = useState<"kennel" | "country">("kennel");
@@ -78,7 +75,7 @@ function CountRow({ href, image, fallback, name, count, hared }: { href: string;
           )}
         </div>
         <span className="shrink-0 text-4xl font-bold text-zinc-900">=</span>
-        <div className="min-w-0 leading-tight text-zinc-900" style={condensed}>
+        <div className="font-condensed min-w-0 leading-tight text-zinc-900" style={condensed}>
           <div className="text-[22px] leading-[1.05]">{name}</div>
           <div className="text-[44px] leading-none">{count}</div>
           {hared > 0 && <div className="text-[20px] font-semibold">({hared} times hared)</div>}

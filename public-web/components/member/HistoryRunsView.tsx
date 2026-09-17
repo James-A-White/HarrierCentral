@@ -137,7 +137,7 @@ function RunRow({ r, showKennelLogo, showFlag }: { r: HistoryRunRow; showKennelL
         <img src={`/images/flags/${r.flagFile}`} alt={r.countryName} className="h-12 w-12 shrink-0 rounded-full object-cover" />
       )}
       <div className="w-0.5 self-stretch bg-zinc-400/60" />
-      <div className="min-w-0 flex-1 leading-tight text-zinc-900" style={condensed}>
+      <div className="font-condensed min-w-0 flex-1 leading-tight text-zinc-900" style={condensed}>
         <Link href={`/${r.kennelSlug}/${r.eventNumber}?back=/me/history`} className="block truncate text-[19px] hover:underline">{r.eventName}</Link>
         <div className="truncate text-[17px] font-semibold" suppressHydrationWarning>Run #{r.eventNumber} on {appDate(r.eventStartDatetime)}</div>
         {attended && r.totalRunsThisKennel ? (

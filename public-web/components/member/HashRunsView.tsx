@@ -231,6 +231,10 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
 
   return (
     <div className="-mx-3 -mt-[12px] sm:-mt-[16px] md:-mx-6">
+      {/* The app pins the search, the count strip and the filter bar; the
+          list scrolls under them. Fixed under the purple title bar (48px);
+          the list is padded by their height (48 + 1 + 24 + 1 + 55). */}
+      <div className="fixed inset-x-0 top-12 z-40">
       {/* Search — the app's white bar with the magnifier and X */}
       <div className="flex items-center gap-3 bg-white px-4 py-2.5">
         <Search className="h-6 w-6 shrink-0 text-zinc-900" />
@@ -255,10 +259,11 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
         <Chip on={false} onClick={() => router.push("/me/map")} icon={<MapPinned className="h-5 w-5" />} title="Runs on the map" />
         <Chip on={false} onClick={() => router.push("/calendar")} icon={<CalendarSearch className="h-5 w-5" />} title="Calendar" />
       </div>
+      </div>
 
       {error && <p className="mx-3 mt-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold" style={{ color: HC_RED }}>{error}</p>}
 
-      <ul className="space-y-2 px-2.5 pb-12 pt-2">
+      <ul className="space-y-2 px-2.5 pb-12 pt-[134px]">
         {morePast && (
           <li ref={topSentinel} className="py-3 text-center text-sm text-white/80" aria-live="polite">
             Loading older runs… ({past.length - pastShown} more)
@@ -267,7 +272,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
         {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} busy={busy === r.PublicEventId} />)}
 
         {past.length > 0 && (
-          <li ref={dividerRef} className="scroll-mt-[190px]">
+          <li ref={dividerRef} className="scroll-mt-[186px]">
             <Banner>↑ Past Runs ↑</Banner>
           </li>
         )}

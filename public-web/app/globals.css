@@ -168,3 +168,12 @@
     @apply bg-background text-foreground antialiased;
   }
 }
+/* The member area is set like the app: Avenir Next where the device has it,
+   Nunito Sans otherwise; the condensed face for the app's condensed labels. */
+.member-font {
+  font-family: "Avenir Next", var(--font-fallback), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.member-font .font-condensed {
+  font-family: "Avenir Next Condensed", "AvenirNextCondensed-DemiBold", var(--font-fallback-condensed), "Arial Narrow", sans-serif;
+  font-stretch: condensed;
+}
