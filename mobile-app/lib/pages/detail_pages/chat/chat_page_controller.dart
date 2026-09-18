@@ -160,6 +160,12 @@ class ChatPageController extends GetxController {
   }
 
   void _upgradeOwnMessagesToDelivered() {
+    // onClose cancels the FCM subscription WITHOUT awaiting it, so an event
+    // already in flight can still land here after chatController.dispose().
+    // Writing to a disposed InMemoryChatController throws "Cannot add new
+    // events after calling close" — the same fault _fetchDelta was fixed for
+    // on 2026-09-14, from the one path that was not covered.
+    if (isClosed) return;
     for (final msg in List.of(chatController.messages)) {
       if (msg.authorId != currentUser.id) continue;
       if (msg.status != core.MessageStatus.sent) continue;
@@ -399,6 +405,9 @@ class ChatPageController extends GetxController {
         height: image.height.toDouble(),
         size: bytes.length,
       );
+      // Picking an image and decoding it are both long awaits, and the
+      // hasher can leave the chat inside either one.
+      if (isClosed) return;
       unawaited(chatController.insertMessage(message));
     }
   }

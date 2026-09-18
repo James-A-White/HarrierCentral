@@ -393,17 +393,27 @@ class ServiceCommon {
       // GetX throws LateInitializationError from closeAllSnackbars when a
       // queued snackbar never got its controller (seen 2026-09-11 while an
       // import was polling through 599s). Closing is best-effort.
+      // The WHOLE thing is best-effort, not just the close. GetX throws a
+      // LateInitializationError out of closeAllSnackbars when a queued
+      // snackbar never got its controller (seen 2026-09-11 and again
+      // 2026-09-12, both while an HTTP call was retrying through 599s), and
+      // showSnackbar can fault the same way on a teardown. This is a
+      // "Reconnecting…" toast raised from inside a retry loop: failing to
+      // draw it must never become an app error on top of the network one it
+      // was reporting.
       try {
         Get.closeAllSnackbars();
       } catch (_) {}
-      Get.showSnackbar(
-        GetSnackBar(
-          title: title,
-          message: message,
-          duration: duration,
-          backgroundColor: backgroundColor,
-        ),
-      );
+      try {
+        Get.showSnackbar(
+          GetSnackBar(
+            title: title,
+            message: message,
+            duration: duration,
+            backgroundColor: backgroundColor,
+          ),
+        );
+      } catch (_) {}
     }
 
     if (_snackbarContext() != null) {

@@ -37,6 +37,10 @@ class RunNumberPopupState extends State<RunNumberPopup> {
         focusNode: myFocusNodeFirstName,
         controller: _runNumberAmountTextController,
         keyboardType: TextInputType.number,
+        // TextInputType.number still offers a decimal separator on both
+        // platforms, which is how "729.5" got typed into a column that only
+        // holds whole numbers.
+        inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
         style: ts_alertDialogBody,
         decoration: InputDecoration(
           border: InputBorder.none,

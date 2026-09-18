@@ -311,7 +311,20 @@ class FilterEventsController extends GetxController {
       if (runNumber == 'auto') {
         rn = 0;
       } else {
-        rn = int.parse(runNumber);
+        // A kennel admin typed "729.5" — half-numbered runs are a real hash
+        // convention — and int.parse threw a FormatException that killed the
+        // whole update silently (production, 2026-09-16). absoluteEventNumber
+        // is an integer column, so say so rather than crash or round their
+        // number to something they did not ask for.
+        final int? parsed = int.tryParse(runNumber.trim());
+        if (parsed == null) {
+          showHcSnackbar(
+            'Run numbers must be whole numbers.',
+            isError: true,
+          );
+          return;
+        }
+        rn = parsed;
       }
 
       await updateEvent(eventId: event.eventId, asboluteEventNumber: rn);

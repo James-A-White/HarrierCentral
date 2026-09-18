@@ -1,5 +1,12 @@
 ## 3.0.44+1385 (2026-09-18)
 ### Fixes
+- **Run numbers**: setting a run number to something that is not a whole
+  number, like 729.5, now says so instead of silently doing nothing. The
+  field no longer accepts a decimal point.
+- **Chat**: leaving a chat while a photo was being picked, or as a
+  notification arrived, no longer throws in the background.
+- **Reconnecting**: the "experiencing connection issues" notice can no
+  longer fail in a way that reports itself as an app error.
 - **Checking in the pack**: setting someone's RSVP when the network dropped
   left the row spinning for ever and did nothing. It now says it could not
   save and stops. Copying RSVPs from the last run no longer fails on a
