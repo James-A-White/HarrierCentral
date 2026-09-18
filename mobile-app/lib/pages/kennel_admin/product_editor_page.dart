@@ -71,7 +71,7 @@ class ProductEditorController extends GetxController {
           'price': priceCharged,
           if (unitCost != 0) 'unitCost': unitCost,
           if (promotionalCredit != 0) 'promotionalCredit': promotionalCredit,
-          if (runCount != null) 'runsIncluded': runCount,
+          'runsIncluded': ?runCount,
         }),
         productDetailsJson: productDetailsJson,
         isActive: isActive,
