@@ -259,12 +259,6 @@ INNER JOIN HC.Device device ON device.UserId = hkm.UserId
 LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
 WHERE hkm.KennelId = @kennelId
   AND hkm.removed  = 0
-  -- The sender does not get pushed their own message. 472 of the 3,373 chat
-  -- pushes in the 30 days to 2026-09-18 went back to the person who wrote
-  -- them (11 people), which is 14% of all chat push traffic and reads as the
-  -- app being broken. hcapp_sendRoomMessage has excluded its sender since it
-  -- was written; these two never did.
-  AND hkm.UserId <> @userId
   AND h.Removed    = 0
   AND device.FcmToken IS NOT NULL
   AND device.removed   = 0
