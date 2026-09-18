@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harrier_central/imports.dart';
-import 'package:harrier_central/widgets/packtrack_trim_overlay.dart';
 
 /// The trim panel shipped with "Stop everyone's tracking" drawn in hc_red on an
 /// hc_red button, i.e. an invisible label on a blank red bar, and with its four

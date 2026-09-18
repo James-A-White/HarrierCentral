@@ -1089,8 +1089,9 @@ SELECT
 
   /// Human label for a payment's product type, shown in the detail popup.
   String _productLabel(int productType) {
-    if (productType == productTypeMembership.value)
+    if (productType == productTypeMembership.value) {
       return 'Annual subscription';
+    }
     if (productType == productTypeHaberdashery.value) return 'Haberdashery';
     return 'Run fee';
   }

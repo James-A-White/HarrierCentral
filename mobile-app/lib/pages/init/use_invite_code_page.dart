@@ -489,8 +489,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               width: double.infinity,
                               child: TextButton(
                                 style: text_button_style,
-                                child: Text('Get Started!', style: ts_button),
                                 onPressed: _submitInviteCode,
+                                child: Text('Get Started!', style: ts_button),
                               ),
                             ),
                     ],

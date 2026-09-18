@@ -23,7 +23,8 @@ extension NullableUuidStringExtension on String? {
 bool isValidUuid(String? uuid) {
   if (uuid == null || uuid.isEmpty) return false;
   // GUID_EMPTY is defined in constants.dart
-  if (uuid.toLowerCase() == '00000000-0000-0000-0000-000000000000')
+  if (uuid.toLowerCase() == '00000000-0000-0000-0000-000000000000') {
     return false;
+  }
   return true;
 }

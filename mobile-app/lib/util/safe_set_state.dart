@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 extension SafeSetStateExtension<T extends StatefulWidget> on State<T> {

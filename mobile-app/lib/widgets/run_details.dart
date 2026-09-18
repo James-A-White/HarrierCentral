@@ -1518,7 +1518,7 @@ class _MyNotesSection extends StatelessWidget {
   }
 }
 
-/// "Post this run to <kennel's app>" with a chevron for the other platforms.
+/// "Post this run to `<kennel's app>`" with a chevron for the other platforms.
 ///
 /// Built from a Row of two buttons rather than a MenuAnchor-per-button so the
 /// main action stays a plain red button like every other on the page, and

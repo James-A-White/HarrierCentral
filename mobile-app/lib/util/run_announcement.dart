@@ -1,6 +1,5 @@
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:harrier_central/imports.dart';
 
 /// The messaging apps a kennel can prefer. Codes match
