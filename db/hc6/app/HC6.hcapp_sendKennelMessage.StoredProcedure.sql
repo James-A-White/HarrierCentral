@@ -162,6 +162,9 @@ WHERE msg.id = @messageId AND msg.removed = 0 AND h.Removed = 0;
 -- window to sit inside and is treated as on, as it always was here.
 -- ---------------------------------------------------------------
 DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
+-- Builds that cannot route a push with no event are left out entirely.
+-- One place owns the number: HC6.MinBuildForChatPush.
+DECLARE @minPushBuild INT = HC6.MinBuildForChatPush();
 
 SELECT DISTINCT
     hkm.UserId,
@@ -177,6 +180,9 @@ WHERE hkm.KennelId = @kennelId
   AND device.FcmToken  IS NOT NULL
   AND device.removed   = 0
   AND device.LastLogin >= @idleCutoff
+  -- BuildNumber is NVARCHAR and can be '<unknown>': TRY_CAST yields NULL,
+  -- the comparison is UNKNOWN, and the device is excluded. Fail closed.
+  AND TRY_CAST(device.BuildNumber AS INT) >= @minPushBuild
   AND COALESCE(hkm.KennelNotificationPreference, 0) IN (1, 3, 4)
   AND (
       @sendToEveryone       != 0

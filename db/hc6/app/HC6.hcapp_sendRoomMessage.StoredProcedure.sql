@@ -217,6 +217,9 @@ WHERE msg.id = @messageId;
 -- SPs use, so a room can never push to someone it would refuse to show.
 -- ---------------------------------------------------------------
 DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
+-- Builds that cannot route a push with no event are left out entirely.
+-- One place owns the number: HC6.MinBuildForChatPush.
+DECLARE @minPushBuild INT = HC6.MinBuildForChatPush();
 
 SELECT DISTINCT
     h.id           AS UserId,
@@ -236,6 +239,9 @@ WHERE h.Removed = 0
   AND device.FcmToken  IS NOT NULL
   AND device.removed   = 0
   AND device.LastLogin >= @idleCutoff
+  -- BuildNumber is NVARCHAR and can be '<unknown>': TRY_CAST yields NULL,
+  -- the comparison is UNKNOWN, and the device is excluded. Fail closed.
+  AND TRY_CAST(device.BuildNumber AS INT) >= @minPushBuild
   AND ISNULL(b.ParticipationState, 0) <> 2
   AND HC6.UserMayEnterChatRoom(h.id, @roomType) = 1;
 
