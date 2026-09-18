@@ -169,6 +169,18 @@ class FutureRunListPageController extends GetxController {
   /// in-memory filters over already-loaded data, so this just re-filters and
   /// re-anchors on the divider. Toggling a chip while in chats mode leaves it
   /// (which changes scope all -> future), so a reload is needed there.
+  /// `update()` after an await, safely.
+  ///
+  /// This controller is `Get.put` without `permanent: true` (the flag is
+  /// commented out in future_run_list_page.dart), so nothing guarantees it
+  /// outlives its route. GetX's update() dereferences a null `_updaters`
+  /// once disposed and throws in release, and every update below is reached
+  /// after a backend refresh or a table read.
+  void _update(List<Object> ids) {
+    if (isClosed) return;
+    update(ids);
+  }
+
   Future<void> toggleChip(RxBool chip) async {
     final wasChatsMode = isChatsMode;
     if (wasChatsMode) {
@@ -378,7 +390,7 @@ class FutureRunListPageController extends GetxController {
     debugPrint(
       '[BOOT] onInitAsync: calling update(runList, mainNavPage): ${DateTime.now().millisecondsSinceEpoch}ms',
     );
-    update([UpdateIds.runList, UpdateIds.mainNavPage]);
+    _update([UpdateIds.runList, UpdateIds.mainNavPage]);
     debugPrint(
       '[BOOT] onInitAsync: COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
@@ -411,7 +423,7 @@ class FutureRunListPageController extends GetxController {
 
   void refreshRunListUi() {
     filterRuns(false);
-    update([UpdateIds.runList, UpdateIds.mainNavPage]);
+    _update([UpdateIds.runList, UpdateIds.mainNavPage]);
   }
 
   void notificationReceived(RemoteMessage message) {
@@ -568,7 +580,7 @@ class FutureRunListPageController extends GetxController {
 
     // _updateTotalNotificationCounter();
 
-    update([UpdateIds.runList, UpdateIds.mainNavPage]);
+    _update([UpdateIds.runList, UpdateIds.mainNavPage]);
 
     //setStateIfMounted(() {});
 
@@ -680,7 +692,7 @@ class FutureRunListPageController extends GetxController {
       filteredRuns.value = List<dynamic>.from(list);
       resultCount.value = filteredRuns.length;
       if (pastRuns.isNotEmpty) pastRuns.clear();
-      update([UpdateIds.runList]);
+      _update([UpdateIds.runList]);
       return;
     }
 
@@ -831,7 +843,7 @@ class FutureRunListPageController extends GetxController {
     debugPrint(
       '[BOOT] filterRuns: update(runList) start: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
-    update([UpdateIds.runList]);
+    _update([UpdateIds.runList]);
     debugPrint(
       '[BOOT] filterRuns: COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
@@ -1104,7 +1116,7 @@ class FutureRunListPageController extends GetxController {
     }
 
     await refreshFromTable(true);
-    update([UpdateIds.runList]);
+    _update([UpdateIds.runList]);
   }
 
   // Resolve a run table's physical name the same way clearTables does, so the

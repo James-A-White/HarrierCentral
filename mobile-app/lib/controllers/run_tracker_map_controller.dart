@@ -1234,6 +1234,11 @@ class RunTrackerMapController extends GetxController
       final raw = await KennelPhotoService().getRunPhotos(
         eventId: event.eventId,
       );
+      // Same bail-out as the track poll below, for the same reason: this is
+      // fired unawaited from the 15 s tick and from init, so the map page can
+      // be dismissed inside the fetch. update() on a disposed controller
+      // dereferences a null _updaters and throws in release as well as debug.
+      if (isClosed) return;
       if (raw.startsWith(ERROR_PREFIX)) return;
       final outer = jsonDecode(raw) as List<dynamic>;
       // No envelope on success. rowset 0 = own photos, rowset 1 = public photos.
@@ -1304,8 +1309,11 @@ class RunTrackerMapController extends GetxController
           ..clear()
           ..addAll(rows);
       }
+      // Re-checked: the uploader loop above awaits a DB read per NEW uploader,
+      // so the page can go between the fetch guard and here.
       if (updated || changed) {
         _photoCacheVersion++; // invalidate the memoised marker lists
+        if (isClosed) return;
         update();
       }
     } catch (e, s) {

@@ -207,6 +207,18 @@ class CheckInPackController extends GetxController
     }
   }
 
+  /// `update()` after an await, safely.
+  ///
+  /// GetX's update() dereferences a null `_updaters` once the controller is
+  /// disposed, so it throws in RELEASE as well as debug — unlike a plain
+  /// `.value` write, which GetX leaves harmless. Every update in this
+  /// controller is reached after a backend sync, a table read or a 1.5 s
+  /// delay, and backing out of check-in during any of those is one tap.
+  void _update(List<Object> ids) {
+    if (isClosed) return;
+    update(ids);
+  }
+
   Future<void> refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
     if (Utilities.isNotConnected()) {
       // Offline: skip the backend sync but STILL read from the local
@@ -219,14 +231,14 @@ class CheckInPackController extends GetxController
       await _refreshCounters(forceRefresh: true);
       if (showLoadingIndicator && isLoading) {
         isLoading = false;
-        update([UpdateIds.appScaffold]);
+        _update([UpdateIds.appScaffold]);
       }
       return;
     }
 
     if (showLoadingIndicator) {
       isLoading = true;
-      update([UpdateIds.appScaffold]);
+      _update([UpdateIds.appScaffold]);
     }
 
     await tableModel.syncEventAdminService.updateFromBackend(
@@ -295,7 +307,7 @@ class CheckInPackController extends GetxController
     } finally {
       if (forceRefresh) {
         isLoading = false;
-        update([UpdateIds.appScaffold]);
+        _update([UpdateIds.appScaffold]);
       }
     }
   }
@@ -516,7 +528,7 @@ class CheckInPackController extends GetxController
 
       if (forceRefresh) {
         isLoading = false;
-        update([UpdateIds.appScaffold]);
+        _update([UpdateIds.appScaffold]);
       }
 
       await filterPackListResults();
@@ -600,7 +612,7 @@ class CheckInPackController extends GetxController
       filteredList.assignAll(results);
     }
 
-    update([UpdateIds.hasherList]);
+    _update([UpdateIds.hasherList]);
   }
 
   Future<void> toggleFilterPanel() async {
@@ -609,6 +621,9 @@ class CheckInPackController extends GetxController
     } else {
       await animationController.forward();
     }
+    // animationController is disposed in onClose, so leaving the page mid
+    // animation lands here holding a dead one.
+    if (isClosed) return;
     showFilter.toggle();
     await refreshPackListFromTables(true);
   }
