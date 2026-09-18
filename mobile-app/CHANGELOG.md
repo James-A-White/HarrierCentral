@@ -1,5 +1,9 @@
 ## 3.0.44+1385 (2026-09-18)
 ### Fixes
+- **Checking in the pack**: setting someone's RSVP when the network dropped
+  left the row spinning for ever and did nothing. It now says it could not
+  save and stops. Copying RSVPs from the last run no longer fails on a
+  kennel's first ever run.
 - **Checking in the pack**: tapping a button on the payment bar could do
   nothing at all — no RSVP, no membership charge, no sale — if the list had
   refreshed underneath it since you tapped the hasher. It now works however

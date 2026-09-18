@@ -1036,6 +1036,17 @@ class CheckInPackController extends GetxController
           hemId: packMember.hemId,
         );
 
+    // A failed or transient call returns an EMPTY list — a dropped socket, a
+    // 599 stall, an error envelope. Indexing [0] threw a RangeError that also
+    // stranded the row: the caller clears rsvpIndexUpdating only after this
+    // returns, so the spinner span for ever. Seen in production 2026-09-17.
+    // run_list_item and run_tabs already guard this; the check-in list was
+    // missed.
+    if (adHocData.isEmpty) {
+      showHcSnackbar("Couldn't save RSVP — please try again.", isError: true);
+      return;
+    }
+
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
@@ -1467,6 +1478,13 @@ class CheckInPackController extends GetxController
       eventAggregate.event.eventStartDatetime,
     );
 
+    // A kennel's FIRST run has no previous one, and the query returns no
+    // rows. Say so instead of throwing a RangeError.
+    if (result.isEmpty) {
+      showHcSnackbar('No previous run to copy RSVPs from.', isError: true);
+      return;
+    }
+
     String lastRunName = result[0]['eventName'].toString();
     String fromEventId = result[0]['eventId'].toString();
 
@@ -1484,7 +1502,16 @@ class CheckInPackController extends GetxController
       final List<dynamic> adHocData = await tableModel.hasherEventMapService
           .copyEventRsvps(fromEventId, eventAggregate.event.eventId);
 
-      final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+      // Same empty-on-failure shape as every other adHoc reply. The refresh
+      // below still runs, because a copy can fail partway and local truth is
+      // then whatever actually landed.
+      if (adHocData.isEmpty) {
+        showHcSnackbar("Couldn't copy the RSVPs — please try again.",
+            isError: true);
+      }
+
+      final String serverMessage =
+          adHocData.isNotEmpty ? (adHocData[0]['serverMessage'] ?? '') : '';
 
       if (serverMessage.isNotEmpty) {
         await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
