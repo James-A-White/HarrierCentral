@@ -311,7 +311,25 @@ BEGIN TRY
 
 		UNION ALL
 
-		-- Push (FCM notifications dispatched to mobile devices only)
+		-- Push: notifications a PERSON actually saw.
+		--
+		-- IsVisible = 1 is the whole filter, and it is exact: every
+		-- badge-maintenance push is data-only by construction. It removes
+		-- markEventChatRead (the read-sync that clears a badge on your other
+		-- devices, 2,388 of the 5,767 rows in the 30 days to 2026-09-18) and
+		-- the silent copies of a chat message sent to someone who has the
+		-- thread muted. Neither ever appears on a phone, so counting them
+		-- made the row answer "how much FCM traffic" when the question is
+		-- "how many people were interrupted" (James, 2026-09-18).
+		--
+		-- The join to HC.Device was removed with it. It existed to say
+		-- "mobile only", but it matched on a LIVE FcmToken, so a push whose
+		-- token was later cleared — by the duplicate-token dedupe, or by
+		-- DeleteFcmToken after Firebase rejected it — silently vanished from
+		-- the count. That was losing 55% of all rows, and the portal dedupe
+		-- added on 2026-09-18 would have made it worse. Expect this row to
+		-- step UP when this deploys; the old number was wrong, not the new
+		-- one.
 		SELECT
 			'Push' AS dataType,
 			8 AS id,
@@ -324,9 +342,9 @@ BEGIN TRY
 			SUM(CASE WHEN pl.SentAt >= b.m1 THEN 1 ELSE 0 END),
 			SUM(CASE WHEN pl.SentAt >= b.m2 AND pl.SentAt < b.m1 THEN 1 ELSE 0 END)
 		FROM HC.PushLog pl WITH (NOLOCK)
-		INNER JOIN HC.Device d WITH (NOLOCK) ON d.FcmToken = pl.FcmToken AND d.IsMobile = 1
 		CROSS JOIN DateBounds b
 		WHERE pl.SentAt >= b.m2
+			AND pl.IsVisible = 1
 
 		UNION ALL
 
