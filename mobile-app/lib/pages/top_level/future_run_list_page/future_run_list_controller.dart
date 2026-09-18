@@ -506,9 +506,46 @@ class FutureRunListPageController extends GetxController {
   }
 
   Future<void> _processMessage(Map<String, dynamic> data) async {
+    // Kennel chat and the role rooms carry a ThreadKind and NO event, so they
+    // are routed before the run lookup below, which needs an event id and
+    // would otherwise drop the tap on the floor (E9.F1.S10).
+    final String threadKind = '${data['ThreadKind'] ?? ''}';
+    if (threadKind == 'room') {
+      final int? roomType = int.tryParse('${data['RoomType'] ?? ''}');
+      if (roomType != null) {
+        await Get.to(
+          () => ChatScaffold.room(
+            roomType: roomType,
+            title: '${data['RoomName'] ?? 'Chat room'}',
+            key: UniqueKey(),
+          ),
+        );
+      }
+      return;
+    }
+    if (threadKind == 'kennel') {
+      final String kennelId = '${data['KennelId'] ?? ''}';
+      final String publicKennelId = '${data['PublicKennelId'] ?? ''}';
+      final String shortName = '${data['KennelShortName'] ?? ''}';
+      if (kennelId.isNotEmpty && publicKennelId.isNotEmpty) {
+        await Get.to(
+          () => ChatScaffold(
+            title: shortName.isEmpty ? 'Kennel Chat' : '$shortName Kennel Chat',
+            eventId: kennelId,
+            publicEventId: publicKennelId,
+            isKennelThread: true,
+          ),
+        );
+      }
+      return;
+    }
+
     String? eventId = data['EventId']?.toString().toUpperCase();
+    // Stringify before parsing: int.tryParse takes a String, so an absent key
+    // throws rather than falling back to 0. The same bug was fixed in
+    // NotificationService on 2026-08-30; this copy was missed.
     MessageType messageType = MessageType.fromId(
-      int.tryParse(data['MessageType']) ?? 0,
+      int.tryParse('${data['MessageType'] ?? ''}') ?? 0,
     );
     if ((eventId != null) && (allRuns != null)) {
       dynamic runs = allRuns!

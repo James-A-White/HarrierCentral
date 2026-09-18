@@ -259,6 +259,15 @@ namespace HcWebApi.Endpoints
                     case "sendEventMessage":
                         _ = SendNotifications(multipleResults, log, includeNulls);
                         break;
+                    // Kennel chat and the role rooms computed a push audience that
+                    // nothing delivered — the switch only knew about run chat, so a
+                    // kennel or room message never reached a phone (E9.F1.S10).
+                    case "sendKennelMessage":
+                        _ = SendChatNotifications(multipleResults, ChatPushKind.Kennel, log);
+                        break;
+                    case "sendRoomMessage":
+                        _ = SendChatNotifications(multipleResults, ChatPushKind.Room, log);
+                        break;
                     case "markEventChatRead":
                         await SendReadSyncAsync(multipleResults, log);
                         break;
@@ -567,6 +576,173 @@ namespace HcWebApi.Endpoints
         // The shared EventMessage class (PortalApi.cs) retains the old HC5 typo for
         // backward compat with HC5 paths. This local class is used only in the HC6
         // sendEventMessage notification path.
+        public enum ChatPushKind { Kennel, Room }
+
+        /// <summary>
+        /// Push for the two thread kinds that are not a run: kennel chat and the
+        /// platform-wide role rooms.
+        ///
+        /// Deliberately separate from SendNotifications rather than folded into it.
+        /// That method deserialises into EventMessageHc6, whose EventId and
+        /// PublicEventId are `required`, so System.Text.Json REFUSES a kennel or room
+        /// detail row outright — the push would have failed silently inside its own
+        /// catch. Run chat keeps the path that works; these two get one that fits
+        /// their shape.
+        ///
+        /// Rowsets:
+        ///   Kennel — 0 detail, 1 visible, 2 silent
+        ///   Room   — 0 chat shape (left alone for clients), 1 detail, 2 visible, 3 silent
+        /// </summary>
+        public async Task SendChatNotifications(
+            List<List<Dictionary<string, object?>>> multipleResults, ChatPushKind kind, ILogger logger)
+        {
+            try
+            {
+                int detail = kind == ChatPushKind.Room ? 1 : 0;
+                if (multipleResults == null || multipleResults.Count < detail + 3)
+                {
+                    logger.LogWarning("{Kind} push: expected {N} rowsets, got {Got}. Nothing sent.",
+                        kind, detail + 3, multipleResults?.Count ?? 0);
+                    return;
+                }
+
+                var detailRow = multipleResults[detail].FirstOrDefault();
+                if (detailRow == null) { logger.LogWarning("{Kind} push: no detail row.", kind); return; }
+
+                string? Str(string key) =>
+                    detailRow.TryGetValue(key, out var v) && v != null ? v.ToString() : null;
+
+                var recipients = Tokens(multipleResults[detail + 1], visible: true)
+                    .Concat(Tokens(multipleResults[detail + 2], visible: false))
+                    .ToList();
+                if (recipients.Count == 0) { logger.LogInformation("{Kind} push: no recipients.", kind); return; }
+
+                // MessageType is PINNED TO "0" on the wire, and this is load-bearing.
+                // In HC.EventMessage the column names WHICH ROOM (1..6) for a room
+                // message, but the app parses the same key through MessageType.fromId,
+                // which THROWS ArgumentError for anything above 2 — unguarded, in both
+                // the foreground handler and the tap handler. Sending the real room
+                // number would break four of the six rooms on every phone already out
+                // there. The room travels in RoomType instead, which older builds
+                // ignore and newer ones can route on.
+                var data = new Dictionary<string, string> { ["MessageType"] = "0" };
+                void Put(string k, string? v) { if (!string.IsNullOrEmpty(v)) data[k] = v!; }
+
+                Put("ThreadKind",      kind == ChatPushKind.Room ? "room" : "kennel");
+                Put("MessageId",       Str("MessageId"));
+                Put("Title",           Str("MessageTitle"));
+                Put("Message",         Str("MessageContent"));
+                Put("UserId",          Str("UserId"));
+                Put("UserDisplayName", Str("UserDisplayName"));
+                Put("UserPhoto",       Str("UserPhoto"));
+                if (kind == ChatPushKind.Room)
+                {
+                    Put("RoomType", Str("RoomType"));
+                    Put("RoomName", Str("RoomName"));
+                }
+                else
+                {
+                    Put("KennelId",         Str("KennelId"));
+                    Put("PublicKennelId",   Str("PublicKennelId"));
+                    Put("KennelShortName",  Str("KennelShortName"));
+                }
+
+                string? accessToken = await GetFirebaseAccessTokenAsync();
+                var title = Str("MessageTitle") ?? "Harrier Central";
+                var body  = Str("MessageContent") ?? "";
+
+                var results = await Task.WhenAll(recipients.Select(r =>
+                    SendDataPushAsync(r.Token, data, title, body, r.Visible, accessToken, logger)));
+
+                var queryType = kind == ChatPushKind.Room ? "sendRoomMessage" : "sendKennelMessage";
+                _ = LogPushBatchAsync(
+                    queryType,
+                    null,                       // no EventId: neither kind belongs to a run
+                    $"chat: {title}",
+                    recipients.Select((r, i) => new PushLogEntry(
+                        r.Token, r.UserId, SenderUserId: Str("UserId"),
+                        IsVisible: r.Visible, FcmResult: results[i])),
+                    logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error sending {Kind} chat push: {Message}", kind, ex.Message);
+            }
+        }
+
+        private static IEnumerable<(string Token, string? UserId, bool Visible)> Tokens(
+            List<Dictionary<string, object?>> rows, bool visible)
+        {
+            foreach (var row in rows)
+            {
+                var token = row.TryGetValue("FcmToken", out var t) ? t?.ToString() : null;
+                if (string.IsNullOrEmpty(token)) continue;
+                var userId = row.TryGetValue("UserId", out var u) ? u?.ToString() : null;
+                yield return (token!, userId, visible);
+            }
+        }
+
+        /// <summary>
+        /// One FCM send. Every data value is a string, because FCM v1 types
+        /// message.data as map&lt;string,string&gt; and rejects the whole payload if a
+        /// value is null — which is what a kennel row's absent EventId would have been.
+        /// </summary>
+        private static async Task<string> SendDataPushAsync(
+            string fcmToken, Dictionary<string, string> data, string title, string body,
+            bool isNotification, string? accessToken, ILogger log)
+        {
+            try
+            {
+                var messageBody = new
+                {
+                    message = new
+                    {
+                        token = fcmToken,
+                        notification = isNotification ? new { title, body } : null,
+                        data,
+                        android = isNotification ? new { priority = "high", notification = new { sound = "default" } } : null,
+                        apns = isNotification
+                            ? new
+                            {
+                                headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
+                                payload = new { aps = new Dictionary<string, object> { ["sound"] = "default" } }
+                            }
+                            : new
+                            {
+                                headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
+                                payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
+                            }
+                    },
+                };
+
+                var stringContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(messageBody), Encoding.UTF8);
+                stringContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                var request = new HttpRequestMessage(HttpMethod.Post, FcmUrl)
+                {
+                    Headers = { { "Authorization", $"Bearer {accessToken}" } },
+                    Content = stringContent
+                };
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode) return "success";
+
+                string errorJson = await response.Content.ReadAsStringAsync();
+                log.LogWarning("FCM chat push failed: {Error}", errorJson);
+                if (errorJson.Contains("UNREGISTERED") || errorJson.Contains("NOT_FOUND") ||
+                    errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
+                {
+                    await DeleteFcmToken(fcmToken, log);
+                    return "token_error";
+                }
+                return "error";
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Exception while sending chat push.");
+                return "error";
+            }
+        }
+
         private sealed class EventMessageHc6
         {
             public required string MessageId { get; set; }

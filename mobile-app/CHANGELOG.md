@@ -1,3 +1,9 @@
+## 3.0.44+1385 (2026-09-18)
+### New Features
+- **Kennel and room chat notifications**: a message in your kennel's chat or one
+  of your role rooms now reaches your phone. Tapping it opens that thread. Older
+  builds get the notification too, but land on the run list instead.
+
 ## 3.0.43+1384 (2026-09-17)
 ### Improvements
 - **Chat rooms**: every role room now has its own coin — a struck medallion

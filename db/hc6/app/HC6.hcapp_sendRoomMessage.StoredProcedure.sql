@@ -26,8 +26,17 @@ AS
 --   NOT HC6.CheckKennelPermission: that answers "may this user do X in
 --   kennel K", and a room belongs to no kennel.
 --
--- Returns: rowset 0 — the message, in the same shape the chat UI already
---   reads for kennel and event threads.
+-- Returns:
+--   Rowset 0: the message, in the same shape the chat UI already reads for
+--     kennel and event threads. UNCHANGED — clients parse this one.
+--   Rowset 1: push detail for the API shim { MessageId, RoomType, RoomName,
+--     UserId, UserDisplayName, UserPhoto, MessageTitle, MessageContent }
+--   Rowset 2: visible push recipients { UserId, FcmToken }
+--   Rowset 3: silent (data-only) recipients { UserId, FcmToken }
+--
+--   Rowsets 1-3 were added 2026-09-18 (E9.F1.S10). A room computed no
+--   audience at all before that, so the shim had nothing to deliver and a
+--   room message never reached a phone.
 -- Author: Harrier Central
 -- Created: 2026-09-13
 -- HC5 Source: none (new)
@@ -157,4 +166,92 @@ SELECT
 FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
 WHERE msg.id = @messageId;
+
+-- The message is COMMITTED by this point. Everything below is push
+-- plumbing, so a failure here must not fail the send: it is logged and
+-- swallowed, never re-thrown. Re-throwing would break the client's parse of
+-- a rowset it has already been given, to report a message that did in fact
+-- arrive.
+BEGIN TRY
+
+-- ---------------------------------------------------------------
+-- Rowset 1: push detail.
+-- Deliberately a SEPARATE rowset rather than extra columns on rowset 0:
+-- rowset 0 is the flutter_chat_core shape that two clients already parse,
+-- and it stays exactly as it was.
+-- ---------------------------------------------------------------
+SELECT
+    msg.id                                   AS MessageId,
+    msg.MessageType                          AS RoomType,
+    c.RoomName                               AS RoomName,
+    h.PublicHasherId                         AS UserId,
+    h.DisplayName                            AS UserDisplayName,
+    h.Photo                                  AS UserPhoto,
+    c.RoomName + ' — ' + h.DisplayName       AS MessageTitle,
+    msg.MessageContent                       AS MessageContent
+FROM HC.EventMessage msg
+INNER JOIN HC.Hasher h ON msg.UserId = h.id
+LEFT JOIN HC6.ChatRoomCatalog() c ON c.RoomType = msg.MessageType
+WHERE msg.id = @messageId;
+
+-- ---------------------------------------------------------------
+-- Push recipients. A room does NOT use the kennel notification preference:
+-- membership is by role and the room's own opt-out lives on
+-- HC.EventMessageBadgeCounts.ParticipationState —
+--   0 participate with push (the default, and no row means the default)
+--   1 participate, badges only
+--   2 opted out, and the room is not even listed
+-- so 0 is consent here, unlike the kennel and event prefs where 0 means
+-- "never touched". That difference is deliberate: a hasher only has a room
+-- at all because they hold the role.
+--
+-- The rest mirrors hcapp_sendEventMessage: one push per DEVICE TOKEN, not
+-- per device row, nothing retired, and nothing to a device that has not
+-- signed in for 180 days (the next sign-in re-arms it).
+--
+-- The sender is excluded. The event and kennel audiences do NOT exclude
+-- their sender; that looks like a bug but it is pre-existing behaviour and
+-- is left alone here rather than changed as a side effect.
+--
+-- HC6.UserMayEnterChatRoom is the gate, the same one the list and the read
+-- SPs use, so a room can never push to someone it would refuse to show.
+-- ---------------------------------------------------------------
+DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
+
+SELECT DISTINCT
+    h.id           AS UserId,
+    device.FcmToken,
+    ISNULL(b.ParticipationState, 0) AS Pref
+INTO #roomAudience
+FROM HC.Hasher h
+INNER JOIN HC.Device device ON device.UserId = h.id
+LEFT JOIN HC.EventMessageBadgeCounts b
+       ON b.UserId       = h.id
+      AND b.EventId      IS NULL
+      AND b.KennelId     IS NULL
+      AND b.ThreadId     IS NULL
+      AND b.MessageType  = @roomType
+WHERE h.Removed = 0
+  AND h.id <> @userId
+  AND device.FcmToken  IS NOT NULL
+  AND device.removed   = 0
+  AND device.LastLogin >= @idleCutoff
+  AND ISNULL(b.ParticipationState, 0) <> 2
+  AND HC6.UserMayEnterChatRoom(h.id, @roomType) = 1;
+
+-- Rowset 2: visible push recipients
+SELECT DISTINCT UserId, FcmToken FROM #roomAudience WHERE Pref = 0;
+
+-- Rowset 3: silent (data-only) recipients — the badge moves, nothing buzzes
+SELECT DISTINCT UserId, FcmToken FROM #roomAudience WHERE Pref = 1;
+
+DROP TABLE #roomAudience;
+
+END TRY
+BEGIN CATCH
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId),
+            'Push audience failed in sendRoomMessage', ERROR_MESSAGE(), @procName, @userId);
+    -- Swallowed on purpose. See the note above the TRY.
+END CATCH
 GO

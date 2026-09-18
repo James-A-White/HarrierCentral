@@ -141,9 +141,13 @@ SELECT
     msg.MessageContent                       AS MessageContent,
     msg.MessageReleasabilityFlags            AS MessageReleasabilityFlags,
     0                                        AS EventChatMessageCount,
-    msg.MessageType                          AS MessageType
+    msg.MessageType                          AS MessageType,
+    -- Added 2026-09-18: a kennel push carries the short name so the phone can
+    -- title the thread it opens. Additive, so older clients ignore it.
+    k.KennelShortName                        AS KennelShortName
 FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
+LEFT JOIN HC.Kennel k  ON k.id = msg.KennelId
 WHERE msg.id = @messageId AND msg.removed = 0 AND h.Removed = 0;
 
 -- ---------------------------------------------------------------
