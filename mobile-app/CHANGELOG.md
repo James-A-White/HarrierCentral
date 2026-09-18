@@ -1,4 +1,10 @@
 ## 3.0.44+1385 (2026-09-18)
+### Fixes
+- **Checking in the pack**: tapping a button on the payment bar could do
+  nothing at all — no RSVP, no membership charge, no sale — if the list had
+  refreshed underneath it since you tapped the hasher. It now works however
+  long the bar has been open.
+
 ### New Features
 - **Kennel and room chat notifications**: a message in your kennel's chat or one
   of your role rooms now reaches your phone. Tapping it opens that thread. Older

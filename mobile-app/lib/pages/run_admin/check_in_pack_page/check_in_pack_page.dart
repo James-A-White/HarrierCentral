@@ -360,7 +360,7 @@ class CheckInPackPage extends StatelessWidget {
                                             if (packMember.isPaid != 1) {
                                               unawaited(
                                                 AppScaffoldController.payForEvent(
-                                                  context,
+                                                  ScaffoldMessenger.of(context),
 
                                                   paymentBankTransfer.value,
                                                   index,
@@ -473,7 +473,7 @@ class CheckInPackPage extends StatelessWidget {
                                             if (packMember.isPaid != 1) {
                                               unawaited(
                                                 AppScaffoldController.payForEvent(
-                                                  context,
+                                                  ScaffoldMessenger.of(context),
 
                                                   paymentCash.value,
                                                   index,

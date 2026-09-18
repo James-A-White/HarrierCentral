@@ -4,6 +4,7 @@ class PaymentSnackBar extends SnackBar {
   const PaymentSnackBar({
     super.key,
     required this.context,
+    required this.messenger,
     required this.packMember,
     required this.eventAggregate,
     required this.onRsvpCallback,
@@ -16,6 +17,13 @@ class PaymentSnackBar extends SnackBar {
   }) : super(content: const Text('test'));
 
   final BuildContext context;
+
+  /// The messenger resolved by the CALLER while its context was still alive.
+  /// These buttons fire long after the row that opened the snackbar may have
+  /// been rebuilt, and `ScaffoldMessenger.of(context)` on a defunct element
+  /// throws rather than returning null. See the note in
+  /// CheckInPackController.onHasherTapped.
+  final ScaffoldMessengerState messenger;
   final CheckInPackModel packMember;
   final RunAdminAggregate eventAggregate;
   final Function onRsvpCallback;
@@ -119,7 +127,7 @@ class PaymentSnackBar extends SnackBar {
                                 attendenceState: attendenceNoChange.value,
                                 isHare: isHareNo.value,
                               );
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                              messenger.hideCurrentSnackBar(
                                 reason: SnackBarClosedReason.hide,
                               );
                             },
@@ -165,7 +173,7 @@ class PaymentSnackBar extends SnackBar {
                               //     isHareNo.value,
                               //     attendenceNo.value,
                               //     packMember['']);
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                              messenger.hideCurrentSnackBar(
                                 reason: SnackBarClosedReason.hide,
                               );
                             },
