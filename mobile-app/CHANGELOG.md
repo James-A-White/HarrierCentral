@@ -1,5 +1,8 @@
 ## 3.0.44+1385 (2026-09-18)
 ### Fixes
+- **Exporting a trail** no longer fails outright when it contains a marker
+  this version does not recognise. The unknown marker is skipped, as it was
+  always meant to be.
 - **Chat**: in a kennel chat or a role room, your own message now gets its
   second tick, and new messages arrive while you are reading, the same as a
   run chat always has.
