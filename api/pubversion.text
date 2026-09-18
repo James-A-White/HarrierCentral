@@ -1,3 +1,14 @@
+1.0.58+56
+    • Application Insights actually ON. The app had only the legacy
+      APPINSIGHTS_INSTRUMENTATIONKEY, whose ingestion Microsoft retired in
+      March 2025, and both worker packages were commented out — so roughly 1
+      request in 1,000 was failing with an EMPTY 500 and nothing recorded why
+      (346 of 358,971 over the week to 2026-09-18). Connection string set on
+      the app, packages enabled, and the worker wired in Program.cs.
+    • The push log now records WHAT WAS SAID. Summary carried MessageTitle
+      ("DisplayName - Run"), identical on every row of a conversation; it now
+      carries the message, trimmed to 160 characters.
+
 1.0.57+55
     • Kennel chat and the role rooms now push. The dispatch switch only knew about
       run chat, so both computed a recipient list that nothing delivered.

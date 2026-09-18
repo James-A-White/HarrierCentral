@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
-    <Version>1.0.57</Version>
+    <Version>1.0.58</Version>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -22,9 +22,14 @@
     <PackageReference Include="Azure.Data.Tables" Version="12.10.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.22.2" />
     <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
-    <!-- Application Insights isn't enabled by default. See https://aka.ms/AAt8mw4. -->
-    <!-- <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" /> -->
-    <!-- <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" /> -->
+    <!-- Application Insights, enabled 2026-09-18. The Function App emits an
+         empty 500 on roughly 1 request in 1,000 (346 of 358,971 over the week
+         to 2026-09-18) and nothing recorded WHY: these two packages were
+         commented out, and the app carried only APPINSIGHTS_INSTRUMENTATIONKEY,
+         whose ingestion Microsoft retired in March 2025. The connection string
+         is now set on the app as well; the key alone sent nothing. -->
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.2.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.1" />
