@@ -1,5 +1,8 @@
 ## 3.0.44+1385 (2026-09-18)
 ### Fixes
+- **Chat**: in a kennel chat or a role room, your own message now gets its
+  second tick, and new messages arrive while you are reading, the same as a
+  run chat always has.
 - **Run numbers**: setting a run number to something that is not a whole
   number, like 729.5, now says so instead of silently doing nothing. The
   field no longer accepts a decimal point.
