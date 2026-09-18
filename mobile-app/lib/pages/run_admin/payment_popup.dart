@@ -47,9 +47,6 @@ class PaymentPopupState extends State<PaymentPopup> {
   // @override
   // void initState() {
 
-  //   super.initState();
-  // }
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -128,15 +125,9 @@ class PaymentPopupState extends State<PaymentPopup> {
                   //         value: 5,
                   //         groupValue: selectedValue,
                   //         onChanged: _handleRadioValueChange1,
-                  //       ),
-                  //       Column(
                   //         mainAxisAlignment: MainAxisAlignment.start,
                   //         crossAxisAlignment: CrossAxisAlignment.start,
                   //         children: <Widget>[
-                  //           Text(
-                  //             'Pay ${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)} & top up',
-                  //             style: const TextStyle(fontSize: 16.0),
-                  //           ),
 
                   //           //         TextField(
 
@@ -144,21 +135,13 @@ class PaymentPopupState extends State<PaymentPopup> {
                   //           //   style: const TextStyle(
                   //           //       fontFamily: 'WorkSansSemiBold',
                   //           //       fontSize: 16.0,
-                  //           //       color: Colors.black),
-                  //           //   decoration: const InputDecoration(
                   //           //     border: InputBorder.none,
                   //           //     icon:const  Icon(
                   //           //       FontAwesomeIcons.moneyBill,
                   //           //       color: Colors.black,
                   //           //     ),
                   //           //     hintText: 'Amount',
-                  //           //     hintStyle: TextStyle(
-                  //           //         fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                  //           //   ),
-                  //           // ),
                   //         ],
-                  //       ),
-                  //     ]),
                 ],
               ),
             ),

@@ -41,9 +41,6 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
         ),
       ),
       actions: <Widget>[
-        // Padding(
-        //   padding: const EdgeInsets.only(right: 0.0),
-        //   child: Container(
         //     width: 60.0,
         //     child:
         TextButton(

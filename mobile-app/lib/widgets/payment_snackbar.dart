@@ -168,11 +168,6 @@ class PaymentSnackBar extends SnackBar {
                                 attendenceState: attendenceNoChange.value,
                                 isHare: isHareNo.value,
                               );
-                              // packScopedModel.setRsvpState(
-                              //     rsvpMaybe.value,
-                              //     isHareNo.value,
-                              //     attendenceNo.value,
-                              //     packMember['']);
                               messenger.hideCurrentSnackBar(
                                 reason: SnackBarClosedReason.hide,
                               );
@@ -251,10 +246,6 @@ class PaymentSnackBar extends SnackBar {
                                 rsvpState: rsvpYes.value,
                                 isHare: isHareYes.value,
                               );
-                              // packScopedModel.setRsvpState(rsvpYes.value,
-                              //     isHareYes.value, -1, packMember['']);
-                              // ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                              //     reason: SnackBarClosedReason.hide);
                             },
                           ),
                           Text(
@@ -309,10 +300,6 @@ class PaymentSnackBar extends SnackBar {
                                   packMember,
                                   attendenceState: attendenceNo.value,
                                 );
-                                // packScopedModel.setRsvpState(
-                                //     -1, -1, attendenceNo.value, packMember['']);
-                                // ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                                //     reason: SnackBarClosedReason.hide);
                               },
                             ),
                             Text(
@@ -353,10 +340,6 @@ class PaymentSnackBar extends SnackBar {
                                     : -1,
                                 attendenceState: attendenceAtHash.value,
                               );
-                              // packScopedModel.setRsvpState(rsvpYes.value, -1,
-                              //     attendenceAtHash.value, packMember['']);
-                              // ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                              //     reason: SnackBarClosedReason.hide);
                             },
                           ),
                           Text(
@@ -397,10 +380,6 @@ class PaymentSnackBar extends SnackBar {
                                     : -1,
                                 attendenceState: attendenceOnIn.value,
                               );
-                              // packScopedModel.setRsvpState(rsvpYes.value, -1,
-                              //     attendenceOnIn.value, packMember['']);
-                              // ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                              //     reason: SnackBarClosedReason.hide);
                             },
                           ),
                           Text(
@@ -742,14 +721,8 @@ class PaymentSnackBar extends SnackBar {
     );
   }
 
-  // void populatePriceStrings() {
-  //   memberPrice = IveCoreUtilities.getFormattedMoney(futureRun.eventPriceForMembers,
-  //       futureRun.digitsAfterDecimal, futureRun.currencySymbol);
-  //   nonMemberPrice = IveCoreUtilities.getFormattedMoney(
   //       futureRun.eventPriceForNonMembers,
   //       futureRun.digitsAfterDecimal,
-  //       futureRun.currencySymbol);
-  // }
 
   Future<void> _payOther(
     CheckInPackModel packMember,

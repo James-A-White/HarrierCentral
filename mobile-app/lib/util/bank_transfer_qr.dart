@@ -28,10 +28,6 @@ class BankTransferQr {
 
       if ((paymentType == paymentBankTransfer.value) ||
           (paymentType == paymentBankTransferOtherAmount.value)) {
-        // String paidFor = 'Run fee, ${eventAggregate.event.eventStartDatetime.toString().substring(0, 10)}, ${eventAggregate.event.eventName}';
-        // if (paymentType == paymentBankTransferOtherAmount.value) {
-        //   paidFor += ' + credit';
-        // }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: hc_blue,
@@ -101,10 +97,6 @@ class BankTransferQr {
         remittanceInfo += eventAggregate.event.eventName;
         beneficiaryInfo += eventAggregate.event.eventName;
       }
-
-      // if (remitString != null) {
-      //   remittanceInfo = remitString;
-      // }
 
       if (remittanceInfo.length > 139) {
         remittanceInfo = remittanceInfo.substring(0, 139);

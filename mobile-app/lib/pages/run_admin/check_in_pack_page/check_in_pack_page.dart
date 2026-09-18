@@ -3,16 +3,9 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 
 // class CheckInBindings extends Bindings {
 //   @override
-//   void dependencies() {
-//     final eventAggregate = Get.arguments as RunAdminAggregate;
 
-//     Get.put(
-//       CheckInPackController(eventAggregate),
 //       tag: eventAggregate.event.eventId,
 //       permanent: false,
-//     );
-//   }
-// }
 
 class CheckInPackPage extends StatelessWidget {
   final String controllerTag;
@@ -44,8 +37,6 @@ class CheckInPackPage extends StatelessWidget {
             // marginBottom: 30,
             animatedIcon: AnimatedIcons.menu_close,
             animatedIconTheme: const IconThemeData(size: 22.0),
-            // this is ignored if animatedIcon is non null
-            // child:const  Icon(Icons.add),
             visible: true,
             curve: Curves.bounceIn,
             overlayColor: Colors.black,
@@ -79,12 +70,8 @@ class CheckInPackPage extends StatelessWidget {
                   await AppScaffoldController.filterOptionsPopup(context);
                 },
               ),
-              // SpeedDialChild(
-              //     child: const Icon(Icons.person_add),
               //     backgroundColor: hc_blue,
               //     label: 'Add Hasher to Harrier Central',
-              //     labelStyle: const TextStyle(fontSize: 18.0),
-              //     onTap: () {
               //       Navigator.push<HashersModel>(
               //         context,
               //         MaterialPageRoute<HashersModel>(
@@ -94,12 +81,6 @@ class CheckInPackPage extends StatelessWidget {
               //             eventId: widget.eventAggregate.event.eventId,
               //             kennelId: widget.eventAggregate.event.kennelId,
               //             uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
-              //           ),
-              //         ),
-              //       ).then((HashersModel result) {
-              //         _refreshPackListFromTables(true);
-              //       });
-              //     }),
               SpeedDialChild(
                 child: const Icon(FontAwesome.heart, color: Colors.white),
                 backgroundColor: hc_blue,
@@ -153,52 +134,26 @@ class CheckInPackPage extends StatelessWidget {
                     !AppScaffoldController.showMultiSelect.value,
                 //onTap: () => {},
               ),
-              // SpeedDialChild(
-              //     child: const Icon(MaterialCommunityIcons.message_video),
               //     backgroundColor: Colors.deepOrange,
               //     label: 'View video tutorial',
-              //     labelStyle: TextStyle(
-              //       fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
-              //     ),
-              //     onTap: () => Navigator.push<dynamic>(
               //           context,
               //           MaterialPageRoute<dynamic>(
               //               builder: (BuildContext context) => const VideoTutorialPage(
               //                     title: 'How to use Check In Page',
               //                     videoUrl: 'https://harriercentral.blob.core.windows.net/help-videos/rabbit.mp4',
-              //                   )),
-              //         )),
-              // if ((widget.eventAggregate.kennel.bankScheme != null) &&
-              //     (widget.eventAggregate.kennel.bankScheme !=
               //         '')) ...<SpeedDialChild>[
-              //   SpeedDialChild(
-              //     child: const Icon(MaterialCommunityIcons.bank),
               //     backgroundColor: Colors.purple,
-              //     label: 'Bank Transfer\r\n(Member)',
-              //     labelStyle: TextStyle(
-              //       fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
-              //     ),
               //     onTap:
               //         () => BankTransferQr.showBankTransferQrCode(
               //           context,
               //           widget.eventAggregate,
               //           true,
-              //         ),
-              //   ),
-              //   SpeedDialChild(
-              //     child: const Icon(MaterialCommunityIcons.bank),
               //     backgroundColor: Colors.purple,
-              //     label: 'Bank Transfer\r\n(Non-Member)',
-              //     labelStyle: TextStyle(
-              //       fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
-              //     ),
               //     onTap:
               //         () => BankTransferQr.showBankTransferQrCode(
               //           context,
               //           widget.eventAggregate,
               //           false,
-              //         ),
-              //   ),
               // ],
             ],
           ),
@@ -1142,12 +1097,6 @@ class CheckInPackPage extends StatelessWidget {
         if (result != null) {
           await controller.refreshPackListFromTables(true);
           // NULLSAFETEST
-          // if (result.dispName == '') {
-          //   result = result.copyWith(dispName: null);
-          // }
-          // if (result.hashName == '') {
-          //   result = result.copyWith(hashName: null);
-          // }
 
           //controller.searchText = result.dispName;
           controller.searchController.text = result.dispName;

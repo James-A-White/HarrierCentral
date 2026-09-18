@@ -124,8 +124,6 @@ class MainNavigationPage extends StatelessWidget {
                                           child:
                                               // badgeController
                                               //     .showChatBubbleLoading
-                                              //     .value
-                                              // ? const Icon(Icons.refresh)
                                               // :
                                               const Icon(
                                                 Icons.chat_bubble_outline,
@@ -232,9 +230,6 @@ class MainNavigationPage extends StatelessWidget {
                                     }
 
                                     // // Delay to ensure overlay is ready
-                                    // await Future.delayed(
-                                    //   const Duration(milliseconds: 100),
-                                    // );
 
                                     Get.closeAllSnackbars();
 

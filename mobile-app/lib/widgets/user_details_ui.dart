@@ -51,17 +51,7 @@ class UserDetailsUiState extends State<UserDetailsUi>
     signupLastNameController.text = widget.lastName ?? '';
     signupHashNameController.text = widget.hashName ?? '';
     WidgetsBinding.instance.addObserver(this);
-    // widget.updateUi = updateUi;
-    // widget.validateForm = validateForm;
   }
-
-  // void updateUi(String firstName, String lastName, String email) {
-  //   setStateIfMounted(() {
-  //     signupEmailController.text = email;
-  //     signupFirstNameController.text = firstName;
-  //     signupLastNameController.text = lastName;
-  //   });
-  // }
 
   @override
   void dispose() {

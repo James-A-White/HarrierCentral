@@ -169,10 +169,6 @@ class UserEventListItem extends StatelessWidget {
                             ],
                           ),
 
-                    // Container(
-                    //   //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-                    //   margin: const EdgeInsets.only(top: 7.0, bottom: 7.0),
-                    //   padding: const EdgeInsets.only(top: 7.0, bottom: 7.0),
                     //   height: 1.0,
                     //   color: Colors.grey[800],
                     // ),

@@ -29,8 +29,6 @@ import 'package:sqflite/sqflite.dart';
 /// value other than as a placeholder
 abstract class BaseModel {
   BaseModel();
-  // factory BaseModel.fromJson() => null;
-  // Map<String, dynamic> toJson() => null;
 }
 
 class EmptyModel implements BaseModel {}
@@ -398,11 +396,6 @@ class BaseService<TDomain> {
 
       if (!isProcessed) {
         if (ms.startsWith(r'[{"errorId"')) {
-            // final List<dynamic> errorItems = jsonDecode(ms) as List<dynamic>;
-            // if (errorItems.isNotEmpty) {
-            //   adHocData = errorItems;
-            // }
-            // print('server messages received');
           } else {
             // There is a chance that the server returned data that this version
             // of the software is not expecting, such as in cases when new features
@@ -416,10 +409,6 @@ class BaseService<TDomain> {
             // and remind the developer that the first field in the result set must be
             // the primary key of the remote DB so we can match the internal table with
             // the received data.
-            // print('The following data was not inserted into the device DB');
-            // print('Please ensure that you are passing in all tables that you want processed by this function in the "tables" parameter');
-            // print('Also, it is required that the primary key for the table to be the first field in the JSON data. Please check the JSON data format.');
-            // print(ms);
           }
         }
       }

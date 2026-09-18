@@ -514,18 +514,6 @@ abstract class HcEnum<T> {
   T get value => _value;
 }
 
-// class EnumQrTypes<String> extends Enum<String> {
-//   const EnumQrTypes(String val) : super(val);
-// }
-
-// const EnumQrTypes<String> enumQrPrefix_userQrCode = EnumQrTypes<String>('UQR:');
-// const EnumQrTypes<String> enumQrPrefix_userSecretCode = EnumQrTypes<String>('USC:');
-// const EnumQrTypes<String> enumQrPrefix_userResetCode = EnumQrTypes<String>('URC:');
-// const EnumQrTypes<String> enumQrPrefix_specificRunStart = EnumQrTypes<String>('SRS:');
-// const EnumQrTypes<String> enumQrPrefix_specificRunEnd = EnumQrTypes<String>('SRE:');
-// const EnumQrTypes<String> enumQrPrefix_kennelGenericRunStart = EnumQrTypes<String>('KRS:');
-// const EnumQrTypes<String> enumQrPrefix_kennelGenericRunEnd = EnumQrTypes<String>('KRE:');
-
 //////////////////////////
 
 class EnumVirginVisitor extends HcEnum<int> {
@@ -539,22 +527,6 @@ const EnumVirginVisitor enumKnownVisitor = EnumVirginVisitor(3);
 
 //////////////////////////
 ///
-// class EnumNotificationState<int> extends HcEnum<int> {
-//   const EnumNotificationState(super.val);
-//}
-
-// const EnumNotificationState<int> NotificationState.unchanged =
-//     EnumNotificationState<int>(-1);
-// const EnumNotificationState<int> NotificationState.auto =
-//     EnumNotificationState<int>(0);
-// const EnumNotificationState<int> NotificationState.on =
-//     EnumNotificationState<int>(1);
-// const EnumNotificationState<int> NotificationState.ignore =
-//     EnumNotificationState<int>(2);
-// const EnumNotificationState<int> NotificationState.mute =
-//     EnumNotificationState<int>(3);
-// const EnumNotificationState<int> NotificationState.onBeforeRun =
-//     EnumNotificationState<int>(4);
 
 enum NotificationState {
   unchanged(-1),
@@ -1010,15 +982,6 @@ const EnumFollowType followTypeToggleHomeKennel = EnumFollowType(3);
 class EnumNotificationType extends HcEnum<int> {
   const EnumNotificationType(super.val);
 }
-
-// const EnumNotificationType<int> notificationTypeCancel =
-//     EnumNotificationType<int>(-1);
-// const EnumNotificationType<int> notificationTypeAuto =
-//     EnumNotificationType<int>(0);
-// const EnumNotificationType<int> notificationTypeAlways =
-//     EnumNotificationType<int>(1);
-// const EnumNotificationType<int> notificationTypeBlock =
-//     EnumNotificationType<int>(2);
 
 //////////////////////////
 

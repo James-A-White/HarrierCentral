@@ -48,9 +48,6 @@ const int INBOUND_INTEGRATION_FACEBOOK = 1;
 const int INBOUND_INTEGRATION_GOOGLE = 2;
 const int INBOUND_INTEGRATION_SAN_DIEGO = 3;
 
-// const num ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT = 48;
-// const num GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN = 10000;
-
 const int ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT = 1;
 const int ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT = 6;
 
@@ -84,9 +81,6 @@ const String APP_STORE_IOS_URL =
     'https://apps.apple.com/app/harrier-central/id1445513595';
 const String APP_STORE_ANDROID_URL =
     'https://play.google.com/store/apps/details?id=com.harriercentral.app';
-
-// const String BASE_URL = 'harrier.azurewebsites.net';
-// const String BASE_API_URL = 'https://$BASE_URL/api/';
 
 const String BASE_AF_URL = 'harriercentralpublicapi.azurewebsites.net';
 const String BASE_AF_API_URL = 'https://$BASE_AF_URL/api/AppApiHC6';
@@ -146,24 +140,8 @@ const String GET_POSITIONS_API_KEY =
 // old APIs below
 
 // TODO: Re-implement email run details
-// const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
-//     'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
-
-// const String EMAIL_PAYMENT_API_URL =
-//     'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
-
-// const String EMAIL_RUN_REPORT_API_URL =
-//     'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
 
 // TODO: Re-implement email run details
-// const String EMAIL_KENNEL_INVITE_CODES_API_URL =
-//     'https://hcazurefunctions7.azurewebsites.net/api/SendKennelInviteCodes';
-
-// const String EMAIL_KENNEL_RUN_STATS_API_URL =
-//     'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';
-
-// const String EMAIL_INVITE_CODE_API_URL =
-//     'https://hcazurefunctions7.azurewebsites.net/api/EmailInviteCode';
 
 // Storage locations
 
@@ -466,14 +444,6 @@ class Mismanagement {
     return (mismanagementFlags ?? 0) & mmRoleIsOnMm != 0;
   }
 
-  // set isOnMismanagement(bool value) {
-  //   mismanagementFlags ??= 0;
-  //   if (value) {
-  //     mismanagementFlags |= mmRoleIsOnMm;
-  //   } else {
-  //     mismanagementFlags &= ~mmRoleIsOnMm;
-  //   }
-  // }
 }
 
 const int cacheDurationAllHashers = 60 * 86400000; // 60 days cache duration
@@ -488,15 +458,6 @@ const List<String> integrationPlatformNames = <String>[
   'Google Out',
   'Berlin H3',
 ];
-
-// const String normalTable = 'normal'; // this is not used, but is added to make the code more clear
-// const String hemUserTable = 'hasherEventMap';
-// const String hemAdminTable = 'hasherEventMapForRunAdmin';
-// const String hkmUserTable = 'hasherKennelMap';
-// const String hkmEventAdminTable = 'hasherKennelMapForRunAdmin';
-// const String hkmKennelAdminTable = 'hasherKennelMapForKennelAdmin';
-// const String eventPaymentsTable = 'Payments';
-// const String userPaymentsTable = 'userPayments';
 
 const Map<String, int> runTags1 = <String, int>{
   'Normal run': 0x00000001,

@@ -419,8 +419,6 @@ class RunTrackerMap extends StatelessWidget {
               Positioned.fill(
                 // Obx must be INSIDE LayoutBuilder: _buildPhotoShowcase reads the
                 // showcase observables, and those reads have to happen in the
-                // Obx's own build scope. Obx(() => LayoutBuilder(...)) reads
-                // nothing in the Obx itself (the reads are deferred to layout),
                 // which throws GetX's "improper use of Obx" — a full-screen grey
                 // ErrorWidget in release — and never observes showcaseZoom.
                 child: LayoutBuilder(

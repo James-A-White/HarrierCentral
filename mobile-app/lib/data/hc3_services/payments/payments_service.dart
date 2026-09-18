@@ -12,13 +12,6 @@ class PaymentsTableHelper extends BaseTableHelper<AppDomainType>
   // String tableName = '';
 
   // @override
-  // String getTableName(dynamic tblType) {
-  //   if (tblType == TableType.paymentsUser) {
-  //     return userPaymentsTable;
-  //   } else {
-  //     return eventPaymentsTable;
-  //   }
-  // }
 
   @override
   String getTableName(AppDomainType appDomainType) {

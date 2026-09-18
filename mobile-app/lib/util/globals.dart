@@ -304,9 +304,6 @@ class AppModel extends GetxService {
 
   // TODO(DevTeam): Make sure this is eventually called
   void dispose() {
-    // if (geoLocationStream != null) {
-    //   geoLocationStream!.cancel();
-    // }
   }
 }
 

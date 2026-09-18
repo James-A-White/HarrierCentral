@@ -20,11 +20,6 @@ class ReceiptsListState extends State<ReceiptsList> {
   void initState() {
     super.initState();
     unawaited(initStateAsync());
-    // DBProvider.db.database.then((Database db) {
-    //   db.rawQuery('SELECT * FROM receipts ORDER BY id').then((List<Map<String, dynamic>> result) {
-    //     //print(result);
-    //   });
-    // });
   }
 
   Future<void> initStateAsync() async {
@@ -62,8 +57,6 @@ class ReceiptsListState extends State<ReceiptsList> {
         // marginBottom: 30,
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: const IconThemeData(size: 22.0),
-        // this is ignored if animatedIcon is non null
-        // child:const  Icon(Icons.add),
         visible: true,
         curve: Curves.bounceIn,
         overlayColor: Colors.black,
@@ -99,15 +92,7 @@ class ReceiptsListState extends State<ReceiptsList> {
           ),
         ],
       ),
-      // body: Container(
-      //   decoration: Backgrounds.defaultHcBackground(),
-      //   height: MediaQuery.sizeOf(context).height,
-      //   child: Container(
-      //     margin: const EdgeInsets.all(30.0),
       //     color: themeLightBackground,
-      //     child: _buildListView(),
-      //   ),
-      // ),
       body: Container(color: themeLightBackground, child: _buildListView()),
     );
   }
@@ -118,8 +103,6 @@ class ReceiptsListState extends State<ReceiptsList> {
       true,
       widget.eventAggregate.event.eventId,
     );
-    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    //print('Receipts data synchronized $resultStr');
     await refreshFromTable();
   }
 

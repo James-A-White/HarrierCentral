@@ -41,9 +41,6 @@ class AppAccessPageState extends State<AppAccessPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
-                    // getOption('Is on mismanagement', mmRoles.getMismanagementState(mmRoleIsOnMm), (bool value) {
-                    //   mmRoles.setMismanagementState(mmRoleIsOnMm, value);
-                    // }),
                     getOption(
                       'Is Super Admin',
                       appAccess.getAppAccess(authIsSuperAdmin),

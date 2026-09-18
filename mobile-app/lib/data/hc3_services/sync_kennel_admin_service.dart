@@ -1,11 +1,6 @@
 import 'package:harrier_central/imports.dart';
 
 class SyncKennelAdminService {
-  //static const int EnumDataTables.kennels.flag = 0x00000001;
-  // static const int EnumDataTables.hasherKennelMap.flag = 0x00000002;
-  // static const int EnumDataTables.hashers.flag = 0x00000004;
-  // static const int EnumDataTables.hasherEventMap.flag = 0x00000008;
-  // static const int EnumDataTables.payments.flag = 0x00000008;
 
   // exclude HasherEventMap and Payment from allData flags
   //static const int flagsAllData = 0x00000007;
@@ -129,10 +124,6 @@ class SyncKennelAdminService {
       await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
     }
 
-    // final int kennelsLastUpdate = (flags & EnumDataTables.kennels.flag) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
-    // final int hashersLastUpdate = (flags & EnumDataTables.hashers.flag) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
-    // final int hasherKennelMapLastUpdate = (flags & EnumDataTables.hasherKennelMap.flag) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(TableType.kennelAdmin)) ?? 0;
-
     // check to see if we need to clear the cache
     //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
 
@@ -141,17 +132,6 @@ class SyncKennelAdminService {
     //   // cache. This happens on startup. So, go ahead and set the lastCacheClear
     //   // date to now and set lastCacheClear to now to prevent the
     //   // cache from clearing immediatly upon startup
-    //   lastCacheClear = DateTime.now().millisecondsSinceEpoch;
-    //   setIntPref(CitiesTableHelper.lastCacheClearKey,
-    //       DateTime.now().millisecondsSinceEpoch);
-    // }
-
-    // if (lastCacheClear + CitiesTableHelper.cacheDuration <
-    //     DateTime.now().millisecondsSinceEpoch) {
-    //   //print(
-    //       'clearing ${CitiesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    //   await clearTable();
-    // }
 
     // get the last updated time of any of the records in
     // the table and add one second to it

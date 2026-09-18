@@ -1,15 +1,8 @@
 import 'package:harrier_central/imports.dart';
 
 class SyncEventAdminService {
-  // static const int EnumDataTables.hasherEventMap.flag = 0x00000001;
-  // static const int EnumDataTables.hasherKennelMap.flag = 0x00000002;
-  // static const int EnumDataTables.narrowEvents.flag = 0x00000004;
-  // static const int EnumDataTables.payments.flag = 0x00000008;
 
   //static const int EnumDataTables.hashers.flag = 0x00000020;
-
-  // static const int flagReceiptsTable = 0x00000010;
-  // static const int flagKennelCreditTable = 0x00000040;
 
   // static const int flagsAllData = 0x0000007f;
 
@@ -132,17 +125,6 @@ class SyncEventAdminService {
     //   // cache. This happens on startup. So, go ahead and set the lastCacheClear
     //   // date to now and set lastCacheClear to now to prevent the
     //   // cache from clearing immediatly upon startup
-    //   lastCacheClear = DateTime.now().millisecondsSinceEpoch;
-    //   setIntPref(CitiesTableHelper.lastCacheClearKey,
-    //       DateTime.now().millisecondsSinceEpoch);
-    // }
-
-    // if (lastCacheClear + CitiesTableHelper.cacheDuration <
-    //     DateTime.now().millisecondsSinceEpoch) {
-    //   //print(
-    //       'clearing ${CitiesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    //   await clearTable();
-    // }
 
     // Watermarks. For a CHANGED event the tables still hold the PREVIOUS
     // event's rows, so their max(updatedAt) is not a watermark for this one —

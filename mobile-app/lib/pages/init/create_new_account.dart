@@ -72,8 +72,6 @@ class CreateNewAccountPageContent extends StatefulWidget {
 
 class CreateNewAccountPageContentState
     extends State<CreateNewAccountPageContent> {
-  // TextEditingController _inviteCodeTextController;
-  // InputDecoration _inviteCodeDecoration;
   final FocusNode inviteCodeFocusNode = FocusNode();
 
   //final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -128,20 +126,12 @@ class CreateNewAccountPageContentState
                       style: localHeadingStyle,
                       textAlign: TextAlign.center,
                     ),
-                    // GestureDetector(
-                    //   onTap: () {
-                    //     await Utilities.showAlert(
                     //         context,
                     //         'What is an "Invite Code"?',
                     //         'An Invite Code is a six character code that allows you to connect to an existing account in Harrier Central.\r\n\r\nTypically you will receive an invite code from your home Kennel when they have already created an account for you in order to track your run counts.\r\n\r\nIf you do not have an Invite Code, please go back to the previous screen and select the option to Create a New Account.',
                     //         'OK');
                     //   },
-                    //   child: Container(
-                    //     padding: const EdgeInsets.only(left: 20),
                     //     height: 26,
-                    //     child: Image.asset('images/icons/info_button.png'),
-                    //   ),
-                    // ),
                   ],
                 ),
                 const SizedBox(height: 30, width: 30),
@@ -155,42 +145,22 @@ class CreateNewAccountPageContentState
                       const SizedBox(height: 30, width: 30),
                       // Row(
                       //   children: <Widget>[
-                      //     Container(
-                      //       margin: const EdgeInsets.only(right: 10),
                       //       height: 25,
                       //       width: 25,
                       //       color: Colors.yellow[100],
                       //       child: Checkbox(
                       //         value: includeInGlobalHashDirectory,
-                      //         onChanged: (bool value) {
-                      //           setStateIfMounted(() {
-                      //             includeInGlobalHashDirectory = value;
-                      //           });
                       //         },
-                      //       ),
-                      //     ),
-                      //     const Expanded(
-                      //       child: Text(
                       //         'Include me in Global Hash Directory',
                       //         //style: headingStyle,
                       //         textAlign: TextAlign.center,
                       //         maxLines: 2,
-                      //       ),
-                      //     ),
-                      //     GestureDetector(
-                      //       onTap: () async {
-                      //         await Utilities.showAlert(
                       //             context,
                       //             'What is the Global Hash Directory?',
                       //             'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
                       //             'OK');
                       //       },
-                      //       child: Container(
-                      //         padding: const EdgeInsets.only(left: 20),
                       //         height: 26,
-                      //         child: Image.asset('images/icons/info_button.png'),
-                      //       ),
-                      //     ),
                       //   ],
                       // ),
                       const SizedBox(height: 8, width: 10),
@@ -343,8 +313,6 @@ class CreateNewAccountPageContentState
                                     StringPrefsEnum.displayName,
                                     result['displayName'],
                                   );
-                                  //setStringPref(StringPrefsEnum.email, result['email']);
-                                  // await setStringPref(StringPrefsEnum.facebookId, result['facebookId']);
                                   await setStringPref(
                                     StringPrefsEnum.firstName,
                                     result['firstName'],

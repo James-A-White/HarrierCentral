@@ -10,26 +10,12 @@ class PrivacyPolicyPage extends StatefulWidget {
   PrivacyPolicyPageState createState() => PrivacyPolicyPageState();
 }
 
-// Future<File> createFileOfPdfUrl() async {
-//   final ByteData bytes =
-//       await rootBundle.load('assets/documents/privacy_policy.pdf');
-//   final String dir = (await getApplicationDocumentsDirectory()).path;
-//   final File file = File('$dir/privacy_policy_internal.pdf');
-//   await file.writeAsBytes(bytes.buffer.asInt8List());
-//   return file;
-// }
-
 class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
   String pathPDF = '';
 
   @override
   void initState() {
     super.initState();
-    // createFileOfPdfUrl().then((File f) {
-    //   setStateIfMounted(() {
-    //     pathPDF = f.path;
-    //   });
-    // });
   }
 
   @override

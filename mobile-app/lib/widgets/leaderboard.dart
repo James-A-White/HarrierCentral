@@ -69,24 +69,6 @@ class LeaderboardModel {
       searchText = lm.searchText;
 }
 
-// Map<String, dynamic> toJson() {
-//   final Map<String, dynamic> data = <String, dynamic>{};
-//   data['displayName'] = displayName;
-//   data['totalRunCount'] = totalRunCount;
-//   data['totalHaringCount'] = totalHaringCount;
-//   data['ytdTotalRunCount'] = ytdTotalRunCount;
-//   data['ytdHaringCount'] = ytdHaringCount;
-//   data['rollingYearTotalRunCount'] = rollingYearTotalRunCount;
-//   data['rollingYearHaringCount'] = rollingYearHaringCount;
-//   data['kennelId'] = kennelId;
-//   data['homeKennelId'] = homeKennelId;
-//   data['hasherId'] = hasherId;
-//   data['kennelCountTotal'] = kennelCountTotal;
-//   data['kennelCountYtd'] = kennelCountYtd;
-//   data['kennelCountRollingYear'] = kennelCountRollingYear;
-//   data['searchText'] = searchText;
-//   return data;
-
 class Leaderboard extends StatefulWidget {
   const Leaderboard({super.key, this.kennelId});
 
@@ -359,8 +341,6 @@ class LeaderboardState extends State<Leaderboard>
                                       //   color: Colors.grey[300],
                                       //   borderRadius: BorderRadius.circular(
                                       //     999,
-                                      //   ),
-                                      // ),
                                       height: 50.0,
                                       padding: const EdgeInsets.all(5.0),
                                       // reviewed for 2.0+

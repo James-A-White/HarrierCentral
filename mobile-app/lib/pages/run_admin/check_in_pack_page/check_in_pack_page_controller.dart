@@ -740,8 +740,6 @@ class CheckInPackController extends GetxController
 
           paymentIndexUpdating.value = null;
 
-          // await refreshPackListFromTables(false);
-          // await _refreshCounters(forceRefresh: true);
         },
       );
 
@@ -908,12 +906,6 @@ class CheckInPackController extends GetxController
 
     rsvpIndexUpdating.value = index;
     attendanceIndexUpdating.value = index;
-
-    // filteredList[index] = filteredList[index].copyWith(
-    //   rsvpStateIndicator: Future<int>.value(rsvpUpdating.value),
-    //   attendenceStateIndicator: Future<int>.value(attendenceUpdating.value),
-    //   paidStateIndicator: Future<int>.value(isPaidUpdating.value),
-    // );
 
     final String? hemId = filteredList[index].hemId;
     final String? hasherId = filteredList[index].hasherId;
@@ -1149,9 +1141,6 @@ class CheckInPackController extends GetxController
     // print(
     //   hasher.nameForDisplay +
     //       ' - ' +
-    //       (hasher.totalRunsThisKennel + hasher.historicalTotalRunCount)
-    //           .toString(),
-    // );
 
     if (hasher.attendenceState >= attendenceAtHash.value) {
       showDrinkIcon =
@@ -1184,10 +1173,6 @@ class CheckInPackController extends GetxController
           Container(height: 30, width: 30, color: Colors.transparent),
           CircleAvatar(
             backgroundColor:
-                // (attendanceState == null ||
-                //         attendanceState == attendenceUnknown.value ||
-                //         rsvpState == rsvpNo.value)
-                //     ? (attendanceIndexUpdating.value == null
                 //         ? Colors.grey[350]
                 //         : Colors.white)
                 //     : Colors.white,
@@ -1400,9 +1385,6 @@ class CheckInPackController extends GetxController
       }
 
       if (type != 'cancel') {
-        // setStateIfMounted(() {
-        //   _isLoading = true;
-        // });
         await tableModel
             //final List<dynamic> adHocData = await tableModel
             .hasherEventMapService
@@ -1419,23 +1401,6 @@ class CheckInPackController extends GetxController
         await refreshPackListFromTables(false);
         await _refreshCounters(forceRefresh: true);
 
-        // setStateIfMounted(() {
-        //   _isLoading = false;
-        // });
-
-        // if (eventAggregate.extensions.appAccess.canManageRuns) {
-        //   if (adHocData.isNotEmpty) {
-        //     final String hem =
-        //         adHocData[0]['hasherEventMapId'].toString().toLowerCase();
-        //     scrollIndex = filteredList.indexWhere(
-        //       (CheckInPackModel k) =>
-        //           k.hemId.toString().toLowerCase() == hem,
-        //     );
-        //     if ((scrollIndex ?? -1) >= 0) {
-        //       //final CheckInPackModel hasher = _packList[scrollIndex!];
-        //       //if (hasher != null) {
-        //       if (scrollIndex != null) {
-        //         final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(
         //           navigatorKey.currentContext!,
         //           _ScaffoldKey.currentState!,
         //           scrollIndex!,
@@ -1445,27 +1410,10 @@ class CheckInPackController extends GetxController
         //           navigatorKey.currentContext!,
         //         ).removeCurrentSnackBar(
         //           reason: SnackBarClosedReason.hide,
-        //         );
-        //         ScaffoldMessenger.of(navigatorKey.currentContext!)
-        //             .showSnackBar(snackBar)
         //             .closed
-        //             .then((SnackBarClosedReason reason) {
-        //               setStateIfMounted(() {
-        //                 if ((scrollIndex ?? -1) >= 0) {
-        //                   if (_scrollController.hasClients) {
-        //                     _scrollController.animateTo(
         //                       scrollIndex! * LIST_ITEM_HEIGHT,
         //                       duration: const Duration(seconds: 1),
         //                       curve: Curves.ease,
-        //                     );
-        //                   }
-        //                 }
-        //               });
-        //             });
-        //       }
-        //     }
-        //   }
-        // }
       }
     }
     return;
@@ -1637,8 +1585,6 @@ class CheckInPackController extends GetxController
           ),
           Icon(FontAwesome.times_circle, color: hc_red),
 
-          // Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          // const Positioned(bottom: 0, child: Icon(Ionicons.md_remove_circle, size: 30, color: Colors.teal))
         ],
         'returnValue': FilterOptions.clearAllFilters,
       },

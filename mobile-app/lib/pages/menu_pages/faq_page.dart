@@ -121,8 +121,6 @@ class FaqPageContentState extends State<FaqPageContent> {
                       style: bodyStyle,
                       textAlign: TextAlign.justify,
                     ),
-                    // Text('\r\n1.4. What are Hash Points?', style: headingStyle),
-                    // Text(
                     //   'It\'s traditional for many Hash Kennels to record how many runs each Hasher has and to give rewards based on this. However, many Kennels have either lost track of run counts or never started in the first place. Hash Points are awarded for good Hash behavior (such as haring a run). Hash Points get reset at the beginning of each year to give newcomers a chance to achieve greatness quickly!',
                     //   style: bodyStyle,
                     //   textAlign: TextAlign.justify,

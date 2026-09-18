@@ -160,11 +160,6 @@ class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
   }
 
   // @override
-  // Map<String, dynamic> toMap(dynamic item) {
-  //   final Map<String, dynamic> map = _$HasherEventMapModelToJson(item);
-
-  //   return map;
-  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
@@ -277,9 +272,6 @@ class HasherEventMapService {
         DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
     final DateTime hasherKennelMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
-
-    //     final DateTime hasherEventMapUpdatedAfter = hasherEventMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
-    // final DateTime hasherKennelMapUpdatedAfter = hasherKennelMapLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
     final Map<String, Object?> hemPrefsBody = <String, Object?>{
       'queryType': 'setEmailAndNotificationPrefs',
@@ -750,10 +742,6 @@ class HasherEventMapService {
 
     final DateTime hasherEventMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
-
-    // final DateTime hasherEventMapUpdatedAfter = DateTime.now().subtract(
-    //   const Duration(days: 999),
-    // );
 
     final Map<String, Object?> copyRsvpBody = <String, Object?>{
       'queryType': 'copyEventRsvps',

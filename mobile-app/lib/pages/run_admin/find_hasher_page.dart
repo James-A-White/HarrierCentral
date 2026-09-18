@@ -84,12 +84,6 @@ class FindHasherPageState extends State<FindHasherPage> {
   final FocusNode searchFocusNode = FocusNode();
   TextEditingController searchController = TextEditingController();
 
-  // void _onSearchTextChanged() {
-  //   setStateIfMounted(() {
-  //     //print('onSearchTextChanged = ${DateTime.now().millisecondsSinceEpoch}');
-  //   });
-  // }
-
   @override
   void dispose() {
     searchFocusNode.dispose();
@@ -182,10 +176,6 @@ class FindHasherPageState extends State<FindHasherPage> {
                 style: ts_headingBlack.copyWith(color: Colors.grey.shade700),
               ),
               onPressed: () {
-                // searchController.text = '';
-                // model.filterPackList('');
-                // model.forceRefresh();
-                // packList = model.filteredPackList;
               },
             ),
           ),
@@ -237,20 +227,10 @@ class HasherListView extends StatelessWidget {
             ),
           ),
           actions: <Widget>[
-            // Padding(
-            //   padding: const EdgeInsets.only(right: 15.0),
-            //   child: ElevatedButton(
-            //     style: ElevatedButton.styleFrom(primary:hc_red),
-            //     child: Text(
             //       'Cancel',
             //       textAlign: TextAlign.center,
             //       style: textStyleButton,
-            //     ),
-            //     onPressed: () {
-            //       Navigator.of(context).pop(-1);
             //     },
-            //   ),
-            // ),
             TextButton(
               style: TextButton.styleFrom(
                 shape: button_shape,
@@ -278,9 +258,6 @@ class HasherListView extends StatelessWidget {
             //     'Add',
             //     textAlign: TextAlign.center,
             //     style: textStyleButton,
-            //   ),
-            //   onPressed: () {
-            //     Navigator.of(context).pop(enumHasher.value);
             //   },
             // ),
           ],

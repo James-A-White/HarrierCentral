@@ -64,13 +64,7 @@ class EmailReportsService {
   //   required String kennelId,
   //   required String kennelName,
   //   required String isPreview,
-  // }) async {
-  //   final String? userId = getStringPref(StringPrefsEnum.userId);
-  //   final String userName = getStringPref(StringPrefsEnum.displayName) ?? '';
-  //   final String? emailAddress = getStringPref(StringPrefsEnum.email);
 
-  //   if (((userId ?? '').isNotEmpty) && ((emailAddress ?? '').isNotEmpty)) {
-  //     final String accessToken = Utilities.generateToken(
   //       userId!,
   //       'rptApi_emailKennelInviteCodes',
   //       paramString: kennelId,
@@ -86,19 +80,9 @@ class EmailReportsService {
   //       'isPreview': isPreview,
   //     });
 
-  //     final Response response = await post(
-  //       Uri.parse(EMAIL_KENNEL_INVITE_CODES_API_URL),
   //       headers: <String, String>{'content-type': 'application/json'},
   //       body: body,
-  //     ).catchError((dynamic error) {
-  //       return Future<Response>.value(Response('error', 500));
-  //     });
 
-  //     return <String, String>{'result': response.body};
-  //   }
-  //   return <String, String>{
   //     'result': 'No valid email address found',
   //     'email': '',
-  //   };
-  // }
 }

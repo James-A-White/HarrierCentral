@@ -3,57 +3,8 @@ import 'package:harrier_central/imports.dart';
 
 //import 'package:intl/intl.dart';
 
-// class RunQueryExtensionsModel {
-//   RunQueryExtensionsModel({
-//     this.daysUntilEvent,
-//     this.distToEvent,
-//     this.appAccessFlags,
-//     this.currencySymbol,
-//     this.digitsAfterDecimal,
-//     this.rsvpState,
-//     this.isPaid,
-//     this.isHare,
-//     this.attendenceState,
-//     this.isMember,
-//     this.following,
-//     this.notificationPreference,
-//     this.emailAlertPreference,
-//     this.distanceUnitsPref,
-//     this.searchRunsText,
-//     this.latitude,
-//     this.longitude,
-//     this.isMapAndDistanceValid,
-//     this.runClassification,
-//   });
-
-//   final num? daysUntilEvent;
-//   double? distToEvent;
-//   final int? appAccessFlags;
-//   int? digitsAfterDecimal;
-//   String? currencySymbol;
-//   int? rsvpState;
-//   int? attendenceState;
-//   int? isPaid;
-//   int? isHare;
-//   int? isMember;
-//   final int? following;
-//   int? notificationPreference;
-//   int? emailAlertPreference;
-//   int? distanceUnitsPref;
-//   //int userPrefs;
-//   String? searchRunsText;
-//   double? latitude;
-//   double? longitude;
-//   bool? isMapAndDistanceValid;
-//   int? runClassification; // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
-
 //   static RunQueryExtensionsModel fromMap(Map<String, dynamic> map, DateTime? eventStartDateTime) {
 //     // make dates and times searchable
-
-//     int? distanceUnitsPref = (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceMeasuredIn;
-//     if (distanceUnitsPref == 0) {
-//       distanceUnitsPref = null;
-//     }
 
 //     final RunQueryExtensionsModel item = RunQueryExtensionsModel(
 //       daysUntilEvent: map['daysUntilEvent'],
@@ -69,15 +20,7 @@ import 'package:harrier_central/imports.dart';
 //       notificationPreference: map['notificationPreference'],
 //       emailAlertPreference: map['emailAlertPreference'],
 //       distanceUnitsPref: distanceUnitsPref ?? map['distanceUnitsPref'],
-//       searchRunsText: map['searchRunsText'] + getSearchDateString(eventStartDateTime),
-//       latitude: map['evtLat'] == null ? null : map['evtLat'] + 0.0,
-//       longitude: map['evtLon'] == null ? null : map['evtLon'] + 0.0,
-//       isMapAndDistanceValid: map['isMapAndDistanceValid'] == 1,
 //       runClassification: map['runClassification'] ?? 3, // default to other run
-//     );
-//     return item;
-//   }
-// }
 
 class RunDetailsAggregate {
   RunDetailsAggregate({
@@ -241,49 +184,10 @@ class QueryRuns {
 
     // List<RunDetailsAggregate> searchTextFilteredRuns = <RunDetailsAggregate>[];
 
-    // // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
-    // if (searchRunsText.isNotEmpty) {
-    //   // searchRunsText = '$searchRunsText , ${removeDiacritics(searchRunsText)}';
-    //   final List<String> searchItems = searchRunsText
-    //       .trim()
-    //       .toLowerCase()
-    //       .split(',');
-    //   for (String st in searchItems) {
-    //     if (st.trim().isEmpty) {
-    //       continue;
-    //     }
-    //     bool negate = false;
-    //     if (st.trim().toLowerCase().startsWith('not ')) {
-    //       negate = true;
-    //       st = st.substring(4);
-    //     }
-    //     final List<String> orItems = st.split('+');
-
     //     ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
-    //     searchTextFilteredRuns.addAll(
-    //       scopeFilteredRuns.where((RunDetailsAggregate a) {
-    //         for (String orItem in orItems) {
-    //           if (orItem.trim().isEmpty) {
-    //             continue;
-    //           }
-    //           orItem = ' ${orItem.trim().toLowerCase()}';
-    //           if ((a.extensions.searchRunsText.toLowerCase().contains(
     //                 orItem,
     //               )) ||
-    //               (removeDiacritics(
-    //                 a.extensions.searchRunsText.toLowerCase(),
-    //               ).contains(orItem))) {
-    //             return !negate;
-    //           }
-    //         }
-    //         return negate;
-    //       }).toList(),
-    //     );
-    //   }
-    // } else {
-    //   searchTextFilteredRuns.addAll(scopeFilteredRuns);
-    // }
 
     // return searchTextFilteredRuns;
   }
@@ -433,8 +337,6 @@ class QueryRuns {
       //       ' ' +
       //       (eventItem.hcLatitude?.toString() ?? 'null') +
       //       ',' +
-      //       (eventItem.hcLongitude?.toString() ?? 'null'),
-      // );
       final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
         results[i],
       );

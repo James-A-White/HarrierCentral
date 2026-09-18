@@ -185,10 +185,6 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
   }
 
   // @override
-  // Map<String, dynamic> toMap(dynamic item) {
-  //   final Map<String,dynamic> map = _$KennelsModelToJson(item);
-  //   return map;
-  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

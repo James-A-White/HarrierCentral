@@ -120,9 +120,6 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           })
           .toList()[0];
 
-      // clientChatCounts.clear();
-      // clientChatCounts.addAll({
-      //   for (var summary in serverChatSummary)
       //     summary.publicEventId: summary.eventChatMessageCount,
       // });
 
@@ -399,8 +396,6 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     if (publicEventId != null) {
       // We don't know the total server count here, so we assume the user has read all known messages
       // by setting the viewed count to a very high number or by using the current unread count.
-      // Since this is a click, we rely on the receiving controller (ChatPageController)
-      // to call markEventMessagesAsViewed() when the page is fully loaded.
       // For now, we clear the global badge since the app is being opened.
       // Note: This might be too aggressive if the notification isn't chat-related.
       _clearAppBadge(); // Clear external badge immediately for a clean look
@@ -473,17 +468,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   // --- GetStorage and Badge Logic ---
 
   void _recalculateGlobalBadgeCount() {
-    // final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
-    // final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
-
-    // // 1. Combine all unique keys from both maps (Union of keys)
-    // final allKeys = serverChatCounts.keys.toSet().union(
-    //   clientChatCounts.keys.toSet(),
-    // );
 
     // // Populate unreadEventCounts with RxInt values derived from clientChatCounts.
-    // unreadEventCounts.value = {
-    //   for (final key in clientChatCounts.keys)
     //     key: (clientChatCounts[key] ?? 0).obs,
     // };
 
@@ -503,13 +489,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
 
     // 2. Calculations
-    // final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
-    //final localViewedCount = clientChatCounts[publicEventId] ?? 0;
 
     // // Update the stored server count for this event
-    // final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
-    // serverChatCounts[publicEventId] = serverChatCount;
-    // setMapIntPref(MapPrefsEnum.serverChatCounts, serverChatCounts);
 
     // Calculate the new unread count (Server Total - Local Viewed).
     // Use max(0, ...) to ensure the count never goes below zero.
@@ -553,20 +534,6 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   // /// To be called when a user views a chat page and marks all messages as read.
-  // void markEventMessagesAsViewed(String publicEventId) {
-  //   if (unreadEventCounts.containsKey(publicEventId)) {
-  //     unreadEventCounts[publicEventId]!.value = 0;
-  //   } else {
-  //     unreadEventCounts[publicEventId] = 0.obs;
-  //   }
-
-  //   final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
-  //   final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
-
-  //   clientChatCounts[publicEventId] = serverChatCounts[publicEventId] ?? 0;
-  //   setMapIntPref(MapPrefsEnum.clientChatCounts, clientChatCounts);
-  //   _recalculateGlobalBadgeCount();
-  // }
 
   /// To be called when a user views a chat page and marks all messages as read.
   Future<void> markEventMessagesAsViewed(String publicEventId) async {
@@ -679,9 +646,6 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     var badgeCount = 0;
 
     String paramString = deviceSecret;
-    // if (publicEventId != null) {
-    //   paramString = deviceSecret + publicEventId;
-    // }
 
     final body = <String, dynamic>{
       'queryType': 'getEventBadgeCount',
@@ -756,13 +720,6 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   // /// Updates the native platform application badge count.
   // void _updateAppBadge() {
   //   // ⚠️ IMPLEMENT EXTERNAL BADGE LOGIC HERE
-  //   if (globalBadgeCount.value > 0) {
-  //     // Example: FlutterAppBadger.updateBadgeCount(globalBadgeCount.value);
-  //     if (kDebugMode) {
-  //       print("Updating native badge to: ${globalBadgeCount.value}");
-  //     }
-  //   }
-  // }
 
   /// Clears the native platform application badge.
   void _clearAppBadge() {

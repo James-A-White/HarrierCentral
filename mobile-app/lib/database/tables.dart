@@ -8,44 +8,9 @@ class Tables {
   // the variable below is there to suppress a warning about defining classes with only static members
   int? unusedVariableToSuppressWarning;
 
-  // static String getTableName(BaseTableHelper tableHelper, {AppDomainType appDomainType}) {
-  //   String tableName = tableHelper.tableName;
-  //   if (tableType != null) {
-  //     switch (tableType) {
-  //       case TableType.baseTable:
   //         // don't change the string, keep it as it was initialized above
-  //         break;
-  //       case TableType.hemEventAdmin:
-  //         tableName = hemAdminTable;
-  //         break;
-  //       case TableType.hemUser:
-  //         tableName = hemUserTable;
-  //         break;
-  //       case TableType.hkmUser:
-  //         tableName = hkmUserTable;
-  //         break;
-  //       case TableType.hkmEventAdmin:
-  //         tableName = hkmEventAdminTable;
-  //         break;
-  //       case TableType.hkmKennelAdmin:
-  //         tableName = hkmKennelAdminTable;
-  //         break;
-  //       case TableType.paymentsEvent:
-  //         tableName = eventPaymentsTable;
-  //         break;
-  //       case TableType.paymentsUser:
-  //         tableName = userPaymentsTable;
-  //         break;
   //       default:
   //         // this will cause a SQL error and help us debug, should put a debug assert here
-  //         assert(false);
-  //         tableName = '';
-  //         break;
-  //     }
-  //   }
-
-  //   return tableName;
-  // }
 
   // *****************
   // DB migrations & version
@@ -471,7 +436,6 @@ class Tables {
 
     ),
 
-
     // MIGRATION 531 — pinned chats (E9.F1.S8). Pin lives on records that
 
     // already sync, so it survives a reload and follows the hasher between
@@ -515,7 +479,6 @@ class Tables {
       appliedAtInt: 0,
 
     ),
-
 
     // MIGRATION 530 — how far each trail actually is (E5.F7.S1, James
     // 2026-09-12): the trails map shows a total for what is on screen. Local

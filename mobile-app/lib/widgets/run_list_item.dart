@@ -195,8 +195,6 @@ class RunListItemController extends GetxController {
     }
   }
 
-  // void setHares(String state) => hares.value = state;
-  // void setHareState(int state) => isHareState.value = state;
 }
 
 class RunListItem extends StatelessWidget {
@@ -227,32 +225,8 @@ class RunListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // if (futureRun.extensions.rsvpState != rliController.rsvpState.value) {
-    //   rliController.setRsvpState(futureRun.extensions.rsvpState);
-    // }
 
-    // if (futureRun.extensions.isHare != rliController.isHareState.value) {
-    //   rliController.setHareState(futureRun.extensions.isHare);
-    // }
-
-    // if (futureRun.extensions.emailAlertPreference !=
-    //     rliController.emailAlertPreference.value) {
-    //   rliController.setEmailState(futureRun.extensions.emailAlertPreference);
-    // }
-
-    // if (futureRun.extensions.notificationPreference !=
-    //     rliController.notificationPreference.value) {
     //   rliController
-    //       .setNotificationState(futureRun.extensions.notificationPreference);
-    // }
-
-    // if (futureRun.event.hares != rliController.hares.value) {
-    //   rliController.setHares(futureRun.event.hares ?? '');
-    // }
-
-    // if (futureRun.extensions.isPaid != rliController.isPaid.value) {
-    //   rliController.setIsPaid(futureRun.extensions.isPaid);
-    // }
 
     String eventName = futureRun.event.eventName;
     if (kDebugMode) {
@@ -293,8 +267,6 @@ class RunListItem extends StatelessWidget {
           // Build the heavy card body ONCE per build(); the flash Obx below
           // reuses it as an identical child, so a "new runs" flash only
           // recolours the container instead of rebuilding every visible card.
-          // (Reading flashingRunIds.contains() subscribes to the whole shared
-          // collection, so a flash notifies every card at once.)
           final Widget cardColumn = Column(
               crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
@@ -424,8 +396,6 @@ class RunListItem extends StatelessWidget {
                     // (repeated for every row of the main run list).
                     memCacheWidth: 900,
                     // errorWidget:
-                    //     (BuildContext context, String url, Exception error) =>
-                    //         const  Icon(Icons.error),
                   ),
                 ),
               ),
@@ -489,13 +459,7 @@ class RunListItem extends StatelessWidget {
                                       //                 1
                                       //           ? 'Tomorrow'
                                       //           : daysUntilEvent <= -2
-                                      //           ? '${(-daysUntilEvent).toInt().toString()} days ago'
-                                      //           : 'in ${daysUntilEvent.toInt().toString()} days'
-                                      //     : (daysUntilEvent <= 30)
-                                      //     ? 'in ${daysUntilEvent ~/ 7.0}${(daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
                                       //     : daysUntilEvent <= 365
-                                      //     ? 'in ${daysUntilEvent ~/ 30.0}${(daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
-                                      //     : 'in ${daysUntilEvent ~/ 365.0}${(daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
                                       style: ts_titleMediumBlack,
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
@@ -630,25 +594,14 @@ class RunListItem extends StatelessWidget {
                                 ],
                               ),
 
-                            // (futureRun.event.hares ?? '') == '' ? Container(
-                            //   padding: const EdgeInsets.only(top:15),
-                            //   child:Image(width: 40.0 * deviceInfo.deviceWidthScaleFactor, height: 40.0 * deviceInfo.deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
                           ],
                         ),
                       ),
                     ),
                     // Expanded(
                     //   flex: 10,
-                    //   child: IconButton(
-                    //     icon: const Icon(MaterialCommunityIcons.dots_vertical),
-                    //     iconSize: Theme.of(context).iconTheme.size,
                     //     color: Colors.black54,
-                    //     splashColor: Theme.of(context).highlightColor,
-                    //     onPressed: () {
-                    //       showNotificationPopup(context);
                     //     },
-                    //   ),
-                    // ),
                   ],
                 ),
               ],
@@ -868,9 +821,6 @@ class RunListItem extends StatelessWidget {
         // <String, dynamic>{
         //   'title': 'I\'ll hare!',
         //   'icon': <Widget>[
-        //     Image.asset('images/icons/checkbox_hare.png',
-        //         width: 30, height: 30),
-        //     Container(
         //         height: 30,
         //         width: 30,
         //         decoration: BoxDecoration(
@@ -1045,9 +995,6 @@ class RunListItem extends StatelessWidget {
 
       // else if (retVal is EnumIsHare) {
       //   // final bool willHare =
-      //   //     await Utilities.promptForHare(rliController.hares.value) ?? false;
-      //   await _setRsvpState(rsvpYes);
-      // }
     }
   }
 
@@ -1190,63 +1137,6 @@ class RunListItem extends StatelessWidget {
     return Image.asset(iconFile, height: 24.0, width: 24.0);
   }
 
-  // Widget _getRsvpWidget() {
-  //   String iconFile = '';
-
-  //   switch (rliController.rsvpState.value) {
-  //     case 3:
-  //       if (rliController.isHareState.value == isHareYes.value) {
-  //         iconFile = 'images/icons/checkbox_hare.png';
-  //       }
-  //       break;
-  //   }
-
-  //   if (iconFile.isEmpty) {
-  //     switch (rliController.attendanceState.value) {
-  //       case 20:
-  //         iconFile = 'images/icons/checkbox_on_trail.png';
-  //         break;
-  //       case 30:
-  //         iconFile = 'images/icons/checkbox_on_in.png';
-  //         break;
-  //     }
-  //   }
-
-  //   if (iconFile.isEmpty) {
-  //     switch (rliController.rsvpState.value) {
-  //       case 0:
-  //         iconFile = 'images/icons/checkbox_empty.png';
-  //         break;
-  //       case 1:
-  //         iconFile = 'images/icons/checkbox_no.png';
-  //         break;
-  //       case 2:
-  //         iconFile = 'images/icons/checkbox_maybe.png';
-  //         break;
-  //       case 3:
-  //         if (rliController.isHareState.value == isHareNo.value) {
-  //           iconFile = 'images/icons/checkbox_yes.png';
-  //         } else {
-  //           iconFile = 'images/icons/checkbox_hare.png';
-  //         }
-  //         break;
-  //       case -1:
-  //         iconFile = 'wait';
-  //         break;
-  //     }
-  //   }
-
-  //   if (iconFile == 'wait') {
-  //     return Icon(delayIcon, color: hc_blue, size: 24.0);
-  //   }
-
-  //   if (iconFile.isEmpty) {
-  //     return const SizedBox();
-  //   }
-
-  //   return Image.asset(iconFile, height: 24.0, width: 24.0);
-  // }
-
   void _showRsvpOptionsPopup() async {
     if (Utilities.isConnected(
       showDialog: true,
@@ -1309,9 +1199,6 @@ class RunListItem extends StatelessWidget {
         // <String, dynamic>{
         //   'title': 'I\'ll hare!',
         //   'icon': <Widget>[
-        //     Image.asset('images/icons/checkbox_hare.png',
-        //         width: 30, height: 30),
-        //     Container(
         //         height: 30,
         //         width: 30,
         //         decoration: BoxDecoration(
@@ -1374,9 +1261,6 @@ class RunListItem extends StatelessWidget {
       if (retVal is EnumRsvpState) {
         await _setRsvpState(retVal);
       } else if (retVal is EnumIsHare) {
-        // final bool willHare =
-        //     await Utilities.promptForHare(futureRun.event.hares) ?? false;
-        //await _setRsvpState(rsvpYes, willHare);
         await _setRsvpState(rsvpYes);
       }
     }
@@ -1629,9 +1513,6 @@ class RunListItem extends StatelessWidget {
             emailAlertsUnchanged,
           );
 
-      // final NotificationSupport notifications = NotificationSupport();
-      // notifications.setNotificationState(eventId: _rda.event.eventId);
-      // // T0D0(James): Fix this to reflect true value of what is in the DB not just the value
       // // provided to the function
       rliController.setNotificationState(
         NotificationState.fromInt(results[0]?['notificationPreference'] ?? 0) ??

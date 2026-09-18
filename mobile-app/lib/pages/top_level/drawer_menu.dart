@@ -1,7 +1,5 @@
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/menu_pages/add_kennel_page.dart';
-//import 'package:harrier_central/pages/menu_pages/app_download_page.dart';
-// import 'package:harrier_central/pages/menu_pages/payment_terminal_config_page.dart';
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({
@@ -9,9 +7,6 @@ class DrawerMenu extends StatefulWidget {
     //required this.ScaffoldKey,
     //required this.futureRunsListKey,
   });
-
-  //final GlobalKey<ScaffoldState> ScaffoldKey;
-  //final GlobalKey<FutureRunListPageState> futureRunsListKey;
 
   @override
   DrawerMenuState createState() => DrawerMenuState();
@@ -112,11 +107,6 @@ class DrawerMenuState extends State<DrawerMenu> {
                             key: Key('52233311'),
                             widget: Column(
                               children: <Widget>[
-                                // Padding(
-                                //   padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
-                                //   child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
-                                // ),
-                                //SizedBox(height: 13.0),
                                 Expanded(child: Leaderboard(kennelId: null)),
                               ],
                             ),
@@ -147,8 +137,6 @@ class DrawerMenuState extends State<DrawerMenu> {
                     leading: const Icon(Icons.person, color: textColor),
                     title: Text('My Profile', style: _style),
                     onTap: () async {
-                      //onTabTapped(EnumAppPages.settings);
-                      //final String userId = getStringPref(StringPrefsEnum.userId);
                       Navigator.pop(context);
                       await Navigator.push<dynamic>(
                         context,
@@ -171,10 +159,6 @@ class DrawerMenuState extends State<DrawerMenu> {
                           },
                         ),
                       );
-                      // if (futureRunsListPageKey.currentState != null) {
-                      //   await futureRunsListPageKey.currentState!
-                      //       .forceRefreshFromTableExternal();
-                      // }
                     },
                   ),
                   ListTile(
@@ -193,28 +177,11 @@ class DrawerMenuState extends State<DrawerMenu> {
                       );
                     },
                   ),
-                  // ListTile(
-                  //   leading: const Icon(Icons.shopping_cart, color: textColor),
-                  //   title: Text('In App Purchases', style: _style),
-                  //   onTap: () async {
-                  //     Navigator.pop(context);
                   //     Navigator.push<dynamic>(
                   //       context,
                   //       MaterialPageRoute<dynamic>(
-                  //         settings: const RouteSettings(),
-                  //         builder: (BuildContext context) {
-                  //           return const InAppPurchasePage();
                   //         },
-                  //       ),
-                  //     );
                   //   },
-                  // ),
-                  // ListTile(
-                  //   leading:const  Icon(Icons.speaker_notes),
-                  //   title: const Text('Acknowledgements'),
-                  //   onTap: () {
-                  //     Navigator.pop(context);
-                  //     onTabTapped(3);
                   //   },
                   // ),
                   ListTile(
@@ -236,20 +203,10 @@ class DrawerMenuState extends State<DrawerMenu> {
                       );
                     },
                   ),
-                  // ListTile(
-                  //   leading: const Icon(Icons.feedback, color: textColor),
-                  //   title: Text('Your feedback', style: style),
-                  //   onTap: () {
-                  //     Navigator.pop(context);
                   //     Navigator.push<dynamic>(
                   //       context,
                   //       MaterialPageRoute<dynamic>(
-                  //         settings: const RouteSettings(),
-                  //         builder: (BuildContext context) {
-                  //           return const UserFeedbackPage();
                   //         },
-                  //       ),
-                  //     );
                   //   },
                   // ),
                   ListTile(
@@ -265,11 +222,6 @@ class DrawerMenuState extends State<DrawerMenu> {
                             return const ImprintPage();
                           },
                         ),
-                        // ).then(
-                        //   (dynamic value) {
-                        //     if (widget.ScaffoldKey.currentState != null) {
-                        //       widget.ScaffoldKey.currentState!.setStateIfMounted(() {});
-                        //     }
                         //   },
                       );
                     },
@@ -312,37 +264,15 @@ class DrawerMenuState extends State<DrawerMenu> {
                     },
                   ),
 
-                  // ListTile(
-                  //   leading: const Icon(MaterialCommunityIcons.cloud_download, color: textColor),
-                  //   title: Text('App Download Links', style: _style),
-                  //   onTap: () {
-                  //     Navigator.pop(context);
                   //     Navigator.push<dynamic>(
                   //       context,
                   //       MaterialPageRoute<dynamic>(
-                  //         settings: const RouteSettings(),
-                  //         builder: (BuildContext context) {
-                  //           return const AppDownloadPage();
                   //         },
-                  //       ),
-                  //     );
                   //   },
-                  // ),
-                  // if (Utilities.isOpeeOrTuna()) ...<Widget>[
-                  //   ListTile(
-                  //     leading: const Icon(FontAwesome.question_circle, color: textColor),
-                  //     title: Text('Payment Terminal', style: _style),
-                  //     onTap: () {
-                  //       Navigator.pop(context);
                   //       Navigator.push<dynamic>(
                   //         context,
                   //         MaterialPageRoute<dynamic>(
-                  //           settings: const RouteSettings(),
-                  //           builder: (BuildContext context) {
-                  //             return const PaymentTerminalConfigPage();
                   //           },
-                  //         ),
-                  //       );
                   //     },
                   //   ),
                   // ],
@@ -389,20 +319,10 @@ class DrawerMenuState extends State<DrawerMenu> {
                       title: Text('Admin Portal', style: _style),
                       onTap: _openAdminPortal,
                     ),
-                  // ListTile(
-                  //   leading: const Icon(Icons.integration_instructions, color: textColor),
-                  //   title: Text('Data integrations', style: style),
-                  //   onTap: () {
-                  //     Navigator.pop(context);
                   //     Navigator.push<dynamic>(
                   //       context,
                   //       MaterialPageRoute<dynamic>(
-                  //         settings: const RouteSettings(),
-                  //         builder: (BuildContext context) {
-                  //           return const IntegrationPage();
                   //         },
-                  //       ),
-                  //     );
                   //   },
                   // ),
                 ],

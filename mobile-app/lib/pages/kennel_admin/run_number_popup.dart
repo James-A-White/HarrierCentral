@@ -50,9 +50,6 @@ class RunNumberPopupState extends State<RunNumberPopup> {
         ),
       ),
       actions: <Widget>[
-        // Padding(
-        //   padding: const EdgeInsets.only(right: 0.0),
-        //   child: Container(
         //     width: 60.0,
         //     child:
         TextButton(
@@ -66,9 +63,6 @@ class RunNumberPopupState extends State<RunNumberPopup> {
           },
         ),
 
-        //   ),
-        // ),
-        // Container(
         //   width: 60.0,
         //child:
         TextButton(
@@ -82,8 +76,6 @@ class RunNumberPopupState extends State<RunNumberPopup> {
           },
         ),
 
-        // ),
-        // Container(
         //   width: 60.0,
         //child:
         TextButton(
@@ -102,27 +94,10 @@ class RunNumberPopupState extends State<RunNumberPopup> {
       ],
     );
 
-    //     Image.network(kennel.kennelLogo,
-    //         fit: BoxFit.fitHeight, height: logoHeight),
-    // alignment: Alignment.centerRight);
   }
-
-  // void _handleRadioValueChange1(int value) {
-  //   setStateIfMounted(() {
-  //     //widget.selectedValue = value;
 
   //     // switch (_radioValue1) {
   //     //   case 0:
-  //     //     Fluttertoast.showToast(msg: 'Correct !',toastLength: Toast.LENGTH_SHORT);
-  //     //     correctScore++;
-  //     //     break;
   //     //   case 1:
-  //     //     Fluttertoast.showToast(msg: 'Try again !',toastLength: Toast.LENGTH_SHORT);
-  //     //     break;
   //     //   case 2:
-  //     //     Fluttertoast.showToast(msg: 'Try again !',toastLength: Toast.LENGTH_SHORT);
-  //     //     break;
-  //     //}
-  //   });
-  // }
 }

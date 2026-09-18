@@ -485,20 +485,7 @@ class MainNavigationController extends GetxController
     }
   }
 
-  // Widget get currentPageWidget {
-  //   switch (currentPage.value) {
-  //     case 0:
-  //       return futureRunsListPage;
-  //     case 1:
-  //       return kennelsListPage;
-  //     case 2:
-  //       return runAndKennelMapPage;
-  //     case 3:
-  //       return historyListPage;
   //     default:
-  //       return futureRunsListPage;
-  //   }
-  // }
 
   Future<bool> _checkLocationPermissions() async {
     appModel.hasLocationPermissions = await Permission.location.isGranted;
@@ -519,13 +506,6 @@ class MainNavigationController extends GetxController
           ? pkg.version
           : (getStringPref(StringPrefsEnum.harrierCentralVersion) ?? ''),
     );
-
-    // if (isLoadingData ||
-    //     getStringPref(StringPrefsEnum.bootType) != BOOT_TYPE_NORMAL) {
-    //   mainScreenContent.value = MainPageContent.loading;
-    // } else {
-    //   mainScreenContent.value = MainPageContent.appContent;
-    // }
 
     if (isLoadingData) {
       mainScreenContent.value = MainPageContent.loading;
@@ -551,11 +531,6 @@ class MainNavigationController extends GetxController
     //   sound: true,
     // );
 
-    // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    //   print('User granted permission');
-    // } else {
-    //   print('User declined or has not accepted permission');
-    // }
   }
 
   void _startScreenListening() {

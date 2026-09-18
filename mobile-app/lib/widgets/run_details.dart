@@ -1056,27 +1056,14 @@ class RunDetails extends StatelessWidget {
                   )
                 : const SizedBox.shrink();
           }),
-          // if ((event.evtDisseminateAllowWebLinks == 1) ||
-          //     (kennel.disseminateAllowWebLinks == 1)) ...<Widget>[
-          //   Padding(
-          //     padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-          //     child: ElevatedButton(
-          //       // style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
-          //       child: Text(
           //         'Copy HC Web link',
           //         style: ts_button,
           //         textAlign: TextAlign.center,
           //         maxLines: 3,
           //         overflow: TextOverflow.ellipsis,
           //         //textScaleFactor: deviceInfo.textClamp50,
-          //       ),
-          //       onPressed: () async {
-          //         await Clipboard.setData(
-          //           ClipboardData(
           //             text:
           //                 'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light',
-          //           ),
-          //         );
 
           //         await Utilities.showAlert(
           //           'Link copied',
@@ -1084,42 +1071,20 @@ class RunDetails extends StatelessWidget {
           //           'OK',
           //         );
           //       },
-          //     ),
-          //   ),
           // ],
           // if (!(((event.eventFacebookId ?? '') != '') &&
           //         (event.eventInboundIntegrationId ==
           //             INBOUND_INTEGRATION_FACEBOOK)) &&
           //     (eventUrlWithKennelBackup != null) &&
           //     (eventUrlWithKennelBackup!.isNotEmpty)) ...<Widget>[
-          //   Padding(
-          //     padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
-          //     child: ElevatedButton(
-          //       style: ButtonStyle(
-          //         shadowColor: WidgetStateProperty.all(Colors.transparent),
-          //         backgroundColor: WidgetStateProperty.all(Colors.transparent),
-          //       ),
-          //       child: Image.asset(
           //         'images/icons/visit_run_on_web.png',
           //         height: 60.0,
           //         width: 325.0,
-          //       ),
-          //       onPressed: () async {
-          //         if (Utilities.isValidUrl(eventUrlWithKennelBackup!)) {
-          //           await launchUrl(
-          //             Uri.parse(eventUrlWithKennelBackup!),
           //             mode: LaunchMode.externalApplication,
-          //           );
-          //         } else {
-          //           await Utilities.showAlert(
           //             'Unable to open link',
           //             'Harrier Central was unable to open $eventUrlWithKennelBackup',
           //             'OK',
-          //           );
-          //         }
           //       },
-          //     ),
-          //   ),
           // ],
           if ((event.eventDescription ?? '') != '') ...<Widget>[
             FancyDivider(
@@ -1163,8 +1128,6 @@ class RunDetails extends StatelessWidget {
   }
 
   Widget _addressContextMenu(EditableTextState editableTextState) {
-    // final List<ContextMenuButtonItem> buttonItems =
-    //     editableTextState.contextMenuButtonItems;
 
     final List<ContextMenuButtonItem> buttonItems = [];
 
