@@ -540,6 +540,15 @@ Run fees, memberships, kit and credit. Every movement is a ledger entry, and the
 | `E8.F6.S2` | As a **Hash Cash**, I want a payment report per run and per period so that I can reconcile the bucket against the app. | `Shipped` |
 | `E8.F6.S3` | As a **Hash Cash**, I want that report emailed to me on a schedule so that reconciliation is not something I have to remember. | `Shipped` |
 
+### E8.F7 · Taking money on the trail  
+`App` `API` `DB` `3.1`
+
+| ID | Story | Status |
+|---|---|---|
+| `E8.F7.S1` | As a **Hash Cash**, I want to take a card or phone payment at the trail so that a hasher with no cash can still pay on the day, and the money lands in the club's account rather than in somebody's pocket to be settled later (James, 2026-09-18). **Belongs to the 3.1 train**, alongside the rest of payments. Today `EnumPaymentType` offers Not paid, Free run, Cash, Bank transfer, Hash credit and their other-amount variants — every one of which records an intention rather than moving money. Bank transfer already produces a QR code (`util/bank_transfer_qr.dart`), so the club is halfway to being paid by phone without holding any card data. **The decision to make first is the model, not the vendor.** Two shapes, and they are very different products: (a) a card reader or tap-to-phone at the bucket, which is SumUp or Zettle territory and suits the way Hash Cash actually works, versus (b) a payment link or in-app sheet the hasher completes themselves, which is Stripe territory and needs no hardware. **⚠ Whichever is chosen, this is money belonging to 390 independent clubs, not to Harrier Central** — each kennel needs its own merchant account and the platform must never become the merchant of record, or it inherits every club's chargebacks, KYC and tax position. Stripe Connect and SumUp both have models for that; picking one is the real work. Note also that Apple and Google permit real-world goods and services to bypass in-app purchase, so a trail fee is outside the 30% rule, but a *membership* sold in-app may not be — worth confirming before a renewal flow is wired to a card. Existing plumbing to reuse: `HC.Payment` with `clientPaymentId` idempotency, the phone outbox for offline sends, and the receipts and reconciliation reports that already balance the bucket. | `Next` |
+
+---
+
 ---
 
 ## E9 — Messaging, Notifications & Teaching
