@@ -1,3 +1,7 @@
+2.0.77+712
+    • Usage Data drill-down: a date in the FUTURE showed as "-2315m ago". Now reads "in 1d 14h 35m", and past dates read "1d 14h 35m ago" — days, hours and minutes in both directions.
+    • Analyser clean: 48 outstanding issues fixed, 39 of them braceless if statements.
+
 2.0.76+711
     • Kennel messaging: choose the kennel's messaging app (WhatsApp default) and publish its group invite link — Other tab, Messaging section
 

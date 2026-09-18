@@ -1,3 +1,13 @@
+## 2.0.77+712 (2026-09-18)
+### Fixes
+- **Usage Data drill-down**: a run in the future showed a negative age, like
+  "-2315m ago". Dates now read "in 1d 14h 35m" ahead of time and
+  "1d 14h 35m ago" behind it — days, hours and minutes either way.
+
+### Improvements
+- The analyser reports nothing on the portal for the first time: 48 issues
+  fixed, 39 of them statements after a braceless `if`.
+
 # Harrier Central Portal — Changelog
 
 ## 2.0.76+711 (2026-09-15)

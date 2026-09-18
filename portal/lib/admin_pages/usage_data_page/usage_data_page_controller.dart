@@ -227,6 +227,33 @@ class UsageDataPageController extends GetxController {
     );
   }
 
+  /// A date column in the drill-down, as a distance from now.
+  ///
+  /// Works in BOTH directions. The previous version did
+  /// `DateTime.now().difference(dt)` and then tested `inMinutes < 60`, which
+  /// is true for every negative value — so a run in the future fell into the
+  /// minutes branch and rendered as "-2315m ago" (James, 2026-09-18). A run
+  /// due tomorrow evening now reads "in 1d 14h 35m".
+  ///
+  /// Always days/hours/minutes so a run three days out reads the same way as
+  /// one three days past, and compact because this lands in a narrow table
+  /// cell on a phone. The verbose sentence form lives in
+  /// [formatMinutesDuration], which the run cards use.
+  String _relativeToNow(DateTime dt) {
+    final DateTime now = DateTime.now();
+    final bool future = dt.isAfter(now);
+    final Duration d = future ? dt.difference(now) : now.difference(dt);
+    final int days = d.inDays;
+    final int hours = d.inHours % 24;
+    final int mins = d.inMinutes % 60;
+    final List<String> parts = <String>[
+      if (days > 0) '${days}d',
+      if (days > 0 || hours > 0) '${hours}h',
+      '${mins}m',
+    ];
+    return future ? 'in ${parts.join(' ')}' : '${parts.join(' ')} ago';
+  }
+
   String _formatValue(String columnName, dynamic value) {
     if (value == null) return '';
     final n = columnName.toLowerCase();
@@ -237,11 +264,7 @@ class UsageDataPageController extends GetxController {
         n == 'timestamp';
     if (isDateCol) {
       try {
-        final dt = DateTime.parse(value.toString()).toLocal();
-        final diff = DateTime.now().difference(dt);
-        if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-        if (diff.inHours < 24) return '${diff.inHours}h ago';
-        return '${diff.inDays}d ago';
+        return _relativeToNow(DateTime.parse(value.toString()).toLocal());
       } catch (_) {}
     }
     return value.toString();
