@@ -12,29 +12,15 @@ class SupportPage extends StatefulWidget {
 }
 
 class SupportPageState extends State<SupportPage> {
-  // final String _firstName = getStringPref(StringPrefsEnum.firstName) ?? '';
-  // final String _lastName = getStringPref(StringPrefsEnum.lastName) ?? '';
-  // final String _email = getStringPref(StringPrefsEnum.email) ?? '';
-  // final String _hashName = getStringPref(StringPrefsEnum.hashName) ?? '';
 
-  // final FocusNode _resetCodeFocusNode = FocusNode();
-  // final TextEditingController _resetCodeTextController =
-  //     TextEditingController();
-  // final InputDecoration _resetCodeDecoration = InputDecoration(
   //   labelText: 'Invite Code',
   //   fillColor: hc_red,
-  //   border: OutlineInputBorder(
-  //     borderRadius: BorderRadius.circular(25.0),
-  //     borderSide: const BorderSide(),
-  //   ),
-  // );
 
   @override
   void initState() {
     super.initState();
     _loadSecretCode();
   }
-
 
   // qrSecretCode now lives in the keychain (async) — load it after first frame.
   Future<void> _loadSecretCode() async {
@@ -354,156 +340,47 @@ class SupportPageState extends State<SupportPage> {
                                   ],
                                 ),
                               ),
-                            // const FancyDivider(
-                            //   key: Key('6624334671'),
                             //   innerColor: Colors.white,
                             //   topMargin: 40.0,
                             //   bottomMargin: 30.0,
-                            // ),
-                            // Text(
                             //   'Invite Code:',
                             //   style: ts_headingLarge,
                             //   textAlign: TextAlign.center,
-                            // ),
-                            // Container(
-                            //   padding: const EdgeInsets.all(30.0),
 
-                            //   //color: const Color.fromARGB(255, 255, 255, 255),
-                            //   child: Center(
-                            //     child: Column(
                             //       children: <Widget>[
                             //         Container(
                             //           //color: Colors.white,
-                            //           padding: const EdgeInsets.all(10.0),
-                            //           decoration: BoxDecoration(
                             //             color: Colors.yellow[100],
-                            //             borderRadius: BorderRadius.circular(5.0),
-                            //           ),
-                            //           // padding: const EdgeInsets.only(
-                            //           //     top: 0.0, bottom: 8.0),
-                            //           child: TextFormField(
                             //             autocorrect: false,
                             //             controller: _resetCodeTextController,
                             //             focusNode: _resetCodeFocusNode,
                             //             decoration: _resetCodeDecoration,
-                            //             // validator: (val) {
-                            //             //   if (val.length == 0) {
-                            //             //     return "Email cannot be empty";
-                            //             //   } else {
-                            //             //     return null;
-                            //             //   }
                             //             // },
                             //             keyboardType: TextInputType.text,
                             //             style: const TextStyle(
                             //               color: Colors.yellow,
                             //               fontFamily: 'Poppins',
-                            //             ),
-                            //           ),
-                            //         ),
-                            //         Padding(
-                            //           padding: const EdgeInsets.only(top: 25),
-                            //           child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                            //             StyleForConnected(
-                            //
-                            //               ElevatedButton(
-                            //                 style: ElevatedButton.styleFrom(
-                            //                   padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                            //                 ),
-                            //                 onPressed: () async {
-                            //                   if (Utilities.isConnected(appModel.connectionStatus)) {
-                            //                     await tableModel.syncUserDataService.updateFromBackend(
                             //                           SyncUserDataService.flagAllMasterData,
                             //                           false,
                             //                           debugText: 'support_page: All master data',
-                            //                         );
-                            //                     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                            //                     //print('Master data synchronized $resultStr');
-
-                            //                     if (_resetCodeTextController.text.length == 6) {
-                            //                       setStateIfMounted(() {
-                            //                         isLoading = true;
-                            //                       });
 
                             //                       final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
-                            //                       if (!mounted) return;
-                            //                       final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
-
-                            //                       setStateIfMounted(() {
-                            //                         isLoading = false;
-                            //                       });
-
-                            //                       if (result['result'] != 'failed') {
-                            //                         _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
-                            //                         _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
-
-                            //                         await Utilities.showAlert('App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                            //                       }
-                            //                     }
-                            //                   }
                             //                 },
                             //                 child: Text(
                             //                   'Reset App',
                             //                   style: ts_button,
-                            //                 ),
-                            //               ),
-                            //             ),
-                            //           ]),
-                            //         ),
-                            //         Padding(
-                            //           padding: const EdgeInsets.only(top: 25),
-                            //           child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                            //             StyleForConnected(
-                            //
-                            //               ElevatedButton(
-                            //                 style: ElevatedButton.styleFrom(
-                            //                   padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
-                            //                 ),
-                            //                 onPressed: () async {
-                            //                   if (Utilities.isConnected(appModel.connectionStatus)) {
-                            //                     await tableModel.syncUserDataService.updateFromBackend(
                             //                           SyncUserDataService.flagAllMasterData,
                             //                           false,
                             //                           debugText: 'support_page: All master data 2',
-                            //                         );
-                            //                     // final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                            //                     // print('Master data synchronized $resultStr');
-
-                            //                     if (_resetCodeTextController.text.length == 6) {
-                            //                       setStateIfMounted(() {
-                            //                         isLoading = true;
-                            //                       });
 
                             //                       final AuthorizeDeviceService srv = AuthorizeDeviceService();
 
-                            //                       if (!mounted) return;
-                            //                       final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
-
-                            //                       setStateIfMounted(() {
-                            //                         isLoading = false;
-                            //                       });
-
-                            //                       if (result['result'] != 'failed') {
-                            //                         _userName = getStringPref(StringPrefsEnum.displayName) ?? _userName;
-                            //                         _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? _userSecretCode;
-
-                            //                         await Utilities.showAlert('App Reset Successful', 'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.', 'OK');
-                            //                       }
-                            //                     }
-                            //                   }
                             //                 },
                             //                 child: Text(
                             //                   'Reload Database',
                             //                   style: ts_button,
-                            //                 ),
-                            //               ),
-                            //             ),
-                            //           ]),
-                            //         ),
                             //       ],
-                            //     ),
-                            //   ),
-                            // ),
                             const SizedBox(width: 40, height: 40),
                           ],
                         ),

@@ -266,8 +266,6 @@ class KennelMemberListState extends State<KennelMembersList>
         // marginBottom: 30,
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: const IconThemeData(size: 22.0),
-        // this is ignored if animatedIcon is non null
-        // child:const  Icon(Icons.add),
         visible: true,
         curve: Curves.bounceIn,
         overlayColor: Colors.black,
@@ -392,8 +390,6 @@ class KennelMemberListState extends State<KennelMembersList>
 
           // (snapshot?.data == null || snapshot.data.isEmpty)
 
-          //     //? Positioned(top: (filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: getAddHasherBlock())
-          //     ? Positioned(top: (filterPanelAnimation.value.dy * 120) + 125, left: 0, right: 0, child: Container(color:Colors.red))
           //     :
           PositionedTransition(
             rect: _hasherListAnimation,
@@ -742,12 +738,6 @@ class KennelMemberListState extends State<KennelMembersList>
                                         );
                                       }
                                       break;
-                                    // case EnumMemberPopupActions.setHomeKennel:
-                                    //   setAsHomeKennel(snapshot.data[index], 1);
-                                    //   break;
-                                    // case EnumMemberPopupActions.clearHomeKennel:
-                                    //   setAsHomeKennel(snapshot.data[index], 0);
-                                    //   break;
                                   }
                                 },
                                 toggleEmailPreferenceCallback: () async {
@@ -1035,11 +1025,6 @@ class KennelMemberListState extends State<KennelMembersList>
           //   label: 'Home',
           //   index: 2,
           //   useTriState: true,
-          //   onTap: () {
-          //     refreshKennelMembersFromTable(true).then((void _) {
-          //       _refreshCounters(true);
-          //       setStateIfMounted(() {});
-          //     });
           //   },
           //   filterValues: filterValues,
           // ),
@@ -1060,25 +1045,15 @@ class KennelMemberListState extends State<KennelMembersList>
           //   counter: countAtHash,
           //   index: 2,
           //   label: 'At Hash',
-          //   onTap: () {
-          //     _refreshPackListFromTables(true);
           //   },
           //   filterValues: filterValues,
-          // ),
-          // KennelFilterCell(
           //   counter: countPaid,
           //   index: 3,
           //   label: 'Paid',
-          //   onTap: () {
-          //     _refreshPackListFromTables(true);
           //   },
-          // ),
-          // KennelFilterCell(
           //   counter: countOnIn,
           //   index: 4,
           //   label: 'On In',
-          //   onTap: () {
-          //     _refreshPackListFromTables(true);
           //   },
           //   filterValues: filterValues,
           // ),
@@ -1099,8 +1074,6 @@ class KennelMemberListState extends State<KennelMembersList>
       true,
       widget.kennelListAggregate.kennel.kennelId,
     );
-    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    //print('Kennel member data synchronized $resultStr');
     await _refreshKennelMembersFromTable(true);
     await _refreshCounters(true);
     setStateIfMounted(() {});
@@ -1221,20 +1194,5 @@ class KennelMemberListState extends State<KennelMembersList>
     await _refreshCounters(true);
   }
 
-  // void setAsHomeKennel(KennelMemberResultsModel item, int isHomeKennel) {
-  //   final HasherKennelMapService srv = HasherKennelMapService();
-  //   widget.kennel.extensions.followingRequested = -1;
-  //   item.homeKennelBeingUpdated = true;
-  //   setStateIfMounted(() {});
   //   srv
-  //       .updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel,
-  //           targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel)
-  //       .then((void _) {
-  //     refreshKennelMembersFromTable(true).then((void _) {
-  //       item.homeKennelBeingUpdated = false;
-  //       _refreshCounters(true);
-  //       setStateIfMounted(() {});
-  //     });
-  //   });
-  // }
 }

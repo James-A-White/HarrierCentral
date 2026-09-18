@@ -54,9 +54,6 @@ class FutureRunListPageController extends GetxController {
 
   // ── Filter chips (stackable) ───────────────────────────────────────────────
   // Independent on/off filters layered over the combined past+future list:
-  //   My     = only the user's runs (RSVP'd upcoming / attended past)
-  //   Events = only special events (geographic scope >= local event)
-  //   Map    = only runs within the Explore map's visible bounds
   final RxBool filterMy = false.obs;
   final RxBool filterEvents = false.obs;
   final RxBool filterMap = false.obs;
@@ -172,6 +169,18 @@ class FutureRunListPageController extends GetxController {
   /// in-memory filters over already-loaded data, so this just re-filters and
   /// re-anchors on the divider. Toggling a chip while in chats mode leaves it
   /// (which changes scope all -> future), so a reload is needed there.
+  /// `update()` after an await, safely.
+  ///
+  /// This controller is `Get.put` without `permanent: true` (the flag is
+  /// commented out in future_run_list_page.dart), so nothing guarantees it
+  /// outlives its route. GetX's update() dereferences a null `_updaters`
+  /// once disposed and throws in release, and every update below is reached
+  /// after a backend refresh or a table read.
+  void _update(List<Object> ids) {
+    if (isClosed) return;
+    update(ids);
+  }
+
   Future<void> toggleChip(RxBool chip) async {
     final wasChatsMode = isChatsMode;
     if (wasChatsMode) {
@@ -347,10 +356,6 @@ class FutureRunListPageController extends GetxController {
       '[BOOT] onInitAsync: hasLocationPermissions=${appModel.hasLocationPermissions}: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
 
-    //await refreshFromBackend();
-    //await refreshFromTable(true);
-    //chatSummaryMap = await getEventChatMessageCounts();
-
     // NotificationService is registered in initServices(). If Firebase was not
     // ready at boot time, register it now on first use.
     debugPrint(
@@ -385,7 +390,7 @@ class FutureRunListPageController extends GetxController {
     debugPrint(
       '[BOOT] onInitAsync: calling update(runList, mainNavPage): ${DateTime.now().millisecondsSinceEpoch}ms',
     );
-    update([UpdateIds.runList, UpdateIds.mainNavPage]);
+    _update([UpdateIds.runList, UpdateIds.mainNavPage]);
     debugPrint(
       '[BOOT] onInitAsync: COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
@@ -418,22 +423,18 @@ class FutureRunListPageController extends GetxController {
 
   void refreshRunListUi() {
     filterRuns(false);
-    update([UpdateIds.runList, UpdateIds.mainNavPage]);
+    _update([UpdateIds.runList, UpdateIds.mainNavPage]);
   }
 
   void notificationReceived(RemoteMessage message) {
     //final publicEventId = message.data['PublicEventId'] as String?;
 
     // // get the total amount of chats for this event from the message
-    // final chatCount =
-    //     (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
 
     //_updateChatCountBadges(publicEventId, chatCount);
     filterRuns(false);
   }
 
-  // void _updateChatCountBadges(String? publicEventId, int chatCount) {
-  //   if (publicEventId != null) {
   //     // get the number of chats last displayed in the chat window
   //     // when it was last shown
   //     final chatsCounts = getMapIntPref(MapPrefsEnum.unusedChatCounts);
@@ -441,34 +442,10 @@ class FutureRunListPageController extends GetxController {
   //     // calculate how many chats have not been seen yet
   //     if (thisEventUnseenChats[publicEventId] == null) {
   //       thisEventUnseenChats[publicEventId] =
-  //           (chatCount - (chatsCounts[publicEventId] ?? 0)).obs;
-  //     } else {
-  //       thisEventUnseenChats[publicEventId]!.value =
-  //           chatCount - (chatsCounts[publicEventId] ?? 0);
-  //     }
-  //   }
 
   //   _updateTotalNotificationCounter();
 
-  //   update([UpdateIds.runList, UpdateIds.mainNavPage]);
-  // }
-
-  // void resetNotificationCounters() async {
-  //   //chatSummaryMap = await getEventChatMessageCounts();
-  //   final chatsCounts = getMapIntPref(MapPrefsEnum.unusedChatCounts);
-
-  //   for (var run in filteredRuns) {
-  //     if (run is! int) {
-  //       String? publicEventId = run.event?.publicEventId as String?;
-  //       if (publicEventId != null) {
-  //         if (chatSummaryMap[publicEventId] != null) {
   //           chatsCounts[publicEventId] =
-  //               chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0;
-  //         }
-  //         thisEventUnseenChats[publicEventId]?.value = 0;
-  //       }
-  //     }
-  //   }
 
   //   setMapIntPref(MapPrefsEnum.unusedChatCounts, chatsCounts);
 
@@ -476,26 +453,9 @@ class FutureRunListPageController extends GetxController {
 
   //   //showOnlyEventsWithMessages.value = false;
 
-  //   update([UpdateIds.runList, UpdateIds.mainNavPage]);
-  // }
-
-  // void _updateTotalNotificationCounter() {
-  //   int total = 0;
-
-  //   for (var run in filteredRuns) {
-  //     if (run is! int) {
-  //       String? publicEventId = run.event?.publicEventId as String?;
-  //       if (publicEventId != null) {
   //         total +=
   //             (thisEventUnseenChats[publicEventId]?.value ??
   //             chatSummaryMap[publicEventId]?.eventChatMessageCount ??
-  //             0);
-  //       }
-  //     }
-  //   }
-
-  //   totalNotifications.value = total;
-  // }
 
   Future<void> processNotificationClickOnResume(RemoteMessage message) async {
     // if there was no initial message, check to see if there was
@@ -609,8 +569,6 @@ class FutureRunListPageController extends GetxController {
           refreshPage: () async {
             // WARNING!!!!  We need to return the filtered run based
             // on it's ID and not the index
-            // await controller.refreshFromBackend(
-            //     clearLocalTables: true);
             await refreshFromTable(true);
             return run;
           },
@@ -622,7 +580,7 @@ class FutureRunListPageController extends GetxController {
 
     // _updateTotalNotificationCounter();
 
-    update([UpdateIds.runList, UpdateIds.mainNavPage]);
+    _update([UpdateIds.runList, UpdateIds.mainNavPage]);
 
     //setStateIfMounted(() {});
 
@@ -637,26 +595,10 @@ class FutureRunListPageController extends GetxController {
     //       refreshPage: () async {
     //         // WARNING!!!!  We need to return the filtered run based
     //         // on it's ID and not the index
-    //         // await controller.refreshFromBackend(
-    //         //     clearLocalTables: true);
-    //         await refreshFromTable(true);
-    //         return run;
     //       },
-    //     ),
-    //   ),
-    // ).then((void _) {
-    //   refreshFromBackend(clearLocalTables: false).then((void _) {
     //     // this means the user went to the chat page, so reset to zero to hide the badge
     //     // I don't like this logic, but it will have to do for now.
-    //     final chatsCounts2 = getMapIntPref(MapPrefsEnum.chatCounts);
-    //     if ((chatsCounts2[run.event.publicEventId] ?? 0) !=
-    //         (chatsCounts[run.event.publicEventId] ?? 0)) {
-    //       thisEventChatCount[run.event.publicEventId] = 0;
-    //     }
 
-    //     setStateIfMounted(() {});
-    //   });
-    // });
   }
 
   DateTime _toDateOnly(DateTime dt) {
@@ -750,7 +692,7 @@ class FutureRunListPageController extends GetxController {
       filteredRuns.value = List<dynamic>.from(list);
       resultCount.value = filteredRuns.length;
       if (pastRuns.isNotEmpty) pastRuns.clear();
-      update([UpdateIds.runList]);
+      _update([UpdateIds.runList]);
       return;
     }
 
@@ -861,26 +803,9 @@ class FutureRunListPageController extends GetxController {
         '[BOOT] filterRuns: header-insertion done: ${DateTime.now().millisecondsSinceEpoch}ms — finalListLength=${filteredRuns.length}',
       );
     } else {
-      // filteredRuns.sort((dynamic a, dynamic b) {
-      //   int result = _toDateOnly(
       //     b.event.eventStartDatetime,
-      //   ).compareTo(_toDateOnly(a.event.eventStartDatetime));
-      //   if (result == 0) {
-      //     if ((a.extensions.distToEvent != null) &&
-      //         (b.extensions.distToEvent != null)) {
-      //       final num distA = a.extensions.latitude == null
       //           ? 99999999
-      //           : a.extensions.distToEvent;
-      //       final num distB = b.extensions.latitude == null
       //           ? 99999999
-      //           : b.extensions.distToEvent;
-      //       result = distA.compareTo(distB);
-      //     } else {
-      //       result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
-      //     }
-      //   }
-      //   return result;
-      // });
       resultCount.value = filteredRuns.length;
     }
 
@@ -918,7 +843,7 @@ class FutureRunListPageController extends GetxController {
     debugPrint(
       '[BOOT] filterRuns: update(runList) start: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
-    update([UpdateIds.runList]);
+    _update([UpdateIds.runList]);
     debugPrint(
       '[BOOT] filterRuns: COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
@@ -1191,7 +1116,7 @@ class FutureRunListPageController extends GetxController {
     }
 
     await refreshFromTable(true);
-    update([UpdateIds.runList]);
+    _update([UpdateIds.runList]);
   }
 
   // Resolve a run table's physical name the same way clearTables does, so the

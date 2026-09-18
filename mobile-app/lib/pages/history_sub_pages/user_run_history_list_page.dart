@@ -163,8 +163,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
         final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(
           results[i],
         );
-        // hlrItem.totalHaringThisKennel = -1;
-        // hlrItem.totalRunsThisKennel = -1;
         _runCountsList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
@@ -216,8 +214,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
               // marginBottom: 30,
               animatedIcon: AnimatedIcons.menu_close,
               animatedIconTheme: const IconThemeData(size: 22.0),
-              // this is ignored if animatedIcon is non null
-              // child:const  Icon(Icons.add),
               visible: true,
               curve: Curves.bounceIn,
               overlayColor: Colors.black,
@@ -352,8 +348,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
       true,
       debugText: 'user_run_history_list_page: HEM, Events, Kennels',
     );
-    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    //print('User data synchronized $resultStr');
     await _refreshRunHistoryFromTable(true);
     _kennelInfo = await widget.refreshKennelInfo();
     setStateIfMounted(() {
@@ -364,17 +358,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
   // bool _isLoading = true;
 
   // @override
-  // void initState() {
-  //   super.initState();
 
   // }
 
   // int pageIndex = 1;
 
   // @override
-  // Widget build(BuildContext context) {
-  //   return  AppScaffold(
-  //       floatingActionButton: SpeedDial(
   //         // both default to 16
   //         marginEnd: 18,
   //         marginBottom: 30,
@@ -386,8 +375,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
   //         curve: Curves.bounceIn,
   //         overlayColor: Colors.black,
   //         overlayOpacity: 0.5,
-  //         onOpen: () => //print('OPENING DIAL'),
-  //         onClose: () => //print('DIAL CLOSED'),
   //         tooltip: 'Speed Dial',
   //         heroTag: 'speed-dial-hero-tag',
   //         backgroundColor: Theme.of(context).accentColor,
@@ -395,44 +382,20 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
   //         elevation: 8.0,
   //         shape: CircleBorder(),
   //         children: <SpeedDialChild>[
-  //           SpeedDialChild(
-  //             child: const Icon(MaterialCommunityIcons.email),
   //             backgroundColor: Colors.teal[800],
   //             label: 'Email this kennel\'s run history',
-  //             labelStyle: const TextStyle(fontSize: 18.0),
-  //             onTap: () {
-  //                   model.sendRunCountReportByEmail(kennelId: kennelId, kennelName: widget.kennelName).then((Map<String, String> result) {
-  //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       await Utilities.showAlert( 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
-  //                     }
-  //                   });
   //                 },
-  //           ),
-  //           SpeedDialChild(
-  //             child: const Icon(MaterialCommunityIcons.email_plus),
   //             backgroundColor: hc_blue,
   //             label: 'Email all kennels run history',
-  //             labelStyle: const TextStyle(fontSize: 18.0),
-  //             onTap: ()  {
-  //                   model.sendRunCountReportByEmail(kennelId: GUID_EMPTY, kennelName: 'All of your Hash Kennels').then((Map<String, String> result) {
-  //                     if (result['result'].toLowerCase().startsWith('success')) {
-  //                       await Utilities.showAlert( 'E-mail successfully sent', 'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.', 'OK');
-  //                     }
-  //                   });
   //                 },
   //           ),
   //         ],
-  //       ),
-  //       appBar: AppBar(
   //         centerTitle: true,
   //         backgroundColor: themeAppBarBackground,
   //         title: Text(
   //           'My runs for ${widget.kennelShortName}',
   //           style: const TextStyle(
   //             color: Colors.white,
-  //           ),
-  //         ),
-  //       ),
   //       body:
 
   //         _isLoading ? _buildCircularProgressIndicator() : _buildListView()
@@ -441,40 +404,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
 
   // }
 
-  // Widget _buildCircularProgressIndicator() {
-  //   return const Center(
-  //     child: HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
-  //   );
-  // }
-
-  // Future<void> _handleRefresh() async {
-  //   model.clearKennelList();
-  //   model.getUserEventsFromBackend(false, 1, 0, 0);
-  //   //model.notifyListeners();
-  // }
-
   int myRunCount = 0;
   int myHaringCount = 0;
-
-  // // T0D0(James): Update this to simply pull data already provided by the server
-  // void _updateMyRunCounts() {
-  //   int haringCount = 0;
-  //   int runCount = 0;
-
-  //   for (int i = _runCountsList.length - 1; i >= 0; i--) {
-  //     if (_runCountsList[i].isHare == 1) {
-  //       haringCount++;
-  //     }
-  //     if (_runCountsList[i].attendenceState >= 20) {
-  //       runCount++;
-  //     }
-  //     _runCountsList[i].totalHaringThisKennel = haringCount + (_kennelInfo ?? widget.kennelInfo).historicalHaringCount;
-  //     _runCountsList[i].totalRunsThisKennel = runCount + (_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount;
-  //   }
-
-  //   myRunCount = runCount;
-  //   myHaringCount = haringCount;
-  // }
 
   Widget _buildListView(AppDomainType appDomain) {
     return Container(

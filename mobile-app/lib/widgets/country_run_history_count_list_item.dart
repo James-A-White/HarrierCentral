@@ -34,9 +34,6 @@ class CountryRunHistoryCountListItem extends StatelessWidget {
                     countryName: countryName,
                   );
 
-                  // refreshKennelInfo: () {
-                  //  // return refreshCounters(kennelInfo.kennelId);
-                  // });
                 },
               ),
             );

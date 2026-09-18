@@ -287,6 +287,13 @@ BEGIN TRY
 
 	-- =============================================
 	-- CATEGORY 8: Push Notification Log
+	--
+	-- Visible pushes only, matching the 'Push' row in hcportal_getUsageData
+	-- so the tile and the list that opens from it agree. Badge maintenance is
+	-- data-only by construction — the read-sync that clears a badge on your
+	-- other devices, and the silent copy of a chat message to someone who has
+	-- the thread muted — and neither ever reaches a person's screen
+	-- (James, 2026-09-18).
 	-- =============================================
 	IF (@categoryId = 8)
 	BEGIN
@@ -312,6 +319,7 @@ BEGIN TRY
 		-- Device: resolved via FcmToken — NULL if token was already deleted
 		LEFT OUTER JOIN HC.Device  d  WITH (NOLOCK) ON d.FcmToken       = pl.FcmToken
 		WHERE pl.SentAt > @cutoffDate
+			AND pl.IsVisible = 1
 		ORDER BY pl.SentAt DESC
 		OPTION (RECOMPILE)
 	END

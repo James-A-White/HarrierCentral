@@ -1976,9 +1976,6 @@ Future<void> _showCaptionEditor(
   PhotoReviewController controller,
   KennelPendingPhoto photo,
 ) async {
-  // result == null  → dismissed without action (back / tap outside)
-  // result == ''    → Clear tapped, or Save with empty field
-  // result == 'txt' → Save tapped with content
   final result = await showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,

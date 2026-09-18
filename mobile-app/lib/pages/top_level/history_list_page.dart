@@ -36,9 +36,6 @@ class CountryStats {
   }
 }
 
-// final GlobalKey<HistoryListPageState> historyListPageKey =
-//     GlobalKey<HistoryListPageState>();
-
 class HistoryListPage extends StatefulWidget {
   const HistoryListPage({super.key});
 
@@ -135,9 +132,6 @@ class HistoryListPageState extends State<HistoryListPage>
     //       10 as runCount,
     //       5 as hareCount,
     //       countries.${tableModel.countriesTableHelper.colCountryName},
-    //       countries.${tableModel.countriesTableHelper.colFlagFile}
-    //       FROM ${EnumDataTables.countries.commonTableName}
-    //       -- GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colFlagFile}
     //       ORDER BY runCount desc
     //       ''';
 
@@ -182,10 +176,6 @@ class HistoryListPageState extends State<HistoryListPage>
         }
       }
 
-      // if (forceRefresh && (i == results.length - 1)) {
-      //   setStateIfMounted(() {});
-      // }
-      //}
     } catch (e) {
       //print(e);
     }
@@ -265,13 +255,9 @@ class HistoryListPageState extends State<HistoryListPage>
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) {
       // This means the user tapped a new tab, but the animation hasn't finished yet.
-      //print('Tab is changing to index: ${_tabController.index}');
-      //_refreshRunHistoryFromTable(true);
       setStateIfMounted(() {});
     } else if (_tabController.index != _tabController.previousIndex) {
       // This is triggered after the tab has finished changing.
-      //print('Tab changed to index: ${_tabController.index}');
-      //_refreshRunHistoryFromTable(true);
       setStateIfMounted(() {});
     }
   }
@@ -326,11 +312,6 @@ class HistoryListPageState extends State<HistoryListPage>
         itemExtent: 100.0,
         itemBuilder: (BuildContext context, int index) {
           if (index >= kennels.length) return const SizedBox.shrink();
-          // if (index == 0) {
-          //   return KennelRunHistoryMyRunsItem(refreshCounters: () {
-          //       refreshRunHistoryFromTable(true);
-          //     },);
-          // } else {
 
           return KennelRunHistoryCountListItem(
             kennelInfo: kennels[index],
@@ -364,8 +345,6 @@ class HistoryListPageState extends State<HistoryListPage>
       true,
       debugText: 'history_list_page: HEM,HKM,Events,Kennels',
     );
-    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    //print('Hasher data synchronized $resultStr');
     await queryKennelStats(true);
     await queryCountryStats(true);
     setStateIfMounted(() {

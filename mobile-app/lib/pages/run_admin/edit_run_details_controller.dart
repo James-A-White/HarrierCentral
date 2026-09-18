@@ -383,7 +383,7 @@ class EditRunDetailsController extends GetxController
     final String? validationError = _validateForSave();
     if (validationError != null) {
       if (currentTab.value != EditingTabEnum.details) {
-        tabController.animateTo(EditingTabEnum.details.value);
+        _goToTab(EditingTabEnum.details.value);
       }
       // Run the form's own validation too so the offending field shows its
       // error inline, once the tab it lives on has been built.
@@ -458,6 +458,19 @@ class EditRunDetailsController extends GetxController
     return true;
   }
 
+  /// Jump tabs, safely.
+  ///
+  /// `tabController` is disposed in onClose, and TabController.animateTo
+  /// dereferences its nulled AnimationController — so it throws in RELEASE,
+  /// not just under an assert. onSaveBarPressed reaches it after a network
+  /// save, which is exactly when the editor can be backed out of. The
+  /// `mutate()` wrapper already guards this controller's update() calls; this
+  /// is the same idea for the tab jumps that sit outside it.
+  void _goToTab(int index) {
+    if (isClosed) return;
+    tabController.animateTo(index);
+  }
+
   Future<void> onSaveBarPressed() async {
     final bool didAddressChange = addressChanged;
     final bool saved = await saveAll();
@@ -471,7 +484,7 @@ class EditRunDetailsController extends GetxController
         Navigator.of(navigatorKey.currentContext!).pop();
         return;
       }
-      tabController.animateTo(currentTab.value.next);
+      _goToTab(currentTab.value.next);
       return;
     }
 
@@ -609,7 +622,7 @@ class EditRunDetailsController extends GetxController
             ),
             onPressed: () {
               Navigator.of(ctx).pop();
-              tabController.animateTo(EditingTabEnum.map.value);
+              _goToTab(EditingTabEnum.map.value);
             },
             child: const Text('Go to Map'),
           ),
@@ -713,7 +726,7 @@ class EditRunDetailsController extends GetxController
         mapCenter = latlng.LatLng(result.position!.lat!, result.position!.lon!);
       }
     });
-    tabController.animateTo(EditingTabEnum.address.value);
+    _goToTab(EditingTabEnum.address.value);
   }
 
   Future<void> geocodeAndNavigateToMap() async {
@@ -776,7 +789,7 @@ class EditRunDetailsController extends GetxController
               mapCenter = latlng.LatLng(lat, lon);
               isUpdating.value = false;
             });
-            tabController.animateTo(EditingTabEnum.map.value);
+            _goToTab(EditingTabEnum.map.value);
             return;
           }
         }
@@ -849,7 +862,7 @@ class EditRunDetailsController extends GetxController
         'OK',
       );
 
-      tabController.animateTo(EditingTabEnum.details.index);
+      _goToTab(EditingTabEnum.details.index);
     } else {
       final XFile? image = await ImagePicker().pickImage(source: source);
 

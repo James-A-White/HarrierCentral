@@ -11,10 +11,6 @@ class ReceiptDetailPage extends StatefulWidget {
 }
 
 class ReceiptDetailPageState extends State<ReceiptDetailPage> {
-  // String firstName = getStringPref(StringPrefsEnum.firstName);
-  // String lastName = getStringPref(StringPrefsEnum.lastName);
-  // String email = getStringPref(StringPrefsEnum.email);
-  // String hashName = getStringPref(StringPrefsEnum.hashName);
 
   final GlobalKey<FormState> _receiptFormKey = GlobalKey<FormState>();
   bool _autoValidate = false;
@@ -225,9 +221,6 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           initialValue: _receiptAmount,
           decoration: const InputDecoration(labelText: 'Receipt amount'),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          // validator: (String arg) {
-          //   // if (arg.length < 1)
-          //   //   return 'Name must be more than 2 charaters';
           //   // else
           //   //   return null;
           // },
@@ -318,8 +311,6 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                       style: ts_heading,
                                       textAlign: TextAlign.center,
                                     ),
-                                    //),
-                                    // Positioned(
                                     //   top: 40,
                                     //   //bottom: 20,
                                     //   width: MediaQuery.sizeOf(context).width,
@@ -373,9 +364,6 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
                                     //),
                                     //       ],
-                                    //     ),
-                                    //   ),
-                                    // ),
                                     GestureDetector(
                                       onTap: () async {
                                         await Navigator.push<void>(

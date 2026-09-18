@@ -141,8 +141,9 @@ class _DownDownsPageState extends State<DownDownsPage> {
     if (ok && mounted) {
       setState(() {
         final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (i >= 0)
+        if (i >= 0) {
           _downDowns[i] = _copyWith(dd, isDone: true, isCancelled: false);
+        }
         _sortList();
       });
     }
@@ -198,8 +199,9 @@ class _DownDownsPageState extends State<DownDownsPage> {
     if (ok && mounted) {
       setState(() {
         final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (i >= 0)
+        if (i >= 0) {
           _downDowns[i] = _copyWith(dd, isCancelled: true, isDone: false);
+        }
         _sortList();
       });
     }

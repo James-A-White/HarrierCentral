@@ -42,9 +42,6 @@ class MismanagementRolesPageState extends State<MismanagementRolesPage> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: <Widget>[
-                      // getOption('Is on mismanagement', mmRoles.getMismanagementState(mmRoleIsOnMm), (bool value) {
-                      //   mmRoles.setMismanagementState(mmRoleIsOnMm, value);
-                      // }),
                       const SizedBox(height: 30.0),
                       getOption(
                         'Grand Master/Mistress (GM)',

@@ -73,8 +73,6 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
                 widget.areWeAtRunData.eventImage ??
                 widget.areWeAtRunData.kennelLogo,
             // errorWidget:
-            //     (BuildContext context, String url, Exception error) =>
-            //         const  Icon(Icons.error),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 5.0),
@@ -258,9 +256,6 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
         // ],
       ),
       // actions: <Widget>[
-      //   // Padding(
-      //   //   padding: const EdgeInsets.only(right: 0.0),
-      //   //   child: Container(
       //   //     width: 60.0,
       //   //     child:
 
@@ -268,70 +263,23 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       //     color:hc_red,
       //     child: const Text('Cancel'),
       //     textColor: Colors.white,
-      //     onPressed: () {
-      //       Navigator.of(context)
-      //           .pop(<String, String>{'type': 'cancel', 'amount': ''});
       //     },
       //   ),
 
       // ],
     );
 
-    //     Image.network(kennel.kennelLogo,
-    //         fit: BoxFit.fitHeight, height: logoHeight),
-    // alignment: Alignment.centerRight);
   }
 
-  // List<Widget> getButtons() {
-  //   final List<Widget> buttons = <Widget>[];
-
-  //   for (Map<String, dynamic> btnDef in widget.areWeAtRunData.buttons) {
-  //     if (btnDef['title'].toString().isEmpty) {
-  //       continue;
-  //     }
-  //     final Widget w = Row(children: <Widget>[
-  //       Expanded(
-  //         child: GestureDetector(
-  //           onTap: () {
-  //             Navigator.of(context).pop<dynamic>(btnDef['returnValue']);
   //           },
-  //           child: Container(
-  //             //padding: EdgeInsets.only(top: 6.0 * deviceInfo.deviceHeightScaleFactor, left: 8.0, bottom: 6.0 * deviceInfo.deviceHeightScaleFactor),
   //             color: hc_blue,
-  //             child: Row(children: <Widget>[
-  //               const SizedBox(width: 8.0,),
-  //               Stack(alignment: AlignmentDirectional.center, children: btnDef['icon']),
-  //               Flexible(
-  //                 child: Padding(
-  //                   padding: const EdgeInsets.only(left: 8.0, top: 16.0, bottom: 10.0),
-  //                   child: Text(
-  //                     btnDef['title'].toString(),
   //                     maxLines: 5,
   //                     overflow: TextOverflow.ellipsis,
   //                     style: buttonLabelStyleSmall,
-  //                   ),
-  //                 ),
-  //               ),
-  //             ]),
   //             //textColor: Colors.white,
-  //           ),
-  //         ),
-  //       )
-  //     ]);
 
-  //     buttons.add(w);
-  //     buttons.add(const SizedBox(height: 10.0));
-  //   }
-  //   buttons.add(
-  //                 TextButton(
   //       color:hc_red,
   //       child: Text(widget.areWeAtRunData.cancelButtonTitle),
   //       textColor: Colors.white,
-  //       onPressed: () {
-  //         Navigator.of(context).pop(followTypeCancel);
   //       },
-  //     ),
-  //   );
-  //   return buttons;
-  // }
 }

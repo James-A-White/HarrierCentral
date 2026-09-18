@@ -1,5 +1,6 @@
 using System;
 using Azure.Data.Tables;
+using Microsoft.Azure.Functions.Worker;            // ConfigureFunctionsApplicationInsights
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,20 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 // This sets up all existing Function triggers, routing, JSON settings, etc.
 builder.ConfigureFunctionsWebApplication();
+
+// Application Insights for the ISOLATED WORKER (2026-09-18).
+//
+// The packages alone are not enough and neither is the connection string
+// alone. Without these two calls the worker process sends nothing, which is
+// why roughly 1 request in 1,000 has been failing with an EMPTY 500 and no
+// record anywhere of the exception behind it.
+//
+// ConfigureFunctionsApplicationInsights() is the one people miss: it attaches
+// the worker's ILogger to the telemetry pipeline so an unhandled exception in
+// a Function body is actually reported.
+builder.Services
+    .AddApplicationInsightsTelemetryWorkerService()
+    .ConfigureFunctionsApplicationInsights();
 
 // Register the IHttpClientFactory for BoxProxyFunctions
 builder.Services.AddHttpClient();

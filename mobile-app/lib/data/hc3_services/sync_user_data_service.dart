@@ -2,20 +2,6 @@
 import 'package:harrier_central/imports.dart';
 
 class SyncUserDataService {
-  // static const int EnumDataTables.hashers.flag = 0x00000001;
-  // static const int EnumDataTables.cities.flag = 0x00000002;
-  // static const int EnumDataTables.regions.flag = 0x00000004;
-  // static const int EnumDataTables.countries.flag = 0x00000008;
-  // static const int EnumDataTables.kennels.flag = 0x00000010;
-  // static const int EnumDataTables.narrowEvents.flag = 0x00000020;
-  // static const int EnumDataTables.payments.flag = 0x00000040;
-  // static const int EnumDataTables.hasherKennelMap.flag = 0x00010000;
-  // static const int EnumDataTables.hasherEventMap.flag = 0x00020000;
-
-  // static const int flagAllMasterDataWithoutHashers = 0x0000003E;
-  // static const int flagAllMasterData = 0x0000003F;
-  // static const int flagsAllData = 0x0003007f;
-  // static const int flagAllDataWithoutHashersOrEvents = 0x0003001e;
 
   static const int pageSize_hashersTable = 2500;
   static const int pageSize_citiesTable = 250;
@@ -176,19 +162,6 @@ class SyncUserDataService {
     if (Utilities.isNotConnected()) {
       return false;
     }
-
-    // final lastFullSync =
-    //     getDatePref(DatePrefsEnum.lastSuccessfulUserDataFullSync) ??
-    //     DateTime(2000);
-
-    // if (!forceRefresh &&
-    //     lastFullSync.isAfter(
-    //       DateTime.now().subtract(
-    //         const Duration(seconds: DEBOUNCE_SYNC_USER_DATA),
-    //       ),
-    //     )) {
-    //   return true;
-    // }
 
     debugPrint('[BOOT] SyncUserData.updateFromBackend: start, flags=0x${tablesToSync.toRadixString(16)}, debugText=$debugText: ${DateTime.now().millisecondsSinceEpoch}ms');
     int batchNumber = 1;
@@ -358,9 +331,6 @@ class SyncUserDataService {
 
       //print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
-      // if (DateTime.now().difference(startTime).inMilliseconds > 5000) {
-      //   int xxx = 0;
-      // }
     }
     debugPrint('[BOOT] SyncUserData.updateFromBackend: COMPLETE after $batchNumber batches: ${DateTime.now().millisecondsSinceEpoch}ms');
     return true;

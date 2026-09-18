@@ -142,8 +142,9 @@ class KennelPageFormController extends TabUiController
   // ---------------------------------------------------------------------------
 
   /// Default run start time for the kennel.
-  final Rx<DateTime> defaultRunStartTime =
-      DateTime.fromMillisecondsSinceEpoch(0).obs;
+  final Rx<DateTime> defaultRunStartTime = DateTime.fromMillisecondsSinceEpoch(
+    0,
+  ).obs;
 
   /// Show runs on Hashruns.org (0 = off, 5 = on).
   final RxBool disseminateHashRunsDotOrg = false.obs;
@@ -588,7 +589,8 @@ class KennelPageFormController extends TabUiController
       if (control.includeOverrideButton && control.lookthroughValue != null) {
         // For override fields: show lookthrough if not overridden
         final original = control.originalFieldValue;
-        final isOverridden = original != null &&
+        final isOverridden =
+            original != null &&
             original.isNotEmpty &&
             original != control.lookthroughValue;
 
@@ -638,9 +640,13 @@ class KennelPageFormController extends TabUiController
     bodyParams.addAll(changedData);
 
     final apiResult = await ServiceCommon.sendHttpPostToHC6Api(bodyParams);
-    if (kDebugMode) debugPrint(apiResult is ApiError
-        ? 'SP 6 [editKennel] called — FAILED'
-        : 'SP 6 [editKennel] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        apiResult is ApiError
+            ? 'SP 6 [editKennel] called — FAILED'
+            : 'SP 6 [editKennel] called — success',
+      );
+    }
 
     await _flushPermissionOverrides();
     await _handleSaveResponse(apiResult, showDialog);
@@ -819,8 +825,9 @@ class KennelPageFormController extends TabUiController
     final int songsTabIndex = KennelTabType.songs.index;
     if (songsTabIndex < tabStatus.length) {
       final bool hasSongs = songSelections.values.any((rx) => rx.value == 1);
-      tabStatus[songsTabIndex].value =
-          hasSongs ? TabStatus.isCompleteAndValid : TabStatus.isEmpty;
+      tabStatus[songsTabIndex].value = hasSongs
+          ? TabStatus.isCompleteAndValid
+          : TabStatus.isEmpty;
     }
   }
 
@@ -923,7 +930,11 @@ class KennelPageFormController extends TabUiController
 
     final songName = newSongNameController.text.trim();
     if (songName.isEmpty) {
-      await CoreUtilities.showAlert('Validation', 'Song name is required.', 'OK');
+      await CoreUtilities.showAlert(
+        'Validation',
+        'Song name is required.',
+        'OK',
+      );
       return;
     }
 
@@ -982,9 +993,13 @@ class KennelPageFormController extends TabUiController
     };
 
     final addSongResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(addSongResult is ApiError
-        ? 'SP 2 [addSong] called — FAILED'
-        : 'SP 2 [addSong] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        addSongResult is ApiError
+            ? 'SP 2 [addSong] called — FAILED'
+            : 'SP 2 [addSong] called — success',
+      );
+    }
 
     if (addSongResult is ApiSuccess) {
       isAddingSong.value = false;

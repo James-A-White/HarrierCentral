@@ -838,8 +838,6 @@ class LiveRunGeneralPage extends StatelessWidget {
                       const SizedBox(height: 12),
                       _buildStatsRow(),
                       const SizedBox(height: 12),
-                      // _buildActionsRow(context),
-                      // const SizedBox(height: 12),
                       IntrinsicHeight(
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.stretch,

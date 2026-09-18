@@ -8,8 +8,11 @@ import 'package:hcportal/imports.dart';
 String _deviceId() => box.get(HIVE_DEVICE_ID) as String;
 String _deviceSecret() => (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
 
-String _token(String procName) =>
-    Utilities.generateToken(_deviceId(), procName, paramString: _deviceSecret());
+String _token(String procName) => Utilities.generateToken(
+  _deviceId(),
+  procName,
+  paramString: _deviceSecret(),
+);
 
 // ---------------------------------------------------------------------------
 // Pending newsflashes (user-facing)
@@ -25,14 +28,19 @@ Future<List<NewsflashModel>> queryPendingNewsflashes() async {
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(result is ApiError
-      ? 'SP [getPendingNewsflashes] — FAILED'
-      : 'SP [getPendingNewsflashes] — success');
+  if (kDebugMode) {
+    debugPrint(
+      result is ApiError
+          ? 'SP [getPendingNewsflashes] — FAILED'
+          : 'SP [getPendingNewsflashes] — success',
+    );
+  }
 
   if (result is! ApiSuccess) return [];
 
   try {
-    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
+    final rows =
+        (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     return rows
         .map((r) => NewsflashModel.fromJson(r as Map<String, dynamic>))
         .toList();
@@ -62,15 +70,20 @@ Future<bool> respondToNewsflash(
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(result is ApiError
-      ? 'SP [respondToNewsflash] — FAILED'
-      : 'SP [respondToNewsflash] — success');
+  if (kDebugMode) {
+    debugPrint(
+      result is ApiError
+          ? 'SP [respondToNewsflash] — FAILED'
+          : 'SP [respondToNewsflash] — success',
+    );
+  }
 
   if (result is! ApiSuccess) return false;
 
   try {
-    final row = ((json.decode(result.body) as List<dynamic>)[0]
-        as List<dynamic>)[0] as Map<String, dynamic>;
+    final row =
+        ((json.decode(result.body) as List<dynamic>)[0] as List<dynamic>)[0]
+            as Map<String, dynamic>;
     return (row['Success'] as int?) == 1;
   } on Exception catch (e) {
     if (kDebugMode) debugPrint('respondToNewsflash parse error: $e');
@@ -91,14 +104,19 @@ Future<List<NewsflashAdminModel>> queryNewsflashList() async {
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(result is ApiError
-      ? 'SP [getNewsflashList] — FAILED'
-      : 'SP [getNewsflashList] — success');
+  if (kDebugMode) {
+    debugPrint(
+      result is ApiError
+          ? 'SP [getNewsflashList] — FAILED'
+          : 'SP [getNewsflashList] — success',
+    );
+  }
 
   if (result is! ApiSuccess) return [];
 
   try {
-    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
+    final rows =
+        (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     return rows
         .map((r) => NewsflashAdminModel.fromJson(r as Map<String, dynamic>))
         .toList();
@@ -132,21 +150,25 @@ Future<bool> addEditNewsflash({
     'bodyText': bodyText,
     if (imageUrl != null && imageUrl.isNotEmpty) 'imageUrl': imageUrl,
     'startDate': startDate.toIso8601String().substring(0, 10),
-    if (endDate != null)
-      'endDate': endDate.toIso8601String().substring(0, 10),
+    if (endDate != null) 'endDate': endDate.toIso8601String().substring(0, 10),
     'kennelId': kennelId,
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(result is ApiError
-      ? 'SP [addEditNewsflash] — FAILED'
-      : 'SP [addEditNewsflash] — success');
+  if (kDebugMode) {
+    debugPrint(
+      result is ApiError
+          ? 'SP [addEditNewsflash] — FAILED'
+          : 'SP [addEditNewsflash] — success',
+    );
+  }
 
   if (result is! ApiSuccess) return false;
 
   try {
-    final row = ((json.decode(result.body) as List<dynamic>)[0]
-        as List<dynamic>)[0] as Map<String, dynamic>;
+    final row =
+        ((json.decode(result.body) as List<dynamic>)[0] as List<dynamic>)[0]
+            as Map<String, dynamic>;
     return (row['Success'] as int?) == 1;
   } on Exception catch (e) {
     if (kDebugMode) debugPrint('addEditNewsflash parse error: $e');
@@ -168,15 +190,20 @@ Future<bool> deleteNewsflash(String newsflashId) async {
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(result is ApiError
-      ? 'SP [deleteNewsflash] — FAILED'
-      : 'SP [deleteNewsflash] — success');
+  if (kDebugMode) {
+    debugPrint(
+      result is ApiError
+          ? 'SP [deleteNewsflash] — FAILED'
+          : 'SP [deleteNewsflash] — success',
+    );
+  }
 
   if (result is! ApiSuccess) return false;
 
   try {
-    final row = ((json.decode(result.body) as List<dynamic>)[0]
-        as List<dynamic>)[0] as Map<String, dynamic>;
+    final row =
+        ((json.decode(result.body) as List<dynamic>)[0] as List<dynamic>)[0]
+            as Map<String, dynamic>;
     return (row['Success'] as int?) == 1;
   } on Exception catch (e) {
     if (kDebugMode) debugPrint('deleteNewsflash parse error: $e');
@@ -190,7 +217,8 @@ Future<bool> deleteNewsflash(String newsflashId) async {
 
 /// Returns all users who have interacted with a newsflash.
 Future<List<NewsflashReaderModel>> queryNewsflashReaders(
-    String newsflashId) async {
+  String newsflashId,
+) async {
   final body = <String, String?>{
     'queryType': 'getNewsflashReaders',
     'deviceId': _deviceId(),
@@ -199,14 +227,19 @@ Future<List<NewsflashReaderModel>> queryNewsflashReaders(
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(result is ApiError
-      ? 'SP [getNewsflashReaders] — FAILED'
-      : 'SP [getNewsflashReaders] — success');
+  if (kDebugMode) {
+    debugPrint(
+      result is ApiError
+          ? 'SP [getNewsflashReaders] — FAILED'
+          : 'SP [getNewsflashReaders] — success',
+    );
+  }
 
   if (result is! ApiSuccess) return [];
 
   try {
-    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
+    final rows =
+        (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     return rows
         .map((r) => NewsflashReaderModel.fromJson(r as Map<String, dynamic>))
         .toList();

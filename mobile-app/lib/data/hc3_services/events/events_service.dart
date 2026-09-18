@@ -177,10 +177,6 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
   }
 
   // @override
-  // Map<String, dynamic> toMap(dynamic item) {
-  //   final Map<String, dynamic> map = _$EventModelToJson(item);
-  //   return map;
-  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
@@ -476,8 +472,9 @@ class EventsService extends BaseService {
       final List<dynamic> adHocData = await tableModel.syncUserDataService
           .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
 
-      if (adHocData.isNotEmpty) {
-        final String? returnedId = adHocData[0]['eventId'] as String?;
+      final Map<String, dynamic>? adHocRow = firstRow(adHocData);
+      if (adHocRow != null) {
+        final String? returnedId = adHocRow['eventId'] as String?;
         if (returnedId != null && returnedId.isNotEmpty) {
           eventId = returnedId;
         }
@@ -491,10 +488,6 @@ class EventsService extends BaseService {
 
   // Future<Map<String, String>> sendRunDetailsByEmail({
   //   required String eventId,
-  //   String emailBody = '',
-  // }) async {
-  //   final String userId = currentUserId;
-  //   final String accessToken = Utilities.generateToken(
   //     userId,
   //     'rptApi_emailRunDetails',
   //     paramString: eventId,
@@ -509,18 +502,10 @@ class EventsService extends BaseService {
 
   //   //print(body);
 
-  //   final Response response = await post(
-  //     Uri.parse(EMAIL_RUN_DETAILS_TO_PACK_API_URL),
   //     headers: <String, String>{'content-type': 'application/json'},
   //     body: body,
   //     // Send authorization headers to your backend
   //     //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-  //   ).catchError((dynamic error) {
-  //     return Future<Response>.value(Response('', 500));
-  //   });
-
-  //   return <String, String>{'result': response.body};
-  // }
 
   Future<RunDetailsAggregate?> getSingleRun(String eventId) async {
     //final Geolocator locator = Geolocator();

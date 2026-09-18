@@ -374,7 +374,13 @@ namespace HcWebApi.Endpoints
                 // Log to HC.PushLog — one entry per recipient per event message, with FCM result
                 foreach (var em in eventDetailsList)
                 {
-                    var summary = $"chat: {em.MessageTitle}";
+                    // The Summary is what the portal's push drill-down SHOWS, so it
+                    // carries what was actually said. It used to carry
+                    // MessageTitle, which is "DisplayName - Run" — the same
+                    // string on every row of a conversation, and never the
+                    // message (James, 2026-09-18). Trimmed so one long message
+                    // cannot dominate the column.
+                    var summary = Summarise(em.MessageTitle, em.MessageContent);
                     var logEntries = dispatchList
                         .Select((item, i) => (item, result: fcmResults[i]))
                         .Where(x => x.item.em.EventId == em.EventId && !string.IsNullOrEmpty(x.item.token))
@@ -658,7 +664,7 @@ namespace HcWebApi.Endpoints
                 _ = LogPushBatchAsync(
                     queryType,
                     null,                       // no EventId: neither kind belongs to a run
-                    $"chat: {title}",
+                    Summarise(title, body),
                     recipients.Select((r, i) => new PushLogEntry(
                         r.Token, r.UserId, SenderUserId: Str("UserId"),
                         IsVisible: r.Visible, FcmResult: results[i])),
@@ -668,6 +674,18 @@ namespace HcWebApi.Endpoints
             {
                 logger.LogError("Error sending {Kind} chat push: {Message}", kind, ex.Message);
             }
+        }
+
+        /// <summary>
+        /// One line for the portal's push log: who/where, then what was said.
+        /// Capped so the drill-down column stays readable.
+        /// </summary>
+        private static string Summarise(string? title, string? body)
+        {
+            var text = (body ?? string.Empty).Replace("\r", " ").Replace("\n", " ").Trim();
+            if (text.Length > 160) text = text.Substring(0, 157) + "…";
+            var who = (title ?? string.Empty).Trim();
+            return text.Length == 0 ? $"chat: {who}" : $"{who}: {text}";
         }
 
         private static IEnumerable<(string Token, string? UserId, bool Visible)> Tokens(

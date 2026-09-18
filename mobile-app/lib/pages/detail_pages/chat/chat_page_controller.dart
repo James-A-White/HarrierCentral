@@ -148,18 +148,48 @@ class ChatPageController extends GetxController {
     }
 
     _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final incomingEventId = message.data['EventId'] as String?;
       // Only act on (and log) pushes for THIS chat — every other foreground push
       // used to hit an error-level log with a full data interpolation.
-      if (incomingEventId != null && eventId.asUuid == incomingEventId.asUuid) {
-        BootLogger.logBreadcrumb('[ChatPage FCM] delta for $incomingEventId');
-        _upgradeOwnMessagesToDelivered();
-        unawaited(_fetchDelta());
-      }
+      if (!_pushIsForThisThread(message.data)) return;
+      BootLogger.logBreadcrumb('[ChatPage FCM] delta for ${_kind.name}');
+      // The sender's OWN echo is what turns their single tick into a double,
+      // so this must fire for every thread kind, not just runs.
+      _upgradeOwnMessagesToDelivered();
+      unawaited(_fetchDelta());
     });
   }
 
+  /// Is this push about the thread this page is showing?
+  ///
+  /// The three kinds identify themselves differently on the wire, and until
+  /// 2026-09-18 this only ever looked for an EventId. A kennel push carries a
+  /// KennelId and a room push carries a RoomType — the shim sends the room in
+  /// its own key BECAUSE MessageType is pinned to 0 for these two, since the
+  /// app parses that key through MessageType.fromId, which throws above 2.
+  /// The effect of matching on EventId alone was that a kennel or room
+  /// message never upgraded its sender's tick and never pulled its own delta.
+  bool _pushIsForThisThread(Map<String, dynamic> data) {
+    switch (_kind) {
+      case _ThreadKind.room:
+        final int? pushed = int.tryParse('${data['RoomType'] ?? ''}');
+        return pushed != null && pushed == roomType;
+      case _ThreadKind.kennel:
+        // eventId holds the KENNEL id for a kennel thread (see the chat list).
+        final String? pushed = data['KennelId'] as String?;
+        return pushed != null && pushed.asUuid == eventId.asUuid;
+      case _ThreadKind.event:
+        final String? pushed = data['EventId'] as String?;
+        return pushed != null && pushed.asUuid == eventId.asUuid;
+    }
+  }
+
   void _upgradeOwnMessagesToDelivered() {
+    // onClose cancels the FCM subscription WITHOUT awaiting it, so an event
+    // already in flight can still land here after chatController.dispose().
+    // Writing to a disposed InMemoryChatController throws "Cannot add new
+    // events after calling close" — the same fault _fetchDelta was fixed for
+    // on 2026-09-14, from the one path that was not covered.
+    if (isClosed) return;
     for (final msg in List.of(chatController.messages)) {
       if (msg.authorId != currentUser.id) continue;
       if (msg.status != core.MessageStatus.sent) continue;
@@ -399,6 +429,9 @@ class ChatPageController extends GetxController {
         height: image.height.toDouble(),
         size: bytes.length,
       );
+      // Picking an image and decoding it are both long awaits, and the
+      // hasher can leave the chat inside either one.
+      if (isClosed) return;
       unawaited(chatController.insertMessage(message));
     }
   }

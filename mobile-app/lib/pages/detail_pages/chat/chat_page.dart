@@ -1,7 +1,6 @@
 import 'package:flutter_chat_core/flutter_chat_core.dart' as core;
 import 'package:flutter/gestures.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:harrier_central/imports.dart';
 
 class ChatPage extends StatelessWidget {

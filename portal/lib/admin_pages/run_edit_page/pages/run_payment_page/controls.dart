@@ -16,7 +16,7 @@ extension PaymentControlsExtension on RunEditPageController {
   /// Returns null if the price is null.
   String? _formatPrice(num? price) {
     if (price == null) return null;
-    final digits = this.kennelData.defaultDigitsAfterDecimal;
+    final digits = kennelData.defaultDigitsAfterDecimal;
     return price.toDouble().toStringAsFixed(digits);
   }
 
@@ -54,9 +54,10 @@ extension PaymentControlsExtension on RunEditPageController {
             'prices will be used.',
       ),
       editedFieldValue: useCustomPricing.value.toString(),
-      originalFieldValue: ((originalData.eventPriceForMembers != null) ||
-              (originalData.eventPriceForNonMembers != null))
-          .toString(),
+      originalFieldValue:
+          ((originalData.eventPriceForMembers != null) ||
+                  (originalData.eventPriceForNonMembers != null))
+              .toString(),
       globalKey: GlobalKey<FormFieldState>(),
       label: 'Use custom pricing for this run',
       tabIndex: tabIndex,
@@ -72,10 +73,9 @@ extension PaymentControlsExtension on RunEditPageController {
   void _registerMemberPriceControl(String tabKey, int tabIndex) {
     final fieldKey = '${tabKey}_${RunPaymentField.memberPrice.name}';
 
-    final digits = this.kennelData.defaultDigitsAfterDecimal;
+    final digits = kennelData.defaultDigitsAfterDecimal;
     final isOverridden = originalData.eventPriceForMembers != null;
-    final defaultPrice =
-        _formatPrice(this.kennelData.defaultEventPriceForMembers);
+    final defaultPrice = _formatPrice(kennelData.defaultEventPriceForMembers);
     final overrideValue = _formatPrice(originalData.eventPriceForMembers);
 
     uiControls[fieldKey] = UiControlDefinition(
@@ -108,8 +108,9 @@ extension PaymentControlsExtension on RunEditPageController {
       updateEditedValue: (String? value) {
         // Handle reset to lookthrough (kennel default) value
         if (value == RESET_TO_LOOKTHROUGH_VALUE) {
-          editedData.value =
-              editedData.value.copyWith(eventPriceForMembers: null);
+          editedData.value = editedData.value.copyWith(
+            eventPriceForMembers: null,
+          );
           uiControls[fieldKey]?.editedFieldValue = null;
           uiControls[fieldKey]?.isOverridden = false;
           checkIfFormIsDirty();
@@ -117,8 +118,9 @@ extension PaymentControlsExtension on RunEditPageController {
         }
 
         final price = double.tryParse(value ?? '');
-        editedData.value =
-            editedData.value.copyWith(eventPriceForMembers: price);
+        editedData.value = editedData.value.copyWith(
+          eventPriceForMembers: price,
+        );
         uiControls[fieldKey]?.editedFieldValue = value;
         uiControls[fieldKey]?.isOverridden = (price != null);
         checkIfFormIsDirty();
@@ -129,10 +131,11 @@ extension PaymentControlsExtension on RunEditPageController {
   void _registerNonMemberPriceControl(String tabKey, int tabIndex) {
     final fieldKey = '${tabKey}_${RunPaymentField.nonMemberPrice.name}';
 
-    final digits = this.kennelData.defaultDigitsAfterDecimal;
+    final digits = kennelData.defaultDigitsAfterDecimal;
     final isOverridden = originalData.eventPriceForNonMembers != null;
-    final defaultPrice =
-        _formatPrice(this.kennelData.defaultEventPriceForNonMembers);
+    final defaultPrice = _formatPrice(
+      kennelData.defaultEventPriceForNonMembers,
+    );
     final overrideValue = _formatPrice(originalData.eventPriceForNonMembers);
 
     uiControls[fieldKey] = UiControlDefinition(
@@ -165,8 +168,9 @@ extension PaymentControlsExtension on RunEditPageController {
       updateEditedValue: (String? value) {
         // Handle reset to lookthrough (kennel default) value
         if (value == RESET_TO_LOOKTHROUGH_VALUE) {
-          editedData.value =
-              editedData.value.copyWith(eventPriceForNonMembers: null);
+          editedData.value = editedData.value.copyWith(
+            eventPriceForNonMembers: null,
+          );
           uiControls[fieldKey]?.editedFieldValue = null;
           uiControls[fieldKey]?.isOverridden = false;
           checkIfFormIsDirty();
@@ -174,8 +178,9 @@ extension PaymentControlsExtension on RunEditPageController {
         }
 
         final price = double.tryParse(value ?? '');
-        editedData.value =
-            editedData.value.copyWith(eventPriceForNonMembers: price);
+        editedData.value = editedData.value.copyWith(
+          eventPriceForNonMembers: price,
+        );
         uiControls[fieldKey]?.editedFieldValue = value;
         uiControls[fieldKey]?.isOverridden = (price != null);
         checkIfFormIsDirty();
@@ -234,8 +239,9 @@ extension PaymentControlsExtension on RunEditPageController {
       tabIndex: tabIndex,
       updateEditedValue: (String? value) {
         final price = double.tryParse(value ?? '');
-        editedData.value =
-            editedData.value.copyWith(eventPriceForExtras: price);
+        editedData.value = editedData.value.copyWith(
+          eventPriceForExtras: price,
+        );
         uiControls[fieldKey]?.editedFieldValue = value;
       },
     );
@@ -291,8 +297,9 @@ extension PaymentControlsExtension on RunEditPageController {
       tabIndex: tabIndex,
       updateEditedValue: (dynamic value) {
         if (value is bool) {
-          editedData.value =
-              editedData.value.copyWith(extrasRsvpRequired: value ? 1 : 0);
+          editedData.value = editedData.value.copyWith(
+            extrasRsvpRequired: value ? 1 : 0,
+          );
           uiControls[fieldKey]?.editedFieldValue = value.toString();
         }
       },

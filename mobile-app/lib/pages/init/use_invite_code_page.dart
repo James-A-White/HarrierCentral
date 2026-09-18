@@ -101,8 +101,6 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
   // EQrScannerState _state = EQrScannerState.waitingForScan;
 
   MobileScannerController? _scannerController;
-  // EQrScannerState _state = EQrScannerState.waitingForScan;
-  // bool _isScanning = true;
 
   @override
   void initState() {
@@ -163,8 +161,6 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                 if (!mounted) return;
                 setStateIfMounted(() {
                   _isScanning = false;
-                  // _onScreenMessage = 'Scanning paused';
-                  // _state = EQrScannerState.waitingForScan;
                 });
               })
               .catchError((e, st) {
@@ -179,8 +175,6 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                 if (!mounted) return;
                 setStateIfMounted(() {
                   _isScanning = true;
-                  // _onScreenMessage = 'Looking for QR Code';
-                  // _state = EQrScannerState.scanning;
                 });
               })
               .catchError((e, st) {
@@ -463,42 +457,21 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                       const SizedBox(height: 20, width: 10),
                       // Row(
                       //   children: <Widget>[
-                      //     Container(
-                      //       margin: const EdgeInsets.only(right: 10),
                       //       height: 25,
                       //       width: 25,
                       //       color: Colors.yellow[100],
                       //       child: Checkbox(
                       //         value: _includeInGlobalHashDirectory,
-                      //         onChanged: (bool value) {
-                      //           setStateIfMounted(() {
-                      //             _includeInGlobalHashDirectory = value;
-                      //             // checkDirty();
-                      //           });
                       //         },
-                      //       ),
-                      //     ),
-                      //     const Expanded(
-                      //       child: Text(
                       //         'Include me in Global Hash Directory',
                       //         //style: headingStyle,
                       //         textAlign: TextAlign.center,
-                      //       ),
-                      //     ),
-                      //     GestureDetector(
-                      //       onTap: () async {
-                      //         await Utilities.showAlert(
                       //             context,
                       //             'What is the Global Hash Directory?',
                       //             'The Global Hash Directory is a list of all Hashers who use Harrier Central and "opt-in" to be included in the list.\r\n\r\nWhen you select to be included in the Directory your name, home Kennel and any mismanagement roles you have will be publicly available.\r\n\r\nYou may also use Harrier Central to send short email messages to anyone else in the Directory without sharing your e-mail address.',
                       //             'OK');
                       //       },
-                      //       child: Container(
-                      //         padding: const EdgeInsets.only(left: 20),
                       //         height: 26,
-                      //         child: Image.asset('images/icons/info_button.png'),
-                      //       ),
-                      //     ),
                       //   ],
                       // ),
                       const SizedBox(height: 16, width: 10),
@@ -516,8 +489,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               width: double.infinity,
                               child: TextButton(
                                 style: text_button_style,
-                                child: Text('Get Started!', style: ts_button),
                                 onPressed: _submitInviteCode,
+                                child: Text('Get Started!', style: ts_button),
                               ),
                             ),
                     ],
@@ -632,27 +605,6 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
     }
   }
 
-  // void _onQRViewCreated(QRViewController controller) {
-  //   _scannerController = controller;
-  //   setStateIfMounted(() {
-  //     // _isScanning = true;
-  //     // _onScreenMessage = 'Looking for QR Code';
-  //     // _state = EQrScannerState.scanning;
-  //     //_toggleScanning();
-  //   });
-
-  //   if (_scannerController != null) {
-  //     _scannerController!.scannedDataStream.listen((Barcode scanData) async {
-  //       _result = scanData.code;
   //       // "debounce" the listener to discard multiple scans
   //       // that happen within a 5 second window.
-  //       if ((_lastScan == null) ||
-  //           (_lastScan!.difference(DateTime.now()).inSeconds.abs() > 5)) {
-  //         _lastScan = DateTime.now();
-  //         await _toggleScanning();
-  //         await _onCodeRead(_result);
-  //       }
-  //     });
-  //   }
-  // }
 }

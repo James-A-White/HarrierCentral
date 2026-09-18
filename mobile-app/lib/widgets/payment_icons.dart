@@ -271,8 +271,6 @@ class PaymentIcons extends StatelessWidget {
               // final String modifiedUrl = url.replaceAll('/<payment amount>', '');
 
               // FUCK ANDRIOD - canLaunch doesn't work properly on Android, so I'm commenting it out for now
-              // canLaunch(modifiedUrl).then((bool canLaunch) async {
-              //   if (canLaunch) {
               // OK, we have a good URL, so let's figure out how much the hasher needs to pay
 
               // start with the extras
@@ -388,11 +386,6 @@ class PaymentIcons extends StatelessWidget {
                   );
                 }
               }
-              // } else {
-              //   await Utilities.showAlert(navigatorKey.currentContext, 'Bad payment URL',
-              //       'The payment URL provided by the Kennel is not valid. Please check with the Kennel\'s mismanagement to have them fix the problem.', 'OK');
-              // }
-              //});
             },
             child: Padding(padding: const EdgeInsets.all(8.0), child: w),
           );

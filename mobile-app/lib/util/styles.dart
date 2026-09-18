@@ -17,12 +17,6 @@ const double detailsFontSize = 16.0;
 const double detailLineSpace = 1.0;
 const double detailLineSpaceForBold = 1.1;
 
-// Color brown = const Color.fromARGB(255, 107, 87, 66);
-// Color purple = const Color.fromARGB(255, 61, 27, 142);
-// Color yellow = const Color.fromARGB(255, 236, 212, 68);
-// Color brickRed = const Color.fromARGB(255, 51, 0, 14);
-// Color teal = const Color.fromARGB(255, 13, 115, 124);
-
 class Backgrounds {
   // the variable below is there to suppress a warning about defining classes with only static members
   int? unusedVariableToSuppressWarning;

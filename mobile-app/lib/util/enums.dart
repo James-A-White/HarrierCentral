@@ -478,11 +478,24 @@ enum MessageType {
 
   const MessageType(this.id);
 
-  /// Lookup a MessageType by its [id]. Throws if not found.
+  /// Lookup a MessageType by its [id]. DEGRADES to [chat] when the id is
+  /// unknown — it must never throw.
+  ///
+  /// The id arrives in an FCM payload, so the SERVER chooses it. In
+  /// HC.EventMessage the same MessageType column names WHICH ROOM a room
+  /// message belongs to (1..6), and both call sites parse it outside any
+  /// try, in the foreground handler and the notification-tap handler. An
+  /// ArgumentError there takes the whole dispatch with it.
+  ///
+  /// This is not hypothetical: the API shim pins MessageType to 0 on the wire
+  /// for kennel and room pushes SPECIFICALLY to keep values above 2 away from
+  /// here, because four of the six rooms would otherwise have broken every
+  /// installed phone (2026-09-18). The pin stays as defence in depth, but the
+  /// landmine itself is now defused.
   factory MessageType.fromId(int id) {
     return MessageType.values.firstWhere(
       (tab) => tab.id == id,
-      orElse: () => throw ArgumentError('No ChatTab with id $id'),
+      orElse: () => MessageType.chat,
     );
   }
 }
@@ -507,11 +520,22 @@ enum SplashSequenceType {
 
   const SplashSequenceType(this.id, this.delayInHours);
 
-  /// Lookup a SplashSequenceType by its [id]. Throws if not found.
+  /// Lookup a SplashSequenceType by its [id]. DEGRADES to [unknown] when the
+  /// id is unrecognised — it must never throw.
+  ///
+  /// The id comes from the login response, is stored in prefs, and is read
+  /// back by MainNavigationController on the way into the app. HC.SplashSequence
+  /// .SequenceType is a plain INT with a free-text description beside it, so
+  /// adding a category server-side is a data change nobody would think of as a
+  /// release. Throwing here would have turned that data change into a crash on
+  /// the navigation path for every phone already installed, with no app
+  /// release involved. Only 100 and 300 are in use today; that is luck, not
+  /// design. [unknown] means "show no splash", which is the right answer for a
+  /// category this build has never heard of.
   factory SplashSequenceType.fromId(int id) {
     return SplashSequenceType.values.firstWhere(
       (tab) => tab.id == id,
-      orElse: () => throw ArgumentError('No SplashSequenceType with id $id'),
+      orElse: () => SplashSequenceType.unknown,
     );
   }
 }
@@ -526,18 +550,6 @@ abstract class HcEnum<T> {
   T get value => _value;
 }
 
-// class EnumQrTypes<String> extends Enum<String> {
-//   const EnumQrTypes(String val) : super(val);
-// }
-
-// const EnumQrTypes<String> enumQrPrefix_userQrCode = EnumQrTypes<String>('UQR:');
-// const EnumQrTypes<String> enumQrPrefix_userSecretCode = EnumQrTypes<String>('USC:');
-// const EnumQrTypes<String> enumQrPrefix_userResetCode = EnumQrTypes<String>('URC:');
-// const EnumQrTypes<String> enumQrPrefix_specificRunStart = EnumQrTypes<String>('SRS:');
-// const EnumQrTypes<String> enumQrPrefix_specificRunEnd = EnumQrTypes<String>('SRE:');
-// const EnumQrTypes<String> enumQrPrefix_kennelGenericRunStart = EnumQrTypes<String>('KRS:');
-// const EnumQrTypes<String> enumQrPrefix_kennelGenericRunEnd = EnumQrTypes<String>('KRE:');
-
 //////////////////////////
 
 class EnumVirginVisitor extends HcEnum<int> {
@@ -551,22 +563,6 @@ const EnumVirginVisitor enumKnownVisitor = EnumVirginVisitor(3);
 
 //////////////////////////
 ///
-// class EnumNotificationState<int> extends HcEnum<int> {
-//   const EnumNotificationState(super.val);
-//}
-
-// const EnumNotificationState<int> NotificationState.unchanged =
-//     EnumNotificationState<int>(-1);
-// const EnumNotificationState<int> NotificationState.auto =
-//     EnumNotificationState<int>(0);
-// const EnumNotificationState<int> NotificationState.on =
-//     EnumNotificationState<int>(1);
-// const EnumNotificationState<int> NotificationState.ignore =
-//     EnumNotificationState<int>(2);
-// const EnumNotificationState<int> NotificationState.mute =
-//     EnumNotificationState<int>(3);
-// const EnumNotificationState<int> NotificationState.onBeforeRun =
-//     EnumNotificationState<int>(4);
 
 enum NotificationState {
   unchanged(-1),
@@ -852,14 +848,25 @@ enum HashRunPointTypes {
 
   static HashRunPointTypes? fromInt(int value) => _valueMap[value];
 
+  /// The marker type for a track point's 3-character prefix, or null when
+  /// this build does not know the prefix.
+  ///
+  /// The RETURN TYPE always said null was possible; the body threw instead.
+  /// Both callers were written against the signature — the GPX exporter's very
+  /// next line reads `if (type == null) return null; // unknown marker type —
+  /// skip waypoint` — and it is NOT inside a try, so an unrecognised prefix
+  /// killed the whole export rather than skipping one waypoint. Prefixes come
+  /// from stored track data and the glyph registry grows server-side, so an
+  /// unknown one is an ordinary event, not a programming error.
   static HashRunPointTypes? fromKey(String key) {
     if (key.length > 3) {
       key = key.substring(0, 3);
     }
-    return HashRunPointTypes.values.firstWhere(
-      (tab) => tab.key == key.trimLeft(),
-      orElse: () => throw ArgumentError('No HashRunPointTypes with key $key'),
-    );
+    final String wanted = key.trimLeft();
+    for (final HashRunPointTypes t in HashRunPointTypes.values) {
+      if (t.key == wanted) return t;
+    }
+    return null;
   }
 }
 
@@ -1073,15 +1080,6 @@ const EnumFollowType followTypeToggleHomeKennel = EnumFollowType(3);
 class EnumNotificationType extends HcEnum<int> {
   const EnumNotificationType(super.val);
 }
-
-// const EnumNotificationType<int> notificationTypeCancel =
-//     EnumNotificationType<int>(-1);
-// const EnumNotificationType<int> notificationTypeAuto =
-//     EnumNotificationType<int>(0);
-// const EnumNotificationType<int> notificationTypeAlways =
-//     EnumNotificationType<int>(1);
-// const EnumNotificationType<int> notificationTypeBlock =
-//     EnumNotificationType<int>(2);
 
 //////////////////////////
 

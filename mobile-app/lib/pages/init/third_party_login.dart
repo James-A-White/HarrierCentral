@@ -114,15 +114,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
                         ),
                       ),
                     ],
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
-                    //   child: SignInWithAppleButton(
                     //       height: 60,
                     //       style: SignInWithAppleButtonStyle.whiteOutlined,
-                    //       onPressed: () {
-                    //         _appleLogin();
-                    //       }),
-                    // ),
                   ],
                 ),
               ),
@@ -301,12 +294,6 @@ class LoginPageState extends State<ThirdPartyLogin> {
                           borderSide: const BorderSide(),
                         ),
                       ),
-                      // validator: (String val) {
-                      //   if (val.length != 6) {
-                      //     return 'Invite codes are six characters';
-                      //   } else {
-                      //     return null;
-                      //   }
                       // },
                       //keyboardType: TextInputType.,
                       textAlign: TextAlign.center,
@@ -331,8 +318,6 @@ class LoginPageState extends State<ThirdPartyLogin> {
                         return Utilities.validateEmail(value);
                       },
                       //,
-                      // onSaved: (String val) {
-                      //   _email = val;
                       // },
                       //keyboardType: TextInputType.,
                       textAlign: TextAlign.center,

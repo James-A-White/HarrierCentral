@@ -179,18 +179,8 @@ class UserQrCodePageState extends State<UserQrCodePage>
     );
   }
 
-  // Widget _buildMenuBar(BuildContext context) {
-  //   return Container(
   //     width: 300.0,
   //     height: 50.0,
-  //     decoration: const BoxDecoration(
-  //       color: Color(0x552B2B2B),
-  //       borderRadius: BorderRadius.all(Radius.circular(25.0)),
-  //     ),
-  //     child: CustomPaint(
-  //       painter: TabIndicationPainter(
-  //           context: context, pageController: _pageController),
-  //       child: Row(
   //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
   //         children: <Widget>[
   //           Expanded(
@@ -203,12 +193,6 @@ class UserQrCodePageState extends State<UserQrCodePage>
   //                 style: const TextStyle(
   //                     color: left,
   //                     fontSize: 14.0,
-  //                     fontFamily: 'WorkSansSemiBold'),
-  //               ),
-  //             ),
-  //           ),
-  //           Expanded(
-  //             child:             TextButton(
   //               splashColor: Colors.transparent,
   //               highlightColor: Colors.transparent,
   //               onPressed: _onSwitchToQrCode,
@@ -217,15 +201,7 @@ class UserQrCodePageState extends State<UserQrCodePage>
   //                 style: const TextStyle(
   //                     color: right,
   //                     fontSize: 14.0,
-  //                     fontFamily: 'WorkSansSemiBold'),
-  //               ),
-  //             ),
-  //           ),
   //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 
   void _initTabs() {
     if (_tabs.isEmpty) {
@@ -234,15 +210,6 @@ class UserQrCodePageState extends State<UserQrCodePage>
     }
   }
 
-  // void _onSwitchToQrCode() {
-  //   _pageController.animateToPage(0,
-  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  // }
-
-  // void _onSwitchToQrScanner() {
-  //   _pageController?.animateToPage(1,
-  //       duration: const Duration(milliseconds: 500), curve: Curves.decelerate);
-  // }
 }
 
 class QrCodeTab extends StatefulWidget {
@@ -265,8 +232,6 @@ class QrCodeTabState extends State<QrCodeTab>
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        //print('Height = ${constraints.maxHeight}');
-        //print('Width = ${constraints.maxWidth}');
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -307,10 +272,6 @@ class QrCodeTabState extends State<QrCodeTab>
 
               //   child: Container(
               //                       color: Colors.white,
-              //     height: MediaQuery.sizeOf(context).width * 0.8,
-              //     width: MediaQuery.sizeOf(context).width * 0.8,
-              //   ),
-              // ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(
@@ -374,8 +335,6 @@ class QrScannerTabState extends State<QrScannerTab>
   MobileScannerController? _scannerController;
   EQrScannerState _state = EQrScannerState.waitingForScan;
   bool _isScanning = false;
-  // bool _isProcessing = false;
-  // bool _dataRecorded = false;
 
   //final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
 
@@ -491,9 +450,6 @@ class QrScannerTabState extends State<QrScannerTab>
     }
   }
 
-  //   // return Future<void>(() {});(() {});
-  // }
-
   Future<void> _onCodeRead(String scanResult) async {
     // final AudioPlayer audioPlayer = AudioPlayer();
     // // ignore: unawaited_futures
@@ -552,11 +508,8 @@ class QrScannerTabState extends State<QrScannerTab>
 
         setStateIfMounted(() {
           _state = EQrScannerState.dataRecorded;
-          if (adHocData.isNotEmpty) {
-            _onScreenMessage = adHocData[0]['userMessage'];
-          } else {
-            _onScreenMessage = 'Processing Complete';
-          }
+          _onScreenMessage =
+              firstRow(adHocData)?['userMessage'] ?? 'Processing Complete';
         });
       } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) ||
           (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
@@ -612,11 +565,8 @@ class QrScannerTabState extends State<QrScannerTab>
                 );
 
             setStateIfMounted(() {
-              if (adHocData.isNotEmpty) {
-                _onScreenMessage = adHocData[0]['userMessage'];
-              } else {
-                _onScreenMessage = 'Processing Complete';
-              }
+              _onScreenMessage =
+                  firstRow(adHocData)?['userMessage'] ?? 'Processing Complete';
             });
           }
         }
@@ -638,93 +588,18 @@ class QrScannerTabState extends State<QrScannerTab>
       }
     }
 
-    // final ProcessQrScanService srv = ProcessQrScanService();
-    // final Future<ProcessQrScanModel> apiCall =
-    //     srv.processQrScan('', scanResult, 'UserScan', '', '', '');
-    // apiCall.then((ProcessQrScanModel result) {
-    //   setStateIfMounted(() => barcode = result.resultStr1);
-    // });
-
     // return Future<void>(() {});(() {});
   }
 
-  // Future<dynamic> stopScanning() async {
-  //   controller.stopScanning();
-  //   await controller.dispose();
-  //   controller = null;
-  // }
-
-  // Widget _cameraPreviewWidget() {
-  //   return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraint) {
-  //     return Container(
-  //       padding: const EdgeInsets.all(9.0),
   //       height: constraint.biggest.height,
   //       width: constraint.biggest.height,
-  //       child: (controller == null) ? Container() : QRReaderPreview(controller),
-  //     );
-  //   });
-  // }
-
-  // Future<void> onNewCameraSelected(CameraDescription cameraDescription) async {
-  //   if (controller != null) {
-  //     await controller.dispose();
-  //   }
-  //   controller = QRReaderController(cameraDescription, ResolutionPreset.high, <CodeFormat>[CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
 
   //   // If the controller is updated then update the UI.
-  //   controller.addListener(() {
-  //     if (mounted) {
-  //       setStateIfMounted(() {});
-  //     }
-  //     if (controller.value.hasError) {
-  //       showInSnackBar('Camera error ${controller.value.errorDescription}');
-  //     }
-  //   });
-
-  //   try {
-  //     await controller.initialize();
-  //   } on QRReaderException catch (e) {
-  //     //logError(e.code, e.description);
-  //     showInSnackBar('Error: ${e.code}\n${e.description}');
-  //   }
-
-  //   if (mounted) {
-  //     setStateIfMounted(() {});
-  //     controller.startScanning();
-  //   }
-
-  //   // return Future<void>(() {});(() {});
-  // }
 
   // void showInSnackBar(String message) {
   //   // _ScaffoldKey.currentState
-  //   //     .showSnackBar(SnackBar(content: Text(message)));
-  // }
 
   String? _result;
-
-  // void _onQRViewCreated(QRViewController controller) {
-  //   _scannerController = controller;
-  //   if (_scannerController != null) {
-  //     setStateIfMounted(() {
-  //       _isScanning = true;
-  //       _onScreenMessage = 'Looking for QR Code';
-  //       _state = EQrScannerState.scanning;
-  //     });
-
-  //     _scannerController!.scannedDataStream.listen((Barcode scanData) async {
-  //       await _scannerController!.pauseCamera();
-  //       setStateIfMounted(() {
-  //         _isScanning = false;
-  //         _result = scanData.code;
-  //       });
-  //       if (_result != null) {
-  //         await _onCodeRead(_result!);
-  //         setStateIfMounted(() {});
-  //       }
-  //     });
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -807,8 +682,6 @@ class QrScannerTabState extends State<QrScannerTab>
             ),
           ),
         ),
-        // // child:Container(
-        // //   child: _cameraPreviewWidget(), width: 200.0, height: 200.0),
         if (_state != EQrScannerState.dataRecorded) ...<Widget>[
           Container(
             margin: const EdgeInsets.all(10.0),

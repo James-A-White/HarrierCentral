@@ -136,12 +136,6 @@ class FutureRunsListPage extends StatelessWidget {
   }
 
   // @override
-  // Widget build(BuildContext context) {
-  //   return AppScaffold(
-  //       body: controller.allRuns == null
-  //           ? HcAppCircularProgressIndicator(key: UniqueKey())
-  //           : _buildListView(controller));
-  // }
 
   Future<void> refreshFromTableExternal() async {
     await controller.refreshFromTable(true);
@@ -330,16 +324,7 @@ class FutureRunsListPage extends StatelessWidget {
                     const SizedBox(width: 8),
                   ],
                 ),
-                // SizedBox(height: 5.0),
-                // Padding(
-                //   padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                //   child: Row(
                 //     children: [
-                //       Expanded(
-                //         child: Container(
-                //           padding: EdgeInsets.only(right: 10),
-                //           child: AutoSizeText(
-                //             controller.runsToDisplay.value.description,
                 //             style: ts_bodyYellow,
                 //             textAlign: TextAlign.center,
                 //             maxLines: 2,
@@ -347,27 +332,15 @@ class FutureRunsListPage extends StatelessWidget {
 
                 //           //height: 100,
                 //           // width: 100,
-                //         ),
-                //       ),
 
                 //       SizedBox(width: 10),
 
-                //       GestureDetector(
-                //         onTap: () async {
-                //           await Utilities.showAlert(
-                //             controller.runsToDisplay.value.helpTitle,
-                //             controller.runsToDisplay.value.helpText,
                 //             'OK',
                 //           );
                 //         },
                 //         child: SizedBox(
                 //           height: 35,
-                //           child: Image.asset('images/icons/info_button.png'),
-                //         ),
-                //       ),
                 //     ],
-                //   ),
-                // ),
               ],
             ),
           ),
@@ -457,19 +430,10 @@ class FutureRunsListPage extends StatelessWidget {
             displacement: 40.0,
             child: Column(
               children: [
-                // if (controller.showOnlyEventsWithMessages.value)
-                //   Container(
-                //     padding: EdgeInsets.only(top: 5, bottom: 5),
-                //     child: ElevatedButton(
-                //       onPressed: () {
-                //         controller.resetNotificationCounters();
                 //       },
                 //       child: Text(
                 //         'Clear all notifications',
                 //         style: ts_button,
-                //       ),
-                //     ),
-                //   ),
                 Expanded(
                   child: Stack(
                     // Tight constraints so the ScrollablePositionedList fills the
@@ -516,18 +480,10 @@ class FutureRunsListPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                // Padding(
-                                //   padding: const EdgeInsets.only(top: 0.0),
-                                //   child: TextButton(
                                 //     style: text_button_style,
-                                //     child: Text('Reload runs', style: ts_button),
-                                //     onPressed: () async {
-                                //       await controller.refreshFromBackend(
                                 //         clearLocalTables: true,
                                 //       );
                                 //     },
-                                //   ),
-                                // ),
                               ],
                             )
                           : Obx(() {
@@ -729,20 +685,10 @@ class FutureRunsListPage extends StatelessWidget {
                                                               }
                                                             }
 
-                                                            // await Utilities.subscribeToGeoLocationStream().then((
-                                                            //   void _,
-                                                            // ) async {
-                                                            //   await Utilities.showAlert(
                                                             //     'Location Services Enabled',
                                                             //     'Location Services have been enabled.',
                                                             //     'OK',
-                                                            //   );
-                                                            //   if (context.mounted) {
-                                                            //     _showConfigureDistancePopup(
                                                             //       context,
-                                                            //     );
-                                                            //   }
-                                                            // });
                                                           }
                                                         }
                                                       }
@@ -1114,49 +1060,14 @@ class FutureRunsListPage extends StatelessWidget {
     );
   }
 
-  // Widget _runsToDisplayButton() {
-  //   return Obx(
-  //     () => Padding(
-  //       padding: const EdgeInsets.symmetric(horizontal: 13.0),
-  //       child: controller.showRunToDisplaySpinner.value
-  //           ? SizedBox(
   //               height: 49,
   //               width: 100,
-  //               child: Center(
-  //                 child: HcAppCircularProgressIndicator(
-  //                   key: UniqueKey(),
   //                   color1: Colors.white,
   //                   color2: Colors.blue.shade300,
   //                   size: 35,
-  //                 ),
-  //               ),
-  //             )
-  //           : ElevatedButton(
-  //               style: ElevatedButton.styleFrom(
-  //                 padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-  //               ),
-  //               onPressed: () async {
-  //                 controller.runsToDisplay.value = RunsToDisplay
-  //                     .values[(controller.runsToDisplay.value.next)];
-  //                 controller.runsToDisplay.value.defaultViewIsFuture
-  //                     ? controller.runsTimeScope.value = RunsTimeScope.future
-  //                     : controller.runsTimeScope.value = RunsTimeScope.past;
-  //                 controller.runsToDisplayLoading.value = true;
-  //                 await controller.refreshFromTable(true);
-  //                 controller.runsToDisplayLoading.value = false;
   //               },
-  //               child: Padding(
-  //                 padding: const EdgeInsets.only(left: 10, right: 10, top: 0),
-  //                 child: Text(
-  //                   controller.runsToDisplay.value.label,
   //                   textAlign: TextAlign.center,
   //                   style: ts_button,
-  //                 ),
-  //               ),
-  //             ),
-  //     ),
-  //   );
-  // }
 
   Future<void> _showConfigureDistancePopup(BuildContext context) async {
     if (Utilities.isConnected(showDialog: true)) {
@@ -1286,9 +1197,6 @@ class FutureRunsListPage extends StatelessWidget {
         //     Container(
         //       height: 30,
         //       width: 45,
-        //       decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
-        //     ),
-        //     Text('500', style: ts_footnoteBlack)
         //   ],
         //   'returnValue': hasherPref_500
         // },

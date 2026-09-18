@@ -1,4 +1,27 @@
 ## 3.0.44+1385 (2026-09-18)
+### Fixes
+- **Exporting a trail** no longer fails outright when it contains a marker
+  this version does not recognise. The unknown marker is skipped, as it was
+  always meant to be.
+- **Chat**: in a kennel chat or a role room, your own message now gets its
+  second tick, and new messages arrive while you are reading, the same as a
+  run chat always has.
+- **Run numbers**: setting a run number to something that is not a whole
+  number, like 729.5, now says so instead of silently doing nothing. The
+  field no longer accepts a decimal point.
+- **Chat**: leaving a chat while a photo was being picked, or as a
+  notification arrived, no longer throws in the background.
+- **Reconnecting**: the "experiencing connection issues" notice can no
+  longer fail in a way that reports itself as an app error.
+- **Checking in the pack**: setting someone's RSVP when the network dropped
+  left the row spinning for ever and did nothing. It now says it could not
+  save and stops. Copying RSVPs from the last run no longer fails on a
+  kennel's first ever run.
+- **Checking in the pack**: tapping a button on the payment bar could do
+  nothing at all — no RSVP, no membership charge, no sale — if the list had
+  refreshed underneath it since you tapped the hasher. It now works however
+  long the bar has been open.
+
 ### New Features
 - **Kennel and room chat notifications**: a message in your kennel's chat or one
   of your role rooms now reaches your phone. Tapping it opens that thread. Older

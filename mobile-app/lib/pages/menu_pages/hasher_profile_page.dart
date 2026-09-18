@@ -48,10 +48,6 @@ class HasherProfilePage extends StatefulWidget {
 }
 
 class HasherProfilePageState extends State<HasherProfilePage> {
-  // String firstName = getStringPref(StringPrefsEnum.firstName);
-  // String lastName = getStringPref(StringPrefsEnum.lastName);
-  // String email = getStringPref(StringPrefsEnum.email);
-  // String hashName = getStringPref(StringPrefsEnum.hashName);
 
   final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _runCountFormKey = GlobalKey<FormState>();
@@ -65,12 +61,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   String? _email = getStringPref(StringPrefsEnum.email);
   int _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
-
-  // String _firstName = getStringPref(StringPrefsEnum.firstName);
-  // String _lastName = getStringPref(StringPrefsEnum.lastName);
-  // String _email = getStringPref(StringPrefsEnum.email);
-  // String _hashName = getStringPref(StringPrefsEnum.displayName);
-  // String _photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
 
   bool _isLoading = true;
   bool _isDirty = false;
@@ -111,8 +101,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             true,
             widget.eventId,
           );
-          //final String resultStr = res ? 'successfully' : 'unsuccessfully';
-          //print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.user:
           await tableModel.syncUserDataService.updateFromBackend(
@@ -120,8 +108,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             true,
             debugText: 'hasher_profile_page: Hashers',
           );
-          //final String resultStr = res ? 'successfully' : 'unsuccessfully';
-          //print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.kennel:
           await tableModel.syncKennelAdminService.updateFromBackend(
@@ -129,8 +115,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             true,
             widget.kennelId,
           );
-          //final String resultStr = res ? 'successfully' : 'unsuccessfully';
-          //print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
           query =
               '''
@@ -826,15 +810,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         // Container(
                                                         //   decoration: BoxDecoration(
                                                         //     shape: BoxShape.rectangle,
-                                                        //     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                                                        //     image: DecorationImage(
                                                         //       fit: BoxFit.fill,
                                                         //       image: NetworkImage(
                                                         //         newPhoto,
-                                                        //       ),
-                                                        //     ),
-                                                        //   ),
-                                                        // ),
                                                       ),
                                                     ),
                                             ),
@@ -1459,17 +1437,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 }
                                                                 //                                              Navigator.of(context).push<dynamic>(
                                                                 //   MaterialPageRoute<dynamic>(
-                                                                //     builder: (BuildContext context) {
-                                                                //       return UserRunHistoryListPage(
                                                                 //           kennelInfo: kennelInfo,
-                                                                //           refreshKennelInfo: () {
-                                                                //             return refreshCounters(kennelInfo.kennelId);
-                                                                //           });
                                                                 //     },
-                                                                //   ),
-                                                                // ).then((void _) {
-                                                                //   refreshCounters(kennelInfo.kennelId);
-                                                                // });
                                                               },
                                                         child:
                                                             _userRunHistoryLoading
@@ -1829,10 +1798,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             );
 
                                                         if (result2 ?? false) {
-                                                          // String? tpLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
-                                                          // if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
-                                                          //   await FacebookAuth.instance.logOut();
-                                                          // }
 
                                                           final GdprDeleteService
                                                           svc =
@@ -1942,8 +1907,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
-  // void setupDependencies() {
-  //   // GetIt.I.registerSingleton<DeviceInfo>(DeviceInfo());
   //   // Register other dependencies here
   // }
 

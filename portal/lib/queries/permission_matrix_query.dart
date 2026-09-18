@@ -8,8 +8,11 @@ import 'package:hcportal/imports.dart';
 String _deviceId() => box.get(HIVE_DEVICE_ID) as String;
 String _deviceSecret() => (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
 
-String _token(String procName) =>
-    Utilities.generateToken(_deviceId(), procName, paramString: _deviceSecret());
+String _token(String procName) => Utilities.generateToken(
+  _deviceId(),
+  procName,
+  paramString: _deviceSecret(),
+);
 
 // ---------------------------------------------------------------------------
 // Load the permission matrix (super-admin editor)
@@ -25,14 +28,16 @@ Future<PermissionMatrixData?> queryPermissionMatrix({
     'queryType': 'getPermissionMatrix',
     'deviceId': _deviceId(),
     'accessToken': _token('hcportal_getPermissionMatrix'),
-    if (publicKennelId != null) 'publicKennelId': publicKennelId,
+    'publicKennelId': ?publicKennelId,
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
   if (kDebugMode) {
-    debugPrint(result is ApiError
-        ? 'SP [getPermissionMatrix] — FAILED'
-        : 'SP [getPermissionMatrix] — success');
+    debugPrint(
+      result is ApiError
+          ? 'SP [getPermissionMatrix] — FAILED'
+          : 'SP [getPermissionMatrix] — success',
+    );
   }
   if (result is! ApiSuccess) return null;
 
@@ -56,8 +61,8 @@ Future<PermissionMatrixData?> queryPermissionMatrix({
       if (decoded.length > 4)
         for (final dynamic o in decoded[4] as List<dynamic>)
           '${((o as Map<String, dynamic>)['GrantorId'] as num).toInt()}:'
-                  '${(o['FunctionId'] as num).toInt()}':
-              (o['Allowed'] as num).toInt(),
+              '${(o['FunctionId'] as num).toInt()}': (o['Allowed'] as num)
+              .toInt(),
     };
 
     return PermissionMatrixData(
@@ -102,15 +107,18 @@ Future<bool> savePermissionMatrix({
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
   if (kDebugMode) {
-    debugPrint(result is ApiError
-        ? 'SP [savePermissionMatrix] — FAILED'
-        : 'SP [savePermissionMatrix] — success');
+    debugPrint(
+      result is ApiError
+          ? 'SP [savePermissionMatrix] — FAILED'
+          : 'SP [savePermissionMatrix] — success',
+    );
   }
   if (result is! ApiSuccess) return false;
 
   try {
-    final row = ((json.decode(result.body) as List<dynamic>)[0]
-        as List<dynamic>)[0] as Map<String, dynamic>;
+    final row =
+        ((json.decode(result.body) as List<dynamic>)[0] as List<dynamic>)[0]
+            as Map<String, dynamic>;
     return (row['Success'] as int?) == 1;
   } on Exception catch (e) {
     if (kDebugMode) debugPrint('savePermissionMatrix parse error: $e');

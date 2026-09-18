@@ -169,8 +169,6 @@ class EditRunDetailsPage extends StatelessWidget {
               //           fontStyle: FontStyle.normal,
               //           color: Colors.white,
               //           fontSize: 24.0,
-              //           height: 1.0),
-              //     )),
               Positioned(
                 top: 0,
                 left: 0,
@@ -726,26 +724,12 @@ class EditRunDetailsPage extends StatelessWidget {
                         },
                       ),
 
-                      // DateTimePicker(
-                      //   onFieldSubmitted: (value) {
-                      //     c.eventDatetimeController.text = value;
-                      //     c.mutate(() {});
                       //   },
-                      //   onChanged: (value) {
-                      //     c.eventDatetimeController.text = value;
-                      //     c.mutate(() {});
                       //   },
-                      //   onSaved: (newValue) {
-                      //     c.eventDatetimeController.text = newValue ?? '';
-                      //     c.mutate(() {});
                       //   },
                       //   decoration: InputDecoration(
                       //     labelText: 'Date / Time',
                       //     fillColor: hc_red,
-                      //     border: OutlineInputBorder(
-                      //       borderRadius: BorderRadius.circular(10.0),
-                      //       borderSide: const BorderSide(),
-                      //     ),
                       //     hintStyle: ts_hint,
                       //   ),
                       //   focusNode: c.focusNodeDatetime,
@@ -754,12 +738,8 @@ class EditRunDetailsPage extends StatelessWidget {
                       //   use24HourFormat: false,
                       //   locale: const Locale('en', 'US'),
                       //   dateMask: 'E, d MMM, yyyy, h:mm a',
-                      //   firstDate: DateTime(2000),
-                      //   lastDate: DateTime(2100),
                       //   dateLabelText: 'Date',
                       //   timeLabelText: 'Hour',
-                      //   validator: (String? val) {
-                      //     return null;
                       //   },
                       // ),
                     ),
@@ -1022,8 +1002,6 @@ class EditRunDetailsPage extends StatelessWidget {
                                 child: CachedNetworkImage(
                                   imageUrl: c.eventAggregate.event.eventImage!,
                                   // errorWidget:
-                                  //     (BuildContext context, String url, Exception error) =>
-                                  //         const  Icon(Icons.error),
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -1256,9 +1234,6 @@ class EditRunDetailsPage extends StatelessWidget {
           child: Stack(
             alignment: AlignmentDirectional.center,
             children: <Widget>[
-              // Container(
-              //   //decoration: Backgrounds.defaultHcBackground(),
-              //   height: MediaQuery.sizeOf(context).height - 300,
               //   child:
               EditorMap(
                 c.eventAggregate.extensions.latitude == null
@@ -1683,23 +1658,10 @@ class EditRunDetailsPage extends StatelessWidget {
                         right: 25.0,
                       ),
                       child: TextFormField(
-                        // onChanged: (String text) {
-                        //   if ((text == null) || (text.isEmpty)) {
-                        //     c.absoluteEventNumberController.text = '<auto>';
-                        //   } else if ((text.length > 6) && (text.contains('<auto>'))) {
-                        //     c.absoluteEventNumberController.text = c.absoluteEventNumberController.text.replaceAll('<auto>', '');
-                        //     c.absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: c.absoluteEventNumberController.text.length));
-                        //   }
                         // },
                         maxLines: 1,
                         focusNode: c.focusNodeHares,
                         controller: c.haresController,
-                        // validator: (String val) {
-                        //   if (val.isEmpty) {
-                        //     return 'Please provide an event number or leave blank for auto numbering';
-                        //   } else {
-                        //     return null;
-                        //   }
                         // },
                         //keyboardType: const TextInputType.(),
                         textCapitalization: TextCapitalization.sentences,
@@ -1739,23 +1701,10 @@ class EditRunDetailsPage extends StatelessWidget {
                         right: 25.0,
                       ),
                       child: TextFormField(
-                        // onChanged: (String text) {
-                        //   if ((text == null) || (text.isEmpty)) {
-                        //     c.absoluteEventNumberController.text = '<auto>';
-                        //   } else if ((text.length > 6) && (text.contains('<auto>'))) {
-                        //     c.absoluteEventNumberController.text = c.absoluteEventNumberController.text.replaceAll('<auto>', '');
-                        //     c.absoluteEventNumberController.selection = TextSelection.fromPosition(TextPosition(offset: c.absoluteEventNumberController.text.length));
-                        //   }
                         // },
                         maxLines: 1,
                         focusNode: c.focusNodeAbsoluteEventNumber,
                         controller: c.absoluteEventNumberController,
-                        // validator: (String val) {
-                        //   if (val.isEmpty) {
-                        //     return 'Please provide an event number or leave blank for auto numbering';
-                        //   } else {
-                        //     return null;
-                        //   }
                         // },
                         keyboardType: const TextInputType.numberWithOptions(),
                         textCapitalization: TextCapitalization.sentences,
@@ -1802,13 +1751,6 @@ class EditRunDetailsPage extends StatelessWidget {
                                   : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
-                                // onChanged: (String text) {
-                                //   if ((text == null) || (text.isEmpty)) {
-                                //     //c.eventPriceForMembersController.text = '';
-                                //   } else if ((text.length > 9) && (text.contains('<default>'))) {
-                                //     // c.eventPriceForMembersController.text = c.eventPriceForMembersController.text.replaceAll('<default>', '');
-                                //     // c.eventPriceForMembersController.selection = TextSelection.fromPosition(TextPosition(offset: c.eventPriceForMembersController.text.length));
-                                //   }
                                 // },
                                 maxLines: 1,
                                 focusNode: c.focusNodeEventPriceForMembers,
@@ -1842,14 +1784,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                   : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
-                                // onChanged: (String text) {
-                                //   if ((text == null) || (text.isEmpty)) {
-                                //     //c.eventPriceForNonMembersController.text = '<default>';
-                                //   } else if ((text.length > 9) && (text.contains('<default>'))) {
-                                //     c.eventPriceForNonMembersController.text = c.eventPriceForNonMembersController.text.replaceAll('<default>', '');
                                 //     c.eventPriceForNonMembersController.selection =
-                                //         TextSelection.fromPosition(TextPosition(offset: c.eventPriceForNonMembersController.text.length));
-                                //   }
                                 // },
                                 maxLines: 1,
                                 focusNode: c.focusNodeEventPriceForNonMembers,
@@ -1908,13 +1843,6 @@ class EditRunDetailsPage extends StatelessWidget {
                                   : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
-                                // onChanged: (String text) {
-                                //   if ((text == null) || (text.isEmpty)) {
-                                //     c.eventPriceForExtrasController.text = '<none>';
-                                //   } else if ((text.length > 6) && (text.contains('<none>'))) {
-                                //     c.eventPriceForExtrasController.text = c.eventPriceForExtrasController.text.replaceAll('<none>', '');
-                                //     c.eventPriceForExtrasController.selection = TextSelection.fromPosition(TextPosition(offset: c.eventPriceForExtrasController.text.length));
-                                //   }
                                 // },
                                 maxLines: 1,
                                 focusNode: c.focusNodeEventPriceForExtras,
@@ -1948,13 +1876,6 @@ class EditRunDetailsPage extends StatelessWidget {
                                   : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
-                                // onChanged: (String text) {
-                                //   if ((text == null) || (text.isEmpty)) {
-                                //     c.extrasDescriptionController.text = '<none>';
-                                //   } else if ((text.length > 6) && (text.contains('<none>'))) {
-                                //     c.extrasDescriptionController.text = c.extrasDescriptionController.text.replaceAll('<none>', '');
-                                //     c.extrasDescriptionController.selection = TextSelection.fromPosition(TextPosition(offset: c.extrasDescriptionController.text.length));
-                                //   }
                                 // },
                                 maxLines: 1,
                                 focusNode: c.focusNodeExtrasDescription,

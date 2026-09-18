@@ -128,7 +128,7 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
             Container(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -219,8 +219,8 @@ class _HasherCard extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         decoration: BoxDecoration(
           color: isSelected
-              ? Colors.green.shade700.withOpacity(0.25)
-              : Colors.white.withOpacity(0.08),
+              ? Colors.green.shade700.withValues(alpha: 0.25)
+              : Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.green.shade400 : Colors.white12,

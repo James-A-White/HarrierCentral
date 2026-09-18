@@ -10,15 +10,6 @@ class HasherKennelMapTableHelper extends BaseTableHelper<AppDomainType>
   }
 
   // @override
-  // String getTableName(dynamic tblType) {
-  //   if (tblType == TableType.hkmEventAdmin) {
-  //     return hkmEventAdminTable;
-  //   } else if (tblType == TableType.hkmKennelAdmin) {
-  //     return hkmKennelAdminTable;
-  //   } else {
-  //     return hkmUserTable;
-  //   }
-  // }
 
   @override
   String getTableName(AppDomainType appDomainType) {
@@ -138,11 +129,6 @@ class HasherKennelMapTableHelper extends BaseTableHelper<AppDomainType>
   }
 
   // @override
-  // Map<String, dynamic> toMap(dynamic item) {
-  //   final Map<String, dynamic> map = _$HasherKennelMapModelToJson(item);
-
-  //   return map;
-  // }
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {

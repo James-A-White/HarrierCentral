@@ -71,6 +71,31 @@ BEGIN TRY
         [LastLogin] = GetDate()
     where id = @deviceId
 
+    -- ---------------------------------------------------------------
+    -- Retire the same token from any OTHER device row (2026-09-18).
+    --
+    -- hcapp_setFcmTokens has done this since 2026-09-17, after one hasher
+    -- was found receiving 43 copies of a single chat message. The portal
+    -- writes the very same column through this procedure and was never
+    -- given the same treatment, so browser rows went on duplicating: a new
+    -- portal session mints a new HC.Device row, the browser hands back the
+    -- SAME push subscription, and both rows then hold it. One admin had two
+    -- rows a day apart carrying an identical token, which is two copies of
+    -- every notification.
+    --
+    -- Scoped to the token STRING only, exactly as the app procedure is, and
+    -- deliberately NOT to the hasher: a browser push subscription belongs to
+    -- one browser profile, so the same string on another row is the same
+    -- browser. Registering a browser must never silence a phone, and two
+    -- devices must never silence each other (James, 2026-09-17).
+    -- ---------------------------------------------------------------
+    IF (@fcmToken IS NOT NULL)
+        UPDATE HC.Device
+        SET FcmToken        = NULL,
+            FcmTokenDeleted = SYSUTCDATETIME()
+        WHERE FcmToken = @fcmToken
+          AND id      <> @deviceId;
+
     COMMIT TRANSACTION;
 
     SELECT 'Success' as result

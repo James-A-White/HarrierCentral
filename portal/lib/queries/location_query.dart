@@ -38,8 +38,11 @@ class CityTimezone {
 String _deviceId() => box.get(HIVE_DEVICE_ID) as String;
 String _deviceSecret() => (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
 
-String _token(String procName) =>
-    Utilities.generateToken(_deviceId(), procName, paramString: _deviceSecret());
+String _token(String procName) => Utilities.generateToken(
+  _deviceId(),
+  procName,
+  paramString: _deviceSecret(),
+);
 
 /// Projects a `[{id, <nameField>}]` rowset into an ordered {id: name} map,
 /// lower-casing the UUID keys (SQL Server returns them upper-case).
@@ -68,15 +71,18 @@ Future<Map<String, String>> queryCountries() async {
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
   if (kDebugMode) {
-    debugPrint(result is ApiError
-        ? 'SP [getCountries] — FAILED'
-        : 'SP [getCountries] — success');
+    debugPrint(
+      result is ApiError
+          ? 'SP [getCountries] — FAILED'
+          : 'SP [getCountries] — success',
+    );
   }
 
   if (result is! ApiSuccess) return _cachedCountries();
 
   try {
-    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
+    final rows =
+        (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     final map = _toIdNameMap(rows, 'CountryName');
     // Also cache {id: NeighboringCountries} for the gazetteer country filter.
     final neighbors = <String, String>{};
@@ -123,15 +129,18 @@ Future<Map<String, String>> queryRegions(String countryId) async {
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
   if (kDebugMode) {
-    debugPrint(result is ApiError
-        ? 'SP [getRegions] — FAILED'
-        : 'SP [getRegions] — success');
+    debugPrint(
+      result is ApiError
+          ? 'SP [getRegions] — FAILED'
+          : 'SP [getRegions] — success',
+    );
   }
 
   if (result is! ApiSuccess) return <String, String>{};
 
   try {
-    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
+    final rows =
+        (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     return _toIdNameMap(rows, 'RegionName');
   } on Exception catch (e) {
     if (kDebugMode) debugPrint('queryRegions parse error: $e');
@@ -150,15 +159,18 @@ Future<Map<String, String>> queryCities(String regionId) async {
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
   if (kDebugMode) {
-    debugPrint(result is ApiError
-        ? 'SP [getCities] — FAILED'
-        : 'SP [getCities] — success');
+    debugPrint(
+      result is ApiError
+          ? 'SP [getCities] — FAILED'
+          : 'SP [getCities] — success',
+    );
   }
 
   if (result is! ApiSuccess) return <String, String>{};
 
   try {
-    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
+    final rows =
+        (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     return _toIdNameMap(rows, 'CityName');
   } on Exception catch (e) {
     if (kDebugMode) debugPrint('queryCities parse error: $e');
@@ -177,21 +189,24 @@ Future<List<CityTimezone>> queryCityTimezones({
     'queryType': 'getCityTimezones',
     'deviceId': _deviceId(),
     'accessToken': _token('hcportal_getCityTimezones'),
-    if (cityId != null) 'cityId': cityId,
+    'cityId': ?cityId,
     if (timezoneId != null) 'timezoneId': timezoneId.toString(),
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
   if (kDebugMode) {
-    debugPrint(result is ApiError
-        ? 'SP [getCityTimezones] — FAILED'
-        : 'SP [getCityTimezones] — success');
+    debugPrint(
+      result is ApiError
+          ? 'SP [getCityTimezones] — FAILED'
+          : 'SP [getCityTimezones] — success',
+    );
   }
 
   if (result is! ApiSuccess) return <CityTimezone>[];
 
   try {
-    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
+    final rows =
+        (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     return [
       for (final r in rows)
         if ((r as Map<String, dynamic>)['utcOffset'] != null)
@@ -221,20 +236,23 @@ Future<Map<int, String>> queryTimezonesForGeography(
     'deviceId': _deviceId(),
     'accessToken': _token('hcportal_getTimezonesForGeography'),
     'countryId': countryId,
-    if (regionId != null) 'regionId': regionId,
+    'regionId': ?regionId,
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
   if (kDebugMode) {
-    debugPrint(result is ApiError
-        ? 'SP [getTimezonesForGeography] — FAILED'
-        : 'SP [getTimezonesForGeography] — success');
+    debugPrint(
+      result is ApiError
+          ? 'SP [getTimezonesForGeography] — FAILED'
+          : 'SP [getTimezonesForGeography] — success',
+    );
   }
 
   if (result is! ApiSuccess) return <int, String>{};
 
   try {
-    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
+    final rows =
+        (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     final map = <int, String>{};
     for (final r in rows) {
       final row = r as Map<String, dynamic>;

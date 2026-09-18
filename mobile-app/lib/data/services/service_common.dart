@@ -165,8 +165,6 @@ class ServiceCommon {
       return ERROR_NO_CONNECTION;
     }
 
-    // print('>>> http post $httpCounter $requestBody');
-    // httpCounter++;
     final int maxAttempts = noRetries ? 1 : _maxRetryAttempts;
     bool tokenRetryUsed = false;
     bool suspendRetryUsed = false;
@@ -393,17 +391,27 @@ class ServiceCommon {
       // GetX throws LateInitializationError from closeAllSnackbars when a
       // queued snackbar never got its controller (seen 2026-09-11 while an
       // import was polling through 599s). Closing is best-effort.
+      // The WHOLE thing is best-effort, not just the close. GetX throws a
+      // LateInitializationError out of closeAllSnackbars when a queued
+      // snackbar never got its controller (seen 2026-09-11 and again
+      // 2026-09-12, both while an HTTP call was retrying through 599s), and
+      // showSnackbar can fault the same way on a teardown. This is a
+      // "Reconnecting…" toast raised from inside a retry loop: failing to
+      // draw it must never become an app error on top of the network one it
+      // was reporting.
       try {
         Get.closeAllSnackbars();
       } catch (_) {}
-      Get.showSnackbar(
-        GetSnackBar(
-          title: title,
-          message: message,
-          duration: duration,
-          backgroundColor: backgroundColor,
-        ),
-      );
+      try {
+        Get.showSnackbar(
+          GetSnackBar(
+            title: title,
+            message: message,
+            duration: duration,
+            backgroundColor: backgroundColor,
+          ),
+        );
+      } catch (_) {}
     }
 
     if (_snackbarContext() != null) {
@@ -448,13 +456,6 @@ class ServiceCommon {
   //
   // For NEW service methods, prefer [ServiceResult<T>] instead:
   //
-  //   Future<ServiceResult<MyModel>> fetchSomething() async {
-  //     final body = await sendHttpPost(...);
-  //     if (body.startsWith('ERROR')) {
-  //       return ServiceResult.failure(body);
-  //     }
-  //     return ServiceResult.success(MyModel.fromJson(jsonDecode(body)));
-  //   }
   //
   // See lib/data/models/service_result.dart for the full API.
   // ─────────────────────────────────────────────────────────────────────────
@@ -481,8 +482,6 @@ class ServiceCommon {
       returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
 
       // AppApiHC6 returns SP errors in two formats:
-      //   1. Flat object  {"errorType":N,"errorUserMessage":"...","errorId":"..."}
-      //      (produced by the shim's HC6 error detection reading rowset 0)
       //   2. Nested rowsets [[{...}],[{...}]] for 200 responses with SP errors
       final dynamic decoded = json.decode(response.body);
       Map<String, dynamic> errorRow;

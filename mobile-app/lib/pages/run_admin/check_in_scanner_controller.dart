@@ -129,13 +129,14 @@ class CheckInScannerController extends GetxController {
           qrScanText: prefix + content,
         );
 
-    if (adHocData.isNotEmpty) {
-      double amountOwed = adHocData[0]['isMember'] == 1
+    final Map<String, dynamic>? row = firstRow(adHocData);
+    if (row != null) {
+      double amountOwed = row['isMember'] == 1
           ? eventAggregate.extensions.memberPrice
           : eventAggregate.extensions.nonMemberPrice;
 
-      final num discountAmount = adHocData[0]['discountAmount'];
-      final int discountPercent = adHocData[0]['discountPercent'];
+      final num discountAmount = row['discountAmount'];
+      final int discountPercent = row['discountPercent'];
 
       amountOwed -= discountAmount;
       amountOwed -= amountOwed * (discountPercent / 100.0);
@@ -147,12 +148,12 @@ class CheckInScannerController extends GetxController {
         IveCoreUtilities.showInSnackBar(
           // ignore: use_build_context_synchronously
           navigatorKey.currentContext!,
-          adHocData[0]['userMessage'] as String,
+          row['userMessage'] as String,
           durationInSeconds: 5,
         );
       }
 
-      if ((adHocData[0]['isPaid'] != 0) || (amountOwed <= 0)) {
+      if ((row['isPaid'] != 0) || (amountOwed <= 0)) {
         // Already paid or zero balance — no payment dialog needed.
       } else {
         final PaymentPopup pp = PaymentPopup(
@@ -160,9 +161,9 @@ class CheckInScannerController extends GetxController {
           creditAllowed: eventAggregate.kennel.allowCredit,
           creditRemaining: 0,
           currencySymbol: eventAggregate.extensions.curSym,
-          hemId: adHocData[0]['hasherEventMapId'] as String,
+          hemId: row['hasherEventMapId'] as String,
           decimalDigits: eventAggregate.extensions.digAfterDec,
-          allowDefaultPricing: adHocData[0]['isMember'] == 1,
+          allowDefaultPricing: row['isMember'] == 1,
         );
 
         final PaymentPopupResult? popupResult =
@@ -171,7 +172,7 @@ class CheckInScannerController extends GetxController {
         if ((popupResult != null) && (popupResult.transactionType != -1)) {
           onScreenMessage.value = 'Please wait, processing payment';
           await _payForEvent(
-            adHocData[0]['hasherEventMapId'] as String,
+            row['hasherEventMapId'] as String,
             popupResult.transactionType,
             popupResult.transactionValue,
           );

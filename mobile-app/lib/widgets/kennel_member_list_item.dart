@@ -63,9 +63,6 @@ class KennelMemberListItem extends StatelessWidget {
         if (result != null) {
           bool refreshThisUserData = false;
 
-          // kennelMember.dispName = result.dispName;
-          // kennelMember.photo = result.photo;
-
           if (result.hasherId.equalsUuid(getStringPref(StringPrefsEnum.userId) ?? '')) {
             refreshThisUserData = true;
           }
@@ -189,8 +186,6 @@ class KennelMemberListItem extends StatelessWidget {
                   //         '<Updating home kennel>',
                   //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 15.0, height: 1.0, color: hc_blue),
                   //         textAlign: TextAlign.center,
-                  //       )
-                  //     : Text(
                   //         '${kennelMember.homeKennelName ?? '<no home hash>'}',
                   //         overflow: TextOverflow.ellipsis,
                   //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceInfo.deviceWidthScaleFactor, height: 1.0),
@@ -405,8 +400,6 @@ class KennelMemberListItem extends StatelessWidget {
                             },
                           ];
 
-                      // if the current user of this device is a superAdmin
-                      // Alumni standing: content access (member-tier photos/chat)
                       // that survives membership lapse. Permissive by design —
                       // available to anyone who can open this menu.
                       buttons.add(<String, dynamic>{

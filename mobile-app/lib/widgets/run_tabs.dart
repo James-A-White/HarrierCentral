@@ -137,8 +137,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         widget.futureRun.event.eventId,
       );
     }
-    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    //print('Pack member data synchronized $resultStr');
 
     final Future<List<PackListAggregate>> packListFuture =
         _refreshPackListFromTable();
@@ -302,13 +300,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           _tabController.animateTo(widget.openToTab.id);
         }
 
-        // else if ((widget.futureRun.extensions.rsvpState == 0) &&
-        //     (widget.futureRun.event.eventStartDatetime.isAfter(
-        //       DateTime.now().subtract(const Duration(hours: 6)),
         //     )) &&
-        //     ((widget.futureRun.extensions.distToEvent ?? 9999999.0) < 250000)) {
-        //   _tabController.animateTo(1);
-        // }
 
         _tabController.addListener(() async {
           if (!mounted) return;
@@ -378,9 +370,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       });
     });
 
-    // _tabController = TabController(vsync: this, length: _tabs.length);
-    // _gridListTabController = TabController(vsync: this, length: 2);
-
     final List<double?> coords = Utilities.getLatLongFromString(<String?>[
       widget.futureRun.event.locationOneLineDesc,
       widget.futureRun.event.eventDescription,
@@ -406,11 +395,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       _safeSetState(() {});
     });
 
-    // Future.delayed(const Duration(seconds: 7)).then((value) {
-    //   setStateIfMounted(() {
-    //     _showTopWidget = false;
-    //   });
-    // });
   }
 
   Future<void> _clearEventTables() async {
@@ -636,14 +620,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     onPressed: () async {
                                       await _setRsvpState(rsvpYes);
                                     },
-                                    // ),
-                                    // Text(
                                     //   widget.futureRun.attendingEvent +
                                     //               widget.futureRun.haresCount >=
                                     //           0
                                     //       ? (widget.futureRun.attendingEvent +
-                                    //               widget.futureRun.haresCount)
-                                    //           .toString()
                                     //       : '',
                                     //   style: const TextStyle(
                                     //       fontFamily: 'AvenirNext',
@@ -726,8 +706,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               //       fontFamily: 'AvenirNext',
                               //       fontStyle: FontStyle.normal,
                               //       fontSize: 20.0,
-                              //       height: 0.85),
-                              // ),
                             ],
                           ),
                         ),
@@ -794,8 +772,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               //       fontFamily: 'AvenirNext',
                               //       fontStyle: FontStyle.normal,
                               //       fontSize: 20.0,
-                              //       height: 0.85),
-                              // ),
                             ],
                           ),
                         ),
@@ -1040,9 +1016,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       //               .eventDescription ??
                                       //           ''),
                                       //   startDate: localTime,
-                                      //   endDate: localTime.add(
-                                      //     const Duration(hours: 4),
-                                      //   ),
                                       //   location:
                                       //       widget
                                       //           .futureRun
@@ -1054,25 +1027,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
                                       // final calendar.CalendarPlugin
                                       // calendarPlugIn =
-                                      //     calendar.CalendarPlugin();
-                                      // var calendars =
-                                      //     await calendarPlugIn.getCalendars();
 
-                                      // if ((calendars?.isNotEmpty ?? false) &&
-                                      //     (calendars![0].id != null)) {
                                       //   calendarPlugIn
                                       //       .createEvent(
                                       //         calendarId: calendars[0].id!,
                                       //         event: newEvent,
-                                      //       )
-                                      //       .then((evenId) {
-                                      //         setStateIfMounted(() {
-                                      //           debugPrint(
                                       //             'Event Id is: $evenId',
-                                      //           );
-                                      //         });
-                                      //       });
-                                      // }
 
                                       // Event event = Event(
                                       //   title:
@@ -1091,39 +1051,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       //           .extensions
                                       //           .userFriendlyLocation,
                                       //   startDate: localTime,
-                                      //   endDate: localTime.add(
-                                      //     const Duration(hours: 4),
-                                      //   ),
-                                      //   iosParams: IOSParams(
-                                      //     reminder: const Duration(
                                       //       hours: 4,
                                       //     ), // on iOS, you can set alarm notification after your event.
                                       //     url:
                                       //         'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light', // on iOS, you can set url to your event.
-                                      //   ),
-                                      //   // androidParams: AndroidParams(
                                       //   //   emailInvites: [], // on Android, you can add invite emails to your event.
-                                      //   // ),
-                                      // );
 
                                       // PermissionStatus ps;
-
-                                      // if (!await Permission.calendarFullAccess.isGranted) {
-                                      //   ps = await Permission.calendarReadOnly.request();
-                                      //   if (ps.isGranted) {
-                                      //     ps = await Permission.calendarFullAccess.request();
-                                      //   }
-                                      // }
 
                                       // await Add2Calendar.addEvent2Cal(event);
 
                                       // bool success = await Add2Calendar.addEvent2Cal(event);
 
-                                      // if (success) {
-                                      //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Calendar', '${widget.futureRun.event.eventName} has been added to your calendar', 'OK');
-                                      // } else {
-                                      //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Calendar', '${widget.futureRun.event.eventName} was not added to your calendar', 'OK');
-                                      // }
                                     },
                                   ),
                                 ),
@@ -1496,46 +1435,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
-  // Future<void> _setRsvpHare() async {
-  //   final bool willHare =
-  //       await Utilities.promptForHare(widget.futureRun.event.hares ?? '') ??
-  //           false;
-  //   if (willHare) {
-  //     List<PackListAggregate>? lPla = await _thePackList;
-  //     if (lPla != null) {
-  //       setStateIfMounted(() {
-  //         if (_thisUserIndex >= 0) {
-  //           PackListAggregate a = lPla[_thisUserIndex];
-  //           lPla[_thisUserIndex] = PackListAggregate(
   //               hasher: a.hasher,
   //               displayName: a.displayName,
   //               hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
 
-  //           // _thePackList[_thisUserIndex].hem.rsvpState = -1;
-  //           // _thePackList[_thisUserIndex].hem.isHare = -1;
-  //           _rsvpRequested = rsvpYes;
-  //         }
-  //       });
-  //     }
-
-  //     //final String userId = getStringPref(StringPrefsEnum.userId);
-  //     final List<dynamic> adHocData =
-  //         await tableModel.hasherEventMapService.setEventRsvp(
   //               widget.futureRun.event.eventId,
   //               _userId,
   //               AppDomainType.user,
-  //               rsvpYes.value,
-  //               isHareYes.value,
-  //             );
-
-  //     await _refreshHemTableFromBackend(false);
-  //     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
-
-  //     if (serverMessage.isNotEmpty) {
-  //       await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
-  //     }
-  //   }
-  // }
 
   Widget _buildPhotosView() {
     return RunPhotoGallery(
@@ -1555,8 +1461,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     if (lPla != null) {
       setStateIfMounted(() {
         if (_thisUserIndex >= 0 && _thisUserIndex < lPla.length) {
-          // _thePackList[_thisUserIndex].hem.rsvpState = -1;
-          // _thePackList[_thisUserIndex].hem.isHare = 0;
 
           PackListAggregate a = lPla[_thisUserIndex];
           lPla[_thisUserIndex] = PackListAggregate(
@@ -1582,8 +1486,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     if (kDebugMode) debugPrint('[_setRsvpState] adHocData length: ${adHocData.length}, contents: $adHocData');
     // An error envelope or a sync-only reply carries no adHocData row
     // (RangeError seen 2026-09-05 on 3.0.12).
-    final String serverMessage =
-        adHocData.isNotEmpty ? (adHocData[0]['serverMessage'] ?? '') : '';
+    final String serverMessage = firstRow(adHocData)?['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
       await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
@@ -1630,9 +1533,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               SizedBox(width: 20),
                             ],
                           ),
-                          // SizedBox(height: 20),
-                          // FancyDivider(
-                          //   key: ValueKey('divider2342'),
                           //   innerColor: Colors.black,
                           // ),
                         ],
@@ -2205,8 +2105,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     // marginBottom: 20,
                     animatedIcon: AnimatedIcons.menu_close,
                     animatedIconTheme: const IconThemeData(size: 22.0),
-                    // this is ignored if animatedIcon is non null
-                    // child:const  Icon(Icons.add),
                     visible: true,
                     curve: Curves.bounceIn,
                     overlayColor: Colors.black,
@@ -2249,15 +2147,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           await _setRsvpState(rsvpYes);
                         },
                       ),
-                      // SpeedDialChild(
-                      //   child: const ImageIcon(
-                      //       AssetImage('images/icons/hare_icon.png'),
-                      //       color: Colors.deepPurple),
                       //   backgroundColor: Colors.white,
                       //   label: 'I will hare',
-                      //   labelStyle: const TextStyle(fontSize: 18.0),
-                      //   onTap: () async {
-                      //     await _setRsvpHare();
                       //   },
                       // ),
                     ],
@@ -2365,28 +2256,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 //     position: badges.BadgePosition.topEnd(
                                 //       top: 0,
                                 //       end: 0,
-                                //     ),
-                                //     badgeContent: Container(
                                 //       //color: Colors.pink,
                                 //       padding: EdgeInsets.symmetric(
                                 //         horizontal: 2,
                                 //       ),
                                 //       width: 30,
                                 //       height: 13,
-                                //       child: AutoSizeText(
-                                //         chatCount.toString(),
                                 //         textAlign: TextAlign.center,
                                 //         maxLines: 1,
                                 //         minFontSize: 10,
                                 //         maxFontSize: 13,
                                 //         style: ts_badge,
-                                //       ),
-                                //     ),
-                                //     badgeStyle: badges.BadgeStyle(
                                 //       badgeColor: Colors.red.shade800,
-                                //       padding: const EdgeInsets.all(6),
-                                //     ),
-                                //   ),
                                 // ],
                               ],
                             ),
@@ -2423,13 +2304,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       _buildChatView(),
                       _buildPhotosView(),
                     ],
-                    // children: tabs.map((Tab tab) {
-                    //   return Center(
-                    //       child: Text(
                     //     tab.text,
-                    //     style: const TextStyle(fontSize: 20.0),
-                    //   ));
-                    // }).toList(),
                   ),
                 ),
               ],
@@ -2446,61 +2321,28 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
-  // List<Widget> kiddies() {
-  //   final List<Widget> kiddies = <Widget>[];
-
-  //   if (widget.futureRun.mmAuthAllowCheckInAndOut || widget.futureRun.mmAuthAllowEditRsvp) {
-  //     kiddies.add(rsvpRow());
-  //   }
-
-  //   if (widget.futureRun.mmAuthAllowCheckInAndOut) {
-  //     kiddies.add(attendenceRow());
-  //   }
-
   //   kiddies.add(paymentRow());
 
   //   kiddies.add(receiptsRow());
 
-  //   return kiddies;
-  // }
-
-  // Row rsvpRow() {
-  //   return Row(
   //     mainAxisAlignment: MainAxisAlignment.center,
   //     children: <Widget>[
   //       !widget.futureRun.mmAuthAllowEditRsvp
-  //           ? Container()
-  //           : Container(
-  //               margin: const EdgeInsets.only(left: 10, right: 10),
   //               width: 150.0,
   //               height: 100.0,
   //               child: ElevatedButton(
   //                 child: const Text(
   //                   'Check in Pack',
-  //                   style: TextStyle(color: Colors.white),
-  //                 ),
-  //                 onPressed: () {
   //                   Navigator.push<dynamic>(
   //                     context,
   //                     MaterialPageRoute<dynamic>(
-  //                       builder: (BuildContext context) => CheckInPackPage(futureRun: widget.futureRun),
-  //                     ),
-  //                   );
   //                 },
-  //               ),
-  //             ),
   //       !widget.futureRun.mmAuthAllowHashCash
-  //           ? Container()
-  //           : Container(
-  //               margin: const EdgeInsets.only(left: 10, right: 10),
   //               width: 150.0,
   //               height: 100.0,
   //               child: ElevatedButton(
   //                 child: const Text(
   //                   'Hash Cash',
-  //                   style: TextStyle(color: Colors.white),
-  //                 ),
-  //                 onPressed: () {
   //                   Navigator.push<dynamic>(
   //                     context,
   //                     MaterialPageRoute<dynamic>(
@@ -2509,12 +2351,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //                             currencySymbol: widget.futureRun.currencySymbol,
   //                             digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
   //                             eventName: widget.futureRun.eventName,
-  //                           ),
-  //                     ),
-  //                   );
   //                 },
-  //               ),
-  //             ),
 
   //       // Container(
   //       //   width: 150.0,
@@ -2522,30 +2359,15 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //       //       child: const Text(
   //       //         'Edit Run',
   //       //         style:
-  //       //             TextStyle(color: Colors.white),
-  //       //       ),
-  //       //       onPressed: () {
-  //       //         //int i = 0;
-  //       //       }),
-  //       // ),
   //     ],
-  //   );
-  // }
 
-  // Row attendenceRow() {
-  //   return Row(
   //     mainAxisAlignment: MainAxisAlignment.center,
   //     children: <Widget>[
-  //       Container(
-  //         margin: const EdgeInsets.only(left: 10, right: 10),
   //         width: 150.0,
   //         height: 100.0,
   //         child: ElevatedButton(
   //           child: const Text(
   //             'Scan at Run Start',
-  //             style: TextStyle(color: Colors.white),
-  //           ),
-  //           onPressed: () {
   //             Navigator.push<dynamic>(
   //               context,
   //               MaterialPageRoute<dynamic>(
@@ -2555,22 +2377,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //                       eventName: widget.futureRun.eventName,
   //                       eventNumber: widget.futureRun.eventNumber,
   //                       isRunStart: 1,
-  //                     ),
-  //               ),
-  //             );
   //           },
-  //         ),
-  //       ),
-  //       Container(
-  //         margin: const EdgeInsets.only(left: 10, right: 10),
   //         width: 150.0,
   //         height: 100.0,
   //         child: ElevatedButton(
   //           child: const Text(
   //             'Scan at Run End',
-  //             style: TextStyle(color: Colors.white),
-  //           ),
-  //           onPressed: () {
   //             Navigator.push<dynamic>(
   //               context,
   //               MaterialPageRoute<dynamic>(
@@ -2580,30 +2392,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //                       eventName: widget.futureRun.eventName,
   //                       eventNumber: widget.futureRun.eventNumber,
   //                       isRunStart: 0,
-  //                     ),
-  //               ),
-  //             );
   //           },
-  //         ),
-  //       ),
   //     ],
-  //   );
-  // }
 
-  // Row paymentRow() {
-  //   return Row(
   //     mainAxisAlignment: MainAxisAlignment.center,
   //     children: <Widget>[
-  //       Container(
-  //         margin: const EdgeInsets.only(left: 10, right: 10),
   //         width: 150.0,
   //         height: 100.0,
   //         child: ElevatedButton(
   //             child: const Text(
   //               'Run Start QR',
-  //               style: TextStyle(color: Colors.white),
-  //             ),
-  //             onPressed: () {
   //               Navigator.push<dynamic>(
   //                   context,
   //                   MaterialPageRoute<dynamic>(
@@ -2614,19 +2412,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //                             eventNumber: widget.futureRun.eventNumber,
   //                             eventStartDatetime: widget.futureRun.eventStartDatetime,
   //                             isStart: true,
-  //                           )));
-  //             }),
-  //       ),
-  //       Container(
-  //         margin: const EdgeInsets.only(left: 10, right: 10),
   //         width: 150.0,
   //         height: 100.0,
   //         child: ElevatedButton(
   //             child: const Text(
   //               'Run End QR',
-  //               style: TextStyle(color: Colors.white),
-  //             ),
-  //             onPressed: () {
   //               Navigator.push<dynamic>(
   //                   context,
   //                   MaterialPageRoute<dynamic>(
@@ -2637,27 +2427,15 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //                             eventNumber: widget.futureRun.eventNumber,
   //                             eventStartDatetime: widget.futureRun.eventStartDatetime,
   //                             isStart: false,
-  //                           )));
-  //             }),
-  //       ),
   //     ],
-  //   );
-  // }
 
-  // Row receiptsRow() {
-  //   return Row(
   //     mainAxisAlignment: MainAxisAlignment.center,
   //     children: <Widget>[
-  //       Container(
-  //         margin: const EdgeInsets.only(left: 10, right: 10),
   //         width: 150.0,
   //         height: 100.0,
   //         child: ElevatedButton(
   //             child: const Text(
   //               'Manage receipts',
-  //               style: TextStyle(color: Colors.white),
-  //             ),
-  //             onPressed: () {
   //               Navigator.push<dynamic>(
   //                   context,
   //                   MaterialPageRoute<dynamic>(
@@ -2666,20 +2444,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //                             eventId: widget.futureRun.event.eventId,
   //                             digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
   //                             currencySymbol: widget.futureRun.currencySymbol
-  //                           )));
-  //             }),
-  //       ),
 
-  //       // Container(
-  //       //   margin: const EdgeInsets.only(left: 10, right: 10),
   //       //   width: 150.0,
   //       //   height: 100.0,
   //       //   child: ElevatedButton(
   //       //       child: const Text(
   //       //         'Run End QR',
-  //       //         style: TextStyle(color: Colors.white),
-  //       //       ),
-  //       //       onPressed: () {
   //       //         Navigator.push<dynamic>(
   //       //             context,
   //       //             MaterialPageRoute<dynamic>(
@@ -2691,12 +2461,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //       //                       eventStartDatetime:
   //       //                           widget.futureRun.eventStartDatetime,
   //       //                       isStart: false,
-  //       //                     )));
-  //       //       }),
-  //       // ),
   //     ],
-  //   );
-  // }
 
   Future<void> _launchMaps(RunDetailsAggregate rda) async {
     double? lat;

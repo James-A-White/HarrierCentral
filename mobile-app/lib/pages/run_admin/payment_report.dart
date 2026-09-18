@@ -89,8 +89,6 @@ class PaymentReportState extends State<PaymentReportPage> {
       true,
       widget.eventAggregate.event.eventId,
     );
-    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    //print('Payments data synchronized $resultStr');
 
     await _refreshListsFromTable();
     await refreshTotals();
@@ -294,7 +292,6 @@ SELECT
             ) as extrasPaid
           FROM (SELECT 1 as paymentType union values (2), (3), (4), (5), (6), (7), (8) ) x
 
-
           ''';
 
       final List<Map<String, dynamic>> results = await database.rawQuery(sql);
@@ -461,8 +458,6 @@ SELECT
           // marginBottom: 20,
           animatedIcon: AnimatedIcons.menu_close,
           animatedIconTheme: const IconThemeData(size: 22.0),
-          // this is ignored if animatedIcon is non null
-          // child:const  Icon(Icons.add),
           visible: true,
           curve: Curves.bounceIn,
           overlayColor: Colors.black,
@@ -1094,8 +1089,9 @@ SELECT
 
   /// Human label for a payment's product type, shown in the detail popup.
   String _productLabel(int productType) {
-    if (productType == productTypeMembership.value)
+    if (productType == productTypeMembership.value) {
       return 'Annual subscription';
+    }
     if (productType == productTypeHaberdashery.value) return 'Haberdashery';
     return 'Run fee';
   }
@@ -1194,8 +1190,6 @@ SELECT
               allowDefaultPricing:
                   (item.extensions.isMember != 0) ||
                   (item.extensions.isFollowing != 0),
-              // valueChanged: (num value) {
-              //   finalValue = value;
               // },
             );
 
@@ -1224,14 +1218,6 @@ SELECT
                   otherPaymentPopupResult: ppResult.otherPayment,
                 );
 
-                // payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue).then((List<dynamic> results) {
-                //   _refreshListsFromTable().then((void _) {
-                //     setStateIfMounted(() {
-                //       refreshTotals();
-                //       BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
-                //     });
-                //   });
-                // });
               }
             }
           } else {
@@ -1902,8 +1888,6 @@ SELECT
             //         ],
             //       ),
             //     ],
-            //   ),
-            // ),
             actions: <Widget>[
               // Cancel is only wired for run payments — cancelling a
               // membership/haberdashery sale is not yet supported, so hide it

@@ -22,7 +22,7 @@ class TextRun {
 /// comma, or closing bracket at the end of a sentence — is handed back to
 /// the text run so "see https://x.org/a." links to /a, not to "/a.".
 final RegExp _urlPattern = RegExp(r'https?://[^\s<>"]+', caseSensitive: false);
-const String _trailingPunctuation = '.,;:!?)\]}\'"';
+const String _trailingPunctuation = '.,;:!?)]}\'"';
 
 List<TextRun> splitLinks(String text) {
   final List<TextRun> runs = <TextRun>[];

@@ -22,15 +22,6 @@ class BetaRibbon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // String betaFeaturesEnabled =
-    //     getStringPref(StringPrefsEnum.betaFeaturesEnabled) ?? '';
-
-    // if ((feature != null) &&
-    //     (!betaFeaturesEnabled.toLowerCase().contains(
-    //       feature!.key.toLowerCase(),
-    //     ))) {
-    //   return const SizedBox.shrink();
-    // }
 
     if (!showRibbon) {
       return child ?? const SizedBox.shrink();

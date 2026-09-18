@@ -444,8 +444,6 @@ class OtherPaymentPopup extends StatelessWidget {
 
                                   onChanged: (bool? val) {
                                     if (val != null) {
-                                      //setStateIfMounted(() {
-                                      // _recalculateTotal();
                                       controller.specialPriceEnabled.value =
                                           !controller.specialPriceEnabled.value;
                                       if (!controller
@@ -640,9 +638,6 @@ class OtherPaymentPopup extends StatelessWidget {
         ],
       ),
       actions: <Widget>[
-        //   ),
-        // ),
-        // Container(
         //   width: 60.0,
         //child:
         Obx(

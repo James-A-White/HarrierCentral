@@ -79,8 +79,6 @@ class GuestRunsService {
       final List<dynamic> rowsets =
           jsonDecode(response.body) as List<dynamic>;
 
-      // Rowset 0: existence check ({ EventFound })
-      // Rowset 1: photo rows (may be empty)
       if (rowsets.length < 2) {
         return (success: true, photos: <RunPhotoModel>[]);
       }

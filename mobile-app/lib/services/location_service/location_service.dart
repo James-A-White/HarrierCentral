@@ -354,8 +354,6 @@ class LocationService extends GetxService {
     final storedLon = _cachedLon ?? DEFAULT_LONGITUDE;
 
     // 2. Update the shared DeviceInfoService immediately.
-    // Guard: AppLifecycleController.onResumed() can trigger LocationService.onInit()
-    // between await points in initServices(), before DeviceInfo is registered.
     if (Get.isRegistered<DeviceInfo>()) {
       deviceInfo.deviceLat = storedLat.toDouble();
       deviceInfo.deviceLon = storedLon.toDouble();

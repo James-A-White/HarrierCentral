@@ -8,11 +8,6 @@ import 'package:harrier_central/pages/top_level/select_run_page.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart' as maps;
 
-// class LatLon {
-//   num latitude;
-//   num longitude;
-// }
-
 class Utilities {
   //   // this is an unused variable to suppress a LINT warning
   //   int suppressWarning = 0;
@@ -219,11 +214,6 @@ class Utilities {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      // MapSnackbar(saveUserMapPreference, (bool x) {
-                      //   setStateIfMounted(() {
-                      //     saveUserMapPreference.value = x;
-                      //   });
-                      // }),
                       MapSnackbar(saveUserMapPreference),
                       Text('Always use this option', style: ts_titleBlack),
                       const SizedBox(width: 20.0),
@@ -250,85 +240,45 @@ class Utilities {
     return uri != null && uri.hasAbsolutePath && uri.scheme == 'https';
   }
 
-  // static Future<bool?> promptForHare(BuildContext context, String? hareList) async {
-  //   return await showDialog<bool?>(
   //     context: context,
   //     barrierDismissible: false, // user must tap button!
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Will you Hare this run?',
   //   style: ts_alertDialogTitle,
-  // ),
-  //         content: SingleChildScrollView(
-  //           child: ListBody(
   //             children: <Widget>[
   //               Text('Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}'),
   //             ],
-  //           ),
-  //         ),
   //         actions: <Widget>[
-  //                       TextButton(
-  //             child: const Text('No Thanks!'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop(false);
   //             },
-  //           ),
-  //                       TextButton(
-  //             child: const Text('Yes, I\'ll Hare!'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop(true);
   //             },
   //           ),
   //         ],
   //       );
   //     },
-  //   );
-  // }
 
-  // static Future<bool?> promptForHare(String? hareList) async {
-  //   return await Get.dialog<bool?>(
-  //     AlertDialog(
-  //       title: Text(
   //         'Will you Hare this run?',
   //         style: ts_alertDialogTitle,
-  //       ),
-  //       content: SingleChildScrollView(
-  //         child: ListBody(
   //           children: <Widget>[
   //             Text(
   //               'Please confirm that you are signing up to hare this run${((hareList == null) || (hareList.isEmpty)) ? '.' : ' with $hareList'}',
   //               style: ts_alertDialogBody,
   //             ),
   //           ],
-  //         ),
-  //       ),
   //       actions: <Widget>[
   //         TextButton(
   //           style: text_button_style,
   //           child: Text(
   //             'No Thanks!',
   //             style: ts_button,
-  //           ),
-  //           onPressed: () {
-  //             Get.back<bool?>(result: false, canPop: true);
   //           },
-  //         ),
-  //         TextButton(
   //           style: text_button_style,
   //           child: Text(
   //             'Yes, I\'ll Hare!',
   //             style: ts_button,
-  //           ),
-  //           onPressed: () {
-  //             Get.back<bool?>(result: true, canPop: true);
   //           },
   //         ),
   //       ],
   //     ),
 
   //     barrierDismissible: false, // user must tap button!
-  //   );
-  // }
 
   static bool isOpeeOrTuna() {
     bool isOpeeOrTuna = false;
@@ -353,30 +303,13 @@ class Utilities {
   //   IveCoreUtilities.logTiming(
   //     'Geostatus query start',
   //     appModel.appStartTime,
-  //   );
-  //   final LocationPermission permission = await Geolocator.checkPermission();
 
   //   IveCoreUtilities.logTiming(
   //     'Geolocation query start',
   //     appModel.appStartTime,
-  //   );
-  //   if ((permission == LocationPermission.always) ||
-  //       (permission == LocationPermission.whileInUse)) {
-  //     appModel.geoLocationStream = Geolocator.getPositionStream(
-  //       locationSettings: const LocationSettings(
   //         accuracy: BASE_APP_LOCATION_ACCURACY,
   //         distanceFilter: 50,
-  //       ),
-  //     ).listen((Position position) {
-  //       deviceInfo.deviceLat = position.latitude + 0.0;
-  //       deviceInfo.deviceLon = position.longitude + 0.0;
-  //       setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
-  //       setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
-  //       setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
   //       // var xxx = 0
-
-  //       //print('>>>>>>>>>>> geoloc stream update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
-  //     });
 
   //     // don't wait for the position to resolve to return from
   //     // this function because we want the app to start quickly.
@@ -385,68 +318,21 @@ class Utilities {
   //     Geolocator.getCurrentPosition(
   //       locationSettings: const LocationSettings(
   //         accuracy: LocationAccuracy.lowest,
-  //       ),
-  //     ).then((Position position) {
-  //       deviceInfo.deviceLat = position.latitude;
-  //       deviceInfo.deviceLon = position.longitude;
-  //       setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
-  //       setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
-  //       setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
-
-  //       //print('>>>>>>>>>>> geoloc one-time update' + (position == null ? 'Unknown' : position.latitude.toString() + ', ' + position.longitude.toString()));
-  //     });
-  //   }
-  // }
 
   // static Future<void> subscribeToGeoLocationStream() async {
   //   // Load saved location as fallback
-  //   final storedLat =
-  //       (getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE)
-  //           .toDouble();
-  //   final storedLon =
-  //       (getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE)
-  //           .toDouble();
-
-  //   deviceInfo.deviceLat = storedLat;
-  //   deviceInfo.deviceLon = storedLon;
 
   //   //IveCoreUtilities.logTiming('Geostatus query start', appModel.appStartTime);
 
-  //   final permission = await Geolocator.checkPermission();
-  //   //IveCoreUtilities.logTiming('Geolocation query start', appModel.appStartTime);
-
-  //   if (permission == LocationPermission.always ||
-  //       permission == LocationPermission.whileInUse) {
   //     // Start streaming location updates
   //     appModel.geoLocationStream = Geolocator.getPositionStream(
   //       locationSettings: const LocationSettings(
   //         accuracy: BASE_APP_LOCATION_ACCURACY,
   //         distanceFilter: 50,
-  //       ),
-  //     ).listen(_updateDeviceLocation);
 
-  //     // One-time location fetch (low priority, non-blocking)
-  //     Geolocator.getCurrentPosition(
-  //       locationSettings: const LocationSettings(
   //         accuracy: LocationAccuracy.lowest,
-  //       ),
-  //     ).then(_updateDeviceLocation);
-  //   }
-  // }
-
-  // static void _updateDeviceLocation(Position position) {
-  //   final lat = position.latitude.toDouble();
-  //   final lon = position.longitude.toDouble();
-
-  //   deviceInfo.deviceLat = lat;
-  //   deviceInfo.deviceLon = lon;
 
   //   //print('lat = $lat, lon = $lon');
-
-  //   setNumPref(NumPrefsEnum.currentDeviceLat, lat);
-  //   setNumPref(NumPrefsEnum.currentDeviceLon, lon);
-  //   setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
-  // }
 
   static String? validateEmail(String? value) {
     if ((value != null) && (value.isNotEmpty)) {
@@ -825,9 +711,6 @@ class Utilities {
           }
         }
       } else {
-        // print(
-        //   'No HC server detected: ${DateTime.now().millisecondsSinceEpoch}',
-        // );
         return false;
       }
     } catch (e) {
@@ -838,8 +721,6 @@ class Utilities {
   }
 
   // Fast internet check: interface present + general reachability probe.
-  // Does NOT check the HC backend — that full end-to-end check (API → SP → DB)
-  // is done separately by checkHcServer() / NetworkService.backendReachable.
   static Future<bool> checkForInternetConnection() async {
     const Duration internetCheckTimeout = Duration(milliseconds: 3000);
 

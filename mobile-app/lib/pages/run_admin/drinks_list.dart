@@ -50,15 +50,6 @@ class DrinksResults {
   }
 }
 
-// Mismanagement get mismanagement {
-//   return Mismanagement(mismanagementRoles);
-// }
-
-// AppAccess get appAccess {
-//   return AppAccess(appAccessFlags);
-// }
-//}
-
 class DrinksListState extends State<DrinksList>
     with SingleTickerProviderStateMixin {
   DrinksListState();
@@ -109,8 +100,6 @@ class DrinksListState extends State<DrinksList>
         true,
         widget.eventAggregate.event.eventId,
       );
-      //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-      //print('Payments data synchronized $resultStr');
 
       await _refreshDrinksFromTable(true);
 
@@ -306,8 +295,6 @@ class DrinksListState extends State<DrinksList>
                   itemCount: _awards.length,
                   separatorBuilder: (BuildContext context, int index) =>
                       const Divider(height: 1.0, color: Colors.black45),
-                  //padding: const EdgeInsets.only(top: 5),
-                  // separatorBuilder: (BuildContext context, int index) => const Divider(
                   //   height: 1.0,
                   //   color: Colors.black45,
                   // ),
@@ -396,11 +383,6 @@ class DrinksListState extends State<DrinksList>
                     //   height: 120.0,
                     //   child: ListTile(
                     //     dense: false,
-                    //     visualDensity: VisualDensity(vertical: 4), // to expand
-                    //     leading: SizedBox(height: 120.0, child: Utilities.getProfilePic(_awards[index].photo, 120.0, 120.0)),
-                    //     title: Text(_awards[index].dispName),
-                    //   ),
-                    // );
                   },
                 ),
         ),

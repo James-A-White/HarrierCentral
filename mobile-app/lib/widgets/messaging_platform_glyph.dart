@@ -63,11 +63,12 @@ class MessagingPlatformGlyph extends StatelessWidget {
         painter: _SignalMarkPainter(color),
       ),
     };
-    if (!onDisc)
+    if (!onDisc) {
       return SizedBox.square(
         dimension: size,
         child: Center(child: glyph),
       );
+    }
     // The disc is a little larger than the glyph, as the brand marks are
     // drawn: a rounded square of colour behind a white glyph would be their
     // OWN presentation, but on our red button a white disc under the

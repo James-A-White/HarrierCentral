@@ -41,9 +41,6 @@ class EditorMapState extends State<EditorMap> {
     super.initState();
     _oldTrueNorthLock = widget.trueNorthLock;
     _mapControllerAvailable = false;
-    // mapController.mapEventStream.listen((MapEvent event) {
-    //   widget.mapMoved(event.center);
-    // });
   }
 
   @override

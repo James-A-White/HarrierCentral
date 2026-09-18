@@ -209,9 +209,12 @@ WHERE msg.id = @messageId;
 -- per device row, nothing retired, and nothing to a device that has not
 -- signed in for 180 days (the next sign-in re-arms it).
 --
--- The sender is excluded. The event and kennel audiences do NOT exclude
--- their sender; that looks like a bug but it is pre-existing behaviour and
--- is left alone here rather than changed as a side effect.
+-- The sender IS included, deliberately, exactly as the event and kennel
+-- audiences include theirs. The echo of your own message is what drives the
+-- delivered tick: the chat page's FCM listener calls
+-- _upgradeOwnMessagesToDelivered() for any push on the thread it is showing,
+-- so suppressing the sender's copy would leave their own messages on a single
+-- tick for ever (James, 2026-09-18). It looked like a fan-out bug and is not.
 --
 -- HC6.UserMayEnterChatRoom is the gate, the same one the list and the read
 -- SPs use, so a room can never push to someone it would refuse to show.
@@ -235,7 +238,6 @@ LEFT JOIN HC.EventMessageBadgeCounts b
       AND b.ThreadId     IS NULL
       AND b.MessageType  = @roomType
 WHERE h.Removed = 0
-  AND h.id <> @userId
   AND device.FcmToken  IS NOT NULL
   AND device.removed   = 0
   AND device.LastLogin >= @idleCutoff

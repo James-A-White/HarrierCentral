@@ -207,6 +207,18 @@ class CheckInPackController extends GetxController
     }
   }
 
+  /// `update()` after an await, safely.
+  ///
+  /// GetX's update() dereferences a null `_updaters` once the controller is
+  /// disposed, so it throws in RELEASE as well as debug — unlike a plain
+  /// `.value` write, which GetX leaves harmless. Every update in this
+  /// controller is reached after a backend sync, a table read or a 1.5 s
+  /// delay, and backing out of check-in during any of those is one tap.
+  void _update(List<Object> ids) {
+    if (isClosed) return;
+    update(ids);
+  }
+
   Future<void> refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
     if (Utilities.isNotConnected()) {
       // Offline: skip the backend sync but STILL read from the local
@@ -219,14 +231,14 @@ class CheckInPackController extends GetxController
       await _refreshCounters(forceRefresh: true);
       if (showLoadingIndicator && isLoading) {
         isLoading = false;
-        update([UpdateIds.appScaffold]);
+        _update([UpdateIds.appScaffold]);
       }
       return;
     }
 
     if (showLoadingIndicator) {
       isLoading = true;
-      update([UpdateIds.appScaffold]);
+      _update([UpdateIds.appScaffold]);
     }
 
     await tableModel.syncEventAdminService.updateFromBackend(
@@ -295,7 +307,7 @@ class CheckInPackController extends GetxController
     } finally {
       if (forceRefresh) {
         isLoading = false;
-        update([UpdateIds.appScaffold]);
+        _update([UpdateIds.appScaffold]);
       }
     }
   }
@@ -516,7 +528,7 @@ class CheckInPackController extends GetxController
 
       if (forceRefresh) {
         isLoading = false;
-        update([UpdateIds.appScaffold]);
+        _update([UpdateIds.appScaffold]);
       }
 
       await filterPackListResults();
@@ -600,7 +612,7 @@ class CheckInPackController extends GetxController
       filteredList.assignAll(results);
     }
 
-    update([UpdateIds.hasherList]);
+    _update([UpdateIds.hasherList]);
   }
 
   Future<void> toggleFilterPanel() async {
@@ -609,6 +621,9 @@ class CheckInPackController extends GetxController
     } else {
       await animationController.forward();
     }
+    // animationController is disposed in onClose, so leaving the page mid
+    // animation lands here holding a dead one.
+    if (isClosed) return;
     showFilter.toggle();
     await refreshPackListFromTables(true);
   }
@@ -628,7 +643,20 @@ class CheckInPackController extends GetxController
   void onHasherTapped(BuildContext context, int index) async {
     final CheckInPackModel hasher = filteredList[index];
     searchFocusNode.unfocus();
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    // Resolve the messenger ONCE, here, while the context is certainly alive,
+    // and hand the resolved object to every callback below.
+    //
+    // The callbacks run when the hasher taps a button in the payment
+    // snackbar, which can be long after this tap. `context` belongs to the
+    // list ITEM, and this list rebuilds constantly — a payment, an RSVP, the
+    // counters, a sync. Once that element is gone the context is defunct and
+    // `ScaffoldMessenger.of(context)` throws "Null check operator used on a
+    // null value", killing the RSVP, the membership charge or the sale that
+    // the tap was meant to start. Seen twice in production on 2026-09-16
+    // (build 1327). The messenger itself belongs to the app, not the row, so
+    // holding it is safe; holding the row's context is not.
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
 
     if (eventAggregate.extensions.appAccess.canManageRuns) {
       final double baseAmount = hasher.isMember != 1
@@ -640,6 +668,7 @@ class CheckInPackController extends GetxController
 
       final snackbar = PaymentSnackBar(
         context: context,
+        messenger: messenger,
         eventAggregate: eventAggregate,
         packMember: hasher,
         amountOwed: amountOwed,
@@ -652,9 +681,7 @@ class CheckInPackController extends GetxController
               attendenceState = -1,
               isHare = -1,
             }) async {
-              ScaffoldMessenger.of(
-                context,
-              ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+              messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
               if (rsvpState != -1 && attendenceState == -1) {
                 rsvpIndexUpdating.value = index;
                 await updateRsvpState(updated, rsvpState, isHare);
@@ -673,9 +700,7 @@ class CheckInPackController extends GetxController
               await _refreshCounters(forceRefresh: true);
             },
         onChargeMembership: () {
-          ScaffoldMessenger.of(
-            context,
-          ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+          messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
           unawaited(
             showMembershipChargeSheet(
               context: context,
@@ -693,9 +718,7 @@ class CheckInPackController extends GetxController
           );
         },
         onSellHaberdashery: () {
-          ScaffoldMessenger.of(
-            context,
-          ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+          messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
           unawaited(
             showHaberdasherySaleSheet(
               context: context,
@@ -713,16 +736,14 @@ class CheckInPackController extends GetxController
           );
         },
         onPaidCallback: (updated, paymentType, {userInput}) async {
-          ScaffoldMessenger.of(
-            context,
-          ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+          messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
           paymentIndexUpdating.value = index;
 
           if (showMultiSelect.value) {
-            await bulkPayForEvent(context, paymentType);
+            await bulkPayForEvent(messenger, paymentType);
           } else {
             await payForEvent(
-              context,
+              messenger,
               paymentType,
               index,
               userInput?.totalAmount,
@@ -734,19 +755,22 @@ class CheckInPackController extends GetxController
 
           paymentIndexUpdating.value = null;
 
-          // await refreshPackListFromTables(false);
-          // await _refreshCounters(forceRefresh: true);
         },
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      messenger.showSnackBar(snackbar);
     }
   }
 
-  Future<void> bulkPayForEvent(BuildContext context, int paymentType) async {
-    ScaffoldMessenger.of(
-      context,
-    ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+  /// Takes the messenger rather than a BuildContext: the only thing the
+  /// context was ever used for here was resolving it, and the payment path
+  /// reaches this from a snackbar callback whose context may already be
+  /// defunct. See onHasherTapped.
+  Future<void> bulkPayForEvent(
+    ScaffoldMessengerState messenger,
+    int paymentType,
+  ) async {
+    messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
 
     await _processBulkPayment(paymentType);
 
@@ -757,8 +781,10 @@ class CheckInPackController extends GetxController
     await _refreshCounters(forceRefresh: true);
   }
 
+  /// Takes the messenger rather than a BuildContext, for the same reason as
+  /// [bulkPayForEvent].
   Future<void> payForEvent(
-    BuildContext context,
+    ScaffoldMessengerState messenger,
     int paymentType,
     int index,
     double? otherAmount, {
@@ -766,9 +792,7 @@ class CheckInPackController extends GetxController
     String? specialRunPriceReason,
     bool? useSpecialPriceAsDefault,
   }) async {
-    ScaffoldMessenger.of(
-      context,
-    ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+    messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
     dynamic payForExtras = payForRunOnly;
 
     if (((paymentType == paymentFreeRun.value) ||
@@ -820,13 +844,21 @@ class CheckInPackController extends GetxController
         cancelButtonReturnValue: followTypeCancel,
       );
 
-      payForExtras = await showDialog<dynamic>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return popup;
-        },
-      );
+      // The app's navigator, not the tapped row's context. This runs after a
+      // payment button in the snackbar, by which time the row that opened it
+      // may have been rebuilt away; the navigator outlives all of them. If it
+      // is somehow gone the answer stays payForRunOnly, which is the
+      // conservative one — never charge for extras nobody confirmed.
+      final BuildContext? dialogContext = navigatorKey.currentContext;
+      if (dialogContext != null) {
+        payForExtras = await showDialog<dynamic>(
+          context: dialogContext,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return popup;
+          },
+        );
+      }
     }
     final List<dynamic>? results = await _processPayment(
       index,
@@ -889,12 +921,6 @@ class CheckInPackController extends GetxController
 
     rsvpIndexUpdating.value = index;
     attendanceIndexUpdating.value = index;
-
-    // filteredList[index] = filteredList[index].copyWith(
-    //   rsvpStateIndicator: Future<int>.value(rsvpUpdating.value),
-    //   attendenceStateIndicator: Future<int>.value(attendenceUpdating.value),
-    //   paidStateIndicator: Future<int>.value(isPaidUpdating.value),
-    // );
 
     final String? hemId = filteredList[index].hemId;
     final String? hasherId = filteredList[index].hasherId;
@@ -1017,7 +1043,19 @@ class CheckInPackController extends GetxController
           hemId: packMember.hemId,
         );
 
-    final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+    // A failed or transient call returns an EMPTY list — a dropped socket, a
+    // 599 stall, an error envelope. Indexing [0] threw a RangeError that also
+    // stranded the row: the caller clears rsvpIndexUpdating only after this
+    // returns, so the spinner span for ever. Seen in production 2026-09-17.
+    // run_list_item and run_tabs already guard this; the check-in list was
+    // missed.
+    final Map<String, dynamic>? row = firstRow(adHocData);
+    if (row == null) {
+      showHcSnackbar("Couldn't save RSVP — please try again.", isError: true);
+      return;
+    }
+
+    final String serverMessage = row['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
       await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
@@ -1118,9 +1156,6 @@ class CheckInPackController extends GetxController
     // print(
     //   hasher.nameForDisplay +
     //       ' - ' +
-    //       (hasher.totalRunsThisKennel + hasher.historicalTotalRunCount)
-    //           .toString(),
-    // );
 
     if (hasher.attendenceState >= attendenceAtHash.value) {
       showDrinkIcon =
@@ -1153,10 +1188,6 @@ class CheckInPackController extends GetxController
           Container(height: 30, width: 30, color: Colors.transparent),
           CircleAvatar(
             backgroundColor:
-                // (attendanceState == null ||
-                //         attendanceState == attendenceUnknown.value ||
-                //         rsvpState == rsvpNo.value)
-                //     ? (attendanceIndexUpdating.value == null
                 //         ? Colors.grey[350]
                 //         : Colors.white)
                 //     : Colors.white,
@@ -1369,9 +1400,6 @@ class CheckInPackController extends GetxController
       }
 
       if (type != 'cancel') {
-        // setStateIfMounted(() {
-        //   _isLoading = true;
-        // });
         await tableModel
             //final List<dynamic> adHocData = await tableModel
             .hasherEventMapService
@@ -1388,23 +1416,6 @@ class CheckInPackController extends GetxController
         await refreshPackListFromTables(false);
         await _refreshCounters(forceRefresh: true);
 
-        // setStateIfMounted(() {
-        //   _isLoading = false;
-        // });
-
-        // if (eventAggregate.extensions.appAccess.canManageRuns) {
-        //   if (adHocData.isNotEmpty) {
-        //     final String hem =
-        //         adHocData[0]['hasherEventMapId'].toString().toLowerCase();
-        //     scrollIndex = filteredList.indexWhere(
-        //       (CheckInPackModel k) =>
-        //           k.hemId.toString().toLowerCase() == hem,
-        //     );
-        //     if ((scrollIndex ?? -1) >= 0) {
-        //       //final CheckInPackModel hasher = _packList[scrollIndex!];
-        //       //if (hasher != null) {
-        //       if (scrollIndex != null) {
-        //         final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(
         //           navigatorKey.currentContext!,
         //           _ScaffoldKey.currentState!,
         //           scrollIndex!,
@@ -1414,27 +1425,10 @@ class CheckInPackController extends GetxController
         //           navigatorKey.currentContext!,
         //         ).removeCurrentSnackBar(
         //           reason: SnackBarClosedReason.hide,
-        //         );
-        //         ScaffoldMessenger.of(navigatorKey.currentContext!)
-        //             .showSnackBar(snackBar)
         //             .closed
-        //             .then((SnackBarClosedReason reason) {
-        //               setStateIfMounted(() {
-        //                 if ((scrollIndex ?? -1) >= 0) {
-        //                   if (_scrollController.hasClients) {
-        //                     _scrollController.animateTo(
         //                       scrollIndex! * LIST_ITEM_HEIGHT,
         //                       duration: const Duration(seconds: 1),
         //                       curve: Curves.ease,
-        //                     );
-        //                   }
-        //                 }
-        //               });
-        //             });
-        //       }
-        //     }
-        //   }
-        // }
       }
     }
     return;
@@ -1447,6 +1441,13 @@ class CheckInPackController extends GetxController
       eventAggregate.kennel.kennelId,
       eventAggregate.event.eventStartDatetime,
     );
+
+    // A kennel's FIRST run has no previous one, and the query returns no
+    // rows. Say so instead of throwing a RangeError.
+    if (result.isEmpty) {
+      showHcSnackbar('No previous run to copy RSVPs from.', isError: true);
+      return;
+    }
 
     String lastRunName = result[0]['eventName'].toString();
     String fromEventId = result[0]['eventId'].toString();
@@ -1465,7 +1466,16 @@ class CheckInPackController extends GetxController
       final List<dynamic> adHocData = await tableModel.hasherEventMapService
           .copyEventRsvps(fromEventId, eventAggregate.event.eventId);
 
-      final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+      // Same empty-on-failure shape as every other adHoc reply. The refresh
+      // below still runs, because a copy can fail partway and local truth is
+      // then whatever actually landed.
+      final Map<String, dynamic>? copyRow = firstRow(adHocData);
+      if (copyRow == null) {
+        showHcSnackbar("Couldn't copy the RSVPs — please try again.",
+            isError: true);
+      }
+
+      final String serverMessage = copyRow?['serverMessage'] ?? '';
 
       if (serverMessage.isNotEmpty) {
         await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
@@ -1590,8 +1600,6 @@ class CheckInPackController extends GetxController
           ),
           Icon(FontAwesome.times_circle, color: hc_red),
 
-          // Container(height: 30, width: 30, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-          // const Positioned(bottom: 0, child: Icon(Ionicons.md_remove_circle, size: 30, color: Colors.teal))
         ],
         'returnValue': FilterOptions.clearAllFilters,
       },
