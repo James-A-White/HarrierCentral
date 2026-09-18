@@ -552,11 +552,8 @@ class QrScannerTabState extends State<QrScannerTab>
 
         setStateIfMounted(() {
           _state = EQrScannerState.dataRecorded;
-          if (adHocData.isNotEmpty) {
-            _onScreenMessage = adHocData[0]['userMessage'];
-          } else {
-            _onScreenMessage = 'Processing Complete';
-          }
+          _onScreenMessage =
+              firstRow(adHocData)?['userMessage'] ?? 'Processing Complete';
         });
       } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) ||
           (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
@@ -612,11 +609,8 @@ class QrScannerTabState extends State<QrScannerTab>
                 );
 
             setStateIfMounted(() {
-              if (adHocData.isNotEmpty) {
-                _onScreenMessage = adHocData[0]['userMessage'];
-              } else {
-                _onScreenMessage = 'Processing Complete';
-              }
+              _onScreenMessage =
+                  firstRow(adHocData)?['userMessage'] ?? 'Processing Complete';
             });
           }
         }

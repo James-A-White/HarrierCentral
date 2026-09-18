@@ -1404,19 +1404,19 @@ class RunListItem extends StatelessWidget {
     // A failed/transient call (e.g. socket torn down while backgrounded during
     // run tracking) returns an empty list. Restore the previous RSVP, tell the
     // user, and bail rather than indexing into [0] and throwing a RangeError.
-    if (adHocData.isEmpty) {
+    final Map<String, dynamic>? row = firstRow(adHocData);
+    if (row == null) {
       rliController.rsvpState.value = previousRsvpState;
       showHcSnackbar("Couldn't save RSVP — please try again.", isError: true);
       return;
     }
 
-    final int rsvpResult = adHocData[0]['rsvpState'];
-    final int willHareResult = adHocData[0]['willHareState'];
-    final String hares = adHocData[0]['hares'] ?? '';
-    final String serverMessage = adHocData[0]['serverMessage'] ?? '';
-    final int? eventNotificationPreference =
-        adHocData[0]['eventNotificationPreference'];
-    final int? emailAlertPreference = adHocData[0]['emailAlertPreference'];
+    final int rsvpResult = row['rsvpState'];
+    final int willHareResult = row['willHareState'];
+    final String hares = row['hares'] ?? '';
+    final String serverMessage = row['serverMessage'] ?? '';
+    final int? eventNotificationPreference = row['eventNotificationPreference'];
+    final int? emailAlertPreference = row['emailAlertPreference'];
 
     rliController.rsvpState.value = rsvpResult;
     rliController.isHareState.value = willHareResult;

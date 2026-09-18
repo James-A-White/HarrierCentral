@@ -1042,12 +1042,13 @@ class CheckInPackController extends GetxController
     // returns, so the spinner span for ever. Seen in production 2026-09-17.
     // run_list_item and run_tabs already guard this; the check-in list was
     // missed.
-    if (adHocData.isEmpty) {
+    final Map<String, dynamic>? row = firstRow(adHocData);
+    if (row == null) {
       showHcSnackbar("Couldn't save RSVP — please try again.", isError: true);
       return;
     }
 
-    final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+    final String serverMessage = row['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
       await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
@@ -1505,13 +1506,13 @@ class CheckInPackController extends GetxController
       // Same empty-on-failure shape as every other adHoc reply. The refresh
       // below still runs, because a copy can fail partway and local truth is
       // then whatever actually landed.
-      if (adHocData.isEmpty) {
+      final Map<String, dynamic>? copyRow = firstRow(adHocData);
+      if (copyRow == null) {
         showHcSnackbar("Couldn't copy the RSVPs — please try again.",
             isError: true);
       }
 
-      final String serverMessage =
-          adHocData.isNotEmpty ? (adHocData[0]['serverMessage'] ?? '') : '';
+      final String serverMessage = copyRow?['serverMessage'] ?? '';
 
       if (serverMessage.isNotEmpty) {
         await Utilities.showAlert('RSVP Result', serverMessage, 'OK');

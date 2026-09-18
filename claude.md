@@ -648,6 +648,54 @@ all clients — unnecessary load for every user.
 synced table without explicitly noting that James must disable the `UpdatedAt`
 trigger first, run the ALTER, then re-enable it. Do not run this autonomously.
 
+**Fixing a crash? Find the other call sites BEFORE you commit.**
+
+A stack trace names one file and one line, so the natural fix is that line.
+In this codebase that fix is usually incomplete, because the same idiom is
+hand-copied across several files and only the one that crashed gets guarded.
+
+Measured on 2026-09-18, five classes were each fixed once and missed elsewhere:
+
+| Class | Guarded | Missed until it crashed |
+|---|---|---|
+| Empty SP reply read at `[0]` | run tabs (5 Sep), run list | check-in, 3 sites (17 Sep) |
+| Write to a disposed chat stream | delta fetch, send (14 Sep) | delivered receipts, image picker |
+| GetX snackbar throwing | around close (11 Sep) | around show (12 Sep) |
+| `int.tryParse` on a missing key | notification service (30 Aug) | run list controller |
+| Stale `BuildContext` for the messenger | 4 calls commented out | the controller's 5 copies (16 Sep) |
+
+So: after writing the fix and before committing, grep for the SHAPE, not the
+symptom. One command, and on 18 Sep it turned one fix into three — including a
+crash on a kennel's first ever run that nobody had reported.
+
+```bash
+# MUST print nothing. Skips sp_reply.dart's own docs and commented-out code.
+grep -rn "adHocData\[" mobile-app/lib | grep -v sp_reply.dart | grep -vE ":[[:space:]]*//"
+
+# Every one of these inside a deferred callback is a bug — resolve it early.
+grep -rn "ScaffoldMessenger.of(" mobile-app/lib
+
+# tryParse unless the input is ours and cannot be a decimal or absent.
+grep -rn "int.parse(" mobile-app/lib
+```
+
+Two classes are now structural rather than a matter of remembering:
+
+- **`firstRow(adHocData)`** (`lib/util/sp_reply.dart`) is the ONLY way to read
+  an SP's adHoc reply. An empty list is what a dropped socket, a local timeout
+  or an error envelope look like, and indexing it throws a `RangeError` that
+  also kills the rest of the callback — the refresh never runs and the spinner
+  never clears, so the user sees a dead tap rather than an error. `adHocData[`
+  appearing anywhere is a new unguarded read, not a survivor.
+- **A `BuildContext` captured for later is a bug.** Resolve what you need from
+  it (`ScaffoldMessenger.of`) while it is certainly alive and hand the resolved
+  object to the callback. The row that opened a snackbar is gone by the time
+  its buttons are pressed.
+
+Still open, and worth an audit rather than a guess: 36 GetX controllers exist
+and 6 ever check `isClosed`. Only those that await and then touch state have
+the fault, so that is an exposure figure, not a bug count.
+
 **Always flag as code smells:**
 - Sentinel magic values (`-1`, `-2`, `'<null>'`, `-99.0`, `-999.0`)
 - Inconsistent sentinel values across parameters in the same SP

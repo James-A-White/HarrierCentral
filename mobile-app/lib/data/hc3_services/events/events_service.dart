@@ -467,8 +467,9 @@ class EventsService extends BaseService {
       final List<dynamic> adHocData = await tableModel.syncUserDataService
           .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
 
-      if (adHocData.isNotEmpty) {
-        final String? returnedId = adHocData[0]['eventId'] as String?;
+      final Map<String, dynamic>? adHocRow = firstRow(adHocData);
+      if (adHocRow != null) {
+        final String? returnedId = adHocRow['eventId'] as String?;
         if (returnedId != null && returnedId.isNotEmpty) {
           eventId = returnedId;
         }

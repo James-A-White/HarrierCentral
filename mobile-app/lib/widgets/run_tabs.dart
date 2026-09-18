@@ -1582,8 +1582,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     if (kDebugMode) debugPrint('[_setRsvpState] adHocData length: ${adHocData.length}, contents: $adHocData');
     // An error envelope or a sync-only reply carries no adHocData row
     // (RangeError seen 2026-09-05 on 3.0.12).
-    final String serverMessage =
-        adHocData.isNotEmpty ? (adHocData[0]['serverMessage'] ?? '') : '';
+    final String serverMessage = firstRow(adHocData)?['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
       await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
