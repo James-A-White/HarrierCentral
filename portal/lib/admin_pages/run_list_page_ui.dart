@@ -27,7 +27,6 @@ const String TEXT_SIX_MONTHS = 'Six months';
 const String TEXT_ONE_YEAR = 'One year';
 const String TEXT_ALL_RUNS_EVENTS = 'All runs / events';
 
-
 /// A kennel/admin action surfaced in the runs-page nav (left rail on wide
 /// screens, overflow menu on narrow).
 typedef _BarAction = ({
@@ -45,12 +44,12 @@ class RunListPage extends StatelessWidget {
     this.textTheme,
     super.key,
   }) : formController = Get.put(
-          RunListPageController(
-            kennel,
-            backgroundColor: backgroundColor ?? 'e0e0e0',
-            textTheme: textTheme ?? 'dark',
-          ),
-        );
+         RunListPageController(
+           kennel,
+           backgroundColor: backgroundColor ?? 'e0e0e0',
+           textTheme: textTheme ?? 'dark',
+         ),
+       );
   final String? backgroundColor;
   final String? textTheme;
   final HasherKennelsModel kennel;
@@ -90,7 +89,8 @@ class RunListPage extends StatelessWidget {
             } else if (!formController.isLoaded.value) {
               content = HcCircularProgressIndicator(key: UniqueKey());
             } else {
-              content = (formController.isNarrowScreen.value ||
+              content =
+                  (formController.isNarrowScreen.value ||
                       formController.displayType.toLowerCase() ==
                           RUN_DISPLAY_TYPE_DETAIL_ONLY)
                   ? _getDetailOnly()
@@ -338,18 +338,16 @@ class RunListPage extends StatelessWidget {
             child: Obx(() {
               final selectedId = formController.selectedKennelId.value;
               final isLoading = !formController.isLoaded.value;
-              final searchText =
-                  formController.kennelPickerSearch.value.toLowerCase();
+              final searchText = formController.kennelPickerSearch.value
+                  .toLowerCase();
               final visible = searchText.isEmpty
                   ? allKennels
                   : allKennels
-                      .where(
-                        (k) => formController.kennelMatchesSearch(
-                          k,
-                          searchText,
-                        ),
-                      )
-                      .toList();
+                        .where(
+                          (k) =>
+                              formController.kennelMatchesSearch(k, searchText),
+                        )
+                        .toList();
 
               return Stack(
                 children: [
@@ -439,9 +437,7 @@ class RunListPage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.96),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFCBD5E1),
-                ),
+                border: Border.all(color: const Color(0xFFCBD5E1)),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x1A000000),
@@ -452,10 +448,7 @@ class RunListPage extends StatelessWidget {
               ),
               child: IconButton(
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: 36,
-                  minHeight: 36,
-                ),
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                 icon: Icon(
                   isLeft ? Icons.chevron_left : Icons.chevron_right,
                   size: 22,
@@ -474,8 +467,11 @@ class RunListPage extends StatelessWidget {
     );
   }
 
-  Widget _kennelPickerItem(HasherKennelsModel k, String selectedId,
-      {bool isLoading = false}) {
+  Widget _kennelPickerItem(
+    HasherKennelsModel k,
+    String selectedId, {
+    bool isLoading = false,
+  }) {
     final isSelected = k.publicKennelId.asUuid == selectedId;
     final canTap = !isSelected && !isLoading;
     double? scrollOffsetAtPointerDown;
@@ -498,8 +494,8 @@ class RunListPage extends StatelessWidget {
           if (!canTap) return;
           scrollOffsetAtPointerDown =
               formController.kennelPickerScrollController.hasClients
-                  ? formController.kennelPickerScrollController.offset
-                  : 0.0;
+              ? formController.kennelPickerScrollController.offset
+              : 0.0;
           globalPositionAtPointerDown = event.position;
         },
         onPointerUp: (event) {
@@ -508,8 +504,8 @@ class RunListPage extends StatelessWidget {
 
           final currentOffset =
               formController.kennelPickerScrollController.hasClients
-                  ? formController.kennelPickerScrollController.offset
-                  : 0.0;
+              ? formController.kennelPickerScrollController.offset
+              : 0.0;
 
           final movedSinceTapDown =
               (currentOffset - (scrollOffsetAtPointerDown ?? currentOffset))
@@ -791,8 +787,9 @@ class RunListPage extends StatelessWidget {
   }
 
   Widget _navItem(_BarAction a) {
-    final color =
-        a.isPrimary ? const Color(0xFFB91C1C) : const Color(0xFF334155);
+    final color = a.isPrimary
+        ? const Color(0xFFB91C1C)
+        : const Color(0xFF334155);
     return ListTile(
       dense: true,
       leading: Icon(a.icon, size: 20, color: color),
@@ -855,8 +852,9 @@ class RunListPage extends StatelessWidget {
                   actions[i].label,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight:
-                        actions[i].isPrimary ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: actions[i].isPrimary
+                        ? FontWeight.w700
+                        : FontWeight.w500,
                     color: actions[i].isPrimary
                         ? const Color(0xFFB91C1C)
                         : const Color(0xFF0F172A),
@@ -882,15 +880,10 @@ class RunListPage extends StatelessWidget {
           color: isPrimary ? const Color(0xFFB91C1C) : const Color(0xFFE2E8F0),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        textStyle: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-        ),
+        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
       ),
       onPressed: onPressed,
       child: Text(label),
@@ -940,9 +933,7 @@ class RunListPage extends StatelessWidget {
                       canEditKennelStatus: formController.canEditKennel,
                     ),
                   );
-                  await Get.delete<KennelPageFormController>(
-                    force: true,
-                  );
+                  await Get.delete<KennelPageFormController>(force: true);
                 }
               },
             ),
@@ -1057,37 +1048,37 @@ class RunListPage extends StatelessWidget {
                     return index == formController.displayedEventsDetails.length
                         ? _pastListFooter()
                         : Card(
-                          margin: EdgeInsets.only(
-                            right: formController.isNarrowScreen.value
-                                ? 15.0
-                                : 40.0,
-                            left: formController.isNarrowScreen.value
-                                ? 15.0
-                                : 40.0,
-                            top: 30,
-                            bottom: 10,
-                          ),
-                          elevation: 5,
-                          color: formController.textThemeIsLight
-                              ? HexColor.darken(
-                                  HexColor(formController.backgroundColor),
-                                )
-                              : HexColor.lighten(
-                                  HexColor(formController.backgroundColor),
-                                ),
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              color: formController.textThemeIsLight
-                                  ? Colors.black38
-                                  : Colors.white38,
-                              width: 2,
+                            margin: EdgeInsets.only(
+                              right: formController.isNarrowScreen.value
+                                  ? 15.0
+                                  : 40.0,
+                              left: formController.isNarrowScreen.value
+                                  ? 15.0
+                                  : 40.0,
+                              top: 30,
+                              bottom: 10,
                             ),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: _renderRunDetail(
-                            formController.displayedEventsDetails[index],
-                          ),
-                        );
+                            elevation: 5,
+                            color: formController.textThemeIsLight
+                                ? HexColor.darken(
+                                    HexColor(formController.backgroundColor),
+                                  )
+                                : HexColor.lighten(
+                                    HexColor(formController.backgroundColor),
+                                  ),
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                color: formController.textThemeIsLight
+                                    ? Colors.black38
+                                    : Colors.white38,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            child: _renderRunDetail(
+                              formController.displayedEventsDetails[index],
+                            ),
+                          );
                   },
                 ),
               ),
@@ -1153,7 +1144,9 @@ class RunListPage extends StatelessWidget {
 
   void _setDisplayRuns(EDisplayRuns which) {
     formController.displayRuns = which;
-    formController.tabController.animateTo(which == EDisplayRuns.future ? 0 : 1);
+    formController.tabController.animateTo(
+      which == EDisplayRuns.future ? 0 : 1,
+    );
     formController.setDisplayedEvents();
   }
 
@@ -1211,10 +1204,7 @@ class RunListPage extends StatelessWidget {
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
                 hintText: 'Search runs…',
-                hintStyle: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF94A3B8),
-                ),
+                hintStyle: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
               ),
             ),
           ),
@@ -1300,8 +1290,9 @@ class RunListPage extends StatelessWidget {
                 Tab(text: TEXT_PAST_RUNS),
               ],
               onTap: (int tabIdx) {
-                formController.displayRuns =
-                    tabIdx == 0 ? EDisplayRuns.future : EDisplayRuns.past;
+                formController.displayRuns = tabIdx == 0
+                    ? EDisplayRuns.future
+                    : EDisplayRuns.past;
                 formController.setDisplayedEvents();
               },
             ),
@@ -1310,7 +1301,10 @@ class RunListPage extends StatelessWidget {
         Expanded(
           child: Obx(() {
             final selectedId = formController
-                .eventForSingleEventDetailsView.value.runDetails.publicEventId;
+                .eventForSingleEventDetailsView
+                .value
+                .runDetails
+                .publicEventId;
             return Scrollbar(
               thumbVisibility: true,
               controller: _scrollController3,
@@ -1326,13 +1320,15 @@ class RunListPage extends StatelessWidget {
                   return GetBuilder<RunListPageController>(
                     id: 'chatCountBadge',
                     builder: (controller) {
-                      final canEdit = formController.kennel.canManageRuns ||
+                      final canEdit =
+                          formController.kennel.canManageRuns ||
                           formController.kennel.canManageHashCash;
                       return RunListItem(
                         event: event,
                         isSelected: isSelected,
-                        chatCount: formController
-                                .thisEventChatCount[event.publicEventId] ??
+                        chatCount:
+                            formController.thisEventChatCount[event
+                                .publicEventId] ??
                             0,
                         onTap: () async {
                           formController.eventForSingleEventDetailsView.value =
@@ -1391,9 +1387,13 @@ class RunListPage extends StatelessWidget {
     };
 
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(result is ApiError
-        ? 'SP 11 [getKennel] called — FAILED'
-        : 'SP 11 [getKennel] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        result is ApiError
+            ? 'SP 11 [getKennel] called — FAILED'
+            : 'SP 11 [getKennel] called — success',
+      );
+    }
     if (result case ApiSuccess(:final body)) {
       final jsonItems = json.decode(body) as List<dynamic>;
       rdm = KennelModel.fromJson(
@@ -1422,9 +1422,13 @@ class RunListPage extends StatelessWidget {
     };
 
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(result is ApiError
-        ? 'SP [getKennelWebsite] called — FAILED'
-        : 'SP [getKennelWebsite] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        result is ApiError
+            ? 'SP [getKennelWebsite] called — FAILED'
+            : 'SP [getKennelWebsite] called — success',
+      );
+    }
     if (result case ApiSuccess(:final body)) {
       final jsonItems = json.decode(body) as List<dynamic>;
       final rows = jsonItems[0] as List<dynamic>;
@@ -1458,7 +1462,8 @@ class RunListPage extends StatelessWidget {
       if (kDebugMode) debugPrint('SP [generateWebAdminToken] — FAILED');
       return;
     }
-    final decoded = json.decode((webTokenResult as ApiSuccess).body) as List<dynamic>;
+    final decoded =
+        json.decode((webTokenResult as ApiSuccess).body) as List<dynamic>;
     final rows = (decoded[0] as List<dynamic>);
     if (rows.isEmpty) return;
 
@@ -1480,7 +1485,8 @@ class RunListPage extends StatelessWidget {
   }
 
   Widget _renderRunDetail(EventDetailsResult edr) {
-    final canEdit = formController.kennel.canManageRuns ||
+    final canEdit =
+        formController.kennel.canManageRuns ||
         formController.kennel.canManageHashCash;
     return RunDetailWidget(
       rdm: edr.runDetails,

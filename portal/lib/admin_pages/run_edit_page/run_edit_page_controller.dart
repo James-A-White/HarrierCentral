@@ -77,8 +77,9 @@ class RunEditPageController extends TabUiController
   late RunDetailsModel originalData;
 
   /// The currently edited run data (reactive).
-  final Rx<RunDetailsModel> editedData =
-      Rx<RunDetailsModel>(RunDetailsModel.empty());
+  final Rx<RunDetailsModel> editedData = Rx<RunDetailsModel>(
+    RunDetailsModel.empty(),
+  );
 
   // ---------------------------------------------------------------------------
   // State - UI Controllers
@@ -341,9 +342,11 @@ class RunEditPageController extends TabUiController
   /// Derives the region/city "Other" flags from stored data: a null structured
   /// id paired with a non-empty name means a free-text ("Other") value.
   void _initLocationOtherFlags() {
-    regionIsOther.value = _normId(originalData.regionId) == null &&
+    regionIsOther.value =
+        _normId(originalData.regionId) == null &&
         (originalData.regionName ?? '').trim().isNotEmpty;
-    cityIsOther.value = _normId(originalData.cityId) == null &&
+    cityIsOther.value =
+        _normId(originalData.cityId) == null &&
         (originalData.cityName ?? '').trim().isNotEmpty;
   }
 
@@ -629,11 +632,7 @@ class RunEditPageController extends TabUiController
         hasCustomTabStatusFunction: false,
         showTabInSubmitSummary: true,
         isTabLockable: false,
-        sidebarData: SideBarData(
-          tab.title,
-          tab.icon,
-          tab.description,
-        ),
+        sidebarData: SideBarData(tab.title, tab.icon, tab.description),
       );
     }).toList();
   }
@@ -686,8 +685,7 @@ class RunEditPageController extends TabUiController
     // default run weekday (DefaultRunDayOfWeek) and start time-of-day
     // (DefaultRunStartTime). The old fractional-seconds day encoding is retired.
     if (isAddMode) {
-      final defaultStartDayOfWeek =
-          kennelData.defaultRunDayOfWeek.clamp(1, 7);
+      final defaultStartDayOfWeek = kennelData.defaultRunDayOfWeek.clamp(1, 7);
 
       // Advance from the last run date (or today) until we land on the
       // correct day of the week
@@ -708,8 +706,9 @@ class RunEditPageController extends TabUiController
         kennelData.defaultRunStartTime.minute,
       );
 
-      editedData.value =
-          editedData.value.copyWith(eventStartDatetime: defaultStart);
+      editedData.value = editedData.value.copyWith(
+        eventStartDatetime: defaultStart,
+      );
       originalData = originalData.copyWith(eventStartDatetime: defaultStart);
     }
 
@@ -724,12 +723,13 @@ class RunEditPageController extends TabUiController
 
     // Initialize form options
     autoNumberRuns.value = originalData.absoluteEventNumber == null;
-    useCustomPricing.value = (originalData.eventPriceForMembers != null) ||
+    useCustomPricing.value =
+        (originalData.eventPriceForMembers != null) ||
         (originalData.eventPriceForNonMembers != null);
     useExtrasPricing.value = originalData.eventPriceForExtras != null;
     limitParticipation.value =
         (originalData.maximumParticipantsAllowed != null) ||
-            (originalData.minimumParticipantsRequired != null);
+        (originalData.minimumParticipantsRequired != null);
 
     // Initialize tags — seed from kennel defaults when adding a new run
     if (isAddMode) {
@@ -760,8 +760,9 @@ class RunEditPageController extends TabUiController
     // Empty means the run has no country of its own and inherits the kennel's.
     // Held as null rather than '' so the `?? kennelData.countryName` fallbacks
     // downstream fire — the same treatment region and city already get.
-    country.value =
-        originalData.countryName.isEmpty ? null : originalData.countryName;
+    country.value = originalData.countryName.isEmpty
+        ? null
+        : originalData.countryName;
     countryId.value = _normId(originalData.countryId);
     region.value = originalData.regionName;
     regionId.value = _normId(originalData.regionId);
@@ -891,14 +892,19 @@ class RunEditPageController extends TabUiController
 
       bodyJson.addAll(changes);
 
-      final saveResult =
-          await ServiceCommon.sendHttpPostToHC6Api(bodyJson);
-      if (kDebugMode) debugPrint(saveResult is ApiError
-          ? 'SP 1 [addEditEvent] called — FAILED'
-          : 'SP 1 [addEditEvent] called — success');
+      final saveResult = await ServiceCommon.sendHttpPostToHC6Api(bodyJson);
+      if (kDebugMode) {
+        debugPrint(
+          saveResult is ApiError
+              ? 'SP 1 [addEditEvent] called — FAILED'
+              : 'SP 1 [addEditEvent] called — success',
+        );
+      }
       if (saveResult is! ApiSuccess) return;
-      final updateResult = ((jsonDecode(saveResult.body) as List<dynamic>)[0]
-          as List<dynamic>)[0] as Map<String, dynamic>;
+      final updateResult =
+          ((jsonDecode(saveResult.body) as List<dynamic>)[0]
+                  as List<dynamic>)[0]
+              as Map<String, dynamic>;
 
       final resultForDisplay = updateResult['result'] as String?;
 
@@ -954,12 +960,13 @@ class RunEditPageController extends TabUiController
 
     // Reset form options
     autoNumberRuns.value = originalData.absoluteEventNumber == null;
-    useCustomPricing.value = (originalData.eventPriceForMembers != null) ||
+    useCustomPricing.value =
+        (originalData.eventPriceForMembers != null) ||
         (originalData.eventPriceForNonMembers != null);
     useExtrasPricing.value = originalData.eventPriceForExtras != null;
     limitParticipation.value =
         (originalData.maximumParticipantsAllowed != null) ||
-            (originalData.minimumParticipantsRequired != null);
+        (originalData.minimumParticipantsRequired != null);
 
     // Reset publishing options
     publishOnHashruns.value = originalData.evtDisseminateHashRunsDotOrg ?? -2;
@@ -980,8 +987,9 @@ class RunEditPageController extends TabUiController
     // Empty means the run has no country of its own and inherits the kennel's.
     // Held as null rather than '' so the `?? kennelData.countryName` fallbacks
     // downstream fire — the same treatment region and city already get.
-    country.value =
-        originalData.countryName.isEmpty ? null : originalData.countryName;
+    country.value = originalData.countryName.isEmpty
+        ? null
+        : originalData.countryName;
     countryId.value = _normId(originalData.countryId);
     region.value = originalData.regionName;
     regionId.value = _normId(originalData.regionId);
@@ -1025,7 +1033,8 @@ class RunEditPageController extends TabUiController
   @override
   void checkIfFormIsDirty() {
     // Compare edited data with original data
-    isFormDirty.value = editedData.value != originalData ||
+    isFormDirty.value =
+        editedData.value != originalData ||
         tags1.value != originalData.tags1 ||
         tags2.value != originalData.tags2 ||
         tags3.value != originalData.tags3 ||
@@ -1070,7 +1079,8 @@ class RunEditPageController extends TabUiController
         AlertDialog(
           title: const Text('Unsaved Changes'),
           content: const Text(
-              'You have unsaved changes. Are you sure you want to leave?'),
+            'You have unsaved changes. Are you sure you want to leave?',
+          ),
           actions: [
             HcButton.secondary(
               label: 'Stay',
@@ -1112,8 +1122,8 @@ class RunEditPageController extends TabUiController
 
     // Start datetime
     if (isAddMode || edited.eventStartDatetime != original.eventStartDatetime) {
-      changes['eventStartDatetime'] =
-          edited.eventStartDatetime.toIso8601String();
+      changes['eventStartDatetime'] = edited.eventStartDatetime
+          .toIso8601String();
     }
 
     // -------------------------------------------------------------------------
@@ -1210,7 +1220,8 @@ class RunEditPageController extends TabUiController
     }
 
     // Geographic scope
-    if (isAddMode || edited.eventGeographicScope != original.eventGeographicScope) {
+    if (isAddMode ||
+        edited.eventGeographicScope != original.eventGeographicScope) {
       changes['eventGeographicScope'] = edited.eventGeographicScope;
     }
 
@@ -1331,14 +1342,30 @@ class RunEditPageController extends TabUiController
     // Integration Flags
     // -------------------------------------------------------------------------
 
-    _addBoolChange(changes, 'useFbRunDetails', useExtRunDetails.value,
-        original.useFbRunDetails != 0);
-    _addBoolChange(changes, 'useFbLocation', useExtLocation.value,
-        original.useFbLocation != 0);
     _addBoolChange(
-        changes, 'useFbLatLon', useExtLatLon.value, original.useFbLatLon != 0);
+      changes,
+      'useFbRunDetails',
+      useExtRunDetails.value,
+      original.useFbRunDetails != 0,
+    );
     _addBoolChange(
-        changes, 'useFbImage', useExtImage.value, original.useFbImage != 0);
+      changes,
+      'useFbLocation',
+      useExtLocation.value,
+      original.useFbLocation != 0,
+    );
+    _addBoolChange(
+      changes,
+      'useFbLatLon',
+      useExtLatLon.value,
+      original.useFbLatLon != 0,
+    );
+    _addBoolChange(
+      changes,
+      'useFbImage',
+      useExtImage.value,
+      original.useFbImage != 0,
+    );
 
     return changes;
   }
@@ -1458,14 +1485,12 @@ class RunEditPageController extends TabUiController
 
   /// Initializes the map controller with the run, kennel, or city location.
   void initializeMapController() {
-
     double lat;
     double lon;
 
     if (originalData.hcLatitude != null && originalData.hcLatitude != 0.0) {
       lat = originalData.hcLatitude!;
       lon = originalData.hcLongitude ?? 0.0;
-
     } else if (kennelData.kennelLat != null && kennelData.kennelLat != 0.0) {
       lat = kennelData.kennelLat!;
       lon = kennelData.kennelLon ?? 0.0;
@@ -1531,17 +1556,22 @@ class RunEditPageController extends TabUiController
       var lon = kd.kennelLon ?? kd.cityLon;
       var countryCodes = kd.kennelCountryCodes;
 
-      final hasLocationOverride = cityId.value != null ||
+      final hasLocationOverride =
+          cityId.value != null ||
           cityIsOther.value ||
           regionId.value != null ||
           regionIsOther.value ||
           _normId(countryId.value) != _normId(kd.countryId);
       if (hasLocationOverride) {
-        final parts = <String?>[
-          city.value ?? kd.cityName,
-          region.value ?? kd.regionName,
-          country.value ?? kd.countryName,
-        ].where((p) => p != null && p.trim().isNotEmpty).cast<String>().toList();
+        final parts =
+            <String?>[
+                  city.value ?? kd.cityName,
+                  region.value ?? kd.regionName,
+                  country.value ?? kd.countryName,
+                ]
+                .where((p) => p != null && p.trim().isNotEmpty)
+                .cast<String>()
+                .toList();
         if (parts.isNotEmpty) {
           final geo = await _geocodePlace(parts.join(', '));
           if (geo != null) {
@@ -1566,14 +1596,15 @@ class RunEditPageController extends TabUiController
           '${RunTabType.basicInfo.key}_${RunBasicInfoField.placeDescription.name}';
       var currentPlaceDesc = (textControllers[placeKey]?.text ?? '').trim();
       if (currentPlaceDesc.isEmpty) {
-        currentPlaceDesc = <String?>[
-          city.value ?? kd.cityName,
-          region.value ?? kd.regionName,
-          country.value ?? kd.countryName,
-        ]
-            .where((p) => p != null && p.trim().isNotEmpty)
-            .cast<String>()
-            .join(', ');
+        currentPlaceDesc =
+            <String?>[
+                  city.value ?? kd.cityName,
+                  region.value ?? kd.regionName,
+                  country.value ?? kd.countryName,
+                ]
+                .where((p) => p != null && p.trim().isNotEmpty)
+                .cast<String>()
+                .join(', ');
       }
 
       // Allow the UI to show the loading state before opening dialog
@@ -1608,7 +1639,9 @@ class RunEditPageController extends TabUiController
     } finally {
       if (lookupController != null) {
         await Get.delete<RunLocationLookupController>(
-            tag: lookupTag, force: true);
+          tag: lookupTag,
+          force: true,
+        );
       }
       isLookupLoading.value = false;
     }
@@ -1619,12 +1652,14 @@ class RunEditPageController extends TabUiController
   /// failure so the caller can fall back to the kennel centre.
   Future<({double lat, double lon})?> _geocodePlace(String text) async {
     try {
-      final url = Uri.parse(PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL)
-          .replace(queryParameters: {'q': text});
+      final url = Uri.parse(
+        PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL,
+      ).replace(queryParameters: {'q': text});
       final resp = await http.get(url, headers: {'Accept': '*/*'});
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
-        final place =
-            AzurePlace.fromJson(jsonDecode(resp.body) as Map<String, dynamic>);
+        final place = AzurePlace.fromJson(
+          jsonDecode(resp.body) as Map<String, dynamic>,
+        );
         final results = place.results ?? [];
         if (results.isNotEmpty) {
           final pos = results.first.position;
@@ -1687,27 +1722,42 @@ class RunEditPageController extends TabUiController
     final lon = source.hcLongitude ?? source.fbLongitude;
 
     // --- Place description (Basic Info tab) ---
-    final placeDesc =
-        loc(source.locationOneLineDesc, source.extLocationOneLineDesc);
+    final placeDesc = loc(
+      source.locationOneLineDesc,
+      source.extLocationOneLineDesc,
+    );
     final placeKey =
         '${RunTabType.basicInfo.key}_${RunBasicInfoField.placeDescription.name}';
     textControllers[placeKey]?.text = placeDesc;
-    uiControls[placeKey]
-        ?.updateEditedValue(placeDesc.isEmpty ? null : placeDesc);
+    uiControls[placeKey]?.updateEditedValue(
+      placeDesc.isEmpty ? null : placeDesc,
+    );
 
     // --- Address fields (Location tab) ---
-    _updateAddressField(RunLocationField.street,
-        loc(source.locationStreet, source.extLocationStreet));
-    _updateAddressField(RunLocationField.city,
-        loc(source.locationCity, source.extLocationCity));
-    _updateAddressField(RunLocationField.postcode,
-        loc(source.locationPostCode, source.extLocationPostCode));
-    _updateAddressField(RunLocationField.region,
-        loc(source.locationRegion, source.extLocationRegion));
-    _updateAddressField(RunLocationField.country,
-        loc(source.locationCountry, source.extLocationCountry));
     _updateAddressField(
-        RunLocationField.phone, source.locationPhoneNumber ?? '');
+      RunLocationField.street,
+      loc(source.locationStreet, source.extLocationStreet),
+    );
+    _updateAddressField(
+      RunLocationField.city,
+      loc(source.locationCity, source.extLocationCity),
+    );
+    _updateAddressField(
+      RunLocationField.postcode,
+      loc(source.locationPostCode, source.extLocationPostCode),
+    );
+    _updateAddressField(
+      RunLocationField.region,
+      loc(source.locationRegion, source.extLocationRegion),
+    );
+    _updateAddressField(
+      RunLocationField.country,
+      loc(source.locationCountry, source.extLocationCountry),
+    );
+    _updateAddressField(
+      RunLocationField.phone,
+      source.locationPhoneNumber ?? '',
+    );
 
     // --- Lat / Lon ---
     final latKey =
@@ -1746,8 +1796,9 @@ class RunEditPageController extends TabUiController
     final placeKey =
         '${RunTabType.basicInfo.key}_${RunBasicInfoField.placeDescription.name}';
     textControllers[placeKey]?.text = placeName;
-    uiControls[placeKey]
-        ?.updateEditedValue(placeName.isEmpty ? null : placeName);
+    uiControls[placeKey]?.updateEditedValue(
+      placeName.isEmpty ? null : placeName,
+    );
 
     // --- Lat / Lon ---
     if (result.position != null) {
@@ -1767,8 +1818,10 @@ class RunEditPageController extends TabUiController
 
       // Centre map on the result
       if (mapController.value != null && lat != null && lon != null) {
-        mapController.value!.center =
-            LatLng(Angle.degree(lat), Angle.degree(lon));
+        mapController.value!.center = LatLng(
+          Angle.degree(lat),
+          Angle.degree(lon),
+        );
         mapRebuildTrigger.value++;
       }
     }
@@ -1776,12 +1829,18 @@ class RunEditPageController extends TabUiController
     // --- Address fields (Location tab) ---
     if (!useExtLocation.value && address != null) {
       _updateAddressField(
-          RunLocationField.street, _buildStreetAddress(address));
+        RunLocationField.street,
+        _buildStreetAddress(address),
+      );
       _updateAddressField(RunLocationField.city, address.municipality ?? '');
-      _updateAddressField(RunLocationField.postcode,
-          address.extendedPostalCode ?? address.postalCode ?? '');
       _updateAddressField(
-          RunLocationField.region, address.countrySubdivision ?? '');
+        RunLocationField.postcode,
+        address.extendedPostalCode ?? address.postalCode ?? '',
+      );
+      _updateAddressField(
+        RunLocationField.region,
+        address.countrySubdivision ?? '',
+      );
       _updateAddressField(RunLocationField.country, address.country ?? '');
     }
 
@@ -1807,10 +1866,7 @@ class RunEditPageController extends TabUiController
 
     try {
       final url = Uri.parse(PORTAL_REVERSE_GEOCODE_API_URL).replace(
-        queryParameters: {
-          'lat': lat.toString(),
-          'lon': lon.toString(),
-        },
+        queryParameters: {'lat': lat.toString(), 'lon': lon.toString()},
       );
       final response = await http.get(url);
 
@@ -1823,9 +1879,13 @@ class RunEditPageController extends TabUiController
           final address = azureAddress.addresses?[0].address;
           if (address != null) {
             _updateAddressField(
-                RunLocationField.street, _buildStreetAddress(address));
-            _updateAddressField(RunLocationField.postcode,
-                address.extendedPostalCode ?? address.postalCode ?? '');
+              RunLocationField.street,
+              _buildStreetAddress(address),
+            );
+            _updateAddressField(
+              RunLocationField.postcode,
+              address.extendedPostalCode ?? address.postalCode ?? '',
+            );
             // Country/Region/City are structured dropdowns now — best-effort
             // match the geocoded names to ids, falling back to "Other".
             await matchReverseGeocodedLocation(
@@ -1878,8 +1938,10 @@ class RunEditPageController extends TabUiController
     final lon = double.tryParse(textControllers[lonKey]?.text ?? '');
 
     if (lat != null && lon != null) {
-      mapController.value!.center =
-          LatLng(Angle.degree(lat), Angle.degree(lon));
+      mapController.value!.center = LatLng(
+        Angle.degree(lat),
+        Angle.degree(lon),
+      );
       mapRebuildTrigger.value++;
     }
   }
@@ -1887,15 +1949,25 @@ class RunEditPageController extends TabUiController
   /// Copies address fields from external integration source.
   void copyAddressFromExternal() {
     _updateAddressField(
-        RunLocationField.street, originalData.extLocationStreet ?? '');
+      RunLocationField.street,
+      originalData.extLocationStreet ?? '',
+    );
     _updateAddressField(
-        RunLocationField.city, originalData.extLocationCity ?? '');
+      RunLocationField.city,
+      originalData.extLocationCity ?? '',
+    );
     _updateAddressField(
-        RunLocationField.postcode, originalData.extLocationPostCode ?? '');
+      RunLocationField.postcode,
+      originalData.extLocationPostCode ?? '',
+    );
     _updateAddressField(
-        RunLocationField.region, originalData.extLocationRegion ?? '');
+      RunLocationField.region,
+      originalData.extLocationRegion ?? '',
+    );
     _updateAddressField(
-        RunLocationField.country, originalData.extLocationCountry ?? '');
+      RunLocationField.country,
+      originalData.extLocationCountry ?? '',
+    );
     checkIfFormIsDirty();
   }
 
@@ -1908,13 +1980,16 @@ class RunEditPageController extends TabUiController
 
     if (originalData.fbLatitude != null && originalData.fbLongitude != null) {
       textControllers[latKey]?.text = formatCoordinate(originalData.fbLatitude);
-      textControllers[lonKey]?.text =
-          formatCoordinate(originalData.fbLongitude);
+      textControllers[lonKey]?.text = formatCoordinate(
+        originalData.fbLongitude,
+      );
 
-      uiControls[latKey]
-          ?.updateEditedValue(formatCoordinate(originalData.fbLatitude));
-      uiControls[lonKey]
-          ?.updateEditedValue(formatCoordinate(originalData.fbLongitude));
+      uiControls[latKey]?.updateEditedValue(
+        formatCoordinate(originalData.fbLatitude),
+      );
+      uiControls[lonKey]?.updateEditedValue(
+        formatCoordinate(originalData.fbLongitude),
+      );
 
       // Also center map
       mapController.value?.center = LatLng(

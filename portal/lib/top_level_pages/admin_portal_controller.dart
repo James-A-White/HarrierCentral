@@ -47,8 +47,7 @@ class AdminPortalController extends GetxController {
   static void _stripCodeFromUrl() {
     try {
       final path = web.window.location.pathname;
-      web.window.history
-          .replaceState(null, '', path.isEmpty ? '/' : path);
+      web.window.history.replaceState(null, '', path.isEmpty ? '/' : path);
     } catch (_) {
       // Non-web / unsupported — nothing to strip.
     }
@@ -147,7 +146,8 @@ class AdminPortalController extends GetxController {
         firstName = box.get(HIVE_FIRST_NAME) as String;
         lastName = box.get(HIVE_LAST_NAME) as String;
         hashName = box.get(HIVE_HASH_NAME) as String;
-        displayName = box.get(HIVE_DISPLAY_NAME) as String? ??
+        displayName =
+            box.get(HIVE_DISPLAY_NAME) as String? ??
             box.get(HIVE_HASH_NAME) as String;
         photo = box.get(HIVE_HASHER_PHOTO) as String? ?? '';
         publicHasherId = box.get(HIVE_HASHER_ID) as String;
@@ -183,15 +183,17 @@ class AdminPortalController extends GetxController {
           const Duration(seconds: AUTH_POLL_INTERVAL_SECONDS),
         );
 
-        if (kDebugMode) debugPrint(
-          '[Auth poll] Starting — authCode: ${authCode.substring(0, 8)}… '
-          'max $AUTH_POLL_MAX_ATTEMPTS attempts @ ${AUTH_POLL_INTERVAL_SECONDS}s',
-        );
+        if (kDebugMode) {
+          debugPrint(
+            '[Auth poll] Starting — authCode: ${authCode.substring(0, 8)}… '
+            'max $AUTH_POLL_MAX_ATTEMPTS attempts @ ${AUTH_POLL_INTERVAL_SECONDS}s',
+          );
+        }
 
         for (var i = 0; i < AUTH_POLL_MAX_ATTEMPTS; i++) {
-          if (kDebugMode) debugPrint(
-            '[Auth poll] Attempt ${i + 1}/$AUTH_POLL_MAX_ATTEMPTS',
-          );
+          if (kDebugMode) {
+            debugPrint('[Auth poll] Attempt ${i + 1}/$AUTH_POLL_MAX_ATTEMPTS');
+          }
 
           // NOTE: This is a randomly generated user ID that matches the one
           // in the database used to generate the access token.
@@ -216,26 +218,34 @@ class AdminPortalController extends GetxController {
             'isQrFlow': isAppLogin ? '0' : '1',
           };
 
-          final authResult =
-              await ServiceCommon.sendHttpPostToHC6Api(body);
-          if (kDebugMode) debugPrint(authResult is ApiError
-              ? '[Auth poll] Attempt ${i + 1} — SP FAILED'
-              : '[Auth poll] Attempt ${i + 1} — SP success');
+          final authResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+          if (kDebugMode) {
+            debugPrint(
+              authResult is ApiError
+                  ? '[Auth poll] Attempt ${i + 1} — SP FAILED'
+                  : '[Auth poll] Attempt ${i + 1} — SP success',
+            );
+          }
 
           if (authResult case ApiSuccess(:final body)) {
-            final rows = (json.decode(body) as List<dynamic>)[0] as List<dynamic>;
+            final rows =
+                (json.decode(body) as List<dynamic>)[0] as List<dynamic>;
             if (rows.isEmpty) {
-              if (kDebugMode) debugPrint(
-                '[Auth poll] Attempt ${i + 1} — no scan yet, waiting…',
-              );
+              if (kDebugMode) {
+                debugPrint(
+                  '[Auth poll] Attempt ${i + 1} — no scan yet, waiting…',
+                );
+              }
               await Future<void>.delayed(
                 const Duration(seconds: AUTH_POLL_INTERVAL_SECONDS),
               );
               continue;
             }
-            if (kDebugMode) debugPrint(
-              '[Auth poll] Attempt ${i + 1} — scan received! Parsing credentials…',
-            );
+            if (kDebugMode) {
+              debugPrint(
+                '[Auth poll] Attempt ${i + 1} — scan received! Parsing credentials…',
+              );
+            }
             final items = rows[0] as Map<String, dynamic>;
 
             publicHasherId = items['publicHasherId'] as String;
@@ -263,10 +273,12 @@ class AdminPortalController extends GetxController {
               await _getHasherKennels();
               await _fetchPlatformAdminPrivileges();
 
-              if (kDebugMode) debugPrint(
-                '[Auth poll] Login complete on attempt ${i + 1} — '
-                'hasher: $publicHasherId',
-              );
+              if (kDebugMode) {
+                debugPrint(
+                  '[Auth poll] Login complete on attempt ${i + 1} — '
+                  'hasher: $publicHasherId',
+                );
+              }
               break;
             }
           }
@@ -314,9 +326,13 @@ class AdminPortalController extends GetxController {
       'version': packageInfo.value?.version ?? 'unknown',
     };
     final fcmResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(fcmResult is ApiError
-        ? 'SP 19 [updateFcmToken] called — FAILED'
-        : 'SP 19 [updateFcmToken] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        fcmResult is ApiError
+            ? 'SP 19 [updateFcmToken] called — FAILED'
+            : 'SP 19 [updateFcmToken] called — success',
+      );
+    }
   }
 
   Future<void> _initializeNotifications() async {
@@ -362,7 +378,8 @@ class AdminPortalController extends GetxController {
           (box.get(HIVE_FCM_TOKEN_DENIED_COUNT) ?? 0) as int;
 
       if (fcmTokenDeniedCount % FCM_DENIED_REMINDER_INTERVAL == 0) {
-        final userResponse = await CoreUtilities.showAlert(
+        final userResponse =
+            await CoreUtilities.showAlert(
               'Harrier Central Notifications',
               'Harrier Central will soon contain a trail chat function (expected in the next few weeks) where a chat group is automatically created for each run.\r\n\r\nFor this to work properly, you must enable notifications. You will not receive any pop-up notifications by enabling notifications for Harrier Central.',
               'Allow notifications',
@@ -411,9 +428,13 @@ class AdminPortalController extends GetxController {
     };
 
     final landingResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(landingResult is ApiError
-        ? 'SP 13 [getLandingPageData] called — FAILED'
-        : 'SP 13 [getLandingPageData] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        landingResult is ApiError
+            ? 'SP 13 [getLandingPageData] called — FAILED'
+            : 'SP 13 [getLandingPageData] called — success',
+      );
+    }
 
     // Stale device credentials (e.g. device record deleted server-side) cause
     // auth to fail even though HIVE_IS_LOGGED_IN is still true.  Without
@@ -428,8 +449,9 @@ class AdminPortalController extends GetxController {
     }
 
     if (landingResult case ApiSuccess(:final body)) {
-      final items = ((json.decode(body) as List<dynamic>)[0]
-          as List<dynamic>)[0] as Map<String, dynamic>;
+      final items =
+          ((json.decode(body) as List<dynamic>)[0] as List<dynamic>)[0]
+              as Map<String, dynamic>;
 
       if (publicHasherId.isNotEmpty) {
         firstName = items['firstName'] as String;
@@ -452,8 +474,9 @@ class AdminPortalController extends GetxController {
     }
 
     allKennels.sort((HasherKennelsModel a, HasherKennelsModel b) {
-      final cmp = (b.appAccessFlags & 0x00000001)
-          .compareTo(a.appAccessFlags & 0x00000001);
+      final cmp = (b.appAccessFlags & 0x00000001).compareTo(
+        a.appAccessFlags & 0x00000001,
+      );
       if (cmp != 0) {
         return cmp;
       }
@@ -482,22 +505,35 @@ class AdminPortalController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(result is ApiError
-          ? 'SP [getHcAdminPrivileges] called — FAILED'
-          : 'SP [getHcAdminPrivileges] called — success');
+      if (kDebugMode) {
+        debugPrint(
+          result is ApiError
+              ? 'SP [getHcAdminPrivileges] called — FAILED'
+              : 'SP [getHcAdminPrivileges] called — success',
+        );
+      }
 
       if (result case ApiSuccess(:final body)) {
-        final row = ((json.decode(body) as List<dynamic>)[0]
-            as List<dynamic>)[0] as Map<String, dynamic>;
+        final row =
+            ((json.decode(body) as List<dynamic>)[0] as List<dynamic>)[0]
+                as Map<String, dynamic>;
 
-        await box.put(HIVE_PLATFORM_ADMIN_CAN_VIEW_MONITOR,
-            (row['CanViewMonitor'] as int? ?? 0) != 0);
-        await box.put(HIVE_PLATFORM_ADMIN_CAN_MANAGE_NEWSFLASH,
-            (row['CanManageNewsflash'] as int? ?? 0) != 0);
-        await box.put(HIVE_PLATFORM_ADMIN_CAN_EDIT_KENNEL,
-            (row['CanEditKennel'] as int? ?? 0) != 0);
-        await box.put(HIVE_PLATFORM_ADMIN_CAN_MANAGE_PERMISSIONS,
-            (row['CanManagePermissions'] as int? ?? 0) != 0);
+        await box.put(
+          HIVE_PLATFORM_ADMIN_CAN_VIEW_MONITOR,
+          (row['CanViewMonitor'] as int? ?? 0) != 0,
+        );
+        await box.put(
+          HIVE_PLATFORM_ADMIN_CAN_MANAGE_NEWSFLASH,
+          (row['CanManageNewsflash'] as int? ?? 0) != 0,
+        );
+        await box.put(
+          HIVE_PLATFORM_ADMIN_CAN_EDIT_KENNEL,
+          (row['CanEditKennel'] as int? ?? 0) != 0,
+        );
+        await box.put(
+          HIVE_PLATFORM_ADMIN_CAN_MANAGE_PERMISSIONS,
+          (row['CanManagePermissions'] as int? ?? 0) != 0,
+        );
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[getHcAdminPrivileges] exception: $e');

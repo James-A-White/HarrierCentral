@@ -66,7 +66,10 @@ class RunListPageController extends GetxController
   bool get canManagePermissions =>
       (box.get(HIVE_PLATFORM_ADMIN_CAN_MANAGE_PERMISSIONS) as bool?) ?? false;
   bool get hasAnyPlatformAdminPrivilege =>
-      canViewMonitor || canManageNewsflash || canEditKennel || canManagePermissions;
+      canViewMonitor ||
+      canManageNewsflash ||
+      canEditKennel ||
+      canManagePermissions;
 
   Worker? _worker;
   bool firstLoad = true;
@@ -160,11 +163,15 @@ class RunListPageController extends GetxController
           }
           update(['chatCountBadge']);
         } catch (e) {
-          if (kDebugMode) debugPrint('[RunListPageController] onMessage error: $e');
+          if (kDebugMode) {
+            debugPrint('[RunListPageController] onMessage error: $e');
+          }
         }
       },
       onError: (Object e, StackTrace st) {
-        if (kDebugMode) debugPrint('[RunListPageController] FCM stream error: $e');
+        if (kDebugMode) {
+          debugPrint('[RunListPageController] FCM stream error: $e');
+        }
       },
       onDone: _subscribeRunListFcm,
       cancelOnError: false,
@@ -259,8 +266,7 @@ class RunListPageController extends GetxController
     isLoadingMorePast.value = true;
     _pastWeeksWindow += _pastWeeksIncrement;
     final past = await _fetchDetailEvents('past', _pastWeeksWindow);
-    final before =
-        allEventsDetails.where((e) => _isPast(e.runDetails)).length;
+    final before = allEventsDetails.where((e) => _isPast(e.runDetails)).length;
     // Replace the past portion (the wider window is a superset), keep future.
     allEventsDetails
       ..removeWhere((e) => _isPast(e.runDetails))
@@ -346,9 +352,13 @@ class RunListPageController extends GetxController
     };
 
     final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(apiResult is ApiError
-        ? 'SP 10 [getEvents:$pastOrFuture] called — FAILED'
-        : 'SP 10 [getEvents:$pastOrFuture] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        apiResult is ApiError
+            ? 'SP 10 [getEvents:$pastOrFuture] called — FAILED'
+            : 'SP 10 [getEvents:$pastOrFuture] called — success',
+      );
+    }
 
     final out = <EventDetailsResult>[];
     if (apiResult case ApiSuccess(body: final jsonResult)) {
@@ -445,9 +455,13 @@ class RunListPageController extends GetxController
     };
 
     final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(apiResult is ApiError
-        ? 'SP 10 [getEvents] called — FAILED'
-        : 'SP 10 [getEvents] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        apiResult is ApiError
+            ? 'SP 10 [getEvents] called — FAILED'
+            : 'SP 10 [getEvents] called — success',
+      );
+    }
     eventForSingleEventDetailsView = EventDetailsResult.empty().obs;
     displayedEvents.clear();
     allEvents.clear();
@@ -518,9 +532,13 @@ class RunListPageController extends GetxController
       };
 
       final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(apiResult is ApiError
-          ? 'SP 5 [deleteEvent] called — FAILED'
-          : 'SP 5 [deleteEvent] called — success');
+      if (kDebugMode) {
+        debugPrint(
+          apiResult is ApiError
+              ? 'SP 5 [deleteEvent] called — FAILED'
+              : 'SP 5 [deleteEvent] called — success',
+        );
+      }
 
       if (apiResult case ApiSuccess(:final body)) {
         final jsonItems = json.decode(body) as List<dynamic>;

@@ -26,9 +26,13 @@ Future<List<SongModel>> queryKennelSongs(String publicKennelId) async {
   };
 
   final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(result is ApiError
-      ? 'SP 15 [getSongs] called — FAILED'
-      : 'SP 15 [getSongs] called — success');
+  if (kDebugMode) {
+    debugPrint(
+      result is ApiError
+          ? 'SP 15 [getSongs] called — FAILED'
+          : 'SP 15 [getSongs] called — success',
+    );
+  }
 
   if (result case ApiSuccess(:final body)) {
     final jsonItems = json.decode(body) as List<dynamic>;
@@ -87,9 +91,13 @@ Future<bool> editSong({
   };
 
   final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(apiResult is ApiError
-      ? 'SP [editSong] called — FAILED'
-      : 'SP [editSong] called — success');
+  if (kDebugMode) {
+    debugPrint(
+      apiResult is ApiError
+          ? 'SP [editSong] called — FAILED'
+          : 'SP [editSong] called — success',
+    );
+  }
 
   if (apiResult case ApiSuccess(:final body)) {
     final jsonItems = json.decode(body) as List<dynamic>;
@@ -136,9 +144,13 @@ Future<bool> toggleKennelSong({
   };
 
   final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(apiResult is ApiError
-      ? 'SP 18 [toggleKennelSong] called — FAILED'
-      : 'SP 18 [toggleKennelSong] called — success');
+  if (kDebugMode) {
+    debugPrint(
+      apiResult is ApiError
+          ? 'SP 18 [toggleKennelSong] called — FAILED'
+          : 'SP 18 [toggleKennelSong] called — success',
+    );
+  }
 
   if (apiResult case ApiSuccess(:final body)) {
     final jsonItems = json.decode(body) as List<dynamic>;

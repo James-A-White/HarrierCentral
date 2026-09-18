@@ -122,11 +122,7 @@ class KennelHashersController extends TabUiController
       field: 'lastName',
       type: TrinaColumnType.text(),
     ),
-    TrinaColumn(
-      title: 'Email',
-      field: 'eMail',
-      type: TrinaColumnType.text(),
-    ),
+    TrinaColumn(title: 'Email', field: 'eMail', type: TrinaColumnType.text()),
     TrinaColumn(
       title: 'Photo',
       field: 'photo',
@@ -166,8 +162,12 @@ class KennelHashersController extends TabUiController
     TrinaColumn(
       title: 'Notifications',
       field: 'notifications',
-      type: TrinaColumnType.select(
-          <dynamic>['On', 'Off', 'Silver Bell', '6 hrs before']),
+      type: TrinaColumnType.select(<dynamic>[
+        'On',
+        'Off',
+        'Silver Bell',
+        '6 hrs before',
+      ]),
     ),
     TrinaColumn(
       title: 'Email Alerts',
@@ -255,8 +255,12 @@ class KennelHashersController extends TabUiController
       // level, where it falls back to this kennel default). On=1, Off=2,
       // Silver Bell=3 (silent/in-app only), 6 hrs before=4 (push only within
       // the 6-hour window before the run).
-      type: TrinaColumnType.select(
-          <dynamic>['On', 'Off', 'Silver Bell', '6 hrs before']),
+      type: TrinaColumnType.select(<dynamic>[
+        'On',
+        'Off',
+        'Silver Bell',
+        '6 hrs before',
+      ]),
       renderer: (TrinaColumnRendererContext rendererContext) {
         return Text(
           rendererContext.cell.value.toString(),
@@ -513,6 +517,7 @@ class KennelHashersController extends TabUiController
       enableEditingMode: false,
       width: 300,
     ),
+
     // TrinaColumn(
     //   title: 'Hash Name',
     //   field: 'hashName',
@@ -531,7 +536,6 @@ class KennelHashersController extends TabUiController
     //   type: TrinaColumnType.text(),
     //   enableEditingMode: false,
     // ),
-
     TrinaColumn(
       title: 'Previous total runs',
       field: 'historicTotalRuns',
@@ -618,7 +622,6 @@ class KennelHashersController extends TabUiController
     //   width: 150.0,
     //   enableEditingMode: false,
     // ),
-
     TrinaColumn(
       title: 'Previous are estimates',
       field: 'historicCountsAreEstimates',
@@ -769,11 +772,7 @@ class KennelHashersController extends TabUiController
         return Row(
           children: <Widget>[
             if (!emailValid) ...<Widget>[
-              const Icon(
-                FontAwesome.warning,
-                size: 20,
-                color: Colors.orange,
-              ),
+              const Icon(FontAwesome.warning, size: 20, color: Colors.orange),
               const SizedBox(width: 10),
             ],
             Text(
@@ -869,8 +868,9 @@ class KennelHashersController extends TabUiController
     final initialView = kennel.canManageMembers
         ? EKennelGridOptions.membership
         : EKennelGridOptions.hashCredit;
-    final initialIndex =
-        visibleViews.indexOf(initialView).clamp(0, visibleViews.length - 1);
+    final initialIndex = visibleViews
+        .indexOf(initialView)
+        .clamp(0, visibleViews.length - 1);
     if (tabController.index != initialIndex) {
       // Fires the tab listener → _onTabChanged → loads that view.
       tabController.index = initialIndex;
@@ -1012,9 +1012,13 @@ class KennelHashersController extends TabUiController
     };
 
     final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(apiResult is ApiError
-        ? 'SP 12a (a-b) [getKennelHashers] called — FAILED'
-        : 'SP 12a (a-b) [getKennelHashers] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        apiResult is ApiError
+            ? 'SP 12a (a-b) [getKennelHashers] called — FAILED'
+            : 'SP 12a (a-b) [getKennelHashers] called — success',
+      );
+    }
     _allFetched.clear();
     if (apiResult case ApiSuccess(body: final jsonString)) {
       final decodedJson = json.decode(jsonString) as List<dynamic>;
@@ -1090,21 +1094,26 @@ class KennelHashersController extends TabUiController
           'historicTotalRuns': TrinaCell(value: item.historicTotalRuns),
           'hcHaringCount': TrinaCell(value: item.hcHaringCount),
           'hcTotalRunCount': TrinaCell(value: item.hcTotalRunCount),
-          'overallTotalHaring':
-              TrinaCell(value: item.historicHaring + item.hcHaringCount),
-          'overallTotalRuns':
-              TrinaCell(value: item.historicTotalRuns + item.hcTotalRunCount),
-          'historicCountsAreEstimates':
-              TrinaCell(value: item.historicCountsAreEstimates),
+          'overallTotalHaring': TrinaCell(
+            value: item.historicHaring + item.hcHaringCount,
+          ),
+          'overallTotalRuns': TrinaCell(
+            value: item.historicTotalRuns + item.hcTotalRunCount,
+          ),
+          'historicCountsAreEstimates': TrinaCell(
+            value: item.historicCountsAreEstimates,
+          ),
           'dateOfLastRun': TrinaCell(value: item.dateOfLastRun ?? ''),
-          'membershipExpirationDate':
-              TrinaCell(value: item.membershipExpirationDate),
+          'membershipExpirationDate': TrinaCell(
+            value: item.membershipExpirationDate,
+          ),
           'hashCredit': TrinaCell(value: item.hashCredit),
           'kennelCredit': TrinaCell(value: item.kennelCredit),
           'discountPercent': TrinaCell(value: item.discountPercent),
           'discountAmount': TrinaCell(value: item.discountAmount),
-          'discountDescription':
-              TrinaCell(value: item.discountDescription ?? ''),
+          'discountDescription': TrinaCell(
+            value: item.discountDescription ?? '',
+          ),
           'lastLoginDateTime': TrinaCell(value: item.lastLoginDateTime ?? ''),
         },
       );
@@ -1152,8 +1161,9 @@ class KennelHashersController extends TabUiController
           'lastName': TrinaCell(value: newHashers[i].lastName),
           'eMail': TrinaCell(value: newHashers[i].eMail),
           'historicHaring': TrinaCell(value: newHashers[i].historicHaring),
-          'historicTotalRuns':
-              TrinaCell(value: newHashers[i].historicTotalRuns),
+          'historicTotalRuns': TrinaCell(
+            value: newHashers[i].historicTotalRuns,
+          ),
         },
       );
 
@@ -1250,22 +1260,20 @@ class KennelHashersController extends TabUiController
                 color: newHashers[context.rowIdx].addHasherStatus == null
                     ? Colors.white
                     : newHashers[context.rowIdx].addHasherStatus ==
-                            BULK_IMPORT_RESPONSE_NO_CHANGE
-                        ? Colors.grey.shade300
-                        : newHashers[context.rowIdx].addHasherStatus ==
-                                BULK_IMPORT_RESPONSE_NEW_MEMBER
-                            ? Colors.blue.shade700
-                            : newHashers[context.rowIdx].addHasherStatus ==
-                                    BULK_IMPORT_RESPONSE_NEW_HC_USER
-                                ? Colors.green
-                                : newHashers[context.rowIdx].addHasherStatus ==
-                                        BULK_IMPORT_RESPONSE_UPDATE_RUN_COUNTS
-                                    ? Colors.purple.shade500
-                                    : Colors.red.shade900,
+                          BULK_IMPORT_RESPONSE_NO_CHANGE
+                    ? Colors.grey.shade300
+                    : newHashers[context.rowIdx].addHasherStatus ==
+                          BULK_IMPORT_RESPONSE_NEW_MEMBER
+                    ? Colors.blue.shade700
+                    : newHashers[context.rowIdx].addHasherStatus ==
+                          BULK_IMPORT_RESPONSE_NEW_HC_USER
+                    ? Colors.green
+                    : newHashers[context.rowIdx].addHasherStatus ==
+                          BULK_IMPORT_RESPONSE_UPDATE_RUN_COUNTS
+                    ? Colors.purple.shade500
+                    : Colors.red.shade900,
               ),
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
               Text(
                 ((context.cell.value as String?) ?? '').isNotEmpty
                     ? (context.cell.value as String? ?? '')
@@ -1306,7 +1314,11 @@ class KennelHashersController extends TabUiController
       final field = event.column.field;
       final newValue = event.value.toString();
       if (editableHasherFields.contains(field)) {
-        await updateHasherField(displayedHashers[event.rowIdx], field, newValue);
+        await updateHasherField(
+          displayedHashers[event.rowIdx],
+          field,
+          newValue,
+        );
       }
     }
 
@@ -1361,9 +1373,13 @@ class KennelHashersController extends TabUiController
     };
 
     final hasherResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(hasherResult is ApiError
-        ? 'SP 20 [updateKennelHasher] called — FAILED'
-        : 'SP 20 [updateKennelHasher] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        hasherResult is ApiError
+            ? 'SP 20 [updateKennelHasher] called — FAILED'
+            : 'SP 20 [updateKennelHasher] called — success',
+      );
+    }
     if (hasherResult case ApiSuccess(:final body)) {
       final jsonItems = json.decode(body) as List<dynamic>;
       if (jsonItems.isNotEmpty) {
@@ -1396,13 +1412,10 @@ class KennelHashersController extends TabUiController
   }
 
   Future<void> saveBulkHashers() async {
-    stateManager!
-        .setCurrentCell(rows[98].cells['firstName'], 0);
-    stateManager!
-        .setCurrentCell(rows[99].cells['firstName'], 0);
+    stateManager!.setCurrentCell(rows[98].cells['firstName'], 0);
+    stateManager!.setCurrentCell(rows[99].cells['firstName'], 0);
     stateManager!.gridFocusNode.unfocus(
-      disposition:
-          UnfocusDisposition.previouslyFocusedChild,
+      disposition: UnfocusDisposition.previouslyFocusedChild,
     );
     isMajorUpdate = true;
     update();
@@ -1412,19 +1425,13 @@ class KennelHashersController extends TabUiController
     final newHasherList = <NewHasherModel?>[];
     for (var i = 0; i < 100; i++) {
       final pr = rows[i];
-      final firstName =
-          pr.cells['firstName']?.value?.toString() ?? '';
-      final lastName =
-          pr.cells['lastName']?.value?.toString() ?? '';
-      var hashName =
-          pr.cells['hashName']?.value?.toString() ?? '';
-      final email =
-          pr.cells['eMail']?.value?.toString() ?? '';
+      final firstName = pr.cells['firstName']?.value?.toString() ?? '';
+      final lastName = pr.cells['lastName']?.value?.toString() ?? '';
+      var hashName = pr.cells['hashName']?.value?.toString() ?? '';
+      final email = pr.cells['eMail']?.value?.toString() ?? '';
       final historicTotalRuns =
-          (pr.cells['historicTotalRuns']?.value ?? 0)
-              as int;
-      final historicHaring =
-          (pr.cells['historicHaring']?.value ?? 0) as int;
+          (pr.cells['historicTotalRuns']?.value ?? 0) as int;
+      final historicHaring = (pr.cells['historicHaring']?.value ?? 0) as int;
 
       //print('first name = ' + firstName + ', row = ' + i.toString());
       //print('email = ' + email + ', row = ' + i.toString());
@@ -1447,8 +1454,7 @@ class KennelHashersController extends TabUiController
       );
       // make sure duplicate emails are not sent to the server
       if (newHasherList.firstWhere(
-            (NewHasherModel? element) =>
-                element?.eMail == email,
+            (NewHasherModel? element) => element?.eMail == email,
             orElse: () => null,
           ) ==
           null) {
@@ -1475,26 +1481,24 @@ class KennelHashersController extends TabUiController
         'publicKennelId': kennel.publicKennelId,
         'newHasherJson': newHasherJson,
       };
-      final bulkResult = await ServiceCommon
-          .sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(bulkResult is ApiError
-          ? 'SP 3 [bulkAddHashers] called — FAILED'
-          : 'SP 3 [bulkAddHashers] called — success');
+      final bulkResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+      if (kDebugMode) {
+        debugPrint(
+          bulkResult is ApiError
+              ? 'SP 3 [bulkAddHashers] called — FAILED'
+              : 'SP 3 [bulkAddHashers] called — success',
+        );
+      }
 
       newHashers.clear();
 
       if (bulkResult is! ApiSuccess) return;
-      final decodedJson =
-          json.decode(bulkResult.body) as List<dynamic>;
+      final decodedJson = json.decode(bulkResult.body) as List<dynamic>;
       final jsonGroup = (decodedJson[0] as List)
-          .map<Map<String, dynamic>>(
-            (e) => e as Map<String, dynamic>,
-          )
+          .map<Map<String, dynamic>>((e) => e as Map<String, dynamic>)
           .toList();
       for (final item in jsonGroup) {
-        final hasher = NewHasherModel.fromJson(
-          item,
-        );
+        final hasher = NewHasherModel.fromJson(item);
         newHashers.add(hasher);
       }
 
@@ -1532,7 +1536,10 @@ class KennelHashersPage extends StatelessWidget {
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
-            c.updateSizeWithDebounce(constraints.maxWidth, constraints.maxHeight);
+            c.updateSizeWithDebounce(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
             // Same infra as the editors: vertical rail (wide) / hamburger
             // (narrow) drives the selected view; content sits beside/below it.
             return TabRailScaffold<KennelHashersController>(
@@ -1566,7 +1573,7 @@ class _KennelHashersContent extends StatelessWidget {
       builder: (c) => Obx(() {
         final useCards =
             c.screenSize.value != EScreenSize.isNormalScreen &&
-                c.columnsType != EKennelGridOptions.addNewMembers;
+            c.columnsType != EKennelGridOptions.addNewMembers;
         return Container(
           color: const Color(0xFFF1F5F9),
           padding: EdgeInsets.fromLTRB(
@@ -1615,8 +1622,11 @@ class _KennelHashersContent extends StatelessWidget {
                               padding: EdgeInsets.zero,
                               visualDensity: VisualDensity.compact,
                               tooltip: 'About this view',
-                              icon: const Icon(Icons.info_outline,
-                                  color: Colors.white, size: 22),
+                              icon: const Icon(
+                                Icons.info_outline,
+                                color: Colors.white,
+                                size: 22,
+                              ),
                               onPressed: () => _showInfoDialog(context, c),
                             ),
                     ),
@@ -1641,7 +1651,9 @@ class _KennelHashersContent extends StatelessWidget {
                             ),
                       border: const OutlineInputBorder(),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                     ),
                   ),
                 ),
@@ -1653,8 +1665,8 @@ class _KennelHashersContent extends StatelessWidget {
                           TrinaGrid(
                             configuration: TrinaGridConfiguration(
                               style: TrinaGridStyleConfig(
-                                rowHeight: c.columnsType ==
-                                        EKennelGridOptions.photos
+                                rowHeight:
+                                    c.columnsType == EKennelGridOptions.photos
                                     ? KennelHashersController.photoRowHeight
                                     : KennelHashersController.standardRowHeight,
                               ),
@@ -1682,7 +1694,8 @@ class _KennelHashersContent extends StatelessWidget {
                         ],
                       ),
               ),
-              if (c.columnsType == EKennelGridOptions.addNewMembers) ...<Widget>[
+              if (c.columnsType ==
+                  EKennelGridOptions.addNewMembers) ...<Widget>[
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: OverflowBar(
@@ -1709,24 +1722,26 @@ class _KennelHashersContent extends StatelessWidget {
   }
 
   void _showInfoDialog(BuildContext context, KennelHashersController c) {
-    unawaited(showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(KennelHashersController.viewTitle(c.columnsType)),
-        content: SingleChildScrollView(
-          child: Text(
-            c.descriptionText,
-            style: const TextStyle(fontSize: 15, height: 1.4),
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(KennelHashersController.viewTitle(c.columnsType)),
+          content: SingleChildScrollView(
+            child: Text(
+              c.descriptionText,
+              style: const TextStyle(fontSize: 15, height: 1.4),
+            ),
           ),
+          actions: [
+            HcButton.secondary(
+              label: 'Close',
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+          ],
         ),
-        actions: [
-          HcButton.secondary(
-            label: 'Close',
-            onPressed: () => Navigator.of(dialogContext).pop(),
-          ),
-        ],
       ),
-    ));
+    );
   }
 
   Widget _loadingState(String message) {
@@ -1854,8 +1869,11 @@ class _MemberCardState extends State<_MemberCard> {
     switch (widget.view) {
       case EKennelGridOptions.membership:
         return [
-          _dropdown('status', 'Membership', h.status,
-              const ['Member', 'Following', 'None']),
+          _dropdown('status', 'Membership', h.status, const [
+            'Member',
+            'Following',
+            'None',
+          ]),
           _readonly('Following', h.isFollowing),
         ];
       case EKennelGridOptions.nonAppHashers:
@@ -1863,23 +1881,42 @@ class _MemberCardState extends State<_MemberCard> {
           _text('firstName', 'First name', h.firstName ?? ''),
           _text('lastName', 'Last name', h.lastName ?? ''),
           _text('hashName', 'Hash name', h.hashName ?? ''),
-          _text('eMail', 'Email', h.eMail,
-              keyboardType: TextInputType.emailAddress),
+          _text(
+            'eMail',
+            'Email',
+            h.eMail,
+            keyboardType: TextInputType.emailAddress,
+          ),
           _readonly('Invite code', h.inviteCode),
         ];
       case EKennelGridOptions.notificationAndEmail:
         return [
-          _dropdown('notifications', 'Notifications', h.notifications,
-              const ['On', 'Off', 'Silver Bell', '6 hrs before']),
-          _dropdown('emailAlerts', 'Email alerts', h.emailAlerts,
-              const ['Auto', 'On', 'Off']),
+          _dropdown('notifications', 'Notifications', h.notifications, const [
+            'On',
+            'Off',
+            'Silver Bell',
+            '6 hrs before',
+          ]),
+          _dropdown('emailAlerts', 'Email alerts', h.emailAlerts, const [
+            'Auto',
+            'On',
+            'Off',
+          ]),
         ];
       case EKennelGridOptions.runCounts:
         return [
-          _text('historicTotalRuns', 'Previous runs', '${h.historicTotalRuns}',
-              keyboardType: TextInputType.number),
-          _text('historicHaring', 'Previous harings', '${h.historicHaring}',
-              keyboardType: TextInputType.number),
+          _text(
+            'historicTotalRuns',
+            'Previous runs',
+            '${h.historicTotalRuns}',
+            keyboardType: TextInputType.number,
+          ),
+          _text(
+            'historicHaring',
+            'Previous harings',
+            '${h.historicHaring}',
+            keyboardType: TextInputType.number,
+          ),
           _readonly('App runs', '${h.hcTotalRunCount}'),
           _readonly('App harings', '${h.hcHaringCount}'),
         ];
@@ -1887,12 +1924,23 @@ class _MemberCardState extends State<_MemberCard> {
         return [_photo(h.photo)];
       case EKennelGridOptions.hashCredit:
         return [
-          _text('discountAmount', 'Discount amount', '${h.discountAmount}',
-              keyboardType: TextInputType.number),
-          _text('discountPercent', 'Discount percent', '${h.discountPercent}',
-              keyboardType: TextInputType.number),
-          _text('discountDescription', 'Discount description',
-              h.discountDescription ?? ''),
+          _text(
+            'discountAmount',
+            'Discount amount',
+            '${h.discountAmount}',
+            keyboardType: TextInputType.number,
+          ),
+          _text(
+            'discountPercent',
+            'Discount percent',
+            '${h.discountPercent}',
+            keyboardType: TextInputType.number,
+          ),
+          _text(
+            'discountDescription',
+            'Discount description',
+            h.discountDescription ?? '',
+          ),
         ];
       case EKennelGridOptions.addNewMembers:
       case EKennelGridOptions.allFields:

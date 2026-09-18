@@ -55,20 +55,38 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(result is ApiError
-          ? 'SP 16b (a-b) [getUsageData] called — FAILED'
-          : 'SP 16b (a-b) [getUsageData] called — success');
+      if (kDebugMode) {
+        debugPrint(
+          result is ApiError
+              ? 'SP 16b (a-b) [getUsageData] called — FAILED'
+              : 'SP 16b (a-b) [getUsageData] called — success',
+        );
+      }
       if (result is! ApiSuccess) return;
 
       final outer = json.decode(result.body) as List<dynamic>;
-      hcVersions.value = _parseList(outer[0] as List<dynamic>, UdHcVersion.fromJson);
+      hcVersions.value = _parseList(
+        outer[0] as List<dynamic>,
+        UdHcVersion.fromJson,
+      );
       _calculateMaxHcVersion();
 
-      integrationMonitor.value =
-          _parseList(outer[1] as List<dynamic>, UdIntegrationMonitorModel.fromJson);
-      appActivity.value = _parseList(outer[2] as List<dynamic>, UdAppActivityModel.fromJson);
-      recentUsers.value = _parseList(outer[3] as List<dynamic>, UdRecentUserModel.fromJson);
-      newEvents.value = _parseList(outer[4] as List<dynamic>, UdNewEventsModel.fromJson);
+      integrationMonitor.value = _parseList(
+        outer[1] as List<dynamic>,
+        UdIntegrationMonitorModel.fromJson,
+      );
+      appActivity.value = _parseList(
+        outer[2] as List<dynamic>,
+        UdAppActivityModel.fromJson,
+      );
+      recentUsers.value = _parseList(
+        outer[3] as List<dynamic>,
+        UdRecentUserModel.fromJson,
+      );
+      newEvents.value = _parseList(
+        outer[4] as List<dynamic>,
+        UdNewEventsModel.fromJson,
+      );
 
       // Safety net: clear any stuck loading indicators on refresh
       isUpdatingId.value = -1;
@@ -122,10 +140,16 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(result is ApiError
-          ? 'SP 7c (a-d) [getCategoryDetail2] called — FAILED'
-          : 'SP 7c (a-d) [getCategoryDetail2] called — success');
-      if (result case ApiSuccess(:final body)) await _showCategoryDetailDialog(body, title);
+      if (kDebugMode) {
+        debugPrint(
+          result is ApiError
+              ? 'SP 7c (a-d) [getCategoryDetail2] called — FAILED'
+              : 'SP 7c (a-d) [getCategoryDetail2] called — success',
+        );
+      }
+      if (result case ApiSuccess(:final body)) {
+        await _showCategoryDetailDialog(body, title);
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('getCategoryDetail error: $e');
     } finally {
@@ -162,10 +186,16 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(result is ApiError
-          ? 'SP 7d (a-d) [getCategoryDetail2] called — FAILED'
-          : 'SP 7d (a-d) [getCategoryDetail2] called — success');
-      if (result case ApiSuccess(:final body)) await _showCategoryDetailDialog(body, title);
+      if (kDebugMode) {
+        debugPrint(
+          result is ApiError
+              ? 'SP 7d (a-d) [getCategoryDetail2] called — FAILED'
+              : 'SP 7d (a-d) [getCategoryDetail2] called — success',
+        );
+      }
+      if (result case ApiSuccess(:final body)) {
+        await _showCategoryDetailDialog(body, title);
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('getHcVersionDetail error: $e');
     } finally {
@@ -173,10 +203,7 @@ class UsageDataPageController extends GetxController {
     }
   }
 
-  Future<void> _showCategoryDetailDialog(
-    String body,
-    String title,
-  ) async {
+  Future<void> _showCategoryDetailDialog(String body, String title) async {
     final outer = json.decode(body) as List<dynamic>;
     if (outer.isEmpty) return;
 
@@ -195,18 +222,16 @@ class UsageDataPageController extends GetxController {
 
     await showDialog<void>(
       context: navigatorKey.currentContext!,
-      builder: (_) => CategoryDetailDialog(
-        title: title,
-        headers: headers,
-        rows: rows,
-      ),
+      builder: (_) =>
+          CategoryDetailDialog(title: title, headers: headers, rows: rows),
     );
   }
 
   String _formatValue(String columnName, dynamic value) {
     if (value == null) return '';
     final n = columnName.toLowerCase();
-    final isDateCol = n.endsWith('at') ||
+    final isDateCol =
+        n.endsWith('at') ||
         n.endsWith('date') ||
         n.endsWith('datetime') ||
         n == 'timestamp';
@@ -300,9 +325,13 @@ class UsageDataPageController extends GetxController {
         'days': days.toString(),
       };
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(result is ApiError
-          ? 'SP [getDeviceHealth] called — FAILED'
-          : 'SP [getDeviceHealth] called — success');
+      if (kDebugMode) {
+        debugPrint(
+          result is ApiError
+              ? 'SP [getDeviceHealth] called — FAILED'
+              : 'SP [getDeviceHealth] called — success',
+        );
+      }
       if (result is! ApiSuccess) return DeviceHealth.empty;
       final outer = json.decode(result.body) as List<dynamic>;
       if (outer.length < 2) return DeviceHealth.empty;
@@ -338,16 +367,18 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(result is ApiError
-          ? 'SP 14 [getLoginHistory] called — FAILED'
-          : 'SP 14 [getLoginHistory] called — success');
+      if (kDebugMode) {
+        debugPrint(
+          result is ApiError
+              ? 'SP 14 [getLoginHistory] called — FAILED'
+              : 'SP 14 [getLoginHistory] called — success',
+        );
+      }
       if (result is! ApiSuccess) return <UdLoginHistoryModel>[];
       final outer = json.decode(result.body) as List<dynamic>;
       final items = outer.first as List<dynamic>;
       return items
-          .map(
-            (e) => UdLoginHistoryModel.fromJson(e as Map<String, dynamic>),
-          )
+          .map((e) => UdLoginHistoryModel.fromJson(e as Map<String, dynamic>))
           .toList();
     } catch (e) {
       if (kDebugMode) debugPrint('getLoginHistory error: $e');

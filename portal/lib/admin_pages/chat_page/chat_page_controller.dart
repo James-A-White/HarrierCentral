@@ -93,7 +93,9 @@ class ChatSheetController extends GetxController {
 
       unawaited(_markEventChatRead(publicEventId));
     } catch (e) {
-      if (kDebugMode) debugPrint('[ChatSheetController] onInitAsync load error: $e');
+      if (kDebugMode) {
+        debugPrint('[ChatSheetController] onInitAsync load error: $e');
+      }
     }
 
     // FCM subscription always registered, even if initial load failed.
@@ -117,15 +119,21 @@ class ChatSheetController extends GetxController {
           }
           unawaited(
             _refreshMessages().catchError((Object e, StackTrace st) {
-              if (kDebugMode) debugPrint('[ChatSheetController] _refreshMessages error: $e');
+              if (kDebugMode) {
+                debugPrint('[ChatSheetController] _refreshMessages error: $e');
+              }
             }),
           );
         } catch (e) {
-          if (kDebugMode) debugPrint('[ChatSheetController] onMessage handler error: $e');
+          if (kDebugMode) {
+            debugPrint('[ChatSheetController] onMessage handler error: $e');
+          }
         }
       },
       onError: (Object e, StackTrace st) {
-        if (kDebugMode) debugPrint('[ChatSheetController] FCM stream error: $e');
+        if (kDebugMode) {
+          debugPrint('[ChatSheetController] FCM stream error: $e');
+        }
       },
       onDone: _subscribeFcm,
       cancelOnError: false,
@@ -166,8 +174,9 @@ class ChatSheetController extends GetxController {
 
       final messages = _parseMessages(rawMessages);
       for (final msg in messages) {
-        final existing =
-            chatController.messages.firstWhereOrNull((m) => m.id == msg.id);
+        final existing = chatController.messages.firstWhereOrNull(
+          (m) => m.id == msg.id,
+        );
         if (existing == null) {
           await chatController.insertMessage(msg);
         } else if (existing.authorId == currentUser.id) {
@@ -183,7 +192,9 @@ class ChatSheetController extends GetxController {
         }
       }
     } catch (e, st) {
-      if (kDebugMode) debugPrint('[ChatSheetController] _refreshMessages exception: $e\n$st');
+      if (kDebugMode) {
+        debugPrint('[ChatSheetController] _refreshMessages exception: $e\n$st');
+      }
     } finally {
       _isRefreshing = false;
       if (_pendingRefresh) {
@@ -231,11 +242,13 @@ class ChatSheetController extends GetxController {
       'publicEventId': publicEventId,
     };
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(
-      result is ApiError
-          ? 'SP [markEventChatRead] called — FAILED'
-          : 'SP [markEventChatRead] called — success',
-    );
+    if (kDebugMode) {
+      debugPrint(
+        result is ApiError
+            ? 'SP [markEventChatRead] called — FAILED'
+            : 'SP [markEventChatRead] called — success',
+      );
+    }
   }
 
   Future<String?> _getEventMessages(
@@ -261,11 +274,13 @@ class ChatSheetController extends GetxController {
     }
 
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(
-      result is ApiError
-          ? 'SP 9 [getEventMessages] called — FAILED'
-          : 'SP 9 [getEventMessages] called — success',
-    );
+    if (kDebugMode) {
+      debugPrint(
+        result is ApiError
+            ? 'SP 9 [getEventMessages] called — FAILED'
+            : 'SP 9 [getEventMessages] called — success',
+      );
+    }
     return result is ApiSuccess ? result.body : null;
   }
 
@@ -432,14 +447,15 @@ class ChatSheetController extends GetxController {
 
     final sendResult = await ServiceCommon.sendHttpPostToHC6Api(body);
     final failed = sendResult is ApiError;
-    if (kDebugMode) debugPrint(
-      failed
-          ? 'SP 17 [sendEventMessage] called — FAILED'
-          : 'SP 17 [sendEventMessage] called — success',
-    );
+    if (kDebugMode) {
+      debugPrint(
+        failed
+            ? 'SP 17 [sendEventMessage] called — FAILED'
+            : 'SP 17 [sendEventMessage] called — success',
+      );
+    }
 
-    final sent =
-        chatController.messages.firstWhereOrNull((m) => m.id == uuid);
+    final sent = chatController.messages.firstWhereOrNull((m) => m.id == uuid);
     if (sent is! core.TextMessage) return;
 
     if (failed) {
@@ -468,18 +484,16 @@ class ChatSheetController extends GetxController {
       // delta fetch that upgrades to double tick.
       await chatController.updateMessage(
         sent,
-        sent.copyWith(
-          status: core.MessageStatus.sent,
-          sentAt: DateTime.now(),
-        ),
+        sent.copyWith(status: core.MessageStatus.sent, sentAt: DateTime.now()),
       );
 
       // Handle race: if the FCM echo arrived and ran _refreshMessages()
       // before the SP response returned, the message was still in `sending`
       // state and the upgrade was deferred into _pendingDeliveryIds.
       if (_pendingDeliveryIds.remove(uuid)) {
-        final updated =
-            chatController.messages.firstWhereOrNull((m) => m.id == uuid);
+        final updated = chatController.messages.firstWhereOrNull(
+          (m) => m.id == uuid,
+        );
         if (updated is core.TextMessage) {
           await chatController.updateMessage(
             updated,

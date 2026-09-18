@@ -72,9 +72,7 @@ class CheckinSheetController extends GetxController {
     await getKennelImage();
 
     await getHasherDataFromDb();
-    checkInDocBytes.value = await getPdfDoc(
-      pdf_lib.PdfPageFormat.a4,
-    );
+    checkInDocBytes.value = await getPdfDoc(pdf_lib.PdfPageFormat.a4);
   }
 
   Future<void> getKennelImage() async {
@@ -107,9 +105,13 @@ class CheckinSheetController extends GetxController {
       'publicKennelId': publicKennelId,
     };
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(result is ApiError
-        ? 'SP 12b (a-b) [getKennelHashers] called — FAILED'
-        : 'SP 12b (a-b) [getKennelHashers] called — success');
+    if (kDebugMode) {
+      debugPrint(
+        result is ApiError
+            ? 'SP 12b (a-b) [getKennelHashers] called — FAILED'
+            : 'SP 12b (a-b) [getKennelHashers] called — success',
+      );
+    }
 
     if (result case ApiSuccess(body: final jsonString)) {
       final decodedJson = (json.decode(jsonString) as List<dynamic>)[0];
@@ -164,9 +166,7 @@ class CheckinSheetController extends GetxController {
     var days = 90;
     var recentHashCutoff = DateTime.now().subtract(Duration(days: days));
     final hashersWithRuns = hashers
-        .where(
-          (hasher) => hasher.dateOfLastRun != null,
-        )
+        .where((hasher) => hasher.dateOfLastRun != null)
         .toList()
         .length;
 
@@ -217,10 +217,12 @@ class CheckinSheetController extends GetxController {
         .toList();
 
     // Step 3: Alphabetize both lists based on hasher name
-    recentHashers
-        .sort((a, b) => (a.displayName ?? '').compareTo(b.displayName ?? ''));
-    otherHashers
-        .sort((a, b) => (a.displayName ?? '').compareTo(b.displayName ?? ''));
+    recentHashers.sort(
+      (a, b) => (a.displayName ?? '').compareTo(b.displayName ?? ''),
+    );
+    otherHashers.sort(
+      (a, b) => (a.displayName ?? '').compareTo(b.displayName ?? ''),
+    );
 
     // this is a hack... we need a better
     // way to get the run number and start dates
@@ -257,10 +259,8 @@ class CheckinSheetController extends GetxController {
         pw.Page(
           pageFormat: pgFormat,
           margin: pw.EdgeInsets.all(margin),
-          build: (pw.Context context) => buildPdfTable(
-            nextHasherBatch,
-            pageTitleStr,
-          ),
+          build: (pw.Context context) =>
+              buildPdfTable(nextHasherBatch, pageTitleStr),
         ),
       );
 
@@ -299,8 +299,10 @@ class CheckinSheetController extends GetxController {
     final atSecondToLastEvent =
         hasher.atSecondToLastEvent?.replaceFirst(r, '') ?? '';
 
-    final r2 = RegExp('[^A-Za-z0-9 ]',
-        unicode: true); // Keep word characters and spaces
+    final r2 = RegExp(
+      '[^A-Za-z0-9 ]',
+      unicode: true,
+    ); // Keep word characters and spaces
     final displayName = hasher.displayName?.replaceAll(r2, '') ?? '';
     final hasherRunCount =
         hasher.hcTotalRunCount + hasher.historicTotalRuns + 1;
@@ -336,8 +338,9 @@ class CheckinSheetController extends GetxController {
           child: pw.Text(
             (hasherRunCount).toString(),
             style: pw.TextStyle(
-              fontWeight:
-                  isSpecialRun ? pw.FontWeight.bold : pw.FontWeight.normal,
+              fontWeight: isSpecialRun
+                  ? pw.FontWeight.bold
+                  : pw.FontWeight.normal,
             ),
           ),
         ),
@@ -345,26 +348,19 @@ class CheckinSheetController extends GetxController {
           padding: const pw.EdgeInsets.only(top: 2.5),
           alignment: pw.Alignment.center,
           width: col3width,
-          child: pw.Text(
-            atSecondToLastEvent,
-          ),
+          child: pw.Text(atSecondToLastEvent),
         ),
         pw.Container(
           padding: const pw.EdgeInsets.only(top: 2.5),
           alignment: pw.Alignment.center,
           width: col4width,
-          child: pw.Text(
-            atLastEvent,
-          ),
+          child: pw.Text(atLastEvent),
         ),
       ],
     );
   }
 
-  pw.Widget buildPdfTable(
-    List<KennelHashersModel> hashers,
-    String subtitle,
-  ) {
+  pw.Widget buildPdfTable(List<KennelHashersModel> hashers, String subtitle) {
     final int rowCount = min(hashers.length ~/ 2, rowsPerColumn);
 
     return pw.Stack(
@@ -374,20 +370,15 @@ class CheckinSheetController extends GetxController {
           mainAxisAlignment: pw.MainAxisAlignment.center,
           children: [
             pw.Text(
-                'Printed on: ${DateFormat('MMM d, yyyy').format(DateTime.now())}'),
+              'Printed on: ${DateFormat('MMM d, yyyy').format(DateTime.now())}',
+            ),
             pw.Text(
               kennelName,
-              style: pw.TextStyle(
-                fontWeight: pw.FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16),
             ),
             pw.Text(
               subtitle,
-              style: pw.TextStyle(
-                fontWeight: pw.FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16),
             ),
             pw.Expanded(
               child: pw.Row(
@@ -395,15 +386,11 @@ class CheckinSheetController extends GetxController {
                 children: [
                   buildColumn(hashers.skip(0).take(rowCount).toList()),
                   pw.SizedBox(width: 20),
-                  buildColumn(
-                    hashers.skip(rowCount).toList(),
-                  ),
+                  buildColumn(hashers.skip(rowCount).toList()),
                 ],
               ),
             ),
-            pw.Align(
-              child: pw.Text('Legend'),
-            ),
+            pw.Align(child: pw.Text('Legend')),
             pw.SizedBox(height: 10),
             pw.Row(
               children: [
@@ -413,7 +400,8 @@ class CheckinSheetController extends GetxController {
                     //color: pdf_lib.PdfColors.amber,
                     //height: 30,
                     child: pw.Text(
-                        'F = Free Run\r\nC = Paid with cash\r\nB = Paid with bank transfer\r\nX = Not paid'),
+                      'F = Free Run\r\nC = Paid with cash\r\nB = Paid with bank transfer\r\nX = Not paid',
+                    ),
                   ),
                 ),
                 pw.SizedBox(width: 20),
@@ -422,7 +410,8 @@ class CheckinSheetController extends GetxController {
                     //color: pdf_lib.PdfColors.amber,
                     //height: 30,
                     child: pw.Text(
-                        'H = Paid with hash credit\r\nC? = Other amount paid with cash\r\nB? = Other amount paid with bank transfer\r\nH? = Other amount paid with hash cash'),
+                      'H = Paid with hash credit\r\nC? = Other amount paid with cash\r\nB? = Other amount paid with bank transfer\r\nH? = Other amount paid with hash cash',
+                    ),
                   ),
                 ),
               ],
@@ -438,11 +427,7 @@ class CheckinSheetController extends GetxController {
         if (kennelLogoImage != null) ...[
           pw.Opacity(
             opacity: 0.22,
-            child: pw.Image(
-              kennelLogoImage!,
-              width: 400,
-              height: 400,
-            ),
+            child: pw.Image(kennelLogoImage!, width: 400, height: 400),
           ),
         ],
       ],
@@ -525,13 +510,7 @@ class CheckinSheetController extends GetxController {
         ),
         ...hashers.map(toElement),
         for (int i = 0; i < numBlankRows; i++) ...[
-          pw.TableRow(
-            children: [
-              pw.Container(
-                height: 20,
-              ),
-            ],
-          )
+          pw.TableRow(children: [pw.Container(height: 20)]),
         ],
       ],
     );
