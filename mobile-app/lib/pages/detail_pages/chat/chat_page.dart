@@ -227,6 +227,7 @@ class _LinkAwareTextMessageState extends State<_LinkAwareTextMessage> {
     }
 
     final DateTime? sent = widget.message.resolvedTime;
+    final core.MessageStatus? status = widget.message.resolvedStatus;
     return ClipRRect(
       borderRadius: t.shape,
       child: Container(
@@ -237,14 +238,59 @@ class _LinkAwareTextMessageState extends State<_LinkAwareTextMessage> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             RichText(text: TextSpan(children: spans)),
-            if (sent != null)
+            if (sent != null || (mine && status != null))
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(widget.timeFormat.format(sent.toLocal()), style: time),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 3,
+                  children: <Widget>[
+                    if (sent != null)
+                      Text(
+                        widget.timeFormat.format(sent.toLocal()),
+                        style: time,
+                      ),
+                    // Only MY bubbles carry a tick — it reports what became of
+                    // something I sent. The stock SimpleTextMessage draws this
+                    // through TimeAndStatus; this bubble replaced it for
+                    // tappable links (2026-09-15) and dropped the tick with it,
+                    // so no chat message has shown one since.
+                    if (mine && status != null) _statusIcon(status, time.color),
+                  ],
+                ),
               ),
           ],
         ),
       ),
     );
+  }
+
+  /// sending → spinner, sent → one tick (the server took it), delivered → two
+  /// ticks (its own push came back to this device, or the server handed the
+  /// message back on a fetch), error → a warning.
+  ///
+  /// Drawn here rather than through flutter_chat_core's getIconForStatus,
+  /// which returns the SAME single Icons.check for sent and delivered — the
+  /// upgrade in _upgradeOwnMessagesToDelivered would be invisible.
+  Widget _statusIcon(core.MessageStatus status, Color? colour) {
+    switch (status) {
+      case core.MessageStatus.sending:
+        return SizedBox(
+          width: 10,
+          height: 10,
+          child: CircularProgressIndicator(color: colour, strokeWidth: 1.5),
+        );
+      case core.MessageStatus.error:
+        return const Icon(
+          Icons.error_outline,
+          size: 15,
+          color: Colors.amberAccent,
+        );
+      case core.MessageStatus.sent:
+        return Icon(Icons.check, size: 15, color: colour);
+      case core.MessageStatus.delivered:
+      case core.MessageStatus.seen:
+        return Icon(Icons.done_all, size: 15, color: colour);
+    }
   }
 }
