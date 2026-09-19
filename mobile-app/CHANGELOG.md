@@ -1,3 +1,12 @@
+## 3.1.0+1389 (2026-09-19)
+### Fixes
+- **Tapping a notification no longer freezes the app.** Opening a chat push
+  while the app was closed could leave a black screen that only force-quitting
+  cleared — the tap was handled before the app had a screen to return to, and
+  it closed the only one there was. The tap is now held until the app is up,
+  and then takes you to the thread it came from, which it never did on a cold
+  start even before.
+
 ## 3.1.0+1388 (2026-09-19)
 ### Fixes
 - **Chat badges now move while the app is open.** A message in a kennel chat

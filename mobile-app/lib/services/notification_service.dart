@@ -35,6 +35,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   StreamSubscription<RemoteMessage>? _fcmSubscription;
   StreamSubscription<RemoteMessage>? _openedAppSubscription;
 
+  /// A notification tap that arrived before the app had a screen to put it on.
+  /// Held here and replayed by [onMainReady]; see [_handleNotificationClick].
+  RemoteMessage? _pendingTap;
+
+  /// Set once MainNavigationPage has built its pages — i.e. the '/main' route
+  /// exists and can safely be popped back to.
+  bool _mainReady = false;
+
   // --- Initialization ---
 
   Future<NotificationService> init() async {
@@ -416,6 +424,31 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> _handleNotificationClick(RemoteMessage message) async {
+    // NOTHING here may touch the navigator until '/main' exists.
+    //
+    // Both entry points can fire before it does. getInitialMessage() is
+    // awaited from init(), which main() awaits BEFORE runApp() — there is no
+    // Navigator at all at that point — and onMessageOpenedApp can land while
+    // the boot/splash screen is still the only route on the stack. Either way
+    // the Get.until below pops until it finds '/main', and finding nothing it
+    // pops EVERY route, leaving an empty navigator: a black, frozen app that
+    // only a force-quit clears. Opening from the icon instead is fine, which
+    // is exactly how this was reported (Tuna Melt's phone, 2026-09-19,
+    // tapping a role-room push; three launches on 3.1.0+1388 whose logs stop
+    // dead after [VERSION] with no paused/resumed metric following).
+    //
+    // So an early tap is HELD, not dropped — [onMainReady] replays it once the
+    // run list is on screen, which also fixes the other half of the same
+    // fault: a cold-start tap never navigated anywhere, because
+    // FutureRunListPageController was not registered yet when it was handled.
+    if (!_mainReady) {
+      _pendingTap = message;
+      BootLogger.logBreadcrumb(
+        '[NotificationService] tap held until /main exists',
+      );
+      return;
+    }
+
     // Song notification tap — update session state then navigate to the songbook.
     // onSongSelected() must be called first so pendingSongId is set before the
     // SongsPageController's ever() worker fires on navigation.
@@ -462,6 +495,17 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         );
       }
     }
+  }
+
+  /// Called by MainNavigationPageController once its pages exist and '/main'
+  /// is on the stack. Replays a tap that arrived during boot.
+  void onMainReady() {
+    _mainReady = true;
+    final RemoteMessage? held = _pendingTap;
+    if (held == null) return;
+    _pendingTap = null;
+    BootLogger.logBreadcrumb('[NotificationService] replaying held tap');
+    unawaited(_handleNotificationClick(held));
   }
 
   void _dispatchMessageToControllers(RemoteMessage message) {

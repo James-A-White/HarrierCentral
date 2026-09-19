@@ -258,6 +258,14 @@ class MainNavigationController extends GetxController
     songsPage = SongsPage();
     mainScreenReady.value = true;
     isLoadingData = false;
+
+    // '/main' now exists, so a notification tap can safely pop back to it.
+    // A tap that arrived during boot was held rather than acted on (it would
+    // have emptied the navigator and frozen the app) — this releases it.
+    if (Get.isRegistered<NotificationService>()) {
+      Get.find<NotificationService>().onMainReady();
+    }
+
     debugPrint('[BOOT] MainNavController: all pages created, mainScreenReady=true: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     // The minimum-splash gate only applies when we actually blocked on a sync
