@@ -1,3 +1,29 @@
+## 3.1.0+1386 (2026-09-19)
+
+The version everyone on the App Store and Play Store moves to. The last
+public release was 3.0.12, so this one carries everything from 3.0.13 to
+3.0.44 at once — 30 enhancements and 45 fixes — which is why it takes a
+new version number rather than another point release.
+
+The headlines: **kennel and role-room chat now reaches your phone**, with
+rooms for the roles you hold and a coin for each one; **sign in with your
+hashruns.org passkey**, or approve a computer's login by pointing your
+camera at its QR code; **share a run to WhatsApp** as a written notice
+whose links record an RSVP and open the app at check-in; **import your
+running history** from a GPX, TCX or FIT file or a whole Strava or Garmin
+archive; **your trails live on your phone**, so they draw without a
+signal; **Find my photos** picks the run's photos out of your camera roll;
+and **past-run cards show what a run has** — track, photos, chat and
+down-downs, with counts.
+
+The fixes that matter most: the runs-list crash that fired 61 times over
+one weekend, photos and admin marks no longer bending anyone's GPS trail,
+and a long run of weak-signal faults where the app reported a fact about
+your hash when it was really reporting a fact about your connection.
+
+Same code as 3.0.44+1385, which is on the beta tracks; only the version
+name and build number differ.
+
 ## 3.0.44+1385 (2026-09-18)
 ### Fixes
 - **Exporting a trail** no longer fails outright when it contains a marker
