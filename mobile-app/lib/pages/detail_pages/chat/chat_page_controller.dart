@@ -140,11 +140,20 @@ class ChatPageController extends GetxController {
     // race-free where a post-close server refetch is not: markEventChatRead is
     // fired-and-forgotten above, so a refetch can beat its write and read back
     // the stale count. The SP remains the durable server-side backstop.
-    if (roomType == null && Get.isRegistered<NotificationService>()) {
-      // A room has no publicEventId to key a local badge on, and its GET
-      // marks it read server-side via @markRead.
-      Get.find<NotificationService>()
-          .clearUnreadForThread(publicEventId, isKennelThread: isKennelThread);
+    if (Get.isRegistered<NotificationService>()) {
+      final NotificationService notifications = Get.find<NotificationService>();
+      if (roomType != null) {
+        // A room has no publicEventId to key a local badge on — its roomType
+        // IS the key. The server read still happens through the GET's
+        // @markRead; this is the optimistic half, and without it the app-bar
+        // bubble kept a count for a room that was already open.
+        notifications.clearUnreadForRoom(roomType!);
+      } else {
+        notifications.clearUnreadForThread(
+          publicEventId,
+          isKennelThread: isKennelThread,
+        );
+      }
     }
 
     _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {

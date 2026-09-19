@@ -129,11 +129,28 @@ BEGIN
                     (SELECT MAX(em.MessageSequenceCount)
                      FROM HC.EventMessage em
                      WHERE em.EventId = embc.EventId AND em.Removed = 0)
-                ELSE
+                WHEN embc.KennelId IS NOT NULL THEN
                     (SELECT MAX(em.MessageSequenceCount)
                      FROM HC.EventMessage em
                      WHERE em.KennelId = embc.KennelId
                        AND em.EventId IS NULL AND em.Removed = 0)
+                -- A ROOM row: EventId and KennelId are BOTH NULL and the room
+                -- is identified by MessageType alone. It used to fall into the
+                -- kennel ELSE above, where `em.KennelId = embc.KennelId` is
+                -- NULL = NULL — never true — so MAX returned NULL, the
+                -- COALESCE kept the old value, and Mark all read silently did
+                -- nothing for every role room. The client zeroed the badge
+                -- optimistically and the next fetch brought it straight back.
+                WHEN embc.ThreadId IS NULL THEN
+                    (SELECT MAX(em.MessageSequenceCount)
+                     FROM HC.EventMessage em
+                     WHERE em.EventId IS NULL AND em.KennelId IS NULL
+                       AND em.MessageType = embc.MessageType
+                       AND em.Removed = 0)
+                -- ThreadId NOT NULL is a future 1:1 DM. Deliberately no branch:
+                -- NULL here means COALESCE keeps the row untouched rather than
+                -- this SP guessing at a thread shape that does not exist yet.
+                ELSE NULL
             END,
             embc.LastSequenceCount)
     FROM HC.EventMessageBadgeCounts embc
@@ -161,6 +178,27 @@ BEGIN
         WHERE embc.UserId = @userId
           AND embc.KennelId = t.KennelId
           AND embc.EventId IS NULL);
+
+    -- Rooms need the same caught-up row, for the same reason kennels do: a
+    -- hasher who has never opened a role room has NO badge row, so the UPDATE
+    -- above has nothing to advance and the room stays unread for ever. The
+    -- room's audience is a permission, not a membership table, so the scope
+    -- comes from HC6.UserMayEnterChatRoom rather than from a join.
+    INSERT HC.EventMessageBadgeCounts (UserId, EventId, KennelId, MessageType, LastSequenceCount, LastReadAt)
+    SELECT @userId, NULL, NULL, t.MessageType, t.MaxSeq, GETUTCDATE()
+    FROM (
+        SELECT em.MessageType, MAX(em.MessageSequenceCount) AS MaxSeq
+        FROM HC.EventMessage em
+        WHERE em.EventId IS NULL AND em.KennelId IS NULL AND em.Removed = 0
+        GROUP BY em.MessageType
+    ) AS t
+    WHERE HC6.UserMayEnterChatRoom(@userId, t.MessageType) = 1
+      AND NOT EXISTS (
+        SELECT 1 FROM HC.EventMessageBadgeCounts embc
+        WHERE embc.UserId = @userId
+          AND embc.EventId IS NULL AND embc.KennelId IS NULL
+          AND embc.ThreadId IS NULL
+          AND embc.MessageType = t.MessageType);
 
     -- Run threads surface unread before first read too (since 2026-08-28), so
     -- the same caught-up-row insert is needed for every run thread in the
