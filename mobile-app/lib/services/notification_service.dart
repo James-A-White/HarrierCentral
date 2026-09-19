@@ -17,6 +17,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   // Derived RxInt for the *Global* App Icon Badge Count (sum of all events)
   final RxInt globalTotalBadgeCount = 0.obs;
 
+  /// Key for a platform-wide room in [unreadEventCounts], which is otherwise
+  /// keyed by publicEventId / publicKennelId. A room has no id of its own, and
+  /// a colon cannot appear in a UUID, so this can never collide with one.
+  static String roomBadgeKey(int roomType) => 'room:$roomType';
+
   /// Threads that contain at least one message, keyed by **lowercase**
   /// publicEventId (run threads) / publicKennelId (kennel threads). Populated
   /// from the Mode 3 badge fetch (SP v1.1.0 returns every visible thread with
@@ -145,6 +150,29 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           if ((summary.messageCount ?? 0) > 0) {
             withMessages.add(summary.publicKennelId!.asUuid);
           }
+        }
+      }
+
+      // Room rows too, and they are the THIRD kind of thread — a room has
+      // neither a publicEventId nor a publicKennelId (both are NULL by design;
+      // a room is identified by its RoomType alone), so neither branch above
+      // can ever match one. Without this the room's unread count reaches the
+      // chat list, which reads summary.badgeCount directly, but never reaches
+      // unreadEventCounts — so globalTotalBadgeCount folds a map that has never
+      // heard of it and the app-bar bubble stays hidden. That is how kennel and
+      // role-room chat shipped on 2026-09-14 with no top-level badge at all:
+      // rooms were threaded through the list-building path and the per-row
+      // badge, and the one place that AGGREGATES was missed (James saw it on
+      // 2026-09-19 — "I'm not seeing the badge count").
+      //
+      // Keyed by roomBadgeKey(), not by a UUID. The key space is shared with
+      // event and kennel threads and every lookup here matches on .asUuid,
+      // which is only toLowerCase(), so a 'room:N' key is compared safely and
+      // can never collide with a real id.
+      for (final summary in serverChatSummary) {
+        if (summary.isRoomThread) {
+          unreadEventCounts[roomBadgeKey(summary.roomType!)] =
+              summary.badgeCount.obs;
         }
       }
       // Which threads have any content at all (read or not).
@@ -590,6 +618,42 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           ? (s.isKennelThread && (s.publicKennelId ?? '').asUuid == id)
           : (s.publicEventId.asUuid == id);
       if (!match || s.badgeCount == 0) continue;
+      unreadChatRuns[i] = s.withBadgeCount(0);
+      changed = true;
+    }
+
+    if (changed && Get.isRegistered<FutureRunListPageController>()) {
+      Get.find<FutureRunListPageController>().refreshRunListUi();
+    }
+  }
+
+  /// The room counterpart of [clearUnreadForThread]: zeroes a platform-wide
+  /// room's unread badge the instant the room is opened, so the app-bar bubble
+  /// drops without waiting for the next server fetch.
+  ///
+  /// A room needs its own entry point because it has no publicEventId or
+  /// publicKennelId to pass as a threadId — [roomBadgeKey] is the whole
+  /// identity. Server-side the read is already durable: hcapp_getRoomMessages
+  /// is called with markRead, so this is purely the optimistic half.
+  void clearUnreadForRoom(int roomType) {
+    final String key = roomBadgeKey(roomType);
+    var changed = false;
+
+    final RxInt? count = unreadEventCounts[key];
+    if (count != null && count.value != 0) {
+      count.value = 0;
+      changed = true;
+    }
+    if (changed) _recalculateGlobalBadgeCount();
+
+    // Same rule as every other thread (James, 2026-09-13): the row loses its
+    // badge but KEEPS its place in the list, so the chat you just read is not
+    // the hardest one to find again.
+    for (int i = 0; i < unreadChatRuns.length; i++) {
+      final EventChatSummary s = unreadChatRuns[i];
+      if (!s.isRoomThread || s.roomType != roomType || s.badgeCount == 0) {
+        continue;
+      }
       unreadChatRuns[i] = s.withBadgeCount(0);
       changed = true;
     }

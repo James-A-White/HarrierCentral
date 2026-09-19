@@ -21,8 +21,16 @@ one weekend, photos and admin marks no longer bending anyone's GPS trail,
 and a long run of weak-signal faults where the app reported a fact about
 your hash when it was really reporting a fact about your connection.
 
-Same code as 3.0.44+1385, which is on the beta tracks; only the version
-name and build number differ.
+### Fixes
+- **The chat bubble at the top of Hash Runs counts your kennel and role
+  rooms again.** A room message badged the room's own row in the chat list
+  but never the bubble, so unless you opened the list there was nothing to
+  tell you a message had arrived. Rooms have been in the app since
+  14 September and the bubble has never counted them.
+- **Mark all read now clears a room.** It cleared the badge on screen and
+  the next refresh brought it back. (Server-side; needs the SP deployed.)
+
+Otherwise the same code as 3.0.44+1385, which is on the beta tracks.
 
 ## 3.0.44+1385 (2026-09-18)
 ### Fixes
