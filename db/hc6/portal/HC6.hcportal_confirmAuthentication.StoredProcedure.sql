@@ -89,12 +89,47 @@ BEGIN TRY
         RETURN;
     END
 
-    DECLARE @deviceSecret nvarchar(150), @timeWindow int
+    DECLARE @deviceSecret nvarchar(150), @timeWindow int, @existingOwner uniqueidentifier
 
     SELECT
-            @deviceSecret = d.DeviceSecret,
-            @timeWindow = d.TimeWindow
+            @deviceSecret  = d.DeviceSecret,
+            @timeWindow    = d.TimeWindow,
+            @existingOwner = d.UserId
             FROM HC.Device d where d.id = @newDeviceId
+
+    -- ---------------------------------------------------------------
+    -- Who is logging in? Needed BEFORE the reuse decision below.
+    -- ---------------------------------------------------------------
+    DECLARE @loginHasherId uniqueidentifier;
+    SELECT @loginHasherId = h.id
+    FROM HC.WebPortalAuthenticationRequests w
+    INNER JOIN HC.Hasher h on w.hasherId = h.id
+    WHERE trim(lower(w.scanData)) = trim(lower(@qrCodeData))
+      AND ISNULL(w.Removed, 0) = 0
+      AND w.updatedAt > DATEADD(SECOND, -@ttlSeconds, SYSDATETIMEOFFSET());
+
+    -- ---------------------------------------------------------------
+    -- NEVER hand one hasher another hasher's device (2026-09-19).
+    --
+    -- The portal used to mint a fresh UUID on every login, so this row was
+    -- always new and the question never arose — at the cost of a device row
+    -- per login (392 rows across 68 people). The client now offers the device
+    -- it already holds so the row is reused, and that makes ownership matter:
+    -- ValidatePortalAuth resolves the hasher FROM HC.Device.UserId, so
+    -- silently reusing a row owned by someone else would authenticate the new
+    -- person AS the old one. On a shared browser that is a login as another
+    -- hasher.
+    --
+    -- So a row is only reused when it already belongs to the person logging
+    -- in. Anyone else gets a brand-new device id, exactly as before.
+    -- ---------------------------------------------------------------
+    IF (@deviceSecret IS NOT NULL
+        AND (@existingOwner IS NULL OR @loginHasherId IS NULL OR @existingOwner <> @loginHasherId))
+    BEGIN
+        SET @deviceSecret = NULL;   -- forces the provisioning branch below
+        SET @timeWindow   = NULL;
+        SET @newDeviceId  = NEWID();
+    END
 
     -- Provision new device if no existing secret
     IF(@deviceSecret IS NULL)
@@ -105,13 +140,7 @@ BEGIN TRY
         SELECT @deviceSecret = LEFT(REPLACE(REPLACE(cast('' as xml).value('xs:base64Binary(sql:variable("@BinaryData"))', 'varchar(max)'), '+', ''), '/', ''), 75)
         SELECT @timeWindow = cast((rand()*15)+30 as int)
 
-        SELECT
-                @hasherId = h.id
-                FROM HC.WebPortalAuthenticationRequests w
-                INNER JOIN HC.Hasher h on w.hasherId = h.id
-                WHERE trim(lower(scanData)) = trim(lower(@qrCodeData))
-                  AND ISNULL(w.Removed, 0) = 0
-                  AND w.updatedAt > DATEADD(SECOND, -@ttlSeconds, SYSDATETIMEOFFSET())
+        SET @hasherId = @loginHasherId;   -- resolved once, above
 
             IF (@hasherId IS NOT NULL)
             BEGIN

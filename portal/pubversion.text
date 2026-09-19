@@ -1,3 +1,6 @@
+2.0.78+713
+    • Signing in no longer creates a new device every time. The browser offers the device it already has; the server reuses it only when it belongs to you.
+
 2.0.77+712
     • Usage Data drill-down: a date in the FUTURE showed as "-2315m ago". Now reads "in 1d 14h 35m", and past dates read "1d 14h 35m ago" — days, hours and minutes in both directions.
     • Analyser clean: 48 outstanding issues fixed, 39 of them braceless if statements.
