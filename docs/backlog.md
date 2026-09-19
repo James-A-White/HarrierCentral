@@ -549,6 +549,15 @@ Run fees, memberships, kit and credit. Every movement is a ledger entry, and the
 
 ---
 
+### E8.F8 · Portal session identity  
+`Portal` `DB` `3.1`
+
+| ID | Story | Status |
+|---|---|---|
+| `E8.F8.S1` | As a **hasher using the portal**, I want my browser to stay signed in between visits so that I am not re-authenticating from my phone every session (James, 2026-09-19). **Two separate faults were found on 2026-09-19 and only one is fixed.** FIXED: the portal minted a fresh UUID on every login and sent it as the device to provision, so `hcportal_confirmAuthentication` inserted a row unconditionally — 392 `HC.Device` rows across 68 people, one hasher on 49, each carrying its own push token, which is where the duplicate notifications came from. It now offers the device it already holds, and the SP reuses that row **only when it already belongs to the person logging in** — ownership matters because `ValidatePortalAuth` resolves the hasher FROM `HC.Device.UserId`, so blind reuse on a shared browser would sign the second person in as the first. **STILL OPEN:** why the stored credentials are rejected at the start of a session in the first place. Observed twice on 2026-09-18 (11:46 and 18:29, Pink Panter): `getLandingPageData` fails auth on the previous session's device, the login handshake runs, a new device appears seconds later. Identity lives in Hive, which is IndexedDB on web, and the device id clearly survives — the failing call uses it — so it is the secret or the token, not wholesale storage loss. **Needs a reproduction in a browser before it needs code**; the cause may be browser storage policy, which no server change can fix. **Longer-term direction to decide, not yet chosen:** drop device-bound auth in the browser for a signed session cookie, the way the public web's member auth already works. That removes device rows entirely, but it is the whole portal auth path rather than a fix, and `HC.Device` also carries the web push token, which would need a new home. | `Next` |
+
+---
+
 ---
 
 ## E9 — Messaging, Notifications & Teaching

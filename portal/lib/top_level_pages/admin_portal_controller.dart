@@ -155,7 +155,23 @@ class AdminPortalController extends GetxController {
         await _getHasherKennels();
         await _fetchPlatformAdminPrivileges();
       } else {
-        final deviceId = const Uuid().v4();
+        // Offer the device this browser ALREADY has, rather than minting a
+        // fresh one on every login.
+        //
+        // A new UUID here meant a new HC.Device row per login, unconditionally
+        // — 392 rows across 68 people by 2026-09-19, one hasher on 49. Each
+        // row also carried its own push token, which is what produced the
+        // duplicate notifications fixed on 2026-09-17 and 2026-09-18.
+        //
+        // hcportal_confirmAuthentication reuses the row only when it already
+        // belongs to the person logging in, and mints a fresh id otherwise —
+        // so a shared browser cannot hand one hasher another's device. Passing
+        // a stale or unknown id is therefore safe: the worst case is the old
+        // behaviour.
+        final String storedDeviceId =
+            (box.get(HIVE_DEVICE_ID) as String?)?.trim() ?? '';
+        final deviceId =
+            storedDeviceId.isEmpty ? const Uuid().v4() : storedDeviceId;
 
         final deviceInfoPlugin = DeviceInfoPlugin();
         final webInfo = await deviceInfoPlugin.webBrowserInfo;

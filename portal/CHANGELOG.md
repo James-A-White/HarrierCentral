@@ -1,3 +1,10 @@
+## 2.0.78+713 (2026-09-19)
+### Fixes
+- **Signing in no longer registers a brand-new device every time.** The
+  browser now offers the device it already holds. The server reuses that
+  device only when it already belongs to you, so a shared computer can never
+  sign one person in as another.
+
 ## 2.0.77+712 (2026-09-18)
 ### Fixes
 - **Usage Data drill-down**: a run in the future showed a negative age, like

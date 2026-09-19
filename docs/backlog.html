@@ -293,8 +293,8 @@
   <p class="standfirst">Every epic, feature and user story across the five components — the Flutter mobile app, the Flutter admin portal, the Next.js public web, the Azure Functions shim and the SQL Server domain layer — plus the non-functional requirements that hold them together. <strong>Epics are organised by what a hasher is trying to do, not by which codebase serves it</strong>, because almost every feature here spans three surfaces at once.</p>
   <div class="meta-strip">
     <div><b>16</b> epics</div>
-    <div><b>81</b> features</div>
-    <div><b>300</b> stories</div>
+    <div><b>82</b> features</div>
+    <div><b>301</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -325,7 +325,7 @@
   <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 37 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 20 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 15 stories</span></a>
-  <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">7 features · 25 stories</span></a>
+  <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">8 features · 26 stories</span></a>
   <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 49 stories</span></a>
   <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 22 stories</span></a>
@@ -885,6 +885,13 @@
     </div>
     <ul class="stories">
       <li class="story"><span class="s-id">E8.F7.S1</span><span class="s-text">As a <em>Hash Cash</em>, I want to take a card or phone payment at the trail so that a hasher with no cash can still pay on the day, and the money lands in the club's account rather than in somebody's pocket to be settled later (James, 2026-09-18). <em>Belongs to the 3.1 train</em>, alongside the rest of payments. Today <code>EnumPaymentType</code> offers Not paid, Free run, Cash, Bank transfer, Hash credit and their other-amount variants — every one of which records an intention rather than moving money. Bank transfer already produces a QR code (<code>util/bank_transfer_qr.dart</code>), so the club is halfway to being paid by phone without holding any card data. <em>The decision to make first is the model, not the vendor.</em> Two shapes, and they are very different products: (a) a card reader or tap-to-phone at the bucket, which is SumUp or Zettle territory and suits the way Hash Cash actually works, versus (b) a payment link or in-app sheet the hasher completes themselves, which is Stripe territory and needs no hardware. <em>⚠ Whichever is chosen, this is money belonging to 390 independent clubs, not to Harrier Central</em> — each kennel needs its own merchant account and the platform must never become the merchant of record, or it inherits every club's chargebacks, KYC and tax position. Stripe Connect and SumUp both have models for that; picking one is the real work. Note also that Apple and Google permit real-world goods and services to bypass in-app purchase, so a trail fee is outside the 30% rule, but a *membership* sold in-app may not be — worth confirming before a renewal flow is wired to a card. Existing plumbing to reuse: <code>HC.Payment</code> with <code>clientPaymentId</code> idempotency, the phone outbox for offline sends, and the receipts and reconciliation reports that already balance the bucket.</span><span class="chip c-next">Next</span></li>
+    </ul>
+  </div>
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E8.F8</span><h3 class="feature-name">Portal session identity  </h3>
+    </div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E8.F8.S1</span><span class="s-text">As a <em>hasher using the portal</em>, I want my browser to stay signed in between visits so that I am not re-authenticating from my phone every session (James, 2026-09-19). <em>Two separate faults were found on 2026-09-19 and only one is fixed.</em> FIXED: the portal minted a fresh UUID on every login and sent it as the device to provision, so <code>hcportal_confirmAuthentication</code> inserted a row unconditionally — 392 <code>HC.Device</code> rows across 68 people, one hasher on 49, each carrying its own push token, which is where the duplicate notifications came from. It now offers the device it already holds, and the SP reuses that row <em>only when it already belongs to the person logging in</em> — ownership matters because <code>ValidatePortalAuth</code> resolves the hasher FROM <code>HC.Device.UserId</code>, so blind reuse on a shared browser would sign the second person in as the first. <em>STILL OPEN:</em> why the stored credentials are rejected at the start of a session in the first place. Observed twice on 2026-09-18 (11:46 and 18:29, Pink Panter): <code>getLandingPageData</code> fails auth on the previous session's device, the login handshake runs, a new device appears seconds later. Identity lives in Hive, which is IndexedDB on web, and the device id clearly survives — the failing call uses it — so it is the secret or the token, not wholesale storage loss. <em>Needs a reproduction in a browser before it needs code</em>; the cause may be browser storage policy, which no server change can fix. <em>Longer-term direction to decide, not yet chosen:</em> drop device-bound auth in the browser for a signed session cookie, the way the public web's member auth already works. That removes device rows entirely, but it is the whole portal auth path rather than a fix, and <code>HC.Device</code> also carries the web push token, which would need a new home.</span><span class="chip c-next">Next</span></li>
     </ul>
   </div>
 </section>
