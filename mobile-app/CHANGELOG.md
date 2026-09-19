@@ -1,3 +1,12 @@
+## 3.1.0+1387 (2026-09-19)
+### Fixes
+- **Chat**: your messages show their tick again — one tick when the server
+  has taken the message, two when it has gone out to the thread. No message
+  has drawn one since 15 September, when the bubble was rebuilt to make
+  links tappable and the tick was left behind. A message you sent from
+  another device, or from the portal, now arrives with both ticks rather
+  than none.
+
 ## 3.1.0+1386 (2026-09-19)
 
 The version everyone on the App Store and Play Store moves to. The last
