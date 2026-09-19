@@ -217,6 +217,12 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
               return bk.compareTo(ak);
             });
       unreadChatRuns.value = withData;
+
+      // Fold the app-bar bubble here, not at the call site. Only init() did
+      // it, so the other four callers — the run list's two refreshes, the
+      // nav bar and the chat bubble — rebuilt every per-thread count and left
+      // globalTotalBadgeCount reading whatever it happened to hold.
+      _recalculateGlobalBadgeCount();
     }
 
     if (Get.isRegistered<FutureRunListPageController>()) {
@@ -380,16 +386,30 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       return;
     }
 
-    // 1. Badge Update Logic: Calculate and update unread counts
-    final publicEventId = message.data['PublicEventId'] as String?;
-
-    int badgeCount = await _getAndResetBadgeCount(
-      publicEventId: publicEventId,
-      resetBadgeCount: false,
-      resetAllBadgeCounts: false,
-    );
-
-    _updateChatCountBadges(publicEventId, badgeCount);
+    // 1. Badge Update Logic: refresh every thread kind's unread counts.
+    //
+    // This used to key on message.data['PublicEventId'], which ONLY a run
+    // chat carries: AppApiHC6.SendChatNotifications sends RoomType for a room
+    // and KennelId for a kennel thread, by design. With the id null,
+    // _updateChatCountBadges returns at its first guard and nothing else in
+    // the foreground path reads the server — so with the app OPEN, a kennel
+    // or room message moved no badge at all. Closing the app hid the fault:
+    // reopening runs this same refresh from the resume path, and every badge
+    // appears at once (James, 2026-09-19: "when the app is open, none of the
+    // badges update").
+    //
+    // Even for a run chat the old path was half a refresh — it wrote
+    // unreadEventCounts and the global fold, but never unreadChatRuns or
+    // threadsWithMessages, so the chat LIST kept its old rows and badges
+    // while the number above it moved.
+    //
+    // getEventChatMessageCounts() is the refresh boot and resume already use:
+    // the same SP and the same request body as the single-count call it
+    // replaces, rebuilding all four fields from the returned rows. Every
+    // thread kind is handled because the rows say what they are — a fourth
+    // kind needs no branch here, which is the mistake this file has now made
+    // twice (see the room aggregation note above).
+    await getEventChatMessageCounts();
 
     // 2. Dispatch to internal controllers
     _dispatchMessageToControllers(message);

@@ -1,3 +1,15 @@
+## 3.1.0+1388 (2026-09-19)
+### Fixes
+- **Chat badges now move while the app is open.** A message in a kennel chat
+  or a role room left every badge untouched until the app was closed and
+  reopened — the badge it arrived with names the run it belongs to, and these
+  two belong to no run, so the update was skipped. All three kinds of chat now
+  refresh the same way. A run chat, which did update its count, now updates
+  its row in the chat list at the same time instead of leaving it behind.
+- **The chat bubble above the run list** no longer shows a stale total after a
+  refresh: pulling the list down, opening the nav bar or tapping the bubble
+  recounted every chat but not the number on the bubble itself.
+
 ## 3.1.0+1387 (2026-09-19)
 ### Fixes
 - **Chat**: your messages show their tick again — one tick when the server
