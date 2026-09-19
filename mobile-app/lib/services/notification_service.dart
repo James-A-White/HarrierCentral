@@ -35,6 +35,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   StreamSubscription<RemoteMessage>? _fcmSubscription;
   StreamSubscription<RemoteMessage>? _openedAppSubscription;
 
+  /// A notification tap that arrived before the app had a screen to put it on.
+  /// Held here and replayed by [onMainReady]; see [_handleNotificationClick].
+  RemoteMessage? _pendingTap;
+
+  /// Set once MainNavigationPage has built its pages — i.e. the '/main' route
+  /// exists and can safely be popped back to.
+  bool _mainReady = false;
+
   // --- Initialization ---
 
   Future<NotificationService> init() async {
@@ -217,6 +225,12 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
               return bk.compareTo(ak);
             });
       unreadChatRuns.value = withData;
+
+      // Fold the app-bar bubble here, not at the call site. Only init() did
+      // it, so the other four callers — the run list's two refreshes, the
+      // nav bar and the chat bubble — rebuilt every per-thread count and left
+      // globalTotalBadgeCount reading whatever it happened to hold.
+      _recalculateGlobalBadgeCount();
     }
 
     if (Get.isRegistered<FutureRunListPageController>()) {
@@ -380,22 +394,61 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       return;
     }
 
-    // 1. Badge Update Logic: Calculate and update unread counts
-    final publicEventId = message.data['PublicEventId'] as String?;
-
-    int badgeCount = await _getAndResetBadgeCount(
-      publicEventId: publicEventId,
-      resetBadgeCount: false,
-      resetAllBadgeCounts: false,
-    );
-
-    _updateChatCountBadges(publicEventId, badgeCount);
+    // 1. Badge Update Logic: refresh every thread kind's unread counts.
+    //
+    // This used to key on message.data['PublicEventId'], which ONLY a run
+    // chat carries: AppApiHC6.SendChatNotifications sends RoomType for a room
+    // and KennelId for a kennel thread, by design. With the id null,
+    // _updateChatCountBadges returns at its first guard and nothing else in
+    // the foreground path reads the server — so with the app OPEN, a kennel
+    // or room message moved no badge at all. Closing the app hid the fault:
+    // reopening runs this same refresh from the resume path, and every badge
+    // appears at once (James, 2026-09-19: "when the app is open, none of the
+    // badges update").
+    //
+    // Even for a run chat the old path was half a refresh — it wrote
+    // unreadEventCounts and the global fold, but never unreadChatRuns or
+    // threadsWithMessages, so the chat LIST kept its old rows and badges
+    // while the number above it moved.
+    //
+    // getEventChatMessageCounts() is the refresh boot and resume already use:
+    // the same SP and the same request body as the single-count call it
+    // replaces, rebuilding all four fields from the returned rows. Every
+    // thread kind is handled because the rows say what they are — a fourth
+    // kind needs no branch here, which is the mistake this file has now made
+    // twice (see the room aggregation note above).
+    await getEventChatMessageCounts();
 
     // 2. Dispatch to internal controllers
     _dispatchMessageToControllers(message);
   }
 
   Future<void> _handleNotificationClick(RemoteMessage message) async {
+    // NOTHING here may touch the navigator until '/main' exists.
+    //
+    // Both entry points can fire before it does. getInitialMessage() is
+    // awaited from init(), which main() awaits BEFORE runApp() — there is no
+    // Navigator at all at that point — and onMessageOpenedApp can land while
+    // the boot/splash screen is still the only route on the stack. Either way
+    // the Get.until below pops until it finds '/main', and finding nothing it
+    // pops EVERY route, leaving an empty navigator: a black, frozen app that
+    // only a force-quit clears. Opening from the icon instead is fine, which
+    // is exactly how this was reported (Tuna Melt's phone, 2026-09-19,
+    // tapping a role-room push; three launches on 3.1.0+1388 whose logs stop
+    // dead after [VERSION] with no paused/resumed metric following).
+    //
+    // So an early tap is HELD, not dropped — [onMainReady] replays it once the
+    // run list is on screen, which also fixes the other half of the same
+    // fault: a cold-start tap never navigated anywhere, because
+    // FutureRunListPageController was not registered yet when it was handled.
+    if (!_mainReady) {
+      _pendingTap = message;
+      BootLogger.logBreadcrumb(
+        '[NotificationService] tap held until /main exists',
+      );
+      return;
+    }
+
     // Song notification tap — update session state then navigate to the songbook.
     // onSongSelected() must be called first so pendingSongId is set before the
     // SongsPageController's ever() worker fires on navigation.
@@ -442,6 +495,17 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         );
       }
     }
+  }
+
+  /// Called by MainNavigationPageController once its pages exist and '/main'
+  /// is on the stack. Replays a tap that arrived during boot.
+  void onMainReady() {
+    _mainReady = true;
+    final RemoteMessage? held = _pendingTap;
+    if (held == null) return;
+    _pendingTap = null;
+    BootLogger.logBreadcrumb('[NotificationService] replaying held tap');
+    unawaited(_handleNotificationClick(held));
   }
 
   void _dispatchMessageToControllers(RemoteMessage message) {

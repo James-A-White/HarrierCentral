@@ -65,14 +65,27 @@ BEGIN
     RETURN;
 END
 
+-- LEN(), not a comparison against '' — and this is not a style point.
+-- The database collates SQL_Latin1_General_CP1_CI_AS, in which a surrogate
+-- pair carries NO sort weight, so N'<emoji>' = '' is TRUE and the old
+-- NULLIF(LTRIM(RTRIM(...)), '') returned NULL for a message made only of
+-- emoji. A hasher who sent a single wave got "The message could not be
+-- sent" for a message that was never empty (Kilty, 2026-09-19, room 1 on
+-- 3.1.0+1388; the request body in the client log carried the emoji).
+-- LEN() counts the code units (2) so emoji pass, and still returns 0 for a
+-- string of only spaces, which is what the guard is actually for.
+-- hcapp_sendKennelMessage already does it this way; this is now the same.
 IF (@roomType IS NULL
     OR @messageId IS NULL
-    OR NULLIF(LTRIM(RTRIM(ISNULL(@messageContent, ''))), '') IS NULL)
+    OR LEN(COALESCE(@messageContent, N'')) = 0)
 BEGIN
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing fields',
-            'roomType, messageId or messageContent was empty', @procName, @userId);
+            CONCAT('roomType=', ISNULL(CAST(@roomType AS VARCHAR(12)), 'NULL'),
+                   ' messageId=', CASE WHEN @messageId IS NULL THEN 'NULL' ELSE 'set' END,
+                   ' contentLen=', LEN(COALESCE(@messageContent, N''))),
+            @procName, @userId);
     SELECT @errorId AS errorId, 2 AS errorType, 1941 AS errorCode,
            'Missing fields' AS errorTitle,
            'The message could not be sent. Please try again.' AS errorUserMessage,

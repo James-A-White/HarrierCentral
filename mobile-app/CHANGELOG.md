@@ -1,3 +1,33 @@
+## 3.1.0+1389 (2026-09-19)
+### Fixes
+- **Tapping a notification no longer freezes the app.** Opening a chat push
+  while the app was closed could leave a black screen that only force-quitting
+  cleared — the tap was handled before the app had a screen to return to, and
+  it closed the only one there was. The tap is now held until the app is up,
+  and then takes you to the thread it came from, which it never did on a cold
+  start even before.
+
+## 3.1.0+1388 (2026-09-19)
+### Fixes
+- **Chat badges now move while the app is open.** A message in a kennel chat
+  or a role room left every badge untouched until the app was closed and
+  reopened — the badge it arrived with names the run it belongs to, and these
+  two belong to no run, so the update was skipped. All three kinds of chat now
+  refresh the same way. A run chat, which did update its count, now updates
+  its row in the chat list at the same time instead of leaving it behind.
+- **The chat bubble above the run list** no longer shows a stale total after a
+  refresh: pulling the list down, opening the nav bar or tapping the bubble
+  recounted every chat but not the number on the bubble itself.
+
+## 3.1.0+1387 (2026-09-19)
+### Fixes
+- **Chat**: your messages show their tick again — one tick when the server
+  has taken the message, two when it has gone out to the thread. No message
+  has drawn one since 15 September, when the bubble was rebuilt to make
+  links tappable and the tick was left behind. A message you sent from
+  another device, or from the portal, now arrives with both ticks rather
+  than none.
+
 ## 3.1.0+1386 (2026-09-19)
 
 The version everyone on the App Store and Play Store moves to. The last
