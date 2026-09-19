@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>16</b> epics</div>
     <div><b>82</b> features</div>
-    <div><b>301</b> stories</div>
+    <div><b>302</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -333,7 +333,7 @@
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 14 requirements</span></a>
   <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 19 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
-  <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">4 features · 17 stories</span></a>
+  <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">4 features · 18 stories</span></a>
 </div></section>
 <section class="epic" id="e1">
   <div class="epic-head">
@@ -1370,6 +1370,7 @@
       <li class="story"><span class="s-id">E16.F3.S2</span><span class="s-text">As a <em>Hash Cash</em>, I want historical zero-cash run payments rewritten as free so that free runs stop appearing as income.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E16.F3.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want a periodic audit that every API-facing procedure still meets the HC6 standard so that drift is caught by a sweep rather than an outage.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E16.F3.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want the public web to report its own failures where every other component reports, so that a web bug is visible in the same sweep rather than dying in a console nobody reads (2026-09-17). <code>publicWeb_logWebError</code> writes to <code>HC.ErrorLog</code> stamped <code>web &lt;version&gt;</code>; deliberately NOT behind ValidateAppAuth, since the most useful reports come from a visitor with no session — the guard is the internal secret on the shim. All 17 swallowed <code>console.error</code> calls in the member routes now report, and <code>app/global-error.tsx</code> and <code>app/me/error.tsx</code> post what the browser cannot survive to a rate-limited endpoint. The logger never throws and never blocks a response. <em>Live 2026-09-17</em> (web 0.21.64, API 1.0.56).</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E16.F3.S5</span><span class="s-text">As a <em>Platform Admin</em>, I want the local-database migrations applied in version order so that an upgrade does not depend on the order somebody happened to paste them into the file (2026-09-19). <code>MigrationsModel.doDatabaseMigrations</code> walks <code>migrationList</code> in FILE order, skipping any whose <code>dbVersion</code> is at or below the installed one. It never sorts. The list in <code>database/tables.dart</code> currently reads <em>528, 532, 531, 530, 529</em>, so a phone upgrading from the App Store build (527) applies them in exactly that jumbled order. <em>It is harmless today and that is luck, not design:</em> every statement in those five is an independent <code>ALTER TABLE ... ADD COLUMN</code>, so nothing reads a column a later migration adds. The first migration that depends on an earlier one — a backfill <code>UPDATE</code>, an index over a new column, a <code>CREATE TABLE ... SELECT</code> — breaks silently, and breaks ONLY for people upgrading from an older build. Anyone already near the current version skips the whole list, so no beta tester can ever reproduce it. <em>Fix is one line</em> — sort the list by <code>dbVersion</code> in the runner, not in the file, so the ordering cannot be undone by the next person appending to <code>tables.dart</code>. Worth a test that asserts the list is strictly ascending. <em>⚠ Do NOT 'fix' this by bumping DB_VERSION by 10 to force a wipe-and-reload</em> (considered and rejected 2026-09-19): <code>_handleDbUpgrade</code> calls <code>clearPrefs()</code>, which destroys the payment outbox — <code>paymentOutboxJson</code> lives in prefs, nothing flushes it first — so any offline payment a Hash Cash has taken and not yet sent is lost, with no trace. It also needs connectivity at boot or the user lands on the guest page, it hits everyone below DB_VERSION-9 rather than only the old builds, and it halves the deliberate 20-version gap between the 3.0.x (532) and 3.1 (552) trains.</span><span class="chip c-next">Next</span></li>
     </ul>
   </div>
   <div class="feature">
