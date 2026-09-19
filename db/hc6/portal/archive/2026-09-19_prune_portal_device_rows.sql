@@ -22,8 +22,8 @@
 -- row stays available for the push log's token lookups and the change is
 -- reversible.
 --
--- Expected on 2026-09-19: 353 live browser rows -> 258 retired, 95 kept
--- across the same 68 people, 32 live tokens cleared.
+-- RUN 2026-09-19 07:22 UTC: 258 rows retired, exactly as predicted. 95 kept
+-- across the same 68 people, average 1.4 each. Nobody was left with zero.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
