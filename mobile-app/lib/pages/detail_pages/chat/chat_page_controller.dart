@@ -376,7 +376,13 @@ class ChatPageController extends GetxController {
             : (createdAtMs is num)
                 ? DateTime.fromMillisecondsSinceEpoch(createdAtMs.toInt())
                 : null,
-        status: core.MessageStatus.sent,
+        // A message the server hands back IS on the server, so my own come
+        // back with both ticks rather than sitting on one for ever. Messages
+        // I sent from another device — or from the portal, or straight into
+        // the table — only ever arrive this way, and showed no tick at all.
+        status: authorId == currentUser.id
+            ? core.MessageStatus.delivered
+            : core.MessageStatus.sent,
       ));
     }
     // SP returns newest-first; reverse to oldest-first for display and
