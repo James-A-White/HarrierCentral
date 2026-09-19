@@ -176,7 +176,7 @@ too. `/login` is a reserved slug.
 3. API: `func publish harriercentralpublicapi` (allow-list).
 4. Web app settings: add `HC_MEMBER_SESSION_SECRET`.
 5. Public web deploy (Dance baby).
-6. App builds carrying `/login/` (3.1 and 3.0.x) — the QR door needs them; the email door does not.
+6. App builds carrying `/login/` (both trains — now 3.1.x and 3.2) — the QR door needs them; the email door does not.
 
 ## Risks and how they are held
 
