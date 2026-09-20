@@ -100,7 +100,7 @@ String trackingGpsSettingsJson() {
   });
 }
 
-class LocationService extends GetxService {
+class LocationService extends GetxService with WidgetsBindingObserver {
   /// Returns the registered service, registering one if it has gone.
   ///
   /// This service is not permanent: it is deleted while the app is paused and
@@ -230,6 +230,9 @@ class LocationService extends GetxService {
   @override
   void onInit() {
     super.onInit();
+    // The precise boost must not survive a backgrounding — see
+    // [didChangeAppLifecycleState].
+    WidgetsBinding.instance.addObserver(this);
     // Call the subscription logic on initialization
     unawaited(onInitAsync());
     _onInnAutoStop.init();
@@ -336,6 +339,7 @@ class LocationService extends GetxService {
 
   @override
   void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
     _trackingWorker?.dispose();
     unawaited(_geoLocationStreamSubscription?.cancel());
     _stopBoostHeartbeat();
@@ -483,6 +487,16 @@ class LocationService extends GetxService {
   // change fidelity is to reconfigure THE shared stream here.
   int _preciseStreamRequests = 0;
 
+  /// True while the app is off screen and the boost is therefore suspended.
+  /// The ref count is untouched — the holders still exist and still expect
+  /// their boost back — but the stream runs at idle settings until resume.
+  bool _boostSuspended = false;
+
+  /// Whether the boost should actually be costing anything right now. Every
+  /// decision that reconfigures the shared stream reads THIS, not the bare
+  /// ref count.
+  bool get _preciseBoostActive => _preciseStreamRequests > 0 && !_boostSuspended;
+
   /// Call when a surface needing a live position opens; pair with
   /// [releasePreciseStream] when it closes. While run tracking (or the pause
   /// monitor) is active the stream is already fine-grained, so this only
@@ -494,6 +508,7 @@ class LocationService extends GetxService {
     );
     _startBoostHeartbeat();
     if (_preciseStreamRequests == 1 &&
+        !_boostSuspended &&
         !joinRunTracking.value &&
         !isPaused.value) {
       unawaited(_subscribeIdleStream());
@@ -507,9 +522,66 @@ class LocationService extends GetxService {
     );
     if (_preciseStreamRequests == 0) _stopBoostHeartbeat();
     if (_preciseStreamRequests == 0 &&
+        !_boostSuspended &&
         !joinRunTracking.value &&
         !isPaused.value) {
       unawaited(_subscribeIdleStream());
+    }
+  }
+
+  /// The boost is a FOREGROUND cost. A surface that holds one is, by
+  /// definition, drawing a live position for someone to look at; once the app
+  /// is off screen there is nobody looking and the phone is paying for
+  /// navigation-grade GPS for nothing.
+  ///
+  /// Every holder used to be responsible for noticing this itself, and the
+  /// PackTrack map does (`setVisible(false)` releases its boost). The main
+  /// map tab did not: its `_isShowing` asks only which TAB is selected, so
+  /// leaving the app on the map tab and putting the phone in a pocket held
+  /// 5 m / `LocationAccuracy.best` indefinitely. James's 2026-09-20 log:
+  /// `precise boost still held after 22min with no run tracking (holders=1)`
+  /// in a session whose metrics ring read `tier=precise` with `fg=0`.
+  ///
+  /// So the rule lives here instead of in each holder. Backgrounding
+  /// suspends the boost and drops the shared stream to idle; resuming
+  /// restores it for whichever holders are still there. Run tracking is
+  /// untouched — a tracked run is *meant* to keep fine-grained GPS in the
+  /// background, and both branches below bail out while it is active.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (!_boostSuspended) return;
+        _boostSuspended = false;
+        if (_preciseStreamRequests == 0) return;
+        BootLogger.logBreadcrumb(
+          'Location: precise boost RESUMED with the app '
+          '(holders=$_preciseStreamRequests)',
+        );
+        _boostHeldSince = DateTime.now();
+        if (!joinRunTracking.value && !isPaused.value) {
+          unawaited(_subscribeIdleStream());
+        }
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        if (_boostSuspended) return;
+        _boostSuspended = true;
+        if (_preciseStreamRequests == 0) return;
+        BootLogger.logBreadcrumb(
+          'Location: precise boost SUSPENDED for background '
+          '(holders=$_preciseStreamRequests)',
+        );
+        if (!joinRunTracking.value && !isPaused.value) {
+          unawaited(_subscribeIdleStream());
+        }
+        break;
+      case AppLifecycleState.inactive:
+        // Transient — a notification shade, a permission sheet, the app
+        // switcher. Tearing the stream down and back up for those would
+        // churn the platform stream several times a minute.
+        break;
     }
   }
 
@@ -540,6 +612,10 @@ class LocationService extends GetxService {
       }
       // While tracking, fine-grained GPS is the point — not worth a line.
       if (joinRunTracking.value || isPaused.value) return;
+      // Suspended for the background: the holders are still counted but the
+      // stream is idle, so there is nothing being paid for and nothing to
+      // report.
+      if (_boostSuspended) return;
       final held = DateTime.now().difference(_boostHeldSince ?? DateTime.now());
       BootLogger.logBreadcrumb(
         'Location: precise boost still held after ${held.inMinutes}min with no '
@@ -569,7 +645,7 @@ class LocationService extends GetxService {
   /// (Re)subscribes the shared stream for the not-tracking state: precise
   /// viewer settings while any boost is held, low-power idle otherwise.
   Future<void> _subscribeIdleStream() async {
-    final bool precise = _preciseStreamRequests > 0;
+    final bool precise = _preciseBoostActive;
     final LocationSettings settings = precise
         ? getLocSettings(
             5,
