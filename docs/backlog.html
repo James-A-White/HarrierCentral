@@ -292,9 +292,9 @@
   <h1>Harrier Central Product Backlog</h1>
   <p class="standfirst">Every epic, feature and user story across the five components — the Flutter mobile app, the Flutter admin portal, the Next.js public web, the Azure Functions shim and the SQL Server domain layer — plus the non-functional requirements that hold them together. <strong>Epics are organised by what a hasher is trying to do, not by which codebase serves it</strong>, because almost every feature here spans three surfaces at once.</p>
   <div class="meta-strip">
-    <div><b>16</b> epics</div>
-    <div><b>83</b> features</div>
-    <div><b>306</b> stories</div>
+    <div><b>17</b> epics</div>
+    <div><b>84</b> features</div>
+    <div><b>307</b> stories</div>
     <div><b>47</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -316,7 +316,7 @@
   <div class="persona"><div class="persona-name">Platform Admin<span>HC.PlatformAdmin</span></div><div class="persona-desc">Opee and Tuna Melt only. Four independent capabilities — <code>CanViewMonitor</code>, <code>CanManageNewsflash</code>, <code>CanEditKennel</code>, <code>CanManagePermissions</code> — and the last is held by Opee alone.</div></div>
 </div></section>
 <section id="index"><h2>Epics</h2>
-<p class="sec-note">13 product epics and 3 non-functional ones. IDs are stable — quote them when assigning work to an agent.</p>
+<p class="sec-note">14 product epics and 3 non-functional ones. IDs are stable — quote them when assigning work to an agent.</p>
 <div class="index-grid">
   <a class="idx" href="#e1"><span class="idx-id">E1</span><span class="idx-name">Identity &amp; Account Access</span><span class="idx-count">6 features · 23 stories</span></a>
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 18 stories</span></a>
@@ -334,6 +334,7 @@
   <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 19 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
   <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">5 features · 19 stories</span></a>
+  <a class="idx" href="#e17"><span class="idx-id">E17</span><span class="idx-name">Speaking the hasher's language</span><span class="idx-count">1 features · 1 stories</span></a>
 </div></section>
 <section class="epic" id="e1">
   <div class="epic-head">
@@ -1396,6 +1397,20 @@
       <li class="story"><span class="s-id">E16.F4.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want the battery draw re-measured after each release so that a regression is caught by data rather than by a complaint.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E16.F4.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want a working test harness in the portal so that a regression there can be pinned by a test rather than found by a kennel.</span><span class="chip c-next">Next</span>
         <span class="gap"><code>flutter_test</code> is commented out of the portal's dev_dependencies and <code>widget_test.dart</code> has no <code>main</code> — the portal has no test coverage at all, and enabling it hits a <code>web</code> package incompatibility</span></li>
+    </ul>
+  </div>
+</section>
+<section class="epic" id="e17">
+  <div class="epic-head">
+    <div class="epic-id">E17</div>
+    <h2 class="epic-title">Speaking the hasher's language</h2>
+    <p class="epic-intent"><code>App</code> <code>Web</code> <code>Portal</code> <code>DB</code> Everything Harrier Central says is in English, in every client. Raised 2026-09-20 (James: "how hard would it be to I18N the interface... for our Kennels in Taiwan, Barbados, Germany"), measured the same day, and parked <em>after the 3.2 payments train</em> — the measurements are here so the question does not have to be asked twice.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E17.F1</span><h3 class="feature-name">One interface, several languages</h3>
+    </div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E17.F1.S1</span><span class="s-text">As a <em>hasher whose phone is not in English</em>, I want Harrier Central in my own language, so that the app does not assume the hash is an English-speaking club. <em>Measured 2026-09-20 — start with the demand, because it is smaller than the country list suggests.</em> Active devices by locale over 180 days: <code>en_GB</code> 514, <code>en_US</code> 488, none recorded 453, <em><code>en_BB</code> 48 — Barbados is already English</em>, <code>de_DE</code> 36, <code>en_CA</code> 31, <code>en_PT</code> 25, <em><code>zh_Hant_TW</code> 21</em>, <code>en_AU</code> 19, <code>nl_NL</code> 16, <code>en_BE</code> 15, <code>en_DE</code> 14. So the genuinely non-English populations are ~36 German and ~21 Taiwanese devices, about 3% of the fleet, and half the "foreign" kennels are English-speaking. <em>Ask the Taiwanese kennel whether they want a translated UI before building one</em> — at 21 devices that conversation is cheaper than the work. <em>The surface, counted:</em> 321 <code>Text()</code> literals in the app (249 distinct), 153 <code>showAlert</code>/<code>Get.snackbar</code> sites (~300 more strings), <em>96 <code>errorUserMessage</code> and 60 <code>errorTitle</code> strings inside stored procedures</em>, 56 push/notification composition sites in SPs, ~59 hardcoded strings in the public web. Roughly 700–900 strings. No scaffolding exists: <code>intl</code> is a dependency for date formatting only — no <code>flutter_localizations</code>, no <code>.arb</code>, no <code>generate: true</code>. <em>The extraction is the easy part. The four that are not:</em> (1) <em>a third of the user-facing text lives in the database</em> — errors, titles and push bodies are composed server-side and arrive rendered, so localising them means either returning a key plus parameters from every SP (a contract change across every client) or storing translations keyed by locale (a new table, which is James's call). <code>HC.Device.Locale</code> already exists and is populated, so the server can know who it is speaking to. (2) <em>Chinese breaks the typography</em> — the app is set in Avenir Next, which has no CJK glyphs, so Traditional Chinese needs a bundled or fallback font and different line-breaking. (3) <em>German expands text by about 30%</em>, and this codebase has already shipped Row-overflow bugs twice — hence claude.md's "two controls side by side want a Wrap, not a Row". Every screen needs re-checking at longer strings, and this cost is larger than the translating. (4) <em>Hash jargon probably should not be translated</em> — hare, down-down, on-on, mismanagement, hash cash. What stays in English is a hasher's judgement, not a translator's. <em>Rough shape:</em> 2–4 weeks of development for two languages, plus someone to produce ~800 strings per language, plus a permanent tax on every new string (enforceable with a lint banning raw literals in <code>Text()</code>). <em>The cheap first slice, if it is ever wanted:</em> the app chrome only, one language, driven by the device locale, leaving server errors in English — about a third of the work, proves the pipeline, and serves the German devices without committing to the SP contract change.</span><span class="chip c-back">Backlog</span></li>
     </ul>
   </div>
 </section>
