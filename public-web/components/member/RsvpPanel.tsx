@@ -119,10 +119,16 @@ export function RsvpPanel({ slug, kennelName, publicEventId, rsvpFromUrl, eventS
 
       {!isPast && (
         <div className="mt-3 flex flex-wrap gap-2">
+          {/* Unselected answers all wear the same muted chip, so the ONE that
+              is filled is the one you chose. This button used to fall back to
+              var(--kennel-primary), whose default is #dc2626 — the very red
+              the selected "Can't make it" is painted in — so answering "no"
+              left two red buttons side by side and neither read as the
+              answer (James, 2026-09-20, on BMPH3). Selected stays green. */}
           <button type="button" className={btn} disabled={busy} onClick={() => answer("yes")}
             style={myState === "yes" || myState === "here"
               ? { backgroundColor: "#16a34a", color: "#fff" }
-              : { backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}>
+              : { backgroundColor: "var(--kennel-btn-secondary, rgba(255,255,255,0.12))", color: "var(--kennel-text-body)" }}>
             ✅ I&apos;ll be there
           </button>
           <button type="button" className={btn} disabled={busy} onClick={() => answer("maybe")}
