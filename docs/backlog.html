@@ -294,8 +294,8 @@
   <div class="meta-strip">
     <div><b>17</b> epics</div>
     <div><b>84</b> features</div>
-    <div><b>307</b> stories</div>
-    <div><b>47</b> NFR requirements</div>
+    <div><b>308</b> stories</div>
+    <div><b>48</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
   <div class="legend">
@@ -318,7 +318,7 @@
 <section id="index"><h2>Epics</h2>
 <p class="sec-note">14 product epics and 3 non-functional ones. IDs are stable — quote them when assigning work to an agent.</p>
 <div class="index-grid">
-  <a class="idx" href="#e1"><span class="idx-id">E1</span><span class="idx-name">Identity &amp; Account Access</span><span class="idx-count">6 features · 23 stories</span></a>
+  <a class="idx" href="#e1"><span class="idx-id">E1</span><span class="idx-name">Identity &amp; Account Access</span><span class="idx-count">6 features · 24 stories</span></a>
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 18 stories</span></a>
   <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 26 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
@@ -330,7 +330,7 @@
   <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 22 stories</span></a>
   <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">5 features · 16 stories</span></a>
-  <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 14 requirements</span></a>
+  <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 15 requirements</span></a>
   <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 19 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
   <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">5 features · 19 stories</span></a>
@@ -353,6 +353,7 @@
       <li class="story"><span class="s-id">E1.F1.S3</span><span class="s-text">As a <em>Hasher</em> whose phone clock has drifted, I want to be told to turn on automatic time rather than to reinstall, so that I can actually fix it.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E1.F1.S4</span><span class="s-text">As a <em>Hasher</em>, I want the server to tolerate a couple of time blocks either side so that ordinary latency does not lock me out.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E1.F1.S5</span><span class="s-text">As a <em>Hasher</em> on a second device, I want to approve the new device from the one I already trust so that I am not locked out of my own account.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E1.F1.S6</span><span class="s-text">As a <em>hasher</em>, I want my device's credential to stay on that device, so that restoring a phone backup onto somebody else's hardware does not hand them my account (James, 2026-09-20, asking why the Android emulator already knew who he was). <em>The answer that time was innocent</em> — the emulator had the app installed since 2025-11-09 and <code>flutter run</code> updates in place rather than reinstalling, so the old session's prefs were simply still there. <em>The question it exposed is not.</em> <code>android/app/src/main/AndroidManifest.xml</code> sets no <code>android:allowBackup</code> and no <code>dataExtractionRules</code>, so Android's default of <code>allowBackup="true"</code> applies, and <code>deviceSecret</code> lives in plain <code>SharedPreferences</code> (<code>StringPrefsEnum.deviceSecret</code>), not in secure storage. Google Auto Backup can therefore carry a working device secret to Drive and restore it onto a <em>different physical device</em>, which then authenticates with no sign-in, no email code and no passkey — two devices, one credential, one <code>HC.Device</code> row. That contradicts <code>E13.G1.R1</code>, which promises identity is a *device-bound* shared secret. <em>Mitigations that already exist, so this is a hole not a fire:</em> <code>FlutterSecureStorage</code> items are encrypted with a Keystore key that never leaves the device, so those restore as undecryptable blobs; and because both devices share one row, E9.F7.S19's sign-out revokes the copy as well as the original. <em>Three ways to close it, in increasing order of merit:</em> (a) <code>android:allowBackup="false"</code> — blunt, and costs a legitimate new-phone setup its session; (b) <code>dataExtractionRules</code> excluding the credential keys — keeps backup for everything else; (c) <em>move <code>deviceSecret</code> into <code>FlutterSecureStorage</code></em>, which makes backup irrelevant because the restored copy cannot be decrypted, and needs a one-boot migration for installs that already hold it in prefs. <em>iOS needs the same review</em> — <code>NSUserDefaults</code> is in iCloud backup, and keychain items restore to a new device unless written with <code>ThisDeviceOnly</code> accessibility. Deliberately NOT fixed before the 3.1.0 store push (James, 2026-09-20: "I want to ship the current version into production"); scheduled for the <em>3.2</em> train.</span><span class="chip c-next">Next</span></li>
     </ul>
   </div>
   <div class="feature">
@@ -1205,6 +1206,7 @@
     </div>
     <div class="reqs">
       <div class="req"><span class="s-id">E13.G1.R1</span><span class="req-what">No password exists anywhere in the platform; identity is a device-bound shared secret.</span><span class="req-how"><b>Enforced by</b> <code>hcapp_authorizeDevice</code> mints a 75-char secret and a per-device 30–44s window.</span></div>
+      <div class="req"><span class="s-id">E13.G1.R6</span><span class="req-what">A device secret never leaves the device it was minted for.</span><span class="req-how"><b>Enforced by</b> <em>⚠ Not currently enforced on Android:</em> <code>allowBackup</code> defaults to true and <code>deviceSecret</code> sits in plain <code>SharedPreferences</code>, so a Google backup can restore a working credential onto another device. iOS needs the same review for <code>NSUserDefaults</code> and keychain accessibility. See <code>E1.F1.S6</code> (3.2).</span></div>
       <div class="req"><span class="s-id">E13.G1.R2</span><span class="req-what">Every access token expires within roughly one time window and is not reusable outside it.</span><span class="req-how"><b>Enforced by</b> <code>CHECK_ACCESS_TOKEN_V2</code> accepting offsets −2…+2 only.</span></div>
       <div class="req"><span class="s-id">E13.G1.R3</span><span class="req-what">Operations touching money or another user bind the token to that specific operation.</span><span class="req-how"><b>Enforced by</b> Compound <code>paramString</code> of device secret plus target.</span></div>
       <div class="req"><span class="s-id">E13.G1.R4</span><span class="req-what">Authorisation is always kennel-scoped; an admin of one kennel has no rights in another.</span><span class="req-how"><b>Enforced by</b> <code>CheckKennelPermission</code> reading grantors from that kennel's <code>HasherKennelMap</code> row.</span></div>
