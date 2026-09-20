@@ -1,3 +1,25 @@
+## 3.1.0+1390 (2026-09-20)
+### Improvements
+- **My Profile is now My Account**, and holds only account things: your
+  details, your run counts, your passkeys, third-party login and delete
+  account.
+- **Passkeys** are listed on My Account — what can sign you in without a code,
+  when each was last used, and a Remove on any you do not recognise. Removing
+  one here stops it signing you in; the passkey itself stays in that device's
+  own password manager until you delete it there too.
+- **Which map app opens an address is now a setting you can change.** It used
+  to appear only after you had chosen one, and the only button was Clear — so
+  switching from one map app to another meant clearing the setting, opening a
+  run and choosing again. Settings now says which app is set, and Change opens
+  the same list you saw the first time.
+- **"Automatically show runs within N" moved to Settings**, next to the miles
+  and kilometres setting it is labelled in.
+
+### Fixes
+- **Editing another hasher's profile no longer resets their settings.** Doing
+  so overwrote that hasher's preferences with a fixed value, changing their
+  distance units and switching their auto-show radius off.
+
 ## 3.1.0+1389 (2026-09-19)
 ### Fixes
 - **Tapping a notification no longer freezes the app.** Opening a chat push
