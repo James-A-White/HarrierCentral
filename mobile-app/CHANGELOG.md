@@ -1,3 +1,10 @@
+## 3.1.0+1393 (2026-09-20)
+### Improvements
+- **Devices** now show what each one was running when it last signed in, and the
+  time as well as the date — with several old installs listed, the version is
+  what tells them apart.
+- "Signed out" now means a device someone actually signed out.
+
 ## 3.1.0+1392 (2026-09-20)
 ### New Features
 - **Devices**, on My Account: everything that can reach your account, whether
