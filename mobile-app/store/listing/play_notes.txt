@@ -1,11 +1,13 @@
-Harrier Central 3.0 — our biggest update ever.
+Harrier Central 3.1 — everything since 3.0.12, in one update.
 
-PackTrack: see the whole pack on one live map. Drop trail marks, find everyone with the radar, find the trail with the lost compass, snap photos onto the map, then replay or share any run.
+Post a run straight into your kennel's WhatsApp, Telegram or Signal group. Run links now open in the app.
 
-Trail TV: put the run on a big screen at the On-Inn.
+Bring your history with you: import a Strava or Garmin export, or a single GPX, TCX or FIT file, and your old runs join your run counts.
 
-Plus an interactive songbook, chat for every run and kennel, and the Hash Flash gallery.
+Chat for your kennel and every role you hold, with notifications.
 
-Opens straight to your runs, works offline for check-in and payments, and copes quietly with a bad signal.
+Your trails live on your phone, so they draw offline.
+
+Find my photos pulls a run's photos from your camera roll.
 
 On On!

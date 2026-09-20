@@ -1,17 +1,26 @@
-Harrier Central 3.1 - everything since 3.0.12, in one update.
+Harrier Central 3.1 — everything since 3.0.12, in one update.
 
-Chat that reaches your phone: your kennel's chat, and a room for each role you hold, with notifications when someone posts.
+POST THE RUN WHERE YOUR KENNEL ALREADY TALKS
+Setting a trail? Post it straight into your kennel's WhatsApp group from the run's share sheet — the notice is written for you, WhatsApp opens on the group picker, one tap sends. Telegram, Signal, Messenger and WeChat work too, and your kennel picks which one the button opens. Kennels that publish a group invite get a "Join the group" button, and a hashruns.org run link now opens the run in the app instead of the browser.
 
-Sign in without waiting for a code: use the passkey you made on hashruns.org, or point your camera at the QR code on your computer.
+BRING YOUR RUNNING HISTORY WITH YOU
+Import a whole Strava or Garmin export and the app works out which of those tracks were hashes, matches them to the right runs and adds them to the PackTrack — so trails you recorded years ago before you ever had this app are on the map with everyone else's. A single GPX, TCX or FIT file works the same way, and your old runs join your run counts.
 
-Bring your running history with you: import a GPX, TCX or FIT file, or a whole Strava or Garmin export, and your old runs join your run counts.
+CHAT THAT REACHES YOUR PHONE
+Your kennel has a chat, and so does every role you hold — Grand Masters, Hash Cash, Hash Flash and the rest. Messages arrive as notifications, the bubble on Hash Runs counts what you have not read, and you choose per room whether to be notified, kept quiet or left alone. Pin the conversations you care about to the top.
 
-Your trails now live on your phone, so they draw instantly and work without a signal.
+YOUR TRAILS, ON YOUR PHONE
+Runs you tracked now come down with your data instead of being fetched, so they draw the moment you open them and work with no signal at all. The trails map totals what it is showing — distance, time and pace across every trail on screen.
 
-Find my photos picks a run's photos out of your camera roll, so the pack sees them without you hunting through thousands.
+FIND MY PHOTOS
+The photos of a run are already on your phone, buried in a camera roll with thousands of others. Find my photos picks out the ones taken on the trail, you choose which to share, and the pack sees them. Hash Flashes can review a whole kennel's photos in one place, and anyone can take their own photo back out of public view at any time.
 
-Past runs show what happened on them at a glance: the track, the photos, the chat and the down-downs, with counts.
+EVERY PAST RUN, AT A GLANCE
+A past run's card now shows what actually happened on it — the trail and how many ran it, the photos, the chat, the down-downs — each with a count, so you can see which runs have something waiting without opening them. Add your own notes to any run, and share them with your kennel if you want to.
 
-Plus the fixes that matter most: the runs-list crash is gone, photos and admin marks no longer bend your recorded GPS trail, and check-in, payments and the pack list keep working on a bad signal.
+SIGN IN WITHOUT WAITING FOR A CODE
+Use the passkey you made on hashruns.org, or point your camera at the QR code on your computer. My Account lists every device that can reach your account, what it was running and when it last signed in, and you can sign any of them out.
+
+Plus a great deal of work on the unglamorous parts: check-in, payments and the pack list keep working when the signal drops, and your recorded GPS trail is a lot truer to the ground than it was.
 
 On On!
