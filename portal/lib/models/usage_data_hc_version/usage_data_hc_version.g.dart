@@ -11,7 +11,6 @@ _UdHcVersion _$UdHcVersionFromJson(Map<String, dynamic> json) => _UdHcVersion(
   buildNum: json['buildNum'] as String,
   isiPhone: (json['isiPhone'] as num).toInt(),
   isNotiPhone: (json['isNotiPhone'] as num).toInt(),
-  trackStatus: (json['trackStatus'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$UdHcVersionToJson(_UdHcVersion instance) =>
@@ -20,5 +19,4 @@ Map<String, dynamic> _$UdHcVersionToJson(_UdHcVersion instance) =>
       'buildNum': instance.buildNum,
       'isiPhone': instance.isiPhone,
       'isNotiPhone': instance.isNotiPhone,
-      'trackStatus': instance.trackStatus,
     };

@@ -12,8 +12,7 @@ AS
 --              Login, Payment, Portal, Error, Push, App Error), recent login details,
 --              and recently updated/active events.
 -- Parameters: @deviceId, @accessToken (auth)
--- Returns: Rowset 1: VersionData (iOS vs Android, plus trackStatus:
---                     1 = 3.1.x/3.2.x, 2 = 3.0.x, 3 = 2.x.y, 0 = other)
+-- Returns: Rowset 1: VersionData (iOS vs Android)
 --          Rowset 2: IntegrationJobData
 --          Rowset 3: UsageStatistics
 --          Rowset 4: LoginInformation
@@ -34,9 +33,10 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
---   - 2026-09-20: added trackStatus to rowset 1 (additive; the portal
---     colours a version tile from it — dark green 3.1/3.2, yellow 3.0,
---     red 2.x)
+--   - 2026-09-20: highlightHcVersion (rowset 4) re-based on the release
+--     train. Same 0..3 scale, but the old rules named 1.x/2.x only, so every
+--     3.x build scored 3 (red) and 2.1.2 scored 0 (green) — backwards on the
+--     hasher cards. 0 = 3.1/3.2, 1 = 3.0, 3 = 2.x, 9 = unrecognised.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -82,36 +82,14 @@ BEGIN TRY
 		FROM LatestLogins cte
 		INNER JOIN HC.LaunchAndLogin ll2 WITH (NOLOCK) ON cte.idx = ll2.idx
 		GROUP BY ll2.HcVersion
-	),
-	VersionParts AS (
-		SELECT
-			SUBSTRING(HcVersion, 1, PATINDEX('%-%', HcVersion) - 1) AS versionNum,
-			SUBSTRING(HcVersion, PATINDEX('%-%', HcVersion) + 1, 1000) AS buildNum,
-			isiPhone,
-			isNotiPhone
-		FROM VersionStats
 	)
 	SELECT
-		versionNum,
-		buildNum,
+		SUBSTRING(HcVersion, 1, PATINDEX('%-%', HcVersion) - 1) AS versionNum,
+		SUBSTRING(HcVersion, PATINDEX('%-%', HcVersion) + 1, 1000) AS buildNum,
 		isiPhone,
-		isNotiPhone,
-		-- Release train this version belongs to. The portal picks the tile
-		-- colour from this, so the definition of "current" lives here and not
-		-- in the client.
-		--   1 = current   3.1.x / 3.2.x  (dark green)
-		--   2 = previous  3.0.x          (yellow)
-		--   3 = legacy    2.x.y          (red)
-		--   0 = anything else            (neutral)
-		CAST(CASE
-			WHEN versionNum LIKE '3.1.%' OR versionNum = '3.1'
-			  OR versionNum LIKE '3.2.%' OR versionNum = '3.2' THEN 1
-			WHEN versionNum LIKE '3.0.%' OR versionNum = '3.0' THEN 2
-			WHEN versionNum LIKE '2.%' THEN 3
-			ELSE 0
-		END AS SMALLINT) AS trackStatus
-	FROM VersionParts
-	ORDER BY buildNum DESC;
+		isNotiPhone
+	FROM VersionStats
+	ORDER BY SUBSTRING(HcVersion, PATINDEX('%-%', HcVersion) + 1, 1000) DESC;
 
 	-- Result Set 2: Integration job data
 	;WITH LatestJobs AS (
@@ -446,18 +424,29 @@ BEGIN TRY
 			WHEN COALESCE(REPLACE(LEFT(ll.SystemVersion, 5), '/', ''), '') LIKE '23%' THEN 3
 			ELSE 3
 		END AS highlightPhoneVersion,
+		-- Release train the hasher's app build belongs to, on the existing
+		-- 0 = best .. 3 = worst scale the phone-version column already uses.
+		-- The rules it replaced still spoke of 1.x and 2.x, so every 3.x build
+		-- fell through to ELSE 3 and the newest app on the estate showed red.
+		--   0 = current   3.1.x / 3.2.x
+		--   1 = previous  3.0.x
+		--   3 = legacy    2.x.y
+		--   9 = anything else (a version this SP has not been told about)
 		CASE
-			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%2.1%' THEN 0
-			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%2.0%' THEN 0
-			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%1.6%' THEN 1
-			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%1.5%' THEN 2
-			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%1.2%' THEN 3
-			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%1.1.%' THEN 3
-			ELSE 3
+			WHEN v.hcVersionNum LIKE '3.1.%' OR v.hcVersionNum = '3.1'
+			  OR v.hcVersionNum LIKE '3.2.%' OR v.hcVersionNum = '3.2' THEN 0
+			WHEN v.hcVersionNum LIKE '3.0.%' OR v.hcVersionNum = '3.0' THEN 1
+			WHEN v.hcVersionNum LIKE '2.%' THEN 3
+			ELSE 9
 		END AS highlightHcVersion
 	FROM HC.LaunchAndLogin ll WITH (NOLOCK)
 	INNER JOIN HC.Hasher h WITH (NOLOCK) ON h.id = ll.UserId
 	LEFT OUTER JOIN HC.Kennel k WITH (NOLOCK) ON h.HomeKennelId = k.id
+	-- 'HC Ver: 3.1.0, Bld: 1394' -> '3.1.0', parsed once so the CASE above
+	-- reads as version rules rather than string surgery.
+	CROSS APPLY (VALUES (
+		LTRIM(REPLACE(LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1), 'HC Ver:', ''))
+	)) AS v(hcVersionNum)
 	WHERE ll.LoginDate > DATEADD(DAY, -1, GETDATE())
 		AND ll.HcVersion LIKE 'HC Ver%'
 	GROUP BY
@@ -465,6 +454,7 @@ BEGIN TRY
 		ll.UserId,
 		h.FirstName + ' ' + h.LastName,
 		LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1),
+		v.hcVersionNum,
 		COALESCE(REPLACE(LEFT(ll.SystemVersion, 5), '/', ''), ''),
 		CASE
 			WHEN ll.DeviceType = 'iPhone' THEN 1

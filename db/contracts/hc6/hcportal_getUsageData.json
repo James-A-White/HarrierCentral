@@ -57,12 +57,6 @@
           "type": "INT",
           "nullable": false,
           "description": "Count of users on this version whose SystemName is not 'iOS'"
-        },
-        {
-          "name": "trackStatus",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "Release train classification used by the portal to colour the version tile: 1 = current 3.1.x / 3.2.x (dark green), 2 = previous 3.0.x (yellow), 3 = legacy 2.x.y (red), 0 = any other version (neutral purple). Added 2026-09-20; additive, no existing column changed."
         }
       ]
     },
@@ -323,7 +317,7 @@
           "name": "highlightHcVersion",
           "type": "INT",
           "nullable": false,
-          "description": "Computed highlight priority for HC version: 0=current (2.1+, 2.0+), 1=recent (1.6+), 2=older (1.5+), 3=outdated (1.2, 1.1.x, all others)"
+          "description": "Release train of the hasher's app build, on the same 0=best..3=worst scale as highlightPhoneVersion: 0=current (3.1.x / 3.2.x), 1=previous (3.0.x), 3=legacy (2.x.y), 9=a version the SP does not recognise. Re-based 2026-09-20; the previous rules named only 1.x and 2.x, so every 3.x build scored 3 and 2.1.2 scored 0. The portal colours the card chip from this: dark green, yellow, red, purple."
         }
       ]
     },

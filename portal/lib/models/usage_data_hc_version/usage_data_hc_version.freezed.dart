@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UdHcVersion implements DiagnosticableTreeMixin {
 
- String get versionNum; String get buildNum; int get isiPhone; int get isNotiPhone; int get trackStatus;
+ String get versionNum; String get buildNum; int get isiPhone; int get isNotiPhone;
 /// Create a copy of UdHcVersion
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,21 +29,21 @@ $UdHcVersionCopyWith<UdHcVersion> get copyWith => _$UdHcVersionCopyWithImpl<UdHc
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'UdHcVersion'))
-    ..add(DiagnosticsProperty('versionNum', versionNum))..add(DiagnosticsProperty('buildNum', buildNum))..add(DiagnosticsProperty('isiPhone', isiPhone))..add(DiagnosticsProperty('isNotiPhone', isNotiPhone))..add(DiagnosticsProperty('trackStatus', trackStatus));
+    ..add(DiagnosticsProperty('versionNum', versionNum))..add(DiagnosticsProperty('buildNum', buildNum))..add(DiagnosticsProperty('isiPhone', isiPhone))..add(DiagnosticsProperty('isNotiPhone', isNotiPhone));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UdHcVersion&&(identical(other.versionNum, versionNum) || other.versionNum == versionNum)&&(identical(other.buildNum, buildNum) || other.buildNum == buildNum)&&(identical(other.isiPhone, isiPhone) || other.isiPhone == isiPhone)&&(identical(other.isNotiPhone, isNotiPhone) || other.isNotiPhone == isNotiPhone)&&(identical(other.trackStatus, trackStatus) || other.trackStatus == trackStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UdHcVersion&&(identical(other.versionNum, versionNum) || other.versionNum == versionNum)&&(identical(other.buildNum, buildNum) || other.buildNum == buildNum)&&(identical(other.isiPhone, isiPhone) || other.isiPhone == isiPhone)&&(identical(other.isNotiPhone, isNotiPhone) || other.isNotiPhone == isNotiPhone));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,versionNum,buildNum,isiPhone,isNotiPhone,trackStatus);
+int get hashCode => Object.hash(runtimeType,versionNum,buildNum,isiPhone,isNotiPhone);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'UdHcVersion(versionNum: $versionNum, buildNum: $buildNum, isiPhone: $isiPhone, isNotiPhone: $isNotiPhone, trackStatus: $trackStatus)';
+  return 'UdHcVersion(versionNum: $versionNum, buildNum: $buildNum, isiPhone: $isiPhone, isNotiPhone: $isNotiPhone)';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $UdHcVersionCopyWith<$Res>  {
   factory $UdHcVersionCopyWith(UdHcVersion value, $Res Function(UdHcVersion) _then) = _$UdHcVersionCopyWithImpl;
 @useResult
 $Res call({
- String versionNum, String buildNum, int isiPhone, int isNotiPhone, int trackStatus
+ String versionNum, String buildNum, int isiPhone, int isNotiPhone
 });
 
 
@@ -71,13 +71,12 @@ class _$UdHcVersionCopyWithImpl<$Res>
 
 /// Create a copy of UdHcVersion
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? versionNum = null,Object? buildNum = null,Object? isiPhone = null,Object? isNotiPhone = null,Object? trackStatus = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? versionNum = null,Object? buildNum = null,Object? isiPhone = null,Object? isNotiPhone = null,}) {
   return _then(_self.copyWith(
 versionNum: null == versionNum ? _self.versionNum : versionNum // ignore: cast_nullable_to_non_nullable
 as String,buildNum: null == buildNum ? _self.buildNum : buildNum // ignore: cast_nullable_to_non_nullable
 as String,isiPhone: null == isiPhone ? _self.isiPhone : isiPhone // ignore: cast_nullable_to_non_nullable
 as int,isNotiPhone: null == isNotiPhone ? _self.isNotiPhone : isNotiPhone // ignore: cast_nullable_to_non_nullable
-as int,trackStatus: null == trackStatus ? _self.trackStatus : trackStatus // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -163,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String versionNum,  String buildNum,  int isiPhone,  int isNotiPhone,  int trackStatus)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String versionNum,  String buildNum,  int isiPhone,  int isNotiPhone)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UdHcVersion() when $default != null:
-return $default(_that.versionNum,_that.buildNum,_that.isiPhone,_that.isNotiPhone,_that.trackStatus);case _:
+return $default(_that.versionNum,_that.buildNum,_that.isiPhone,_that.isNotiPhone);case _:
   return orElse();
 
 }
@@ -184,10 +183,10 @@ return $default(_that.versionNum,_that.buildNum,_that.isiPhone,_that.isNotiPhone
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String versionNum,  String buildNum,  int isiPhone,  int isNotiPhone,  int trackStatus)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String versionNum,  String buildNum,  int isiPhone,  int isNotiPhone)  $default,) {final _that = this;
 switch (_that) {
 case _UdHcVersion():
-return $default(_that.versionNum,_that.buildNum,_that.isiPhone,_that.isNotiPhone,_that.trackStatus);case _:
+return $default(_that.versionNum,_that.buildNum,_that.isiPhone,_that.isNotiPhone);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +203,10 @@ return $default(_that.versionNum,_that.buildNum,_that.isiPhone,_that.isNotiPhone
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String versionNum,  String buildNum,  int isiPhone,  int isNotiPhone,  int trackStatus)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String versionNum,  String buildNum,  int isiPhone,  int isNotiPhone)?  $default,) {final _that = this;
 switch (_that) {
 case _UdHcVersion() when $default != null:
-return $default(_that.versionNum,_that.buildNum,_that.isiPhone,_that.isNotiPhone,_that.trackStatus);case _:
+return $default(_that.versionNum,_that.buildNum,_that.isiPhone,_that.isNotiPhone);case _:
   return null;
 
 }
@@ -219,14 +218,13 @@ return $default(_that.versionNum,_that.buildNum,_that.isiPhone,_that.isNotiPhone
 @JsonSerializable()
 
 class _UdHcVersion with DiagnosticableTreeMixin implements UdHcVersion {
-   _UdHcVersion({required this.versionNum, required this.buildNum, required this.isiPhone, required this.isNotiPhone, this.trackStatus = 0});
+   _UdHcVersion({required this.versionNum, required this.buildNum, required this.isiPhone, required this.isNotiPhone});
   factory _UdHcVersion.fromJson(Map<String, dynamic> json) => _$UdHcVersionFromJson(json);
 
 @override final  String versionNum;
 @override final  String buildNum;
 @override final  int isiPhone;
 @override final  int isNotiPhone;
-@override@JsonKey() final  int trackStatus;
 
 /// Create a copy of UdHcVersion
 /// with the given fields replaced by the non-null parameter values.
@@ -242,21 +240,21 @@ Map<String, dynamic> toJson() {
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'UdHcVersion'))
-    ..add(DiagnosticsProperty('versionNum', versionNum))..add(DiagnosticsProperty('buildNum', buildNum))..add(DiagnosticsProperty('isiPhone', isiPhone))..add(DiagnosticsProperty('isNotiPhone', isNotiPhone))..add(DiagnosticsProperty('trackStatus', trackStatus));
+    ..add(DiagnosticsProperty('versionNum', versionNum))..add(DiagnosticsProperty('buildNum', buildNum))..add(DiagnosticsProperty('isiPhone', isiPhone))..add(DiagnosticsProperty('isNotiPhone', isNotiPhone));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UdHcVersion&&(identical(other.versionNum, versionNum) || other.versionNum == versionNum)&&(identical(other.buildNum, buildNum) || other.buildNum == buildNum)&&(identical(other.isiPhone, isiPhone) || other.isiPhone == isiPhone)&&(identical(other.isNotiPhone, isNotiPhone) || other.isNotiPhone == isNotiPhone)&&(identical(other.trackStatus, trackStatus) || other.trackStatus == trackStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UdHcVersion&&(identical(other.versionNum, versionNum) || other.versionNum == versionNum)&&(identical(other.buildNum, buildNum) || other.buildNum == buildNum)&&(identical(other.isiPhone, isiPhone) || other.isiPhone == isiPhone)&&(identical(other.isNotiPhone, isNotiPhone) || other.isNotiPhone == isNotiPhone));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,versionNum,buildNum,isiPhone,isNotiPhone,trackStatus);
+int get hashCode => Object.hash(runtimeType,versionNum,buildNum,isiPhone,isNotiPhone);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'UdHcVersion(versionNum: $versionNum, buildNum: $buildNum, isiPhone: $isiPhone, isNotiPhone: $isNotiPhone, trackStatus: $trackStatus)';
+  return 'UdHcVersion(versionNum: $versionNum, buildNum: $buildNum, isiPhone: $isiPhone, isNotiPhone: $isNotiPhone)';
 }
 
 
@@ -267,7 +265,7 @@ abstract mixin class _$UdHcVersionCopyWith<$Res> implements $UdHcVersionCopyWith
   factory _$UdHcVersionCopyWith(_UdHcVersion value, $Res Function(_UdHcVersion) _then) = __$UdHcVersionCopyWithImpl;
 @override @useResult
 $Res call({
- String versionNum, String buildNum, int isiPhone, int isNotiPhone, int trackStatus
+ String versionNum, String buildNum, int isiPhone, int isNotiPhone
 });
 
 
@@ -284,13 +282,12 @@ class __$UdHcVersionCopyWithImpl<$Res>
 
 /// Create a copy of UdHcVersion
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? versionNum = null,Object? buildNum = null,Object? isiPhone = null,Object? isNotiPhone = null,Object? trackStatus = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? versionNum = null,Object? buildNum = null,Object? isiPhone = null,Object? isNotiPhone = null,}) {
   return _then(_UdHcVersion(
 versionNum: null == versionNum ? _self.versionNum : versionNum // ignore: cast_nullable_to_non_nullable
 as String,buildNum: null == buildNum ? _self.buildNum : buildNum // ignore: cast_nullable_to_non_nullable
 as String,isiPhone: null == isiPhone ? _self.isiPhone : isiPhone // ignore: cast_nullable_to_non_nullable
 as int,isNotiPhone: null == isNotiPhone ? _self.isNotiPhone : isNotiPhone // ignore: cast_nullable_to_non_nullable
-as int,trackStatus: null == trackStatus ? _self.trackStatus : trackStatus // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
