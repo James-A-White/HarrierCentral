@@ -43,6 +43,12 @@ AS
 --   Service accounts (callerType != 0) are always rejected.
 -- =====================================================================
 
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -137,11 +143,11 @@ BEGIN TRY
     VALUES (
         @newSongId,
         LTRIM(RTRIM(@songName)),
-        NULLIF(LTRIM(RTRIM(@tuneOf)), ''),
+        CASE WHEN LEN(COALESCE(@tuneOf, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@tuneOf)) END,
         @bawdyRating,
-        NULLIF(LTRIM(RTRIM(@notes)), ''),
-        NULLIF(LTRIM(RTRIM(@actions)), ''),
-        NULLIF(LTRIM(RTRIM(@variants)), ''),
+        CASE WHEN LEN(COALESCE(@notes, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@notes)) END,
+        CASE WHEN LEN(COALESCE(@actions, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@actions)) END,
+        CASE WHEN LEN(COALESCE(@variants, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@variants)) END,
         NULL,                                           -- ImageUrl: set separately (not at creation time)
         NULL,                                           -- AudioUrl: set separately (not at creation time)
         0,                                              -- AutoAddToKennel: default off
@@ -149,7 +155,7 @@ BEGIN TRY
         @kennelId,
         @hasherId,
         COALESCE(LTRIM(RTRIM(@lyrics)), ''),            -- Lyrics is NOT NULL; store '' if omitted
-        NULLIF(LTRIM(RTRIM(@tags)), ''),
+        CASE WHEN LEN(COALESCE(@tags, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@tags)) END,
         0
     );
 

@@ -452,6 +452,19 @@ class ChatPageController extends GetxController {
   }
 
   Future<void> handleSendPressed(String text) async {
+    // A blank composer must never reach the server. The send SPs refuse an
+    // empty message, and ServiceCommon.sendHttpPost turns any error envelope
+    // into an alert — so pressing send on nothing produced a dialog rather
+    // than nothing happening.
+    //
+    // Dart's trim() strips whitespace ONLY. An emoji-only message is not
+    // blank here and must still send: the server used to disagree, because
+    // in the database's collation a surrogate pair compares equal to '',
+    // which is what refused Kilty's single wave on 2026-09-19. That was
+    // fixed in hcapp_sendRoomMessage; this guard must not reintroduce it,
+    // so it stays a trim() test and never a length-in-characters one.
+    if (text.trim().isEmpty) return;
+
     final uuid = const Uuid().v4();
     final newMsg = core.Message.text(
       id: uuid,

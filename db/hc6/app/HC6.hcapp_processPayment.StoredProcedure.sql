@@ -128,6 +128,12 @@ AS
 --   Success envelope added.
 --   Delegation targets updated to HC6 SPs.
 -- =====================================================================
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -797,7 +803,7 @@ BEGIN TRY
                  COALESCE(@specialRunPriceReason, ''),
                  COALESCE(@surcharge, 0),
                  CASE WHEN @productType = 2 THEN @memberExpiry ELSE NULL END,
-                 NULLIF(LTRIM(RTRIM(@notes)), ''),
+                 CASE WHEN LEN(COALESCE(@notes, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@notes)) END,
                  GETDATE());
 
             -- ---------------------------------------------------------------
