@@ -1,3 +1,6 @@
+2.0.82+717
+    • Version column: a version with a single device is nearly white, so the one-off builds recede and the real releases stand out.
+
 2.0.81+716
     • Version column: shaded by log(devices), so the versions with a handful of users are no longer all the same pale purple. Busiest build is still darkest.
 

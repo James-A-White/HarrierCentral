@@ -1,3 +1,11 @@
+## 2.0.82+717 (2026-09-20)
+### Improvements
+- **A version with one device is now nearly white.** The shading scale is
+  anchored at both ends — one device reads as "nobody is on this", the
+  busiest build stays the darkest purple — so the tail of one-off builds
+  drops back visually instead of competing with the releases people are
+  actually running.
+
 ## 2.0.81+716 (2026-09-20)
 ### Improvements
 - **The version column shades by log(devices) instead of the raw share.** One
