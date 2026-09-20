@@ -12,7 +12,8 @@ AS
 --              Login, Payment, Portal, Error, Push, App Error), recent login details,
 --              and recently updated/active events.
 -- Parameters: @deviceId, @accessToken (auth)
--- Returns: Rowset 1: VersionData (iOS vs Android)
+-- Returns: Rowset 1: VersionData (iOS vs Android, plus trackStatus:
+--                     1 = 3.1.x/3.2.x, 2 = 3.0.x, 3 = 2.x.y, 0 = other)
 --          Rowset 2: IntegrationJobData
 --          Rowset 3: UsageStatistics
 --          Rowset 4: LoginInformation
@@ -33,6 +34,9 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+--   - 2026-09-20: added trackStatus to rowset 1 (additive; the portal
+--     colours a version tile from it — dark green 3.1/3.2, yellow 3.0,
+--     red 2.x)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -78,14 +82,36 @@ BEGIN TRY
 		FROM LatestLogins cte
 		INNER JOIN HC.LaunchAndLogin ll2 WITH (NOLOCK) ON cte.idx = ll2.idx
 		GROUP BY ll2.HcVersion
+	),
+	VersionParts AS (
+		SELECT
+			SUBSTRING(HcVersion, 1, PATINDEX('%-%', HcVersion) - 1) AS versionNum,
+			SUBSTRING(HcVersion, PATINDEX('%-%', HcVersion) + 1, 1000) AS buildNum,
+			isiPhone,
+			isNotiPhone
+		FROM VersionStats
 	)
 	SELECT
-		SUBSTRING(HcVersion, 1, PATINDEX('%-%', HcVersion) - 1) AS versionNum,
-		SUBSTRING(HcVersion, PATINDEX('%-%', HcVersion) + 1, 1000) AS buildNum,
+		versionNum,
+		buildNum,
 		isiPhone,
-		isNotiPhone
-	FROM VersionStats
-	ORDER BY SUBSTRING(HcVersion, PATINDEX('%-%', HcVersion) + 1, 1000) DESC;
+		isNotiPhone,
+		-- Release train this version belongs to. The portal picks the tile
+		-- colour from this, so the definition of "current" lives here and not
+		-- in the client.
+		--   1 = current   3.1.x / 3.2.x  (dark green)
+		--   2 = previous  3.0.x          (yellow)
+		--   3 = legacy    2.x.y          (red)
+		--   0 = anything else            (neutral)
+		CAST(CASE
+			WHEN versionNum LIKE '3.1.%' OR versionNum = '3.1'
+			  OR versionNum LIKE '3.2.%' OR versionNum = '3.2' THEN 1
+			WHEN versionNum LIKE '3.0.%' OR versionNum = '3.0' THEN 2
+			WHEN versionNum LIKE '2.%' THEN 3
+			ELSE 0
+		END AS SMALLINT) AS trackStatus
+	FROM VersionParts
+	ORDER BY buildNum DESC;
 
 	-- Result Set 2: Integration job data
 	;WITH LatestJobs AS (

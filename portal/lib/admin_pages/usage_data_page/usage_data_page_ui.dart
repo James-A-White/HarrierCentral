@@ -217,6 +217,38 @@ class _HcVersionColumn extends StatelessWidget {
 
   final UsageDataPageController controller;
 
+  /// Base hue for a version tile. The release train is decided server-side by
+  /// hcportal_getUsageData (trackStatus), so what counts as "current" changes
+  /// with an SP deploy rather than a portal rebuild.
+  ///   1 = current  3.1.x / 3.2.x  → dark green
+  ///   2 = previous 3.0.x          → yellow
+  ///   3 = legacy   2.x.y          → red
+  ///   0 = anything else           → the original purple
+  static Color _trackColor(int trackStatus) {
+    switch (trackStatus) {
+      case 1:
+        return Colors.green.shade900;
+      case 2:
+        return Colors.yellow.shade700;
+      case 3:
+        return Colors.red.shade700;
+      default:
+        return Colors.purple;
+    }
+  }
+
+  /// The track colour, lightened for the quieter versions so the tile still
+  /// reads as "how many people are on this build" without losing the hue —
+  /// forcing an absolute lightness would turn dark green into pale green.
+  static Color _tileColor(int trackStatus, double usageShare) {
+    final base = HSLColor.fromColor(_trackColor(trackStatus));
+    return base
+        .withLightness(
+          (base.lightness + (1.0 - usageShare) * 0.18).clamp(0.0, 0.92),
+        )
+        .toColor();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() => SingleChildScrollView(
@@ -227,10 +259,16 @@ class _HcVersionColumn extends StatelessWidget {
               final maxVersion = controller.maxHcVersion.value == 0
                   ? 1
                   : controller.maxHcVersion.value;
-              final lightness =
-                  ((((totalUsers / maxVersion) / 2.0) - 0.85).abs())
-                      .clamp(0.0, 1.0);
-              final textColor = lightness < 0.7 ? Colors.white : Colors.black;
+              final usageShare = (totalUsers / maxVersion).clamp(0.0, 1.0);
+              final tileColor = _tileColor(hcVer.trackStatus, usageShare);
+              // The current train is always white on dark green; every other
+              // tile takes whichever reads against the colour it ended up.
+              final textColor = hcVer.trackStatus == 1
+                  ? Colors.white
+                  : ThemeData.estimateBrightnessForColor(tileColor) ==
+                          Brightness.dark
+                      ? Colors.white
+                      : Colors.black;
               final versionKey = '${hcVer.versionNum}/${hcVer.buildNum}';
               final isUpdating =
                   controller.isUpdatingVersion.value == versionKey;
@@ -250,9 +288,7 @@ class _HcVersionColumn extends StatelessWidget {
                     width: double.infinity,
                     constraints: const BoxConstraints(minHeight: 80),
                     padding: const EdgeInsets.symmetric(vertical: 6),
-                    color: HSLColor.fromColor(Colors.purple)
-                        .withLightness(lightness)
-                        .toColor(),
+                    color: tileColor,
                     child: isUpdating
                         ? const HcCircularProgressIndicator(
                             key: Key('version_loading'),
