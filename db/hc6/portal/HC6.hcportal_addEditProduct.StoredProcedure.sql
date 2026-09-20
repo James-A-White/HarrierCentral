@@ -44,6 +44,12 @@ AS
 -- Breaking Changes: none
 -- =====================================================================
 
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -89,7 +95,7 @@ END
 
 -- Pre-flight, all before BEGIN TRANSACTION so there is no rollback that
 -- could erase an error log written beside it.
-IF (NULLIF(LTRIM(RTRIM(ISNULL(@name, ''))), '') IS NULL)
+IF (LEN(COALESCE(@name, N'')) = 0)
 BEGIN
     SELECT 0 AS Success, 'Give the product a name.' AS ErrorMessage;
     RETURN;

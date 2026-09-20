@@ -27,6 +27,12 @@ AS
 -- HC5 Source:  None — new for HC6 public web
 -- Breaking Changes: None
 -- =====================================================================
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -76,10 +82,10 @@ BEGIN TRY
 
         -- Display name: kennel-specific hash name first, then global hash
         -- name, then the computed DisplayName (which handles first/last).
-        -- NULLIF strips empty strings so COALESCE skips them.
+        -- Blank names become NULL so COALESCE skips them (emoji are not blank).
         COALESCE(
-            NULLIF(LTRIM(RTRIM(hkm.KennelHashName)), ''),
-            NULLIF(LTRIM(RTRIM(h.HashName)),         ''),
+            CASE WHEN LEN(COALESCE(hkm.KennelHashName, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(hkm.KennelHashName)) END,
+            CASE WHEN LEN(COALESCE(h.HashName, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(h.HashName)) END,
             h.DisplayName
         ) AS DisplayName,
 

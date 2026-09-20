@@ -42,6 +42,12 @@ AS
 -- Created: 2026-06-08
 -- HC5 Source: None — new feature
 -- =====================================================================
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -142,7 +148,7 @@ BEGIN TRY
         CASE WHEN @externalCount > 0 THEN @externalNames ELSE NULL END;
 
     INSERT INTO HC.DownDowns (id, EventId, KennelId, ChargeText, SongChoice, SongId, IsDone, CreatedByUserId, ChargePhotoUrl, ExternalNames)
-    VALUES (@newId, @eventId, @kennelId, @chargeText, NULLIF(LTRIM(RTRIM(@songChoice)), ''), @songId, 0, @userId,
+    VALUES (@newId, @eventId, @kennelId, @chargeText, CASE WHEN LEN(COALESCE(@songChoice, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@songChoice)) END, @songId, 0, @userId,
             NULLIF(LTRIM(RTRIM(@chargePhotoUrl)), ''), @externalNamesToStore);
 
     INSERT INTO HC.DownDownHashers (DownDownId, HasherId)

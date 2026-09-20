@@ -40,6 +40,12 @@ AS
 -- HC5 Source: none (new)
 -- Breaking Changes: none
 -- =====================================================================
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -98,7 +104,7 @@ END
 
 -- Pre-flight, before any transaction: nothing to roll back, so no chance of
 -- rolling back the error log with it.
-IF (NULLIF(LTRIM(RTRIM(ISNULL(@name, ''))), '') IS NULL)
+IF (LEN(COALESCE(@name, N'')) = 0)
 BEGIN
     SET @errorCode = 1342; SET @errorType = 2; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, kennelId)

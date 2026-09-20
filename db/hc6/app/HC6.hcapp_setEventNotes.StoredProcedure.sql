@@ -27,6 +27,12 @@ AS
 -- HC5 Source: none (new)
 -- Breaking Changes: none
 -- =====================================================================
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -83,7 +89,7 @@ END
 BEGIN TRY
     BEGIN TRANSACTION;
     UPDATE HC.HasherEventMap
-       SET Notes = NULLIF(LTRIM(RTRIM(@notes)), ''),
+       SET Notes = CASE WHEN LEN(COALESCE(@notes, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@notes)) END,
            NotesVisibility = CASE WHEN @notesVisibility IN (0, 1) THEN @notesVisibility ELSE NotesVisibility END,
            updatedAt = GETDATE()
      WHERE id = @hemId;

@@ -31,6 +31,12 @@ AS
 -- Created: 2026-06-08
 -- HC5 Source: None — new feature
 -- =====================================================================
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -132,7 +138,7 @@ BEGIN TRY
 
     UPDATE HC.DownDowns
     SET ChargeText     = @chargeText,
-        SongChoice     = NULLIF(LTRIM(RTRIM(@songChoice)), ''),
+        SongChoice     = CASE WHEN LEN(COALESCE(@songChoice, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@songChoice)) END,
         SongId         = @songId,
         ChargePhotoUrl = COALESCE(@chargePhotoUrl, ChargePhotoUrl),
         UpdatedAt      = GETUTCDATE()

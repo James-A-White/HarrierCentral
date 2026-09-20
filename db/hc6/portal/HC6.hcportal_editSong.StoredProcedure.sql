@@ -47,6 +47,12 @@ AS
 --   Service accounts (callerType != 0) are always rejected.
 -- =====================================================================
 
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -131,13 +137,13 @@ BEGIN TRY
     UPDATE HC.Song
     SET
         SongName    = LTRIM(RTRIM(@songName)),
-        TuneOf      = NULLIF(LTRIM(RTRIM(@tuneOf)), ''),
+        TuneOf      = CASE WHEN LEN(COALESCE(@tuneOf, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@tuneOf)) END,
         BawdyRating = @bawdyRating,
-        Notes       = NULLIF(LTRIM(RTRIM(@notes)), ''),
-        Actions     = NULLIF(LTRIM(RTRIM(@actions)), ''),
-        Variants    = NULLIF(LTRIM(RTRIM(@variants)), ''),
+        Notes       = CASE WHEN LEN(COALESCE(@notes, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@notes)) END,
+        Actions     = CASE WHEN LEN(COALESCE(@actions, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@actions)) END,
+        Variants    = CASE WHEN LEN(COALESCE(@variants, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@variants)) END,
         Lyrics      = COALESCE(LTRIM(RTRIM(@lyrics)), ''),
-        Tags        = NULLIF(LTRIM(RTRIM(@tags)), ''),
+        Tags        = CASE WHEN LEN(COALESCE(@tags, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@tags)) END,
         updatedAt   = CONVERT(datetimeoffset(7), sysutcdatetime(), 0)
     WHERE id = @songId AND Removed = 0;
 

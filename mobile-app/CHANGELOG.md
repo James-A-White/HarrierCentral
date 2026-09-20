@@ -6,6 +6,10 @@
   it closed the only one there was. The tap is now held until the app is up,
   and then takes you to the thread it came from, which it never did on a cold
   start even before.
+- **Pressing send on an empty box** no longer shows an error. The message went
+  to the server, which refused it, and the refusal became an alert. A message
+  that is only emoji is not empty and still sends — that one was the server's
+  fault, and is fixed there.
 
 ## 3.1.0+1388 (2026-09-19)
 ### Fixes

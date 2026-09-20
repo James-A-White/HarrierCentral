@@ -19,11 +19,17 @@ AS
 -- Author: Harrier Central
 -- Created: 2026-09-11
 -- =====================================================================
+-- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
+-- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
+-- and NULLIF(LTRIM(RTRIM(x)), '') threw away any value made only of emoji.
+-- LEN() counts code units, so emoji survive while a string of spaces still
+-- measures 0. (2026-09-19, after a room message of one wave was refused.)
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
 DECLARE @procName NVARCHAR(128) = OBJECT_NAME(@@PROCID);
-DECLARE @clean NVARCHAR(4000) = NULLIF(LTRIM(RTRIM(@notes)), '');
+DECLARE @clean NVARCHAR(4000) = CASE WHEN LEN(COALESCE(@notes, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@notes)) END;
 IF (@clean IS NULL) RETURN;
 
 BEGIN TRY
