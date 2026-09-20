@@ -1,3 +1,4 @@
+import 'package:map_launcher/map_launcher.dart' as maps;
 import 'package:harrier_central/imports.dart';
 
 /// Settings — device + account preferences split out of My Profile
@@ -12,9 +13,15 @@ class SettingsPageController extends GetxController {
   /// page owns both and why _ownedMask must cover them together: one
   /// read-modify-write, one save, no way for the two to overwrite each other.
   final RxInt autoRunPreference = 0.obs;
+
+  /// Which external map app opens when a hasher taps an address, or empty
+  /// for "ask me every time". Moved here from My Account on 2026-09-20,
+  /// where it could only ever be CLEARED — there was no way to change it
+  /// without first clearing it and then opening a map (James).
+  final RxString mapProvider = ''.obs;
   final RxBool savePhotosToCameraRoll = true.obs;
-  final RxInt trackingQuality = (getIntPref(IntPrefsEnum.trackingQuality) ?? 2)
-      .obs;
+  final RxInt trackingQuality =
+      (getIntPref(IntPrefsEnum.trackingQuality) ?? 2).obs;
   final RxBool isSaving = false.obs;
   final RxBool isLoading = true.obs;
 
@@ -26,7 +33,6 @@ class SettingsPageController extends GetxController {
   final RxBool chatRoomsLoading = true.obs;
   final RxBool chatRoomsFailed = false.obs;
   final RxInt savingRoomType = (-1).obs;
-
 
   HashersModel? _hasher;
 
@@ -46,17 +52,18 @@ class SettingsPageController extends GetxController {
     final int stored = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
     distancePreference.value = stored & hasherPref_distanceMeasuredIn;
     autoRunPreference.value = stored & hasherPref_distanceForAutoDisplay;
+    mapProvider.value = getStringPref(StringPrefsEnum.mapPreference) ?? '';
     savePhotosToCameraRoll.value =
         (stored & hasherPref_cameraRollSaveDisabled) == 0;
     unawaited(_loadHasher());
     unawaited(loadChatRooms());
   }
 
-
   Future<void> loadChatRooms() async {
     chatRoomsLoading.value = true;
-    final List<ChatRoom>? rooms =
-        await ChatRoomService.fetchRooms(includeOptedOut: true);
+    final List<ChatRoom>? rooms = await ChatRoomService.fetchRooms(
+      includeOptedOut: true,
+    );
     chatRoomsFailed.value = rooms == null;
     chatRooms.value = rooms ?? <ChatRoom>[];
     chatRoomsLoading.value = false;
@@ -150,6 +157,33 @@ class SettingsPageController extends GetxController {
     final int previous = distancePreference.value;
     distancePreference.value = value ?? 0;
     await _savePreferences(onFailureDistance: previous);
+  }
+
+  /// Opens the SAME sheet a hasher sees the first time they open a map,
+  /// in choose-only mode: it stores the pick and launches nothing. Reusing
+  /// it means this screen offers exactly the providers that are installed,
+  /// and cannot drift from the chooser (James, 2026-09-20).
+  ///
+  /// A local coords/title/address are required by the signature but unused
+  /// in this mode.
+  Future<void> chooseMapProvider() async {
+    final BuildContext? context = Get.context;
+    if (context == null) return;
+    await Utilities.openMapsSheet(
+      context,
+      '',
+      maps.Coords(0, 0),
+      '',
+      ValueNotifier<bool>(true),
+      chooseOnly: true,
+    );
+    mapProvider.value = getStringPref(StringPrefsEnum.mapPreference) ?? '';
+  }
+
+  /// Back to being asked every time.
+  Future<void> clearMapProvider() async {
+    await setStringPref(StringPrefsEnum.mapPreference, '');
+    mapProvider.value = '';
   }
 
   Future<void> setAutoRunPreference(int? value) async {
@@ -354,6 +388,73 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  /// Which map app opens when a hasher taps an address.
+  ///
+  /// Always drawn, and that is the change (James, 2026-09-20). On My Account
+  /// this appeared ONLY once a preference existed, and offered only "Clear" —
+  /// so a hasher who had picked Google Maps could not switch to Waze without
+  /// clearing the setting, opening a run, and choosing again from the sheet.
+  /// Here it states what is set, and Change opens that same sheet directly.
+  Widget _mapProviderSection(SettingsPageController controller) {
+    final String current = controller.mapProvider.value;
+    final bool isSet = current.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        const FancyDivider(
+          key: Key('settings_map_provider_divider'),
+          innerColor: Colors.white,
+          topMargin: 20.0,
+          bottomMargin: 10.0,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Map App',
+            style: ts_headingLarge,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Text(
+            isSet
+                ? 'Addresses open in $current.'
+                : 'You are asked which app to use each time you open an '
+                      'address.',
+            style: ts_body,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 8.0),
+          // Wrap, not Row: at a large text size two buttons are wider than a
+          // phone, and a Row overflows.
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: <Widget>[
+              ElevatedButton(
+                onPressed: () => unawaited(controller.chooseMapProvider()),
+                child: Text(
+                  isSet ? 'Change' : 'Choose an app',
+                  style: ts_button,
+                ),
+              ),
+              if (isSet)
+                TextButton(
+                  onPressed: () => unawaited(controller.clearMapProvider()),
+                  child: Text('Ask me every time', style: ts_button),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   /// "Automatically show all runs within N" — the radius that puts nearby
   /// runs on the list without being asked.
   ///
@@ -382,8 +483,11 @@ class SettingsPage extends StatelessWidget {
         if (!appModel.hasLocationPermissions) ...<Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Distance to Runs', style: ts_headingLarge,
-                textAlign: TextAlign.center),
+            child: Text(
+              'Distance to Runs',
+              style: ts_headingLarge,
+              textAlign: TextAlign.center,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -407,8 +511,7 @@ class SettingsPage extends StatelessWidget {
           ),
         ] else
           AbsorbPointer(
-            absorbing:
-                controller.isSaving.value || controller.isLoading.value,
+            absorbing: controller.isSaving.value || controller.isLoading.value,
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.yellow[100],
@@ -424,8 +527,7 @@ class SettingsPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text('Automatically Show Runs',
-                            style: ts_headingBlack),
+                        Text('Automatically Show Runs', style: ts_headingBlack),
                         _sectionSpinner(controller),
                       ],
                     ),
@@ -439,24 +541,25 @@ class SettingsPage extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 12, top: 6),
                       child: Row(
                         children: <Widget>[
-                          Text('Or...   ...Automatically Show All Runs Within...',
-                              style: ts_footnoteBlack),
+                          Text(
+                            'Or...   ...Automatically Show All Runs Within...',
+                            style: ts_footnoteBlack,
+                          ),
                         ],
                       ),
                     ),
                     // The label carries the hasher's own units, so changing
                     // miles/kilometres above relabels these without a reload.
-                    for (final MapEntry<int, int> option
-                        in const <int, int>{
-                          hasherPref_10: 10,
-                          hasherPref_25: 25,
-                          hasherPref_50: 50,
-                          hasherPref_75: 75,
-                          hasherPref_100: 100,
-                          hasherPref_150: 150,
-                          hasherPref_250: 250,
-                          hasherPref_500: 500,
-                        }.entries)
+                    for (final MapEntry<int, int> option in const <int, int>{
+                      hasherPref_10: 10,
+                      hasherPref_25: 25,
+                      hasherPref_50: 50,
+                      hasherPref_75: 75,
+                      hasherPref_100: 100,
+                      hasherPref_150: 150,
+                      hasherPref_250: 250,
+                      hasherPref_500: 500,
+                    }.entries)
                       Row(
                         children: <Widget>[
                           Radio<int>(value: option.key),
@@ -559,10 +662,18 @@ class SettingsPage extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: <Widget>[
-                  _participationChip(controller, room, kRoomParticipatePush,
-                      'Notify me'),
-                  _participationChip(controller, room,
-                      kRoomParticipateBadgesOnly, 'Badge only'),
+                  _participationChip(
+                    controller,
+                    room,
+                    kRoomParticipatePush,
+                    'Notify me',
+                  ),
+                  _participationChip(
+                    controller,
+                    room,
+                    kRoomParticipateBadgesOnly,
+                    'Badge only',
+                  ),
                   _participationChip(controller, room, kRoomOptOut, 'Leave'),
                 ],
               ),
@@ -670,10 +781,7 @@ class SettingsPage extends StatelessWidget {
                   ),
                   Text(
                     sub,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],
               ),
@@ -742,8 +850,9 @@ class SettingsPage extends StatelessWidget {
                             ),
                             child: RadioGroup(
                               groupValue: controller.distancePreference.value,
-                              onChanged: (int? v) =>
-                                  unawaited(controller.setDistancePreference(v)),
+                              onChanged: (int? v) => unawaited(
+                                controller.setDistancePreference(v),
+                              ),
                               child: Column(
                                 children: <Widget>[
                                   const SizedBox(height: 10, width: 10),
@@ -932,6 +1041,7 @@ class SettingsPage extends StatelessWidget {
                         ),
                         // ------------------------- Chat Rooms
                         _autoShowRunsSection(controller),
+                        _mapProviderSection(controller),
                         _chatRoomsSection(controller),
                       ],
                     ),

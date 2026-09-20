@@ -132,13 +132,26 @@ class Utilities {
     return result;
   }
 
+  /// The map-provider sheet.
+  ///
+  /// Two jobs, one sheet (James, 2026-09-20). Normally it is the chooser
+  /// shown when a hasher opens a map for the first time: pick a provider,
+  /// optionally remember it, and the map opens. With [chooseOnly] it is the
+  /// same list used as a SETTING — picking stores the preference and the
+  /// sheet closes without launching anything, and the remember-me toggle is
+  /// hidden because choosing IS the act of remembering.
+  ///
+  /// Same sheet rather than a second list on purpose: the providers offered
+  /// are whatever MapLauncher finds installed, and two copies of that would
+  /// drift the moment somebody installs Waze.
   static Future<void> openMapsSheet(
     BuildContext context,
     String title,
     maps.Coords coords,
     String address,
-    ValueNotifier<bool> saveUserMapPreference,
-  ) async {
+    ValueNotifier<bool> saveUserMapPreference, {
+    bool chooseOnly = false,
+  }) async {
     try {
       final List<maps.AvailableMap> availableMaps =
           await maps.MapLauncher.installedMaps;
@@ -150,7 +163,7 @@ class Utilities {
         ),
         builder: (BuildContext context) {
           return SizedBox(
-            height: (availableMaps.length * 64.0) + 170,
+            height: (availableMaps.length * 64.0) + (chooseOnly ? 110 : 170),
             child: SafeArea(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -173,7 +186,7 @@ class Utilities {
                             padding: const EdgeInsets.symmetric(vertical: 4.0),
                             child: ListTile(
                               onTap: () async {
-                                if (saveUserMapPreference.value) {
+                                if (chooseOnly || saveUserMapPreference.value) {
                                   await setStringPref(
                                     StringPrefsEnum.mapPreference,
                                     map.mapName,
@@ -182,6 +195,8 @@ class Utilities {
                                 Navigator.of(
                                   navigatorKey.currentContext!,
                                 ).pop();
+
+                                if (chooseOnly) return;
 
                                 await Future<void>.delayed(
                                   const Duration(milliseconds: 200),
@@ -214,7 +229,7 @@ class Utilities {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      MapSnackbar(saveUserMapPreference),
+                      if (!chooseOnly) MapSnackbar(saveUserMapPreference),
                       Text('Always use this option', style: ts_titleBlack),
                       const SizedBox(width: 20.0),
                     ],

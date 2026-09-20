@@ -30,7 +30,8 @@ class PasskeysController extends GetxController {
 
   Future<void> load() async {
     loading.value = true;
-    final List<AccountPasskey>? keys = await PasskeyManageService.fetchPasskeys();
+    final List<AccountPasskey>? keys =
+        await PasskeyManageService.fetchPasskeys();
     if (isClosed) return;
     failed.value = keys == null;
     passkeys.value = keys ?? <AccountPasskey>[];
@@ -81,8 +82,11 @@ class PasskeysSection extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Passkeys', style: ts_headingLarge,
-                textAlign: TextAlign.center),
+            child: Text(
+              'Passkeys',
+              style: ts_headingLarge,
+              textAlign: TextAlign.center,
+            ),
           ),
           if (controller.failed.value) ...<Widget>[
             Padding(
@@ -127,7 +131,12 @@ class PasskeysSection extends StatelessWidget {
             for (final AccountPasskey key in controller.passkeys)
               _row(controller, key),
             Padding(
-              padding: const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 12),
+              padding: const EdgeInsets.only(
+                left: 8,
+                right: 8,
+                top: 4,
+                bottom: 12,
+              ),
               child: Text(
                 'Removing a passkey here stops it signing you in. The passkey '
                 'itself stays in that device\'s own password manager until '
@@ -157,8 +166,10 @@ class PasskeysSection extends StatelessWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                Icon(key.isMobile ? Icons.smartphone : Icons.computer,
-                    color: Colors.white70),
+                Icon(
+                  key.isMobile ? Icons.smartphone : Icons.computer,
+                  color: Colors.white70,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -191,20 +202,24 @@ class PasskeysSection extends StatelessWidget {
               children: confirming
                   ? <Widget>[
                       ElevatedButton(
-                        onPressed:
-                            busy ? null : () => unawaited(controller.remove(key)),
+                        onPressed: busy
+                            ? null
+                            : () => unawaited(controller.remove(key)),
                         child: busy
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white),
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
                               )
                             : Text('Remove it', style: ts_button),
                       ),
                       TextButton(
-                        onPressed:
-                            busy ? null : () => controller.confirmingId.value = '',
+                        onPressed: busy
+                            ? null
+                            : () => controller.confirmingId.value = '',
                         child: Text('Keep', style: ts_button),
                       ),
                     ]
