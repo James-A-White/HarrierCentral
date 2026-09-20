@@ -23,6 +23,12 @@ AS
 --   and 46 signed in within 90 days, so that filter would cut off 13
 --   active people in a week.
 --
+--   SignedOutAt is stamped so ValidateAppAuth can refuse the device with a
+--   DISTINCT error (type 7) rather than the ordinary bad-token one. That
+--   distinction is load-bearing: the client wipes the install on type 7,
+--   and a phone with a drifting clock produces a bad-token error that must
+--   never do that.
+--
 --   FcmToken and ApnsToken are cleared too, and that is not tidiness: the
 --   push queries filter on the token being present, not on `removed`, so
 --   a lost phone would otherwise keep buzzing with this hasher's chats.
@@ -102,6 +108,7 @@ BEGIN TRY
 
     UPDATE HC.Device
        SET DeviceSecret = @newSecret,   -- the revocation itself
+           SignedOutAt  = SYSDATETIMEOFFSET(),  -- so the refusal can explain
            FcmToken     = NULL,         -- stop the pushes; they key on this
            ApnsToken    = NULL,
            removed      = 1,            -- list-only meaning (see header)
