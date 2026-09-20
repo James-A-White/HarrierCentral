@@ -55,6 +55,11 @@ namespace HcWebApi.Endpoints
             "sendChatMessage",
             "markChatRead",
             "issuePasskeyInviteCode",
+            // Managing passkeys, not just making them (E9.F7.S18, 2026-09-20).
+            // Both are thin wrappers over the app's hcapp_ SPs, so the web and
+            // the app cannot drift apart on who may remove what.
+            "listPasskeys",
+            "deletePasskey",
             "getAllSongs",
             "getReportContext",
             "logWebError",
