@@ -1,3 +1,13 @@
+## 2.0.80+715 (2026-09-20)
+### Improvements
+- **The app version on a hasher card is coloured by release train.** Dark
+  green with white text for the current 3.1.x / 3.2.x, yellow for 3.0.x, red
+  for 2.x.y. The old rules in `hcportal_getUsageData` named only 1.x and 2.x,
+  so every 3.x build scored "outdated" and showed red while 2.1.2 showed
+  green — backwards on every card.
+- **The version column is purple again**, shaded by how many devices are on
+  that build, as it was before 2.0.79.
+
 ## 2.0.79+714 (2026-09-20)
 ### Improvements
 - **Usage Data: version tiles are coloured by release train.** The current

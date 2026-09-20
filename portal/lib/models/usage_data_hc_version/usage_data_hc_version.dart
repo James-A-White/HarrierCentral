@@ -12,7 +12,6 @@ abstract class UdHcVersion with _$UdHcVersion {
     required String buildNum,
     required int isiPhone,
     required int isNotiPhone,
-    @Default(0) int trackStatus,
   }) = _UdHcVersion;
 
   factory UdHcVersion.fromJson(Map<String, dynamic> json) =>

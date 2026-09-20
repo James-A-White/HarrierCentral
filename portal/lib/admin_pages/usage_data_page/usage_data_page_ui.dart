@@ -217,38 +217,6 @@ class _HcVersionColumn extends StatelessWidget {
 
   final UsageDataPageController controller;
 
-  /// Base hue for a version tile. The release train is decided server-side by
-  /// hcportal_getUsageData (trackStatus), so what counts as "current" changes
-  /// with an SP deploy rather than a portal rebuild.
-  ///   1 = current  3.1.x / 3.2.x  → dark green
-  ///   2 = previous 3.0.x          → yellow
-  ///   3 = legacy   2.x.y          → red
-  ///   0 = anything else           → the original purple
-  static Color _trackColor(int trackStatus) {
-    switch (trackStatus) {
-      case 1:
-        return Colors.green.shade900;
-      case 2:
-        return Colors.yellow.shade700;
-      case 3:
-        return Colors.red.shade700;
-      default:
-        return Colors.purple;
-    }
-  }
-
-  /// The track colour, lightened for the quieter versions so the tile still
-  /// reads as "how many people are on this build" without losing the hue —
-  /// forcing an absolute lightness would turn dark green into pale green.
-  static Color _tileColor(int trackStatus, double usageShare) {
-    final base = HSLColor.fromColor(_trackColor(trackStatus));
-    return base
-        .withLightness(
-          (base.lightness + (1.0 - usageShare) * 0.18).clamp(0.0, 0.92),
-        )
-        .toColor();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Obx(() => SingleChildScrollView(
@@ -259,16 +227,10 @@ class _HcVersionColumn extends StatelessWidget {
               final maxVersion = controller.maxHcVersion.value == 0
                   ? 1
                   : controller.maxHcVersion.value;
-              final usageShare = (totalUsers / maxVersion).clamp(0.0, 1.0);
-              final tileColor = _tileColor(hcVer.trackStatus, usageShare);
-              // The current train is always white on dark green; every other
-              // tile takes whichever reads against the colour it ended up.
-              final textColor = hcVer.trackStatus == 1
-                  ? Colors.white
-                  : ThemeData.estimateBrightnessForColor(tileColor) ==
-                          Brightness.dark
-                      ? Colors.white
-                      : Colors.black;
+              final lightness =
+                  ((((totalUsers / maxVersion) / 2.0) - 0.85).abs())
+                      .clamp(0.0, 1.0);
+              final textColor = lightness < 0.7 ? Colors.white : Colors.black;
               final versionKey = '${hcVer.versionNum}/${hcVer.buildNum}';
               final isUpdating =
                   controller.isUpdatingVersion.value == versionKey;
@@ -288,7 +250,9 @@ class _HcVersionColumn extends StatelessWidget {
                     width: double.infinity,
                     constraints: const BoxConstraints(minHeight: 80),
                     padding: const EdgeInsets.symmetric(vertical: 6),
-                    color: tileColor,
+                    color: HSLColor.fromColor(Colors.purple)
+                        .withLightness(lightness)
+                        .toColor(),
                     child: isUpdating
                         ? const HcCircularProgressIndicator(
                             key: Key('version_loading'),
@@ -877,6 +841,7 @@ class _VersionRow extends StatelessWidget {
 
   final UdRecentUserModel user;
 
+  /// Phone OS version chip — pale staleness shades, oldest is reddest.
   Color _highlightColor(int level) {
     switch (level) {
       case 0:
@@ -891,6 +856,18 @@ class _VersionRow extends StatelessWidget {
         return Colors.purple.shade300;
     }
   }
+
+  /// App version chip — the release train, from highlightHcVersion:
+  /// 0 = current 3.1.x/3.2.x, 1 = previous 3.0.x, 3 = legacy 2.x.y,
+  /// anything else = a version the SP has not been told about.
+  static const Map<int, (Color, Color)> _hcTrackColors = <int, (Color, Color)>{
+    0: (Color(0xFF1B5E20), Colors.white), // dark green
+    1: (Color(0xFFFBC02D), Colors.black), // yellow
+    3: (Color(0xFFD32F2F), Colors.white), // red
+  };
+
+  (Color, Color) _hcTrackColor(int level) =>
+      _hcTrackColors[level] ?? (Colors.purple.shade300, Colors.black);
 
   @override
   Widget build(BuildContext context) {
@@ -931,20 +908,24 @@ class _VersionRow extends StatelessWidget {
             size: 15,
           ),
         ],
-        ColoredBox(
-          color: _highlightColor(user.highlightHcVersion),
-          child: AutoSizeText(
-            user.hcVersion.replaceAll('HC Ver: ', ''),
-            minFontSize: 5,
-            maxFontSize: 32,
-            maxLines: 1,
-            style: TextStyle(
-              fontWeight: user.highlightHcVersion == 1
-                  ? FontWeight.w900
-                  : FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
+        Builder(
+          builder: (BuildContext context) {
+            final (Color background, Color foreground) =
+                _hcTrackColor(user.highlightHcVersion);
+            return ColoredBox(
+              color: background,
+              child: AutoSizeText(
+                user.hcVersion.replaceAll('HC Ver: ', ''),
+                minFontSize: 5,
+                maxFontSize: 32,
+                maxLines: 1,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: foreground,
+                ),
+              ),
+            );
+          },
         ),
         const Expanded(child: SizedBox()),
       ],
