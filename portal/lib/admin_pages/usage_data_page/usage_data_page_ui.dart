@@ -227,10 +227,16 @@ class _HcVersionColumn extends StatelessWidget {
               final maxVersion = controller.maxHcVersion.value == 0
                   ? 1
                   : controller.maxHcVersion.value;
-              final lightness =
-                  ((((totalUsers / maxVersion) / 2.0) - 0.85).abs())
-                      .clamp(0.0, 1.0);
-              final textColor = lightness < 0.7 ? Colors.white : Colors.black;
+              // Shade by log(devices) rather than the raw share. One release
+              // normally holds most of the estate — 3.0.12 was 321 of 399 —
+              // and a linear ratio then pins every other tile to the same
+              // pale purple, so a column of thirteen versions showed two
+              // shades. 0.85 = palest, 0.35 = the busiest build.
+              final share = log(totalUsers + 1) / log(maxVersion + 1);
+              final lightness = (0.85 - share * 0.50).clamp(0.35, 0.85);
+              // 0.52 is where purple crosses from dark to light for
+              // Flutter's own contrast estimate; below it, white reads.
+              final textColor = lightness < 0.52 ? Colors.white : Colors.black;
               final versionKey = '${hcVer.versionNum}/${hcVer.buildNum}';
               final isUpdating =
                   controller.isUpdatingVersion.value == versionKey;

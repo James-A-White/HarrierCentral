@@ -1,3 +1,12 @@
+## 2.0.81+716 (2026-09-20)
+### Improvements
+- **The version column shades by log(devices) instead of the raw share.** One
+  release normally holds most of the estate — 3.0.12 is 321 of 399 — and a
+  linear ratio pinned every other tile to the same pale purple, so thirteen
+  versions showed as two shades. The busiest build is still the darkest; the
+  quiet ones now separate from each other. Text flips to white at the
+  lightness where purple actually stops carrying it.
+
 ## 2.0.80+715 (2026-09-20)
 ### Improvements
 - **The app version on a hasher card is coloured by release train.** Dark
