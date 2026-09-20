@@ -1,3 +1,6 @@
+2.0.81+716
+    • Version column: shaded by log(devices), so the versions with a handful of users are no longer all the same pale purple. Busiest build is still darkest.
+
 2.0.80+715
     • Hasher cards: the app version chip is coloured by release train — dark green for the current 3.1/3.2, yellow for 3.0, red for 2.x. It used to show the newest app as red and 2.1.2 as green.
     • The version column is purple again, shaded by device count.
