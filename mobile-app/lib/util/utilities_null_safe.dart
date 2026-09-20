@@ -132,42 +132,38 @@ class Utilities {
     return result;
   }
 
-  /// The map-provider sheet.
+  /// The list of installed map apps, as a sheet. Returns what was picked,
+  /// or null if the hasher dismissed it.
   ///
-  /// Two jobs, one sheet (James, 2026-09-20). Normally it is the chooser
-  /// shown when a hasher opens a map for the first time: pick a provider,
-  /// optionally remember it, and the map opens. With [chooseOnly] it is the
-  /// same list used as a SETTING — picking stores the preference and the
-  /// sheet closes without launching anything, and the remember-me toggle is
-  /// hidden because choosing IS the act of remembering.
+  /// This is the ONE list. It is composed by [openMapsSheet], which opens the
+  /// chosen app, and by Settings' Map App section, which only records the
+  /// choice — so the two can never offer different providers, and neither
+  /// needs to know how the other uses the answer (James, 2026-09-20).
   ///
-  /// Same sheet rather than a second list on purpose: the providers offered
-  /// are whatever MapLauncher finds installed, and two copies of that would
-  /// drift the moment somebody installs Waze.
-  static Future<void> openMapsSheet(
-    BuildContext context,
-    String title,
-    maps.Coords coords,
-    String address,
-    ValueNotifier<bool> saveUserMapPreference, {
-    bool chooseOnly = false,
+  /// [remember] shows the "Always use this option" toggle and reports its
+  /// state. Pass null where the pick IS the setting: there is nothing to
+  /// offer to remember.
+  static Future<maps.AvailableMap?> pickMapProvider(
+    BuildContext context, {
+    ValueNotifier<bool>? remember,
   }) async {
     try {
       final List<maps.AvailableMap> availableMaps =
           await maps.MapLauncher.installedMaps;
 
-      await showModalBottomSheet<dynamic>(
+      return await showModalBottomSheet<maps.AvailableMap>(
         context: navigatorKey.currentContext!,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        builder: (BuildContext context) {
+        builder: (BuildContext sheetContext) {
           return SizedBox(
-            height: (availableMaps.length * 64.0) + (chooseOnly ? 110 : 170),
+            height:
+                (availableMaps.length * 64.0) + (remember == null ? 110 : 170),
             child: SafeArea(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: <Widget>[
                   const Padding(
                     padding: EdgeInsets.only(bottom: 14.0, top: 14.0),
                     child: Center(
@@ -181,36 +177,12 @@ class Utilities {
                   Expanded(
                     child: ListView(
                       children: <Widget>[
-                        for (maps.AvailableMap map in availableMaps)
+                        for (final maps.AvailableMap map in availableMaps)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4.0),
                             child: ListTile(
-                              onTap: () async {
-                                if (chooseOnly || saveUserMapPreference.value) {
-                                  await setStringPref(
-                                    StringPrefsEnum.mapPreference,
-                                    map.mapName,
-                                  );
-                                }
-                                Navigator.of(
-                                  navigatorKey.currentContext!,
-                                ).pop();
-
-                                if (chooseOnly) return;
-
-                                await Future<void>.delayed(
-                                  const Duration(milliseconds: 200),
-                                );
-
-                                // BUG in plugin - doesn't work when sending a title with Google maps
-                                await map.showMarker(
-                                  coords: coords,
-                                  title: map.mapName.contains('Google')
-                                      ? ''
-                                      : title,
-                                  description: address,
-                                );
-                              },
+                              // Hand the choice back and let the caller act.
+                              onTap: () => Navigator.of(sheetContext).pop(map),
                               title: Text(
                                 map.mapName,
                                 style: ts_titleLargeBlack,
@@ -226,14 +198,17 @@ class Utilities {
                       ],
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      if (!chooseOnly) MapSnackbar(saveUserMapPreference),
-                      Text('Always use this option', style: ts_titleBlack),
-                      const SizedBox(width: 20.0),
-                    ],
-                  ),
+                  // The toggle and its label live or die together — shown
+                  // only when there is something to remember.
+                  if (remember != null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        MapSnackbar(remember),
+                        Text('Always use this option', style: ts_titleBlack),
+                        const SizedBox(width: 20.0),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -242,9 +217,42 @@ class Utilities {
       );
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('');
+        debugPrint('pickMapProvider: $e');
       }
+      return null;
     }
+  }
+
+  /// Pick a map app and open it on [coords] — the first-time chooser.
+  ///
+  /// Remembers the pick when the hasher asked it to; Settings can change or
+  /// clear that later (Map App section).
+  static Future<void> openMapsSheet(
+    BuildContext context,
+    String title,
+    maps.Coords coords,
+    String address,
+    ValueNotifier<bool> saveUserMapPreference,
+  ) async {
+    final maps.AvailableMap? map = await pickMapProvider(
+      context,
+      remember: saveUserMapPreference,
+    );
+    if (map == null) return;
+
+    if (saveUserMapPreference.value) {
+      await setStringPref(StringPrefsEnum.mapPreference, map.mapName);
+    }
+
+    // Let the sheet finish closing before the map app takes the screen.
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    // BUG in plugin - doesn't work when sending a title with Google maps
+    await map.showMarker(
+      coords: coords,
+      title: map.mapName.contains('Google') ? '' : title,
+      description: address,
+    );
   }
 
   static bool isValidUrl(String? url) {

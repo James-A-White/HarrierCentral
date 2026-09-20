@@ -159,25 +159,17 @@ class SettingsPageController extends GetxController {
     await _savePreferences(onFailureDistance: previous);
   }
 
-  /// Opens the SAME sheet a hasher sees the first time they open a map,
-  /// in choose-only mode: it stores the pick and launches nothing. Reusing
-  /// it means this screen offers exactly the providers that are installed,
-  /// and cannot drift from the chooser (James, 2026-09-20).
-  ///
-  /// A local coords/title/address are required by the signature but unused
-  /// in this mode.
+  /// Offers the same list of installed map apps the first-time chooser
+  /// offers, and records the answer. No coordinates, no launch — picking IS
+  /// the setting here, so there is nothing to remember and nothing to open
+  /// (James, 2026-09-20).
   Future<void> chooseMapProvider() async {
     final BuildContext? context = Get.context;
     if (context == null) return;
-    await Utilities.openMapsSheet(
-      context,
-      '',
-      maps.Coords(0, 0),
-      '',
-      ValueNotifier<bool>(true),
-      chooseOnly: true,
-    );
-    mapProvider.value = getStringPref(StringPrefsEnum.mapPreference) ?? '';
+    final maps.AvailableMap? picked = await Utilities.pickMapProvider(context);
+    if (picked == null) return; // dismissed — leave the setting alone
+    await setStringPref(StringPrefsEnum.mapPreference, picked.mapName);
+    mapProvider.value = picked.mapName;
   }
 
   /// Back to being asked every time.
