@@ -1,5 +1,19 @@
 # public-web Changelog
 
+## 0.21.66 (2026-09-20)
+
+- The answer you chose on a run is now the only one that looks chosen. "I'll
+  be there" used to fall back to the kennel's colour when it was NOT your
+  answer — which for most kennels is the same red the selected "Can't make it"
+  is painted in, so answering no left two red buttons and neither read as the
+  answer.
+- **Devices**: a signed-in member can see everything that can reach their
+  account — every device, whether it holds a passkey, and when it last signed
+  in — and can sign any of them out or remove its passkey. Until now a passkey
+  could be created and never removed, and a device could never be signed out
+  at all, so losing a phone meant losing control of how you sign in. Signing a
+  device out revokes it at once and stops its notifications.
+
 ## 0.21.65 (2026-09-17)
 
 - Each role chat room now carries its own coin in the chat list — a struck
