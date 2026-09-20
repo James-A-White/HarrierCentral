@@ -135,7 +135,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.person, color: textColor),
-                    title: Text('My Profile', style: _style),
+                    title: Text('My Account', style: _style),
                     onTap: () async {
                       Navigator.pop(context);
                       await Navigator.push<dynamic>(

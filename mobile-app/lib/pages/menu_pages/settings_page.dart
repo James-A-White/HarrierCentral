@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 import 'package:harrier_central/imports.dart';
 
 /// Settings — device + account preferences split out of My Profile
@@ -6,6 +5,13 @@ import 'package:harrier_central/imports.dart';
 /// The auto-display-runs radius stays on My Profile.
 class SettingsPageController extends GetxController {
   final RxInt distancePreference = 0.obs;
+
+  /// "Automatically show all runs within N" — moved here from My Account on
+  /// 2026-09-20, which is now account-only. It shares the Preferences
+  /// bitfield with the distance UNITS above (rung 0x3C), which is why this
+  /// page owns both and why _ownedMask must cover them together: one
+  /// read-modify-write, one save, no way for the two to overwrite each other.
+  final RxInt autoRunPreference = 0.obs;
   final RxBool savePhotosToCameraRoll = true.obs;
   final RxInt trackingQuality = (getIntPref(IntPrefsEnum.trackingQuality) ?? 2)
       .obs;
@@ -21,19 +27,6 @@ class SettingsPageController extends GetxController {
   final RxBool chatRoomsFailed = false.obs;
   final RxInt savingRoomType = (-1).obs;
 
-  /// The passkeys registered against this account (E9.F7.S18) — a passkey is
-  /// a credential on a DEVICE row, so this list is "what can sign me in
-  /// without a code". Mostly browsers: passkeys are made on the web.
-  /// null-from-the-service means the call failed, which is drawn as a failure
-  /// rather than as "you have none" — the same trap as an empty run list.
-  final RxList<AccountPasskey> passkeys = <AccountPasskey>[].obs;
-  final RxBool passkeysLoading = true.obs;
-  final RxBool passkeysFailed = false.obs;
-
-  /// The passkey whose Remove has been tapped once. Revoking asks twice: it
-  /// is the only control here that takes access away.
-  final RxString confirmingPasskeyId = ''.obs;
-  final RxString deletingPasskeyId = ''.obs;
 
   HashersModel? _hasher;
 
@@ -43,48 +36,22 @@ class SettingsPageController extends GetxController {
   /// whole Preferences column when @preferences is supplied, so the value is
   /// composed read-modify-write from the stored bitfield.
   static const int _ownedMask =
-      hasherPref_distanceMeasuredIn | hasherPref_cameraRollSaveDisabled;
+      hasherPref_distanceMeasuredIn |
+      hasherPref_cameraRollSaveDisabled |
+      hasherPref_distanceForAutoDisplay;
 
   @override
   void onInit() {
     super.onInit();
     final int stored = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
     distancePreference.value = stored & hasherPref_distanceMeasuredIn;
+    autoRunPreference.value = stored & hasherPref_distanceForAutoDisplay;
     savePhotosToCameraRoll.value =
         (stored & hasherPref_cameraRollSaveDisabled) == 0;
     unawaited(_loadHasher());
     unawaited(loadChatRooms());
-    unawaited(loadPasskeys());
   }
 
-  Future<void> loadPasskeys() async {
-    passkeysLoading.value = true;
-    final List<AccountPasskey>? keys = await PasskeyManageService.fetchPasskeys();
-    passkeysFailed.value = keys == null;
-    passkeys.value = keys ?? <AccountPasskey>[];
-    passkeysLoading.value = false;
-  }
-
-  /// Revokes one passkey. The SP hands back what remains, so the list is
-  /// replaced from the reply rather than re-fetched — and a failure leaves
-  /// the screen exactly as it was.
-  Future<void> removePasskey(AccountPasskey key) async {
-    if (deletingPasskeyId.value.isNotEmpty) return;
-    deletingPasskeyId.value = key.deviceId;
-    final List<AccountPasskey>? remaining =
-        await PasskeyManageService.deletePasskey(key.deviceId);
-    deletingPasskeyId.value = '';
-    confirmingPasskeyId.value = '';
-    if (remaining == null) {
-      Get.snackbar(
-        'Not removed',
-        'That passkey could not be removed. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-    passkeys.value = remaining;
-  }
 
   Future<void> loadChatRooms() async {
     chatRoomsLoading.value = true;
@@ -185,6 +152,75 @@ class SettingsPageController extends GetxController {
     await _savePreferences(onFailureDistance: previous);
   }
 
+  Future<void> setAutoRunPreference(int? value) async {
+    final int previous = autoRunPreference.value;
+    autoRunPreference.value = value ?? 0;
+    await _savePreferences(onFailureAutoRun: previous);
+  }
+
+  Future<void> enableLocationServices() async {
+    bool success = false;
+    {
+      final PermissionStatus ps = await Permission.location.request();
+
+      if (ps.isPermanentlyDenied) {
+        final bool? openSettings = await Utilities.showAlert(
+          'Phone Settings',
+          'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+          'Open Settings',
+          showCancelButton: true,
+          cancelButtonText: 'Cancel',
+        );
+
+        if (openSettings ?? false) {
+          await openAppSettings();
+
+          success =
+              await Utilities.showAlert(
+                'Success?',
+                'Were you able to change the settings to enable location services?',
+                'Yes',
+                showCancelButton: true,
+                cancelButtonText: 'No',
+              ) ??
+              false;
+        }
+      }
+
+      if ((ps.isGranted) || success) {
+        if (await Permission.location.serviceStatus.isEnabled) {
+          appModel.hasLocationPermissions = true;
+          final locService = Get.isRegistered<LocationService>()
+              ? Get.find<LocationService>()
+              : Get.put(LocationService());
+          if (locService.initialized) {
+            await Utilities.showAlert(
+              'Location Services Enabled',
+              'Location Services have been enabled.',
+              'OK',
+            );
+          }
+        }
+      } else {
+        await Utilities.showAlert(
+          'Location Services problem',
+          'Harrier Central was unable to confirm that Location Services have been enabled.\r\n\r\nPlease use the Settings panel to enable Location Services for Harrier Centra. Once you have done this, please close and restart Harrier Central.',
+          'Open Settings',
+          showCancelButton: true,
+          cancelButtonText: 'Cancel',
+        );
+
+        await openAppSettings();
+      }
+    }
+
+    await Utilities.showAlert(
+      'Location preferences updated',
+      'Your location preferences have been updated.\r\n\r\nYou may have to wait a few minutes or open and close the app before your current location is used by the app.',
+      'OK',
+    );
+  }
+
   Future<void> setSavePhotosToCameraRoll(bool value) async {
     final bool previous = savePhotosToCameraRoll.value;
     savePhotosToCameraRoll.value = value;
@@ -198,6 +234,7 @@ class SettingsPageController extends GetxController {
 
   Future<void> _savePreferences({
     int? onFailureDistance,
+    int? onFailureAutoRun,
     bool? onFailureCamera,
   }) async {
     final HashersModel? h = _hasher;
@@ -208,6 +245,7 @@ class SettingsPageController extends GetxController {
     final int newPrefs =
         (stored & ~_ownedMask) |
         distancePreference.value |
+        autoRunPreference.value |
         (savePhotosToCameraRoll.value ? 0 : hasherPref_cameraRollSaveDisabled);
 
     final String responseBody = await HashersService().addEditUser(
@@ -229,6 +267,9 @@ class SettingsPageController extends GetxController {
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       await setIntPref(IntPrefsEnum.hasherPreferences, newPrefs);
     } else {
+      if (onFailureAutoRun != null) {
+        autoRunPreference.value = onFailureAutoRun;
+      }
       if (onFailureDistance != null) {
         distancePreference.value = onFailureDistance;
       }
@@ -313,177 +354,125 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  /// The passkeys that can sign this hasher in (E9.F7.S18).
+  /// "Automatically show all runs within N" — the radius that puts nearby
+  /// runs on the list without being asked.
   ///
-  /// Always drawn, unlike the chat rooms: "no passkeys" is a fact worth
-  /// telling, because the screen is also where a hasher learns the feature
-  /// exists. A failure says so rather than showing an empty list, which would
-  /// read as "your passkeys were removed".
-  Widget _passkeysSection(SettingsPageController controller) {
-    if (controller.passkeysLoading.value) return const SizedBox.shrink();
+  /// Moved here from My Account on 2026-09-20 (James: "the only things left
+  /// in My Account are account related"). It belongs beside the distance
+  /// UNITS, which it is labelled in, and it shares their bitfield.
+  ///
+  /// Without location permission the radius is meaningless, so the section
+  /// asks for permission instead of offering a setting that cannot work.
+  /// miles or kilometres, from the hasher's own units bit. Lifted from
+  /// HasherProfilePage with the radius it labels (2026-09-20) so this page
+  /// does not reach into that one.
+  String _distanceUnits(int distancePreference) =>
+      distancePreference == 2 ? 'kilometers' : 'miles';
 
+  Widget _autoShowRunsSection(SettingsPageController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         const FancyDivider(
-          key: Key('settings_passkeys_divider'),
+          key: Key('settings_auto_show_runs_divider'),
           innerColor: Colors.white,
           topMargin: 20.0,
           bottomMargin: 10.0,
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text('Passkeys', style: ts_headingLarge, textAlign: TextAlign.center),
-        ),
-        if (controller.passkeysFailed.value) ...<Widget>[
+        if (!appModel.hasLocationPermissions) ...<Widget>[
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.all(8.0),
+            child: Text('Distance to Runs', style: ts_headingLarge,
+                textAlign: TextAlign.center),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Your passkeys could not be loaded. A connection is required to '
-              'change these settings.',
+              'Harrier Central can help you find runs that are nearby. In '
+              'order to do this, the app needs to have access to the phone\'s '
+              'current location, but currently location is disabled for this '
+              'app.\r\n\r\nTo start using the distance features of Harrier '
+              'Central please press the "Use Location" button below and follow '
+              'the prompts.',
               style: ts_body,
               textAlign: TextAlign.center,
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.refresh, color: Colors.white),
-              label: Text('Try again', style: ts_button),
-              onPressed: () => unawaited(controller.loadPasskeys()),
+            padding: const EdgeInsets.only(top: 22.0, bottom: 20.0),
+            child: ElevatedButton(
+              onPressed: () => unawaited(controller.enableLocationServices()),
+              child: Text('Use Location', style: ts_button),
             ),
           ),
-        ] else if (controller.passkeys.isEmpty) ...<Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-            child: Text(
-              'A passkey signs you in on hashruns.org with your face, '
-              'fingerprint or screen lock — no code to wait for. You make one '
-              'on the website; they will be listed here.',
-              style: ts_body,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 10),
-        ] else ...<Widget>[
-          Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8, bottom: 12),
-            child: Text(
-              'These can sign you in without a code. Remove any you do not '
-              'recognise, or that belong to a device you no longer have.',
-              style: ts_body,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          for (final AccountPasskey key in controller.passkeys)
-            _passkeyRow(controller, key),
-          Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 12),
-            child: Text(
-              'Removing a passkey here stops it signing you in. The passkey '
-              'itself stays in that device\'s own password manager until you '
-              'delete it there too.',
-              style: ts_bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  /// One passkey: what it is, when it last signed in, and a two-tap Remove.
-  Widget _passkeyRow(SettingsPageController controller, AccountPasskey key) {
-    final bool confirming = controller.confirmingPasskeyId.value == key.deviceId;
-    final bool busy = controller.deletingPasskeyId.value == key.deviceId;
-
-    return Card(
-      color: Colors.black.withValues(alpha: 0.28),
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Icon(
-                  key.isMobile ? Icons.smartphone : Icons.computer,
-                  color: Colors.white70,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        key.isThisDevice ? '${key.label} (this device)' : key.label,
-                        style: ts_titleMedium,
+        ] else
+          AbsorbPointer(
+            absorbing:
+                controller.isSaving.value || controller.isLoading.value,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.yellow[100],
+                borderRadius: BorderRadius.circular(5.0),
+              ),
+              child: RadioGroup(
+                groupValue: controller.autoRunPreference.value,
+                onChanged: (int? v) =>
+                    unawaited(controller.setAutoRunPreference(v)),
+                child: Column(
+                  children: <Widget>[
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text('Automatically Show Runs',
+                            style: ts_headingBlack),
+                        _sectionSpinner(controller),
+                      ],
+                    ),
+                    const Row(
+                      children: <Widget>[
+                        Radio<int>(value: hasherPref_0),
+                        Text('Do not auto show runs'),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, top: 6),
+                      child: Row(
+                        children: <Widget>[
+                          Text('Or...   ...Automatically Show All Runs Within...',
+                              style: ts_footnoteBlack),
+                        ],
                       ),
-                      Text(
-                        key.lastLogin == null
-                            ? 'Not used yet'
-                            : 'Last used ${DateFormat('d MMM yyyy').format(key.lastLogin!.toLocal())}',
-                        style: ts_bodySmall,
+                    ),
+                    // The label carries the hasher's own units, so changing
+                    // miles/kilometres above relabels these without a reload.
+                    for (final MapEntry<int, int> option
+                        in const <int, int>{
+                          hasherPref_10: 10,
+                          hasherPref_25: 25,
+                          hasherPref_50: 50,
+                          hasherPref_75: 75,
+                          hasherPref_100: 100,
+                          hasherPref_150: 150,
+                          hasherPref_250: 250,
+                          hasherPref_500: 500,
+                        }.entries)
+                      Row(
+                        children: <Widget>[
+                          Radio<int>(value: option.key),
+                          Text(
+                            '${option.value} '
+                            '${_distanceUnits(controller.distancePreference.value)}',
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // Wrap, not Row: at a large text size two buttons are wider than
-            // a phone and a Row overflows.
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 4,
-              children: confirming
-                  ? <Widget>[
-                      ElevatedButton(
-                        onPressed: busy
-                            ? null
-                            : () => unawaited(controller.removePasskey(key)),
-                        child: busy
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text('Remove it', style: ts_button),
-                      ),
-                      TextButton(
-                        onPressed: busy
-                            ? null
-                            : () => controller.confirmingPasskeyId.value = '',
-                        child: Text('Keep', style: ts_button),
-                      ),
-                    ]
-                  : <Widget>[
-                      TextButton(
-                        onPressed: () =>
-                            controller.confirmingPasskeyId.value = key.deviceId,
-                        child: Text('Remove', style: ts_button),
-                      ),
-                    ],
-            ),
-            if (confirming)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(
-                  key.isThisDevice
-                      ? 'This will not sign you out — you will just need a code next time.'
-                      : 'That device will need an email code to sign in again.',
-                  style: ts_bodySmall,
-                  textAlign: TextAlign.center,
+                    const SizedBox(height: 10),
+                  ],
                 ),
               ),
-          ],
-        ),
-      ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -942,8 +931,8 @@ class SettingsPage extends StatelessWidget {
                           ),
                         ),
                         // ------------------------- Chat Rooms
+                        _autoShowRunsSection(controller),
                         _chatRoomsSection(controller),
-                        _passkeysSection(controller),
                       ],
                     ),
                   ),
