@@ -424,7 +424,16 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> _handleNotificationClick(RemoteMessage message) async {
-    // NOTHING here may touch the navigator until '/main' exists.
+    // Two defences, because this path has already been wrong once.
+    //
+    // FIRST, and unconditionally: every Get.until below stops at
+    // route.isFirst as well as at '/main'. popUntil pops until its predicate
+    // matches and empties the stack when nothing does — an empty navigator
+    // is a black, frozen app that only a force-quit clears. isFirst makes
+    // that outcome impossible whatever the timing, so a mistake in the
+    // holding logic below can cost a missed navigation but never a hang.
+    //
+    // SECOND: nothing here may touch the navigator until '/main' exists.
     //
     // Both entry points can fire before it does. getInitialMessage() is
     // awaited from init(), which main() awaits BEFORE runApp() — there is no
@@ -464,7 +473,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           selectedByName:
               message.data['SelectedByName'] as String? ?? 'Someone',
         );
-        Get.until((route) => route.settings.name == '/main');
+        Get.until((route) => route.isFirst || route.settings.name == '/main');
         _navigateToSongbook(eventId.toLowerCase());
       }
       return;
@@ -483,7 +492,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
 
     //pop all the way back to the main page
-    Get.until((route) => route.settings.name == '/main');
+    Get.until((route) => route.isFirst || route.settings.name == '/main');
 
     if (Get.isRegistered<FutureRunListPageController>()) {
       await Get.find<FutureRunListPageController>()
@@ -560,7 +569,6 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   // --- GetStorage and Badge Logic ---
 
   void _recalculateGlobalBadgeCount() {
-
     // // Populate unreadEventCounts with RxInt values derived from clientChatCounts.
     //     key: (clientChatCounts[key] ?? 0).obs,
     // };

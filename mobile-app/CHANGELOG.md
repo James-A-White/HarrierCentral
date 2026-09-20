@@ -1,3 +1,12 @@
+## 3.1.0+1391 (2026-09-20)
+### Fixes
+- **Tapping a notification can no longer leave a black screen**, whatever the
+  timing. Returning to the run list stops at the bottom of the stack now, so
+  the app cannot be left with nothing on screen even if the tap arrives before
+  the app is ready. 1389 tried to fix this by holding the tap instead, and that
+  hold had a hole: a boot that hit any error released the app to the run list
+  but never replayed the tap. Both are fixed.
+
 ## 3.1.0+1390 (2026-09-20)
 ### Improvements
 - **My Profile is now My Account**, and holds only account things: your
