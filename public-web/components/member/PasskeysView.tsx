@@ -99,9 +99,14 @@ Nothing is signed in to your account but this browser.
                       </p>
                       <p className="text-xs text-white/60">
                         {[
+                          // Version first: with a dozen old installs listed,
+                          // it is what tells them apart.
+                          k.AppVersion
+                            ? (k.AppBuild ? `${k.AppVersion} (${k.AppBuild})` : k.AppVersion)
+                            : "version not recorded",
                           k.LastLogin
-                            ? `Last used ${new Date(k.LastLogin).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`
-                            : "Not used yet",
+                            ? new Date(k.LastLogin).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                            : "not used yet",
                           ...(hasPasskey ? ["passkey"] : []),
                           ...(isSignedOut ? ["signed out"] : []),
                         ].join(" · ")}

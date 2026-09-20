@@ -1,3 +1,15 @@
+## 3.1.0+1392 (2026-09-20)
+### New Features
+- **Devices**, on My Account: everything that can reach your account, whether
+  it holds a passkey, and when it last signed in. Sign out anything you no
+  longer have — it loses access at once and stops receiving your notifications
+  — or remove just its passkey. A device that is signed out and holds no
+  passkey drops off the list, because it can no longer reach your account at
+  all.
+- **If your account signs this device out**, the app now says so and starts
+  again from scratch, showing runs the way it does for someone who has just
+  installed it, rather than failing with an error it cannot explain.
+
 ## 3.1.0+1391 (2026-09-20)
 ### Fixes
 - **Tapping a notification can no longer leave a black screen**, whatever the

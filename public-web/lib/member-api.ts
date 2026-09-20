@@ -462,6 +462,10 @@ export type Passkey = {
    *  returned at all — it can no longer reach the account by any route. */
   HasPasskey?: number;
   IsSignedOut?: number;
+  /** What the device was running when it last signed in. Null for the 564
+   *  rows platform-wide that never reported one. */
+  AppVersion?: string | null;
+  AppBuild?: string | null;
 };
 
 /** Every device that can reach this account. Supersedes listPasskeys. */

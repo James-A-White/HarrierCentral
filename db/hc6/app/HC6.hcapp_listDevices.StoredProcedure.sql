@@ -29,7 +29,7 @@ AS
 -- Returns: rowset 0 — standard success envelope.
 --          rowset 1 — one row per device, most recent sign-in first:
 --            DeviceId, Label, Platform, IsThisDevice, LastLogin,
---            IsMobile, HasPasskey, IsSignedOut
+--            IsMobile, AppVersion, AppBuild, HasPasskey, IsSignedOut
 -- Author: Harrier Central
 -- Created: 2026-09-20
 -- HC5 Source: none (new)
@@ -71,8 +71,19 @@ BEGIN TRY
         CASE WHEN d.id = @deviceId THEN 1 ELSE 0 END                 AS IsThisDevice,
         d.LastLogin                                                  AS LastLogin,
         ISNULL(d.IsMobile, 0)                                        AS IsMobile,
+        -- What it was running when it last signed in. These columns are
+        -- rewritten at every login, so for a LIVE device this is current and
+        -- for a dead row it is frozen at its last sign-in — which is the
+        -- useful reading here (James, 2026-09-20: a list of old installs is
+        -- unreadable without it). 564 rows platform-wide have no version;
+        -- they come back NULL and the client says so.
+        NULLIF(LTRIM(RTRIM(ISNULL(d.Version, ''))), '')              AS AppVersion,
+        NULLIF(LTRIM(RTRIM(ISNULL(d.BuildNumber, ''))), '')          AS AppBuild,
         CASE WHEN d.PasskeyCredentialId IS NOT NULL THEN 1 ELSE 0 END AS HasPasskey,
-        CASE WHEN d.removed = 1 THEN 1 ELSE 0 END                    AS IsSignedOut
+        -- From SignedOutAt, NOT from `removed`. 300 devices carry removed = 1
+        -- from before it meant anything, so reading it here would label rows
+        -- "signed out" that nobody ever signed out.
+        CASE WHEN d.SignedOutAt IS NOT NULL THEN 1 ELSE 0 END        AS IsSignedOut
     FROM HC.Device d
     WHERE d.UserId = @userId
       AND (d.removed = 0 OR d.PasskeyCredentialId IS NOT NULL)
