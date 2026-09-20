@@ -208,10 +208,15 @@ class PasskeysSection extends StatelessWidget {
                       ),
                       Text(
                         <String>[
+                          // Version first: with a dozen old installs listed,
+                          // it is what tells them apart (James, 2026-09-20).
+                          key.versionLabel,
                           if (key.lastLogin == null)
-                            'Not used yet'
+                            'not used yet'
                           else
-                            'Last used ${DateFormat('d MMM yyyy').format(key.lastLogin!.toLocal())}',
+                            DateFormat(
+                              'd MMM yyyy, HH:mm',
+                            ).format(key.lastLogin!.toLocal()),
                           if (key.hasPasskey) 'passkey',
                           if (key.isSignedOut) 'signed out',
                         ].join(' · '),

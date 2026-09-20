@@ -17,7 +17,19 @@ class AccountPasskey {
     this.lastLogin,
     this.hasPasskey = true,
     this.isSignedOut = false,
+    this.appVersion,
+    this.appBuild,
   });
+
+  /// "3.1.0 (1378)", or "version not recorded" when the row never sent one.
+  String get versionLabel {
+    if (appVersion == null || appVersion!.isEmpty) {
+      return 'version not recorded';
+    }
+    return appBuild == null || appBuild!.isEmpty
+        ? appVersion!
+        : '$appVersion ($appBuild)';
+  }
 
   final String deviceId;
 
@@ -36,6 +48,11 @@ class AccountPasskey {
   final bool hasPasskey;
   final bool isSignedOut;
 
+  /// What the device was running when it last signed in. Null for the 564
+  /// rows platform-wide that never reported one.
+  final String? appVersion;
+  final String? appBuild;
+
   factory AccountPasskey.fromJson(Map<String, dynamic> json) => AccountPasskey(
     deviceId: ((json['DeviceId'] as String?) ?? '').asUuid,
     label: (json['Label'] as String?) ?? 'A device',
@@ -52,6 +69,8 @@ class AccountPasskey {
         ? true
         : (json['HasPasskey'] == 1 || json['HasPasskey'] == true),
     isSignedOut: json['IsSignedOut'] == 1 || json['IsSignedOut'] == true,
+    appVersion: json['AppVersion'] as String?,
+    appBuild: json['AppBuild']?.toString(),
   );
 }
 
