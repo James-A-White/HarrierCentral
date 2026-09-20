@@ -1033,6 +1033,22 @@ RSVP enum, where 3 is Yes — ended up in four app SPs (2026-09-20).
 
 ---
 
+## E17 — Speaking the hasher's language
+
+`App` `Web` `Portal` `DB`
+
+Everything Harrier Central says is in English, in every client. Raised 2026-09-20
+(James: "how hard would it be to I18N the interface... for our Kennels in Taiwan,
+Barbados, Germany"), measured the same day, and parked **after the 3.2 payments
+train** — the measurements are here so the question does not have to be asked twice.
+
+### E17.F1 · One interface, several languages
+
+| ID | Story | Status |
+|---|---|---|
+| `E17.F1.S1` | As a **hasher whose phone is not in English**, I want Harrier Central in my own language, so that the app does not assume the hash is an English-speaking club. **Measured 2026-09-20 — start with the demand, because it is smaller than the country list suggests.** Active devices by locale over 180 days: `en_GB` 514, `en_US` 488, none recorded 453, **`en_BB` 48 — Barbados is already English**, `de_DE` 36, `en_CA` 31, `en_PT` 25, **`zh_Hant_TW` 21**, `en_AU` 19, `nl_NL` 16, `en_BE` 15, `en_DE` 14. So the genuinely non-English populations are ~36 German and ~21 Taiwanese devices, about 3% of the fleet, and half the "foreign" kennels are English-speaking. **Ask the Taiwanese kennel whether they want a translated UI before building one** — at 21 devices that conversation is cheaper than the work. **The surface, counted:** 321 `Text()` literals in the app (249 distinct), 153 `showAlert`/`Get.snackbar` sites (~300 more strings), **96 `errorUserMessage` and 60 `errorTitle` strings inside stored procedures**, 56 push/notification composition sites in SPs, ~59 hardcoded strings in the public web. Roughly 700–900 strings. No scaffolding exists: `intl` is a dependency for date formatting only — no `flutter_localizations`, no `.arb`, no `generate: true`. **The extraction is the easy part. The four that are not:** (1) **a third of the user-facing text lives in the database** — errors, titles and push bodies are composed server-side and arrive rendered, so localising them means either returning a key plus parameters from every SP (a contract change across every client) or storing translations keyed by locale (a new table, which is James's call). `HC.Device.Locale` already exists and is populated, so the server can know who it is speaking to. (2) **Chinese breaks the typography** — the app is set in Avenir Next, which has no CJK glyphs, so Traditional Chinese needs a bundled or fallback font and different line-breaking. (3) **German expands text by about 30%**, and this codebase has already shipped Row-overflow bugs twice — hence claude.md's "two controls side by side want a Wrap, not a Row". Every screen needs re-checking at longer strings, and this cost is larger than the translating. (4) **Hash jargon probably should not be translated** — hare, down-down, on-on, mismanagement, hash cash. What stays in English is a hasher's judgement, not a translator's. **Rough shape:** 2–4 weeks of development for two languages, plus someone to produce ~800 strings per language, plus a permanent tax on every new string (enforceable with a lint banning raw literals in `Text()`). **The cheap first slice, if it is ever wanted:** the app chrome only, one language, driven by the device locale, leaving server errors in English — about a third of the work, proves the pipeline, and serves the German devices without committing to the SP contract change. | `Backlog` |
+
+
 Status reflects the working tree at `dev` on 2026-09-12. Epic and story IDs are stable — quote them when assigning work. Where a story is marked **Building** with a known gap, the gap names what is actually missing rather than what remains to polish.
 
 Bugs and individual work items live in GitHub Issues; this document is the map above them.
