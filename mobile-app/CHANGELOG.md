@@ -1,3 +1,23 @@
+## 3.1.0+1394 (2026-09-20)
+### Fixes
+- **Battery**: the precise-GPS boost is now suspended while the app is in the
+  background. Leaving the app on the map tab and pocketing the phone kept
+  navigation-grade GPS running indefinitely. Run tracking is unaffected — a
+  tracked run is meant to keep fine-grained GPS in the background.
+- **Kennel members**: tapping the email-alert envelope on a member row did
+  nothing and threw behind the scenes. Fixed.
+- **My trails**: trails were filtered by the run list's date view, so a hasher
+  with older trails saw an empty map on the default "Recent" mode.
+- **Map**: the "Track my run" button is gone from the map tab — it lives in the
+  run tools screen, and the map was offering it to people nowhere near the start.
+- **Diagnostics**: Reload Data now uploads the log before wiping it, so
+  reporting a problem no longer deletes the evidence for it.
+
+### Server-side (no app update needed)
+- 737 trails archived before 2026-09-12 sat behind every phone's sync watermark
+  and never arrived. They have been touched so they sync once and will appear
+  on their own.
+
 ## 3.1.0+1393 (2026-09-20)
 ### Improvements
 - **Devices** now show what each one was running when it last signed in, and the
