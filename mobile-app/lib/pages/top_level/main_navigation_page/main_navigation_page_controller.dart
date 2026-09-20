@@ -452,8 +452,9 @@ class MainNavigationController extends GetxController
       listener = ImageStreamListener(
         (info, _) {
           stream.removeListener(listener);
-          if (!completer.isCompleted)
+          if (!completer.isCompleted) {
             completer.complete(Image(image: provider));
+          }
         },
         onError: (error, stack) {
           stream.removeListener(listener);

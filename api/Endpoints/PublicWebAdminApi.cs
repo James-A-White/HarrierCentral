@@ -60,6 +60,9 @@ namespace HcWebApi.Endpoints
             // the app cannot drift apart on who may remove what.
             "listPasskeys",
             "deletePasskey",
+            // Signing a device out, not just removing its passkey (E9.F7.S19).
+            "listDevices",
+            "signOutDevice",
             "getAllSongs",
             "getReportContext",
             "logWebError",

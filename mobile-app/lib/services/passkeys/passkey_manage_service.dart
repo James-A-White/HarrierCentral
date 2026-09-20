@@ -15,6 +15,8 @@ class AccountPasskey {
     required this.isThisDevice,
     required this.isMobile,
     this.lastLogin,
+    this.hasPasskey = true,
+    this.isSignedOut = false,
   });
 
   final String deviceId;
@@ -27,6 +29,13 @@ class AccountPasskey {
   final bool isMobile;
   final DateTime? lastLogin;
 
+  /// Whether this device holds a passkey, and whether it has been signed
+  /// out. A row that is BOTH signed out and passkey-free is not returned at
+  /// all — it can no longer reach the account by any route, so it leaves the
+  /// list (E9.F7.S19, James 2026-09-20).
+  final bool hasPasskey;
+  final bool isSignedOut;
+
   factory AccountPasskey.fromJson(Map<String, dynamic> json) => AccountPasskey(
     deviceId: ((json['DeviceId'] as String?) ?? '').asUuid,
     label: (json['Label'] as String?) ?? 'A device',
@@ -36,6 +45,13 @@ class AccountPasskey {
     isThisDevice: json['IsThisDevice'] == 1 || json['IsThisDevice'] == true,
     isMobile: json['IsMobile'] == 1 || json['IsMobile'] == true,
     lastLogin: DateTime.tryParse('${json['LastLogin'] ?? ''}'),
+    // listPasskeys (the older SP, still called by builds 1390/1391) sends
+    // neither column and every row it returns HAS a passkey — hence the
+    // defaults above.
+    hasPasskey: json['HasPasskey'] == null
+        ? true
+        : (json['HasPasskey'] == 1 || json['HasPasskey'] == true),
+    isSignedOut: json['IsSignedOut'] == 1 || json['IsSignedOut'] == true,
   );
 }
 
@@ -46,6 +62,24 @@ class AccountPasskey {
 /// must not be drawn as an error (nor a failure drawn as "you have none").
 class PasskeyManageService {
   const PasskeyManageService();
+
+  /// Every device that can reach this account, with its passkey and
+  /// signed-out state (E9.F7.S19). Supersedes [fetchPasskeys].
+  static Future<List<AccountPasskey>?> fetchDevices() =>
+      _call(queryType: 'listDevices', procName: 'hcapp_listDevices');
+
+  /// Cuts one device off: the server rotates its secret, drops its push
+  /// tokens and takes it out of the list. Returns what is left.
+  ///
+  /// It does NOT remove that device's passkey — two acts, two
+  /// consequences — so a signed-out device holding one stays listed until
+  /// the passkey is removed too.
+  static Future<List<AccountPasskey>?> signOutDevice(String targetDeviceId) =>
+      _call(
+        queryType: 'signOutDevice',
+        procName: 'hcapp_signOutDevice',
+        extra: <String, dynamic>{'targetDeviceId': targetDeviceId.asUuid},
+      );
 
   static Future<List<AccountPasskey>?> fetchPasskeys() =>
       _call(queryType: 'listPasskeys', procName: 'hcapp_listPasskeys');
@@ -69,7 +103,8 @@ class PasskeyManageService {
   }) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
     if (userId.isEmpty || deviceId.isEmpty || deviceSecret.isEmpty) return null;
 
     final String result = await ServiceCommon.sendHttpPost(() {
@@ -95,12 +130,16 @@ class PasskeyManageService {
       // returned an error envelope, not an empty list.
       if (outer.isEmpty) return null;
       final envelope = (outer[0] as List<dynamic>);
-      final bool ok = envelope.isNotEmpty &&
-          ((envelope[0] as Map<String, dynamic>)['success'] as num?)?.toInt() == 1;
+      final bool ok =
+          envelope.isNotEmpty &&
+          ((envelope[0] as Map<String, dynamic>)['success'] as num?)?.toInt() ==
+              1;
       if (!ok) return null;
       if (outer.length < 2) return <AccountPasskey>[];
       return (outer[1] as List<dynamic>)
-          .map((dynamic r) => AccountPasskey.fromJson(r as Map<String, dynamic>))
+          .map(
+            (dynamic r) => AccountPasskey.fromJson(r as Map<String, dynamic>),
+          )
           .toList();
     } catch (_) {
       return null;

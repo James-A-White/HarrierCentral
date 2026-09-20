@@ -1,3 +1,8 @@
+1.0.60+58
+    • Signing a device out (E9.F7.S19): listDevices and signOutDevice added
+      to PublicWebAdminApi's allowlist. Thin publicWeb_ wrappers over the
+      app's hcapp_ SPs, as with the passkey pair.
+
 1.0.59+57
     • Managing passkeys (E9.F7.S18): listPasskeys and deletePasskey added to
       PublicWebAdminApi's allowlist, so the member area can show a hasher
