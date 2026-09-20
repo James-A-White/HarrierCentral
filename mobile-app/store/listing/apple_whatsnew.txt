@@ -1,25 +1,17 @@
-Harrier Central 3.0 - our biggest update ever.
+Harrier Central 3.1 - everything since 3.0.12, in one update.
 
-PackTrack: see the whole pack on one live map. Drop trail marks from your phone or Apple Watch, find everyone with the radar, find the trail with the lost compass, send an I'm Lost, snap photos onto the map, then replay or share any run.
+Chat that reaches your phone: your kennel's chat, and a room for each role you hold, with notifications when someone posts.
 
-Trail TV: put the run on a big screen at the On-Inn, with live tracks, photos, stats and a QR code so anyone in the room can follow along.
+Sign in without waiting for a code: use the passkey you made on hashruns.org, or point your camera at the QR code on your computer.
 
-Interactive Songbook: share the current song and every phone switches to it.
+Bring your running history with you: import a GPX, TCX or FIT file, or a whole Strava or Garmin export, and your old runs join your run counts.
 
-Now a native iPad app, full screen in both portrait and landscape.
+Your trails now live on your phone, so they draw instantly and work without a signal.
 
-Apple Watch support during your run so you can see your distance and mark checks and false trails.
+Find my photos picks a run's photos out of your camera roll, so the pack sees them without you hunting through thousands.
 
-Faster and steadier: opens straight to your runs, works offline for check-in, payments and the pack list, and copes quietly with a bad signal.
+Past runs show what happened on them at a glance: the track, the photos, the chat and the down-downs, with counts.
 
-Better chat: Trail Chat for every run, kennel chat, unread badges and an Unseen Chats list.
-
-Hash Flash: photo review with audiences, bulk actions, captions, crop and camera-roll import.
-
-Memberships and haberdashery charged straight from check-in, with a clearer payment report.
-
-Plus Hashes Around the World, an Explore map, the Admin Portal from the menu, per-kennel permissions and a new sign-up flow.
-
-Also in this update: your recorded track is no longer thrown off by a photo taken by someone else, a phone with a weak GPS signal keeps far more of its trail, trail marks are drawn beneath the trail instead of over it, and the live run list refreshes properly when a message arrives.
+Plus the fixes that matter most: the runs-list crash is gone, photos and admin marks no longer bend your recorded GPS trail, and check-in, payments and the pack list keep working on a bad signal.
 
 On On!

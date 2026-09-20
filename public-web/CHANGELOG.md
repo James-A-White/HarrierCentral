@@ -1,5 +1,15 @@
 # public-web Changelog
 
+## 0.21.67 (2026-09-20)
+
+- Devices now show what each one was running when it last signed in, and the
+  time as well as the date — with several old installs listed, the version is
+  what tells them apart. Devices that never reported a version say so rather
+  than guessing.
+- "Signed out" now means a device someone actually signed out. It was being
+  read from an older flag that 300 devices carry for unrelated reasons, so
+  rows could be labelled signed out when nothing had signed them out.
+
 ## 0.21.66 (2026-09-20)
 
 - The answer you chose on a run is now the only one that looks chosen. "I'll
