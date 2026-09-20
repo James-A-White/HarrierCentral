@@ -62,6 +62,17 @@ class RunAndKennelMapController extends GetxController {
   /// drawn only when its run's pin is (James, 2026-09-12): filtering the
   /// runs used to leave the trails behind.
   Set<String> _visibleRunIds = <String>{};
+
+  /// Runs whose TRAIL may be drawn. The same set as [_visibleRunIds] minus the
+  /// view-mode test: "Show my trails" is its own layer with its own promise,
+  /// and a trail whose run falls outside Recent or Past is still one of the
+  /// hasher's trails. Gating trails on the run-pin filter meant a hasher with
+  /// trails going back to January saw an empty map and assumed the data was
+  /// missing (James, 2026-09-20 — he reloaded the app to fix a filter).
+  ///
+  /// A SEARCH still narrows them, because searching is the user asking for
+  /// less; a date filter on the pins is not.
+  Set<String> _trailEligibleRunIds = <String>{};
   final LayerHitNotifier<String> trailHits =
       ValueNotifier<LayerHitResult<String>?>(null);
   int _trailQuery = 0;
@@ -468,7 +479,9 @@ class RunAndKennelMapController extends GetxController {
       return;
     }
     final List<TrailOnMap> shown = _loadedTrails
-        .where((TrailOnMap t) => _visibleRunIds.contains(t.eventId.asUuid))
+        .where(
+          (TrailOnMap t) => _trailEligibleRunIds.contains(t.eventId.asUuid),
+        )
         .toList(growable: false);
     trailCount.value = shown.length;
     trailMetres.value = shown.fold<double>(
@@ -804,9 +817,15 @@ class RunAndKennelMapController extends GetxController {
   void _buildRunMarkers() {
     runLocationMarkers = <Marker>[];
     _visibleRunIds = <String>{};
+    _trailEligibleRunIds = <String>{};
 
     for (int i = 0; i < _filteredRuns.length; i++) {
       final RunDetailsAggregate run = _filteredRuns[i];
+
+      // Trails are eligible before the view-mode test, so the layer shows
+      // every trail the search left behind rather than only the runs whose
+      // pins happen to be on screen.
+      _trailEligibleRunIds.add(run.event.eventId.asUuid);
 
       final DateTime start = run.event.eventStartDatetimeGmt;
       final RunLocationsViewMode mode = viewMode.value;

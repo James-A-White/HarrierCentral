@@ -28,9 +28,13 @@ class AppBootService {
   // ---------------------------------------------------------------------------
 
   Future<void> boot() async {
-    debugPrint('[BOOT] boot() start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] boot() start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await initPrefs();
-    debugPrint('[BOOT] initPrefs done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] initPrefs done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     // Send the previous session's error log to the server (awaited only for the
     // pref clear — the server call itself is fire-and-forget), then seed the
@@ -48,11 +52,17 @@ class AppBootService {
     final String? userId = await _resolveUserId();
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
     final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
-    debugPrint('[BOOT] userId resolved: ${userId != null ? "present" : "null"}, deviceId: ${deviceId != null ? "present" : "null"}');
+    debugPrint(
+      '[BOOT] userId resolved: ${userId != null ? "present" : "null"}, deviceId: ${deviceId != null ? "present" : "null"}',
+    );
 
-    debugPrint('[BOOT] checkForInternetConnection start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] checkForInternetConnection start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await Utilities.checkForInternetConnection();
-    debugPrint('[BOOT] checkForInternetConnection done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] checkForInternetConnection done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     // 1.x → 2.x migration: userId exists in legacy prefs but no deviceId yet.
     if (userId != null && deviceId == null) {
@@ -70,14 +80,15 @@ class AppBootService {
         if (outcome == ReauthorizeOutcome.success) {
           // A user-requested Reload Data lands here (resetAndReboot marks it);
           // silent self-healing recovery carries no marker and stays silent.
-          if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_RELOAD_DATA) {
+          if (getStringPref(StringPrefsEnum.bootType) ==
+              BOOT_TYPE_RELOAD_DATA) {
             await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
             final String userName =
                 getStringPref(StringPrefsEnum.displayName) ?? 'Hasher';
             await Utilities.showAlert(
               'Data Reload Complete',
               'Your local data has been cleared, $userName, and is being '
-              'reloaded fresh from the Harrier Central servers.',
+                  'reloaded fresh from the Harrier Central servers.',
               'OK',
             );
           }
@@ -100,8 +111,8 @@ class AppBootService {
           await Utilities.showAlert(
             'Let\'s find your account',
             'We couldn\'t sign you in automatically using the code saved on '
-            'this device.\r\n\r\nEnter your hash name or email address and '
-            'we\'ll find your account.',
+                'this device.\r\n\r\nEnter your hash name or email address and '
+                'we\'ll find your account.',
             'Continue',
           );
           await OnboardingFlowController.start(
@@ -116,7 +127,7 @@ class AppBootService {
         await Utilities.showAlert(
           'Reconnection Needed',
           'We couldn\'t reconnect this device automatically.\r\n\r\nPlease log '
-          'in with your QR code or reset code to continue.',
+              'in with your QR code or reset code to continue.',
           'Continue',
         );
         await OnboardingFlowController.start(
@@ -150,12 +161,18 @@ class AppBootService {
       return;
     }
 
-    debugPrint('[BOOT] _prepareDeviceContext start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _prepareDeviceContext start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await _prepareDeviceContext();
-    debugPrint('[BOOT] _prepareDeviceContext done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _prepareDeviceContext done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     bool reauthorizationHandled = false;
-    debugPrint('[BOOT] _fetchLoginResult start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _fetchLoginResult start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     final ApproveLoginModel? loginResult = await _fetchLoginResult(
       errorCallback: (DbErrorModel error) async {
         if (_isReauthorizationError(error)) {
@@ -167,7 +184,9 @@ class AppBootService {
       },
     );
 
-    debugPrint('[BOOT] _fetchLoginResult done: ${DateTime.now().millisecondsSinceEpoch}ms — result=${loginResult != null ? "present" : "null"}, reauthorizationHandled=$reauthorizationHandled');
+    debugPrint(
+      '[BOOT] _fetchLoginResult done: ${DateTime.now().millisecondsSinceEpoch}ms — result=${loginResult != null ? "present" : "null"}, reauthorizationHandled=$reauthorizationHandled',
+    );
 
     if (reauthorizationHandled) return;
 
@@ -177,15 +196,27 @@ class AppBootService {
       return;
     }
 
-    debugPrint('[BOOT] _storeLoginPrefs start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _storeLoginPrefs start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await _storeLoginPrefs(loginResult);
-    debugPrint('[BOOT] _storeLoginPrefs done: ${DateTime.now().millisecondsSinceEpoch}ms');
-    debugPrint('[BOOT] _showLoginMessage start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _storeLoginPrefs done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
+    debugPrint(
+      '[BOOT] _showLoginMessage start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await _showLoginMessage(loginResult);
-    debugPrint('[BOOT] _showLoginMessage done: ${DateTime.now().millisecondsSinceEpoch}ms');
-    debugPrint('[BOOT] _routeAfterLogin start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _showLoginMessage done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
+    debugPrint(
+      '[BOOT] _routeAfterLogin start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await _routeAfterLogin(userId, loginResult);
-    debugPrint('[BOOT] _routeAfterLogin done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _routeAfterLogin done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -201,6 +232,41 @@ class AppBootService {
   /// whole session's log (the 2026-08-06 run log died this way), and the
   /// long flaky-network sessions worth diagnosing are exactly the ones most
   /// likely to boot next on a bad connection.
+  /// Upload this session's persisted log before a wipe removes it.
+  ///
+  /// Same payload shape as [_sendPreviousSessionErrors] — the breadcrumbs plus
+  /// the metrics ring — with a line naming which button caused it, so the
+  /// sweep can tell a flushed log from an ordinary next-boot upload.
+  ///
+  /// Never throws and never blocks for long: the hasher asked for a reset, and
+  /// a server that will not answer must not stand in the way of it. On the
+  /// Reload Data path connectivity has already been proven a few lines above,
+  /// so in the case that matters this almost always lands.
+  static Future<void> _flushErrorLogBeforeWipe(String reason) async {
+    try {
+      final String errors =
+          getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '';
+      final String series =
+          getStringPref(StringPrefsEnum.lastSessionMetricsSeries) ?? '';
+      if (errors.isEmpty && series.isEmpty) return;
+
+      final String marker =
+          '[${DateTime.now().toIso8601String()}] [TRACE] '
+          '=== $reason pressed — log flushed before the device was wiped ===';
+      final String log = <String>[
+        errors,
+        series,
+        marker,
+      ].where((String s) => s.isNotEmpty).join('\n===\n');
+
+      await ServiceCommon.recordClientErrorLog(
+        log,
+      ).timeout(const Duration(seconds: 10), onTimeout: () => false);
+    } catch (_) {
+      // Losing the log is bad; blocking the reset is worse.
+    }
+  }
+
   static Future<void> _sendPreviousSessionErrors() async {
     final String errors =
         getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '';
@@ -228,9 +294,7 @@ class AppBootService {
         if (restored.length > 100000) {
           restored = restored.substring(restored.length - 100000);
         }
-        unawaited(
-          setStringPref(StringPrefsEnum.lastSessionErrorLog, restored),
-        );
+        unawaited(setStringPref(StringPrefsEnum.lastSessionErrorLog, restored));
       }),
     );
   }
@@ -278,18 +342,30 @@ class AppBootService {
     // A recovery reset must be able to re-authorise afterwards — verify the full
     // path through to the DB before wiping anything.
     if (keepResetCode) {
-      final bool reachable = await Utilities.checkHcServer()
-          .timeout(const Duration(seconds: 15), onTimeout: () => false);
+      final bool reachable = await Utilities.checkHcServer().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => false,
+      );
       if (!reachable) {
         await Utilities.showAlert(
           'No Connection',
           'A full reload needs a connection to Harrier Central so the app can '
-          'reload your data afterwards.\r\n\r\nPlease reconnect and try again.',
+              'reload your data afterwards.\r\n\r\nPlease reconnect and try again.',
           'OK',
         );
         return; // aborted — nothing wiped
       }
     }
+
+    // Send the breadcrumbs BEFORE they are destroyed.
+    //
+    // Nobody presses Reload Data because things are going well — it is what a
+    // hasher reaches for when something is broken, which makes this session's
+    // log the most valuable one there is. The wipe below calls clearPrefs(),
+    // and the log lives in a pref, so until now the act of reporting a problem
+    // deleted the evidence for it (James, 2026-09-20, after a reload erased
+    // the log for the very bug he was reporting).
+    await _flushErrorLogBeforeWipe(keepResetCode ? 'Reload Data' : 'Log Out');
 
     // Hold the recovery key (if we're keeping it) before wiping.
     final String? recoveryCode = keepResetCode ? await getResetCode() : null;
@@ -325,8 +401,9 @@ class AppBootService {
   Future<ReauthorizeOutcome> _autoReauthorize(String resetCode) async {
     try {
       final AuthorizeDeviceService srv = AuthorizeDeviceService();
-      final Map<String, String> result =
-          await srv.authorizeDevice(scanText: normalizeInviteCode(resetCode));
+      final Map<String, String> result = await srv.authorizeDevice(
+        scanText: normalizeInviteCode(resetCode),
+      );
 
       if (result['result'] != 'success') {
         final int? errorCode = int.tryParse(result['errorCode'] ?? '');
@@ -385,7 +462,9 @@ class AppBootService {
     String? userId,
     ApproveLoginModel loginResult,
   ) async {
-    debugPrint('[BOOT] _routeAfterLogin: serverStatusCode=${loginResult.serverStatusCode}, approvalCode=${loginResult.approvalCode}');
+    debugPrint(
+      '[BOOT] _routeAfterLogin: serverStatusCode=${loginResult.serverStatusCode}, approvalCode=${loginResult.approvalCode}',
+    );
     if (loginResult.serverStatusCode == serverStatusDownForMaintenance.value) {
       await Utilities.showAlert(
         'Down for Maintenance',
@@ -420,9 +499,13 @@ class AppBootService {
       return;
     }
 
-    debugPrint('[BOOT] _handleExistingUser start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _handleExistingUser start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await _handleExistingUser();
-    debugPrint('[BOOT] _handleExistingUser done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _handleExistingUser done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
   }
 
   /// Normal boot for a returning user: check DB version and upgrade if needed.
@@ -430,7 +513,9 @@ class AppBootService {
     debugPrint('[BOOT] _handleExistingUser: checking DB version');
     final int installedDbVersion =
         getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
-    debugPrint('[BOOT] _handleExistingUser: installedDbVersion=$installedDbVersion, DB_VERSION=$DB_VERSION');
+    debugPrint(
+      '[BOOT] _handleExistingUser: installedDbVersion=$installedDbVersion, DB_VERSION=$DB_VERSION',
+    );
     final bool dbTooFarBehind =
         installedDbVersion != DB_VERSION &&
         (installedDbVersion + 9) < DB_VERSION;
@@ -448,9 +533,13 @@ class AppBootService {
     await ensureCredentialsEncrypted();
 
     await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
-    debugPrint('[BOOT] Get.off(MainNavigationPage) start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] Get.off(MainNavigationPage) start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await Get.off(() => MainNavigationPage(), routeName: '/main');
-    debugPrint('[BOOT] Get.off(MainNavigationPage) done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] Get.off(MainNavigationPage) done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     // A GPX file that launched the app ("Open in" / the share extension) is
     // acted on now that there is a signed-in user and a page to open over.
@@ -463,14 +552,16 @@ class AppBootService {
       final String? eid = notifier.pendingEventId.value;
       if (eid != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.to<void>(() => AppScaffold(
-            appBar: AppBar(
-              backgroundColor: themeAppBarBackground,
-              iconTheme: const IconThemeData(color: Colors.white),
-              title: Text('Songbook', style: ts_appBarTitle),
+          Get.to<void>(
+            () => AppScaffold(
+              appBar: AppBar(
+                backgroundColor: themeAppBarBackground,
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text('Songbook', style: ts_appBarTitle),
+              ),
+              body: SongsPage(eventId: eid),
             ),
-            body: SongsPage(eventId: eid),
-          ));
+          );
         });
       }
     }
@@ -490,13 +581,15 @@ class AppBootService {
     // ── Step 0: Connectivity guard ───────────────────────────────────────────
     // We're about to wipe and re-authorise — without the backend we'd wipe and
     // be unable to recover. Keep the old DB and retry on the next online boot.
-    final bool reachable = await Utilities.checkHcServer()
-        .timeout(const Duration(seconds: 15), onTimeout: () => false);
+    final bool reachable = await Utilities.checkHcServer().timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => false,
+    );
     if (!reachable) {
       await Utilities.showAlert(
         'Update Postponed',
         'Harrier Central needs a connection to finish updating your data.\r\n\r\n'
-        'We\'ll try again next time you open the app while connected.',
+            'We\'ll try again next time you open the app while connected.',
         'Continue',
       );
       await Get.off(
@@ -591,8 +684,9 @@ class AppBootService {
     final bool isEncrypted =
         getStringPref(StringPrefsEnum.storageType) == 'encrypted';
 
-    String dialogTitle =
-        isEncrypted ? 'Account Load Successful' : 'Profile Load Successful';
+    String dialogTitle = isEncrypted
+        ? 'Account Load Successful'
+        : 'Profile Load Successful';
     String dialogMessage =
         'The app has been successfully updated for $userName.';
 
@@ -669,9 +763,13 @@ class AppBootService {
   /// Store app version in prefs and collect location — everything ApproveLoginService
   /// needs that isn't already populated by initServices().
   Future<void> _prepareDeviceContext() async {
-    debugPrint('[BOOT] _prepareDeviceContext: PackageInfo.fromPlatform start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _prepareDeviceContext: PackageInfo.fromPlatform start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     final PackageInfo p = await PackageInfo.fromPlatform();
-    debugPrint('[BOOT] _prepareDeviceContext: PackageInfo done: ${DateTime.now().millisecondsSinceEpoch}ms — v${p.version}+${p.buildNumber}');
+    debugPrint(
+      '[BOOT] _prepareDeviceContext: PackageInfo done: ${DateTime.now().millisecondsSinceEpoch}ms — v${p.version}+${p.buildNumber}',
+    );
     await setStringPref(
       StringPrefsEnum.harrierCentralVersionAndBuild,
       'HC Ver: ${p.version}, Bld: ${p.buildNumber}',
@@ -697,20 +795,28 @@ class AppBootService {
     await setStringPref(StringPrefsEnum.harrierCentralVersion, p.version);
 
     appModel.appStartTime = DateTime.now();
-    debugPrint('[BOOT] _prepareDeviceContext: Permission.location.isGranted check: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _prepareDeviceContext: Permission.location.isGranted check: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     appModel.hasLocationPermissions = await Permission.location.isGranted;
-    debugPrint('[BOOT] _prepareDeviceContext: hasLocationPermissions=${appModel.hasLocationPermissions}: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _prepareDeviceContext: hasLocationPermissions=${appModel.hasLocationPermissions}: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     if (appModel.hasLocationPermissions) {
       if (!Get.isRegistered<LocationService>()) {
         Get.put(LocationService());
       }
       if (kDebugMode) {
-        debugPrint('[BOOT] _prepareDeviceContext: Geolocator.getLastKnownPosition start: ${DateTime.now().millisecondsSinceEpoch}ms');
+        debugPrint(
+          '[BOOT] _prepareDeviceContext: Geolocator.getLastKnownPosition start: ${DateTime.now().millisecondsSinceEpoch}ms',
+        );
       }
       final Position? position = await Geolocator.getLastKnownPosition();
       if (kDebugMode) {
-        debugPrint('[BOOT] _prepareDeviceContext: getLastKnownPosition done: ${DateTime.now().millisecondsSinceEpoch}ms — lat=${position?.latitude}');
+        debugPrint(
+          '[BOOT] _prepareDeviceContext: getLastKnownPosition done: ${DateTime.now().millisecondsSinceEpoch}ms — lat=${position?.latitude}',
+        );
       }
       deviceInfo.deviceLat = position?.latitude.toDouble();
       deviceInfo.deviceLon = position?.longitude.toDouble();
@@ -721,15 +827,21 @@ class AppBootService {
   Future<ApproveLoginModel?> _fetchLoginResult({
     Function? errorCallback,
   }) async {
-    debugPrint('[BOOT] _fetchLoginResult: isConnected=${Utilities.isConnected()}: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _fetchLoginResult: isConnected=${Utilities.isConnected()}: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     if (!Utilities.isConnected()) return null;
 
     final ApproveLoginService svc = ApproveLoginService();
-    debugPrint('[BOOT] _fetchLoginResult: approveLogin HTTP call start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _fetchLoginResult: approveLogin HTTP call start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     final String responseBody = await svc.approveLogin(
       errorCallback: errorCallback,
     );
-    debugPrint('[BOOT] _fetchLoginResult: approveLogin HTTP call done: ${DateTime.now().millisecondsSinceEpoch}ms — responseLen=${responseBody.length}');
+    debugPrint(
+      '[BOOT] _fetchLoginResult: approveLogin HTTP call done: ${DateTime.now().millisecondsSinceEpoch}ms — responseLen=${responseBody.length}',
+    );
 
     // approveLogin shows an error dialog and returns ERROR_KEY_OK_BTN_PRESSED
     // when the server returns a hard error the user acknowledged.
@@ -755,15 +867,17 @@ class AppBootService {
 
     // Check for proximity song (server found an active song within 500m).
     // Parsed outside ApproveLoginModel to avoid regenerating Freezed files.
-    final String? activeSongId      = row['activeSongId']      as String?;
+    final String? activeSongId = row['activeSongId'] as String?;
     final String? activeSongEventId = row['activeSongEventId'] as String?;
-    if (activeSongId != null && activeSongId.isNotEmpty &&
+    if (activeSongId != null &&
+        activeSongId.isNotEmpty &&
         activeSongId != GUID_EMPTY &&
-        activeSongEventId != null && activeSongEventId.isNotEmpty &&
+        activeSongEventId != null &&
+        activeSongEventId.isNotEmpty &&
         activeSongEventId != GUID_EMPTY) {
       SongSessionNotifier.ensure().setPendingProximitySong(
         eventId: activeSongEventId,
-        songId:  activeSongId,
+        songId: activeSongId,
       );
     }
 
@@ -866,12 +980,14 @@ class AppBootService {
   Future<void> _handleDeviceNoLongerRegistered() async {
     // Report immediately before clearing prefs so the stale deviceId is captured.
     // hcapp_logClientErrors accepts unregistered devices for exactly this case.
-    unawaited(ServiceCommon.recordClientErrorLog(
-      '[${DateTime.now().toIso8601String()}] [DEVICE_NOT_REGISTERED] '
-      'deviceId=${getStringPref(StringPrefsEnum.deviceId) ?? "<null>"} '
-      'userId=${getStringPref(StringPrefsEnum.userId) ?? "<null>"} '
-      'hcVersion=${getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ?? "<null>"}',
-    ));
+    unawaited(
+      ServiceCommon.recordClientErrorLog(
+        '[${DateTime.now().toIso8601String()}] [DEVICE_NOT_REGISTERED] '
+        'deviceId=${getStringPref(StringPrefsEnum.deviceId) ?? "<null>"} '
+        'userId=${getStringPref(StringPrefsEnum.userId) ?? "<null>"} '
+        'hcVersion=${getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ?? "<null>"}',
+      ),
+    );
 
     await Get.dialog<void>(
       AlertDialog(

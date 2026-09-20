@@ -88,8 +88,10 @@ class KennelMemberListState extends State<KennelMembersList>
     // Consumed by RotationTransition (line ~776), which animates itself each
     // frame — no per-frame setState needed. (_filterPanelAnimation and
     // _hasherListAnimation likewise drive Slide/PositionedTransition.)
-    _buttonAnimation =
-        Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController);
+    _buttonAnimation = Tween<double>(
+      begin: 0,
+      end: 90.0 / 360.0,
+    ).animate(_animationController);
   }
 
   Future<void> _initLoad() async {
@@ -190,7 +192,11 @@ class KennelMemberListState extends State<KennelMembersList>
         }
       }
     } catch (e, s) {
-      BootLogger.logError('[KennelMembers._refreshKennelMembersFromTable] kennelId=${widget.kennelListAggregate.kennel.kennelId}', e, s);
+      BootLogger.logError(
+        '[KennelMembers._refreshKennelMembersFromTable] kennelId=${widget.kennelListAggregate.kennel.kennelId}',
+        e,
+        s,
+      );
     }
   }
 
@@ -244,7 +250,11 @@ class KennelMemberListState extends State<KennelMembersList>
         setStateIfMounted(() {});
       }
     } catch (e, s) {
-      BootLogger.logError('[KennelMembers._refreshCounters] kennelId=${widget.kennelListAggregate.kennel.kennelId}', e, s);
+      BootLogger.logError(
+        '[KennelMembers._refreshCounters] kennelId=${widget.kennelListAggregate.kennel.kennelId}',
+        e,
+        s,
+      );
     }
   }
 
@@ -347,7 +357,11 @@ class KennelMemberListState extends State<KennelMembersList>
                   // _isLoading = false;
                 });
               } catch (e, s) {
-                BootLogger.logError('[KennelMembers.SpeedDial.updateStatus] kennelId=${widget.kennelListAggregate.kennel.kennelId}', e, s);
+                BootLogger.logError(
+                  '[KennelMembers.SpeedDial.updateStatus] kennelId=${widget.kennelListAggregate.kennel.kennelId}',
+                  e,
+                  s,
+                );
                 if (!mounted) return;
                 setStateIfMounted(() {});
               }
@@ -580,166 +594,176 @@ class KennelMemberListState extends State<KennelMembersList>
                                       await _refreshCounters(true);
                                       setStateIfMounted(() {});
                                     },
-                                modifyMembershipCallback: (EnumMemberPopupActions? retVal) async {
-                                  if (retVal == null) return;
+                                modifyMembershipCallback:
+                                    (EnumMemberPopupActions? retVal) async {
+                                      if (retVal == null) return;
 
-                                  switch (retVal) {
-                                    case EnumMemberPopupActions.cancelDialog:
-                                      break;
-                                    case EnumMemberPopupActions
-                                        .chargeMembership:
-                                      final KennelMemberResultsModel m =
-                                          snapshot.data![index];
-                                      await showMembershipChargeSheet(
-                                        context: context,
-                                        kennelId: widget
-                                            .kennelListAggregate
-                                            .kennel
-                                            .kennelId,
-                                        userId: m.hasherId,
-                                        displayName: m.dispName,
-                                        appDomainType: AppDomainType.kennel,
-                                        onCharged: () async {
-                                          // The payment SP's bundled sync
-                                          // returns user-domain rowsets; the
-                                          // target's HKM lives in the KENNEL
-                                          // domain, so pull it explicitly.
-                                          await tableModel
-                                              .syncKennelAdminService
-                                              .updateFromBackend(
-                                                EnumDataTables
-                                                    .hasherKennelMap
-                                                    .flag,
+                                      switch (retVal) {
+                                        case EnumMemberPopupActions
+                                            .cancelDialog:
+                                          break;
+                                        case EnumMemberPopupActions
+                                            .chargeMembership:
+                                          final KennelMemberResultsModel m =
+                                              snapshot.data![index];
+                                          await showMembershipChargeSheet(
+                                            context: context,
+                                            kennelId: widget
+                                                .kennelListAggregate
+                                                .kennel
+                                                .kennelId,
+                                            userId: m.hasherId,
+                                            displayName: m.dispName,
+                                            appDomainType: AppDomainType.kennel,
+                                            onCharged: () async {
+                                              // The payment SP's bundled sync
+                                              // returns user-domain rowsets; the
+                                              // target's HKM lives in the KENNEL
+                                              // domain, so pull it explicitly.
+                                              await tableModel
+                                                  .syncKennelAdminService
+                                                  .updateFromBackend(
+                                                    EnumDataTables
+                                                        .hasherKennelMap
+                                                        .flag,
+                                                    true,
+                                                    widget
+                                                        .kennelListAggregate
+                                                        .kennel
+                                                        .kennelId,
+                                                  );
+                                              await _refreshKennelMembersFromTable(
                                                 true,
-                                                widget
-                                                    .kennelListAggregate
-                                                    .kennel
-                                                    .kennelId,
                                               );
-                                          await _refreshKennelMembersFromTable(
-                                            true,
+                                              await _refreshCounters(true);
+                                              setStateIfMounted(() {});
+                                            },
                                           );
-                                          await _refreshCounters(true);
-                                          setStateIfMounted(() {});
-                                        },
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions.addOneMonth:
-                                      await _modifyMembership(
-                                        snapshot,
-                                        index,
-                                        1,
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions.addSixMonths:
-                                      await _modifyMembership(
-                                        snapshot,
-                                        index,
-                                        6,
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions.addOneYear:
-                                      await _modifyMembership(
-                                        snapshot,
-                                        index,
-                                        12,
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions
-                                        .permanentMembership:
-                                      await _modifyMembership(
-                                        snapshot,
-                                        index,
-                                        9999,
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions
-                                        .cancelMembership:
-                                      await _modifyMembership(
-                                        snapshot,
-                                        index,
-                                        -9999,
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions.hideSharedNotes:
-                                      await _setUserProperties(
-                                        snapshot,
-                                        index,
-                                        kennelStandingSet:
-                                            KENNEL_STANDING_NOTES_SUPPRESSED,
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions.allowSharedNotes:
-                                      await _setUserProperties(
-                                        snapshot,
-                                        index,
-                                        kennelStandingClear:
-                                            KENNEL_STANDING_NOTES_SUPPRESSED,
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions.grantAlumni:
-                                      // ALUMNI bit 0x0002 (manual grant)
-                                      await _setUserProperties(
-                                        snapshot,
-                                        index,
-                                        kennelStandingSet: 0x0002,
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions.revokeAlumni:
-                                      await _setUserProperties(
-                                        snapshot,
-                                        index,
-                                        kennelStandingClear: 0x0002,
-                                      );
-                                      break;
-                                    case EnumMemberPopupActions.editKennelAdmin:
-                                      final int? appAccessResult =
-                                          await Navigator.push<int>(
-                                            context,
-                                            MaterialPageRoute<int>(
-                                              builder: (BuildContext context) =>
-                                                  AppAccessPage(
-                                                    appAccess: snapshot
-                                                        .data![index]
-                                                        .appAccessFlags,
-                                                  ),
-                                            ),
+                                          break;
+                                        case EnumMemberPopupActions.addOneMonth:
+                                          await _modifyMembership(
+                                            snapshot,
+                                            index,
+                                            1,
                                           );
+                                          break;
+                                        case EnumMemberPopupActions
+                                            .addSixMonths:
+                                          await _modifyMembership(
+                                            snapshot,
+                                            index,
+                                            6,
+                                          );
+                                          break;
+                                        case EnumMemberPopupActions.addOneYear:
+                                          await _modifyMembership(
+                                            snapshot,
+                                            index,
+                                            12,
+                                          );
+                                          break;
+                                        case EnumMemberPopupActions
+                                            .permanentMembership:
+                                          await _modifyMembership(
+                                            snapshot,
+                                            index,
+                                            9999,
+                                          );
+                                          break;
+                                        case EnumMemberPopupActions
+                                            .cancelMembership:
+                                          await _modifyMembership(
+                                            snapshot,
+                                            index,
+                                            -9999,
+                                          );
+                                          break;
+                                        case EnumMemberPopupActions
+                                            .hideSharedNotes:
+                                          await _setUserProperties(
+                                            snapshot,
+                                            index,
+                                            kennelStandingSet:
+                                                KENNEL_STANDING_NOTES_SUPPRESSED,
+                                          );
+                                          break;
+                                        case EnumMemberPopupActions
+                                            .allowSharedNotes:
+                                          await _setUserProperties(
+                                            snapshot,
+                                            index,
+                                            kennelStandingClear:
+                                                KENNEL_STANDING_NOTES_SUPPRESSED,
+                                          );
+                                          break;
+                                        case EnumMemberPopupActions.grantAlumni:
+                                          // ALUMNI bit 0x0002 (manual grant)
+                                          await _setUserProperties(
+                                            snapshot,
+                                            index,
+                                            kennelStandingSet: 0x0002,
+                                          );
+                                          break;
+                                        case EnumMemberPopupActions
+                                            .revokeAlumni:
+                                          await _setUserProperties(
+                                            snapshot,
+                                            index,
+                                            kennelStandingClear: 0x0002,
+                                          );
+                                          break;
+                                        case EnumMemberPopupActions
+                                            .editKennelAdmin:
+                                          final int? appAccessResult =
+                                              await Navigator.push<int>(
+                                                context,
+                                                MaterialPageRoute<int>(
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          AppAccessPage(
+                                                            appAccess: snapshot
+                                                                .data![index]
+                                                                .appAccessFlags,
+                                                          ),
+                                                ),
+                                              );
 
-                                      if (appAccessResult != null) {
-                                        await _setUserProperties(
-                                          snapshot,
-                                          index,
-                                          appAccessFlags: appAccessResult,
-                                        );
-                                      }
-                                      break;
-                                    case EnumMemberPopupActions
-                                        .editMismanagementRole:
-                                      final int? mismanagementResult =
-                                          await Navigator.push<int>(
-                                            context,
-                                            MaterialPageRoute<int>(
-                                              builder: (BuildContext context) =>
-                                                  MismanagementRolesPage(
-                                                    mismanagementRoles: snapshot
-                                                        .data![index]
-                                                        .mismanagementRoles,
-                                                  ),
-                                            ),
-                                          );
+                                          if (appAccessResult != null) {
+                                            await _setUserProperties(
+                                              snapshot,
+                                              index,
+                                              appAccessFlags: appAccessResult,
+                                            );
+                                          }
+                                          break;
+                                        case EnumMemberPopupActions
+                                            .editMismanagementRole:
+                                          final int? mismanagementResult =
+                                              await Navigator.push<int>(
+                                                context,
+                                                MaterialPageRoute<int>(
+                                                  builder:
+                                                      (
+                                                        BuildContext context,
+                                                      ) => MismanagementRolesPage(
+                                                        mismanagementRoles: snapshot
+                                                            .data![index]
+                                                            .mismanagementRoles,
+                                                      ),
+                                                ),
+                                              );
 
-                                      if (mismanagementResult != null) {
-                                        await _setUserProperties(
-                                          snapshot,
-                                          index,
-                                          mismanagementRoles:
-                                              mismanagementResult,
-                                        );
+                                          if (mismanagementResult != null) {
+                                            await _setUserProperties(
+                                              snapshot,
+                                              index,
+                                              mismanagementRoles:
+                                                  mismanagementResult,
+                                            );
+                                          }
+                                          break;
                                       }
-                                      break;
-                                  }
-                                },
+                                    },
                                 toggleEmailPreferenceCallback: () async {
                                   if (Utilities.isConnected(
                                     showDialog: true,
@@ -755,10 +779,18 @@ class KennelMemberListState extends State<KennelMembersList>
                                             1
                                         ? 1
                                         : 2;
-                                    snapshot
-                                            .data![index]
-                                            .kennelEmailAlertPreference =
-                                        -1;
+                                    // KennelMemberResultsModel is @freezed —
+                                    // it has no setters, so assigning to this
+                                    // field threw NoSuchMethodError and the
+                                    // envelope did nothing at all (seen in
+                                    // production on 3.0.12, 2026-09-20).
+                                    // copyWith and replace the element.
+                                    snapshot.data![index] =
+                                        (snapshot.data![index]
+                                                as KennelMemberResultsModel)
+                                            .copyWith(
+                                              kennelEmailAlertPreference: -1,
+                                            );
                                     setStateIfMounted(() {});
                                     final List<dynamic> queryResults = await srv
                                         .updateHasherKennelStatus(
@@ -775,10 +807,16 @@ class KennelMemberListState extends State<KennelMembersList>
                                     if (!mounted) return;
                                     setStateIfMounted(() {
                                       if (queryResults.isNotEmpty) {
-                                        snapshot
-                                                .data![index]
-                                                .kennelEmailAlertPreference =
-                                            queryResults[0]['kennelEmailAlertPreference'];
+                                        snapshot.data![index] =
+                                            (snapshot.data![index]
+                                                    as KennelMemberResultsModel)
+                                                .copyWith(
+                                                  kennelEmailAlertPreference:
+                                                      (queryResults[0]['kennelEmailAlertPreference']
+                                                              as num?)
+                                                          ?.toInt() ??
+                                                      0,
+                                                );
                                       }
                                     });
                                   }
@@ -1160,7 +1198,11 @@ class KennelMemberListState extends State<KennelMembersList>
       );
     } catch (e, s) {
       debugPrint('_setUserProperties: updateHasherKennelStatus error: $e');
-      BootLogger.logError('[KennelMembers._setUserProperties] kennelId=${widget.kennelListAggregate.kennel.kennelId} appAccessFlags=$appAccessFlags mismanagementRoles=$mismanagementRoles', e, s);
+      BootLogger.logError(
+        '[KennelMembers._setUserProperties] kennelId=${widget.kennelListAggregate.kennel.kennelId} appAccessFlags=$appAccessFlags mismanagementRoles=$mismanagementRoles',
+        e,
+        s,
+      );
     } finally {
       await _refreshKennelMembersFromTable(true);
       if (mounted) {
