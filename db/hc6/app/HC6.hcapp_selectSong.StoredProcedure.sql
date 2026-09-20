@@ -128,7 +128,17 @@ FROM HC.HasherEventMap hem
 INNER JOIN HC.Device d ON d.UserId = hem.UserId
 LEFT  JOIN HC.HasherKennelMap hkm ON hkm.UserId = hem.UserId AND hkm.KennelId = @kennelId
 WHERE hem.EventId  = @eventId
-  AND (hem.RsvpState >= 2 OR hem.AttendenceState >= 3)
+  -- >= 20, not >= 3. The 3 was borrowed from the RSVP enum (where 3 is
+  -- Yes); the attendance enum has nothing between 0 and 10, so >= 3 read
+  -- as "has any attendance row" and swept in state 10 — marked NOT at the
+  -- hash — sending a live "we are singing this" push to 2,129 hashers
+  -- recorded as absent (2026-09-20). The correct test is the one this SP
+  -- already uses ten lines below for the preference override.
+  AND (hem.RsvpState >= 2 OR hem.AttendenceState >= 20)
+  -- And being marked absent VETOES an earlier Maybe/Yes. The attendance
+  -- record is made later, at the circle, by someone who looked: it beats
+  -- an RSVP made days before (James, 2026-09-20).
+  AND ISNULL(hem.AttendenceState, 0) <> 10
   AND hem.Removed   = 0
   AND d.FcmToken IS NOT NULL
   AND d.FcmToken != ''
@@ -195,7 +205,17 @@ INNER JOIN HC.Device d ON d.UserId = hem.UserId
 LEFT  JOIN HC.HasherKennelMap hkm
       ON hkm.UserId = hem.UserId AND hkm.KennelId = @kennelId
 WHERE hem.EventId  = @eventId
-  AND (hem.RsvpState >= 2 OR hem.AttendenceState >= 3)
+  -- >= 20, not >= 3. The 3 was borrowed from the RSVP enum (where 3 is
+  -- Yes); the attendance enum has nothing between 0 and 10, so >= 3 read
+  -- as "has any attendance row" and swept in state 10 — marked NOT at the
+  -- hash — sending a live "we are singing this" push to 2,129 hashers
+  -- recorded as absent (2026-09-20). The correct test is the one this SP
+  -- already uses ten lines below for the preference override.
+  AND (hem.RsvpState >= 2 OR hem.AttendenceState >= 20)
+  -- And being marked absent VETOES an earlier Maybe/Yes. The attendance
+  -- record is made later, at the circle, by someone who looked: it beats
+  -- an RSVP made days before (James, 2026-09-20).
+  AND ISNULL(hem.AttendenceState, 0) <> 10
   AND hem.Removed   = 0
   AND d.FcmToken IS NOT NULL
   AND d.FcmToken != ''
