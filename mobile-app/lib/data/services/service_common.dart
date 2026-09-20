@@ -516,6 +516,19 @@ class ServiceCommon {
 
       final DbErrorModel errorResult = DbErrorModel.fromJson(errorRow);
 
+      // This device has been signed out of the account (E9.F7.S19). It is
+      // its own error type precisely so this branch cannot catch anything
+      // else: an expired or clock-skewed token is type 1, and wiping an
+      // install for that would be a disaster. Nothing below runs — no
+      // errorCallback, no error dialog — because the caller's screen is
+      // about to be replaced by a rebooting app.
+      if (SignedOutHandler.isSignedOut(errorResult.errorType)) {
+        unawaited(
+          SignedOutHandler.handle(message: errorResult.errorUserMessage),
+        );
+        return ERROR_HANDLED;
+      }
+
       if (errorCallback != null) {
         final bool errorCallbackResult = await errorCallback(errorResult);
         returnValue = errorCallbackResult ? ERROR_HANDLED : ERROR_NOT_HANDLED;

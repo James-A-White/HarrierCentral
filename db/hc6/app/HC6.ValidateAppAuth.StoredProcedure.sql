@@ -56,10 +56,13 @@ SET @errorTitle   = NULL;
 SET @errorMsg     = NULL;
 
 -- Resolve device → user credentials
+DECLARE @signedOutAt DATETIMEOFFSET;
+
 SELECT
     @userId       = d.UserId,
     @deviceSecret = d.DeviceSecret,
-    @timeWindow   = d.TimeWindow
+    @timeWindow   = d.TimeWindow,
+    @signedOutAt  = d.SignedOutAt
 FROM HC.Device d
 WHERE d.id = @deviceId;
 
@@ -74,6 +77,31 @@ BEGIN
 
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Device not registered', @errorMsg, @procName, NULL);
+    RETURN;
+END
+
+-- Signed out deliberately (E9.F7.S19)
+--
+-- This MUST be tested before the token check, and must be its own error.
+-- hcapp_signOutDevice rotates DeviceSecret, so the token would fail anyway
+-- — but it would fail as errorType 1, which is also what a phone with a
+-- drifting clock produces. The client wipes the install on THIS error and
+-- must never wipe on that one, so the two cannot share a code.
+--
+-- SignedOutAt is written only by hcapp_signOutDevice. It is NOT the same
+-- as `removed`: 300 devices carry removed = 1 and 46 of those signed in
+-- within 90 days, so reading `removed` here would wipe the app for people
+-- actively using it.
+IF (@signedOutAt IS NOT NULL)
+BEGIN
+    SET @errorCode  = 1200 + @spNumber;
+    SET @errorType  = 7;
+    SET @errorId    = NEWID();
+    SET @errorTitle = 'Signed out';
+    SET @errorMsg   = 'This device was signed out of your Harrier Central account. Sign in again to carry on.';
+
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Device signed out', @errorMsg, @procName, @userId);
     RETURN;
 END
 
