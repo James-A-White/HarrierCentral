@@ -150782,7 +150782,7 @@ r=A.E(new A.V(q,new A.bBM(r),p),p.i("ai.E"))
 return A.eR(A.ag(r,B.A,B.u,B.x,0,B.H),B.O,s,B.M,B.af,s,s,s,s,!1,s,!1,B.a2)},
 $S:409}
 A.bBM.prototype={
-$1(a){var s=null,r=a.d,q=a.c,p=r+q,o=this.a,n=o.c,m=n.ay,l=m.gj(0)===0?1:m.gj(0),k=B.j.a3(0.85-Math.log(p+1)/Math.log(l+1)*0.5,0.35,0.85),j=k<0.52?B.B:B.L,i=a.a+"/"+a.b
+$1(a){var s=null,r=a.d,q=a.c,p=r+q,o=this.a,n=o.c,m=n.ay,l=m.gj(0)===0?1:m.gj(0),k=0.93-(p<=1||l<=1?0:B.j.a3(Math.log(p)/Math.log(l),0,1))*0.58,j=k<0.52?B.B:B.L,i=a.a+"/"+a.b
 n=n.dy.gj(0)
 m=A.E1(B.T3)
 m=new A.eb(m.a,m.b,m.c,k).bn()
