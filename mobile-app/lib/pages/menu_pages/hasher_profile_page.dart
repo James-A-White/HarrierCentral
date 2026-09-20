@@ -48,7 +48,6 @@ class HasherProfilePage extends StatefulWidget {
 }
 
 class HasherProfilePageState extends State<HasherProfilePage> {
-
   final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _runCountFormKey = GlobalKey<FormState>();
 
@@ -188,8 +187,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   final TextEditingController _previousHaringCountController =
       TextEditingController();
 
-  String? _externalMapProvider;
-
   @override
   void initState() {
     super.initState();
@@ -228,8 +225,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     });
 
     _newPhoto = bundledAvatarUrl(Random.secure().nextInt(49) + 1);
-
-    _externalMapProvider = getStringPref(StringPrefsEnum.mapPreference);
   }
 
   Future<void> initializeValues() async {
@@ -305,7 +300,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         (_historicalCountIsEstimate ?? false)) {
       isDirty = true;
     }
-
 
     if (isDirty != _isDirty) {
       setStateIfMounted(() {
@@ -588,7 +582,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _checkDirty();
     });
   }
-
 
   @override
   void dispose() {
@@ -1153,7 +1146,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                             context,
                                                                           ) {
                                                                             return UserRunHistoryListPage(
-                                                                              appDomain: AppDomainType.values.byName(widget.dataContext.name),
+                                                                              appDomain: AppDomainType.values.byName(
+                                                                                widget.dataContext.name,
+                                                                              ),
                                                                               hashName: widget.hashNameFromSearch,
                                                                               hasherId: widget.hasherId,
                                                                               kennelInfo: runHistory[0],
@@ -1206,79 +1201,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    if (_externalMapProvider !=
-                                        null) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('8552133039'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Clear Map Preference',
-                                              style: ts_headingLarge,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'You have set your map preference to $_externalMapProvider. Click below to clear this preference. The next time you open an external map app, you will again be asked to indicate a preference.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 15.0,
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          vertical: 8.0,
-                                                          horizontal: 15.0,
-                                                        ),
-                                                  ),
-                                                  onPressed: () async {
-                                                    await Utilities.showAlert(
-                                                      'Map preferences cleared',
-                                                      'Your map preference has been cleared. Next time you access an external map application, you will be prompted again to select a map preference.',
-                                                      'OK',
-                                                      showCancelButton: false,
-                                                    );
-
-                                                    await removePref(
-                                                      StringPrefsEnum
-                                                          .mapPreference,
-                                                    );
-
-                                                    setStateIfMounted(() {
-                                                      _externalMapProvider =
-                                                          null;
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                    'Clear map preference',
-                                                    style: ts_button,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
                                     if (widget.uiElementsToDisplay &
                                             HasherProfilePage
                                                 .flagUiElement_logOutButton !=
@@ -1342,11 +1264,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         bool? result,
                                                       ) async {
                                                         if (result ?? false) {
-                                                          await AppBootService
-                                                              .resetAndReboot(
-                                                                keepResetCode:
-                                                                    false,
-                                                              );
+                                                          await AppBootService.resetAndReboot(
+                                                            keepResetCode:
+                                                                false,
+                                                          );
                                                         }
                                                       });
                                                     },
@@ -1535,7 +1456,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             );
 
                                                         if (result2 ?? false) {
-
                                                           final GdprDeleteService
                                                           svc =
                                                               GdprDeleteService();
@@ -1646,5 +1566,4 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   //   // Register other dependencies here
   // }
-
 }
