@@ -74,6 +74,20 @@ class MainNavigationController extends GetxController
 
   var reportSplashSequenceViewed = false;
 
+  /// The app is up: '/main' exists and can safely be popped back to.
+  ///
+  /// BOTH paths that reach the app content call this — the normal one and
+  /// onInitAsync's catch-all, which was missed when the notification
+  /// hand-off was added on 2026-09-19. A boot that threw therefore held a
+  /// notification tap for ever and never replayed it. One method so the
+  /// next "we are up" path cannot forget it either.
+  void _markMainReady() {
+    mainScreenReady.value = true;
+    if (Get.isRegistered<NotificationService>()) {
+      Get.find<NotificationService>().onMainReady();
+    }
+  }
+
   Future<void> onInitAsync() async {
     try {
       await _onInitAsyncBody();
@@ -86,7 +100,7 @@ class MainNavigationController extends GetxController
         debugPrint('onInitAsync unhandled error: $e');
         debugPrint(stack.toString());
       }
-      mainScreenReady.value = true;
+      _markMainReady();
       mainScreenContent.value = MainPageContent.appContent;
       isLoadingData = false;
       update([UpdateIds.appScaffold]);
@@ -95,7 +109,9 @@ class MainNavigationController extends GetxController
 
   Future<void> _onInitAsyncBody() async {
     final stopwatch = Stopwatch()..start();
-    debugPrint('[BOOT] MainNavController: _onInitAsyncBody start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: _onInitAsyncBody start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     appBarText.value = tabTitles[0];
 
@@ -107,11 +123,14 @@ class MainNavigationController extends GetxController
       await Utilities.showAlert(
         'Database Version Mismatch',
         'DB_VERSION is $DB_VERSION but the last migration record is $lastMigration.\n\n'
-        'A migration record must be added to Tables.migrationList for every '
-        'DB_VERSION change. The app cannot start until this is fixed.',
+            'A migration record must be added to Tables.migrationList for every '
+            'DB_VERSION change. The app cannot start until this is fixed.',
         'OK',
       );
-      assert(DB_VERSION == lastMigration, 'DB_VERSION ($DB_VERSION) != last migration ($lastMigration) — add a MigrationsModel entry to Tables.migrationList.');
+      assert(
+        DB_VERSION == lastMigration,
+        'DB_VERSION ($DB_VERSION) != last migration ($lastMigration) — add a MigrationsModel entry to Tables.migrationList.',
+      );
       return;
     }
 
@@ -123,19 +142,25 @@ class MainNavigationController extends GetxController
     // so this stays correct across the logout/reset paths that delete the DB
     // without erasing prefs — a freshly-created/empty DB yields a count of 0 and
     // still blocks on the first sync (which runs with a real progress callback).
-    debugPrint('[BOOT] MainNavController: openAppDatabase start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: openAppDatabase start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await openAppDatabase(informUser, 'PRO_APP');
-    final int cachedEventCount =
-        await CommonQueries.countRecords(EnumDataTables.events.commonTableName);
+    final int cachedEventCount = await CommonQueries.countRecords(
+      EnumDataTables.events.commonTableName,
+    );
     final bool hasCachedData = cachedEventCount > 0;
-    debugPrint('[BOOT] MainNavController: openAppDatabase done, cachedEventCount=$cachedEventCount, hasCachedData=$hasCachedData: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: openAppDatabase done, cachedEventCount=$cachedEventCount, hasCachedData=$hasCachedData: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     // Choose what fills the screen until appContent is ready. Returning users get
     // the blank app background (MainPageContent.initial, the default) — never the
     // loading screen. First launch still shows "Filling Your Mug" during the
     // blocking sync below. Version/promo splash sequences always show regardless.
-    final MainPageContent waitingContent =
-        hasCachedData ? MainPageContent.initial : MainPageContent.loading;
+    final MainPageContent waitingContent = hasCachedData
+        ? MainPageContent.initial
+        : MainPageContent.loading;
     if (Utilities.isConnected()) {
       // Read the version from the platform, NOT the pref: the signup flow
       // (invite code → photo confirm) pushes MainNavigationPage directly
@@ -182,13 +207,17 @@ class MainNavigationController extends GetxController
 
       // always display version change splash sequences if they exist on the server
       if (!isFirstEverRun && hcCurrentVersion != hcPreviousVersion) {
-        debugPrint('[BOOT] MainNavController: version changed $hcPreviousVersion→$hcCurrentVersion, preloading images: ${DateTime.now().millisecondsSinceEpoch}ms');
+        debugPrint(
+          '[BOOT] MainNavController: version changed $hcPreviousVersion→$hcCurrentVersion, preloading images: ${DateTime.now().millisecondsSinceEpoch}ms',
+        );
         // Show the splash state BEFORE the download so the bundled first
         // slide + "Please wait" appear instantly instead of bare jungle.
         currentSplashRootName = 'version_$hcCurrentVersion';
         mainScreenContent.value = MainPageContent.splashSequence;
         final imgCount = await _preloadImages('version_$hcCurrentVersion');
-        debugPrint('[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms');
+        debugPrint(
+          '[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms',
+        );
         if (imgCount == 0) {
           // don't show any splah images if none have been loaded
           mainScreenContent.value = waitingContent;
@@ -202,13 +231,17 @@ class MainNavigationController extends GetxController
         // only show a splash screen if enough time has elapsed
         // since the last time a splash screen was displayed
         if (timeSinceLastView.inHours > splashType.delayInHours) {
-          debugPrint('[BOOT] MainNavController: splashSequence preloading ($splashSequenceRootName): ${DateTime.now().millisecondsSinceEpoch}ms');
+          debugPrint(
+            '[BOOT] MainNavController: splashSequence preloading ($splashSequenceRootName): ${DateTime.now().millisecondsSinceEpoch}ms',
+          );
           // Show the splash state BEFORE the download (bundled slide or
           // wait bar) instead of leaving the bare app background up.
           currentSplashRootName = splashSequenceRootName;
           mainScreenContent.value = MainPageContent.splashSequence;
           final imgCount = await _preloadImages(splashSequenceRootName);
-          debugPrint('[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms');
+          debugPrint(
+            '[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms',
+          );
           if (imgCount == 0) {
             // don't show any splah images if none have been loaded
             mainScreenContent.value = MainPageContent.appContent;
@@ -235,14 +268,20 @@ class MainNavigationController extends GetxController
     } else {
       mainScreenContent.value = MainPageContent.appContent;
     }
-    debugPrint('[BOOT] MainNavController: mainScreenContent=${mainScreenContent.value.name}: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: mainScreenContent=${mainScreenContent.value.name}: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     // First launch (no cached data): block on the full sync while "Filling Your
     // Mug" shows. Returning users skip this — they sync in the background below.
     if (!hasCachedData) {
-      debugPrint('[BOOT] MainNavController: first launch — blocking full sync start: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] MainNavController: first launch — blocking full sync start: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
       await syncAllUserDataFromBackend(informUser: informUser);
-      debugPrint('[BOOT] MainNavController: first-launch full sync done: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] MainNavController: first-launch full sync done: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
     }
 
     // Drain any photos that were taken while offline.
@@ -250,34 +289,35 @@ class MainNavigationController extends GetxController
 
     // Create all pages up front — these are cheap synchronous constructors, and
     // the IndexedStack needs every child present before we flip to appContent.
-    debugPrint('[BOOT] MainNavController: creating pages: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: creating pages: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     futureRunsListPage = FutureRunsListPage();
     kennelsListPage = KennelsListPage(key: kennelLocationsPageKey);
     historyListPage = HistoryListPage();
     runAndKennelMapPage = RunAndKennelMapPage(key: runAndKennelMapPageKey);
     songsPage = SongsPage();
-    mainScreenReady.value = true;
+    _markMainReady();
     isLoadingData = false;
 
-    // '/main' now exists, so a notification tap can safely pop back to it.
-    // A tap that arrived during boot was held rather than acted on (it would
-    // have emptied the navigator and frozen the app) — this releases it.
-    if (Get.isRegistered<NotificationService>()) {
-      Get.find<NotificationService>().onMainReady();
-    }
-
-    debugPrint('[BOOT] MainNavController: all pages created, mainScreenReady=true: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: all pages created, mainScreenReady=true: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     // The minimum-splash gate only applies when we actually blocked on a sync
     // (first launch). Returning users skip it so the runs page appears at once.
     if (!hasCachedData) {
       final elapsed = stopwatch.elapsedMilliseconds;
       final remaining = 1500 - elapsed;
-      debugPrint('[BOOT] MainNavController: elapsed=${elapsed}ms, waiting ${remaining > 0 ? remaining : 0}ms to 1500ms gate: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] MainNavController: elapsed=${elapsed}ms, waiting ${remaining > 0 ? remaining : 0}ms to 1500ms gate: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
       if (remaining > 0) {
         await Future.delayed(Duration(milliseconds: remaining));
       }
-      debugPrint('[BOOT] MainNavController: 1500ms gate passed: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] MainNavController: 1500ms gate passed: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
     }
 
     // Reveal the app as early as possible. For returning users nothing slow runs
@@ -287,7 +327,9 @@ class MainNavigationController extends GetxController
       mainScreenContent.value = MainPageContent.appContent;
     }
     update([UpdateIds.appScaffold]);
-    debugPrint('[BOOT] MainNavController: appContent shown: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: appContent shown: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     // --- everything below runs with the runs page already on screen ---
 
@@ -295,7 +337,9 @@ class MainNavigationController extends GetxController
     // check it AFTER the app is visible. Doing it before the flip is what let the
     // loading screen paint a frame on slower launches (the occasional flash).
     final hasLoc = await _checkLocationPermissions();
-    debugPrint('[BOOT] MainNavController: hasLoc=$hasLoc: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: hasLoc=$hasLoc: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     _startScreenListening();
 
     // Returning users: the runs page is now visible with cached data. Run the
@@ -308,7 +352,9 @@ class MainNavigationController extends GetxController
     // Fire after app content is visible so the GPS wait loop (and any dialog)
     // never blocks the loading screen from clearing.
     if (hasLoc) {
-      debugPrint('[BOOT] MainNavController: firing _checkAreWeAtRunStart (unawaited): ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] MainNavController: firing _checkAreWeAtRunStart (unawaited): ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
       unawaited(_checkAreWeAtRunStart());
     }
 
@@ -318,7 +364,9 @@ class MainNavigationController extends GetxController
     bool? notificationsConfigured = getBoolPref(
       BoolPrefsEnum.notificationPreferencesRequested,
     );
-    debugPrint('[BOOT] MainNavController: notificationsConfigured=$notificationsConfigured: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: notificationsConfigured=$notificationsConfigured: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     // Only register NotificationService here if services_init.dart didn't already
     // do it at boot. Since Firebase is now initialised in main() before initServices(),
@@ -326,13 +374,17 @@ class MainNavigationController extends GetxController
     // first-ever launch where notificationsConfigured was false at boot time.
     if ((notificationsConfigured ?? false) &&
         !Get.isRegistered<NotificationService>()) {
-      debugPrint('[BOOT] MainNavController: NotificationService.init start: ${DateTime.now().millisecondsSinceEpoch}ms');
-      await Get.putAsync(
-        () => NotificationService().init(),
+      debugPrint(
+        '[BOOT] MainNavController: NotificationService.init start: ${DateTime.now().millisecondsSinceEpoch}ms',
       );
-      debugPrint('[BOOT] MainNavController: NotificationService.init done: ${DateTime.now().millisecondsSinceEpoch}ms');
+      await Get.putAsync(() => NotificationService().init());
+      debugPrint(
+        '[BOOT] MainNavController: NotificationService.init done: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
     }
-    debugPrint('[BOOT] MainNavController: _onInitAsyncBody COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: _onInitAsyncBody COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
   }
 
   /// Returning-user boot path: runs the full user-data sync in the background
@@ -340,18 +392,24 @@ class MainNavigationController extends GetxController
   /// the runs list with the fresh results. Failures are swallowed so the app
   /// stays usable on whatever data is cached.
   Future<void> _runBackgroundFullSyncAndRefresh() async {
-    debugPrint('[BOOT] MainNavController: background full sync start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: background full sync start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     try {
       await syncAllUserDataFromBackend();
     } catch (e, stack) {
       debugPrint('[BOOT] MainNavController: background full sync error: $e');
       debugPrint(stack.toString());
     }
-    debugPrint('[BOOT] MainNavController: background full sync done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] MainNavController: background full sync done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     if (Get.isRegistered<FutureRunListPageController>()) {
       await Get.find<FutureRunListPageController>().reloadAndFlash();
-      debugPrint('[BOOT] MainNavController: runs list reloaded (with flash) after background sync: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] MainNavController: runs list reloaded (with flash) after background sync: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
     }
 
     // The runs tab was refreshed explicitly above (with the flash animation).
@@ -362,7 +420,9 @@ class MainNavigationController extends GetxController
       Get.find<DataChangeService>().notify(
         const DataChangeEvent(type: DataChangeType.fullSyncCompleted),
       );
-      debugPrint('[BOOT] MainNavController: fullSyncCompleted broadcast to remaining tabs: ${DateTime.now().millisecondsSinceEpoch}ms');
+      debugPrint(
+        '[BOOT] MainNavController: fullSyncCompleted broadcast to remaining tabs: ${DateTime.now().millisecondsSinceEpoch}ms',
+      );
     }
   }
 
@@ -392,7 +452,9 @@ class MainNavigationController extends GetxController
       listener = ImageStreamListener(
         (info, _) {
           stream.removeListener(listener);
-          if (!completer.isCompleted) completer.complete(Image(image: provider));
+          if (!completer.isCompleted) {
+            completer.complete(Image(image: provider));
+          }
         },
         onError: (error, stack) {
           stream.removeListener(listener);
@@ -412,7 +474,9 @@ class MainNavigationController extends GetxController
     );
     final List<Future<Image?>> slideFutures = <Future<Image?>>[
       for (var i = 1; i <= maxImages; i++)
-        resolveOne('$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_$i.avif'),
+        resolveOne(
+          '$BASE_NEW_VERSION_IMAGES_URL${splashSequenceRootName}_$i.avif',
+        ),
     ];
 
     final Image? background = await backgroundFuture;
@@ -468,7 +532,9 @@ class MainNavigationController extends GetxController
     if (index == 0 && Get.isRegistered<FutureRunListPageController>()) {
       final ctrl = Get.find<FutureRunListPageController>();
       await ctrl.refreshFromTable(true); // instant local refresh
-      unawaited(ctrl.triggerBackgroundSync()); // background API sync (1-min debounce)
+      unawaited(
+        ctrl.triggerBackgroundSync(),
+      ); // background API sync (1-min debounce)
     }
   }
 
@@ -486,8 +552,9 @@ class MainNavigationController extends GetxController
       if (currentPage.value == 0 &&
           Get.isRegistered<FutureRunListPageController>()) {
         unawaited(
-          Get.find<FutureRunListPageController>()
-              .triggerBackgroundSync(ignoreDebounce: true),
+          Get.find<FutureRunListPageController>().triggerBackgroundSync(
+            ignoreDebounce: true,
+          ),
         );
       }
     }
@@ -538,7 +605,6 @@ class MainNavigationController extends GetxController
     //   badge: true,
     //   sound: true,
     // );
-
   }
 
   void _startScreenListening() {
@@ -550,14 +616,20 @@ class MainNavigationController extends GetxController
         }
       });
     } catch (e) {
-      debugPrint('main_navigation_controller: screen state listener failed: $e');
+      debugPrint(
+        'main_navigation_controller: screen state listener failed: $e',
+      );
     }
   }
 
   Future<void> _checkAreWeAtRunStart() async {
-    debugPrint('[BOOT] _checkAreWeAtRunStart: start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _checkAreWeAtRunStart: start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     await Utilities.isAtRunStart();
-    debugPrint('[BOOT] _checkAreWeAtRunStart: done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] _checkAreWeAtRunStart: done: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
   }
 
   @override

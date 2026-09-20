@@ -458,7 +458,38 @@ export type Passkey = {
   IsThisDevice: number;
   LastLogin: string | null;
   IsMobile: number;
+  /** E9.F7.S19. A row that is BOTH signed out and passkey-free is not
+   *  returned at all — it can no longer reach the account by any route. */
+  HasPasskey?: number;
+  IsSignedOut?: number;
 };
+
+/** Every device that can reach this account. Supersedes listPasskeys. */
+export async function listDevices(s: MemberSession): Promise<Passkey[]> {
+  const rowsets = await callAdminApi("listDevices", {
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "hcapp_listDevices"),
+  });
+  if (envelopeOf(rowsets).success !== 1) return [];
+  return (rowsets[1] ?? []) as unknown as Passkey[];
+}
+
+/** Cuts one device off — the server rotates its secret, which is the
+ *  revocation, and drops its push tokens. Returns what is left. */
+export async function signOutDevice(
+  s: MemberSession,
+  targetDeviceId: string,
+): Promise<{ ok: boolean; message?: string; remaining: Passkey[] }> {
+  const rowsets = await callAdminApi("signOutDevice", {
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "hcapp_signOutDevice"),
+    targetDeviceId,
+  });
+  if (envelopeOf(rowsets).success !== 1) {
+    return { ok: false, message: userMessageOf(rowsets), remaining: [] };
+  }
+  return { ok: true, remaining: (rowsets[1] ?? []) as unknown as Passkey[] };
+}
 
 export async function listPasskeys(s: MemberSession): Promise<Passkey[]> {
   const rowsets = await callAdminApi("listPasskeys", {

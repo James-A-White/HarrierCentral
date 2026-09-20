@@ -17,9 +17,10 @@ class PasskeysController extends GetxController {
   final RxBool loading = true.obs;
   final RxBool failed = false.obs;
 
-  /// The passkey whose Remove has been tapped once. Revoking asks twice: it
-  /// is the only control here that takes access away.
+  /// The row whose Remove-passkey or Sign-out has been tapped once. Both
+  /// ask twice: they are the controls here that take access away.
   final RxString confirmingId = ''.obs;
+  final RxString confirmingSignOutId = ''.obs;
   final RxString deletingId = ''.obs;
 
   @override
@@ -31,7 +32,7 @@ class PasskeysController extends GetxController {
   Future<void> load() async {
     loading.value = true;
     final List<AccountPasskey>? keys =
-        await PasskeyManageService.fetchPasskeys();
+        await PasskeyManageService.fetchDevices();
     if (isClosed) return;
     failed.value = keys == null;
     passkeys.value = keys ?? <AccountPasskey>[];
@@ -53,6 +54,28 @@ class PasskeysController extends GetxController {
       Get.snackbar(
         'Not removed',
         'That passkey could not be removed. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    passkeys.value = remaining;
+  }
+
+  /// Signs one device out. The server rotates its secret — which is what
+  /// actually revokes it — drops its push tokens so it stops buzzing, and
+  /// returns the list without it (unless it still holds a passkey).
+  Future<void> signOut(AccountPasskey device) async {
+    if (deletingId.value.isNotEmpty) return;
+    deletingId.value = device.deviceId;
+    final List<AccountPasskey>? remaining =
+        await PasskeyManageService.signOutDevice(device.deviceId);
+    if (isClosed) return;
+    deletingId.value = '';
+    confirmingSignOutId.value = '';
+    if (remaining == null) {
+      Get.snackbar(
+        'Not signed out',
+        'That device could not be signed out. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -92,7 +115,7 @@ class PasskeysSection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                'Your passkeys could not be loaded. A connection is required '
+                'Your devices could not be loaded. A connection is required '
                 'to change these settings.',
                 style: ts_body,
                 textAlign: TextAlign.center,
@@ -110,9 +133,7 @@ class PasskeysSection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
               child: Text(
-                'A passkey signs you in on hashruns.org with your face, '
-                'fingerprint or screen lock — no code to wait for. You make '
-                'one on the website; they will be listed here.',
+                'Nothing is signed in to your account but this device.',
                 style: ts_body,
                 textAlign: TextAlign.center,
               ),
@@ -122,8 +143,9 @@ class PasskeysSection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 8, bottom: 12),
               child: Text(
-                'These can sign you in without a code. Remove any you do not '
-                'recognise, or that belong to a device you no longer have.',
+                'Everything that can reach your account. Sign out anything '
+                'you no longer have, and remove any passkey you do not '
+                'recognise.',
                 style: ts_body,
                 textAlign: TextAlign.center,
               ),
@@ -138,9 +160,10 @@ class PasskeysSection extends StatelessWidget {
                 bottom: 12,
               ),
               child: Text(
-                'Removing a passkey here stops it signing you in. The passkey '
-                'itself stays in that device\'s own password manager until '
-                'you delete it there too.',
+                'Signing a device out takes its access away at once and stops '
+                'its notifications. Removing a passkey stops that one-tap '
+                'sign-in — the passkey itself stays in the device\'s own '
+                'password manager until you delete it there too.',
                 style: ts_bodySmall,
                 textAlign: TextAlign.center,
               ),
@@ -154,6 +177,8 @@ class PasskeysSection extends StatelessWidget {
   /// One passkey: what it is, when it last signed in, and a two-tap Remove.
   Widget _row(PasskeysController controller, AccountPasskey key) {
     final bool confirming = controller.confirmingId.value == key.deviceId;
+    final bool confirmingSignOut =
+        controller.confirmingSignOutId.value == key.deviceId;
     final bool busy = controller.deletingId.value == key.deviceId;
 
     return Card(
@@ -182,9 +207,14 @@ class PasskeysSection extends StatelessWidget {
                         style: ts_titleMedium,
                       ),
                       Text(
-                        key.lastLogin == null
-                            ? 'Not used yet'
-                            : 'Last used ${DateFormat('d MMM yyyy').format(key.lastLogin!.toLocal())}',
+                        <String>[
+                          if (key.lastLogin == null)
+                            'Not used yet'
+                          else
+                            'Last used ${DateFormat('d MMM yyyy').format(key.lastLogin!.toLocal())}',
+                          if (key.hasPasskey) 'passkey',
+                          if (key.isSignedOut) 'signed out',
+                        ].join(' · '),
                         style: ts_bodySmall,
                       ),
                     ],
@@ -193,8 +223,8 @@ class PasskeysSection extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Wrap, not Row: at a large text size two buttons are wider than
-            // a phone and a Row overflows.
+            // Wrap, not Row: at a large text size these are wider than a
+            // phone and a Row overflows.
             Wrap(
               alignment: WrapAlignment.center,
               spacing: 8,
@@ -214,7 +244,7 @@ class PasskeysSection extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                               )
-                            : Text('Remove it', style: ts_button),
+                            : Text('Remove passkey', style: ts_button),
                       ),
                       TextButton(
                         onPressed: busy
@@ -223,12 +253,46 @@ class PasskeysSection extends StatelessWidget {
                         child: Text('Keep', style: ts_button),
                       ),
                     ]
-                  : <Widget>[
-                      TextButton(
-                        onPressed: () =>
-                            controller.confirmingId.value = key.deviceId,
-                        child: Text('Remove', style: ts_button),
+                  : confirmingSignOut
+                  ? <Widget>[
+                      ElevatedButton(
+                        onPressed: busy
+                            ? null
+                            : () => unawaited(controller.signOut(key)),
+                        child: busy
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text('Sign it out', style: ts_button),
                       ),
+                      TextButton(
+                        onPressed: busy
+                            ? null
+                            : () => controller.confirmingSignOutId.value = '',
+                        child: Text('Leave it', style: ts_button),
+                      ),
+                    ]
+                  : <Widget>[
+                      if (key.hasPasskey)
+                        TextButton(
+                          onPressed: () =>
+                              controller.confirmingId.value = key.deviceId,
+                          child: Text('Remove passkey', style: ts_button),
+                        ),
+                      // Already-signed-out rows are only still here because
+                      // they hold a passkey, so they get no second sign-out.
+                      if (!key.isSignedOut)
+                        TextButton(
+                          onPressed: () =>
+                              controller.confirmingSignOutId.value =
+                                  key.deviceId,
+                          child: Text('Sign out', style: ts_button),
+                        ),
                     ],
             ),
             if (confirming)
@@ -238,6 +302,17 @@ class PasskeysSection extends StatelessWidget {
                   key.isThisDevice
                       ? 'This will not sign you out — you will just need a code next time.'
                       : 'That device will need an email code to sign in again.',
+                  style: ts_bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            if (confirmingSignOut)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  key.isThisDevice
+                      ? 'This is the device you are using. It will be signed out and you will have to sign in again.'
+                      : 'That device loses access at once and stops receiving your notifications.',
                   style: ts_bodySmall,
                   textAlign: TextAlign.center,
                 ),

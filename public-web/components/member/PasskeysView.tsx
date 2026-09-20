@@ -5,15 +5,20 @@ import { KeyRound, Loader2, Smartphone, Monitor } from "lucide-react";
 import type { Passkey } from "@/lib/member-api";
 
 /**
- * The passkeys on this account, with a Remove on each (E9.F7.S18).
+ * Everything that can reach this account, with the two ways to take that
+ * away: sign the device out, or remove its passkey (E9.F7.S18, E9.F7.S19).
  *
- * Removing asks twice. This is the one control in the member area that takes
- * access away, and on a phone the Remove sits under a thumb that was
- * scrolling a moment ago.
+ * Both ask twice. These are the controls in the member area that take access
+ * away, and on a phone they sit under a thumb that was scrolling a moment ago.
+ *
+ * A row disappears once the device is BOTH signed out and passkey-free — at
+ * that point it cannot reach the account by any route, so there is nothing
+ * left to show (James, 2026-09-20).
  */
 export function PasskeysView({ initial }: { initial: Passkey[] }) {
   const [keys, setKeys] = useState<Passkey[]>(initial);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [confirmingSignOut, setConfirmingSignOut] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
@@ -37,25 +42,46 @@ export function PasskeysView({ initial }: { initial: Passkey[] }) {
     }
   }
 
+  async function signOut(k: Passkey) {
+    setBusy(k.DeviceId); setError(""); setDone("");
+    try {
+      const res = await fetch("/api/member/passkeys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetDeviceId: k.DeviceId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) { setError(data?.error ?? "That device could not be signed out."); return; }
+      setKeys(data.passkeys ?? []);
+      setDone(`${k.Label} has been signed out.`);
+    } catch {
+      setError("That device could not be signed out just now.");
+    } finally {
+      setBusy(null); setConfirmingSignOut(null);
+    }
+  }
+
   return (
     <div className="pt-3">
       <h2 className="mb-1 flex items-center gap-2 text-xl font-bold">
-        <KeyRound className="h-5 w-5" /> Passkeys
+        <KeyRound className="h-5 w-5" /> Devices
       </h2>
       <p className="mb-4 text-sm text-white/70">
-        A passkey signs you in with your face, fingerprint or screen lock — no code, no password.
+Everything signed in to your account. Sign out anything you no longer have; remove a passkey to stop its one-tap sign-in.
       </p>
 
       {keys.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-black/30 p-5 text-sm text-white/70">
-          No passkeys yet. Next time you sign in with an email code, say yes when we offer to
-          remember this device — that is what makes one.
+Nothing is signed in to your account but this browser.
         </div>
       ) : (
         <ul className="space-y-2">
           {keys.map((k) => {
             const isConfirming = confirming === k.DeviceId;
+            const isConfirmingOut = confirmingSignOut === k.DeviceId;
             const isBusy = busy === k.DeviceId;
+            const hasPasskey = k.HasPasskey !== 0;   // absent ⇒ older SP, always a passkey
+            const isSignedOut = k.IsSignedOut === 1;
             return (
               <li key={k.DeviceId} className="rounded-2xl border border-white/10 bg-black/30 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -72,7 +98,13 @@ export function PasskeysView({ initial }: { initial: Passkey[] }) {
                         )}
                       </p>
                       <p className="text-xs text-white/60">
-                        {k.LastLogin ? `Last used ${new Date(k.LastLogin).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}` : "Not used yet"}
+                        {[
+                          k.LastLogin
+                            ? `Last used ${new Date(k.LastLogin).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`
+                            : "Not used yet",
+                          ...(hasPasskey ? ["passkey"] : []),
+                          ...(isSignedOut ? ["signed out"] : []),
+                        ].join(" · ")}
                       </p>
                     </div>
                   </div>
@@ -81,18 +113,41 @@ export function PasskeysView({ initial }: { initial: Passkey[] }) {
                     <div className="flex items-center gap-2">
                       <button type="button" disabled={isBusy} onClick={() => remove(k)}
                         className="inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
-                        {isBusy && <Loader2 className="h-4 w-4 animate-spin" />} Remove it
+                        {isBusy && <Loader2 className="h-4 w-4 animate-spin" />} Remove passkey
                       </button>
                       <button type="button" disabled={isBusy} onClick={() => setConfirming(null)}
                         className="rounded-full bg-white/12 px-4 py-2 text-sm font-semibold disabled:opacity-50">
                         Keep
                       </button>
                     </div>
+                  ) : isConfirmingOut ? (
+                    <div className="flex items-center gap-2">
+                      <button type="button" disabled={isBusy} onClick={() => signOut(k)}
+                        className="inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+                        {isBusy && <Loader2 className="h-4 w-4 animate-spin" />} Sign it out
+                      </button>
+                      <button type="button" disabled={isBusy} onClick={() => setConfirmingSignOut(null)}
+                        className="rounded-full bg-white/12 px-4 py-2 text-sm font-semibold disabled:opacity-50">
+                        Leave it
+                      </button>
+                    </div>
                   ) : (
-                    <button type="button" onClick={() => { setConfirming(k.DeviceId); setError(""); setDone(""); }}
-                      className="rounded-full bg-white/12 px-4 py-2 text-sm font-semibold hover:bg-white/20">
-                      Remove
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {hasPasskey && (
+                        <button type="button" onClick={() => { setConfirming(k.DeviceId); setError(""); setDone(""); }}
+                          className="rounded-full bg-white/12 px-4 py-2 text-sm font-semibold hover:bg-white/20">
+                          Remove passkey
+                        </button>
+                      )}
+                      {/* Already-signed-out rows are only still listed because
+                          they hold a passkey — there is nothing left to sign out. */}
+                      {!isSignedOut && (
+                        <button type="button" onClick={() => { setConfirmingSignOut(k.DeviceId); setError(""); setDone(""); }}
+                          className="rounded-full bg-white/12 px-4 py-2 text-sm font-semibold hover:bg-white/20">
+                          Sign out
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
 
@@ -101,6 +156,13 @@ export function PasskeysView({ initial }: { initial: Passkey[] }) {
                     {k.IsThisDevice === 1
                       ? "This is the device you are using. Removing its passkey will not sign you out — you will just need an email code next time."
                       : "That device will need an email code to sign in again."}
+                  </p>
+                )}
+                {isConfirmingOut && (
+                  <p className="mt-3 text-sm text-white/70">
+                    {k.IsThisDevice === 1
+                      ? "This is the browser you are using. It will be signed out and you will have to sign in again."
+                      : "That device loses access at once and stops receiving your notifications."}
                   </p>
                 )}
               </li>
@@ -117,9 +179,10 @@ export function PasskeysView({ initial }: { initial: Passkey[] }) {
         // the credential, but the phone or browser still holds its copy and
         // will keep offering it until it is deleted there too.
         <p className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4 text-xs text-white/60">
-          Removing a passkey here stops it signing you in. The passkey itself still sits in the
-          device&apos;s own password manager — on an iPhone or Mac, Settings → Passwords →
-          hashruns.org — and you can delete it there too if you want it gone for good.
+          Signing a device out takes its access away at once and stops its notifications.
+          Removing a passkey stops that one-tap sign-in — the passkey itself still sits in the
+          device&apos;s own password manager (on an iPhone or Mac, Settings → Passwords →
+          hashruns.org) until you delete it there too.
         </p>
       )}
     </div>
