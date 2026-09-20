@@ -21,3 +21,4 @@ public-web/.next/
 *.lscache
 extracted_lines.txt
 missing_imports.txt
+__pycache__/
