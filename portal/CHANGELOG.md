@@ -1,3 +1,13 @@
+## 2.0.79+714 (2026-09-20)
+### Improvements
+- **Usage Data: version tiles are coloured by release train.** The current
+  train (3.1.x and 3.2.x) is dark green with white text, 3.0.x is yellow and
+  2.x.y is red; anything else stays purple. The tile still lightens as fewer
+  people are on that build, so the busiest version is the strongest colour.
+  Which version counts as current is decided by
+  `hcportal_getUsageData` (new `trackStatus` column), so the next train
+  needs an SP deploy rather than a portal rebuild.
+
 ## 2.0.78+713 (2026-09-19)
 ### Fixes
 - **Signing in no longer registers a brand-new device every time.** The

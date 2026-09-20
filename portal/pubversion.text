@@ -1,3 +1,6 @@
+2.0.79+714
+    • Usage Data: version tiles are coloured by release train — dark green with white text for the current 3.1/3.2, yellow for 3.0, red for 2.x. The tile still shades by how many people are on that build.
+
 2.0.78+713
     • Signing in no longer creates a new device every time. The browser offers the device it already has; the server reuses it only when it belongs to you.
 
