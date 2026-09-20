@@ -448,6 +448,44 @@ export async function setNotificationPrefs(s: MemberSession, p: { publicKennelId
   return envelopeOf(rowsets).success === 1 ? { ok: true } : { ok: false, message: userMessageOf(rowsets) };
 }
 
+/** One passkey on the signed-in hasher's account (E9.F7.S18). The credential
+ * id and public key are deliberately NOT returned by the SP — a settings
+ * screen has no use for them. */
+export type Passkey = {
+  DeviceId: string;
+  Label: string;
+  Platform: string;
+  IsThisDevice: number;
+  LastLogin: string | null;
+  IsMobile: number;
+};
+
+export async function listPasskeys(s: MemberSession): Promise<Passkey[]> {
+  const rowsets = await callAdminApi("listPasskeys", {
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "hcapp_listPasskeys"),
+  });
+  if (envelopeOf(rowsets).success !== 1) return [];
+  return (rowsets[1] ?? []) as unknown as Passkey[];
+}
+
+/** Removes one passkey and returns what is left, so the caller repaints from
+ * the reply rather than asking again. */
+export async function deletePasskey(
+  s: MemberSession,
+  targetDeviceId: string,
+): Promise<{ ok: boolean; message?: string; remaining: Passkey[] }> {
+  const rowsets = await callAdminApi("deletePasskey", {
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "hcapp_deletePasskey"),
+    targetDeviceId,
+  });
+  if (envelopeOf(rowsets).success !== 1) {
+    return { ok: false, message: userMessageOf(rowsets), remaining: [] };
+  }
+  return { ok: true, remaining: (rowsets[1] ?? []) as unknown as Passkey[] };
+}
+
 export async function getLeaderboard(s: MemberSession, publicKennelId: string): Promise<LeaderboardRow[]> {
   const rowsets = await callAdminApi("getLeaderboard", { deviceId: s.deviceId, accessToken: tokenFor(s, "publicWeb_getLeaderboard"), publicKennelId });
   if (envelopeOf(rowsets).success !== 1) return [];

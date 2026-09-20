@@ -1,3 +1,10 @@
+1.0.59+57
+    • Managing passkeys (E9.F7.S18): listPasskeys and deletePasskey added to
+      PublicWebAdminApi's allowlist, so the member area can show a hasher
+      their passkeys and revoke one. Both are thin publicWeb_ wrappers over
+      the app's own hcapp_ SPs — no new auth model and nothing the app
+      cannot already do.
+
 1.0.58+56
     • Application Insights actually ON. The app had only the legacy
       APPINSIGHTS_INSTRUMENTATIONKEY, whose ingestion Microsoft retired in

@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutList, Users, Map as MapIcon, History, Music, MessageSquare } from "lucide-react";
+import { LayoutList, Users, Map as MapIcon, History, Music, MessageSquare, KeyRound } from "lucide-react";
 
 const TABS = [
   { label: "Runs",    title: "Hash Runs", href: "/me/runs",    icon: LayoutList },
@@ -59,6 +59,12 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
           <h1 className="text-lg font-semibold">{title}</h1>
           <div className="absolute right-3 flex items-center gap-3 text-xs text-white/80">
             <span className="hidden max-w-[12rem] truncate text-2xl font-semibold text-white sm:inline">{hashName}</span>
+            {/* Passkeys live beside Sign out because they are the same kind of
+                thing — how you get in — and an icon keeps the bar usable on a
+                phone, where the hash name is already hidden. */}
+            <Link href="/me/passkeys" aria-label="Passkeys" title="Passkeys" className="text-white/80 hover:text-white">
+              <KeyRound className="h-5 w-5" />
+            </Link>
             <button type="button" onClick={signOut} className="underline underline-offset-2 hover:text-white">Sign out</button>
           </div>
         </div>
