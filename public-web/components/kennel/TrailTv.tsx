@@ -32,6 +32,7 @@ import {
   trackUpTo, filterAndInterpolate, formatDistanceLabel, haversineMeters, photoSrc,
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
+import "@/lib/leaflet-teardown";
 
 const TRACK_COLORS = [
   "#ef4444", "#3b82f6", "#22c55e", "#f59e0b",
