@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
+import "@/lib/leaflet-teardown";
 import { MapPin } from "lucide-react";
 import type { RunEvent } from "@/lib/api";
 

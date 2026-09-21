@@ -6,6 +6,7 @@ import {
   MapContainer, TileLayer, Polyline, Marker, Circle, Pane, useMap, useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
+import "@/lib/leaflet-teardown";
 import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera, Download } from "lucide-react";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, trackUpTo, sumDistanceMeters,

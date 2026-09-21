@@ -2,6 +2,7 @@
 
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
+import "@/lib/leaflet-teardown";
 
 const pinIcon = L.icon({
   iconUrl: "/images/map_pin_foot.png",

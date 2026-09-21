@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from "react-leaflet";
 import L from "leaflet";
+import "@/lib/leaflet-teardown";
 import Link from "next/link";
 import type { MyRun } from "@/lib/member-api";
 import { formatRunDate, relativeTime } from "@/lib/member-format";

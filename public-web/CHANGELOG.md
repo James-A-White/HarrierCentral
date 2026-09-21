@@ -1,5 +1,16 @@
 # public-web Changelog
 
+## 0.21.68 (2026-09-21)
+
+- **A run page with a trail on it no longer breaks when you leave it.** Closing
+  or navigating away from a map threw inside Leaflet's own teardown, and with
+  nothing to catch it the whole page was replaced by "Something broke on our
+  side". 43 visitors lost a bmph3 run page to this between 17 and 21 September.
+  The teardown is now a no-op where it was a crash.
+- **A crash in one component no longer costs the whole page.** Every page below
+  the root now has an error boundary, so a client-side failure shows a panel
+  inside the site rather than replacing the document.
+
 ## 0.21.67 (2026-09-20)
 
 - Devices now show what each one was running when it last signed in, and the

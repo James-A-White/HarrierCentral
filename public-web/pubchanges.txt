@@ -1,3 +1,7 @@
+0.21.68
+    • Leaving a run page that shows a trail no longer replaces the page with "Something broke on our side" — Leaflet was throwing while tearing the map down, and nothing caught it.
+    • A crash in one component now shows a panel inside the site instead of taking the whole document.
+
 0.21.64
     • The Songs tab mirrors the app's screen: the white search bar, the four naughty chips, and the app's cards, fonts and ratings.
     • Answering a run happens on the card. Tapping the state box opens the app's list — "I'll be there!", "I might be there", "I won't make it" — instead of leaving for the run page.
