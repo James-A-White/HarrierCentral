@@ -33,6 +33,13 @@ export async function GET(req: NextRequest) {
     return new NextResponse("Not found", { status: 404 });
   }
 
+  // Belt and braces alongside the host lock: a photo is a photo, not whatever
+  // else happens to sit in the storage account.
+  const type = (upstream.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+  if (!type.startsWith("image/")) {
+    return new NextResponse("Not an image", { status: 400 });
+  }
+
   const safeName = name.replace(/[^\w.\- ]+/g, "_").slice(0, 100) || "run-photo.jpg";
   return new NextResponse(upstream.body, {
     headers: {

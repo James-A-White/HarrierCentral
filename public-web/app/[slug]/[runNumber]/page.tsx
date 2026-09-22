@@ -207,7 +207,7 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
               />
             }
           />
-          <RunPhotoStrip photos={photos} />
+          <RunPhotoStrip photos={photos} slug={slug} runNumber={runNumber} />
         </main>
       </body>
     </html>

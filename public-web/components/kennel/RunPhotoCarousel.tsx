@@ -31,9 +31,12 @@ export function RunPhotoCarousel({ photos, eventName }: RunPhotoCarouselProps) {
   // the blob account — so a direct link would just open the image again. This
   // goes through our own origin, which is what makes it a download and what
   // lets the file arrive named after the run instead of a GUID.
+  //
+  // /api/photo-download is the route the PackTrack map's lightbox already
+  // used. Two routes doing one job is how they drift, so this shares it.
   const downloadHref = (photo: RunPhoto, index: number) =>
-    `/api/run-photos/download?url=${encodeURIComponent(photo.blobUrl)}` +
-    `&name=${encodeURIComponent(`${eventName} ${index + 1}`)}`;
+    `/api/photo-download?u=${encodeURIComponent(photo.blobUrl)}` +
+    `&name=${encodeURIComponent(`${eventName} ${index + 1}.jpg`)}`;
 
   return (
     <section aria-label={`Photos from ${eventName}`}>
