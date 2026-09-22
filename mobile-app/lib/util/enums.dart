@@ -1002,6 +1002,28 @@ const EnumProductType productTypeAwayWeekend = EnumProductType(5);
 const EnumProductType productTypeBarAndRefreshments = EnumProductType(6);
 const EnumProductType productTypeCharityDonation = EnumProductType(7);
 
+//////////////////////////
+
+/// Which card-payment app a kennel takes money through, from
+/// HC.Kennel.PaymentProviderType. NULL/absent means this kennel does not take
+/// card through Harrier Central, which is every kennel until it opts in.
+///
+/// The two providers are different KINDS of integration and the seam exists
+/// for that reason, not for the names — see [CardPaymentMode].
+class EnumPaymentProviderType extends HcEnum<int> {
+  const EnumPaymentProviderType(super.val);
+}
+
+/// SumUp: hand off to their app, the tap happens there, we hold one
+/// app-wide affiliate key and no merchant credentials at all.
+const EnumPaymentProviderType paymentProviderSumUp = EnumPaymentProviderType(1);
+
+/// Zettle by PayPal: their SDK runs inside THIS app, the merchant authorises
+/// by OAuth, and we hold a token per kennel.
+const EnumPaymentProviderType paymentProviderZettle = EnumPaymentProviderType(
+  2,
+);
+
 /// What a catalogue entry can be, in the order the editor offers them.
 ///
 /// NOT productTypeEvent. A single run is bound to its event and its price

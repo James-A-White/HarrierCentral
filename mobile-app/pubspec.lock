@@ -2287,6 +2287,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.3"
+  zettle_sdk:
+    dependency: "direct main"
+    description:
+      name: zettle_sdk
+      sha256: "36304c5485d3ba9ba5e28e816e008f3bfed00b173e27bb3cab164a965f447f53"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
 sdks:
   dart: ">=3.11.5 <4.0.0"
   flutter: ">=3.41.9 <4.0.0"

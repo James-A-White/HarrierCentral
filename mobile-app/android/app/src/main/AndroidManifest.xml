@@ -81,6 +81,20 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Zettle's OAuth returns the merchant here after they have
+                 authorised the kennel's account (E8.F7, 3.2 track). Matches
+                 ZettleConfig.redirectUrl and the redirect registered on
+                 Zettle's developer portal; the scheme is the app's own, the
+                 same one iOS already declares in CFBundleURLSchemes. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="harriercentral"
+                    android:host="zettle"
+                    android:path="/callback"/>
+            </intent-filter>
             <!-- GPX files handed to the app (E5.F5.S6): "Open with" from a
                  file manager, mail or a browser download, and Share from any
                  app holding a .gpx. Delivered to Flutter over

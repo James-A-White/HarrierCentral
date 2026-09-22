@@ -10,6 +10,11 @@ environment:
 # curved_labeled_navigation_bar 2.0.6
 
 dependencies:   
+  # Zettle by PayPal — the SDK mode of E8.F7 (the tap happens in THIS app,
+  # merchant authorises by OAuth). Community plugin, verified publisher,
+  # BSD-3: 1.1.0 was 9 days old with 241 downloads when we took it, so
+  # forking it is the fallback if it goes unmaintained. 3.2 track only.
+  zettle_sdk: ^1.1.0
   # add_2_calendar_new: ^1.0.4
   # audioplayers: 6.1.0 
   auto_size_text: ^3.0.0 
