@@ -1,5 +1,18 @@
 # public-web Changelog
 
+## 0.21.70 (2026-09-22)
+
+- **Run photos are a carousel, not a grid.** One photo at a time, shown whole
+  rather than square-cropped, centred so portrait and landscape do not make the
+  page jump, with left/right arrows, a thumbnail strip, the photographer's name
+  and a **Download** button.
+- **Downloading a photo now downloads it.** Tapping through used to open the
+  raw image on the storage account, with no way back and no way on.
+- **The photos page was rendering without the kennel's own document**, so it
+  arrived white and unstyled. It now carries the kennel's background — their
+  own artwork where they have it, the Harrier Central jungle where they do not
+  — and the kennel's colours, like every other page.
+
 ## 0.21.69 (2026-09-22)
 
 - **The map guards now cover the way in as well as the way out.** 0.21.68
