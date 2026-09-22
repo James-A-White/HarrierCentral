@@ -604,6 +604,45 @@ against the leaves.
 (James, 2026-09-12, after the photo-sweep carousel shipped on a black
 background and the sweep pages on plain grey.)
 
+**Trail photos are shown in a carousel, on a Harrier Central background
+(every client):**
+
+A photo of a trail is never a dead end and never a bare image on a white
+page. Wherever individual run or trail photos are displayed — any client, any
+screen — three things hold:
+
+1. **A carousel, not a terminus.** One photo at a time, with a way to the
+   next: arrows, swipe, or both. A grid of thumbnails is fine as the way *in*,
+   but every thumbnail opens the carousel **at that photo**, never the raw
+   blob URL. A link straight to `harriercentral.blob.core.windows.net` gives
+   the viewer a bare image with no way back to the run, no way on to the next
+   photo, and none of the kennel's styling. That was the state of the web's
+   run photo page and its photo strip until 2026-09-22.
+2. **Shown whole.** `BoxFit.contain` / `object-contain`, never `cover`. A hash
+   photo cropped to a square loses whoever was standing at the edge, and the
+   joke with them. Square crops belong in the thumbnails, where they are only
+   a target to tap.
+3. **On the right backdrop**, which differs per client:
+
+| Client | Backdrop | How |
+|---|---|---|
+| Mobile app | Jungle | `Backgrounds.defaultHcBackground()`, passed into the viewer (see `MapPhotoPage`) |
+| Portal | Hash foot, **light** variant | `Backgrounds.defaultHcBackgroundLight()` — the portal is white cards and slate text, and the dark tile makes the console unreadable |
+| Public web | **The kennel's own artwork** where they have it, the jungle where they do not | `<KennelBackground kennel={kennel} />` — it already falls back to `/images/jungle_background.jpg` |
+
+The photo itself sits on a dark translucent pane over that backdrop, so the
+backdrop reads at the edges rather than being covered by a flat slab.
+
+**Downloads go through `/api/photo-download` (web).** The `download`
+attribute is ignored cross-origin and the photos are on the blob account, so
+a direct link just reopens the image. That one route re-serves the bytes from
+our origin with `Content-Disposition: attachment`; it is allowlisted to our
+storage host, because without that it is an open proxy. There is ONE such
+route — a second was added and removed on 2026-09-22.
+
+Audited across all three clients on 2026-09-22. The mobile app already
+complied everywhere.
+
 **Never crop or mask a kennel logo (web and Flutter):**
 
 A kennel's logo is its identity and its members designed it. It is shown

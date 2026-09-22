@@ -1,3 +1,10 @@
+## 2.0.83+718 (2026-09-22)
+### Improvements
+- **Photo Review sits on the Harrier Central backdrop** rather than a flat
+  slab, and the photo pane is translucent so the backdrop reads at the edges.
+  The light hash-foot tile, not the app's dark jungle — this page is white
+  cards and slate text, and the dark one would leave the console unreadable.
+
 ## 2.0.82+717 (2026-09-20)
 ### Improvements
 - **A version with one device is now nearly white.** The shading scale is
