@@ -1,3 +1,8 @@
+0.21.70
+    • Run photos are a carousel: one at a time, whole rather than cropped, with arrows, thumbnails, the photographer's name and a Download button.
+    • Download actually downloads, instead of opening the raw image with no way back.
+    • The photos page now carries the kennel's own background and colours — it was rendering without them and arriving white.
+
 0.21.69
     • Map guards extended to the mount path: a trail added to a map that is going away no longer throws, and a guard that fires reports itself so a missing trail is visible in the log.
 
