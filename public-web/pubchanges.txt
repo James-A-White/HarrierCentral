@@ -1,3 +1,7 @@
+0.21.71
+    • A photo on a run page opens the carousel at that photo, rather than the raw image with no way back and no way on.
+    • One download route instead of two.
+
 0.21.70
     • Run photos are a carousel: one at a time, whole rather than cropped, with arrows, thumbnails, the photographer's name and a Download button.
     • Download actually downloads, instead of opening the raw image with no way back.

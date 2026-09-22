@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.71 (2026-09-22)
+
+- **A photo on a run page opens the carousel at that photo**, instead of the
+  raw image on the storage account with no way back to the run and no way on
+  to the next one. The grid of thumbnails was the main way in, so it was the
+  same dead end on a different door.
+- One download route instead of two.
+
 ## 0.21.70 (2026-09-22)
 
 - **Run photos are a carousel, not a grid.** One photo at a time, shown whole
