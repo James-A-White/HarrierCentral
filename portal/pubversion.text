@@ -1,3 +1,6 @@
+2.0.83+718
+    • Photo Review now sits on the Harrier Central backdrop, with the photo pane translucent so it reads at the edges.
+
 2.0.82+717
     • Version column: a version with a single device is nearly white, so the one-off builds recede and the real releases stand out.
 

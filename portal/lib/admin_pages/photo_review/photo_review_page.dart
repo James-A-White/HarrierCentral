@@ -248,9 +248,16 @@ class PhotoReviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      // Transparent so the Harrier Central backdrop below shows through. The
+      // LIGHT hash-foot variant, not the dark one the app uses: this page is
+      // white cards and slate text, and the dark tile would leave the whole
+      // console unreadable. Photos themselves still sit on a dark pane, which
+      // is what a photo needs to be looked at.
+      backgroundColor: Colors.transparent,
       appBar: _appBar(),
-      body: Obx(() {
+      body: DecoratedBox(
+        decoration: Backgrounds.defaultHcBackgroundLight(),
+        child: Obx(() {
         if (_controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -272,7 +279,8 @@ class PhotoReviewPage extends StatelessWidget {
             ),
           ],
         );
-      }),
+        }),
+      ),
     );
   }
 
@@ -426,7 +434,10 @@ class PhotoReviewPage extends StatelessWidget {
       final list = _controller.tabPhotos;
       final idx = _controller.currentIndex.value;
       return Container(
-        color: const Color(0xFF0F172A),
+        // Translucent, so the Harrier Central backdrop reads behind the photo
+        // instead of a flat slab — the same treatment the app's photo viewer
+        // and the web's lightbox use.
+        color: const Color(0xFF0F172A).withValues(alpha: 0.88),
         child: Stack(
           children: [
             Positioned.fill(
