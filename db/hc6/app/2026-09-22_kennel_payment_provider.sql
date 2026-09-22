@@ -25,7 +25,22 @@
 --   kennel, so it is two columns on the kennel — the same shape as
 --   DefaultMessagingPlatform / MessagingGroupInviteUrl (E9.F6.S4).
 --
--- WHY PaymentMerchantCode IS A SAFEGUARD, NOT CONFIG
+-- WHY A LOWERCASE STRING AND NOT AN INT ENUM (James, 2026-09-22)
+--   HC.Payment.PaymentProvider is ALREADY NVARCHAR and already holds 331
+--   rows of 'PayPal' and 'Tikkie'. An int here would mean translating on
+--   every write and leaving the payment reports grouping by one vocabulary
+--   while the kennel's config used another. The token a kennel is configured
+--   with is the token written onto the payment, and it is the same word the
+--   provider's own export uses. The collation is CI_AS, so 'PayPal' and
+--   'paypal' are equal on the server; Dart lowercases at the boundary.
+--
+--   What went wrong with KennelPaymentScheme was not string-ness, it was that
+--   it is UNCONSTRAINED — which is why it holds '12', '14' and '16' next to
+--   'PayPal'. Hence the CHECK below. Adding a provider means altering that
+--   constraint, which is a deploy; with two providers that is the right
+--   trade for making junk impossible.
+--
+-- WHY CardPaymentMerchantCode IS A SAFEGUARD, NOT CONFIG
 --   The provider's app on a Hash Cash's phone may be signed into their
 --   PERSONAL account. The tap succeeds, the hasher is charged, we record it
 --   as paid — and the club never sees the money. A callback alone cannot
@@ -53,27 +68,37 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.columns
                WHERE object_id = OBJECT_ID('HC.Kennel')
-                 AND name = 'PaymentProviderType')
+                 AND name = 'CardPaymentProvider')
 BEGIN
-    -- 1 = SumUp   (Payment Switch — hand off to their app, tap happens there)
-    -- 2 = Zettle  (Payments SDK — tap happens in Harrier Central, OAuth per
-    --              merchant)
-    -- NULL = this kennel does not take card through Harrier Central, which is
-    -- every kennel on the day this runs. SMALLINT and not free text on
-    -- purpose: KennelPaymentScheme is NVARCHAR(100) and already holds '12',
-    -- '14' and '16' next to 'PayPal' and 'Tikkie'.
-    ALTER TABLE HC.Kennel ADD PaymentProviderType SMALLINT NULL;
+    -- 'sumup'  — Payment Switch: hand off to their app, the tap happens there
+    -- 'zettle' — Payments SDK: the tap happens in Harrier Central, OAuth per
+    --            merchant
+    -- NULL     — this kennel does not take card through Harrier Central,
+    --            which is every kennel on the day this runs.
+    ALTER TABLE HC.Kennel ADD CardPaymentProvider NVARCHAR(30) NULL;
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints
+               WHERE name = 'CK_Kennel_CardPaymentProvider')
+BEGIN
+    -- Junk cannot land the way it did in KennelPaymentScheme. Lowercase is
+    -- the convention; the CI_AS collation means a stray 'Zettle' still
+    -- passes, and still matches, which is the forgiving half of the rule.
+    ALTER TABLE HC.Kennel ADD CONSTRAINT CK_Kennel_CardPaymentProvider
+        CHECK (CardPaymentProvider IS NULL
+               OR CardPaymentProvider IN ('sumup', 'zettle'));
 END
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.columns
                WHERE object_id = OBJECT_ID('HC.Kennel')
-                 AND name = 'PaymentMerchantCode')
+                 AND name = 'CardPaymentMerchantCode')
 BEGIN
     -- The account the club's money is supposed to land in: SumUp's merchant
     -- code, or Zettle's organisation/merchant id. Compared against what the
     -- provider returns with a completed payment.
-    ALTER TABLE HC.Kennel ADD PaymentMerchantCode NVARCHAR(100) NULL;
+    ALTER TABLE HC.Kennel ADD CardPaymentMerchantCode NVARCHAR(100) NULL;
 END
 GO
 
@@ -86,7 +111,7 @@ SELECT c.name AS col, t.name AS type, c.max_length, c.is_nullable
 FROM sys.columns c
 JOIN sys.types t ON t.user_type_id = c.user_type_id
 WHERE c.object_id = OBJECT_ID('HC.Kennel')
-  AND c.name IN ('PaymentProviderType', 'PaymentMerchantCode');
+  AND c.name IN ('CardPaymentProvider', 'CardPaymentMerchantCode');
 
 SELECT name AS triggerName, is_disabled
 FROM sys.triggers
