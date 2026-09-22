@@ -1,5 +1,17 @@
 # public-web Changelog
 
+## 0.21.69 (2026-09-22)
+
+- **The map guards now cover the way in as well as the way out.** 0.21.68
+  stopped a map throwing as it was torn down; five visitors then hit the
+  mirror image of it — a trail being *added* to a map whose panes had already
+  gone. The page survived, because the error boundary added in 0.21.68 caught
+  it, but the trail did not draw. Both directions are now no-ops rather than
+  throws.
+- If a guard ever fires because of an ordering bug in our own code rather than
+  a teardown, it reports itself once per page load, so a trail that silently
+  fails to draw shows up in the log instead of going unnoticed.
+
 ## 0.21.68 (2026-09-21)
 
 - **A run page with a trail on it no longer breaks when you leave it.** Closing

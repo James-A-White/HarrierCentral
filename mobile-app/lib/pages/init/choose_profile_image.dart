@@ -413,7 +413,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         );
       }
 
-      await Get.off(() => MainNavigationPage(), routeName: '/main');
+      await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
     }
   }
 

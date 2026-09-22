@@ -304,6 +304,7 @@ export 'package:harrier_central/types/typedefs.dart';
 // util
 export 'package:harrier_central/util/bank_transfer_qr.dart';
 export 'package:harrier_central/util/boot_logger.dart';
+export 'package:harrier_central/util/safe_route.dart';
 export 'package:harrier_central/util/constants.dart';
 export 'package:harrier_central/util/enums.dart';
 export 'package:harrier_central/util/form_factor.dart';

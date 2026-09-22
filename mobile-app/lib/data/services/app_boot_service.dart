@@ -92,7 +92,7 @@ class AppBootService {
               'OK',
             );
           }
-          await Get.off(() => MainNavigationPage(), routeName: '/main');
+          await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
           unawaited(IncomingFileService.ensure().flushPending());
           return;
         }
@@ -135,7 +135,7 @@ class AppBootService {
         );
         return;
       }
-      await Get.off(
+      await safeReplaceRoute(
         () => const GuestDiscoveryPage(),
         routeName: RouteNames.GUEST_DISCOVERY.toString(),
       );
@@ -454,7 +454,7 @@ class AppBootService {
       exit(0);
     }
 
-    await Get.off(() => MainNavigationPage(), routeName: '/main');
+    await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
   }
 
   /// Route based on server status, approval code, and local state.
@@ -471,7 +471,7 @@ class AppBootService {
         'Harrier Central is temporarily offline for maintenance.\r\n\r\nYou can continue using the app in Offline Mode with cached data.',
         'Continue Offline',
       );
-      await Get.off(() => MainNavigationPage(), routeName: '/main');
+      await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
       return;
     }
 
@@ -534,11 +534,11 @@ class AppBootService {
 
     await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
     debugPrint(
-      '[BOOT] Get.off(MainNavigationPage) start: ${DateTime.now().millisecondsSinceEpoch}ms',
+      '[BOOT] safeReplaceRoute(MainNavigationPage) start: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
-    await Get.off(() => MainNavigationPage(), routeName: '/main');
+    await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
     debugPrint(
-      '[BOOT] Get.off(MainNavigationPage) done: ${DateTime.now().millisecondsSinceEpoch}ms',
+      '[BOOT] safeReplaceRoute(MainNavigationPage) done: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
 
     // A GPX file that launched the app ("Open in" / the share extension) is
@@ -592,7 +592,7 @@ class AppBootService {
             'We\'ll try again next time you open the app while connected.',
         'Continue',
       );
-      await Get.off(
+      await safeReplaceRoute(
         () => const GuestDiscoveryPage(),
         routeName: RouteNames.GUEST_DISCOVERY.toString(),
       );
@@ -602,7 +602,7 @@ class AppBootService {
     // ── Step 1: Read resetCode (keychain-first) ──────────────────────────────
     final String resetCode = (await getResetCode()) ?? '';
     if (resetCode.isEmpty) {
-      await Get.off(() => MainNavigationPage(), routeName: '/main');
+      await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
       return;
     }
 
@@ -660,7 +660,7 @@ class AppBootService {
         'We were unable to re-authorise this device during the upgrade.\r\n\r\nPlease scan your QR code from your profile page to restore access.',
         'Continue',
       );
-      await Get.off(() => MainNavigationPage(), routeName: '/main');
+      await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
       return;
     }
 
@@ -715,7 +715,7 @@ class AppBootService {
     }
 
     await Utilities.showAlert(dialogTitle, dialogMessage, 'OK');
-    await Get.off(() => MainNavigationPage(), routeName: '/main');
+    await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
   }
 
   /// Login was rejected by the server — tell the user why and fall through to
@@ -747,7 +747,7 @@ class AppBootService {
       );
     }
 
-    await Get.off(() => MainNavigationPage(), routeName: '/main');
+    await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
   }
 
   // ---------------------------------------------------------------------------

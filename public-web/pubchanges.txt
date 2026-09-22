@@ -1,3 +1,6 @@
+0.21.69
+    • Map guards extended to the mount path: a trail added to a map that is going away no longer throws, and a guard that fires reports itself so a missing trail is visible in the log.
+
 0.21.68
     • Leaving a run page that shows a trail no longer replaces the page with "Something broke on our side" — Leaflet was throwing while tearing the map down, and nothing caught it.
     • A crash in one component now shows a panel inside the site instead of taking the whole document.
