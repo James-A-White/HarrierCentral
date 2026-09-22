@@ -1005,24 +1005,39 @@ const EnumProductType productTypeCharityDonation = EnumProductType(7);
 //////////////////////////
 
 /// Which card-payment app a kennel takes money through, from
-/// HC.Kennel.PaymentProviderType. NULL/absent means this kennel does not take
-/// card through Harrier Central, which is every kennel until it opts in.
+/// HC.Kennel.CardPaymentProvider. Null or empty means this kennel does not
+/// take card through Harrier Central, which is every kennel until it opts in.
 ///
-/// The two providers are different KINDS of integration and the seam exists
-/// for that reason, not for the names — see [CardPaymentMode].
-class EnumPaymentProviderType extends HcEnum<int> {
-  const EnumPaymentProviderType(super.val);
+/// **A lowercase string, not an int enum, and deliberately so.**
+/// HC.Payment.PaymentProvider is already NVARCHAR and already holds real
+/// values ('PayPal', 'Tikkie', 331 rows). Coding the kennel's provider as an
+/// int would mean translating on every write and leaving the reports grouping
+/// by one vocabulary while the config used another. The token a kennel is
+/// configured with is the token written onto the payment — the same string,
+/// end to end, which is also what the provider's own export says.
+///
+/// The SQL collation is case-insensitive so 'PayPal' and 'paypal' are equal
+/// there; Dart is not, so compare through [normalizedCardProvider].
+class CardPaymentProviders {
+  const CardPaymentProviders._();
+
+  /// Hand off to SumUp's app; the tap happens on their screen.
+  static const String sumUp = 'sumup';
+
+  /// Zettle by PayPal's SDK; the tap happens inside Harrier Central.
+  static const String zettle = 'zettle';
+
+  /// Every provider Harrier Central can take a card through today. The
+  /// server's HC6.PaymentProviderCatalog() is the registry this mirrors —
+  /// adding one there is a deploy, not an app release.
+  static const List<String> all = <String>[sumUp, zettle];
 }
 
-/// SumUp: hand off to their app, the tap happens there, we hold one
-/// app-wide affiliate key and no merchant credentials at all.
-const EnumPaymentProviderType paymentProviderSumUp = EnumPaymentProviderType(1);
-
-/// Zettle by PayPal: their SDK runs inside THIS app, the merchant authorises
-/// by OAuth, and we hold a token per kennel.
-const EnumPaymentProviderType paymentProviderZettle = EnumPaymentProviderType(
-  2,
-);
+/// Lowercases and trims a provider token from the server or a config screen,
+/// so a stored 'Zettle' or ' SumUp ' still matches. Returns empty for null,
+/// which reads as "this kennel does not take card".
+String normalizedCardProvider(String? provider) =>
+    (provider ?? '').trim().toLowerCase();
 
 /// What a catalogue entry can be, in the order the editor offers them.
 ///

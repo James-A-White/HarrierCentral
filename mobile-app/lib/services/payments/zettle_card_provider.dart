@@ -55,7 +55,7 @@ class ZettleCardProvider implements CardPaymentProvider {
   bool _initialised = false;
 
   @override
-  EnumPaymentProviderType get providerType => paymentProviderZettle;
+  String get providerToken => CardPaymentProviders.zettle;
 
   @override
   CardPaymentMode get mode => CardPaymentMode.sdk;

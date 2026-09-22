@@ -73,7 +73,11 @@ class CardPaymentOutcome {
 /// get control back, and a payment nobody recorded is a hole in the club's
 /// accounts rather than a missing tick.
 abstract class CardPaymentProvider {
-  EnumPaymentProviderType get providerType;
+  /// The token this provider is known by, everywhere: the kennel's
+  /// HC.Kennel.CardPaymentProvider, the HC.Payment.PaymentProvider written
+  /// with each payment, and the provider's own export. Lowercase — see
+  /// [CardPaymentProviders].
+  String get providerToken;
 
   CardPaymentMode get mode;
 
