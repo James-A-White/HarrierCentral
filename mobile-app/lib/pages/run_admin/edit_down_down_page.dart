@@ -1,12 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
-class _SongResult {
-  _SongResult({required this.songId, required this.songName});
-  final String songId;
-  final String songName;
-}
-
-class EditDownDownPage extends StatefulWidget {
+/// Edit Down Down. Stateless over [EditDownDownController].
+class EditDownDownPage extends StatelessWidget {
   const EditDownDownPage({
     super.key,
     required this.kennelId,
@@ -23,167 +18,6 @@ class EditDownDownPage extends StatefulWidget {
   final int eventNumber;
   final DownDownModel downDown;
   final String pageTitle;
-
-  @override
-  State<EditDownDownPage> createState() => _EditDownDownPageState();
-}
-
-class _EditDownDownPageState extends State<EditDownDownPage> {
-  final _service = RunContentService();
-  late final TextEditingController _chargeController;
-  late final TextEditingController _songController;
-
-  String? _linkedSongId;
-  bool _suppressNextSearch = false;
-  List<_SongResult> _songResults = [];
-  bool _isSaving = false;
-  String? _chargePhotoUrl;
-  bool _isCapturingPhoto = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _chargeController = TextEditingController(text: widget.downDown.chargeText);
-    _songController = TextEditingController(
-      text: widget.downDown.songChoice ?? '',
-    );
-    _linkedSongId = widget.downDown.songId;
-    _chargePhotoUrl = widget.downDown.chargePhotoUrl;
-  }
-
-  @override
-  void dispose() {
-    _chargeController.dispose();
-    _songController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _takeChargePhoto() async {
-    setState(() => _isCapturingPhoto = true);
-    try {
-      final url = await KennelPhotoService().captureAndUpload(
-        eventId: widget.eventId,
-        kennelId: widget.kennelId,
-        kennelSlug: widget.kennelSlug,
-        eventNumber: widget.eventNumber,
-        skipMapMarker: true,
-      );
-      if (url != null && mounted) {
-        setState(() => _chargePhotoUrl = url);
-      }
-    } finally {
-      if (mounted) setState(() => _isCapturingPhoto = false);
-    }
-  }
-
-  Future<void> _searchSongs(String query) async {
-    if (query.trim().isEmpty) {
-      if (mounted) setState(() => _songResults = []);
-      return;
-    }
-    final tbl = tableModel.songsTableHelper;
-    final songTable = EnumDataTables.songs.commonTableName;
-    final pattern = '%${query.trim()}%';
-    final kId = widget.kennelId;
-
-    final kennelRows = await database.rawQuery(
-      '''
-      SELECT ${tbl.colSongId}, ${tbl.colSongName}
-      FROM $songTable
-      WHERE ${tbl.colRemoved} = 0
-        AND (${tbl.colAddedByKennelId} = ?
-             OR ${tbl.colAutoAddToKennel} > 0)
-        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
-      ORDER BY
-        CASE WHEN ${tbl.colAddedByKennelId} = ? THEN 0 ELSE 1 END,
-        ${tbl.colSongName}
-      LIMIT 30
-    ''',
-      [kId, pattern, kId],
-    );
-
-    if (kennelRows.isNotEmpty) {
-      if (mounted) {
-        setState(
-          () => _songResults = kennelRows
-              .map(
-                (r) => _SongResult(
-                  songId: r[tbl.colSongId] as String,
-                  songName: r[tbl.colSongName] as String,
-                ),
-              )
-              .toList(),
-        );
-      }
-      return;
-    }
-
-    final globalRows = await database.rawQuery(
-      '''
-      SELECT ${tbl.colSongId}, ${tbl.colSongName}
-      FROM $songTable
-      WHERE ${tbl.colRemoved} = 0
-        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
-      ORDER BY ${tbl.colSongName}
-      LIMIT 30
-    ''',
-      [pattern],
-    );
-
-    if (mounted) {
-      setState(
-        () => _songResults = globalRows
-            .map(
-              (r) => _SongResult(
-                songId: r[tbl.colSongId] as String,
-                songName: r[tbl.colSongName] as String,
-              ),
-            )
-            .toList(),
-      );
-    }
-  }
-
-  Future<void> _save() async {
-    final chargeText = _chargeController.text.trim();
-    if (chargeText.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Charge text is required')));
-      return;
-    }
-
-    setState(() => _isSaving = true);
-
-    final songText = _songController.text.trim();
-    final newPhoto = _chargePhotoUrl != widget.downDown.chargePhotoUrl
-        ? _chargePhotoUrl
-        : null;
-
-    final ok = await _service.updateDownDown(
-      kennelId: widget.kennelId,
-      eventId: widget.eventId,
-      downDownId: widget.downDown.downDownId,
-      chargeText: chargeText,
-      songChoice: songText.isEmpty ? null : songText,
-      songId: _linkedSongId,
-      chargePhotoUrl: newPhoto,
-    );
-
-    if (mounted) {
-      if (ok) {
-        Get.back(result: true);
-      } else {
-        setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Failed to update. Please try again.'),
-            backgroundColor: Colors.red.shade700,
-          ),
-        );
-      }
-    }
-  }
 
   Widget _fieldLabel(String text) => Padding(
     padding: const EdgeInsets.only(left: 2, bottom: 5),
@@ -207,14 +41,33 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
 
   @override
   Widget build(BuildContext context) {
+    return GetBuilder<EditDownDownController>(
+      init: EditDownDownController(
+        kennelId: kennelId,
+        eventId: eventId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+        downDown: downDown,
+      ),
+      tag: EditDownDownController.tagFor(downDown.downDownId),
+      builder: (EditDownDownController c) => Obx(() => _body(context, c)),
+    );
+  }
+
+  Widget _body(BuildContext context, EditDownDownController c) {
+    final bool isSaving = c.isSaving.value;
+    final bool isCapturingPhoto = c.isCapturingPhoto.value;
+    final String? linkedSongId = c.linkedSongId.value;
+    final String? chargePhotoUrl = c.chargePhotoUrl.value;
+    final List<SongResult> songResults = c.songResults;
     return AppScaffold(
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-        title: Text(widget.pageTitle, style: ts_appBarTitle),
+        title: Text(pageTitle, style: ts_appBarTitle),
         actions: [
-          _isSaving
+          isSaving
               ? const Padding(
                   padding: EdgeInsets.all(16),
                   child: SizedBox(
@@ -229,7 +82,7 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
               : IconButton(
                   icon: const Icon(Icons.check, color: Colors.white),
                   tooltip: 'Save',
-                  onPressed: _save,
+                  onPressed: () => unawaited(c.save()),
                 ),
         ],
       ),
@@ -246,7 +99,7 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                 children: [
                   _fieldLabel('Charge'),
                   TextField(
-                    controller: _chargeController,
+                    controller: c.chargeController,
                     maxLines: 3,
                     autofocus: true,
                     style: const TextStyle(color: Colors.black87),
@@ -266,38 +119,29 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                 children: [
                   _fieldLabel('Recommended song (optional)'),
                   TextField(
-                    controller: _songController,
+                    controller: c.songController,
                     style: const TextStyle(color: Colors.black87),
                     decoration: _fieldDecoration.copyWith(
                       hintText: 'Start typing to search…',
                       prefixIcon: const Icon(Icons.music_note),
-                      suffixIcon: _linkedSongId != null
+                      suffixIcon: linkedSongId != null
                           ? Tooltip(
                               message: 'Unlink song',
                               child: IconButton(
                                 icon: const Icon(Icons.link_off, size: 18),
-                                onPressed: () => setState(() {
-                                  _linkedSongId = null;
-                                  _songResults = [];
-                                }),
+                                onPressed: () =>
+                                    c.unlinkSong(clearResults: true),
                               ),
                             )
                           : null,
                     ),
-                    onChanged: (value) {
-                      if (_suppressNextSearch) {
-                        _suppressNextSearch = false;
-                        return;
-                      }
-                      _linkedSongId = null;
-                      unawaited(_searchSongs(value));
-                    },
+                    onChanged: c.onSongChanged,
                   ),
                 ],
               ),
             ),
 
-            if (_linkedSongId != null)
+            if (linkedSongId != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
                 child: Row(
@@ -319,7 +163,7 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      icon: _isCapturingPhoto
+                      icon: isCapturingPhoto
                           ? const SizedBox(
                               width: 16,
                               height: 16,
@@ -329,13 +173,13 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                               ),
                             )
                           : Icon(
-                              _chargePhotoUrl != null
+                              chargePhotoUrl != null
                                   ? Icons.check_circle_outline
                                   : Icons.camera_alt,
                               color: Colors.white70,
                             ),
                       label: Text(
-                        _chargePhotoUrl != null
+                        chargePhotoUrl != null
                             ? 'Photo added'
                             : 'Add photo (optional)',
                         style: const TextStyle(color: Colors.white70),
@@ -343,15 +187,17 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.white30),
                       ),
-                      onPressed: _isCapturingPhoto ? null : _takeChargePhoto,
+                      onPressed: isCapturingPhoto
+                          ? null
+                          : () => unawaited(c.takeChargePhoto()),
                     ),
                   ),
-                  if (_chargePhotoUrl != null) ...[
+                  if (chargePhotoUrl != null) ...[
                     const SizedBox(width: 8),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: Image.network(
-                        _chargePhotoUrl!,
+                        chargePhotoUrl,
                         width: 44,
                         height: 44,
                         cacheWidth: 132,
@@ -365,7 +211,7 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
               ),
             ),
 
-            if (_songResults.isNotEmpty) ...[
+            if (songResults.isNotEmpty) ...[
               const Divider(height: 1, thickness: 1, color: Colors.white24),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
@@ -376,9 +222,9 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
               ),
               Expanded(
                 child: ListView.builder(
-                  itemCount: _songResults.length,
+                  itemCount: songResults.length,
                   itemBuilder: (context, index) {
-                    final song = _songResults[index];
+                    final song = songResults[index];
                     return ListTile(
                       leading: const Icon(
                         Icons.music_note,
@@ -392,14 +238,7 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                           fontSize: 14,
                         ),
                       ),
-                      onTap: () {
-                        _suppressNextSearch = true;
-                        _songController.text = song.songName;
-                        setState(() {
-                          _linkedSongId = song.songId;
-                          _songResults = [];
-                        });
-                      },
+                      onTap: () => c.pickSong(song),
                     );
                   },
                 ),
