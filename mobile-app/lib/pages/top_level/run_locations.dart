@@ -207,9 +207,23 @@ class _PhoneLayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Rx<Position?>? live = controller.livePosition;
+
+    // No location service yet means nothing to observe, so no Obx. An Obx
+    // whose builder returns without reading an observable does not render
+    // nothing — GetX THROWS ("improper use of a GetX"), and in release that
+    // paints an error box over this layer. The IndexedStack builds this tab
+    // hidden at boot, and on a cold start the service can be ten seconds
+    // away (3.1.0+1394, 2026-09-22: three throws in the first 1.5 s, then
+    // fine). Deliberately NOT LocationService.ensure() here: its onInit
+    // checks and may request permission and opens a position stream, and a
+    // hidden tab must not be what starts all that.
+    if (live == null) return const SizedBox.shrink();
+
     return Obx(() {
+      // Observed FIRST, on every path — the permission check below returns
+      // early, and it is a plain bool, not an Rx.
+      final Position? pos = live.value;
       if (!appModel.hasLocationPermissions) return const SizedBox.shrink();
-      final Position? pos = live?.value;
       final double? lat = pos?.latitude ?? deviceInfo.deviceLat;
       final double? lon = pos?.longitude ?? deviceInfo.deviceLon;
       if (lat == null || lon == null) return const SizedBox.shrink();
