@@ -2,403 +2,196 @@
 
 import 'package:harrier_central/imports.dart';
 
-class DrinksList extends StatefulWidget {
+/// "Drink chug-a-lug" — the milestone awards for a run. StatelessWidget over
+/// [DrinksListController]; see the controller for why it is no longer a State.
+class DrinksList extends StatelessWidget {
   const DrinksList({super.key, required this.eventAggregate});
 
   final RunAdminAggregate eventAggregate;
 
-  @override
-  DrinksListState createState() => DrinksListState();
-}
-
-class DrinksResults {
-  DrinksResults({
-    required this.hasherId,
-    required this.dispName,
-    required this.nameForSort,
-    required this.photo,
-    required this.totalRunsThisKennel,
-    required this.totalHaringThisKennel,
-    this.specialRunCount = 0,
-    this.specialHaringCount = 0,
-    this.isHare = 0,
-  });
-
-  final String hasherId;
-  final String dispName;
-  final String nameForSort;
-  final String photo;
-  final int totalRunsThisKennel;
-  final int totalHaringThisKennel;
-  int specialRunCount;
-  int specialHaringCount;
-  int isHare;
-
-  static DrinksResults fromMap(Map<String, dynamic> map) {
-    final DrinksResults item = DrinksResults(
-      hasherId: map['hasherId'],
-      dispName: map['dispName'],
-      nameForSort: map['nameForSort'],
-      photo: map['photo'],
-      totalRunsThisKennel: map['totalRunsThisKennel'],
-      totalHaringThisKennel: map['totalHaringThisKennel'],
-      isHare: map['isHare'],
-      specialHaringCount: 0,
-      specialRunCount: 0,
-    );
-    return item;
-  }
-}
-
-class DrinksListState extends State<DrinksList>
-    with SingleTickerProviderStateMixin {
-  DrinksListState();
-
-  bool _isLoading = false;
-
-  /// Whether the last attempt to load actually reached the server.
-  ///
-  /// Without this the screen cannot tell "this run genuinely has no awards"
-  /// apart from "we never managed to ask", and it showed the first message for
-  /// both. Barbados reported an empty award list that filled in on a second
-  /// visit; their logs carry 35 failed connection checks and 77 failed syncs
-  /// in a week, so the screen was almost certainly right about the data it had
-  /// and wrong about what that meant (James, 2026-09-13).
-  bool _loadFailed = false;
-
-  // ignore: non_constant_identifier_names
-  final double LIST_ITEM_HEIGHT = 84.0;
-  // ignore: non_constant_identifier_names
-  final double LIST_ITEM_ELEMENT_HEIGHT = 84.0;
-
-  final List<DrinksResults> _awards = <DrinksResults>[];
-
-  Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (!Utilities.isConnected()) {
-      // Was a silent no-op: no sync, no spinner, no message — so the screen
-      // fell through to "No awards yet for this Trail" and stated as fact
-      // something it had never checked.
-      setStateIfMounted(() {
-        _isLoading = false;
-        _loadFailed = true;
-      });
-      return;
-    }
-    {
-      if (showLoadingIndicator) {
-        setStateIfMounted(() {
-          _isLoading = true;
-        });
-      }
-
-      final bool synced = await tableModel.syncEventAdminService
-          .updateFromBackend(
-        EnumDataTables.hashers.flag |
-            EnumDataTables.payments.flag |
-            EnumDataTables.hasherEventMap.flag |
-            EnumDataTables.hasherKennelMap.flag,
-        true,
-        widget.eventAggregate.event.eventId,
-      );
-
-      await _refreshDrinksFromTable(true);
-
-      setStateIfMounted(() {
-        _isLoading = false;
-        // updateFromBackend returns false when it could not reach the server.
-        // An empty list after a FAILED sync is not evidence of no awards.
-        _loadFailed = !synced && _awards.isEmpty;
-      });
-    }
-  }
-
-  /// The refresh button. Checks the connection first and says so plainly when
-  /// there is none, rather than spinning and landing back on an empty list.
-  Future<void> _manualRefresh() async {
-    if (!Utilities.isConnected()) {
-      await Utilities.showAlert(
-        'No connection',
-        'A connection is required to get the current run counts. Check your '
-            'signal or Wi-Fi and try again.',
-        'OK',
-      );
-      setStateIfMounted(() => _loadFailed = true);
-      return;
-    }
-    await _refreshSqlTablesFromBackend(true);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    appBar = AppBar(
-      centerTitle: true,
-      backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-      title: Text('Drink chug-a-lug', style: ts_appBarTitle),
-      actions: <Widget>[
-        IconButton(
-          tooltip: 'Refresh',
-          icon: const Icon(Icons.refresh, color: Colors.white),
-          onPressed: () => unawaited(_manualRefresh()),
-        ),
-      ],
-    );
-
-    unawaited(initStateAsync());
-  }
-
-  Future<void> initStateAsync() async {
-    // _refreshSqlTablesFromBackend already queries and renders; a second
-    // query here was the other half of the race (see _refreshDrinksFromTable).
-    await _refreshSqlTablesFromBackend(true);
-  }
-
-  Future<void> _refreshDrinksFromTable(bool forceRefresh) async {
-    // Run/haring milestone counts must be INCLUSIVE of this run. hem.totalRuns/
-    // HaringThisKennel is a cumulative-per-event stamp written by a nightly
-    // backend SP, so it is NULL for a live (same-day) event — falling straight
-    // back to historical-only badly under-counts. When it is NULL, fall back to
-    // the standing HC total + 1 (this run): + always for runs, + only when the
-    // hasher is a hare on this event for haring. Historical baseline is added on
-    // top in every case.
-    final String query =
-        '''
-        SELECT 
-          h.${tableModel.hashersTableHelper.colHasherId},
-          coalesce(
-            hem.${tableModel.hasherEventMapTableHelper.colDisplayName},
-            h.${tableModel.hashersTableHelper.colDispName},
-            h.${tableModel.hashersTableHelper.colHashName},
-            h.${tableModel.hashersTableHelper.colFirstName} || " " || h.${tableModel.hashersTableHelper.colLastName},"<no name>") as dispName,
-          lower(" " || coalesce(h.${tableModel.hashersTableHelper.colHashName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colDispName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colFirstName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colLastName},"") || " ") as nameForSort,
-          h.${tableModel.hashersTableHelper.colPhoto},         
-          coalesce(
-            hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel},
-            coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHcHaringCount},0)
-              + case when hem.${tableModel.hasherEventMapTableHelper.colIsHare} = 1 then 1 else 0 end)
-          + coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},0)
-          as totalHaringThisKennel,
-          coalesce(
-            hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel},
-            coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},0) + 1)
-          + coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},0)
-          as totalRunsThisKennel,
-          hem.${tableModel.hasherEventMapTableHelper.colIsHare}
-          FROM ${EnumDataTables.hasherEventMap.eventTableName} hem 
-          INNER JOIN ${EnumDataTables.hashers.commonTableName} h on hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}  
-          LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId} AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = hem.${tableModel.hasherEventMapTableHelper.colEventKennelId}
-          WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = '${widget.eventAggregate.event.eventId}' 
-          AND hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= 20
-          AND h.${tableModel.hashersTableHelper.colRemoved} = 0 
-          AND h.${tableModel.hashersTableHelper.colHashName} not like '👣 Anonymous%' 
-          ORDER BY totalHaringThisKennel, totalRunsThisKennel
-          ''';
-
-    // Build into a LOCAL list and swap it in with setState in one synchronous
-    // step. This used to _awards.clear() BEFORE the await and refill after it
-    // with no setState — so any frame that built in between painted the empty
-    // state ("No awards yet for this Trail") and nothing repainted when the
-    // rows arrived. On a cold start the first query is slow enough to lose
-    // that race; a refresh re-ran the same race, which is why it sometimes
-    // took two. James, BH3 #2350, 2026-09-23: 53 bytes received in the whole
-    // session — the awards were on the phone throughout.
-    final List<DrinksResults> found = <DrinksResults>[];
-    try {
-      final List<Map<String, dynamic>> results = await database.rawQuery(query);
-      for (int i = 0; i < results.length; i++) {
-        final DrinksResults hlrItem = DrinksResults.fromMap(results[i]);
-
-        hlrItem.specialRunCount = Utilities.checkSpecialRun(
-          hlrItem.totalRunsThisKennel,
-        );
-
-        if (hlrItem.isHare == 1) {
-          hlrItem.specialHaringCount = Utilities.checkSpecialHaring(
-            hlrItem.totalHaringThisKennel,
-          );
-        }
-
-        if ((hlrItem.specialRunCount != specialRunNo) ||
-            (hlrItem.specialHaringCount != specialRunNo)) {
-          found.add(hlrItem);
-        }
-      }
-      setStateIfMounted(() {
-        _awards
-          ..clear()
-          ..addAll(found);
-      });
-    } catch (e, s) {
-      if (kDebugMode) {
-        debugPrint('[DrinksList._buildAwardsList] error: $e');
-      }
-      BootLogger.logError(
-        '[DrinksList._buildAwardsList] eventId=${widget.eventAggregate.event.eventId}',
-        e,
-        s,
-      );
-    }
-  }
-
-  late AppBar appBar;
+  static const double LIST_ITEM_HEIGHT = 84.0;
+  static const double LIST_ITEM_ELEMENT_HEIGHT = 84.0;
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: appBar,
-      body: SafeArea(
-        child: Container(
-          decoration: Backgrounds.defaultHcBackgroundLight(),
-          child: _isLoading
-              ? const HcAppCircularProgressIndicator(key: Key('52039320'))
-              : _awards.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(
-                          _loadFailed
-                              ? Icons.cloud_off
-                              : Icons.emoji_events_outlined,
-                          size: 52,
-                          color: themeBackgroundColor,
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          // Two different facts, which used to share one
-                          // message. "No awards" is a statement about the run;
-                          // "couldn't load" is a statement about the phone.
-                          _loadFailed
-                              ? 'Could not load the awards'
-                              : 'No awards yet for this Trail',
-                          textAlign: TextAlign.center,
-                          style: ts_headingVeryLarge.copyWith(
-                            color: themeBackgroundColor,
-                          ),
-                        ),
-                        if (_loadFailed) ...<Widget>[
-                          const SizedBox(height: 10),
-                          Text(
-                            'A connection is required to get the current run '
-                            'counts. This run may well have awards — they just '
-                            'could not be fetched.',
-                            textAlign: TextAlign.center,
-                            style: ts_body.copyWith(
-                              color: themeBackgroundColor,
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          ElevatedButton.icon(
-                            onPressed: () => unawaited(_manualRefresh()),
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Try again'),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                )
-              : ListView.separated(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: _awards.length,
-                  separatorBuilder: (BuildContext context, int index) =>
-                      const Divider(height: 1.0, color: Colors.black45),
-                  //   height: 1.0,
-                  //   color: Colors.black45,
-                  // ),
+    final String tag = DrinksListController.tagFor(
+      eventAggregate.event.eventId,
+    );
+    final DrinksListController controller = Get.put(
+      DrinksListController(eventAggregate: eventAggregate),
+      tag: tag,
+    );
 
-                  //itemExtent: 58.0,
-                  //shrinkWrap: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(height: LIST_ITEM_HEIGHT, width: 10.0),
-                        Utilities.getProfilePic(
-                          _awards[index].photo,
-                          LIST_ITEM_ELEMENT_HEIGHT,
-                          LIST_ITEM_ELEMENT_HEIGHT,
-                          context,
-                          _awards[index].dispName,
-                        ),
-                        Expanded(
-                          child: Column(
-                            children: <Widget>[
-                              FittedBox(
-                                child: Text(
-                                  _awards[index].dispName,
-                                  style: ts_titleLargeCondensedBlack,
-                                ),
-                              ),
-                              if (_awards[index].specialRunCount ==
-                                  1) ...<Widget>[
-                                FittedBox(
-                                  child: Text(
-                                    '1 run',
-                                    style: ts_titleLargeCondensedBlack,
-                                  ),
-                                ),
-                              ],
-                              if (_awards[index].specialRunCount >
-                                  1) ...<Widget>[
-                                FittedBox(
-                                  child: Text(
-                                    '${_awards[index].totalRunsThisKennel.toString()} runs',
-                                    style: ts_titleLargeCondensedBlack,
-                                  ),
-                                ),
-                              ],
-                              if (_awards[index].specialHaringCount ==
-                                  1) ...<Widget>[
-                                FittedBox(
-                                  child: Text(
-                                    'First time haring',
-                                    style: ts_titleLargeCondensedBlack,
-                                  ),
-                                ),
-                              ],
-                              if (_awards[index].specialHaringCount >
-                                  1) ...<Widget>[
-                                FittedBox(
-                                  child: Text(
-                                    '${_awards[index].totalHaringThisKennel.toString()} hared runs',
-                                    style: ts_titleLargeCondensedBlack,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (_awards[index].specialRunCount > 0) ...<Widget>[
-                          Image.asset(
-                            'images/run_count_icons/run_${_awards[index].specialRunCount}.png',
-                            height: LIST_ITEM_ELEMENT_HEIGHT,
-                            width: LIST_ITEM_ELEMENT_HEIGHT,
-                          ),
-                        ],
-                        if (_awards[index].specialHaringCount > 0) ...<Widget>[
-                          Image.asset(
-                            'images/run_count_icons/rabbit_with_beer.png',
-                            height: LIST_ITEM_ELEMENT_HEIGHT,
-                            width: LIST_ITEM_ELEMENT_HEIGHT,
-                          ),
-                        ],
-                        const Divider(),
-                      ],
-                    );
-
-                    // return Container(
-                    //   height: 120.0,
-                    //   child: ListTile(
-                    //     dense: false,
-                  },
-                ),
+    return PopScope(
+      // Pushed with a MaterialPageRoute, so GetX will not dispose this for us.
+      // Deleting on pop is what makes the next visit start with a fresh load.
+      onPopInvokedWithResult: (bool didPop, Object? _) {
+        if (didPop) Get.delete<DrinksListController>(tag: tag);
+      },
+      child: AppScaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: themeAppBarBackground,
+          iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+          title: Text('Drink chug-a-lug', style: ts_appBarTitle),
+          actions: <Widget>[
+            IconButton(
+              tooltip: 'Refresh',
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: () => unawaited(controller.manualRefresh()),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Container(
+            decoration: Backgrounds.defaultHcBackgroundLight(),
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const HcAppCircularProgressIndicator(
+                  key: Key('52039320'),
+                );
+              }
+              if (controller.awards.isEmpty) {
+                return _EmptyState(controller: controller);
+              }
+              return _AwardsList(controller: controller);
+            }),
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.controller});
+
+  final DrinksListController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool failed = controller.loadFailed.value;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Icon(
+              failed ? Icons.cloud_off : Icons.emoji_events_outlined,
+              size: 52,
+              color: themeBackgroundColor,
+            ),
+            const SizedBox(height: 14),
+            Text(
+              // Two different facts, which used to share one message. "No
+              // awards" is a statement about the run; "couldn't load" is a
+              // statement about the phone.
+              failed ? 'Could not load the awards' : 'No awards yet for this Trail',
+              textAlign: TextAlign.center,
+              style: ts_headingVeryLarge.copyWith(color: themeBackgroundColor),
+            ),
+            if (failed) ...<Widget>[
+              const SizedBox(height: 10),
+              Text(
+                'A connection is required to get the current run counts. This '
+                'run may well have awards — they just could not be fetched.',
+                textAlign: TextAlign.center,
+                style: ts_body.copyWith(color: themeBackgroundColor),
+              ),
+              const SizedBox(height: 18),
+              ElevatedButton.icon(
+                onPressed: () => unawaited(controller.manualRefresh()),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Try again'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AwardsList extends StatelessWidget {
+  const _AwardsList({required this.controller});
+
+  final DrinksListController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    // Read inside Obx (the caller's) — itemCount over an RxList under a
+    // GetBuilder is the stale-count RangeError footgun; this is not that.
+    final List<DrinksResults> awards = controller.awards;
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: awards.length,
+      separatorBuilder: (BuildContext context, int index) =>
+          const Divider(height: 1.0, color: Colors.black45),
+      itemBuilder: (BuildContext context, int index) {
+        final DrinksResults a = awards[index];
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            const SizedBox(height: DrinksList.LIST_ITEM_HEIGHT, width: 10.0),
+            Utilities.getProfilePic(
+              a.photo,
+              DrinksList.LIST_ITEM_ELEMENT_HEIGHT,
+              DrinksList.LIST_ITEM_ELEMENT_HEIGHT,
+              context,
+              a.dispName,
+            ),
+            Expanded(
+              child: Column(
+                children: <Widget>[
+                  FittedBox(
+                    child: Text(a.dispName, style: ts_titleLargeCondensedBlack),
+                  ),
+                  if (a.specialRunCount == 1)
+                    FittedBox(
+                      child: Text('1 run', style: ts_titleLargeCondensedBlack),
+                    ),
+                  if (a.specialRunCount > 1)
+                    FittedBox(
+                      child: Text(
+                        '${a.totalRunsThisKennel} runs',
+                        style: ts_titleLargeCondensedBlack,
+                      ),
+                    ),
+                  if (a.specialHaringCount == 1)
+                    FittedBox(
+                      child: Text(
+                        'First time haring',
+                        style: ts_titleLargeCondensedBlack,
+                      ),
+                    ),
+                  if (a.specialHaringCount > 1)
+                    FittedBox(
+                      child: Text(
+                        '${a.totalHaringThisKennel} hared runs',
+                        style: ts_titleLargeCondensedBlack,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (a.specialRunCount > 0)
+              Image.asset(
+                'images/run_count_icons/run_${a.specialRunCount}.png',
+                height: DrinksList.LIST_ITEM_ELEMENT_HEIGHT,
+                width: DrinksList.LIST_ITEM_ELEMENT_HEIGHT,
+              ),
+            if (a.specialHaringCount > 0)
+              Image.asset(
+                'images/run_count_icons/rabbit_with_beer.png',
+                height: DrinksList.LIST_ITEM_ELEMENT_HEIGHT,
+                width: DrinksList.LIST_ITEM_ELEMENT_HEIGHT,
+              ),
+            const Divider(),
+          ],
+        );
+      },
     );
   }
 }
