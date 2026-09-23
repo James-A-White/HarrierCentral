@@ -41,6 +41,7 @@ CREATE OR ALTER PROCEDURE [HC6].[nonApi_updateRunCountsForAllUsers]
 AS
 BEGIN
     SET NOCOUNT ON;
+BEGIN TRY
     SET XACT_ABORT ON;
 
     -- 1-minute lookback guards against sub-second race conditions
@@ -329,5 +330,15 @@ BEGIN
 
     INSERT INTO LOG.GeneralLog (LogSource, Message)
     VALUES ('RUN COUNTS', 'Updated all user run counts');
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    -- Log THEN re-raise: the caller (a timer-triggered Function, or an
+    -- operator) still sees the failure, and now so does the sweep. Until
+    -- 2026-09-23 a failure here was a "Failed" tile with no row anywhere.
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in nonApi_updateRunCountsForAllUsers', ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), NULL);
+    THROW;
+END CATCH
 
 END

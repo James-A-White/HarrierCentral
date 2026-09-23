@@ -23,6 +23,7 @@ CREATE OR ALTER PROCEDURE [HC6].[nonApi_rptKennelRunStats]
 AS
 BEGIN
     SET NOCOUNT ON;
+BEGIN TRY
     SET XACT_ABORT ON;
 
     -- Build per-run, per-hasher attendance and payment rows
@@ -129,5 +130,15 @@ ORDER BY Event_date DESC';
     EXEC sp_executesql @stmt = @stmt;
 
     DROP TABLE #rpt;
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    -- Log THEN re-raise: the caller (a timer-triggered Function, or an
+    -- operator) still sees the failure, and now so does the sweep. Until
+    -- 2026-09-23 a failure here was a "Failed" tile with no row anywhere.
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in nonApi_rptKennelRunStats', ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), NULL);
+    THROW;
+END CATCH
 
 END

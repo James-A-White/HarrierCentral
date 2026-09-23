@@ -1,0 +1,24 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_logClientError",
+  "version": "1.0.0",
+  "description": "Records a client-side error from the Flutter admin portal into HC.ErrorLog — the portal's equivalent of publicWeb_logWebError. Auth is attempted, not required: an unauthenticated report is accepted only from a device that exists in HC.Device. Added 2026-09-23; before it the portal had no client error telemetry at all.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Auth (optional). With accessToken, resolves userId. Without a valid token, must still name an existing device." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Auth (optional). Generated for 'hcportal_logClientError' with the device secret as paramString." },
+    { "name": "errorName", "type": "NVARCHAR(500)", "nullable": false, "mapsToColumn": "ErrorLog.ErrorName", "description": "One line: the exception's message or type. Truncated to 250." },
+    { "name": "errorDescription", "type": "NVARCHAR(MAX)", "nullable": true, "mapsToColumn": "ErrorLog.ErrorDescription", "description": "The stack, first frames. Truncated to 2500." },
+    { "name": "source", "type": "NVARCHAR(250)", "nullable": true, "mapsToColumn": "ErrorLog.ProcName", "description": "Which handler caught it: portal-flutter (FlutterError.onError) or portal-async (PlatformDispatcher.onError). Default portal-client." },
+    { "name": "appVersion", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "ErrorLog.HcVersion", "description": "Portal version, stored as 'portal 2.0.84'." },
+    { "name": "route", "type": "NVARCHAR(4000)", "nullable": true, "mapsToColumn": "ErrorLog.string_1", "description": "The page the user was on, where known." }
+  ],
+  "rowsets": [
+    { "index": 0, "name": "Envelope", "description": "Success 1, or Success 0 with ErrorMessage ('errorName is required', 'Unknown device', or the CATCH message).", "columns": [
+      { "name": "Success", "type": "INT", "nullable": false, "description": "1 logged, 0 not" },
+      { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Why not" }
+    ] }
+  ],
+  "sideEffects": ["INSERT HC.ErrorLog"],
+  "codeSmells": [],
+  "breakingChangeRules": ["Never remove a column from any rowset", "Never rename a parameter", "Never change a parameter type"]
+}
