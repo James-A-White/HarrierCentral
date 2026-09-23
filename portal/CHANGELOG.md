@@ -1,3 +1,15 @@
+## 2.0.86+721 (2026-09-23)
+### Fixes
+- **Member edits save to the right hasher and say what happened.** The
+  members grid resolved an edited row by its index into the unsorted list
+  while the grid was sorted by name, so a change could go to another hasher;
+  and it swallowed every answer, so a refused or failed edit sat on screen
+  looking saved. Edits now resolve by the row's own id, show "Saved." or the
+  server's reason and revert, and a non-member's hidden email cannot be
+  edited over.
+- **Kennel Website page no longer throws on open.** Its title was an `Obx`
+  over a plain string — a builder that reads no observable throws.
+
 ## 2.0.85+720 (2026-09-23)
 ### Fixes
 - **Error reports from before sign-in now arrive.** 2.0.84's reporter sent no
