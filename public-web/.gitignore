@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# staged deploy artefact from scripts/stage-standalone.sh — never commit
+deploy.zip
