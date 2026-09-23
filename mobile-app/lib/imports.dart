@@ -201,6 +201,8 @@ export 'package:harrier_central/pages/guest/guest_run_detail_page.dart';
 // pages/history_sub_pages
 export 'package:harrier_central/pages/history_sub_pages/user_country_history_list_page.dart';
 export 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
+export 'package:harrier_central/pages/history_sub_pages/user_run_history_controller.dart';
+export 'package:harrier_central/pages/history_sub_pages/user_run_history_list.dart';
 
 // pages/init
 export 'package:harrier_central/pages/init/account_question_page.dart';
@@ -215,6 +217,7 @@ export 'package:harrier_central/pages/init/onboarding_flow_page.dart';
 export 'package:harrier_central/pages/init/new_account.dart';
 export 'package:harrier_central/pages/init/third_party_login.dart';
 export 'package:harrier_central/pages/init/use_invite_code_page.dart';
+export 'package:harrier_central/pages/init/invite_code_controller.dart';
 export 'package:harrier_central/data/services/passkey_sign_in_service.dart';
 export 'package:harrier_central/widgets/passkey_sign_in_button.dart';
 
@@ -223,6 +226,7 @@ export 'package:harrier_central/pages/kennel_admin/app_access_page.dart';
 export 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
 export 'package:harrier_central/pages/kennel_admin/hash_flash_approval_page.dart';
 export 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
+export 'package:harrier_central/pages/kennel_admin/kennel_members_controller.dart';
 export 'package:harrier_central/pages/kennel_admin/mismanagement_roles_page.dart';
 export 'package:harrier_central/pages/kennel_admin/run_number_popup.dart';
 
@@ -234,6 +238,7 @@ export 'package:harrier_central/pages/live_run_pages/live_run_shell.dart';
 export 'package:harrier_central/pages/menu_pages/faq_page.dart';
 export 'package:harrier_central/pages/menu_pages/get_reset_code_popup.dart';
 export 'package:harrier_central/pages/menu_pages/hasher_profile_page.dart';
+export 'package:harrier_central/pages/menu_pages/hasher_profile_controller.dart';
 export 'package:harrier_central/pages/menu_pages/imprint_page.dart';
 export 'package:harrier_central/pages/menu_pages/legal_page.dart';
 export 'package:harrier_central/pages/menu_pages/privacy_policy_page.dart';
@@ -244,6 +249,7 @@ export 'package:harrier_central/widgets/runner_list_canvas.dart';
 export 'package:harrier_central/pages/menu_pages/settings_page.dart';
 export 'package:harrier_central/pages/menu_pages/import_gpx_page.dart';
 export 'package:harrier_central/pages/menu_pages/support_page.dart';
+export 'package:harrier_central/pages/menu_pages/support_controller.dart';
 
 // pages/misc_pages
 export 'package:harrier_central/pages/misc_pages/generic_widget_page.dart';
@@ -257,14 +263,18 @@ export 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 export 'package:harrier_central/pages/run_admin/create_new_event_popup.dart';
 export 'package:harrier_central/pages/run_admin/drinks_list.dart';
 export 'package:harrier_central/pages/run_admin/drinks_list_controller.dart';
+export 'package:harrier_central/util/hc_snack.dart';
+export 'package:harrier_central/util/qr_scan_controller.dart';
 export 'package:harrier_central/pages/run_admin/edit_run_details.dart';
 export 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 export 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
 export 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
 export 'package:harrier_central/pages/run_admin/payment_popup.dart';
 export 'package:harrier_central/pages/run_admin/payment_report.dart';
+export 'package:harrier_central/pages/run_admin/payment_report_controller.dart';
 export 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
 export 'package:harrier_central/pages/run_admin/receipts_page.dart';
+export 'package:harrier_central/pages/run_admin/receipts_controller.dart';
 export 'package:harrier_central/pages/run_admin/run_admin_controller.dart';
 export 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 
@@ -272,6 +282,7 @@ export 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 export 'package:harrier_central/pages/top_level/future_run_list_page/future_run_list_controller.dart';
 export 'package:harrier_central/pages/top_level/future_run_list_page/future_run_list_page.dart';
 export 'package:harrier_central/pages/top_level/history_list_page.dart';
+export 'package:harrier_central/pages/top_level/history_list_controller.dart';
 export 'package:harrier_central/pages/top_level/kennel_list_controller.dart';
 export 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 export 'package:harrier_central/pages/top_level/main_navigation_page/main_navigation_page.dart';
@@ -283,6 +294,7 @@ export 'package:harrier_central/pages/top_level/songs_page_controller.dart';
 export 'package:harrier_central/pages/shared/haberdashery_sale_sheet.dart';
 export 'package:harrier_central/pages/shared/membership_charge_sheet.dart';
 export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
+export 'package:harrier_central/pages/top_level/user_qr_code_controller.dart';
 
 // services
 export 'package:harrier_central/services/connectivity_service.dart';
@@ -371,6 +383,7 @@ export 'package:harrier_central/widgets/kennel_logo.dart';
 export 'package:harrier_central/widgets/kennel_member_list_item.dart';
 export 'package:harrier_central/widgets/kennel_run_history_count_list_item.dart';
 export 'package:harrier_central/widgets/leaderboard.dart';
+export 'package:harrier_central/widgets/leaderboard_controller.dart';
 export 'package:harrier_central/widgets/map_photo_page.dart';
 export 'package:harrier_central/widgets/map_snackbar.dart';
 export 'package:harrier_central/widgets/multiple_choice_popup.dart';
@@ -387,6 +400,7 @@ export 'package:harrier_central/widgets/run_details.dart';
 export 'package:harrier_central/widgets/run_list_item.dart';
 export 'package:harrier_central/widgets/run_qr_share_section.dart';
 export 'package:harrier_central/widgets/run_tabs.dart';
+export 'package:harrier_central/widgets/run_tabs_controller.dart';
 export 'package:harrier_central/widgets/run_tracker_map.dart';
 export 'package:harrier_central/widgets/viewer_location_dot.dart';
 export 'package:harrier_central/widgets/style_for_connected.dart';
@@ -397,3 +411,7 @@ export 'package:harrier_central/widgets/zoomable_image.dart';
 
 // app entry point
 export 'package:harrier_central/main.dart';
+export 'package:harrier_central/widgets/run_photo_gallery_controller.dart';
+export 'package:harrier_central/pages/run_admin/down_downs_controller.dart';
+export 'package:harrier_central/pages/run_admin/down_down_form_controller.dart';
+export 'package:harrier_central/pages/live_run_pages/live_run_charges_controller.dart';

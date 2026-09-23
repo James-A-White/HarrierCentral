@@ -1,211 +1,74 @@
 import 'package:harrier_central/imports.dart';
 
-class ReceiptsList extends StatefulWidget {
+/// The run's receipts, with swipe-to-mark reimbursed / ignored. Stateless over
+/// [ReceiptsListController]; navigation stays here, the writes live there.
+class ReceiptsList extends StatelessWidget {
   const ReceiptsList({super.key, required this.eventAggregate});
 
   final RunAdminAggregate eventAggregate;
 
   @override
-  ReceiptsListState createState() => ReceiptsListState();
-}
-
-class ReceiptsListState extends State<ReceiptsList> {
-  ReceiptsListState();
-
-  int pageIndex = 1;
-
-  List<Map<String, dynamic>> receiptsList = <Map<String, dynamic>>[];
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(initStateAsync());
-  }
-
-  Future<void> initStateAsync() async {
-    await refreshFromTable();
-  }
-
-  Future<void> refreshFromTable() async {
-    try {
-      receiptsList = await database.query(
-        EnumDataTables.receipts.eventTableName,
-      );
-    } catch (e, s) {
-      debugPrint(e.toString());
-      BootLogger.logError('[ReceiptsPage.refreshFromTable]', e, s);
-    }
-
-    setStateIfMounted(() {});
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-        title: Text(
-          '${widget.eventAggregate.event.eventName} receipts',
-          style: ts_appBarTitle,
+    return GetBuilder<ReceiptsListController>(
+      init: ReceiptsListController(eventAggregate: eventAggregate),
+      tag: ReceiptsListController.tagFor(eventAggregate.event.eventId),
+      builder: (ReceiptsListController controller) => AppScaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: themeAppBarBackground,
+          iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+          title: Text(
+            '${eventAggregate.event.eventName} receipts',
+            style: ts_appBarTitle,
+          ),
+        ),
+        floatingActionButton: SpeedDial(
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: const IconThemeData(size: 22.0),
+          visible: true,
+          curve: Curves.bounceIn,
+          overlayColor: Colors.black,
+          overlayOpacity: 0.5,
+          onOpen: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+          tooltip: 'Speed Dial',
+          heroTag: 'speed-dial-hero-tag-6234277',
+          backgroundColor: hc_red,
+          foregroundColor: Colors.white,
+          elevation: 8.0,
+          shape: const CircleBorder(),
+          children: <SpeedDialChild>[
+            SpeedDialChild(
+              child: const Icon(MaterialCommunityIcons.playlist_plus),
+              backgroundColor: hc_blue,
+              label: 'Add Receipt',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () async {
+                await Navigator.push<void>(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => ReceiptDetailPage(
+                      eventId: eventAggregate.event.eventId,
+                    ),
+                  ),
+                );
+                await controller.refreshFromTable();
+              },
+            ),
+          ],
+        ),
+        body: Container(
+          color: themeLightBackground,
+          child: Obx(() => _buildListView(context, controller)),
         ),
       ),
-      floatingActionButton: SpeedDial(
-        // both default to 16
-        // marginEnd: 18,
-        // marginBottom: 30,
-        animatedIcon: AnimatedIcons.menu_close,
-        animatedIconTheme: const IconThemeData(size: 22.0),
-        visible: true,
-        curve: Curves.bounceIn,
-        overlayColor: Colors.black,
-        overlayOpacity: 0.5,
-        onOpen: () {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        },
-        //onClose: () => //print('DIAL CLOSED'),
-        tooltip: 'Speed Dial',
-        heroTag: 'speed-dial-hero-tag-6234277',
-        backgroundColor: hc_red,
-        foregroundColor: Colors.white,
-        elevation: 8.0,
-        shape: const CircleBorder(),
-        children: <SpeedDialChild>[
-          SpeedDialChild(
-            child: const Icon(MaterialCommunityIcons.playlist_plus),
-            backgroundColor: hc_blue,
-            label: 'Add Receipt',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () async {
-              await Navigator.push<void>(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) => ReceiptDetailPage(
-                    eventId: widget.eventAggregate.event.eventId,
-                  ),
-                ),
-              );
-
-              await refreshFromTable();
-            },
-          ),
-        ],
-      ),
-      //     color: themeLightBackground,
-      body: Container(color: themeLightBackground, child: _buildListView()),
     );
   }
 
-  Future<void> _handleRefresh() async {
-    await tableModel.syncEventAdminService.updateFromBackend(
-      EnumDataTables.receipts.flag,
-      true,
-      widget.eventAggregate.event.eventId,
-    );
-    await refreshFromTable();
-  }
-
-  Future<void> setReceiptReimbursementStatus(
-    String receiptId,
-    bool cancelReimbursement,
-  ) async {
-    final String userId = currentUserId;
-
-    await database.transaction<dynamic>((Transaction txn) async {
-      final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
-      final String sql =
-          'UPDATE ${EnumDataTables.receipts.eventTableName} SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
-      await txn.rawUpdate(sql);
-      //print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    });
-
-    await refreshFromTable();
-
-    final ReceiptsModel item = ReceiptsModel(
-      userId: userId,
-      receiptId: receiptId,
-      eventId: widget.eventAggregate.event.eventId,
-      receiptShortDesc: '',
-      receiptAmount: -1,
-      notes: '',
-      reimbursedBy: cancelReimbursement ? GUID_MAX : userId,
-      reimbursedAmount: 0,
-      reimbursedOn: '1999/1/1',
-      reimbursedNotes: '',
-      imageUrl: '',
-      removed: -1,
-    );
-
-    final ReceiptsService srv = ReceiptsService();
-    final String responseBody = await srv.uploadReceipt(item);
-    if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await tableModel.baseService.bulkUpdateDatabase(
-        tableModel.receiptsTableHelper,
-        EnumDataTables.receipts.eventTableName,
-        responseBody,
-        database,
-      );
-
-      await refreshFromTable();
-    } else {
-      await Utilities.showAlert(
-        'Error uploading receipt',
-        'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!',
-        'OK',
-      );
-    }
-    setStateIfMounted(() {});
-  }
-
-  Future<void> setReceiptRemovedStatus(String receiptId, bool removed) async {
-    await database.transaction<dynamic>((Transaction txn) async {
-      final String guidFlag = removed ? GUID_9 : GUID_8;
-      final String sql =
-          'UPDATE ${EnumDataTables.receipts.eventTableName} SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
-      await txn.rawUpdate(sql);
-      //print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    });
-
-    await refreshFromTable();
-
-    final String userId = currentUserId;
-
-    final ReceiptsModel item = ReceiptsModel(
-      userId: userId,
-      receiptId: receiptId,
-      eventId: widget.eventAggregate.event.eventId,
-      receiptShortDesc: '',
-      receiptAmount: -1,
-      notes: '',
-      reimbursedBy: GUID_EMPTY,
-      reimbursedAmount: -1,
-      reimbursedOn: '1999/1/1',
-      reimbursedNotes: '',
-      imageUrl: '',
-      removed: removed ? 0 : 1,
-    );
-
-    final ReceiptsService srv = ReceiptsService();
-    final String responseBody = await srv.uploadReceipt(item);
-    if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await tableModel.baseService.bulkUpdateDatabase(
-        tableModel.receiptsTableHelper,
-        EnumDataTables.receipts.eventTableName,
-        responseBody,
-        database,
-      );
-      await refreshFromTable();
-    } else {
-      await Utilities.showAlert(
-        'Error uploading receipt',
-        'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!',
-        'OK',
-      );
-    }
-  }
-
-  Widget _buildListView() {
+  Widget _buildListView(BuildContext context, ReceiptsListController controller) {
+    // Snapshot inside the Obx so itemCount and itemBuilder agree.
+    final List<Map<String, dynamic>> receiptsList = controller.receipts;
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
@@ -217,12 +80,11 @@ class ReceiptsListState extends State<ReceiptsList> {
                     child: Text('No receipts available.', style: ts_titleBlack),
                   )
                 : RefreshIndicator(
-                    onRefresh: _handleRefresh,
+                    onRefresh: controller.pullToRefresh,
                     displacement: 40.0,
                     child: ListView.separated(
                       separatorBuilder: (BuildContext context, int index) =>
                           const Divider(height: 1.0, color: Colors.black45),
-                      // physics: const AlwaysScrollableScrollPhysics(),
                       shrinkWrap: true,
                       physics: ClampingScrollPhysics(),
                       itemCount: receiptsList.length,
@@ -235,7 +97,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                           confirmDismiss: (DismissDirection direction) async {
                             if (direction == DismissDirection.endToStart) {
                               unawaited(
-                                setReceiptReimbursementStatus(
+                                controller.setReimbursementStatus(
                                   receipt['receiptId'],
                                   (receipt['reimbursedBy'] != null) &&
                                       (receipt['reimbursedBy'] != GUID_EMPTY),
@@ -244,7 +106,7 @@ class ReceiptsListState extends State<ReceiptsList> {
                             } else if (direction ==
                                 DismissDirection.startToEnd) {
                               unawaited(
-                                setReceiptRemovedStatus(
+                                controller.setRemovedStatus(
                                   receipt['receiptId'],
                                   receipt['removed'] == 1,
                                 ),
@@ -370,9 +232,8 @@ class ReceiptsListState extends State<ReceiptsList> {
                               children: <Widget>[
                                 ReceiptListItem(
                                   currencySymbol:
-                                      widget.eventAggregate.extensions.curSym,
-                                  digitsAfterDecimal: widget
-                                      .eventAggregate
+                                      eventAggregate.extensions.curSym,
+                                  digitsAfterDecimal: eventAggregate
                                       .extensions
                                       .digAfterDec,
                                   receipt: receiptsList[index],
@@ -382,15 +243,14 @@ class ReceiptsListState extends State<ReceiptsList> {
                                       MaterialPageRoute<void>(
                                         builder: (BuildContext context) =>
                                             ReceiptDetailPage(
-                                              eventId: widget
-                                                  .eventAggregate
+                                              eventId: eventAggregate
                                                   .event
                                                   .eventId,
                                               receiptItem: receiptsList[index],
                                             ),
                                       ),
                                     );
-                                    await refreshFromTable();
+                                    await controller.refreshFromTable();
                                   },
                                 ),
                               ],

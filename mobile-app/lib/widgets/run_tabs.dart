@@ -40,7 +40,9 @@ enum RunTab {
   }
 }
 
-class RunTabs extends StatefulWidget {
+/// The run detail's six tabs. Stateless over [RunTabsController]; the map,
+/// share sheet, zoomable photo and GPX export keep their BuildContext here.
+class RunTabs extends StatelessWidget {
   const RunTabs({
     super.key,
     required this.futureRun,
@@ -53,424 +55,46 @@ class RunTabs extends StatefulWidget {
   final Function relayActiveTab;
 
   @override
-  State<RunTabs> createState() {
-    return RunTabsState();
-  }
-}
-
-class PackListAggregate {
-  PackListAggregate({
-    required this.hem,
-    required this.hasher,
-    required this.displayName,
-    this.homeKennelName,
-  });
-
-  final HasherEventMapModel hem;
-  final HashersModel hasher;
-  final String displayName;
-  final String? homeKennelName;
-}
-
-class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
-  static const String LABEL_DETAILS = 'Details';
-  static const String LABEL_MAP = 'Map';
-  static const String LABEL_RSVP = 'RSVP';
-  static const String LABEL_STATS = 'Stats';
-  static const String LABEL_CHAT = 'Chat';
-  static const String LABEL_PHOTOS = 'Photos';
-
-  final LiveRunService _liveRunService = LiveRunService.ensure();
-  LiveRunButtonStatus _liveRunStatus = LiveRunButtonStatus.hidden;
-  bool _liveRunLoading = false;
-
-  final List<Tab> _tabs = <Tab>[
-    const Tab(text: LABEL_DETAILS),
-    const Tab(text: LABEL_RSVP),
-    const Tab(text: LABEL_MAP),
-    const Tab(text: LABEL_STATS),
-    const Tab(text: LABEL_CHAT),
-    const Tab(text: LABEL_PHOTOS),
-  ];
-
-  //GlobalKey packListBox = GlobalKey();
-
-  final ScrollController _scrollController = ScrollController();
-  final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
-
-  bool isAdmin = false;
-  //bool _isLoading = true;
-
-  latlng.LatLng _mapCenter = latlng.LatLng(
-    deviceInfo.deviceLat ?? DEFAULT_LATITUDE,
-    deviceInfo.deviceLon ?? DEFAULT_LONGITUDE,
-  );
-
-  bool _trueNorthLock = true;
-  bool _isExportingTrack = false;
-
-  Future<List<PackListAggregate>?> _thePackList =
-      Future<List<PackListAggregate>?>.value(null);
-
-  Map<String, dynamic> _packCount = <String, dynamic>{};
-
-  void _safeSetState(VoidCallback fn) {
-    if (!mounted) return;
-    setStateIfMounted(fn);
-  }
-
-  Future<void> _refreshHemTableFromBackend(bool showLoadingIndicator) async {
-    if (showLoadingIndicator) {
-      _safeSetState(() {
-        //_isLoading = true;
-      });
-    }
-
-    if (isAdmin) {
-      await tableModel.syncEventAdminService.updateFromBackend(
-        EnumDataTables.hasherEventMap.flag,
-        true,
-        widget.futureRun.event.eventId,
-      );
-    } else {
-      await tableModel.syncEventAdminService.updateRsvpsFromBackend(
-        widget.futureRun.event.eventId,
-      );
-    }
-
-    final Future<List<PackListAggregate>> packListFuture =
-        _refreshPackListFromTable();
-    _thePackList = packListFuture;
-    await packListFuture;
-    await _refreshPackCountFromTable(true);
-  }
-
-  int _thisUserIndex = -1;
-
-  Future<List<PackListAggregate>> _refreshPackListFromTable() async {
-    List<PackListAggregate> pla = <PackListAggregate>[];
-
-    final String query =
-        '''
-        SELECT
-          hem.*,
-          h.*,
-          ken.${tableModel.kennelsTableHelper.colKennelName} as kennelName
-          FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
-          LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} h on h.${tableModel.hashersTableHelper.colHasherId} = hem.${tableModel.hasherEventMapTableHelper.colUserId}
-          LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
-          WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = "${widget.futureRun.event.eventId}"
-          AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} <= 3
-          ''';
-
-    try {
-      final List<Map<String, dynamic>> results = await database.rawQuery(query);
-      int missingHasherRecords = 0;
-
-      for (int i = 0; i < results.length; i++) {
-        final HasherEventMapModel packItem = tableModel
-            .hasherEventMapTableHelper
-            .fromMap(results[i]);
-
-        // The hashers join is a LEFT OUTER: a HEM row can name someone this
-        // device has no hasher record for — a virgin/visitor who was never
-        // given one, or somebody created since the last sync. Every h.* column
-        // is NULL then, and the generated fromJson throws on the first
-        // non-nullable cast (hasherId), which took the ENTIRE pack list down
-        // rather than one row. Seen five times over the GNH 2026 weekend.
-        final bool hasHasherRecord = results[i]['hasherId'] != null;
-        if (!hasHasherRecord) missingHasherRecords++;
-        final HashersModel hasherItem = hasHasherRecord
-            ? HashersModel.fromJson(results[i])
-            // Keep the real user id: several unknown hashers must not collapse
-            // onto one another (HashersModel.empty() is all-GUID_EMPTY).
-            : HashersModel.empty().copyWith(hasherId: packItem.userId);
-
-        String displayName = hasHasherRecord
-            ? hasherItem.dispName
-            : (packItem.displayName ?? 'Unknown hasher');
-        if (packItem.virginVisitorType != 0) {
-          displayName = packItem.displayName ?? 'Virgin / Visitor';
-        }
-
-        pla.add(
-          PackListAggregate(
-            hem: packItem,
-            hasher: hasherItem,
-            displayName: displayName,
-            homeKennelName: results[i]['kennelName'] as String?,
-          ),
-        );
-        //}
-      }
-
-      // Not fatal any more, but still a sync gap worth seeing: the pack list
-      // is naming people this device holds no hasher row for.
-      if (missingHasherRecords > 0) {
-        BootLogger.logBreadcrumb(
-          'RunTabs: pack list has $missingHasherRecords of ${results.length} '
-          'attendees with no local hasher record '
-          '(eventId=${widget.futureRun.event.eventId})',
-        );
-      }
-    } catch (e, s) {
-      BootLogger.logError(
-        '[RunTabs._refreshPackListFromTable] eventId=${widget.futureRun.event.eventId}',
-        e,
-        s,
-      );
-    }
-
-    pla.sort(
-      (PackListAggregate a, PackListAggregate b) =>
-          (a.hem.hemKennelHashName ?? a.displayName).compareTo(
-            b.hem.hemKennelHashName ?? b.displayName,
-          ),
+  Widget build(BuildContext context) {
+    return GetBuilder<RunTabsController>(
+      init: RunTabsController(
+        futureRun: futureRun,
+        relayActiveTab: relayActiveTab,
+        openToTab: openToTab,
+      ),
+      tag: RunTabsController.tagFor(futureRun.event.eventId),
+      builder: (RunTabsController c) => Obx(() => _body(context, c)),
     );
-
-    _thisUserIndex = -1;
-
-    for (int i = 0; i < pla.length; i++) {
-      if (pla[i].hasher.hasherId == _userId) {
-        _thisUserIndex = i;
-        break;
-      }
-    }
-
-    return pla;
   }
 
-  Future<void> _refreshPackCountFromTable(bool callSetState) async {
-    _packCount = <String, dynamic>{};
-
-    final String query =
-        '''
-        SELECT
-          count(case when hem.rsvpState = 3 then 1 else null end) as rsvpYesCount,
-          count(case when hem.rsvpState = 2 then 1 else null end) as rsvpMaybeCount,
-          count(case when hem.rsvpState = 1 then 1 else null end) as rsvpNoCount,
-          count(case when hem.isHare = 1 then 1 else null end) as isHareCount
-          FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
-          WHERE hem.eventId = "${widget.futureRun.event.eventId}"
-          AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} <= 3
-          ''';
-
-    try {
-      final List<Map<String, dynamic>> results = await database.rawQuery(query);
-      if (results.isNotEmpty) {
-        _packCount = results[0];
-      }
-      if (callSetState) {
-        _safeSetState(() {});
-      }
-    } catch (e, s) {
-      BootLogger.logError(
-        '[RunTabs._refreshPackCountFromTable] eventId=${widget.futureRun.event.eventId}',
-        e,
-        s,
-      );
-    }
-  }
-
-  late TabController _tabController;
-  late TabController _gridListTabController;
-  bool _isTabControllerReady = false;
-
-  //final GetPackService _getPackService = GetPackService();
-
-  final String _userId = currentUserId;
-
-  //int _currentTabIndex = -1;
-
-  bool _showTopWidget = true;
-  bool _slideTopWidget = false;
-
-  static int DISPLAY_LOGO_IN_RSVP_DURATION = 15;
-
-  @override
-  void initState() {
-    super.initState();
-
-    isAdmin = AppAccess(widget.futureRun.extensions.appAccessFlags).isAdmin;
-
-    //print('Current time in GMT: ${DateTime.now().toUtc().toString()}');
-    unawaited(_refreshLiveRunButton());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      _safeSetState(() {
-        _tabController = TabController(vsync: this, length: _tabs.length);
-        _gridListTabController = TabController(vsync: this, length: 2);
-        _isTabControllerReady = true;
-
-        if (widget.openToTab != RunTab.details) {
-          // switch to the chat tab if a notification was tapped to open the app
-          _tabController.animateTo(widget.openToTab.id);
-        }
-
-        //     )) &&
-
-        _tabController.addListener(() async {
-          if (!mounted) return;
-
-          FocusScope.of(context).unfocus();
-
-          // The speed dial IS the RSVP actions ("I'm coming" / "I might come" /
-          // "I'm not coming"), so it goes on a past run too — otherwise hiding
-          // the three buttons would just move the same dead choice into a
-          // floating button.
-          final bool showRsvpFab =
-              _tabs[_tabController.index].text == LABEL_RSVP &&
-              !isRunPast(widget.futureRun);
-          if (_fabIsVisible != showRsvpFab) {
-            _fabIsVisible = showRsvpFab;
-          }
-
-          if (_tabs[_tabController.index].text == LABEL_RSVP) {
-            await _refreshHemTableFromBackend(false);
-            if (!mounted) return;
-
-            _showTopWidget = true;
-            _slideTopWidget = false;
-            _safeSetState(() {});
-
-            await Future.delayed(
-              Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION),
-            );
-            if (!mounted) return;
-
-            _showTopWidget = false;
-
-            _safeSetState(() {});
-            //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-          }
-          if (_tabs[_tabController.index].text == LABEL_CHAT) {
-            _showTopWidget = true;
-            _slideTopWidget = false;
-            _safeSetState(() {});
-            unawaited(
-              Future.delayed(
-                Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION),
-              ).then((_) {
-                if (!mounted) return;
-
-                _showTopWidget = false;
-                _safeSetState(() {});
-              }),
-            );
-          }
-
-          if ((_tabController.previousIndex == 4) ||
-              (_tabController.index == 4)) {
-            if (Get.isRegistered<NotificationService>()) {
-              final controller = Get.find<NotificationService>();
-              await controller.markEventMessagesAsViewed(
-                widget.futureRun.event.publicEventId,
-              );
-            }
-          }
-
-          if (!mounted) return;
-          widget.relayActiveTab(_tabController.index);
-
-          _safeSetState(() {});
-        });
-      });
-    });
-
-    final List<double?> coords = Utilities.getLatLongFromString(<String?>[
-      widget.futureRun.event.locationOneLineDesc,
-      widget.futureRun.event.eventDescription,
-      widget.futureRun.event.eventName,
-    ]);
-
-    double xLat =
-        widget.futureRun.extensions.evtLat ??
-        coords[0] ??
-        widget.futureRun.kennel.kennelLatitude ??
-        deviceInfo.deviceLon ??
-        DEFAULT_LATITUDE;
-
-    double xLon =
-        widget.futureRun.extensions.evtLon ??
-        coords[1] ??
-        widget.futureRun.kennel.kennelLongitude ??
-        deviceInfo.deviceLon ??
-        DEFAULT_LONGITUDE;
-
-    _mapCenter = latlng.LatLng(xLat, xLon);
-    _saveUserMapPreference.addListener(() {
-      _safeSetState(() {});
-    });
-  }
-
-  Future<void> _clearEventTables() async {
-    for (final table in EnumDataTables.values.where((t) => t.hasEventTable)) {
-      final helper = table.helperFrom(tableModel);
-      await tableModel.baseService.clearTable(
-        database,
-        helper,
-        table.eventTableName,
-      );
-    }
-    await setStringPref(StringPrefsEnum.adminEventId, '');
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _gridListTabController.dispose();
-    _saveUserMapPreference.dispose();
-
-    //('run tabs disposedd');
-
-    unawaited(_clearEventTables());
-    unawaited(Get.delete<ChatPageController>());
-
-    super.dispose();
-  }
-
-  int flexLeft = 27;
-  int flexRight = 73;
-
-  num spaceBetweenColumns = 11.0;
-  num spaceBetweenRows = 23.0;
-
-  Widget _buildRunDetailsView() {
-    final bool hasAttended = widget.futureRun.extensions.attendenceState >= 20;
+  Widget _buildRunDetailsView(BuildContext context, RunTabsController c) {
+    final bool hasAttended = futureRun.extensions.attendenceState >= 20;
     final bool isLoggedIn =
         (getStringPref(StringPrefsEnum.userId) ?? '').isNotEmpty;
 
     return RunDetails(
-      widget.futureRun.event,
-      widget.futureRun.kennel,
-      widget.futureRun.extensions.digitsAfterDecimal,
-      widget.futureRun.extensions.currencySymbol,
-      widget.futureRun.extensions.distanceUnitsPref,
-      widget.futureRun.extensions.distToEvent,
-      widget.futureRun.paymentUrl,
+      futureRun.event,
+      futureRun.kennel,
+      futureRun.extensions.digitsAfterDecimal,
+      futureRun.extensions.currencySymbol,
+      futureRun.extensions.distanceUnitsPref,
+      futureRun.extensions.distToEvent,
+      futureRun.paymentUrl,
       true,
-      widget.futureRun.extensions.isMapAndDistanceValid == 1,
+      futureRun.extensions.isMapAndDistanceValid == 1,
       eventUrlWithKennelBackup:
-          widget.futureRun.event.eventUrl ??
-          widget.futureRun.kennel.kennelEventsUrl,
-      isMember: widget.futureRun.extensions.isMember,
-      isPaid: widget.futureRun.extensions.isPaid,
-      rsvpState: widget.futureRun.extensions.rsvpState,
-      ianaTimeZone: widget.futureRun.extensions.ianaTimeZone,
-      processPayment: (int r, int p) {
-        widget.futureRun.extensions = widget.futureRun.extensions.copyWith(
-          rsvpState: r,
-          isPaid: p != -1 ? p : widget.futureRun.extensions.isPaid,
-        );
-        setStateIfMounted(() {});
-      },
+          futureRun.event.eventUrl ?? futureRun.kennel.kennelEventsUrl,
+      isMember: futureRun.extensions.isMember,
+      isPaid: futureRun.extensions.isPaid,
+      rsvpState: futureRun.extensions.rsvpState,
+      ianaTimeZone: futureRun.extensions.ianaTimeZone,
+      processPayment: c.onPaymentProcessed,
       bottomExtension: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _HashTrashView(
-            kennelId: widget.futureRun.kennel.kennelId,
-            eventId: widget.futureRun.event.eventId,
+            kennelId: futureRun.kennel.kennelId,
+            eventId: futureRun.event.eventId,
           ),
           if (isLoggedIn && hasAttended)
             Padding(
@@ -484,12 +108,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       context,
                       MaterialPageRoute<void>(
                         builder: (_) => AddDownDownPage(
-                          kennelId: widget.futureRun.kennel.kennelId,
-                          eventId: widget.futureRun.event.eventId,
-                          eventName: widget.futureRun.event.eventName,
-                          kennelSlug:
-                              widget.futureRun.kennel.kennelUniqueShortName,
-                          eventNumber: widget.futureRun.event.eventNumber,
+                          kennelId: futureRun.kennel.kennelId,
+                          eventId: futureRun.event.eventId,
+                          eventName: futureRun.event.eventName,
+                          kennelSlug: futureRun.kennel.kennelUniqueShortName,
+                          eventNumber: futureRun.event.eventNumber,
                         ),
                       ),
                     );
@@ -499,840 +122,811 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             ),
           if (isLoggedIn)
             _DownDownsHistoryView(
-              kennelId: widget.futureRun.kennel.kennelId,
-              eventId: widget.futureRun.event.eventId,
-              eventName: widget.futureRun.event.eventName,
-              kennelSlug: widget.futureRun.kennel.kennelUniqueShortName,
-              eventNumber: widget.futureRun.event.eventNumber,
-              isPast: isRunPast(widget.futureRun),
+              kennelId: futureRun.kennel.kennelId,
+              eventId: futureRun.event.eventId,
+              eventName: futureRun.event.eventName,
+              kennelSlug: futureRun.kennel.kennelUniqueShortName,
+              eventNumber: futureRun.event.eventNumber,
+              isPast: isRunPast(futureRun),
             ),
         ],
       ),
     );
   }
 
-  TextStyle rsvpTitlesView = ts_tileText.copyWith(
-    fontSize: 20.0 * deviceInfo.deviceWidthScaleFactor,
-    color: Colors.white,
-  );
+  Widget _buildRsvpView(BuildContext context, RunTabsController c) {
+    final TextStyle rsvpTitlesView = ts_tileText.copyWith(
+      fontSize: 20.0 * deviceInfo.deviceWidthScaleFactor,
+      color: Colors.white,
+    );
+    return Obx(() {
+      if (!c.packListLoaded.value) {
+        return const HcAppCircularProgressIndicator(key: Key('42223995'));
+      } else {
+        final List<PackListAggregate> packList = c.packList;
+        final int thisUserIndex = c.thisUserIndex.value;
+        final PackListAggregate? currentUser =
+            (thisUserIndex >= 0 && thisUserIndex < packList.length)
+            ? packList[thisUserIndex]
+            : null;
 
-  EnumRsvpState _rsvpRequested = rsvpUnknown;
+        return Center(
+          child: Column(
+            //mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              AnimatedSize(
+                duration: Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child: !c.slideTopWidget.value
+                    ? AnimatedOpacity(
+                        opacity: c.showTopWidget.value ? 1.0 : 0.0,
+                        duration: Duration(milliseconds: 400),
+                        onEnd: c.onTopWidgetFaded,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: 15,
+                            left: 20,
+                            bottom: 0,
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  KennelLogo(
+                                    kennelLogoUrl: futureRun.kennel.kennelLogo,
+                                    kennelShortName:
+                                        futureRun.kennel.kennelShortName,
+                                    logoHeight: 70,
+                                  ),
+                                  SizedBox(width: 30),
+                                  Expanded(child: _getRunDetails(Colors.white)),
+                                  SizedBox(width: 20),
+                                ],
+                              ),
+                              SizedBox(height: 25),
+                              FancyDivider(
+                                key: ValueKey('divider2342'),
+                                innerColor: Colors.white,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SizedBox(),
+              ), // Collapses cleanly
 
-  Widget _buildRsvpView() {
-    return FutureBuilder(
-      future: _thePackList,
-      builder: (BuildContext context, AsyncSnapshot<List<PackListAggregate>?> snapshot) {
-        if ((!snapshot.hasData) || (snapshot.data == null)) {
-          return const HcAppCircularProgressIndicator(key: Key('42223995'));
-        } else {
-          final List<PackListAggregate> packList =
-              snapshot.data ?? <PackListAggregate>[];
-          final PackListAggregate? currentUser =
-              (_thisUserIndex >= 0 && _thisUserIndex < packList.length)
-              ? packList[_thisUserIndex]
-              : null;
-
-          return Center(
-            child: Column(
-              //mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                AnimatedSize(
-                  duration: Duration(milliseconds: 500),
-                  curve: Curves.easeInOut,
-                  alignment: Alignment.topCenter,
-                  child: !_slideTopWidget
-                      ? AnimatedOpacity(
-                          opacity: _showTopWidget ? 1.0 : 0.0,
-                          duration: Duration(milliseconds: 400),
-                          onEnd: () {
-                            if (!mounted) return;
-
-                            _safeSetState(() {
-                              _slideTopWidget = true;
-                            });
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              top: 15,
-                              left: 20,
-                              bottom: 0,
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    KennelLogo(
-                                      kennelLogoUrl:
-                                          widget.futureRun.kennel.kennelLogo,
-                                      kennelShortName: widget
-                                          .futureRun
-                                          .kennel
-                                          .kennelShortName,
-                                      logoHeight: 70,
+              StyleForConnected(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      SizedBox(
+                        width: MediaQuery.sizeOf(context).width / 5.5,
+                        child: Column(
+                          children: <Widget>[
+                            Text('Going', style: rsvpTitlesView),
+                            Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: <Widget>[
+                                Positioned(
+                                  // top: 6.5,
+                                  // left: 6.5,
+                                  child: Container(
+                                    height: 36,
+                                    width: 36,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
                                     ),
-                                    SizedBox(width: 30),
-                                    Expanded(
-                                      child: _getRunDetails(Colors.white),
-                                    ),
-                                    SizedBox(width: 20),
-                                  ],
+                                  ),
                                 ),
-                                SizedBox(height: 25),
-                                FancyDivider(
-                                  key: ValueKey('divider2342'),
-                                  innerColor: Colors.white,
+                                IconButton(
+                                  icon: const Icon(FontAwesome.check_circle),
+                                  color: currentUser == null
+                                      ? Colors.grey
+                                      : currentUser.hem.rsvpState ==
+                                            rsvpYes.value
+                                      ? Colors.green
+                                      : (currentUser.hem.rsvpState == -1 &&
+                                            c.rsvpRequested.value == rsvpYes)
+                                      ? hc_blue
+                                      : Colors.grey,
+                                  //tooltip: 'Select to follow a Kennel',
+                                  iconSize: 35.0,
+                                  alignment: Alignment.topCenter,
+                                  splashColor: Colors.greenAccent,
+                                  onPressed: () async {
+                                    await c.setRsvpState(rsvpYes);
+                                  },
+                                  //   futureRun.attendingEvent +
+                                  //               futureRun.haresCount >=
+                                  //           0
+                                  //       ? (futureRun.attendingEvent +
+                                  //       : '',
+                                  //   style: const TextStyle(
+                                  //       fontFamily: 'AvenirNext',
+                                  //       fontStyle: FontStyle.normal,
+                                  //       fontSize: 20.0,
+                                  //       height: 0.85),
                                 ),
                               ],
                             ),
-                          ),
-                        )
-                      : SizedBox(),
-                ), // Collapses cleanly
-
-                StyleForConnected(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        SizedBox(
-                          width: MediaQuery.sizeOf(context).width / 5.5,
-                          child: Column(
-                            children: <Widget>[
-                              Text('Going', style: rsvpTitlesView),
-                              Stack(
-                                alignment: AlignmentDirectional.center,
-                                children: <Widget>[
-                                  Positioned(
-                                    // top: 6.5,
-                                    // left: 6.5,
-                                    child: Container(
-                                      height: 36,
-                                      width: 36,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(FontAwesome.check_circle),
-                                    color: currentUser == null
-                                        ? Colors.grey
-                                        : currentUser.hem.rsvpState ==
-                                              rsvpYes.value
-                                        ? Colors.green
-                                        : (currentUser.hem.rsvpState == -1 &&
-                                              _rsvpRequested == rsvpYes)
-                                        ? hc_blue
-                                        : Colors.grey,
-                                    //tooltip: 'Select to follow a Kennel',
-                                    iconSize: 35.0,
-                                    alignment: Alignment.topCenter,
-                                    splashColor: Colors.greenAccent,
-                                    onPressed: () async {
-                                      await _setRsvpState(rsvpYes);
-                                    },
-                                    //   widget.futureRun.attendingEvent +
-                                    //               widget.futureRun.haresCount >=
-                                    //           0
-                                    //       ? (widget.futureRun.attendingEvent +
-                                    //       : '',
-                                    //   style: const TextStyle(
-                                    //       fontFamily: 'AvenirNext',
-                                    //       fontStyle: FontStyle.normal,
-                                    //       fontSize: 20.0,
-                                    //       height: 0.85),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                (_packCount['rsvpYesCount'] ?? 0) >= 0
-                                    ? (_packCount['rsvpYesCount'] ?? 0)
-                                          .toString()
-                                    : '',
-                                style: rsvpTitlesView,
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          width: MediaQuery.sizeOf(context).width / 5.5,
-                          child: Column(
-                            children: <Widget>[
-                              Text(
-                                //'Maybe: ' + (widget.futureRun.rsvpMaybeCount >= 0 ? widget.futureRun.rsvpMaybeCount.toString() : ''),
-                                'Maybe',
-                                style: rsvpTitlesView,
-                              ),
-                              Stack(
-                                alignment: AlignmentDirectional.center,
-                                children: <Widget>[
-                                  Positioned(
-                                    // top: 6.5,
-                                    // left: 6.5,
-                                    child: Container(
-                                      height: 36,
-                                      width: 36,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      FontAwesome.question_circle,
-                                    ),
-                                    color: currentUser == null
-                                        ? Colors.grey
-                                        : currentUser.hem.rsvpState ==
-                                              rsvpMaybe.value
-                                        ? Colors.orange
-                                        : (currentUser.hem.rsvpState == -1 &&
-                                              _rsvpRequested == rsvpMaybe)
-                                        ? hc_blue
-                                        : Colors.grey,
-                                    //tooltip: 'Select to follow a Kennel',
-                                    iconSize: 35.0,
-                                    alignment: Alignment.topCenter,
-                                    splashColor: Colors.greenAccent,
-                                    onPressed: () async {
-                                      await _setRsvpState(rsvpMaybe);
-                                    },
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                (_packCount['rsvpMaybeCount'] ?? 0) >= 0
-                                    ? (_packCount['rsvpMaybeCount'] ?? 0)
-                                          .toString()
-                                    : '',
-                                style: rsvpTitlesView,
-                              ),
-                              // Text(
-                              //   widget.futureRun.maybeAttendingEvent >= 0
-                              //       ? widget.futureRun.maybeAttendingEvent
-                              //           .toString()
-                              //       : '',
-                              //   style: const TextStyle(
-                              //       fontFamily: 'AvenirNext',
-                              //       fontStyle: FontStyle.normal,
-                              //       fontSize: 20.0,
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          width: MediaQuery.sizeOf(context).width / 5.5,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                //'Not go: ' + (widget.futureRun.rsvpNoCount >= 0 ? widget.futureRun.rsvpNoCount.toString() : ''),
-                                'Not go',
-                                style: rsvpTitlesView,
-                              ),
-                              Stack(
-                                alignment: AlignmentDirectional.center,
-                                children: <Widget>[
-                                  Positioned(
-                                    // top: 6.5,
-                                    // left: 6.5,
-                                    child: Container(
-                                      height: 36,
-                                      width: 36,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(FontAwesome.times_circle),
-                                    color: currentUser == null
-                                        ? Colors.grey
-                                        : currentUser.hem.rsvpState ==
-                                              rsvpNo.value
-                                        ? hc_red
-                                        : (currentUser.hem.rsvpState == -1 &&
-                                              _rsvpRequested == rsvpNo)
-                                        ? hc_blue
-                                        : Colors.grey,
-                                    //tooltip: 'Select to follow a Kennel',
-                                    iconSize: 35.0,
-                                    alignment: Alignment.topCenter,
-                                    splashColor: Colors.greenAccent,
-                                    onPressed: () async {
-                                      await _setRsvpState(rsvpNo);
-                                    },
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                (_packCount['rsvpNoCount'] ?? 0) >= 0
-                                    ? (_packCount['rsvpNoCount'] ?? 0)
-                                          .toString()
-                                    : '',
-                                style: rsvpTitlesView,
-                              ),
-
-                              // Text(
-                              //   widget.futureRun.notAttendingEvent >= 0
-                              //       ? widget.futureRun.notAttendingEvent
-                              //           .toString()
-                              //       : '',
-                              //   style: const TextStyle(
-                              //       fontFamily: 'AvenirNext',
-                              //       fontStyle: FontStyle.normal,
-                              //       fontSize: 20.0,
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          width: MediaQuery.sizeOf(context).width / 5.5,
-                          child: Column(
-                            children: <Widget>[
-                              Text(
-                                // 'Hares: ' + (widget.futureRun.haresCount >= 0 ? widget.futureRun.haresCount.toString() : ''),
-                                'Hares',
-                                style: rsvpTitlesView,
-                              ),
-                              Stack(
-                                alignment: AlignmentDirectional.center,
-                                children: <Widget>[
-                                  Positioned(
-                                    child: Container(
-                                      height: 36,
-                                      width: 36,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: const ImageIcon(
-                                      AssetImage('images/icons/hare_icon.png'),
-                                    ),
-                                    color: currentUser == null
-                                        ? Colors.grey
-                                        : currentUser.hem.isHare ==
-                                              isHareYes.value
-                                        ? Colors.deepPurple
-                                        : currentUser.hem.isHare == -1
-                                        ? hc_blue
-                                        : Colors.grey,
-                                    //tooltip: 'Select to follow a Kennel',
-                                    iconSize: 30.0,
-                                    alignment: Alignment.center,
-                                    splashColor: Colors.greenAccent,
-                                    onPressed: () async {
-                                      //await _setRsvpHare();
-                                    },
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                (_packCount['isHareCount'] ?? 0) >= 0
-                                    ? (_packCount['isHareCount'] ?? 0)
-                                          .toString()
-                                    : '',
-                                style: rsvpTitlesView,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: !snapshot.hasData
-                      ? const SizedBox(
-                          //color: Colors.grey[300],
-                          width: 70.0,
-                          height: 70.0,
-                          child: Padding(
-                            padding: EdgeInsets.all(5.0),
-                            child: Center(
-                              child: HcAppCircularProgressIndicator(
-                                key: Key('22030392'),
-                              ),
-                            ),
-                          ),
-                        )
-                      : ((snapshot.data!.isEmpty) &&
-                            (widget.futureRun.event.eventStartDatetime.isAfter(
-                              DateTime.now().subtract(const Duration(hours: 6)),
-                            )))
-                      ? Column(
-                          children: <Widget>[
-                            const Expanded(flex: 40, child: SizedBox()),
                             Text(
-                              'Be the first to RSVP\r\nfor this run!',
-                              style: ts_headingVeryLarge,
-                              textAlign: TextAlign.center,
+                              (c.packCount['rsvpYesCount'] ?? 0) >= 0
+                                  ? (c.packCount['rsvpYesCount'] ?? 0)
+                                        .toString()
+                                  : '',
+                              style: rsvpTitlesView,
                             ),
-                            if (currentUser == null) ..._getRsvpButtons(),
-                            if (currentUser == null) ...<Widget>[
-                              const Expanded(flex: 40, child: SizedBox()),
-                            ],
                           ],
-                        )
-                      : Column(
+                        ),
+                      ),
+                      SizedBox(
+                        width: MediaQuery.sizeOf(context).width / 5.5,
+                        child: Column(
                           children: <Widget>[
-                            if ((currentUser == null) &&
-                                (widget.futureRun.event.eventStartDatetime
-                                    .isAfter(
-                                      DateTime.now().subtract(
-                                        const Duration(hours: 6),
-                                      ),
-                                    )))
-                              ..._getRsvpButtons(),
-                            if (currentUser == null) ...<Widget>[
-                              const SizedBox(height: 10),
-                            ],
-                            if ((currentUser != null) &&
-                                (currentUser.hem.rsvpState >=
-                                    rsvpMaybe.value)) ...<Widget>[
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: ElevatedButton(
-                                  child: SizedBox(
-                                    width: 230.0,
-                                    height: 40.0,
-                                    child: Row(
-                                      children: <Widget>[
-                                        Stack(
-                                          alignment:
-                                              AlignmentDirectional.center,
-                                          children: <Widget>[
-                                            Container(
-                                              height: 24,
-                                              width: 24,
-                                              decoration: const BoxDecoration(
-                                                color: Colors.white,
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 22.0,
-                                              width: 22.0,
-                                              child: Icon(
-                                                Icons.calendar_month,
-                                                size: 22.0,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 15.0),
-                                        Text(
-                                          'Add to calendar',
-                                          style: ts_button,
-                                        ),
-                                      ],
+                            Text(
+                              //'Maybe: ' + (futureRun.rsvpMaybeCount >= 0 ? futureRun.rsvpMaybeCount.toString() : ''),
+                              'Maybe',
+                              style: rsvpTitlesView,
+                            ),
+                            Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: <Widget>[
+                                Positioned(
+                                  // top: 6.5,
+                                  // left: 6.5,
+                                  child: Container(
+                                    height: 36,
+                                    width: 36,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
                                     ),
                                   ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(FontAwesome.question_circle),
+                                  color: currentUser == null
+                                      ? Colors.grey
+                                      : currentUser.hem.rsvpState ==
+                                            rsvpMaybe.value
+                                      ? Colors.orange
+                                      : (currentUser.hem.rsvpState == -1 &&
+                                            c.rsvpRequested.value == rsvpMaybe)
+                                      ? hc_blue
+                                      : Colors.grey,
+                                  //tooltip: 'Select to follow a Kennel',
+                                  iconSize: 35.0,
+                                  alignment: Alignment.topCenter,
+                                  splashColor: Colors.greenAccent,
                                   onPressed: () async {
-                                    // THIS IS A H@CK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
-                                    String url =
-                                        '$BASE_HASHRUNS_DOT_ORG_URL${widget.futureRun.kennel.kennelUniqueShortName}/${widget.futureRun.event.eventNumber}';
-
-                                    String startTime = widget
-                                        .futureRun
-                                        .event
-                                        .eventStartDatetime
-                                        .toString();
-                                    startTime = startTime.substring(
-                                      0,
-                                      startTime.length - 1,
-                                    );
-                                    DateTime localTime =
-                                        DateTime.tryParse(startTime) ??
-                                        DateTime.now();
-
-                                    String? oneLineLocForDesc = widget
-                                        .futureRun
-                                        .event
-                                        .locationOneLineDesc;
-
-                                    String? oneLineLocForTitle;
-
-                                    if ((oneLineLocForDesc != null) &&
-                                        (oneLineLocForDesc.isNotEmpty)) {
-                                      oneLineLocForTitle =
-                                          ' @ $oneLineLocForDesc';
-                                      oneLineLocForDesc =
-                                          'Location: $oneLineLocForDesc\r\n\r\n';
-                                    } else {
-                                      oneLineLocForDesc = '';
-                                      oneLineLocForTitle = '';
-                                    }
-
-                                    var eventide = Eventide();
-
-                                    // Create an event in the default calendar (iOS write-only access)
-                                    await eventide.createEventInDefaultCalendar(
-                                      title:
-                                          widget.futureRun.event.eventName +
-                                          oneLineLocForTitle,
-                                      description:
-                                          oneLineLocForDesc +
-                                          (widget
-                                                  .futureRun
-                                                  .event
-                                                  .eventDescription ??
-                                              ''),
-                                      location: Utilities.buildMapLocation(
-                                        widget.futureRun.event,
-                                      ),
-                                      startDate: localTime,
-                                      endDate: localTime.add(
-                                        Duration(hours: 4),
-                                      ),
-                                      url: url,
-                                    );
-
-                                    Get.closeAllSnackbars();
-
-                                    if (!context.mounted) return;
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        backgroundColor: Colors.blue,
-                                        content: Text(
-                                          '${widget.futureRun.event.eventName}$oneLineLocForTitle has been added to your calendar',
-                                        ),
-                                      ),
-                                    );
-
-                                    // if (success) {
-
-                                    // calendar.CalendarEvent
-                                    // newEvent = calendar.CalendarEvent(
-                                    //   title:
-                                    //       widget.futureRun.event.eventName +
-                                    //       oneLineLocForTitle,
-                                    //   description:
-                                    //       oneLineLocForDesc +
-                                    //       (widget
-                                    //               .futureRun
-                                    //               .event
-                                    //               .eventDescription ??
-                                    //           ''),
-                                    //   startDate: localTime,
-                                    //   location:
-                                    //       widget
-                                    //           .futureRun
-                                    //           .extensions
-                                    //           .userFriendlyLocation,
-                                    //   url:
-                                    //       'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light',
-                                    // );
-
-                                    // final calendar.CalendarPlugin
-                                    // calendarPlugIn =
-
-                                    //   calendarPlugIn
-                                    //       .createEvent(
-                                    //         calendarId: calendars[0].id!,
-                                    //         event: newEvent,
-                                    //             'Event Id is: $evenId',
-
-                                    // Event event = Event(
-                                    //   title:
-                                    //       widget.futureRun.event.eventName +
-                                    //       oneLineLocForTitle,
-                                    //   description:
-                                    //       oneLineLocForDesc +
-                                    //       (widget
-                                    //               .futureRun
-                                    //               .event
-                                    //               .eventDescription ??
-                                    //           ''),
-                                    //   location:
-                                    //       widget
-                                    //           .futureRun
-                                    //           .extensions
-                                    //           .userFriendlyLocation,
-                                    //   startDate: localTime,
-                                    //       hours: 4,
-                                    //     ), // on iOS, you can set alarm notification after your event.
-                                    //     url:
-                                    //         'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light', // on iOS, you can set url to your event.
-                                    //   //   emailInvites: [], // on Android, you can add invite emails to your event.
-
-                                    // PermissionStatus ps;
-
-                                    // await Add2Calendar.addEvent2Cal(event);
-
-                                    // bool success = await Add2Calendar.addEvent2Cal(event);
+                                    await c.setRsvpState(rsvpMaybe);
                                   },
                                 ),
-                              ),
-                            ],
-                            Container(
-                              padding: const EdgeInsets.all(8.0),
-                              width: 140.0,
-                              // Reviewed for 2.0+
-                              child: TabBar(
-                                onTap: (void _) {
-                                  setStateIfMounted(() {});
-                                },
-                                isScrollable:
-                                    true, // <-- required for labelPadding
-                                tabAlignment: TabAlignment
-                                    .center, // Flutter 3.13+ to keep centered
+                              ],
+                            ),
+                            Text(
+                              (c.packCount['rsvpMaybeCount'] ?? 0) >= 0
+                                  ? (c.packCount['rsvpMaybeCount'] ?? 0)
+                                        .toString()
+                                  : '',
+                              style: rsvpTitlesView,
+                            ),
+                            // Text(
+                            //   futureRun.maybeAttendingEvent >= 0
+                            //       ? futureRun.maybeAttendingEvent
+                            //           .toString()
+                            //       : '',
+                            //   style: const TextStyle(
+                            //       fontFamily: 'AvenirNext',
+                            //       fontStyle: FontStyle.normal,
+                            //       fontSize: 20.0,
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: MediaQuery.sizeOf(context).width / 5.5,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              //'Not go: ' + (futureRun.rsvpNoCount >= 0 ? futureRun.rsvpNoCount.toString() : ''),
+                              'Not go',
+                              style: rsvpTitlesView,
+                            ),
+                            Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: <Widget>[
+                                Positioned(
+                                  // top: 6.5,
+                                  // left: 6.5,
+                                  child: Container(
+                                    height: 36,
+                                    width: 36,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(FontAwesome.times_circle),
+                                  color: currentUser == null
+                                      ? Colors.grey
+                                      : currentUser.hem.rsvpState ==
+                                            rsvpNo.value
+                                      ? hc_red
+                                      : (currentUser.hem.rsvpState == -1 &&
+                                            c.rsvpRequested.value == rsvpNo)
+                                      ? hc_blue
+                                      : Colors.grey,
+                                  //tooltip: 'Select to follow a Kennel',
+                                  iconSize: 35.0,
+                                  alignment: Alignment.topCenter,
+                                  splashColor: Colors.greenAccent,
+                                  onPressed: () async {
+                                    await c.setRsvpState(rsvpNo);
+                                  },
+                                ),
+                              ],
+                            ),
+                            Text(
+                              (c.packCount['rsvpNoCount'] ?? 0) >= 0
+                                  ? (c.packCount['rsvpNoCount'] ?? 0).toString()
+                                  : '',
+                              style: rsvpTitlesView,
+                            ),
 
-                                unselectedLabelColor: Colors.white,
-                                labelColor: Colors.white,
-                                indicatorSize: TabBarIndicatorSize.label,
-                                // labelPadding: EdgeInsets.symmetric(
-                                //   horizontal: 20.0,
-                                // ),
-                                indicatorPadding: EdgeInsets.symmetric(
-                                  horizontal: -5.0,
-                                  vertical: 3.0,
-                                ),
-                                indicator: BoxDecoration(
-                                  color: hc_red,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                tabs: const <Tab>[
-                                  Tab(
-                                    icon: Icon(
-                                      MaterialCommunityIcons
-                                          .format_list_bulleted_square,
+                            // Text(
+                            //   futureRun.notAttendingEvent >= 0
+                            //       ? futureRun.notAttendingEvent
+                            //           .toString()
+                            //       : '',
+                            //   style: const TextStyle(
+                            //       fontFamily: 'AvenirNext',
+                            //       fontStyle: FontStyle.normal,
+                            //       fontSize: 20.0,
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: MediaQuery.sizeOf(context).width / 5.5,
+                        child: Column(
+                          children: <Widget>[
+                            Text(
+                              // 'Hares: ' + (futureRun.haresCount >= 0 ? futureRun.haresCount.toString() : ''),
+                              'Hares',
+                              style: rsvpTitlesView,
+                            ),
+                            Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: <Widget>[
+                                Positioned(
+                                  child: Container(
+                                    height: 36,
+                                    width: 36,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
                                     ),
                                   ),
-                                  Tab(
-                                    icon: Icon(
-                                      MaterialCommunityIcons.view_grid_outline,
-                                    ),
+                                ),
+                                IconButton(
+                                  icon: const ImageIcon(
+                                    AssetImage('images/icons/hare_icon.png'),
                                   ),
-                                ],
-                                controller: _gridListTabController,
+                                  color: currentUser == null
+                                      ? Colors.grey
+                                      : currentUser.hem.isHare ==
+                                            isHareYes.value
+                                      ? Colors.deepPurple
+                                      : currentUser.hem.isHare == -1
+                                      ? hc_blue
+                                      : Colors.grey,
+                                  //tooltip: 'Select to follow a Kennel',
+                                  iconSize: 30.0,
+                                  alignment: Alignment.center,
+                                  splashColor: Colors.greenAccent,
+                                  onPressed: () async {
+                                    //await _setRsvpHare();
+                                  },
+                                ),
+                              ],
+                            ),
+                            Text(
+                              (c.packCount['isHareCount'] ?? 0) >= 0
+                                  ? (c.packCount['isHareCount'] ?? 0).toString()
+                                  : '',
+                              style: rsvpTitlesView,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: !c.packListLoaded.value
+                    ? const SizedBox(
+                        //color: Colors.grey[300],
+                        width: 70.0,
+                        height: 70.0,
+                        child: Padding(
+                          padding: EdgeInsets.all(5.0),
+                          child: Center(
+                            child: HcAppCircularProgressIndicator(
+                              key: Key('22030392'),
+                            ),
+                          ),
+                        ),
+                      )
+                    : ((packList.isEmpty) &&
+                          (futureRun.event.eventStartDatetime.isAfter(
+                            DateTime.now().subtract(const Duration(hours: 6)),
+                          )))
+                    ? Column(
+                        children: <Widget>[
+                          const Expanded(flex: 40, child: SizedBox()),
+                          Text(
+                            'Be the first to RSVP\r\nfor this run!',
+                            style: ts_headingVeryLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                          if (currentUser == null) ..._getRsvpButtons(c),
+                          if (currentUser == null) ...<Widget>[
+                            const Expanded(flex: 40, child: SizedBox()),
+                          ],
+                        ],
+                      )
+                    : Column(
+                        children: <Widget>[
+                          if ((currentUser == null) &&
+                              (futureRun.event.eventStartDatetime.isAfter(
+                                DateTime.now().subtract(
+                                  const Duration(hours: 6),
+                                ),
+                              )))
+                            ..._getRsvpButtons(c),
+                          if (currentUser == null) ...<Widget>[
+                            const SizedBox(height: 10),
+                          ],
+                          if ((currentUser != null) &&
+                              (currentUser.hem.rsvpState >=
+                                  rsvpMaybe.value)) ...<Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: ElevatedButton(
+                                child: SizedBox(
+                                  width: 230.0,
+                                  height: 40.0,
+                                  child: Row(
+                                    children: <Widget>[
+                                      Stack(
+                                        alignment: AlignmentDirectional.center,
+                                        children: <Widget>[
+                                          Container(
+                                            height: 24,
+                                            width: 24,
+                                            decoration: const BoxDecoration(
+                                              color: Colors.white,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 22.0,
+                                            width: 22.0,
+                                            child: Icon(
+                                              Icons.calendar_month,
+                                              size: 22.0,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(width: 15.0),
+                                      Text('Add to calendar', style: ts_button),
+                                    ],
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  // THIS IS A H@CK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
+                                  String url =
+                                      '$BASE_HASHRUNS_DOT_ORG_URL${futureRun.kennel.kennelUniqueShortName}/${futureRun.event.eventNumber}';
+
+                                  String startTime = futureRun
+                                      .event
+                                      .eventStartDatetime
+                                      .toString();
+                                  startTime = startTime.substring(
+                                    0,
+                                    startTime.length - 1,
+                                  );
+                                  DateTime localTime =
+                                      DateTime.tryParse(startTime) ??
+                                      DateTime.now();
+
+                                  String? oneLineLocForDesc =
+                                      futureRun.event.locationOneLineDesc;
+
+                                  String? oneLineLocForTitle;
+
+                                  if ((oneLineLocForDesc != null) &&
+                                      (oneLineLocForDesc.isNotEmpty)) {
+                                    oneLineLocForTitle =
+                                        ' @ $oneLineLocForDesc';
+                                    oneLineLocForDesc =
+                                        'Location: $oneLineLocForDesc\r\n\r\n';
+                                  } else {
+                                    oneLineLocForDesc = '';
+                                    oneLineLocForTitle = '';
+                                  }
+
+                                  var eventide = Eventide();
+
+                                  // Create an event in the default calendar (iOS write-only access)
+                                  await eventide.createEventInDefaultCalendar(
+                                    title:
+                                        futureRun.event.eventName +
+                                        oneLineLocForTitle,
+                                    description:
+                                        oneLineLocForDesc +
+                                        (futureRun.event.eventDescription ??
+                                            ''),
+                                    location: Utilities.buildMapLocation(
+                                      futureRun.event,
+                                    ),
+                                    startDate: localTime,
+                                    endDate: localTime.add(Duration(hours: 4)),
+                                    url: url,
+                                  );
+
+                                  Get.closeAllSnackbars();
+
+                                  if (!context.mounted) return;
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      backgroundColor: Colors.blue,
+                                      content: Text(
+                                        '${futureRun.event.eventName}$oneLineLocForTitle has been added to your calendar',
+                                      ),
+                                    ),
+                                  );
+
+                                  // if (success) {
+
+                                  // calendar.CalendarEvent
+                                  // newEvent = calendar.CalendarEvent(
+                                  //   title:
+                                  //       futureRun.event.eventName +
+                                  //       oneLineLocForTitle,
+                                  //   description:
+                                  //       oneLineLocForDesc +
+                                  //       (widget
+                                  //               .futureRun
+                                  //               .event
+                                  //               .eventDescription ??
+                                  //           ''),
+                                  //   startDate: localTime,
+                                  //   location:
+                                  //       widget
+                                  //           .futureRun
+                                  //           .extensions
+                                  //           .userFriendlyLocation,
+                                  //   url:
+                                  //       'https://www.hashruns.org/#/RID?publicEventId=${futureRun.event.publicEventId}&textTheme=light',
+                                  // );
+
+                                  // final calendar.CalendarPlugin
+                                  // calendarPlugIn =
+
+                                  //   calendarPlugIn
+                                  //       .createEvent(
+                                  //         calendarId: calendars[0].id!,
+                                  //         event: newEvent,
+                                  //             'Event Id is: $evenId',
+
+                                  // Event event = Event(
+                                  //   title:
+                                  //       futureRun.event.eventName +
+                                  //       oneLineLocForTitle,
+                                  //   description:
+                                  //       oneLineLocForDesc +
+                                  //       (widget
+                                  //               .futureRun
+                                  //               .event
+                                  //               .eventDescription ??
+                                  //           ''),
+                                  //   location:
+                                  //       widget
+                                  //           .futureRun
+                                  //           .extensions
+                                  //           .userFriendlyLocation,
+                                  //   startDate: localTime,
+                                  //       hours: 4,
+                                  //     ), // on iOS, you can set alarm notification after your event.
+                                  //     url:
+                                  //         'https://www.hashruns.org/#/RID?publicEventId=${futureRun.event.publicEventId}&textTheme=light', // on iOS, you can set url to your event.
+                                  //   //   emailInvites: [], // on Android, you can add invite emails to your event.
+
+                                  // PermissionStatus ps;
+
+                                  // await Add2Calendar.addEvent2Cal(event);
+
+                                  // bool success = await Add2Calendar.addEvent2Cal(event);
+                                },
                               ),
                             ),
-                            Expanded(
-                              child: Container(
-                                //key: packListBox,
-                                color: const Color.fromARGB(60, 255, 255, 255),
-                                margin: const EdgeInsets.only(
-                                  left: 16.0,
-                                  right: 16.0,
-                                  bottom: 15.0,
-                                ),
-                                padding: const EdgeInsets.all(8.0),
-                                width: MediaQuery.sizeOf(context).width,
-                                child: Scrollbar(
-                                  controller: _scrollController,
-                                  child: RefreshIndicator(
-                                    onRefresh: () =>
-                                        _refreshHemTableFromBackend(true),
-                                    child: _gridListTabController.index == 0
-                                        ? ListView.separated(
-                                            separatorBuilder:
-                                                (
-                                                  BuildContext context,
-                                                  int index,
-                                                ) => const Divider(
-                                                  height: 3.0,
-                                                  color: Colors.black45,
-                                                  thickness: 1.5,
-                                                ),
-                                            physics:
-                                                const AlwaysScrollableScrollPhysics(),
-                                            controller: _scrollController,
-                                            itemCount: snapshot.data!.length,
-                                            itemBuilder: (BuildContext context, int index) {
-                                              final PackListAggregate e =
-                                                  snapshot.data![index];
+                          ],
+                          Container(
+                            padding: const EdgeInsets.all(8.0),
+                            width: 140.0,
+                            // Reviewed for 2.0+
+                            child: TabBar(
+                              isScrollable:
+                                  true, // <-- required for labelPadding
+                              tabAlignment: TabAlignment
+                                  .center, // Flutter 3.13+ to keep centered
 
-                                              return GestureDetector(
-                                                onTap: () async {
-                                                  if (e.hasher.photo != null) {
-                                                    await _getHasherZoomablePhoto(
-                                                      e.hasher.photo!,
-                                                      e.displayName,
-                                                    );
-                                                  }
-                                                },
-                                                child: Row(
-                                                  children: <Widget>[
-                                                    _rsvpIcon(e),
-                                                    const SizedBox(width: 6.0),
-                                                    Container(
-                                                      height: 60,
-                                                      width: 60,
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                            4,
-                                                          ),
-                                                      child: _hasherPhoto(
-                                                        e,
-                                                        false,
-                                                      ),
+                              unselectedLabelColor: Colors.white,
+                              labelColor: Colors.white,
+                              indicatorSize: TabBarIndicatorSize.label,
+                              // labelPadding: EdgeInsets.symmetric(
+                              //   horizontal: 20.0,
+                              // ),
+                              indicatorPadding: EdgeInsets.symmetric(
+                                horizontal: -5.0,
+                                vertical: 3.0,
+                              ),
+                              indicator: BoxDecoration(
+                                color: hc_red,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              tabs: const <Tab>[
+                                Tab(
+                                  icon: Icon(
+                                    MaterialCommunityIcons
+                                        .format_list_bulleted_square,
+                                  ),
+                                ),
+                                Tab(
+                                  icon: Icon(
+                                    MaterialCommunityIcons.view_grid_outline,
+                                  ),
+                                ),
+                              ],
+                              controller: c.gridListTabController,
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              //key: packListBox,
+                              color: const Color.fromARGB(60, 255, 255, 255),
+                              margin: const EdgeInsets.only(
+                                left: 16.0,
+                                right: 16.0,
+                                bottom: 15.0,
+                              ),
+                              padding: const EdgeInsets.all(8.0),
+                              width: MediaQuery.sizeOf(context).width,
+                              child: Scrollbar(
+                                controller: c.scrollController,
+                                child: RefreshIndicator(
+                                  onRefresh: () =>
+                                      c.refreshHemTableFromBackend(true),
+                                  child: c.gridListIndex.value == 0
+                                      ? ListView.separated(
+                                          separatorBuilder:
+                                              (
+                                                BuildContext context,
+                                                int index,
+                                              ) => const Divider(
+                                                height: 3.0,
+                                                color: Colors.black45,
+                                                thickness: 1.5,
+                                              ),
+                                          physics:
+                                              const AlwaysScrollableScrollPhysics(),
+                                          controller: c.scrollController,
+                                          itemCount: packList.length,
+                                          itemBuilder: (BuildContext context, int index) {
+                                            final PackListAggregate e =
+                                                packList[index];
+
+                                            return GestureDetector(
+                                              onTap: () async {
+                                                if (e.hasher.photo != null) {
+                                                  await _getHasherZoomablePhoto(
+                                                    context,
+                                                    e.hasher.photo!,
+                                                    e.displayName,
+                                                  );
+                                                }
+                                              },
+                                              child: Row(
+                                                children: <Widget>[
+                                                  _rsvpIcon(e),
+                                                  const SizedBox(width: 6.0),
+                                                  Container(
+                                                    height: 60,
+                                                    width: 60,
+                                                    padding:
+                                                        const EdgeInsets.all(4),
+                                                    child: _hasherPhoto(
+                                                      e,
+                                                      false,
                                                     ),
-                                                    const SizedBox(width: 8.0),
-                                                    Expanded(
-                                                      child: Container(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 1.0,
-                                                            ),
-                                                        child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              e.hem.hemKennelHashName ??
-                                                                  e.displayName,
-                                                              style:
-                                                                  ts_condensedLarge,
-                                                            ),
-                                                            if (e.homeKennelName !=
-                                                                null)
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets.only(
-                                                                      top: 4.0,
-                                                                    ),
-                                                                child: Text(
-                                                                  e.homeKennelName!,
-                                                                  overflow:
-                                                                      TextOverflow
-                                                                          .ellipsis,
-                                                                  style:
-                                                                      ts_bodySmall,
-                                                                ),
-                                                              ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          )
-                                        : Builder(
-                                            builder: (BuildContext context) {
-                                              // Hares (few) render eagerly as
-                                              // 2x2 tiles up top; the large
-                                              // member list is a LAZY SliverGrid
-                                              // below so a big pack no longer
-                                              // builds every tile at once.
-                                              final List<PackListAggregate>
-                                              hares = snapshot.data!
-                                                  .where(
-                                                    (PackListAggregate e) =>
-                                                        e.hem.isHare != 0,
-                                                  )
-                                                  .toList();
-                                              final List<PackListAggregate>
-                                              members = snapshot.data!
-                                                  .where(
-                                                    (PackListAggregate e) =>
-                                                        e.hem.isHare == 0,
-                                                  )
-                                                  .toList();
-                                              return CustomScrollView(
-                                                controller: _scrollController,
-                                                slivers: <Widget>[
-                                                  if (hares.isNotEmpty)
-                                                    SliverToBoxAdapter(
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              bottom: 8.0,
-                                                            ),
-                                                        child: GridView.count(
-                                                          // Was StaggeredGrid.count with uniform 2x2 tiles
-                                                          // in a 4-cell row — identical layout as a plain
-                                                          // 2-column grid (package removed).
-                                                          crossAxisCount: 2,
-                                                          mainAxisSpacing: 8.0,
-                                                          crossAxisSpacing: 8.0,
-                                                          shrinkWrap: true,
-                                                          physics:
-                                                              const NeverScrollableScrollPhysics(),
-                                                          children: hares
-                                                              .map(
-                                                                (
-                                                                  PackListAggregate
-                                                                  e,
-                                                                ) => _packTile(
-                                                                  e,
-                                                                ),
-                                                              )
-                                                              .toList(),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  SliverGrid(
-                                                    gridDelegate:
-                                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                                          crossAxisCount: 4,
-                                                          mainAxisSpacing: 8.0,
-                                                          crossAxisSpacing: 8.0,
-                                                        ),
-                                                    delegate:
-                                                        SliverChildBuilderDelegate(
-                                                          (
-                                                            BuildContext
-                                                            context,
-                                                            int index,
-                                                          ) => _packTile(
-                                                            members[index],
-                                                          ),
-                                                          childCount:
-                                                              members.length,
-                                                        ),
                                                   ),
-                                                  const SliverToBoxAdapter(
-                                                    child: SizedBox(
-                                                      height: 100.0,
+                                                  const SizedBox(width: 8.0),
+                                                  Expanded(
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            top: 1.0,
+                                                          ),
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            e.hem.hemKennelHashName ??
+                                                                e.displayName,
+                                                            style:
+                                                                ts_condensedLarge,
+                                                          ),
+                                                          if (e.homeKennelName !=
+                                                              null)
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets.only(
+                                                                    top: 4.0,
+                                                                  ),
+                                                              child: Text(
+                                                                e.homeKennelName!,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style:
+                                                                    ts_bodySmall,
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
                                                 ],
-                                              );
-                                            },
-                                          ),
-                                  ),
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : Builder(
+                                          builder: (BuildContext context) {
+                                            // Hares (few) render eagerly as
+                                            // 2x2 tiles up top; the large
+                                            // member list is a LAZY SliverGrid
+                                            // below so a big pack no longer
+                                            // builds every tile at once.
+                                            final List<PackListAggregate>
+                                            hares = packList
+                                                .where(
+                                                  (PackListAggregate e) =>
+                                                      e.hem.isHare != 0,
+                                                )
+                                                .toList();
+                                            final List<PackListAggregate>
+                                            members = packList
+                                                .where(
+                                                  (PackListAggregate e) =>
+                                                      e.hem.isHare == 0,
+                                                )
+                                                .toList();
+                                            return CustomScrollView(
+                                              controller: c.scrollController,
+                                              slivers: <Widget>[
+                                                if (hares.isNotEmpty)
+                                                  SliverToBoxAdapter(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            bottom: 8.0,
+                                                          ),
+                                                      child: GridView.count(
+                                                        // Was StaggeredGrid.count with uniform 2x2 tiles
+                                                        // in a 4-cell row — identical layout as a plain
+                                                        // 2-column grid (package removed).
+                                                        crossAxisCount: 2,
+                                                        mainAxisSpacing: 8.0,
+                                                        crossAxisSpacing: 8.0,
+                                                        shrinkWrap: true,
+                                                        physics:
+                                                            const NeverScrollableScrollPhysics(),
+                                                        children: hares
+                                                            .map(
+                                                              (
+                                                                PackListAggregate
+                                                                e,
+                                                              ) => _packTile(
+                                                                context,
+                                                                e,
+                                                              ),
+                                                            )
+                                                            .toList(),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                SliverGrid(
+                                                  gridDelegate:
+                                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                                        crossAxisCount: 4,
+                                                        mainAxisSpacing: 8.0,
+                                                        crossAxisSpacing: 8.0,
+                                                      ),
+                                                  delegate:
+                                                      SliverChildBuilderDelegate(
+                                                        (
+                                                          BuildContext context,
+                                                          int index,
+                                                        ) => _packTile(
+                                                          context,
+                                                          members[index],
+                                                        ),
+                                                        childCount:
+                                                            members.length,
+                                                      ),
+                                                ),
+                                                const SliverToBoxAdapter(
+                                                  child: SizedBox(
+                                                    height: 100.0,
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                ),
-              ],
-            ),
-          );
-        }
-      },
-    );
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+        );
+      }
+    });
   }
 
   /// A single pack-grid tile (photo + tap-to-zoom). Shared by the eager hare
   /// header and the lazy member grid.
-  Widget _packTile(PackListAggregate e) {
+  Widget _packTile(BuildContext context, PackListAggregate e) {
     return GestureDetector(
       onTap: () async {
         if (e.hasher.photo != null) {
-          await _getHasherZoomablePhoto(e.hasher.photo!, e.displayName);
+          await _getHasherZoomablePhoto(
+            context,
+            e.hasher.photo!,
+            e.displayName,
+          );
         }
       },
       child: _hasherPhoto(e, true),
     );
   }
 
-  Future<void> _getHasherZoomablePhoto(String photo, String dispName) async {
+  Future<void> _getHasherZoomablePhoto(
+    BuildContext context,
+    String photo,
+    String dispName,
+  ) async {
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
@@ -1372,30 +966,30 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AutoSizeText(
-          widget.futureRun.event.eventName,
+          futureRun.event.eventName,
           maxLines: 3,
           style: ts_tileTextLarge.copyWith(color: textColor),
         ),
         Text(
           DateFormat(
             'E, MMM d, yyyy, h:mm a',
-          ).format(widget.futureRun.event.eventStartDatetime),
+          ).format(futureRun.event.eventStartDatetime),
           style: ts_listValueStyle.copyWith(color: textColor),
           textAlign: TextAlign.left,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        if ((widget.futureRun.event.locationOneLineDesc ?? '') != '')
+        if ((futureRun.event.locationOneLineDesc ?? '') != '')
           Text(
-            widget.futureRun.event.locationOneLineDesc!,
+            futureRun.event.locationOneLineDesc!,
             style: ts_listValueStyle.copyWith(color: textColor),
             textAlign: TextAlign.left,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-        if ((widget.futureRun.event.hares ?? '') != '')
+        if ((futureRun.event.hares ?? '') != '')
           Text(
-            'Hares: ${widget.futureRun.event.hares!}',
+            'Hares: ${futureRun.event.hares!}',
             style: ts_listValueStyle.copyWith(color: textColor),
             textAlign: TextAlign.left,
             maxLines: 1,
@@ -1436,70 +1030,20 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
-  //               hasher: a.hasher,
-  //               displayName: a.displayName,
-  //               hem: a.hem.copyWith(rsvpState: -1, isHare: -1));
-
-  //               widget.futureRun.event.eventId,
-  //               _userId,
-  //               AppDomainType.user,
-
-  Widget _buildPhotosView() {
+  Widget _buildPhotosView(RunTabsController c) {
     return RunPhotoGallery(
-      eventName: widget.futureRun.event.eventName,
+      eventName: futureRun.event.eventName,
       loader: () => KennelPhotoService().getRunPhotosForGallery(
-        eventId: widget.futureRun.event.eventId,
+        eventId: futureRun.event.eventId,
       ),
-      kennelId: isAdmin ? widget.futureRun.kennel.kennelId : null,
-      kennelSlug: isAdmin
-          ? widget.futureRun.kennel.kennelUniqueShortName
-          : null,
-      eventNumber: isAdmin ? widget.futureRun.event.absoluteEventNumber : null,
-      run: widget.futureRun,
+      kennelId: c.isAdmin ? futureRun.kennel.kennelId : null,
+      kennelSlug: c.isAdmin ? futureRun.kennel.kennelUniqueShortName : null,
+      eventNumber: c.isAdmin ? futureRun.event.absoluteEventNumber : null,
+      run: futureRun,
     );
   }
 
-  Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
-    List<PackListAggregate>? lPla = await _thePackList;
-    if (lPla != null) {
-      setStateIfMounted(() {
-        if (_thisUserIndex >= 0 && _thisUserIndex < lPla.length) {
-          PackListAggregate a = lPla[_thisUserIndex];
-          lPla[_thisUserIndex] = PackListAggregate(
-            hasher: a.hasher,
-            displayName: a.displayName,
-            hem: a.hem.copyWith(rsvpState: -1, isHare: 0),
-          );
-        }
-        _rsvpRequested = rsvpState;
-      });
-    }
-    //final String userId = getStringPref(StringPrefsEnum.userId);
-
-    final List<dynamic> adHocData = await tableModel.hasherEventMapService
-        .setEventRsvp(
-          widget.futureRun.event.eventId,
-          _userId,
-          AppDomainType.user,
-          rsvpState.value,
-        );
-
-    await _refreshHemTableFromBackend(false);
-    if (kDebugMode) {
-      debugPrint(
-        '[_setRsvpState] adHocData length: ${adHocData.length}, contents: $adHocData',
-      );
-    }
-    // An error envelope or a sync-only reply carries no adHocData row
-    // (RangeError seen 2026-09-05 on 3.0.12).
-    final String serverMessage = firstRow(adHocData)?['serverMessage'] ?? '';
-
-    if (serverMessage.isNotEmpty) {
-      await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
-    }
-  }
-
-  Widget _buildChatView() {
+  Widget _buildChatView(RunTabsController c) {
     return ColoredBox(
       color: Colors.yellow.shade100,
       child: Column(
@@ -1508,17 +1052,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             duration: Duration(milliseconds: 500),
             curve: Curves.easeInOut,
             alignment: Alignment.topCenter,
-            child: !_slideTopWidget
+            child: !c.slideTopWidget.value
                 ? AnimatedOpacity(
-                    opacity: _showTopWidget ? 1.0 : 0.0,
+                    opacity: c.showTopWidget.value ? 1.0 : 0.0,
                     duration: Duration(milliseconds: 400),
-                    onEnd: () {
-                      if (!mounted) return;
-
-                      _safeSetState(() {
-                        _slideTopWidget = true;
-                      });
-                    },
+                    onEnd: c.onTopWidgetFaded,
                     child: Padding(
                       padding: EdgeInsets.only(top: 15, left: 20, bottom: 15),
                       child: Column(
@@ -1526,10 +1064,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           Row(
                             children: [
                               KennelLogo(
-                                kennelLogoUrl:
-                                    widget.futureRun.kennel.kennelLogo,
+                                kennelLogoUrl: futureRun.kennel.kennelLogo,
                                 kennelShortName:
-                                    widget.futureRun.kennel.kennelShortName,
+                                    futureRun.kennel.kennelShortName,
                                 logoHeight: 70,
                               ),
                               SizedBox(width: 30),
@@ -1553,8 +1090,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             child: Stack(
               children: [
                 ChatPage(
-                  eventId: widget.futureRun.event.eventId,
-                  publicEventId: widget.futureRun.event.publicEventId,
+                  eventId: futureRun.event.eventId,
+                  publicEventId: futureRun.event.publicEventId,
                 ),
                 BetaRibbon(
                   title: 'Trail Chat',
@@ -1569,11 +1106,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildMapView() {
+  Widget _buildMapView(BuildContext context, RunTabsController c) {
     final List<double?> coords = Utilities.getLatLongFromString(<String>[
-      widget.futureRun.event.locationOneLineDesc ?? '',
-      widget.futureRun.event.eventDescription ?? '',
-      widget.futureRun.event.eventName,
+      futureRun.event.locationOneLineDesc ?? '',
+      futureRun.event.eventDescription ?? '',
+      futureRun.event.eventName,
     ]);
 
     // The tracking button that used this is gone (see the note below the
@@ -1584,9 +1121,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     LocationService.ensure();
 
     return ConnectedWidget(
-      refreshFunction: () {
-        setStateIfMounted(() {});
-      },
+      refreshFunction: c.update,
       showConnectButton: true,
       disconnectedChild: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -1611,36 +1146,35 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     alignment: AlignmentDirectional.center,
                     children: <Widget>[
                       RunTrackerMap(
-                        widget.futureRun.event,
+                        futureRun.event,
 
-                        (widget.futureRun.extensions.evtLat ?? coords[0]) ==
-                                null
+                        (futureRun.extensions.evtLat ?? coords[0]) == null
                             ? null
                             : latlng.LatLng(
-                                (widget.futureRun.extensions.evtLat ??
-                                    coords[0]!),
-                                (widget.futureRun.extensions.evtLon ??
-                                    coords[1])!,
+                                (futureRun.extensions.evtLat ?? coords[0]!),
+                                (futureRun.extensions.evtLon ?? coords[1])!,
                               ),
-                        _mapCenter,
+                        c.mapCenter,
                         latlng.LatLng(
-                          widget.futureRun.kennel.kennelLatitude!,
-                          widget.futureRun.kennel.kennelLongitude!,
+                          futureRun.kennel.kennelLatitude!,
+                          futureRun.kennel.kennelLongitude!,
                         ),
                         1.0,
                         22.0,
                         14.0,
-                        _trueNorthLock,
+                        c.trueNorthLock.value,
                         // The map draws no controls of its own: they all
                         // live in the one left-hand column below, which the
                         // map positions over whichever canvas is showing.
                         showLocateButton: false,
-                        overlayControls: _mapControls,
+                        overlayControls:
+                            (BuildContext ctx, PackTrackCanvas canvas) =>
+                                _mapControls(ctx, c, canvas),
                         mapMoved: (latlng.LatLng newPosition) {
-                          _mapCenter = newPosition;
+                          c.mapCenter = newPosition;
                         },
                         markerClicked: () async {
-                          await _launchMaps(widget.futureRun);
+                          await _launchMaps(context, c, futureRun);
                         },
                       ),
                       // Admin trim bar, as on the full-screen route: hidden
@@ -1649,7 +1183,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       // the map controller publishes.
                       Positioned.fill(
                         child: Obx(() {
-                          final String tag = widget.futureRun.event.eventId;
+                          final String tag = futureRun.event.eventId;
                           final double panel =
                               Get.isRegistered<RunTrackerMapController>(
                                 tag: tag,
@@ -1668,31 +1202,20 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                             child: Align(
                               alignment: Alignment.bottomCenter,
                               child: TrimEditorOverlay(
-                                trimController: _trimController(),
+                                trimController: c.trimController(),
                                 showCollapsedPill: false,
                               ),
                             ),
                           );
                         }),
                       ),
-                      if (widget.futureRun.extensions.isMapAndDistanceValid ==
+                      if (futureRun.extensions.isMapAndDistanceValid ==
                           0) ...<Widget>[
                         Positioned(
                           right: 10.0,
                           top: 10.0,
                           child: GestureDetector(
-                            onTap: () {
-                              _mapCenter = latlng.LatLng(
-                                widget.futureRun.extensions.evtLat ??
-                                    widget.futureRun.kennel.kennelLatitude ??
-                                    DEFAULT_LATITUDE,
-                                widget.futureRun.extensions.evtLon ??
-                                    widget.futureRun.kennel.kennelLongitude ??
-                                    DEFAULT_LONGITUDE,
-                              );
-
-                              setStateIfMounted(() {});
-                            },
+                            onTap: c.recenterMapOnEvent,
                             child: SizedBox(
                               height: 50.0,
                               width: 50.0,
@@ -1706,17 +1229,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           right: 70.0,
                           top: 10.0,
                           child: GestureDetector(
-                            onTap: () {
-                              setStateIfMounted(() {
-                                if ((deviceInfo.deviceLat != null) &&
-                                    (deviceInfo.deviceLon != null)) {
-                                  _mapCenter = latlng.LatLng(
-                                    deviceInfo.deviceLat!,
-                                    deviceInfo.deviceLon!,
-                                  );
-                                }
-                              });
-                            },
+                            onTap: c.recenterMapOnDevice,
                             child: SizedBox(
                               height: 50.0,
                               width: 50.0,
@@ -1727,7 +1240,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           ),
                         ),
                       ],
-                      if (widget.futureRun.extensions.isMapAndDistanceValid !=
+                      if (futureRun.extensions.isMapAndDistanceValid !=
                           1) ...<Widget>[
                         Container(color: Colors.black54),
                         Container(
@@ -1767,7 +1280,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   /// radar (it decides north-up vs heading-up) but means nothing on the list;
   /// locate moves a camera neither of them has. Share and GPX are about the
   /// RUN, not the rendering, so they stay on all three.
-  Widget _mapControls(BuildContext _, PackTrackCanvas canvas) {
+  Widget _mapControls(
+    BuildContext context,
+    RunTabsController c,
+    PackTrackCanvas canvas,
+  ) {
     final bool isMap = canvas == PackTrackCanvas.map;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1777,13 +1294,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           // route: the compass used to be a bare image in its own artwork,
           // the one button in the column that did not match the rest.
           MapOverlayButton(
-            icon: _trueNorthLock ? Icons.explore : Icons.navigation,
-            tooltip: _trueNorthLock ? 'North up' : 'Rotate with heading',
-            onTap: () {
-              setStateIfMounted(() {
-                _trueNorthLock = !_trueNorthLock;
-              });
-            },
+            icon: c.trueNorthLock.value ? Icons.explore : Icons.navigation,
+            tooltip: c.trueNorthLock.value ? 'North up' : 'Rotate with heading',
+            onTap: c.toggleTrueNorthLock,
           ),
           const SizedBox(height: 10.0),
         ],
@@ -1793,19 +1306,15 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           icon: Icons.fullscreen,
           tooltip: 'Full screen',
           onTap: () => Get.to<void>(
-            () => PackTrackFullScreenMap(
-              run: widget.futureRun,
-              initialCanvas: canvas,
-            ),
+            () => PackTrackFullScreenMap(run: futureRun, initialCanvas: canvas),
           ),
         ),
         const SizedBox(height: 10.0),
         MapOverlayButton(
           icon: Icons.ios_share,
           tooltip: 'Share this run',
-          onTap: () => unawaited(
-            RunShareLinks(widget.futureRun).showShareSheet(context),
-          ),
+          onTap: () =>
+              unawaited(RunShareLinks(futureRun).showShareSheet(context)),
         ),
         // Map only — it moves the map camera. Same gate the map itself used:
         // no point offering to centre on a location we do not have.
@@ -1817,14 +1326,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           MapOverlayButton(
             icon: Icons.near_me,
             tooltip: 'My location',
-            onTap: _recenterMapOnUser,
+            onTap: c.recenterMapOnUser,
           ),
         ],
         // Only when a track actually exists. It used to be gated on the run
         // having OPENED, which is a clock test — a run can open, and finish,
         // with nobody pressing start, and the button was then offered for a
         // run with nothing to export. Same gate on the full-screen map.
-        _trackOnlyControls(),
+        _trackOnlyControls(context, c),
       ],
     );
   }
@@ -1832,15 +1341,15 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   /// Controls that act ON a recorded track, so they appear only once there is
   /// one. Reactive: the column is built inside RunTrackerMap's GetBuilder, so
   /// the map controller exists here, and the Obx rebuilds when positions land.
-  Widget _trackOnlyControls() {
-    final String tag = widget.futureRun.event.eventId;
+  Widget _trackOnlyControls(BuildContext context, RunTabsController c) {
+    final String tag = futureRun.event.eventId;
     if (!Get.isRegistered<RunTrackerMapController>(tag: tag)) {
       return const SizedBox.shrink();
     }
     final RunTrackerMapController controller =
         Get.find<RunTrackerMapController>(tag: tag);
 
-    final PackTrackTrimController trimController = _trimController();
+    final PackTrackTrimController trimController = c.trimController();
 
     return Obx(() {
       if (!controller.hasRecordedTrack) return const SizedBox.shrink();
@@ -1851,7 +1360,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           MapOverlayButton(
             label: 'GPX',
             tooltip: 'Export GPX',
-            onTap: () => unawaited(_exportOwnTrack()),
+            onTap: () => unawaited(_exportOwnTrack(context, c)),
           ),
           // Same control, same slot, same gate as the full-screen route.
           if (trimController.isAdmin) ...<Widget>[
@@ -1867,62 +1376,39 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     });
   }
 
-  /// The admin trim editor for THIS embedded map. Its own controller,
-  /// targeting the embedded map's controller (tag = eventId), so it and the
-  /// full-screen route's editor never fight over one MapController.
-  PackTrackTrimController _trimController() {
-    final String eventId = widget.futureRun.event.eventId;
-    final String trimTag = 'trim-$eventId';
-    return Get.isRegistered<PackTrackTrimController>(tag: trimTag)
-        ? Get.find<PackTrackTrimController>(tag: trimTag)
-        : Get.put(PackTrackTrimController(run: widget.futureRun), tag: trimTag);
-  }
-
-  /// The run-detail map creates its controller BELOW this widget, so both of
-  /// these resolve it lazily at tap time rather than while the column builds.
-  void _recenterMapOnUser() {
-    final String tag = widget.futureRun.event.eventId;
-    if (!Get.isRegistered<RunTrackerMapController>(tag: tag)) return;
-    Get.find<RunTrackerMapController>(tag: tag).recenterOnUser();
-  }
-
-  Future<void> _exportOwnTrack() async {
-    if (_isExportingTrack) return;
-    final String tag = widget.futureRun.event.eventId;
+  Future<void> _exportOwnTrack(
+    BuildContext context,
+    RunTabsController c,
+  ) async {
+    if (c.isExportingTrack.value) return;
+    final String tag = futureRun.event.eventId;
     if (!Get.isRegistered<RunTrackerMapController>(tag: tag)) {
-      _showExportMessage('No track data available yet.');
+      _showExportMessage(context, 'No track data available yet.');
       return;
     }
-    await _exportCurrentUserTrack(Get.find<RunTrackerMapController>(tag: tag));
-  }
-
-  UserTrack? _currentUserTrack(RunTrackerMapController controller) {
-    final userId = getStringPref(StringPrefsEnum.userId);
-    if (userId == null || userId.isEmpty) return null;
-    for (final track in controller.userPositions) {
-      if (track.id == userId && RunTrackerMapController.hasTrack(track)) {
-        return track;
-      }
-    }
-    return null;
+    await _exportCurrentUserTrack(
+      context,
+      c,
+      Get.find<RunTrackerMapController>(tag: tag),
+    );
   }
 
   Future<void> _exportCurrentUserTrack(
+    BuildContext context,
+    RunTabsController c,
     RunTrackerMapController controller,
   ) async {
-    final track = _currentUserTrack(controller);
+    final UserTrack? track = c.currentUserTrack(controller);
     if (track == null) {
-      _showExportMessage('No track data available yet.');
+      _showExportMessage(context, 'No track data available yet.');
       return;
     }
 
-    setStateIfMounted(() {
-      _isExportingTrack = true;
-    });
+    c.isExportingTrack.value = true;
 
     try {
       final exporter = GpxExportService();
-      final trackName = widget.futureRun.event.eventName;
+      final trackName = futureRun.event.eventName;
       await exporter.exportTrack(
         context: context,
         track: track,
@@ -1930,29 +1416,24 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       );
     } catch (error, s) {
       BootLogger.logError(
-        '[RunTabs._exportTrack] trackName=${widget.futureRun.event.eventName} eventId=${widget.futureRun.event.eventId}',
+        '[RunTabs._exportTrack] trackName=${futureRun.event.eventName} eventId=${futureRun.event.eventId}',
         error,
         s,
       );
-      _showExportMessage('Export failed: $error');
+      if (context.mounted) _showExportMessage(context, 'Export failed: $error');
     } finally {
-      if (mounted) {
-        setStateIfMounted(() {
-          _isExportingTrack = false;
-        });
-      }
+      if (!c.isClosed) c.isExportingTrack.value = false;
     }
   }
 
-  void _showExportMessage(String message) {
+  void _showExportMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  bool _fabIsVisible = false;
-
   Widget _getRsvpButton(
+    RunTabsController c,
     IconData iconData,
     Color iconColor,
     String text,
@@ -1988,22 +1469,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ),
         ),
         onPressed: () async {
-          await _setRsvpState(rsvpState);
+          await c.setRsvpState(rsvpState);
         },
       ),
     );
   }
 
-  List<Widget> _getRsvpButtons() {
+  List<Widget> _getRsvpButtons(c) {
     // A past run cannot be RSVP'd to. The three buttons were still offered on
     // finished runs, where they say nothing useful and take most of the screen
     // above the attendee list. The counts and the roster stay — those are the
     // interesting part of a run that has happened.
-    if (isRunPast(widget.futureRun)) {
+    if (isRunPast(futureRun)) {
       return const <Widget>[SizedBox(height: 12.0)];
     }
 
-    if (_rsvpRequested != rsvpUnknown) {
+    if (c.rsvpRequested.value != rsvpUnknown) {
       return <Widget>[
         const HcAppCircularProgressIndicator(key: Key('3920394')),
       ];
@@ -2011,18 +1492,21 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       return <Widget>[
         const SizedBox(height: 30.0),
         _getRsvpButton(
+          c,
           FontAwesome.check_circle,
           Colors.green,
           'I\'ll be there!',
           rsvpYes,
         ),
         _getRsvpButton(
+          c,
           FontAwesome.check_circle,
           Colors.orange,
           'I might come',
           rsvpMaybe,
         ),
         _getRsvpButton(
+          c,
           FontAwesome.check_circle,
           hc_red,
           'I will not come',
@@ -2032,21 +1516,17 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (!_isTabControllerReady) {
-      return const SizedBox(); // or a loading spinner
-    }
-
+  Widget _body(BuildContext context, RunTabsController c) {
+    final bool fabIsVisible = c.fabIsVisible.value;
     return Stack(
       children: <Widget>[
         AppScaffold(
-          floatingActionButton: (!_fabIsVisible)
+          floatingActionButton: (!fabIsVisible)
               ? null
               : StyleForConnected(
                   child: AnimatedOpacity(
                     duration: const Duration(milliseconds: 500),
-                    opacity: _fabIsVisible ? 1.0 : 0.0,
+                    opacity: fabIsVisible ? 1.0 : 0.0,
                     child: SpeedDial(
                       // both default to 16
                       // marginEnd: 18,
@@ -2074,7 +1554,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           label: 'I\'m not coming',
                           labelStyle: const TextStyle(fontSize: 18.0),
                           onTap: () async {
-                            await _setRsvpState(rsvpNo);
+                            await c.setRsvpState(rsvpNo);
                           },
                         ),
                         SpeedDialChild(
@@ -2083,7 +1563,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           label: 'I might come',
                           labelStyle: const TextStyle(fontSize: 18.0),
                           onTap: () async {
-                            await _setRsvpState(rsvpMaybe);
+                            await c.setRsvpState(rsvpMaybe);
                           },
                         ),
                         SpeedDialChild(
@@ -2092,7 +1572,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           label: 'I\'m coming',
                           labelStyle: const TextStyle(fontSize: 18.0),
                           onTap: () async {
-                            await _setRsvpState(rsvpYes);
+                            await c.setRsvpState(rsvpYes);
                           },
                         ),
                         //   backgroundColor: Colors.white,
@@ -2148,8 +1628,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                   color: hc_red,
                                   borderRadius: BorderRadius.circular(999),
                                 ),
-                                tabs: _tabs,
-                                controller: _tabController,
+                                tabs: RunTabsController.tabs,
+                                controller: c.tabController,
                               ),
                             ),
                           ),
@@ -2170,8 +1650,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               return Obx(() {
                                 final count =
                                     ns
-                                        .unreadEventCounts[widget
-                                            .futureRun
+                                        .unreadEventCounts[futureRun
                                             .event
                                             .publicEventId]
                                         ?.value ??
@@ -2230,18 +1709,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                _buildLiveRunButton(context),
+                _buildLiveRunButton(context, c),
                 Expanded(
                   child: TabBarView(
-                    controller: _tabController,
+                    controller: c.tabController,
                     children: <Widget>[
-                      _buildRunDetailsView(),
-                      _buildRsvpView(),
-                      _buildMapView(),
+                      _buildRunDetailsView(context, c),
+                      _buildRsvpView(context, c),
+                      _buildMapView(context, c),
                       ConnectedWidget(
-                        refreshFunction: () {
-                          setStateIfMounted(() {});
-                        },
+                        refreshFunction: c.update,
                         showConnectButton: true,
                         disconnectedChild: Padding(
                           padding: const EdgeInsets.all(20.0),
@@ -2253,12 +1730,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                             ),
                           ),
                         ),
-                        child: Leaderboard(
-                          kennelId: widget.futureRun.kennel.kennelId,
-                        ),
+                        child: Leaderboard(kennelId: futureRun.kennel.kennelId),
                       ),
-                      _buildChatView(),
-                      _buildPhotosView(),
+                      _buildChatView(c),
+                      _buildPhotosView(c),
                     ],
                     //     tab.text,
                   ),
@@ -2277,149 +1752,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
-  //   kiddies.add(paymentRow());
-
-  //   kiddies.add(receiptsRow());
-
-  //     mainAxisAlignment: MainAxisAlignment.center,
-  //     children: <Widget>[
-  //       !widget.futureRun.mmAuthAllowEditRsvp
-  //               width: 150.0,
-  //               height: 100.0,
-  //               child: ElevatedButton(
-  //                 child: const Text(
-  //                   'Check in Pack',
-  //                   Navigator.push<dynamic>(
-  //                     context,
-  //                     MaterialPageRoute<dynamic>(
-  //                 },
-  //       !widget.futureRun.mmAuthAllowHashCash
-  //               width: 150.0,
-  //               height: 100.0,
-  //               child: ElevatedButton(
-  //                 child: const Text(
-  //                   'Hash Cash',
-  //                   Navigator.push<dynamic>(
-  //                     context,
-  //                     MaterialPageRoute<dynamic>(
-  //                       builder: (BuildContext context) => PaymentReportPage(
-  //                             eventId: widget.futureRun.event.eventId,
-  //                             currencySymbol: widget.futureRun.currencySymbol,
-  //                             digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
-  //                             eventName: widget.futureRun.eventName,
-  //                 },
-
-  //       // Container(
-  //       //   width: 150.0,
-  //       //   child: ElevatedButton(
-  //       //       child: const Text(
-  //       //         'Edit Run',
-  //       //         style:
-  //     ],
-
-  //     mainAxisAlignment: MainAxisAlignment.center,
-  //     children: <Widget>[
-  //         width: 150.0,
-  //         height: 100.0,
-  //         child: ElevatedButton(
-  //           child: const Text(
-  //             'Scan at Run Start',
-  //             Navigator.push<dynamic>(
-  //               context,
-  //               MaterialPageRoute<dynamic>(
-  //                 builder: (BuildContext context) => CheckInScannerPage(
-  //                       kennelShortName: widget.futureRun.kennelShortName,
-  //                       eventId: widget.futureRun.event.eventId,
-  //                       eventName: widget.futureRun.eventName,
-  //                       eventNumber: widget.futureRun.eventNumber,
-  //                       isRunStart: 1,
-  //           },
-  //         width: 150.0,
-  //         height: 100.0,
-  //         child: ElevatedButton(
-  //           child: const Text(
-  //             'Scan at Run End',
-  //             Navigator.push<dynamic>(
-  //               context,
-  //               MaterialPageRoute<dynamic>(
-  //                 builder: (BuildContext context) => CheckInScannerPage(
-  //                       kennelShortName: widget.futureRun.kennelShortName,
-  //                       eventId: widget.futureRun.event.eventId,
-  //                       eventName: widget.futureRun.eventName,
-  //                       eventNumber: widget.futureRun.eventNumber,
-  //                       isRunStart: 0,
-  //           },
-  //     ],
-
-  //     mainAxisAlignment: MainAxisAlignment.center,
-  //     children: <Widget>[
-  //         width: 150.0,
-  //         height: 100.0,
-  //         child: ElevatedButton(
-  //             child: const Text(
-  //               'Run Start QR',
-  //               Navigator.push<dynamic>(
-  //                   context,
-  //                   MaterialPageRoute<dynamic>(
-  //                       builder: (BuildContext context) => RunStartEndQrCodes(
-  //                             kennelShortName: widget.futureRun.kennelShortName,
-  //                             eventId: widget.futureRun.event.eventId,
-  //                             eventName: widget.futureRun.eventName,
-  //                             eventNumber: widget.futureRun.eventNumber,
-  //                             eventStartDatetime: widget.futureRun.eventStartDatetime,
-  //                             isStart: true,
-  //         width: 150.0,
-  //         height: 100.0,
-  //         child: ElevatedButton(
-  //             child: const Text(
-  //               'Run End QR',
-  //               Navigator.push<dynamic>(
-  //                   context,
-  //                   MaterialPageRoute<dynamic>(
-  //                       builder: (BuildContext context) => RunStartEndQrCodes(
-  //                             kennelShortName: widget.futureRun.kennelShortName,
-  //                             eventId: widget.futureRun.event.eventId,
-  //                             eventName: widget.futureRun.eventName,
-  //                             eventNumber: widget.futureRun.eventNumber,
-  //                             eventStartDatetime: widget.futureRun.eventStartDatetime,
-  //                             isStart: false,
-  //     ],
-
-  //     mainAxisAlignment: MainAxisAlignment.center,
-  //     children: <Widget>[
-  //         width: 150.0,
-  //         height: 100.0,
-  //         child: ElevatedButton(
-  //             child: const Text(
-  //               'Manage receipts',
-  //               Navigator.push<dynamic>(
-  //                   context,
-  //                   MaterialPageRoute<dynamic>(
-  //                       builder: (BuildContext context) => ReceiptsList(
-  //                             eventName: widget.futureRun.eventName,
-  //                             eventId: widget.futureRun.event.eventId,
-  //                             digitsAfterDecimal: widget.futureRun.digitsAfterDecimal,
-  //                             currencySymbol: widget.futureRun.currencySymbol
-
-  //       //   width: 150.0,
-  //       //   height: 100.0,
-  //       //   child: ElevatedButton(
-  //       //       child: const Text(
-  //       //         'Run End QR',
-  //       //         Navigator.push<dynamic>(
-  //       //             context,
-  //       //             MaterialPageRoute<dynamic>(
-  //       //                 builder: (BuildContext context) => RunStartEndQrCodes(
-  //       //                       kennelShortName: widget.futureRun.kennelShortName,
-  //       //                       eventId: widget.futureRun.event.eventId,
-  //       //                       eventName: widget.futureRun.eventName,
-  //       //                       eventNumber: widget.futureRun.eventNumber,
-  //       //                       eventStartDatetime:
-  //       //                           widget.futureRun.eventStartDatetime,
-  //       //                       isStart: false,
-  //     ],
-
-  Future<void> _launchMaps(RunDetailsAggregate rda) async {
+  Future<void> _launchMaps(
+    BuildContext context,
+    RunTabsController c,
+    RunDetailsAggregate rda,
+  ) async {
     double? lat;
     double? lon;
     String address = '';
@@ -2477,7 +1814,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           address,
           maps.Coords(lat, lon),
           rda.event.eventName,
-          _saveUserMapPreference,
+          c.saveUserMapPreference,
         );
       } else {
         final List<maps.AvailableMap> availableMaps =
@@ -2503,9 +1840,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
   }
 
-  Widget _buildLiveRunButton(BuildContext context) {
-    final state = _liveRunStatus;
-    final loading = _liveRunLoading;
+  Widget _buildLiveRunButton(BuildContext context, RunTabsController c) {
+    final state = c.liveRunStatus.value;
+    final loading = c.liveRunLoading.value;
     final bool isActiveRun = state == LiveRunButtonStatus.active;
 
     if (state == LiveRunButtonStatus.hidden) return const SizedBox.shrink();
@@ -2542,191 +1879,101 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               ? null
               : () async {
                   if (!isActiveRun) {
-                    _liveRunService.startRun(
-                      eventId: widget.futureRun.event.eventId,
-                      eventName: widget.futureRun.event.eventName,
-                    );
-                    setStateIfMounted(() {
-                      _liveRunStatus = LiveRunButtonStatus.active;
-                    });
+                    c.startLiveRun();
                   }
                   await Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => LiveRunShell(run: widget.futureRun),
+                      builder: (_) => LiveRunShell(run: futureRun),
                     ),
                   );
-                  await _refreshLiveRunButton();
+                  await c.refreshLiveRunButton();
                 },
         ),
       ),
     );
   }
-
-  Future<void> _refreshLiveRunButton() async {
-    _safeSetState(() => _liveRunLoading = true);
-    try {
-      final now = DateTime.now();
-      final eventStart = widget.futureRun.event.eventStartDatetime;
-      final windowStart = eventStart.subtract(const Duration(minutes: 30));
-      final windowEnd = eventStart.add(const Duration(hours: 6));
-
-      final String eventId = widget.futureRun.event.eventId;
-      final String? activeId = _liveRunService.activeRunEventId.value;
-
-      if (activeId != null) {
-        _liveRunStatus = activeId == eventId
-            ? LiveRunButtonStatus.active
-            : LiveRunButtonStatus.hidden;
-        return;
-      }
-
-      if (now.isBefore(windowStart) || now.isAfter(windowEnd)) {
-        _liveRunStatus = LiveRunButtonStatus.hidden;
-        return;
-      }
-
-      final bool isCheckedIn =
-          widget.futureRun.extensions.attendenceState >= attendenceAtHash.value;
-      final bool hasRsvpYes =
-          widget.futureRun.extensions.rsvpState == rsvpYes.value;
-
-      if (isCheckedIn) {
-        _liveRunStatus = LiveRunButtonStatus.eligible;
-        return;
-      }
-
-      // Being AT the start qualifies on its own — see the matching comment in
-      // RunListItemController.refreshLiveRunButton. An RSVP'd hasher keeps the
-      // old, laxer test; anyone else has to actually be here.
-      final results = await CommonQueries.isAtRunStart(
-        eventId: eventId,
-        requireProximity: !hasRsvpYes,
-      );
-      final bool atStart = results.any((item) => item.eventId == eventId);
-      _liveRunStatus = atStart
-          ? LiveRunButtonStatus.eligible
-          : LiveRunButtonStatus.hidden;
-    } catch (e, s) {
-      debugPrint('Live run button check failed: $e');
-      BootLogger.logError(
-        '[RunTabs._checkLiveRunStatus] eventId=${widget.futureRun.event.eventId}',
-        e,
-        s,
-      );
-      _liveRunStatus = LiveRunButtonStatus.hidden;
-    } finally {
-      _safeSetState(() => _liveRunLoading = false);
-    }
-  }
 }
 
 /// Loads and displays published HashTrash for a run.
 /// Renders nothing if the event has no published HashTrash.
-class _HashTrashView extends StatefulWidget {
+class _HashTrashView extends StatelessWidget {
   const _HashTrashView({required this.kennelId, required this.eventId});
 
   final String kennelId;
   final String eventId;
 
   @override
-  State<_HashTrashView> createState() => _HashTrashViewState();
-}
-
-class _HashTrashViewState extends State<_HashTrashView> {
-  HashTrashModel? _model;
-  bool _loaded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_load());
-  }
-
-  Future<void> _load() async {
-    if (!Utilities.isConnected()) return;
-    try {
-      final m = await RunContentService().getHashTrash(
-        kennelId: widget.kennelId,
-        eventId: widget.eventId,
-      );
-      if (mounted) {
-        setState(() {
-          _model = m;
-          _loaded = true;
-        });
-      }
-    } catch (e, s) {
-      BootLogger.logError('[ERROR][RUN]', 'tab load failed: $e', s);
-      if (mounted) setState(() => _loaded = true);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (!_loaded ||
-        _model == null ||
-        (_model!.headline.isEmpty &&
-            (_model!.content == null || _model!.content!.isEmpty))) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const FancyDivider(
-          key: Key('hash_trash_divider'),
-          innerColor: Colors.white,
-          topMargin: 20,
-          bottomMargin: 10,
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Row(
-            children: [
-              Text(
-                'Hash Trash',
-                style: ts_headingLarge.copyWith(color: Colors.white),
-              ),
-              if (_model!.isDraft) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
+    return GetBuilder<HashTrashViewController>(
+      init: HashTrashViewController(kennelId: kennelId, eventId: eventId),
+      tag: HashTrashViewController.tagFor(eventId),
+      builder: (HashTrashViewController c) => Obx(() {
+        final HashTrashModel? model = c.model.value;
+        if (!c.loaded.value ||
+            model == null ||
+            (model.headline.isEmpty &&
+                (model.content == null || model.content!.isEmpty))) {
+          return const SizedBox.shrink();
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const FancyDivider(
+              key: Key('hash_trash_divider'),
+              innerColor: Colors.white,
+              topMargin: 20,
+              bottomMargin: 10,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Row(
+                children: [
+                  Text(
+                    'Hash Trash',
+                    style: ts_headingLarge.copyWith(color: Colors.white),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade700,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'DRAFT',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                  if (model.isDraft) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade700,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'DRAFT',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Markdown(
-            data: _model!.headline.isNotEmpty
-                ? '# ${_model!.headline}\n\n${_model!.content ?? ''}'
-                : (_model!.content ?? ''),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(12),
-          ),
-        ),
-      ],
+                  ],
+                ],
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Markdown(
+                data: model.headline.isNotEmpty
+                    ? '# ${model.headline}\n\n${model.content ?? ''}'
+                    : (model.content ?? ''),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(12),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 }
@@ -2739,7 +1986,7 @@ class _HashTrashViewState extends State<_HashTrashView> {
 // are marked here. Those who can manage down-downs get a button into the
 // charges page, so a past run's circle can still be recorded and marked done.
 
-class _DownDownsHistoryView extends StatefulWidget {
+class _DownDownsHistoryView extends StatelessWidget {
   const _DownDownsHistoryView({
     required this.kennelId,
     required this.eventId,
@@ -2756,138 +2003,100 @@ class _DownDownsHistoryView extends StatefulWidget {
   final int eventNumber;
   final bool isPast;
 
-  @override
-  State<_DownDownsHistoryView> createState() => _DownDownsHistoryViewState();
-}
-
-class _DownDownsHistoryViewState extends State<_DownDownsHistoryView> {
-  List<DownDownModel> _charges = [];
-  bool _loaded = false;
-  bool _canManage = false;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_load());
-  }
-
-  Future<void> _load() async {
-    if (!Utilities.isConnected()) return;
-    try {
-      final kennelAgg = await QueryKennels.getSingleKennel(widget.kennelId);
-      _canManage = canAccessFeature(
-        KennelFeature.manageDownDowns,
-        appAccessFlags: kennelAgg?.hkm?.appAccessFlags ?? 0,
-        mismanagementRoles: kennelAgg?.hkm?.mismanagementRoles ?? 0,
-        kennelOverrideJson: kennelAgg?.kennel.permissionOverrideJson,
-      );
-      final result = await RunContentService().getCompletedDownDowns(
-        kennelId: widget.kennelId,
-        eventId: widget.eventId,
-      );
-      if (result != null && mounted) {
-        final all = result.downDowns;
-        for (final dd in all) {
-          dd.hashers = result.hashers
-              .where((h) => h.downDownId == dd.downDownId)
-              .toList();
-        }
-        setState(() {
-          _charges = all;
-          _loaded = true;
-        });
-      } else {
-        if (mounted) setState(() => _loaded = true);
-      }
-    } catch (e, s) {
-      BootLogger.logError('[ERROR][RUN]', 'tab load failed: $e', s);
-      if (mounted) setState(() => _loaded = true);
-    }
-  }
-
-  Future<void> _openChargesPage() async {
+  Future<void> _openChargesPage(
+    BuildContext context,
+    DownDownsHistoryController c,
+  ) async {
     if (!Utilities.isConnected(showDialog: true)) return;
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
         builder: (_) => LiveRunChargesPage(
-          kennelId: widget.kennelId,
-          eventId: widget.eventId,
-          eventName: widget.eventName,
-          kennelSlug: widget.kennelSlug,
-          eventNumber: widget.eventNumber,
+          kennelId: kennelId,
+          eventId: eventId,
+          eventName: eventName,
+          kennelSlug: kennelSlug,
+          eventNumber: eventNumber,
         ),
       ),
     );
     // Charges may have been added, marked done or cancelled: the run card's
     // count lives on the synced event row and follows with the next sync.
-    await _load();
+    await c.load();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_loaded) return const SizedBox.shrink();
-    // A manager sees the section on a past run even when it is empty — that
-    // is the way in to record a circle nobody wrote down on the night.
-    final bool showManage = _canManage && widget.isPast;
-    if (_charges.isEmpty && !showManage) return const SizedBox.shrink();
+    return GetBuilder<DownDownsHistoryController>(
+      init: DownDownsHistoryController(kennelId: kennelId, eventId: eventId),
+      tag: DownDownsHistoryController.tagFor(eventId),
+      builder: (DownDownsHistoryController c) => Obx(() {
+        if (!c.loaded.value) return const SizedBox.shrink();
+        final List<DownDownModel> charges = c.charges;
+        // A manager sees the section on a past run even when it is empty —
+        // that is the way in to record a circle nobody wrote down on the
+        // night.
+        final bool showManage = c.canManage.value && isPast;
+        if (charges.isEmpty && !showManage) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const FancyDivider(
-          key: Key('down_downs_divider'),
-          innerColor: Colors.white,
-          topMargin: 20,
-          bottomMargin: 10,
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Row(
-            children: [
-              const Icon(
-                MaterialCommunityIcons.gavel,
-                color: Colors.yellow,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Down Downs',
-                  style: ts_headingLarge.copyWith(color: Colors.yellow),
-                ),
-              ),
-              if (showManage)
-                TextButton.icon(
-                  onPressed: _openChargesPage,
-                  icon: const Icon(
-                    Icons.edit_outlined,
-                    size: 18,
-                    color: Colors.white,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const FancyDivider(
+              key: Key('down_downs_divider'),
+              innerColor: Colors.white,
+              topMargin: 20,
+              bottomMargin: 10,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Row(
+                children: [
+                  const Icon(
+                    MaterialCommunityIcons.gavel,
+                    color: Colors.yellow,
+                    size: 20,
                   ),
-                  label: const Text(
-                    'Manage',
-                    style: TextStyle(color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Down Downs',
+                      style: ts_headingLarge.copyWith(color: Colors.yellow),
+                    ),
                   ),
-                ),
-            ],
-          ),
-        ),
-        if (_charges.isEmpty)
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Text(
-              'No down downs recorded for this run.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-                fontStyle: FontStyle.italic,
+                  if (showManage)
+                    TextButton.icon(
+                      onPressed: () => unawaited(_openChargesPage(context, c)),
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Manage',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
-        for (final dd in _charges) _DownDownHistoryTile(dd: dd),
-        const SizedBox(height: 16),
-      ],
+            if (charges.isEmpty)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Text(
+                  'No down downs recorded for this run.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            for (final dd in charges) _DownDownHistoryTile(dd: dd),
+            const SizedBox(height: 16),
+          ],
+        );
+      }),
     );
   }
 }

@@ -1,20 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
-class _SongResult {
-  _SongResult({required this.songId, required this.songName});
-  final String songId;
-  final String songName;
-}
-
-/// Simple model for an attendee shown in the hasher picker.
-class _AttendeeItem {
-  _AttendeeItem({required this.hasherId, required this.displayName});
-  final String hasherId;
-  final String displayName;
-  bool selected = false;
-}
-
-class AddDownDownPage extends StatefulWidget {
+/// Add Down Down. Stateless over [AddDownDownController].
+class AddDownDownPage extends StatelessWidget {
   const AddDownDownPage({
     super.key,
     required this.kennelId,
@@ -31,268 +18,30 @@ class AddDownDownPage extends StatefulWidget {
   final int eventNumber;
 
   @override
-  State<AddDownDownPage> createState() => _AddDownDownPageState();
-}
-
-class _AddDownDownPageState extends State<AddDownDownPage> {
-  final _service = RunContentService();
-  final _chargeController = TextEditingController();
-  final _songController = TextEditingController();
-  final _externalNameController = TextEditingController();
-
-  /// Names of people being charged who are NOT registered HC users.
-  final List<String> _externalNames = [];
-
-  String? _linkedSongId;
-  bool _suppressNextSongSearch = false;
-  List<_SongResult> _songResults = [];
-
-  bool _isLoading = true;
-  bool _isSaving = false;
-  bool _isCapturingPhoto = false;
-  String? _chargePhotoUrl;
-  List<_AttendeeItem> _attendees = [];
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_loadAttendees());
-  }
-
-  @override
-  void dispose() {
-    _chargeController.dispose();
-    _songController.dispose();
-    _externalNameController.dispose();
-    super.dispose();
-  }
-
-  /// Adds the typed (or supplied) name to the external-people list, ignoring
-  /// blanks and case-insensitive duplicates, then clears the input.
-  void _addExternalName([String? value]) {
-    final name = (value ?? _externalNameController.text).trim();
-    _externalNameController.clear();
-    if (name.isEmpty) return;
-    final exists = _externalNames.any(
-      (n) => n.toLowerCase() == name.toLowerCase(),
-    );
-    if (!exists) {
-      setState(() => _externalNames.add(name));
-    } else {
-      setState(() {}); // reflect the cleared input
-    }
-  }
-
-  Future<void> _searchSongs(String query) async {
-    if (query.trim().isEmpty) {
-      setState(() => _songResults = []);
-      return;
-    }
-    final tbl = tableModel.songsTableHelper;
-    final songTable = EnumDataTables.songs.commonTableName;
-    final pattern = '%${query.trim()}%';
-    final kId = widget.kennelId;
-
-    final kennelRows = await database.rawQuery(
-      '''
-      SELECT ${tbl.colSongId}, ${tbl.colSongName}
-      FROM $songTable
-      WHERE ${tbl.colRemoved} = 0
-        AND (${tbl.colAddedByKennelId} = ?
-             OR ${tbl.colAutoAddToKennel} > 0)
-        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
-      ORDER BY
-        CASE WHEN ${tbl.colAddedByKennelId} = ? THEN 0 ELSE 1 END,
-        ${tbl.colSongName}
-      LIMIT 10
-    ''',
-      [kId, pattern, kId],
-    );
-
-    if (kennelRows.isNotEmpty) {
-      if (mounted) {
-        setState(
-          () => _songResults = kennelRows
-              .map(
-                (r) => _SongResult(
-                  songId: r[tbl.colSongId] as String,
-                  songName: r[tbl.colSongName] as String,
-                ),
-              )
-              .toList(),
-        );
-      }
-      return;
-    }
-
-    final globalRows = await database.rawQuery(
-      '''
-      SELECT ${tbl.colSongId}, ${tbl.colSongName}
-      FROM $songTable
-      WHERE ${tbl.colRemoved} = 0
-        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
-      ORDER BY ${tbl.colSongName}
-      LIMIT 10
-    ''',
-      [pattern],
-    );
-
-    if (mounted) {
-      setState(
-        () => _songResults = globalRows
-            .map(
-              (r) => _SongResult(
-                songId: r[tbl.colSongId] as String,
-                songName: r[tbl.colSongName] as String,
-              ),
-            )
-            .toList(),
-      );
-    }
-  }
-
-  Future<void> _loadAttendees() async {
-    setState(() => _isLoading = true);
-    try {
-      // Sync the event HEM table first so attendees are available locally.
-      // Without this the event_ tables are empty unless run admin was opened first.
-      if (Utilities.isConnected()) {
-        await tableModel.syncEventAdminService.updateRsvpsFromBackend(
-          widget.eventId,
-        );
-      }
-
-      final query =
-          '''
-        SELECT
-          h.${tableModel.hashersTableHelper.colHasherId} as hasherId,
-          coalesce(
-            hem.${tableModel.hasherEventMapTableHelper.colDisplayName},
-            h.${tableModel.hashersTableHelper.colDispName},
-            h.${tableModel.hashersTableHelper.colHashName},
-            h.${tableModel.hashersTableHelper.colFirstName} || " " || h.${tableModel.hashersTableHelper.colLastName},
-            "<no name>"
-          ) as displayName
-        FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
-        INNER JOIN ${EnumDataTables.hashers.commonTableName} h
-          ON hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}
-        WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = '${widget.eventId}'
-          AND (
-            hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= 20
-            OR hem.${tableModel.hasherEventMapTableHelper.colRsvpState} = 3
-          )
-          AND h.${tableModel.hashersTableHelper.colRemoved} = 0
-        ORDER BY displayName COLLATE NOCASE
-      ''';
-
-      final results = await database.rawQuery(query);
-      setState(() {
-        _attendees = results
-            .map(
-              (r) => _AttendeeItem(
-                hasherId: r['hasherId'] as String,
-                displayName: r['displayName'] as String? ?? '<no name>',
-              ),
-            )
-            .toList();
-      });
-    } catch (e, s) {
-      BootLogger.logError('[AddDownDownPage._loadAttendees]', e, s);
-    }
-    if (mounted) setState(() => _isLoading = false);
-  }
-
-  List<_AttendeeItem> get _selected =>
-      _attendees.where((a) => a.selected).toList();
-
-  Future<void> _takeChargePhoto() async {
-    setState(() => _isCapturingPhoto = true);
-    try {
-      final url = await KennelPhotoService().captureAndUpload(
-        eventId: widget.eventId,
-        kennelId: widget.kennelId,
-        kennelSlug: widget.kennelSlug,
-        eventNumber: widget.eventNumber,
-        skipMapMarker: true,
-      );
-      if (url != null && mounted) {
-        setState(() => _chargePhotoUrl = url);
-      }
-    } finally {
-      if (mounted) setState(() => _isCapturingPhoto = false);
-    }
-  }
-
-  Future<void> _submit() async {
-    // Fold in any name typed but not yet added via the + button.
-    if (_externalNameController.text.trim().isNotEmpty) {
-      _addExternalName();
-    }
-
-    if (_selected.isEmpty && _externalNames.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Add at least one person — a hasher or a name'),
-        ),
-      );
-      return;
-    }
-    if (_chargeController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Enter the charge')));
-      return;
-    }
-
-    setState(() => _isSaving = true);
-    try {
-      final id = await _service.addDownDown(
-        kennelId: widget.kennelId,
-        eventId: widget.eventId,
-        hasherIds: _selected.map((a) => a.hasherId).toList(),
-        chargeText: _chargeController.text.trim(),
-        externalNames: _externalNames,
-        songChoice: _songController.text.trim().isEmpty
-            ? null
-            : _songController.text.trim(),
-        songId: _linkedSongId,
-        chargePhotoUrl: _chargePhotoUrl,
-      );
-      if (mounted) {
-        if (id != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Down Down recorded!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Get.back();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Failed to save. Are you a run attendee?'),
-              backgroundColor: Colors.red.shade700,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Error saving. Please try again.'),
-            backgroundColor: Colors.red.shade700,
-          ),
-        );
-      }
-    }
-    if (mounted) setState(() => _isSaving = false);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final selectedCount = _selected.length;
+    return GetBuilder<AddDownDownController>(
+      init: AddDownDownController(
+        kennelId: kennelId,
+        eventId: eventId,
+        eventName: eventName,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+      ),
+      tag: AddDownDownController.tagFor(eventId),
+      builder: (AddDownDownController c) => Obx(() => _body(context, c)),
+    );
+  }
 
+  Widget _body(BuildContext context, AddDownDownController c) {
+    // Snapshots inside the Obx so the lists and their counts agree.
+    final bool isSaving = c.isSaving.value;
+    final bool isCapturingPhoto = c.isCapturingPhoto.value;
+    final String? linkedSongId = c.linkedSongId.value;
+    final String? chargePhotoUrl = c.chargePhotoUrl.value;
+    final List<SongResult> songResults = c.songResults;
+    final List<String> externalNames = c.externalNames;
+    final List<AttendeeItem> attendees = c.attendees;
+    final int selectedCount = attendees.where((a) => a.selected).length;
     return AppScaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -302,7 +51,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
-        child: _isLoading
+        child: c.isLoading.value
             ? const HcAppCircularProgressIndicator(key: Key('add_dd_loading'))
             : Column(
                 children: [
@@ -313,7 +62,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                       alignment: Alignment.bottomRight,
                       children: [
                         TextField(
-                          controller: _chargeController,
+                          controller: c.chargeController,
                           maxLines: 3,
                           decoration: InputDecoration(
                             labelText: 'Charge',
@@ -339,10 +88,12 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                             borderRadius: BorderRadius.circular(20),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(20),
-                              onTap: _isSaving ? null : _submit,
+                              onTap: isSaving
+                                  ? null
+                                  : () => unawaited(c.submit()),
                               child: Padding(
                                 padding: const EdgeInsets.all(8),
-                                child: _isSaving
+                                child: isSaving
                                     ? const SizedBox(
                                         width: 18,
                                         height: 18,
@@ -366,7 +117,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                     child: TextField(
-                      controller: _songController,
+                      controller: c.songController,
                       decoration: InputDecoration(
                         labelText: 'Recommended song (optional)',
                         hintText: 'e.g. Down Down',
@@ -376,28 +127,20 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                         filled: true,
                         fillColor: Colors.white,
                         prefixIcon: const Icon(Icons.music_note),
-                        suffixIcon: _linkedSongId != null
+                        suffixIcon: linkedSongId != null
                             ? Tooltip(
                                 message: 'Unlink song',
                                 child: IconButton(
                                   icon: const Icon(Icons.link_off, size: 18),
-                                  onPressed: () =>
-                                      setState(() => _linkedSongId = null),
+                                  onPressed: c.unlinkSong,
                                 ),
                               )
                             : null,
                       ),
-                      onChanged: (value) {
-                        if (_suppressNextSongSearch) {
-                          _suppressNextSongSearch = false;
-                          return;
-                        }
-                        _linkedSongId = null;
-                        unawaited(_searchSongs(value));
-                      },
+                      onChanged: c.onSongChanged,
                     ),
                   ),
-                  if (_songResults.isNotEmpty)
+                  if (songResults.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                       child: Container(
@@ -409,9 +152,9 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                         ),
                         child: ListView.builder(
                           shrinkWrap: true,
-                          itemCount: _songResults.length,
+                          itemCount: songResults.length,
                           itemBuilder: (context, index) {
-                            final song = _songResults[index];
+                            final song = songResults[index];
                             return ListTile(
                               dense: true,
                               leading: const Icon(
@@ -423,14 +166,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                                 song.songName,
                                 style: const TextStyle(fontSize: 14),
                               ),
-                              onTap: () {
-                                _suppressNextSongSearch = true;
-                                _songController.text = song.songName;
-                                setState(() {
-                                  _linkedSongId = song.songId;
-                                  _songResults = [];
-                                });
-                              },
+                              onTap: () => c.pickSong(song),
                             );
                           },
                         ),
@@ -442,7 +178,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            icon: _isCapturingPhoto
+                            icon: isCapturingPhoto
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
@@ -452,13 +188,13 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                                     ),
                                   )
                                 : Icon(
-                                    _chargePhotoUrl != null
+                                    chargePhotoUrl != null
                                         ? Icons.check_circle_outline
                                         : Icons.camera_alt,
                                     color: Colors.white70,
                                   ),
                             label: Text(
-                              _chargePhotoUrl != null
+                              chargePhotoUrl != null
                                   ? 'Photo added'
                                   : 'Add photo (optional)',
                               style: const TextStyle(color: Colors.white70),
@@ -466,17 +202,17 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                             style: OutlinedButton.styleFrom(
                               side: const BorderSide(color: Colors.white30),
                             ),
-                            onPressed: _isCapturingPhoto
+                            onPressed: isCapturingPhoto
                                 ? null
-                                : _takeChargePhoto,
+                                : () => unawaited(c.takeChargePhoto()),
                           ),
                         ),
-                        if (_chargePhotoUrl != null) ...[
+                        if (chargePhotoUrl != null) ...[
                           const SizedBox(width: 8),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(6),
                             child: Image.network(
-                              _chargePhotoUrl!,
+                              chargePhotoUrl,
                               width: 44,
                               height: 44,
                               cacheWidth: 132,
@@ -492,8 +228,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                               size: 18,
                               color: Colors.white54,
                             ),
-                            onPressed: () =>
-                                setState(() => _chargePhotoUrl = null),
+                            onPressed: c.removePhoto,
                             tooltip: 'Remove photo',
                           ),
                         ],
@@ -515,10 +250,10 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                         ),
                         const SizedBox(height: 6),
                         TextField(
-                          controller: _externalNameController,
+                          controller: c.externalNameController,
                           textInputAction: TextInputAction.done,
                           textCapitalization: TextCapitalization.words,
-                          onSubmitted: _addExternalName,
+                          onSubmitted: c.addExternalName,
                           decoration: InputDecoration(
                             hintText: 'Add a name, then tap +',
                             border: OutlineInputBorder(
@@ -531,16 +266,16 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                             suffixIcon: IconButton(
                               icon: const Icon(Icons.add),
                               tooltip: 'Add name',
-                              onPressed: () => _addExternalName(),
+                              onPressed: () => c.addExternalName(),
                             ),
                           ),
                         ),
-                        if (_externalNames.isNotEmpty) ...[
+                        if (externalNames.isNotEmpty) ...[
                           const SizedBox(height: 8),
                           Wrap(
                             spacing: 6,
                             runSpacing: 6,
-                            children: _externalNames
+                            children: externalNames
                                 .map(
                                   (name) => Chip(
                                     label: Text(name),
@@ -550,9 +285,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                     deleteIconColor: Colors.black54,
-                                    onDeleted: () => setState(
-                                      () => _externalNames.remove(name),
-                                    ),
+                                    onDeleted: () => c.removeExternalName(name),
                                     materialTapTargetSize:
                                         MaterialTapTargetSize.shrinkWrap,
                                     visualDensity: const VisualDensity(
@@ -587,7 +320,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                   ),
                   const Divider(height: 1, color: Colors.white24),
                   Expanded(
-                    child: _attendees.isEmpty
+                    child: attendees.isEmpty
                         ? Center(
                             child: Text(
                               'No attendees found yet.\nCheck-in data may still be loading.',
@@ -598,9 +331,9 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                             ),
                           )
                         : ListView.builder(
-                            itemCount: _attendees.length,
+                            itemCount: attendees.length,
                             itemBuilder: (context, index) {
-                              final attendee = _attendees[index];
+                              final attendee = attendees[index];
                               return CheckboxListTile(
                                 value: attendee.selected,
                                 title: Text(
@@ -610,9 +343,8 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                                     color: Colors.yellow,
                                   ),
                                 ),
-                                onChanged: (v) => setState(
-                                  () => attendee.selected = v ?? false,
-                                ),
+                                onChanged: (v) =>
+                                    c.toggleAttendee(attendee, v ?? false),
                                 activeColor: Colors.yellow,
                                 checkColor: Colors.black87,
                                 side: const BorderSide(

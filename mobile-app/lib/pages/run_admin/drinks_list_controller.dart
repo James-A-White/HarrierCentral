@@ -52,9 +52,9 @@ class DrinksResults {
 /// is unit-tested (test/unit/drinks_awards_rule_test.dart) for the first time.
 ///
 /// Lifetime: the page is pushed with a plain MaterialPageRoute, not Get.to, so
-/// GetX will not dispose this on pop. The page deletes it (tagged by eventId)
-/// in its PopScope; every visit therefore starts with a fresh load, as the old
-/// initState did. Every `await` is followed by an `isClosed` check for the
+/// GetX will not dispose this on pop. The page's GetBuilder(init:) deletes it
+/// when the page is disposed; every visit therefore starts with a fresh load,
+/// as the old initState did. Every `await` is followed by an `isClosed` check for the
 /// same reason `setStateIfMounted` existed.
 class DrinksListController extends GetxController {
   DrinksListController({required this.eventAggregate});

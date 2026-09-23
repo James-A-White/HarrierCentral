@@ -1,7 +1,9 @@
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/run_admin/edit_down_down_page.dart';
 
-class DownDownsPage extends StatefulWidget {
+/// Run admin's Down Downs list. Stateless over [DownDownsController]; the
+/// yes/no dialogs live here because they need a context, the actions there.
+class DownDownsPage extends StatelessWidget {
   const DownDownsPage({
     super.key,
     required this.kennelId,
@@ -17,143 +19,15 @@ class DownDownsPage extends StatefulWidget {
   final String kennelSlug;
   final int eventNumber;
 
-  @override
-  State<DownDownsPage> createState() => _DownDownsPageState();
-}
-
-class _DownDownsPageState extends State<DownDownsPage> {
-  final _service = RunContentService();
-
-  bool _isLoading = true;
-  List<DownDownModel> _downDowns = [];
-  Timer? _pollTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_load());
-    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
-      // Don't hit the network while the app is backgrounded/inactive. The timer
-      // keeps ticking cheaply and resumes polling within 15s once foregrounded.
-      if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
-        return;
-      }
-      unawaited(_silentRefresh());
-    });
-  }
-
-  @override
-  void dispose() {
-    _pollTimer?.cancel();
-    super.dispose();
-  }
-
-  void _sortList() {
-    _downDowns.sort((a, b) {
-      // pending (0) → cancelled (1) → done (2)
-      final rankA = a.isDone ? 2 : (a.isCancelled ? 1 : 0);
-      final rankB = b.isDone ? 2 : (b.isCancelled ? 1 : 0);
-      if (rankA != rankB) return rankA.compareTo(rankB);
-      return a.createdAt.compareTo(b.createdAt);
-    });
-  }
-
-  Future<void> _load() async {
-    setState(() => _isLoading = true);
-    try {
-      final result = await _service.getDownDowns(
-        kennelId: widget.kennelId,
-        eventId: widget.eventId,
-      );
-      if (result != null && mounted) {
-        final all = result.downDowns;
-        for (final dd in all) {
-          dd.hashers = result.hashers
-              .where((h) => h.downDownId == dd.downDownId)
-              .toList();
-        }
-        setState(() {
-          _downDowns = all;
-          _sortList();
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Failed to load Down Downs'),
-            backgroundColor: Colors.red.shade700,
-          ),
-        );
-      }
-    }
-    if (mounted) setState(() => _isLoading = false);
-  }
-
-  Future<void> _silentRefresh() async {
-    try {
-      final result = await _service.getDownDowns(
-        kennelId: widget.kennelId,
-        eventId: widget.eventId,
-      );
-      if (result != null && mounted) {
-        final all = result.downDowns;
-        for (final dd in all) {
-          dd.hashers = result.hashers
-              .where((h) => h.downDownId == dd.downDownId)
-              .toList();
-        }
-        setState(() {
-          _downDowns = all;
-          _sortList();
-        });
-      }
-    } catch (_) {
-      // Silently ignore — next poll will retry.
-    }
-  }
-
-  DownDownModel _copyWith(
-    DownDownModel dd, {
-    bool? isDone,
-    bool? isCancelled,
-  }) => DownDownModel(
-    downDownId: dd.downDownId,
-    chargeText: dd.chargeText,
-    isDone: isDone ?? dd.isDone,
-    isCancelled: isCancelled ?? dd.isCancelled,
-    createdByDisplayName: dd.createdByDisplayName,
-    createdByPhoto: dd.createdByPhoto,
-    createdAt: dd.createdAt,
-    songChoice: dd.songChoice,
-    songId: dd.songId,
-    chargePhotoUrl: dd.chargePhotoUrl,
-    hashers: dd.hashers,
-    externalNames: dd.externalNames,
-  );
-
-  Future<void> _markDone(DownDownModel dd) async {
-    final ok = await _service.markDownDownDone(
-      kennelId: widget.kennelId,
-      eventId: widget.eventId,
-      downDownId: dd.downDownId,
-    );
-    if (ok && mounted) {
-      setState(() {
-        final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (i >= 0) {
-          _downDowns[i] = _copyWith(dd, isDone: true, isCancelled: false);
-        }
-        _sortList();
-      });
-    }
-  }
-
-  Future<void> _unmarkDone(DownDownModel dd) async {
+  Future<bool> _confirm(
+    BuildContext context, {
+    required String title,
+    required String yes,
+  }) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Undo Down Down?', style: ts_alertDialogTitle),
+        title: Text(title, style: ts_alertDialogTitle),
         content: Text(
           'Mark this charge as pending again?',
           style: ts_alertDialogBody,
@@ -169,169 +43,85 @@ class _DownDownsPageState extends State<DownDownsPage> {
               backgroundColor: themeBackgroundColor,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Yes, undo'),
+            child: Text(yes),
           ),
         ],
       ),
     );
-    if (confirmed != true) return;
+    return confirmed == true;
+  }
 
-    final ok = await _service.unmarkDownDownDone(
-      kennelId: widget.kennelId,
-      eventId: widget.eventId,
-      downDownId: dd.downDownId,
-    );
-    if (ok && mounted) {
-      setState(() {
-        final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (i >= 0) _downDowns[i] = _copyWith(dd, isDone: false);
-        _sortList();
-      });
+  Future<void> _handleCancelTap(
+    BuildContext context,
+    DownDownsController c,
+    DownDownModel dd,
+  ) async {
+    if (dd.isCancelled) {
+      if (await _confirm(context, title: 'Restore Down Down?', yes: 'Yes, restore')) {
+        await c.uncancel(dd);
+      }
+    } else {
+      await c.cancel(dd);
     }
   }
 
-  Future<void> _cancel(DownDownModel dd) async {
-    final ok = await _service.cancelDownDown(
-      kennelId: widget.kennelId,
-      eventId: widget.eventId,
-      downDownId: dd.downDownId,
-    );
-    if (ok && mounted) {
-      setState(() {
-        final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (i >= 0) {
-          _downDowns[i] = _copyWith(dd, isCancelled: true, isDone: false);
-        }
-        _sortList();
-      });
+  Future<void> _handleCheckTap(
+    BuildContext context,
+    DownDownsController c,
+    DownDownModel dd,
+  ) async {
+    if (dd.isDone) {
+      if (await _confirm(context, title: 'Undo Down Down?', yes: 'Yes, undo')) {
+        await c.unmarkDone(dd);
+      }
+    } else {
+      await c.markDone(dd);
     }
   }
 
-  Future<void> _uncancel(DownDownModel dd) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Restore Down Down?', style: ts_alertDialogTitle),
-        content: Text(
-          'Mark this charge as pending again?',
-          style: ts_alertDialogBody,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: themeBackgroundColor,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Yes, restore'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-
-    final ok = await _service.uncancelDownDown(
-      kennelId: widget.kennelId,
-      eventId: widget.eventId,
-      downDownId: dd.downDownId,
-    );
-    if (ok && mounted) {
-      setState(() {
-        final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (i >= 0) _downDowns[i] = _copyWith(dd, isCancelled: false);
-        _sortList();
-      });
-    }
-  }
-
-  Future<void> _openEditPage(DownDownModel dd) async {
+  Future<void> _openEditPage(DownDownsController c, DownDownModel dd) async {
     final saved = await Get.to<bool>(
       () => EditDownDownPage(
-        kennelId: widget.kennelId,
-        eventId: widget.eventId,
-        kennelSlug: widget.kennelSlug,
-        eventNumber: widget.eventNumber,
+        kennelId: kennelId,
+        eventId: eventId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
         downDown: dd,
         pageTitle: 'Edit Down Down',
       ),
     );
-    if (saved == true && mounted) unawaited(_load());
-  }
-
-  Future<void> _shareSong(DownDownModel dd) async {
-    if (dd.songId == null) return;
-    final result = await SongSessionService.selectSong(
-      eventId: widget.eventId,
-      songId: dd.songId!,
-    );
-    if (mounted) {
-      if (result != null) {
-        final count = result.recipientCount;
-        final withWhom = (count != null && count > 0)
-            ? 'with $count pack ${count == 1 ? 'member' : 'members'}'
-            : 'with the pack';
-        final title = result.songTitle.isNotEmpty
-            ? result.songTitle
-            : (dd.songChoice ?? 'song');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Shared "$title" $withWhom 🎵'),
-            backgroundColor: Colors.green.shade700,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to share song'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _handleCancelTap(DownDownModel dd) {
-    if (dd.isCancelled) {
-      unawaited(_uncancel(dd));
-    } else {
-      unawaited(_cancel(dd));
-    }
-  }
-
-  void _handleCheckTap(DownDownModel dd) {
-    if (dd.isDone) {
-      unawaited(_unmarkDone(dd));
-    } else {
-      unawaited(_markDone(dd));
-    }
+    if (saved == true) unawaited(c.load());
   }
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-        title: Text('Down Downs', style: ts_appBarTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _load,
-          ),
-        ],
-      ),
-      body: Container(
-        decoration: Backgrounds.defaultHcBackground(),
-        child: _isLoading
-            ? const HcAppCircularProgressIndicator(key: Key('dd_loading'))
-            : _downDowns.isEmpty
-            ? Center(
+    return GetBuilder<DownDownsController>(
+      init: DownDownsController(kennelId: kennelId, eventId: eventId),
+      tag: DownDownsController.tagFor(eventId),
+      builder: (DownDownsController c) => AppScaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: themeAppBarBackground,
+          iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+          title: Text('Down Downs', style: ts_appBarTitle),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: () => unawaited(c.load()),
+            ),
+          ],
+        ),
+        body: Container(
+          decoration: Backgrounds.defaultHcBackground(),
+          child: Obx(() {
+            if (c.isLoading.value) {
+              return const HcAppCircularProgressIndicator(
+                key: Key('dd_loading'),
+              );
+            }
+            final List<DownDownModel> downDowns = c.downDowns;
+            if (downDowns.isEmpty) {
+              return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(30),
                   child: Text(
@@ -340,28 +130,34 @@ class _DownDownsPageState extends State<DownDownsPage> {
                     style: ts_headingLarge.copyWith(color: Colors.white),
                   ),
                 ),
-              )
-            : ListView.separated(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: _downDowns.length,
-                separatorBuilder: (context, i) => Divider(
-                  height: 2,
-                  thickness: 1.5,
-                  color: Colors.lightBlueAccent.withValues(alpha: 0.7),
-                ),
-                itemBuilder: (context, index) {
-                  final dd = _downDowns[index];
-                  final names = dd.allChargedNames.join(', ');
-                  return _DownDownTile(
-                    dd: dd,
-                    hasherNames: names,
-                    onCancelTap: () => _handleCancelTap(dd),
-                    onCheckTap: () => _handleCheckTap(dd),
-                    onEditTap: () => _openEditPage(dd),
-                    onShareTap: dd.songId != null ? () => _shareSong(dd) : null,
-                  );
-                },
+              );
+            }
+            return ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: downDowns.length,
+              separatorBuilder: (context, i) => Divider(
+                height: 2,
+                thickness: 1.5,
+                color: Colors.lightBlueAccent.withValues(alpha: 0.7),
               ),
+              itemBuilder: (context, index) {
+                final dd = downDowns[index];
+                final names = dd.allChargedNames.join(', ');
+                return _DownDownTile(
+                  dd: dd,
+                  hasherNames: names,
+                  onCancelTap: () =>
+                      unawaited(_handleCancelTap(context, c, dd)),
+                  onCheckTap: () => unawaited(_handleCheckTap(context, c, dd)),
+                  onEditTap: () => unawaited(_openEditPage(c, dd)),
+                  onShareTap: dd.songId != null
+                      ? () => unawaited(c.shareSong(dd))
+                      : null,
+                );
+              },
+            );
+          }),
+        ),
       ),
     );
   }

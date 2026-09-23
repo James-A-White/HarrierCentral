@@ -14,21 +14,13 @@ class DrinksList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String tag = DrinksListController.tagFor(
-      eventAggregate.event.eventId,
-    );
-    final DrinksListController controller = Get.put(
-      DrinksListController(eventAggregate: eventAggregate),
-      tag: tag,
-    );
-
-    return PopScope(
-      // Pushed with a MaterialPageRoute, so GetX will not dispose this for us.
-      // Deleting on pop is what makes the next visit start with a fresh load.
-      onPopInvokedWithResult: (bool didPop, Object? _) {
-        if (didPop) Get.delete<DrinksListController>(tag: tag);
-      },
-      child: AppScaffold(
+    // GetBuilder's `init` puts the controller and deletes it when this widget
+    // is disposed — the page is pushed with a MaterialPageRoute, so GetX would
+    // not otherwise know when to. Every visit therefore starts a fresh load.
+    return GetBuilder<DrinksListController>(
+      init: DrinksListController(eventAggregate: eventAggregate),
+      tag: DrinksListController.tagFor(eventAggregate.event.eventId),
+      builder: (DrinksListController controller) => AppScaffold(
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: themeAppBarBackground,
@@ -70,7 +62,12 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool failed = controller.loadFailed.value;
+    // Its own Obx: a child widget's build runs after the parent Obx's builder
+    // has returned, so reads here are not tracked by the parent.
+    return Obx(() => _body(controller.loadFailed.value));
+  }
+
+  Widget _body(bool failed) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(30.0),
@@ -121,9 +118,11 @@ class _AwardsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Read inside Obx (the caller's) — itemCount over an RxList under a
-    // GetBuilder is the stale-count RangeError footgun; this is not that.
-    final List<DrinksResults> awards = controller.awards;
+    return Obx(() => _list(context, controller.awards));
+  }
+
+  Widget _list(BuildContext context, List<DrinksResults> awards) {
+    // Snapshot inside the Obx so itemCount and itemBuilder agree.
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: awards.length,

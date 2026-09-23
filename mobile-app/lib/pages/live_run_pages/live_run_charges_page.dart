@@ -2,7 +2,8 @@ import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/pages/run_admin/edit_down_down_page.dart';
 
-class LiveRunChargesPage extends StatefulWidget {
+/// The live run's Charges tab. Stateless over [LiveRunChargesController].
+class LiveRunChargesPage extends StatelessWidget {
   const LiveRunChargesPage({
     super.key,
     required this.kennelId,
@@ -18,80 +19,40 @@ class LiveRunChargesPage extends StatefulWidget {
   final String kennelSlug;
   final int eventNumber;
 
-  @override
-  State<LiveRunChargesPage> createState() => _LiveRunChargesPageState();
-}
-
-class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
-  final _service = RunContentService();
-
-  bool _isLoading = true;
-  bool _canManageCharges = false;
-  List<DownDownModel> _charges = [];
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_load());
-  }
-
-  Future<void> _load() async {
-    setState(() => _isLoading = true);
-    // Gate the add/edit affordances to those who can manage down downs (the
-    // server also enforces this; getDownDowns returns nothing to non-managers).
-    final kennelAgg = await QueryKennels.getSingleKennel(widget.kennelId);
-    _canManageCharges = canAccessFeature(
-      KennelFeature.manageDownDowns,
-      appAccessFlags: kennelAgg?.hkm?.appAccessFlags ?? 0,
-      mismanagementRoles: kennelAgg?.hkm?.mismanagementRoles ?? 0,
-      kennelOverrideJson: kennelAgg?.kennel.permissionOverrideJson,
-    );
-    try {
-      final result = await _service.getDownDowns(
-        kennelId: widget.kennelId,
-        eventId: widget.eventId,
-      );
-      if (result != null && mounted) {
-        final all = result.downDowns;
-        for (final dd in all) {
-          dd.hashers = result.hashers
-              .where((h) => h.downDownId == dd.downDownId)
-              .toList();
-        }
-        setState(() => _charges = all);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Failed to load charges'), backgroundColor: Colors.red.shade700),
-        );
-      }
-    }
-    if (mounted) setState(() => _isLoading = false);
-  }
-
-  Future<void> _openEditPage(DownDownModel dd) async {
+  Future<void> _openEditPage(
+    LiveRunChargesController c,
+    DownDownModel dd,
+  ) async {
     final saved = await Get.to<bool>(
       () => EditDownDownPage(
-        kennelId: widget.kennelId,
-        eventId: widget.eventId,
-        kennelSlug: widget.kennelSlug,
-        eventNumber: widget.eventNumber,
+        kennelId: kennelId,
+        eventId: eventId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
         downDown: dd,
       ),
     );
-    if (saved == true && mounted) unawaited(_load());
+    if (saved == true) unawaited(c.load());
   }
 
   @override
   Widget build(BuildContext context) {
-    final content = Container(
-      decoration: Backgrounds.defaultHcBackground(),
-      child: _isLoading
-          ? const HcAppCircularProgressIndicator(key: Key('charges_loading'))
-          : RefreshIndicator(
-              onRefresh: _load,
-              child: _charges.isEmpty
+    return GetBuilder<LiveRunChargesController>(
+      init: LiveRunChargesController(kennelId: kennelId, eventId: eventId),
+      tag: LiveRunChargesController.tagFor(eventId),
+      builder: (LiveRunChargesController c) {
+        final content = Container(
+          decoration: Backgrounds.defaultHcBackground(),
+          child: Obx(() {
+            if (c.isLoading.value) {
+              return const HcAppCircularProgressIndicator(
+                key: Key('charges_loading'),
+              );
+            }
+            final List<DownDownModel> charges = c.charges;
+            return RefreshIndicator(
+              onRefresh: c.load,
+              child: charges.isEmpty
                   ? ListView(
                       children: [
                         Padding(
@@ -100,7 +61,9 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
                             child: Text(
                               'No charges yet for this run.\nPull to refresh or tap + to add one.',
                               textAlign: TextAlign.center,
-                              style: ts_headingLarge.copyWith(color: Colors.white70),
+                              style: ts_headingLarge.copyWith(
+                                color: Colors.white70,
+                              ),
                             ),
                           ),
                         ),
@@ -108,45 +71,54 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.only(bottom: 80, top: 8),
-                      itemCount: _charges.length,
-                      separatorBuilder: (context, i) => Divider(height: 2, thickness: 1.5, color: Colors.lightBlueAccent.withValues(alpha: 0.7)),
+                      itemCount: charges.length,
+                      separatorBuilder: (context, i) => Divider(
+                        height: 2,
+                        thickness: 1.5,
+                        color: Colors.lightBlueAccent.withValues(alpha: 0.7),
+                      ),
                       itemBuilder: (context, index) {
-                        final dd = _charges[index];
+                        final dd = charges[index];
                         final names = dd.allChargedNames.join(', ');
                         return _ChargeTile(
                           dd: dd,
                           hasherNames: names,
-                          onEdit: () => _openEditPage(dd),
+                          onEdit: () => unawaited(_openEditPage(c, dd)),
                         );
                       },
                     ),
-            ),
-    );
+            );
+          }),
+        );
 
-    return Stack(
-      children: [
-        content,
-        if (_canManageCharges)
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: FloatingActionButton(
-            backgroundColor: Colors.yellow,
-            foregroundColor: Colors.black87,
-            onPressed: () async {
-              await Get.to(
-                () => AddDownDownPage(
-                  kennelId: widget.kennelId,
-                  eventId: widget.eventId,
-                  eventName: widget.eventName,
+        return Stack(
+          children: [
+            content,
+            Obx(() {
+              if (!c.canManageCharges.value) return const SizedBox.shrink();
+              return Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  backgroundColor: Colors.yellow,
+                  foregroundColor: Colors.black87,
+                  onPressed: () async {
+                    await Get.to(
+                      () => AddDownDownPage(
+                        kennelId: kennelId,
+                        eventId: eventId,
+                        eventName: eventName,
+                      ),
+                    );
+                    unawaited(c.load());
+                  },
+                  child: const Icon(Icons.add),
                 ),
               );
-              unawaited(_load());
-            },
-            child: const Icon(Icons.add),
-          ),
-        ),
-      ],
+            }),
+          ],
+        );
+      },
     );
   }
 }
