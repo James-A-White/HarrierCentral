@@ -2156,15 +2156,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
                           Builder(
                             builder: (_) {
-                              if (!Get.isRegistered<NotificationService>()) {
-                                return const SizedBox();
-                              }
+                              // The null check lives OUTSIDE the Obx, on
+                              // purpose. An Obx whose builder returns
+                              // without reading an observable does not
+                              // render nothing — GetX THROWS ("improper use
+                              // of a GetX"), and in release that paints an
+                              // error box. This Builder re-runs on the same
+                              // rebuilds the Obx would, so a service that
+                              // has gone is still caught, just one frame
+                              // up, where returning early is safe.
+                              final ns = notificationServiceOrNull;
+                              if (ns == null) return const SizedBox();
                               return Obx(() {
-                                // Re-check inside the Obx: this closure
-                                // re-runs on later rebuilds, when the
-                                // service may no longer be registered.
-                                final ns = notificationServiceOrNull;
-                                if (ns == null) return const SizedBox();
                                 final count =
                                     ns
                                         .unreadEventCounts[widget
