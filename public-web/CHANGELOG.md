@@ -1,5 +1,16 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-23)
+
+- **Chat messages can be 4,000 characters.** The route rejected nothing and
+  trimmed everything to 500; now the composer stops at 4,000, shows a count
+  once within 400 of it, and an over-long message is refused with a reason.
+- **A malformed song link is a missing song**, not a shim SqlException: a
+  non-GUID id in `/songs/<id>` 404s instead of logging a conversion error.
+- **Maps in hidden tabs** no longer throw `Invalid LatLng object: (NaN, NaN)`
+  from Leaflet's fly animation; `safeFlyTo` falls back to `setView` when the
+  container has no size.
+
 ## 0.21.73 (2026-09-23)
 
 - **Failures that only reached the console now reach the log.** Five PackTrack

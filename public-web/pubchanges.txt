@@ -1,3 +1,8 @@
+0.21.74
+    • Chat messages can be up to 4,000 characters; over-long messages are refused with a reason instead of trimmed to 500.
+    • A non-GUID song id 404s instead of throwing in the shim.
+    • Map flyTo falls back to setView on a zero-size (hidden-tab) map — no more NaN LatLng errors.
+
 0.21.73
     • PackTrack fetch failures in the browser and four API routes' failures now reach HC.ErrorLog instead of dying in the console.
 
