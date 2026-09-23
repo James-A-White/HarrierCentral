@@ -1,3 +1,6 @@
+2.0.85+720
+    • Error reports from before sign-in now reach the server; 2.0.84 sent them without a token and the API dropped them.
+
 2.0.84+719
     • The portal reports its own errors to HC.ErrorLog — it had no client-side error telemetry at all before this.
 

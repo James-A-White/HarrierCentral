@@ -21,8 +21,18 @@ Future<void> sendClientError({
   try {
     final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
-    final accessToken = deviceId.isEmpty || deviceSecret.isEmpty
-        ? ''
+
+    // PortalApiHC6 refuses any call without BOTH deviceId and accessToken
+    // present — it checks presence, not validity; the SP validates. So a
+    // browser that has never held a device cannot report at all (accepted:
+    // it has nothing the server could trust), and before sign-in, when there
+    // is a device but no secret, a placeholder token goes through and the SP
+    // falls back to its device-exists gate. Found on the 2.0.84 smoke test,
+    // where the first version of this sent no token and the shim dropped
+    // every pre-sign-in report on the floor.
+    if (deviceId.isEmpty) return;
+    final accessToken = deviceSecret.isEmpty
+        ? 'none'
         : Utilities.generateToken(
             deviceId,
             'hcportal_logClientError',
@@ -31,8 +41,8 @@ Future<void> sendClientError({
 
     final body = <String, String>{
       'queryType': 'logClientError',
-      if (deviceId.isNotEmpty) 'deviceId': deviceId,
-      if (accessToken.isNotEmpty) 'accessToken': accessToken,
+      'deviceId': deviceId,
+      'accessToken': accessToken,
       'errorName': errorName.length > 500 ? errorName.substring(0, 500) : errorName,
       'errorDescription': errorDescription.length > 2400
           ? errorDescription.substring(0, 2400)

@@ -1,3 +1,11 @@
+## 2.0.85+720 (2026-09-23)
+### Fixes
+- **Error reports from before sign-in now arrive.** 2.0.84's reporter sent no
+  token when there was no secret yet, and the API refuses any call without
+  one — so the reports most worth having were dropped before they reached the
+  server. A placeholder token now goes through and the server applies its own
+  device check.
+
 ## 2.0.84+719 (2026-09-23)
 ### Improvements
 - **The portal now reports its own errors.** Until this build it had no
