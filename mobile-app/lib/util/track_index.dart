@@ -434,7 +434,8 @@ class TrackIndex {
                 LatLng((p[0] as num).toDouble(), (p[1] as num).toDouble()),
           )
           .toList(growable: false);
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][TRACK]', 'track decode failed: $e', s);
       return const <LatLng>[];
     }
   }

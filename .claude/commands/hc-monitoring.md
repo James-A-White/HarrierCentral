@@ -90,13 +90,27 @@ is on for every user, so this is the broad signal. It contains `[ERROR]`,
 means Android** (the Android payload has no `systemName`). Web portal
 sessions appear here too as `chrome`/`safari`/`firefox` on `2.0.x`.
 
-**What is NOT logged anywhere:** a 500 that dies *inside the Azure Function
-shim* before the SP runs. Application Insights is commented out in
-`api/HcWebApi.csproj`. The only trace of these is the client's
-`Retry N failed: 500` line with an **empty** `Response:`. If you ever see a
-burst of those across many devices at once, the shim is the suspect and the
-DB will look innocent. (Memory `signup-broken-five-ways`: empty 500 = shim,
-400 with a JSON body = SP.)
+**The API shim — Application Insights.** `harriercentralpublicapi` has
+`APPLICATIONINSIGHTS_CONNECTION_STRING` and the instrumentation key set (RG
+`harriercentralpublicapi`, component of the same name) since commit
+`45f0a49c`, so a 500 that dies *inside* the Function before the SP runs is
+no longer invisible — it is in App Insights, not in `HC.ErrorLog`. The
+sweep does not read App Insights; when you see a burst of `Retry N failed:
+500` with an **empty** `Response:` across many devices at once, that is
+where to look next. (Memory `signup-broken-five-ways`: empty 500 = shim, 400
+with a JSON body = SP.) Verified wired on 2026-09-23; that telemetry is
+actually arriving has not been checked from the CLI.
+
+**Web errors are in `HC.ErrorLog` too**, since 0.21.6x:
+`HcVersion LIKE 'web %'`, `ProcName` = the reporting source (`global-error`,
+`app-error`, `leaflet-guard`, `packtrack-client/*`, or an API route such as
+`/api/packtrack`), `string_1` = the page. The detail starts with `ua <user
+agent>` from 0.21.72, so a crawler tripping a guard reads as a crawler.
+
+**Portal client errors are in `HC.ErrorLog`** from portal 2.0.84:
+`HcVersion LIKE 'portal %'`, `ProcName` = `portal-flutter` (a widget threw)
+or `portal-async` (a future, timer or stream threw). Before 2.0.84 the
+portal shipped nothing.
 
 ---
 

@@ -47,7 +47,8 @@ class ChatStripController extends GetxController {
       } else {
         debugPrint('ChatStripController: getEventMessages error: $jsonResult');
       }
-    } catch (e) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][CHAT]', 'ChatStrip load failed: $e', s);
       debugPrint('ChatStripController: load error: $e');
     } finally {
       isLoading.value = false;

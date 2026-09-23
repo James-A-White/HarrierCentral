@@ -2445,7 +2445,8 @@ class RunTrackerMapController extends GetxController
       final type = HashRunPointTypes.fromKey(typeKey);
       if (type == null) return null;
       return _ParsedCheckpointType(type: type, customLabel: label);
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][PACKTRACK]', 'call failed: $e', s);
       return null;
     }
   }

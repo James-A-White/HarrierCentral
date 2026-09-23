@@ -1,3 +1,9 @@
+1.0.61+59
+    • PublicWebApi and PublicWebAdminApi now write every failure to HC.ErrorLog —
+      an SP's error envelope, a reader exception, an unhandled exception. Until
+      now a failing publicWeb_ SP was visible only as the page's "upstream 400",
+      with the reason lost; one of those catches was a Debug.Print.
+
 1.0.60+58
     • Signing a device out (E9.F7.S19): listDevices and signOutDevice added
       to PublicWebAdminApi's allowlist. Thin publicWeb_ wrappers over the

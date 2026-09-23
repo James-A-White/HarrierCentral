@@ -1,3 +1,6 @@
+2.0.84+719
+    • The portal reports its own errors to HC.ErrorLog — it had no client-side error telemetry at all before this.
+
 2.0.83+718
     • Photo Review now sits on the Harrier Central backdrop, with the photo pane translucent so it reads at the edges.
 

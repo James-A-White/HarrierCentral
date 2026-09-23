@@ -919,7 +919,8 @@ class KennelPhotoService {
           );
 
       return (success: true, photos: merged);
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][PHOTO]', 'run photos call failed: $e', s);
       return (success: false, photos: <RunPhotoModel>[]);
     }
   }

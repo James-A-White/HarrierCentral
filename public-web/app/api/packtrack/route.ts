@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logWebError } from "@/lib/web-log";
 
 const UPSTREAM = "https://harriercentralpublicapi.azurewebsites.net/api/GetPositions";
 
@@ -12,6 +13,7 @@ export async function GET(req: NextRequest) {
   if (!eventId) return NextResponse.json({ error: "eventId required" }, { status: 400 });
   if (!API_KEY) {
     console.error("[packtrack] GET_POSITIONS_API_KEY not set — cannot call GetPositions");
+    void logWebError({ source: "/api/packtrack", error: "GET_POSITIONS_API_KEY not set", url: req.nextUrl.pathname });
     return NextResponse.json({ error: "not configured" }, { status: 500 });
   }
 
@@ -33,6 +35,7 @@ export async function GET(req: NextRequest) {
     if (!res.ok) {
       const text = await res.text();
       console.error(`[packtrack] upstream error: ${res.status} ${text}`);
+      void logWebError({ source: "/api/packtrack", error: `upstream ${res.status}`, detail: text, url: req.nextUrl.pathname });
       return NextResponse.json({ error: "upstream error", status: res.status }, { status: res.status });
     }
 
@@ -45,7 +48,7 @@ export async function GET(req: NextRequest) {
       headers: { "Cache-Control": "public, s-maxage=300" },
     });
   } catch (err) {
-    console.error("[packtrack] fetch error:", err);
+    void logWebError({ source: "/api/packtrack", error: err, url: req.nextUrl.pathname });
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }

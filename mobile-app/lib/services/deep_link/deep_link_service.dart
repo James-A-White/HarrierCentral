@@ -137,7 +137,8 @@ class DeepLinkService {
     try {
       final Uri? initial = await _links.getInitialLink();
       if (initial != null) _receive(initial, 'cold start');
-    } catch (e) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][DEEPLINK]', 'getInitialLink failed: $e', s);
       debugPrint('[DEEPLINK] getInitialLink failed: $e');
     }
     _sub = _links.uriLinkStream.listen(
@@ -580,7 +581,8 @@ class DeepLinkService {
   Future<void> _openInBrowser(Uri uri) async {
     try {
       await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-    } catch (e) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][DEEPLINK]', 'could not open in a browser: $e', s);
       debugPrint('[DEEPLINK] could not open $uri in a browser: $e');
     }
   }

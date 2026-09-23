@@ -205,6 +205,7 @@ namespace HcWebApi.Endpoints
                     catch (Exception ex)
                     {
                         _log.LogError("PublicWebAdminApi reader error: {Message}", ex.Message);
+                        await LogErrorAsync(connectionString, queryType, $"HC6 Public Web Admin Error: {queryType}", ex.ToString());
                     }
                 }
 
@@ -217,6 +218,7 @@ namespace HcWebApi.Endpoints
                 {
                     errorRowset[0].TryGetValue("ErrorMessage", out var errMsg);
                     _log.LogWarning("PublicWebAdminApi SP error [{QueryType}]: {ErrorMessage}", queryType, errMsg);
+                    await LogErrorAsync(connectionString, queryType, $"HC6 Public Web Admin Error: {queryType}", errMsg?.ToString());
                     return new BadRequestObjectResult(new { success = false, errorMessage = "Operation failed." });
                 }
 
@@ -230,8 +232,34 @@ namespace HcWebApi.Endpoints
             catch (Exception ex)
             {
                 _log.LogError("PublicWebAdminApi error [{QueryType}]: {Message}", queryType, ex.Message);
+                await LogErrorAsync(connectionString, queryType, $"HC6 Public Web Admin Error: {queryType}", ex.ToString());
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
         }
-    }
+    
+        /// Writes a failed public-web admin call to HC.ErrorLog. Until 2026-09-23 this
+        /// shim logged nothing: an SP that returned its error envelope, or a
+        /// reader that threw, reached only ILogger — and a failing publicWeb_ SP
+        /// was visible solely as the page's "upstream 400" with the reason lost.
+        /// Reuses nonApi_logPortalError, which is a plain ErrorLog insert.
+        private async Task LogErrorAsync(string connectionString, string queryType, string errorName, string? detail)
+        {
+            try
+            {
+                using SqlConnection conn = new(connectionString);
+                await conn.OpenAsync();
+                using SqlCommand cmd = new("[HC6].[nonApi_logPortalError]", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@errorName",        errorName.Length > 500 ? errorName[..500] : errorName);
+                cmd.Parameters.AddWithValue("@errorDescription", (object?)detail ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@procName",         $"[HC6].[publicWeb_{queryType}]");
+                cmd.Parameters.AddWithValue("@userId",           DBNull.Value);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.LogError("Failed to write to ErrorLog: {Message}", ex.Message);
+            }
+        }
+}
 }

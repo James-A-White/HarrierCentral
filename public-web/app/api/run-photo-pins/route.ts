@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logWebError } from "@/lib/web-log";
 
 // Proxies to the PublicWebApi shim's publicWeb_getRunPhotoPins SP: where and
 // when each Hash Flash-approved PUBLIC photo was taken. Photos are their own
@@ -30,6 +31,7 @@ export async function GET(req: NextRequest) {
     const res = await fetch(url.toString(), { cache: "no-store" });
     if (!res.ok) {
       console.warn(`[run-photo-pins] upstream ${res.status}`);
+      void logWebError({ source: "/api/run-photo-pins", error: `upstream ${res.status}`, url: req.nextUrl.pathname });
       return NextResponse.json({ pins: [] });
     }
     // Shape: [[{ EventFound: 1 }], [{ photoId, Latitude, Longitude, TakenAtUtc, CreatedAt }, ...]]
@@ -40,7 +42,7 @@ export async function GET(req: NextRequest) {
       { headers: { "Cache-Control": "public, s-maxage=30, max-age=0" } },
     );
   } catch (err) {
-    console.error("[run-photo-pins] fetch error:", err);
+    void logWebError({ source: "/api/run-photo-pins", error: err, url: req.nextUrl.pathname });
     return NextResponse.json({ pins: [] });
   }
 }

@@ -244,7 +244,8 @@ class HistoryListPageState extends State<HistoryListPage>
         // with no qualifying kennels sat on the spinner forever.
         if (forceRefresh) _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][HISTORY]', 'queryKennelStats failed: $e', s);
       if (kDebugMode) debugPrint('[HistoryList] queryKennelStats failed: $e');
       setStateIfMounted(() {
         if (forceRefresh) _isLoading = false;

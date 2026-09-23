@@ -398,6 +398,7 @@ class MainNavigationController extends GetxController
     try {
       await syncAllUserDataFromBackend();
     } catch (e, stack) {
+      BootLogger.logError('[ERROR][BOOT]', 'background full sync failed: $e', stack);
       debugPrint('[BOOT] MainNavController: background full sync error: $e');
       debugPrint(stack.toString());
     }

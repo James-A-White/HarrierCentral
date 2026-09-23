@@ -794,7 +794,9 @@ class EditRunDetailsController extends GetxController
           }
         }
       }
-    } catch (_) {}
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][RUN]', 'external lookup failed: $e', s);
+      }
 
     mutate(() {
       isUpdating.value = false;

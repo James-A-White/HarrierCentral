@@ -1,3 +1,13 @@
+## 2.0.84+719 (2026-09-23)
+### Improvements
+- **The portal now reports its own errors.** Until this build it had no
+  client-side error telemetry at all: a widget that threw, or a future that
+  failed, was seen by whoever hit it and nobody else. Both kinds now reach
+  HC.ErrorLog — the same table the app and the public web use and the Usage
+  Data dashboard reads — as `portal-flutter` and `portal-async`, throttled to
+  twenty per page load with repeats suppressed for five minutes. A crash on
+  the sign-in page is reported too, from any device the platform has issued.
+
 ## 2.0.83+718 (2026-09-22)
 ### Improvements
 - **Photo Review sits on the Harrier Central backdrop** rather than a flat

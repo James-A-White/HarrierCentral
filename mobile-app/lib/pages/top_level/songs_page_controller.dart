@@ -134,7 +134,9 @@ class SongsPageController extends GetxController
         LIMIT 1
       ''');
       isRsvpdToEvent.value = rows.isNotEmpty;
-    } catch (_) {}
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][SONG]', 'isRsvpdToEvent query failed: $e', s);
+      }
   }
 
   void _onIncomingSong() {
