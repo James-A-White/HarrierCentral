@@ -1,3 +1,30 @@
+## 3.1.2+1397 (2026-09-23)
+### Fixes
+- **Chat**: a message longer than 4,000 characters is refused with a clear
+  message instead of being silently cut at 500 (the first Admins-room
+  announcement lost its second half). The composer stops at 4,000; the
+  server refuses anything longer as a backstop.
+- **Check-in payments**: paying for a hasher charges the row that was
+  tapped, not whoever holds its index after a refresh — a shorter list threw
+  (build 1327), a reordered one would have recorded the payment against the
+  wrong hasher.
+- **Snackbars**: closing all snackbars failed asynchronously on 1394 (the
+  failure escaped the try/catch); it now runs in a guarded zone.
+
+### Improvements
+- **GetX migration**: 16 pages moved from `StatefulWidget` to
+  `StatelessWidget` over a GetX controller — drinks list, photo gallery,
+  receipts, down downs, live-run charges, history list, the two run-history
+  pages (one shared controller), payment report, kennel members,
+  leaderboard, check-in QR page, invite code, support, add/edit down down
+  (one shared form controller), profile, and the run detail tabs. Pure rules
+  became unit-tested statics (152 tests). **Beta track only until these are
+  device-tested** — the widget trees are unchanged but the state lives
+  elsewhere now.
+- Two latent faults fixed on the way: the historical-count form copied a
+  count into the first name (dead code, removed), and View Run History
+  indexed an empty history list.
+
 ## 3.1.1+1396 (2026-09-23)
 ### Fixes
 - **Boot**: an empty navigator no longer strands the app on the splash —
