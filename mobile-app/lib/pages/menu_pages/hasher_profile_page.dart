@@ -1,12 +1,11 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:harrier_central/data/services/gdpr_delete_service.dart';
-import 'package:harrier_central/data/services/get_invite_code_service.dart';
 import 'package:harrier_central/imports.dart';
 
-enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
-
-class HasherProfilePage extends StatefulWidget {
+/// The profile page: my account, another hasher, or a new hasher. Stateless
+/// over [HasherProfileController]; navigation and the context-bound dialogs
+/// stay here.
+class HasherProfilePage extends StatelessWidget {
   //final FutureRunScopedModel futureRunsModel;
 
   const HasherProfilePage({
@@ -44,268 +43,43 @@ class HasherProfilePage extends StatefulWidget {
   static const int flagUiElement_getUserRunHistory = 0x00000400;
 
   @override
-  HasherProfilePageState createState() => HasherProfilePageState();
-}
-
-class HasherProfilePageState extends State<HasherProfilePage> {
-  final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _runCountFormKey = GlobalKey<FormState>();
-
-  bool _autoValidate = false;
-
-  int? _historicalTotalRunCount;
-  int? _historicalHaringCount;
-  bool? _historicalCountIsEstimate;
-  bool? _historicalCountIsEstimateWidget;
-
-  String? _email = getStringPref(StringPrefsEnum.email);
-
-  bool _isLoading = true;
-  bool _isDirty = false;
-  bool _addAsKennelFollower = false;
-  bool _userRunHistoryLoading = false;
-  String _photoPrefix = '';
-  String _newPhoto = bundledAvatarUrl(Random.secure().nextInt(49) + 1);
-  late HashersModel _hasher;
-  //HasherKennelMapModel? _hkmData;
-
-  bool isEmptyGuid(String? guid) {
-    if ((guid == null) || (guid.isEmpty) || (guid == GUID_EMPTY)) {
-      return true;
-    }
-    return false;
+  Widget build(BuildContext context) {
+    return GetBuilder<HasherProfileController>(
+      init: HasherProfileController(
+        dataContext: dataContext,
+        pageType: pageType,
+        hasherId: hasherId,
+        eventId: eventId,
+        kennelId: kennelId,
+        hashNameFromSearch: hashNameFromSearch,
+      ),
+      tag: HasherProfileController.tagFor(pageType, hasherId),
+      builder: (HasherProfileController c) => Obx(() => _body(context, c)),
+    );
   }
 
-  Future<void> _refreshUserDataFromTable(bool forceRefresh) async {
-    String query =
-        '''
-        SELECT 
-          h.*
-          FROM ${EnumDataTables.hashers.commonTableName} h
-          WHERE h.hasherId = "${widget.hasherId}"
-
-          ''';
-
-    if (forceRefresh) {
-      // always sync user data before editing
-
-      // TODO(James): Make this AppDomainType correct
-      switch (widget.dataContext) {
-        case EnumDataContext.event:
-          await tableModel.syncEventAdminService.updateFromBackend(
-            EnumDataTables.hashers.flag |
-                EnumDataTables.hasherKennelMap.flag |
-                EnumDataTables.hasherEventMap.flag,
-            true,
-            widget.eventId,
-          );
-          break;
-        case EnumDataContext.user:
-          await tableModel.syncUserDataService.updateFromBackend(
-            EnumDataTables.hashers.flag,
-            true,
-            debugText: 'hasher_profile_page: Hashers',
-          );
-          break;
-        case EnumDataContext.kennel:
-          await tableModel.syncKennelAdminService.updateFromBackend(
-            EnumDataTables.hashers.flag | EnumDataTables.hasherKennelMap.flag,
-            true,
-            widget.kennelId,
-          );
-
-          query =
-              '''
-
-          SELECT 
-            h.*,
-            hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-            hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
-            hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
-            FROM ${EnumDataTables.hashers.commonTableName} h
-            LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.kennelTableName} hkm ON hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = "${widget.kennelId}" AND hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "${widget.hasherId}"
-            WHERE h.${tableModel.hashersTableHelper.colHasherId} = "${widget.hasherId}"
-          ''';
-
-          break;
-      }
-    }
-
-    try {
-      setStateIfMounted(() {
-        _isLoading = true;
-      });
-      final List<Map<String, dynamic>> results = await database.rawQuery(query);
-      if (results.isNotEmpty) {
-        _hasher = HashersModel.fromJson(results[0]);
-
-        if (widget.dataContext == EnumDataContext.kennel) {
-          // _hkmData = tableModel.hasherKennelMapTableHelper.fromMap(results[0]);
-          _historicalTotalRunCount = results[0]['historicalTotalRunCount'];
-          _historicalHaringCount = results[0]['historicalHaringCount'];
-          _historicalCountIsEstimate =
-              ((results[0]['historicalCountIsEstimate'] ?? 0) == 1);
-          _historicalCountIsEstimateWidget = _historicalCountIsEstimate;
-        }
-
-        _firstNameController.text = _hasher.firstName ?? '';
-        _lastNameController.text = _hasher.lastName ?? '';
-        _emailController.text =
-            ''; // we don't reveal e-mail in the app for users other than the user of the app
-        _hashNameController.text = _hasher.hashName ?? '';
-        _nameDisplayPreference = _hasher.dispPref;
-        _newPhoto =
-            _hasher.photo ??
-            _newPhoto; // if we have returned from the photo chooser, don't overwrite
-        _previousRunCountController.text = (_historicalTotalRunCount ?? 0)
-            .toString();
-        _previousHaringCountController.text = (_historicalHaringCount ?? 0)
-            .toString();
-        _historicalCountIsEstimateWidget =
-            (_historicalCountIsEstimate ?? false);
-
-        // fill in the e-mail for the user of the app.
-        if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          _emailController.text = _email ?? '';
-        }
-      }
-
-      _isLoading = false;
-      _checkDirty();
-      setStateIfMounted(() {});
-    } catch (e) {
-      //print(e);
-    }
+  Future<void> _save(BuildContext context, HasherProfileController c) async {
+    final ({bool shouldPop, HashersModel? result}) r = await c.updateProfile();
+    if (r.shouldPop && context.mounted) Navigator.of(context).pop(r.result);
   }
 
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _hashNameController = TextEditingController();
-  final TextEditingController _previousRunCountController =
-      TextEditingController();
-  final TextEditingController _previousHaringCountController =
-      TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    unawaited(initializeValues());
-
-    appBar = AppBar(
-      centerTitle: true,
-      backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-      title: Text(
-        widget.pageType == EnumMyProfilePageType.myProfile
-            ? 'My Account'
-            : 'Hasher Profile',
-        style: ts_appBarTitle,
+  Future<void> _openRunHistory(
+    BuildContext context,
+    HasherProfileController c,
+  ) async {
+    final RunHistoryModel? runHistory = await c.loadRunHistory();
+    if (runHistory == null || !context.mounted) return;
+    await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute<dynamic>(
+        builder: (BuildContext context) => UserRunHistoryListPage(
+          appDomain: AppDomainType.values.byName(dataContext.name),
+          hashName: hashNameFromSearch,
+          hasherId: hasherId,
+          kennelInfo: runHistory,
+          refreshKennelInfo: () {},
+        ),
       ),
     );
-
-    _firstNameController.addListener(() {
-      _checkDirty();
-    });
-    _lastNameController.addListener(() {
-      _checkDirty();
-    });
-    _emailController.addListener(() {
-      _checkDirty();
-    });
-    _hashNameController.addListener(() {
-      _checkDirty();
-    });
-    _previousRunCountController.addListener(() {
-      _checkDirty();
-    });
-    _previousHaringCountController.addListener(() {
-      _checkDirty();
-    });
-
-    _newPhoto = bundledAvatarUrl(Random.secure().nextInt(49) + 1);
-  }
-
-  Future<void> initializeValues() async {
-    final isGranted = await Permission.location.isGranted;
-    appModel.hasLocationPermissions = isGranted;
-
-    if (widget.hashNameFromSearch.isNotEmpty) {
-      _hashNameController.text = widget.hashNameFromSearch;
-    }
-    // //print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
-      await _refreshUserDataFromTable(true);
-      _photoPrefix = widget.hasherId;
-    } else {
-      if ((widget.kennelId.isNotEmpty) && (widget.kennelId != GUID_EMPTY)) {
-        _addAsKennelFollower = true;
-      }
-      _hasher = HashersModel.empty();
-      _photoPrefix = 'newHcUser_${DateTime.now().microsecondsSinceEpoch}';
-
-      _isLoading = false;
-    }
-
-    setStateIfMounted(() {});
-  }
-
-  String getDistancePreferenceAsString(int distPref) {
-    if (distPref == 2) {
-      return 'kilometers';
-    } else if (distPref == 3) {
-      return 'miles';
-    }
-    return 'miles';
-  }
-
-  void _checkDirty() {
-    if (_isLoading) {
-      return;
-    }
-    bool isDirty = false;
-    if (_firstNameController.text != (_hasher.firstName ?? '')) {
-      isDirty = true;
-    }
-    if (_lastNameController.text != (_hasher.lastName ?? '')) {
-      isDirty = true;
-    }
-
-    if (_addAsKennelFollower) {
-      if ((_email != null) && ((_emailController.text) != (_email ?? ''))) {
-        isDirty = true;
-      }
-    }
-
-    if (_hashNameController.text != (_hasher.hashName ?? '')) {
-      isDirty = true;
-    }
-    if (_nameDisplayPreference != _hasher.dispPref) {
-      isDirty = true;
-    }
-    if (_newPhoto != (_hasher.photo ?? '')) {
-      isDirty = true;
-    }
-    if (_previousRunCountController.text !=
-        (_historicalTotalRunCount ?? 0).toString()) {
-      isDirty = true;
-    }
-    if (_previousHaringCountController.text !=
-        (_historicalHaringCount ?? 0).toString()) {
-      isDirty = true;
-    }
-
-    if (_historicalCountIsEstimateWidget !=
-        (_historicalCountIsEstimate ?? false)) {
-      isDirty = true;
-    }
-
-    if (isDirty != _isDirty) {
-      setStateIfMounted(() {
-        _isDirty = isDirty;
-      });
-    }
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -325,130 +99,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
-  //GlobalKey<ScaffoldState> ScaffoldKey = GlobalKey<ScaffoldState>();
-
-  Future<void> _updateProfile() async {
-    if (_profileFormKey.currentState!.validate()) {
-      //    If all data are correct then save data to out variables
-      _profileFormKey.currentState!.save();
-
-      // write the value of the email address to local preferences
-
-      setStateIfMounted(() {
-        _isLoading = true;
-      });
-
-      final HashersService srv = HashersService();
-
-      final String responseBody = await srv.addEditUser(
-        targetUserId: _hasher.hasherId,
-        firstName: _firstNameController.text,
-        lastName: _lastNameController.text,
-        email: _emailController.text,
-        hashName: _hashNameController.text,
-        photo: _newPhoto,
-        eventId: widget.eventId,
-        kennelId: ((widget.kennelId.isEmpty)) ? GUID_EMPTY : widget.kennelId,
-        historicalTotalRunCount: _previousRunCountController.text,
-        historicalHaringCount: _previousHaringCountController.text,
-        historicalCountIsEstimate: _historicalCountIsEstimateWidget,
-        // Replace only the auto-display bits; distance units + camera roll are
-        // owned by the Settings page, and everything else (photo sharing,
-        // debug harvest, ...) must ride through untouched — the SP overwrites
-        // the whole Preferences column when @preferences is supplied.
-        // -1 = do not update; the SP COALESCEs it away. This page owns no
-        // preference bits now that the auto-show radius moved to Settings
-        // (James, 2026-09-20), so it must not write the column at all —
-        // writing it from a stale local copy is how one screen clobbers
-        // another's setting. This also fixes a live bug: the NON-self branch
-        // used to send _autoRunPreference, whose value was never loaded for
-        // another hasher, so an admin editing someone's profile rewrote that
-        // hasher's Preferences to 2 — resetting their distance units and
-        // turning their auto-show radius off.
-        preferences: -1,
-        followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0,
-        nameDisplayPreference: _nameDisplayPreference,
-      );
-
-      if (!responseBody.startsWith(ERROR_PREFIX)) {
-        if (widget.pageType == EnumMyProfilePageType.myProfile) {
-          await setStringPref(StringPrefsEnum.email, _emailController.text);
-        }
-
-        HashersModel? h;
-        final List<dynamic> jsonResult = json.decode(responseBody);
-
-        // look through the returned results and find the
-        // hasher we just edited. Usually only one
-        // hasher will be returned, but there could be
-        // edge cases where more than one Hasher record
-        // is returned.
-        for (int i = 0; i < jsonResult.length; i++) {
-          if ((jsonResult[i].length > 0) &&
-              (jsonResult[i][0].containsKey('hasherId'))) {
-            for (int j = 0; j < jsonResult[i].length; j++) {
-              if ((jsonResult[i][j]['firstName'].toString().toLowerCase() ==
-                      (_hasher.firstName ?? '').toLowerCase()) &&
-                  (jsonResult[i][j]['hashName'].toString().toLowerCase() ==
-                      (_hasher.hashName ?? '').toLowerCase())) {
-                h = HashersModel.fromJson(jsonResult[i][0]);
-              }
-            }
-          }
-        }
-
-        if (h != null) {
-          if (widget.pageType == EnumMyProfilePageType.myProfile) {
-            await setStringPref(StringPrefsEnum.profilePhotoUrl, h.photo);
-            await setStringPref(StringPrefsEnum.displayName, h.dispName);
-            // don't set the e-mail with the result from the
-            // api call. Use the local value in hasher.email instead
-            //setStringPref(StringPrefsEnum.email, hasher.email);
-            await setStringPref(StringPrefsEnum.firstName, h.firstName);
-            await setStringPref(StringPrefsEnum.hashName, h.hashName);
-            await setStringPref(StringPrefsEnum.lastName, h.lastName);
-          }
-        }
-
-        await _refreshUserDataFromTable(true);
-        setStateIfMounted(() {
-          _isLoading = false;
-          _checkDirty();
-        });
-
-        _historicalCountIsEstimateWidget = _historicalCountIsEstimate;
-
-        if (widget.pageType != EnumMyProfilePageType.myProfile) {
-          if (!mounted) return;
-          Navigator.of(context).pop(h);
-        } else {
-          await Utilities.showAlert(
-            'Profile Updated',
-            'Your profile was updated successfully.',
-            'OK',
-          );
-        }
-      } else {
-        await Utilities.showAlert(
-          'Profile Not Updated',
-          'There was a problem updating your profile. Please ensure you are connected to the Internet and try again later.',
-          'OK',
-        );
-      }
-    } else {
-      //    If all data are not valid then start auto validation.
-      setStateIfMounted(() {
-        _autoValidate = true;
-      });
-    }
-  }
-
-  Widget profileFormUi() {
+  Widget _profileFormUi(HasherProfileController c) {
     return Column(
       children: <Widget>[
         TextFormField(
           autocorrect: false,
-          controller: _firstNameController,
+          controller: c.firstNameController,
           //initialValue: hasher.firstName,
           decoration: const InputDecoration(
             labelText: 'First name (or initial)',
@@ -462,14 +118,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             }
           },
           onSaved: (String? val) {
-            _hasher = _hasher.copyWith(firstName: val ?? '');
-            //_hasher.firstName = val;
+            c.hasher = c.hasher.copyWith(firstName: val ?? '');
           },
         ),
         TextFormField(
           autocorrect: false,
           //initialValue: hasher.lastName,
-          controller: _lastNameController,
+          controller: c.lastNameController,
           decoration: const InputDecoration(
             labelText: 'Last Name (or initial)',
           ),
@@ -482,33 +137,30 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             }
           },
           onSaved: (String? val) {
-            _hasher = _hasher.copyWith(lastName: val ?? '');
-            //_hasher.lastName = val;
+            c.hasher = c.hasher.copyWith(lastName: val ?? '');
           },
         ),
-        if ((widget.pageType == EnumMyProfilePageType.myProfile) ||
-            (widget.pageType ==
-                EnumMyProfilePageType.newHasherProfile)) ...<Widget>[
+        if ((pageType == EnumMyProfilePageType.myProfile) ||
+            (pageType == EnumMyProfilePageType.newHasherProfile)) ...<Widget>[
           TextFormField(
             autocorrect: false,
             //initialValue: hasher.email,
-            controller: _emailController,
+            controller: c.emailController,
             decoration: const InputDecoration(labelText: 'Email'),
             keyboardType: TextInputType.emailAddress,
             validator: Utilities.validateEmail,
             onSaved: (String? val) {
-              _email = val ?? '';
+              c.email = val ?? '';
             },
           ),
         ],
         TextFormField(
           autocorrect: false,
           //initialValue: hasher.hashName,
-          controller: _hashNameController,
+          controller: c.hashNameController,
           decoration: const InputDecoration(labelText: 'Hash Name (optional)'),
           onSaved: (String? val) {
-            _hasher = _hasher.copyWith(hashName: val ?? '');
-            //_hasher.hashName = val;
+            c.hasher = c.hasher.copyWith(hashName: val ?? '');
           },
           keyboardType: TextInputType.text,
         ),
@@ -517,30 +169,22 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
-  Widget runCountUi() {
+  Widget _runCountUi(HasherProfileController c) {
     return Column(
       children: <Widget>[
         TextFormField(
           autocorrect: false,
-          controller: _previousRunCountController,
+          controller: c.previousRunCountController,
           decoration: const InputDecoration(labelText: 'Historical run count'),
           keyboardType: TextInputType.number,
-          onSaved: (String? val) {
-            _hasher = _hasher.copyWith(firstName: val ?? '');
-            //_hasher.firstName = val;
-          },
         ),
         TextFormField(
           autocorrect: false,
-          controller: _previousHaringCountController,
+          controller: c.previousHaringCountController,
           decoration: const InputDecoration(
             labelText: 'Historical haring count',
           ),
           keyboardType: TextInputType.number,
-          onSaved: (String? val) {
-            _hasher = _hasher.copyWith(firstName: val ?? '');
-            //_hasher.firstName = val;
-          },
         ),
         const SizedBox(height: 15.0),
         Row(
@@ -551,13 +195,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               width: 25,
               color: Colors.yellow[100],
               child: Checkbox(
-                value: _historicalCountIsEstimateWidget ?? false,
-                onChanged: (bool? value) {
-                  setStateIfMounted(() {
-                    _historicalCountIsEstimateWidget = value ?? false;
-                    _checkDirty();
-                  });
-                },
+                value: c.historicalCountIsEstimateWidget.value ?? false,
+                onChanged: (bool? value) => c.setEstimate(value ?? false),
               ),
             ),
             const Text(
@@ -572,30 +211,20 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
-  AppBar? appBar;
-
-  int _nameDisplayPreference = 1;
-
-  void _handleRadioValueChange0(int? value) {
-    setStateIfMounted(() {
-      _nameDisplayPreference = value ?? 0;
-      _checkDirty();
-    });
-  }
-
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _hashNameController.dispose();
-    _previousRunCountController.dispose();
-    _previousHaringCountController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _body(BuildContext context, HasherProfileController c) {
+    final String newPhoto = c.newPhoto.value;
+    final bool userRunHistoryLoading = c.userRunHistoryLoading.value;
+    final AppBar appBar = AppBar(
+      centerTitle: true,
+      backgroundColor: themeAppBarBackground,
+      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+      title: Text(
+        pageType == EnumMyProfilePageType.myProfile
+            ? 'My Account'
+            : 'Hasher Profile',
+        style: ts_appBarTitle,
+      ),
+    );
     return Stack(
       children: <Widget>[
         SizedBox(
@@ -610,11 +239,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           child: AppScaffold(
             //key: ScaffoldKey,
             appBar: appBar,
-            body: _isLoading
+            body: c.isLoading.value
                 ? Container(
                     height:
                         MediaQuery.sizeOf(context).height -
-                        (appBar?.preferredSize.height ?? 0),
+                        appBar.preferredSize.height,
                     decoration: Backgrounds.defaultHcBackground(),
                     child: _buildCircularProgressIndicator(),
                   )
@@ -622,7 +251,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                     decoration: Backgrounds.defaultHcBackground(),
                     height:
                         MediaQuery.sizeOf(context).height -
-                        (appBar?.preferredSize.height ?? 0),
+                        appBar.preferredSize.height,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onPanDown: (_) {
@@ -644,7 +273,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                 child: Column(
                                   children: <Widget>[
                                     Text(
-                                      widget.pageType ==
+                                      pageType ==
                                               EnumMyProfilePageType.myProfile
                                           ? 'My Profile Information'
                                           : 'Hasher Profile Information',
@@ -681,11 +310,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     BorderRadius.circular(5.0),
                                               ),
                                               child: Form(
-                                                key: _profileFormKey,
-                                                autovalidateMode: _autoValidate
+                                                key: c.profileFormKey,
+                                                autovalidateMode:
+                                                    c.autoValidate.value
                                                     ? AutovalidateMode.always
                                                     : AutovalidateMode.disabled,
-                                                child: profileFormUi(),
+                                                child: _profileFormUi(c),
                                               ),
                                             ),
                                             Container(
@@ -695,10 +325,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                     BorderRadius.circular(5.0),
                                               ),
                                               child: RadioGroup(
-                                                groupValue:
-                                                    _nameDisplayPreference,
+                                                groupValue: c
+                                                    .nameDisplayPreference
+                                                    .value,
                                                 onChanged:
-                                                    _handleRadioValueChange0,
+                                                    c.setNameDisplayPreference,
                                                 child: Column(
                                                   children: <Widget>[
                                                     const SizedBox(
@@ -756,7 +387,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 top: 20,
                                                 bottom: 30,
                                               ),
-                                              child: _newPhoto.isEmpty
+                                              child: newPhoto.isEmpty
                                                   ? Image.asset(
                                                       'images/icons/create_profile_photo.png',
                                                     )
@@ -770,7 +401,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         aspectRatio: 1.0,
                                                         child: ProfilePhoto(
                                                           profilePhotoUrl:
-                                                              _newPhoto,
+                                                              newPhoto,
                                                           photoHeight: 200.0,
                                                           //leftPadding: 0.0,
                                                         ),
@@ -812,24 +443,23 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             context,
                                                           ) => ChooseProfileImage(
                                                             isForThisDevice:
-                                                                widget
-                                                                    .pageType ==
+                                                                pageType ==
                                                                 EnumMyProfilePageType
                                                                     .myProfile,
                                                             fileNamePrefix:
-                                                                _photoPrefix,
+                                                                c.photoPrefix,
                                                             currentProfileImage:
-                                                                _hasher.photo ??
-                                                                _newPhoto,
+                                                                c
+                                                                    .hasher
+                                                                    .photo ??
+                                                                newPhoto,
                                                           ),
                                                     ),
                                                   );
 
-                                                  if (!mounted) return;
                                                   if (result != null &&
                                                       result.isNotEmpty) {
-                                                    _newPhoto = result;
-                                                    _checkDirty();
+                                                    c.onPhotoChosen(result);
                                                   }
                                                 },
                                                 child: Text(
@@ -843,7 +473,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ),
                                       ),
                                     ),
-                                    (widget.uiElementsToDisplay &
+                                    (uiElementsToDisplay &
                                                 HasherProfilePage
                                                     .flagUiElement_followKennel ==
                                             0)
@@ -880,14 +510,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       width: 25,
                                                       color: Colors.yellow[100],
                                                       child: Checkbox(
-                                                        value:
-                                                            _addAsKennelFollower,
-                                                        onChanged: (bool? value) {
-                                                          setStateIfMounted(() {
-                                                            _addAsKennelFollower =
-                                                                value ?? false;
-                                                          });
-                                                        },
+                                                        value: c
+                                                            .addAsKennelFollower
+                                                            .value,
+                                                        onChanged: (bool? value) =>
+                                                            c
+                                                                    .addAsKennelFollower
+                                                                    .value =
+                                                                value ?? false,
                                                       ),
                                                     ),
                                                     const Text(
@@ -901,7 +531,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay &
+                                    (uiElementsToDisplay &
                                                 HasherProfilePage
                                                     .flagUiElement_previousRunCount ==
                                             0)
@@ -921,7 +551,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 textAlign: TextAlign.center,
                                               ),
                                               Text(
-                                                'Number of runs with ${widget.kennelShortName} that are not listed in Harrier Central',
+                                                'Number of runs with $kennelShortName that are not listed in Harrier Central',
                                                 style: ts_headingItalic,
                                                 textAlign: TextAlign.center,
                                               ),
@@ -943,18 +573,18 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ),
                                                 ),
                                                 child: Form(
-                                                  key: _runCountFormKey,
+                                                  key: c.runCountFormKey,
                                                   autovalidateMode:
-                                                      _autoValidate
+                                                      c.autoValidate.value
                                                       ? AutovalidateMode.always
                                                       : AutovalidateMode
                                                             .disabled,
-                                                  child: runCountUi(),
+                                                  child: _runCountUi(c),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay &
+                                    (uiElementsToDisplay &
                                                 HasherProfilePage
                                                     .flagUiElement_getInviteCodeButton ==
                                             0)
@@ -991,14 +621,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               ),
                                                         ),
                                                         onPressed: () async {
-                                                          final GetInviteCodeService
-                                                          svc =
-                                                              GetInviteCodeService();
                                                           final SingleResultModel?
-                                                          result = await svc
-                                                              .getInviteCode(
-                                                                widget.hasherId,
-                                                              );
+                                                          result = await c
+                                                              .getInviteCode();
 
                                                           if ((result?.result ??
                                                                   '')
@@ -1011,7 +636,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 '43930293',
                                                               ),
                                                               dialogTitle:
-                                                                  'The invite code for ${_hasher.dispName} is: \r\n\r\n${result!.result!.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
+                                                                  'The invite code for ${c.hasher.dispName} is: \r\n\r\n${result!.result!.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
                                                               qrText: result
                                                                   .result!,
                                                             );
@@ -1050,7 +675,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    (widget.uiElementsToDisplay &
+                                    (uiElementsToDisplay &
                                                 HasherProfilePage
                                                     .flagUiElement_getUserRunHistory ==
                                             0)
@@ -1087,84 +712,15 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               ),
                                                         ),
                                                         onPressed:
-                                                            _userRunHistoryLoading
+                                                            userRunHistoryLoading
                                                             ? null
-                                                            : () async {
-                                                                setStateIfMounted(
-                                                                  () {
-                                                                    _userRunHistoryLoading =
-                                                                        true;
-                                                                  },
-                                                                );
-                                                                final runHistory =
-                                                                    await RunHistoryQueries.getRunHistory(
-                                                                      widget
-                                                                          .hasherId,
-                                                                      widget
-                                                                          .kennelId,
-                                                                    );
-
-                                                                await tableModel
-                                                                    .syncKennelAdminService
-                                                                    .clearEventData();
-
-                                                                await tableModel.syncKennelAdminService.updateFromBackend(
-                                                                  EnumDataTables
-                                                                          .hasherEventMap
-                                                                          .flag |
-                                                                      EnumDataTables
-                                                                          .payments
-                                                                          .flag,
-                                                                  false,
-                                                                  widget
-                                                                      .kennelId,
-                                                                  targetHasherId:
-                                                                      widget
-                                                                          .hasherId,
-                                                                );
-
-                                                                setStateIfMounted(
-                                                                  () {
-                                                                    _userRunHistoryLoading =
-                                                                        false;
-                                                                  },
-                                                                );
-
-                                                                if (context
-                                                                    .mounted) {
-                                                                  await Navigator.of(
+                                                            : () =>
+                                                                  _openRunHistory(
                                                                     context,
-                                                                  ).push<
-                                                                    dynamic
-                                                                  >(
-                                                                    MaterialPageRoute<
-                                                                      dynamic
-                                                                    >(
-                                                                      builder:
-                                                                          (
-                                                                            BuildContext
-                                                                            context,
-                                                                          ) {
-                                                                            return UserRunHistoryListPage(
-                                                                              appDomain: AppDomainType.values.byName(
-                                                                                widget.dataContext.name,
-                                                                              ),
-                                                                              hashName: widget.hashNameFromSearch,
-                                                                              hasherId: widget.hasherId,
-                                                                              kennelInfo: runHistory[0],
-                                                                              refreshKennelInfo: () {},
-                                                                            );
-                                                                          },
-                                                                    ),
-                                                                  );
-                                                                }
-                                                                //                                              Navigator.of(context).push<dynamic>(
-                                                                //   MaterialPageRoute<dynamic>(
-                                                                //           kennelInfo: kennelInfo,
-                                                                //     },
-                                                              },
+                                                                    c,
+                                                                  ),
                                                         child:
-                                                            _userRunHistoryLoading
+                                                            userRunHistoryLoading
                                                             ? Row(
                                                                 children: [
                                                                   Text(
@@ -1201,7 +757,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                    if (widget.uiElementsToDisplay &
+                                    if (uiElementsToDisplay &
                                             HasherProfilePage
                                                 .flagUiElement_logOutButton !=
                                         0) ...<Widget>[
@@ -1289,10 +845,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                     // (James, 2026-09-20). Self-contained —
                                     // it fetches, draws and revokes on its
                                     // own and needs nothing from this page.
-                                    if (widget.pageType ==
+                                    if (pageType ==
                                         EnumMyProfilePageType.myProfile)
                                       PasskeysSection(),
-                                    if (widget.uiElementsToDisplay &
+                                    if (uiElementsToDisplay &
                                             HasherProfilePage
                                                 .flagUiElement_refresh3rdPartyLogin !=
                                         0) ...<Widget>[
@@ -1373,7 +929,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ],
                                       ),
                                     ],
-                                    if (widget.uiElementsToDisplay &
+                                    if (uiElementsToDisplay &
                                             HasherProfilePage
                                                 .flagUiElement_gdprDeleteAccount !=
                                         0) ...<Widget>[
@@ -1423,80 +979,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             right: 20,
                                                           ),
                                                     ),
-                                                    onPressed: () async {
-                                                      bool? result =
-                                                          await Utilities.showAlert(
-                                                            'Delete Account',
-                                                            'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
-                                                            'Delete Account',
-                                                            showCancelButton:
-                                                                true,
-                                                            cancelButtonText:
-                                                                'Keep Account',
-                                                          );
-
-                                                      if (result ?? false) {
-                                                        await Future<
-                                                          void
-                                                        >.delayed(
-                                                          const Duration(
-                                                            milliseconds: 1500,
-                                                          ),
-                                                        );
-
-                                                        bool? result2 =
-                                                            await Utilities.showAlert(
-                                                              'Delete Account',
-                                                              'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?',
-                                                              'Delete Account',
-                                                              showCancelButton:
-                                                                  true,
-                                                              cancelButtonText:
-                                                                  'Keep Account',
-                                                            );
-
-                                                        if (result2 ?? false) {
-                                                          final GdprDeleteService
-                                                          svc =
-                                                              GdprDeleteService();
-                                                          final SingleResultModel?
-                                                          result = await svc
-                                                              .gdprDelete();
-
-                                                          if ((result?.result ??
-                                                                  '') ==
-                                                              'success') {
-                                                            await Utilities.showAlert(
-                                                              'Successful',
-                                                              'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
-                                                              'OK',
-                                                            );
-                                                          } else {
-                                                            await Utilities.showAlert(
-                                                              'Contact us',
-                                                              'For some reason, we were unable to delete your account. Please contact us at harriercentral@gmail.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
-                                                              'OK',
-                                                            );
-                                                          }
-
-                                                          await clearPrefs();
-                                                          await deleteAllSecure();
-                                                          await DBProvider.deleteDb(
-                                                            DB_NAME,
-                                                          );
-
-                                                          // Get.reset(
-                                                          //   clearRouteBindings:
-                                                          //       true,
-                                                          // );
-
-                                                          await Get.offAll(
-                                                            () =>
-                                                                AppEntryPage(),
-                                                          );
-                                                        }
-                                                      }
-                                                    },
+                                                    onPressed: () => unawaited(
+                                                      c.deleteAccount(),
+                                                    ),
                                                     child: Text(
                                                       'Delete Account',
                                                       style: ts_button,
@@ -1536,15 +1021,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             child: StyleForConnected(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isDirty ? hc_red : Colors.grey,
+                  backgroundColor: c.isDirty.value ? hc_red : Colors.grey,
                 ),
                 onPressed: () async {
-                  if (Utilities.isConnected(showDialog: true) && _isDirty) {
-                    await _updateProfile();
+                  if (Utilities.isConnected(showDialog: true) &&
+                      c.isDirty.value) {
+                    await _save(context, c);
                   }
                 },
                 child: Text(
-                  widget.pageType == EnumMyProfilePageType.newHasherProfile
+                  pageType == EnumMyProfilePageType.newHasherProfile
                       ? 'Add Hasher'
                       : 'Save Changes',
                   style: ts_button,
@@ -1556,14 +1042,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         OfflineModeRibbon(
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
-          refreshFunction: () {
-            setStateIfMounted(() {});
-          },
+          refreshFunction: () => c.update(),
         ),
       ],
     );
   }
-
-  //   // Register other dependencies here
-  // }
 }
