@@ -1,3 +1,17 @@
+## 3.1.1+1396 (2026-09-23)
+### Fixes
+- **Boot**: an empty navigator no longer strands the app on the splash —
+  every route into the main page falls back to a fresh stack if replacing
+  the current one fails (one session in 5,516 over 60 days, on 3.0.12).
+- **Map tab**: a hidden error box at boot when the location service was not
+  yet up — an `Obx` that returned before observing anything (one session in
+  51 on 3.1.0). Fixed at the source; the same shape fixed on the run tabs.
+
+### Improvements
+- **Diagnostics**: 42 error handlers that used to swallow now write to the
+  session log. Expect more `[ERROR]` lines in the sweep — that is the point,
+  not a regression.
+
 ## 3.1.0+1394 (2026-09-20)
 ### Fixes
 - **Battery**: the precise-GPS boost is now suspended while the app is in the
