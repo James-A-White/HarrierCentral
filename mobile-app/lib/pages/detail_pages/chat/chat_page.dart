@@ -82,6 +82,11 @@ class ChatPage extends StatelessWidget {
       theme: _chatTheme,
       timeFormat: _timeFormat,
       builders: core.Builders(
+        // The stock Composer with one addition: a hard cap at the column
+        // width, so a long message is stopped in the box rather than cut on
+        // the server (or refused by it).
+        composerBuilder: (BuildContext context) =>
+            const Composer(maxLength: kChatMessageMaxLength),
         // Links in a bubble are tappable, and a hashruns.org run link opens
         // the run IN the app. The stock bubble renders plain text — there is
         // no url_launcher anywhere in flutter_chat_ui 2.11 — and even if it

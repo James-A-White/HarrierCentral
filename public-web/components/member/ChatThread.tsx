@@ -13,6 +13,9 @@ import { Send } from "lucide-react";
 import type { ChatKind, ChatMessageRow } from "@/lib/member-api";
 import { HC_BLUE, HC_RED } from "@/components/member/app-look";
 
+/** HC.EventMessage.MessageContent is NVARCHAR(4000); the SPs refuse more. */
+const CHAT_MESSAGE_MAX = 4000;
+
 const POLL_MS = 10000;
 
 export function ChatThread({ kind, id, title, me, initial, back }: {
@@ -55,7 +58,7 @@ export function ChatThread({ kind, id, title, me, initial, back }: {
   useEffect(() => { bottom.current?.scrollIntoView({ block: "end" }); }, [messages.length]);
 
   async function send() {
-    const body = text.trim().slice(0, 500);
+    const body = text.trim();
     if (!body || sending) return;
     setSending(true); setError(null);
     const messageId = crypto.randomUUID();
@@ -112,10 +115,14 @@ export function ChatThread({ kind, id, title, me, initial, back }: {
       {/* Composer */}
       <form className="sticky bottom-16 flex items-end gap-2 border-t border-zinc-200 bg-white px-3 py-2" onSubmit={(e) => { e.preventDefault(); send(); }}>
         <textarea
-          value={text} onChange={(e) => setText(e.target.value)} rows={1} maxLength={500} placeholder="Message"
+          value={text} onChange={(e) => setText(e.target.value)} rows={1} maxLength={CHAT_MESSAGE_MAX} placeholder="Message"
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
           className="max-h-32 min-h-[44px] flex-1 resize-y rounded-2xl border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-[17px] text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-700"
         />
+        {/* Only once it matters: a permanent "0/4000" is noise on a chat box. */}
+        {text.length > CHAT_MESSAGE_MAX - 400 && (
+          <span className="shrink-0 self-center text-xs tabular-nums text-zinc-500">{text.length.toLocaleString()}/{CHAT_MESSAGE_MAX.toLocaleString()}</span>
+        )}
         <button type="submit" disabled={sending || !text.trim()} aria-label="Send"
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white disabled:opacity-40" style={{ backgroundColor: HC_BLUE }}>
           <Send className="h-5 w-5" />

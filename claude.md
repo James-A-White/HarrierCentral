@@ -783,6 +783,12 @@ the fault, so that is an exposure figure, not a bug count.
 - `FLOAT` for money
 - `DATALENGTH` for string checks
 - Type or length mismatches between SP parameters and base table columns
+- **An `NVARCHAR(n)` parameter that receives user text** — SQL Server silently
+  truncates a parameter to its declared width: no error, no `HC.ErrorLog` row, a
+  message that just ends. `@messageContent NVARCHAR(500)` cut the first admin-room
+  announcement in half (2026-09-23). Declare such parameters `NVARCHAR(MAX)`, check
+  `LEN()` against the column width, and return the error envelope; cap the client
+  at the same number so the refusal is a backstop.
 - **SP body not wrapped in TRY/CATCH** — any runtime error becomes an unlogged raw 500
   (see "TRY/CATCH is mandatory" above). Flag on sight for reads AND writes.
 - CATCH block that doesn't log to `HC.ErrorLog` (swallows the error with no server record)

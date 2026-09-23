@@ -41,10 +41,10 @@
     },
     {
       "name": "messageContent",
-      "type": "NVARCHAR(500)",
+      "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageContent",
-      "description": "Message body. Required — empty string or null triggers a param validation error."
+      "description": "Message body. Required — empty string or null triggers a param validation error. Longer than 4,000 characters (the column width since 2026-09-23) is refused with errorCode 1264, errorType 2; the parameter is MAX so that it is refused rather than silently truncated."
     },
     {
       "name": "messageReleasabilityFlags",

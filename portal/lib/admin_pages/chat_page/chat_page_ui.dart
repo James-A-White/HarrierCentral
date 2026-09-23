@@ -68,6 +68,10 @@ class ChatSheetPage extends StatelessWidget {
         theme: _chatTheme,
         timeFormat: _timeFormat,
         builders: core.Builders(
+          // Hard cap at HC.EventMessage.MessageContent's width (4,000); the SP
+          // refuses more, this keeps a long message in the box instead.
+          composerBuilder: (BuildContext context) =>
+              const Composer(maxLength: 4000),
           chatMessageBuilder: (
             context,
             message,

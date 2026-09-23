@@ -5,6 +5,8 @@ import { bad, jsonBody } from "@/lib/member-routes";
 import { logWebError } from "@/lib/web-log";
 
 const KINDS: ChatKind[] = ["run", "kennel", "room"];
+/** HC.EventMessage.MessageContent is NVARCHAR(4000). */
+export const CHAT_MESSAGE_MAX = 4000;
 const okId = (kind: ChatKind, id: string) => kind === "room" ? /^\d{1,6}$/.test(id) : /^[0-9a-f-]{36}$/.test(id);
 
 /**
@@ -34,8 +36,11 @@ export async function POST(req: NextRequest) {
   if (!s) return bad("Not signed in.", 401);
   const body = await jsonBody<{ kind?: ChatKind; id?: string; messageId?: string; text?: string }>(req);
   const kind = body?.kind as ChatKind, id = (body?.id ?? "").toLowerCase(), messageId = (body?.messageId ?? "").toLowerCase();
-  const text = (body?.text ?? "").trim().slice(0, 500);
+  const text = (body?.text ?? "").trim();
   if (!KINDS.includes(kind) || !okId(kind, id) || !/^[0-9a-f-]{36}$/.test(messageId) || !text) return bad("Bad request.");
+  // Refused, not sliced: a silent cut is how the first admin-room announcement
+  // lost its second half (2026-09-23). The SPs enforce the same 4,000.
+  if (text.length > CHAT_MESSAGE_MAX) return bad(`Messages can be up to ${CHAT_MESSAGE_MAX.toLocaleString()} characters; this one is ${text.length.toLocaleString()}.`);
   try {
     const r = await sendChatMessage(s, kind, id, messageId, text);
     return r.ok ? NextResponse.json({ ok: true }) : bad(r.message ?? "Couldn't send.", 502);

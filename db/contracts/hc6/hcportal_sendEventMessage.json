@@ -41,10 +41,10 @@
     },
     {
       "name": "messageContent",
-      "type": "NVARCHAR(500)",
+      "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageContent",
-      "description": "Required: message body text. Validation error if NULL or LEN = 0."
+      "description": "Required: message body text. Validation error if NULL or LEN = 0, or longer than 4,000 characters (the column width since 2026-09-23); the parameter is MAX so that an over-long message is refused rather than silently truncated."
     },
     {
       "name": "messageReleasabilityFlags",
