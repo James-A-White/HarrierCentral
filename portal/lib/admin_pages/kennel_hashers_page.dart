@@ -1309,16 +1309,35 @@ class KennelHashersController extends TabUiController
       update();
     });
 
-    if (columnsType != EKennelGridOptions.addNewMembers &&
-        event.rowIdx < displayedHashers.length) {
+    if (columnsType != EKennelGridOptions.addNewMembers) {
       final field = event.column.field;
       final newValue = event.value.toString();
-      if (editableHasherFields.contains(field)) {
-        await updateHasherField(
-          displayedHashers[event.rowIdx],
-          field,
-          newValue,
+      // Resolve the hasher by the row's own id, NOT by event.rowIdx: the
+      // grid sorts client-side (the Display Name header on the Membership
+      // tab), so a row index into the unsorted list is another hasher's.
+      final String publicHasherId =
+          event.row.cells['publicHasherId']?.value?.toString() ?? '';
+      final KennelHashersModel? hasher = displayedHashers
+          .where((h) => h.publicHasherId == publicHasherId)
+          .firstOrNull;
+      if (hasher == null) {
+        _editFeedback(
+          "Couldn't find that hasher — reload the page.",
+          isError: true,
         );
+      } else if (field == 'eMail' &&
+          (newValue == '<hidden>' ||
+              event.oldValue?.toString() == '<hidden>')) {
+        // A non-member's email is shown as a placeholder; typing over it
+        // would send the placeholder to the server as their address.
+        _editFeedback(
+          'Their email is hidden because they are not a member of this '
+          'kennel; it cannot be edited here.',
+          isError: true,
+        );
+        _revertGrid();
+      } else if (editableHasherFields.contains(field)) {
+        await updateHasherField(hasher, field, newValue);
       }
     }
 
@@ -1380,11 +1399,35 @@ class KennelHashersController extends TabUiController
             : 'SP 20 [updateKennelHasher] called — success',
       );
     }
+    // The grid used to swallow every answer: a refused edit stayed on screen
+    // as if saved, and a transport failure said nothing (Kilty, 2026-09-23).
+    if (hasherResult is ApiError) {
+      _editFeedback(
+        "Couldn't save — check your connection and try again.",
+        isError: true,
+      );
+      _revertGrid();
+      return;
+    }
     if (hasherResult case ApiSuccess(:final body)) {
       final jsonItems = json.decode(body) as List<dynamic>;
+      final Map<String, dynamic>? first =
+          (jsonItems.isNotEmpty && (jsonItems[0] as List<dynamic>).isNotEmpty)
+          ? (jsonItems[0] as List<dynamic>)[0] as Map<String, dynamic>
+          : null;
+      // The SP's refusals come back as {Success: 0, ErrorMessage}.
+      if (first != null && first['Success'] == 0) {
+        _editFeedback(
+          first['ErrorMessage'] as String? ?? "The change wasn't saved.",
+          isError: true,
+        );
+        _revertGrid();
+        return;
+      }
+      _applyLocalEdit(hasher.publicHasherId, field, newValue);
+      _editFeedback('Saved.');
       if (jsonItems.isNotEmpty) {
-        final item =
-            ((jsonItems[0]) as List<dynamic>)[0] as Map<String, dynamic>;
+        final item = first ?? <String, dynamic>{};
         if (item['hkmId'] != null) {
           final idx = hashers.indexWhere(
             (h) => h.publicHasherId == hasher.publicHasherId,
@@ -1405,6 +1448,44 @@ class KennelHashersController extends TabUiController
     }
     // A field changed server-side → cache is stale; next view load refetches.
     _hashersFresh = false;
+  }
+
+  /// Keep the local model in step with a saved personal-detail edit, so a
+  /// search or view switch (which rebuild the rows from the model) does not
+  /// snap the cell back to the old value until the next fetch.
+  void _applyLocalEdit(String publicHasherId, String field, String value) {
+    final int idx = hashers.indexWhere(
+      (h) => h.publicHasherId == publicHasherId,
+    );
+    if (idx < 0) return;
+    final KennelHashersModel h = hashers[idx];
+    hashers[idx] = switch (field) {
+      'eMail' => h.copyWith(eMail: value),
+      'firstName' => h.copyWith(firstName: value),
+      'lastName' => h.copyWith(lastName: value),
+      'hashName' => h.copyWith(hashName: value),
+      _ => h,
+    };
+  }
+
+  /// Rebuild the rows from the model, which still holds the pre-edit value.
+  void _revertGrid() {
+    updateTrinaRows();
+    gridKey = UniqueKey();
+    update();
+  }
+
+  void _editFeedback(String message, {bool isError = false}) {
+    Get.snackbar(
+      isError ? 'Not saved' : 'Members',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: isError
+          ? const Color(0xFFDC2626)
+          : const Color(0xFF15803D),
+      colorText: Colors.white,
+      duration: Duration(seconds: isError ? 6 : 2),
+    );
   }
 
   void onGridLoaded(TrinaGridOnLoadedEvent event) {

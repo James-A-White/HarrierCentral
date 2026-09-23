@@ -68,10 +68,7 @@ class _WebsiteScaffold extends StatelessWidget {
             constraints.maxWidth,
             constraints.maxHeight,
           );
-          return Scaffold(
-            appBar: _buildAppBar(),
-            body: _buildBody(),
-          );
+          return Scaffold(appBar: _buildAppBar(), body: _buildBody());
         },
       ),
     );
@@ -86,11 +83,12 @@ class _WebsiteScaffold extends StatelessWidget {
           color: Colors.black,
         ),
       ),
-      title: Obx(
-        () => Text(
-          'Website — ${controller.kennelName}',
-          style: headingStyleBlack,
-        ),
+      // Not an Obx: kennelName is a plain String, and an Obx whose builder
+      // reads no observable THROWS ("improper use of a GetX") — Kilty hit it
+      // opening this page on 2026-09-23 (portal 2.0.85).
+      title: Text(
+        'Website — ${controller.kennelName}',
+        style: headingStyleBlack,
       ),
     );
   }
@@ -130,19 +128,23 @@ class _WebsiteScaffold extends StatelessWidget {
 
   Widget _buildTabContent(KennelWebsiteTabType tab) {
     return switch (tab) {
-      KennelWebsiteTabType.identity =>
-        _IdentityTabContent(controller: controller),
-      KennelWebsiteTabType.appearance =>
-        _AppearanceTabContent(controller: controller),
-      KennelWebsiteTabType.images =>
-        _ImagesTabContent(controller: controller),
-      KennelWebsiteTabType.content =>
-        _ContentTabContent(controller: controller),
+      KennelWebsiteTabType.identity => _IdentityTabContent(
+        controller: controller,
+      ),
+      KennelWebsiteTabType.appearance => _AppearanceTabContent(
+        controller: controller,
+      ),
+      KennelWebsiteTabType.images => _ImagesTabContent(controller: controller),
+      KennelWebsiteTabType.content => _ContentTabContent(
+        controller: controller,
+      ),
       KennelWebsiteTabType.seo => _SeoTabContent(controller: controller),
-      KennelWebsiteTabType.features =>
-        _FeaturesTabContent(controller: controller),
-      KennelWebsiteTabType.advanced =>
-        _AdvancedTabContent(controller: controller),
+      KennelWebsiteTabType.features => _FeaturesTabContent(
+        controller: controller,
+      ),
+      KennelWebsiteTabType.advanced => _AdvancedTabContent(
+        controller: controller,
+      ),
     };
   }
 }
