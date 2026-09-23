@@ -1,5 +1,14 @@
 # public-web Changelog
 
+## 0.21.72 (2026-09-23)
+
+- **The map guards now cover a path's whole life**, not just its birth and
+  death. A trail let in without a renderer was still updated later, and that
+  update threw; six visitors on 22 Sep saw the error panel for it. Every
+  method that touches the renderer is now a no-op without one.
+- **Web errors record the browser's user agent**, so a crawler tripping a
+  guard once an hour reads as a crawler in the log rather than as six people.
+
 ## 0.21.71 (2026-09-22)
 
 - **A photo on a run page opens the carousel at that photo**, instead of the
