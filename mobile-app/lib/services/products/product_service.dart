@@ -59,7 +59,8 @@ class KennelProduct {
     try {
       final Object? d = jsonDecode(raw);
       return d is Map<String, dynamic> ? d : const <String, dynamic>{};
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][PRODUCT]', 'product details unparseable: $e', s);
       return const <String, dynamic>{};
     }
   }

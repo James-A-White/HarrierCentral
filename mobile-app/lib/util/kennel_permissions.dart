@@ -1,3 +1,4 @@
+import 'package:harrier_central/util/boot_logger.dart';
 import 'dart:convert';
 
 import 'package:harrier_central/util/constants.dart';
@@ -194,7 +195,8 @@ class PermissionMatrix {
         );
       }
       return map;
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][PERMS]', 'permission lookup failed: $e', s);
       return null;
     }
   }
