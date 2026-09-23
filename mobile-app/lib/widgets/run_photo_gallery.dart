@@ -4,7 +4,11 @@ import 'package:harrier_central/imports.dart';
 ///
 /// Pass [loader] as the async function that fetches the photo list —
 /// it is called on first build and on each pull-to-refresh gesture.
-class RunPhotoGallery extends StatefulWidget {
+/// StatelessWidget over [RunPhotoGalleryController]; the controller lives as
+/// long as this widget does (GetBuilder's `init` puts it and deletes it on
+/// dispose), so a tab that is rebuilt keeps its photos and a tab that is left
+/// starts fresh next time.
+class RunPhotoGallery extends StatelessWidget {
   const RunPhotoGallery({
     super.key,
     required this.loader,
@@ -30,240 +34,109 @@ class RunPhotoGallery extends StatefulWidget {
   final int? eventNumber;
 
   @override
-  State<RunPhotoGallery> createState() => _RunPhotoGalleryState();
-}
-
-class _RunPhotoGalleryState extends State<RunPhotoGallery> {
-  bool _isLoading = true;
-  bool _hasError = false;
-  List<RunPhotoModel> _photos = const <RunPhotoModel>[];
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
-    final result = await widget.loader();
-    if (!mounted) return;
-    setState(() {
-      _isLoading = false;
-      _hasError = !result.success;
-      _photos = result.photos;
-    });
-  }
-
-  Future<void> _refresh() async {
-    final result = await widget.loader();
-    if (!mounted) return;
-    setState(() {
-      if (result.success) {
-        _photos = result.photos;
-        _hasError = false;
-      } else if (_photos.isEmpty) {
-        _hasError = true;
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final body = Container(
-      decoration: Backgrounds.defaultHcBackground(),
-      child: _isLoading
-          ? const Center(
-              child: HcAppCircularProgressIndicator(key: Key('rpg_load')),
-            )
-          : _hasError
-          ? _buildError()
-          : RefreshIndicator(
-              onRefresh: _refresh,
-              child: _photos.isEmpty
+    return GetBuilder<RunPhotoGalleryController>(
+      init: RunPhotoGalleryController(
+        loader: loader,
+        eventName: eventName,
+        run: run,
+      ),
+      tag: RunPhotoGalleryController.tagFor(run, eventName),
+      builder: (RunPhotoGalleryController controller) {
+        final body = Container(
+          decoration: Backgrounds.defaultHcBackground(),
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return const Center(
+                child: HcAppCircularProgressIndicator(key: Key('rpg_load')),
+              );
+            }
+            if (controller.hasError.value) return _buildError(controller);
+            return RefreshIndicator(
+              onRefresh: controller.pullToRefresh,
+              child: controller.photos.isEmpty
                   ? _buildEmpty(context)
-                  : _buildGrid(context),
-            ),
-    );
+                  : _buildGrid(context, controller),
+            );
+          }),
+        );
 
-    // Importing needs the run for its kennel, number and time window. The guest
-    // gallery has no aggregate, so it simply doesn't get the button.
-    if (widget.run == null) return body;
+        // Importing needs the run for its kennel, number and time window. The
+        // guest gallery has no aggregate, so it simply doesn't get the button.
+        if (run == null) return body;
 
-    return Stack(
-      children: <Widget>[
-        Positioned.fill(child: body),
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              // Finds this run's photos in the roll by time and place, rather
-              // than making the hasher pick them out (E6.F2.S5).
-              if (widget.run != null) ...<Widget>[
-                FloatingActionButton.extended(
-                  heroTag: 'sweep-run-photos',
-                  backgroundColor: Colors.white,
-                  foregroundColor: hc_blue,
-                  icon: const Icon(Icons.auto_awesome),
-                  label: Text(
-                    'Find my photos',
-                    style: ts_button.copyWith(color: hc_blue),
-                  ),
-                  onPressed: () async {
-                    await Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (_) => RunPhotoSweepPage(
-                          eventId: widget.run!.event.eventId,
-                          eventName: widget.eventName,
-                        ),
-                      ),
-                    );
-                    if (mounted) setState(() {});
-                  },
-                ),
-                const SizedBox(height: 10),
-              ],
-              FloatingActionButton.extended(
-            heroTag: 'import-run-photos',
-            backgroundColor: hc_blue,
-            foregroundColor: Colors.white,
-            icon: _isImporting
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
+        return Stack(
+          children: <Widget>[
+            Positioned.fill(child: body),
+            Positioned(
+              right: 16,
+              bottom: 16,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  // Finds this run's photos in the roll by time and place,
+                  // rather than making the hasher pick them out (E6.F2.S5).
+                  FloatingActionButton.extended(
+                    heroTag: 'sweep-run-photos',
+                    backgroundColor: Colors.white,
+                    foregroundColor: hc_blue,
+                    icon: const Icon(Icons.auto_awesome),
+                    label: Text(
+                      'Find my photos',
+                      style: ts_button.copyWith(color: hc_blue),
                     ),
-                  )
-                : const Icon(Icons.add_photo_alternate),
-            label: Text(
-              _isImporting ? 'Adding…' : 'Add your photos',
-              style: ts_button,
-            ),
-            onPressed: _isImporting ? null : _importFromCameraRoll,
+                    onPressed: () async {
+                      await Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder: (_) => RunPhotoSweepPage(
+                            eventId: run!.event.eventId,
+                            eventName: eventName,
+                          ),
+                        ),
+                      );
+                      // The sweep may have sent photos up; pick them up
+                      // without a spinner over what is already showing.
+                      unawaited(controller.pullToRefresh());
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  Obx(() {
+                    final bool importing = controller.isImporting.value;
+                    return FloatingActionButton.extended(
+                      heroTag: 'import-run-photos',
+                      backgroundColor: hc_blue,
+                      foregroundColor: Colors.white,
+                      icon: importing
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.add_photo_alternate),
+                      label: Text(
+                        importing ? 'Adding…' : 'Add your photos',
+                        style: ts_button,
+                      ),
+                      onPressed: importing
+                          ? null
+                          : () => unawaited(controller.importFromCameraRoll()),
+                    );
+                  }),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
-  bool _isImporting = false;
-
-  /// Imports photos the user took on their own camera during this run.
-  ///
-  /// The run has no end time of its own, so the end of the window is the last
-  /// GPS point anyone recorded for it — with a conservative fallback when
-  /// nobody tracked at all.
-  ///
-  /// The window is built in the RUN's wall clock, not the phone's. A photo's
-  /// EXIF time is the wall clock where it was taken, so comparing it against a
-  /// window derived from the phone's current zone breaks the moment someone
-  /// runs abroad and imports after flying home. The run's own UTC offset comes
-  /// free: it's the gap between the event's local time and its true instant.
-  Future<void> _importFromCameraRoll() async {
-    final run = widget.run;
-    if (run == null) return;
-    setState(() => _isImporting = true);
-
-    // Wall-clock digits of the run's start, held UTC-flagged so arithmetic
-    // never drags in the device zone.
-    final DateTime localStart = run.event.eventStartDatetime;
-    final DateTime startWall = DateTime.utc(
-      localStart.year,
-      localStart.month,
-      localStart.day,
-      localStart.hour,
-      localStart.minute,
-      localStart.second,
-    );
-    final Duration runOffset = startWall.difference(
-      run.event.eventStartDatetimeGmt.toUtc(),
-    );
-
-    DateTime endWall = startWall.add(const Duration(hours: 6)); // untracked
-
-    final api = GetPositionsApi();
-    try {
-      final payload = await api.fetchPositions(
-        eventId: run.event.eventId,
-        latestClientTimestampMs: '0000000000000000000',
-      );
-      int newest = 0;
-      for (final u in payload.users) {
-        for (final p in u.positions) {
-          if (p.timestampMs > newest) newest = p.timestampMs;
-        }
-      }
-      if (newest > 0) {
-        // Track points are true instants; shift into the run's wall clock.
-        final lastWall = DateTime.fromMillisecondsSinceEpoch(
-          newest,
-          isUtc: true,
-        ).add(runOffset);
-        if (lastWall.isAfter(startWall)) endWall = lastWall;
-      }
-    } catch (_) {
-      // Keep the fallback window — a failed lookup shouldn't block importing.
-    } finally {
-      api.dispose();
-    }
-
-    final result = await KennelPhotoService().importFromCameraRoll(
-      eventId: run.event.eventId,
-      kennelId: run.kennel.kennelId,
-      kennelSlug: run.kennel.kennelUniqueShortName,
-      eventNumber: run.event.eventNumber,
-      runStartWall: startWall,
-      runEndWall: endWall,
-      runUtcOffset: runOffset,
-      runStartLat: run.extensions.evtLat ?? run.event.hcLatitude,
-      runStartLng: run.extensions.evtLon ?? run.event.hcLongitude,
-    );
-
-    if (!mounted) return;
-    setState(() => _isImporting = false);
-
-    if (result.imported == 0 && result.rejected == 0 && result.failed == 0) {
-      return; // picker cancelled — say nothing
-    }
-
-    final parts = <String>[];
-    if (result.imported > 0) {
-      parts.add('${result.imported} sent to the Hash Flash for review');
-    }
-    if (result.rejected > 0) {
-      parts.add(
-        '${result.rejected} skipped — no location, or not taken at this run',
-      );
-    }
-    if (result.failed > 0) {
-      parts.add('${result.failed} could not be uploaded');
-    }
-
-    Get.snackbar(
-      result.imported > 0 ? 'Photos added' : 'No photos added',
-      parts.join('. '),
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: result.imported > 0 ? hc_blue : hc_red,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 6),
-    );
-
-    if (result.imported > 0) await _load();
-  }
-
-  Widget _buildError() {
+  Widget _buildError(RunPhotoGalleryController controller) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -276,7 +149,7 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: _load,
+            onPressed: () => unawaited(controller.load()),
             child: Text('Retry', style: ts_button),
           ),
         ],
@@ -317,7 +190,9 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
     );
   }
 
-  Widget _buildGrid(BuildContext context) {
+  Widget _buildGrid(BuildContext context, RunPhotoGalleryController controller) {
+    // Snapshot inside the caller's Obx so itemCount and itemBuilder agree.
+    final List<RunPhotoModel> photos = controller.photos;
     return GridView.builder(
       padding: const EdgeInsets.all(2),
       physics: const AlwaysScrollableScrollPhysics(),
@@ -327,11 +202,11 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
         mainAxisSpacing: 2,
         childAspectRatio: 1.0,
       ),
-      itemCount: _photos.length,
+      itemCount: photos.length,
       itemBuilder: (BuildContext context, int index) {
-        final RunPhotoModel photo = _photos[index];
+        final RunPhotoModel photo = photos[index];
         return GestureDetector(
-          onTap: () => _openFullScreen(context, photo, index),
+          onTap: () => _openFullScreen(context, controller, index),
           child: Stack(
             fit: StackFit.expand,
             children: <Widget>[
@@ -388,17 +263,17 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
 
   Future<void> _openFullScreen(
     BuildContext context,
-    RunPhotoModel photo,
+    RunPhotoGalleryController controller,
     int index,
   ) async {
-    final canEdit = widget.kennelId != null && widget.kennelSlug != null;
+    final canEdit = kennelId != null && kennelSlug != null;
 
     // Resolve each distinct photographer's name + avatar from the local hashers
     // table (same source the map path uses). Own photos fall back to the signed-
-    // in user's name. Cached per uploader so N photos = at most N distinct reads.
-    final photographers = await _resolvePhotographers();
+    // in user's name.
+    final photographers = await controller.resolvePhotographers();
 
-    final items = _photos
+    final items = controller.photos
         .map((p) {
           final uid = normalizeUuid(p.userId ?? '');
           final info = photographers[uid];
@@ -412,9 +287,9 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
             longitude: p.longitude,
             photoId: (canEdit && p.isOwnPhoto) ? p.photoId : null,
             originalBlobUrl: (canEdit && p.isOwnPhoto) ? p.blobUrl : null,
-            kennelId: (canEdit && p.isOwnPhoto) ? widget.kennelId : null,
-            kennelSlug: (canEdit && p.isOwnPhoto) ? widget.kennelSlug : null,
-            eventNumber: (canEdit && p.isOwnPhoto) ? widget.eventNumber : null,
+            kennelId: (canEdit && p.isOwnPhoto) ? kennelId : null,
+            kennelSlug: (canEdit && p.isOwnPhoto) ? kennelSlug : null,
+            eventNumber: (canEdit && p.isOwnPhoto) ? eventNumber : null,
             // Their own photo, currently visible to more than just them.
             // No role required — see MapPhotoItem.myPhotoId.
             myPhotoId: (p.isOwnPhoto && p.status >= 2) ? p.photoId : null,
@@ -422,52 +297,18 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
         })
         .toList(growable: false);
 
-    if (!context.mounted) return;
+    if (!context.mounted || index >= items.length) return;
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
         builder: (_) => MapPhotoPage(
-          pageTitle: widget.eventName,
+          pageTitle: eventName,
           photos: items,
           initialIndex: index,
           background: Backgrounds.defaultHcBackground(),
-          run: widget.run,
+          run: run,
         ),
       ),
     );
-  }
-
-  /// Resolves photographer name + avatar for every distinct uploader in the
-  /// current photo set, keyed by normalised userId.
-  Future<Map<String, ({String name, String photo})>>
-  _resolvePhotographers() async {
-    final result = <String, ({String name, String photo})>{};
-    final currentUserId = normalizeUuid(
-      getStringPref(StringPrefsEnum.userId) ?? '',
-    );
-    for (final p in _photos) {
-      final uid = normalizeUuid(p.userId ?? '');
-      if (uid.isEmpty || result.containsKey(uid)) continue;
-
-      // Name: others carry uploaderDisplayName from the SP; own photos use the
-      // signed-in user's stored display name.
-      var name = p.uploaderDisplayName ?? '';
-      if (name.isEmpty && uid == currentUserId) {
-        name = getStringPref(StringPrefsEnum.displayName) ?? '';
-      }
-
-      // Avatar: the raw colPhoto value (may be http or bundle://) — resolved for
-      // display via avatarImageProvider in the viewer.
-      var photo = '';
-      final rows = await QueryUsers.querySingleUser(uid);
-      if (rows.isNotEmpty) {
-        photo =
-            (rows.first[tableModel.hashersTableHelper.colPhoto] as String?) ??
-            '';
-      }
-
-      result[uid] = (name: name, photo: photo);
-    }
-    return result;
   }
 }

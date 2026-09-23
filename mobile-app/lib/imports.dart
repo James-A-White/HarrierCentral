@@ -256,6 +256,7 @@ export 'package:harrier_central/pages/run_admin/check_in_scanner_page.dart';
 export 'package:harrier_central/pages/run_admin/create_new_event_popup.dart';
 export 'package:harrier_central/pages/run_admin/drinks_list.dart';
 export 'package:harrier_central/pages/run_admin/drinks_list_controller.dart';
+export 'package:harrier_central/util/hc_snack.dart';
 export 'package:harrier_central/pages/run_admin/edit_run_details.dart';
 export 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 export 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
@@ -264,6 +265,7 @@ export 'package:harrier_central/pages/run_admin/payment_popup.dart';
 export 'package:harrier_central/pages/run_admin/payment_report.dart';
 export 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
 export 'package:harrier_central/pages/run_admin/receipts_page.dart';
+export 'package:harrier_central/pages/run_admin/receipts_controller.dart';
 export 'package:harrier_central/pages/run_admin/run_admin_controller.dart';
 export 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 
@@ -394,3 +396,6 @@ export 'package:harrier_central/widgets/zoomable_image.dart';
 
 // app entry point
 export 'package:harrier_central/main.dart';
+export 'package:harrier_central/widgets/run_photo_gallery_controller.dart';
+export 'package:harrier_central/pages/run_admin/down_downs_controller.dart';
+export 'package:harrier_central/pages/live_run_pages/live_run_charges_controller.dart';
