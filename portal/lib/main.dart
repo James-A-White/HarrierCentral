@@ -31,6 +31,10 @@ class MyCustomScrollBehavior extends MaterialScrollBehavior {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Client-side error telemetry, before anything can throw. See
+  // services/client_error_reporter.dart for why the portal has this now.
+  ClientErrorReporter.install();
+
   // Load the IANA timezone database so we can show zone abbreviations
   // (e.g. EST/EDT) derived from a city's IANA name.
   tzdata.initializeTimeZones();

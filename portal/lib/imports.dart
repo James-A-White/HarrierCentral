@@ -149,3 +149,4 @@ export 'package:qr_flutter/qr_flutter.dart';
 export 'package:trina_grid/trina_grid.dart';
 export 'package:url_launcher/url_launcher.dart';
 export 'package:uuid/uuid.dart';
+export 'package:hcportal/services/client_error_reporter.dart';
