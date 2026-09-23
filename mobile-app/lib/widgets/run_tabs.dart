@@ -1475,7 +1475,7 @@ class RunTabs extends StatelessWidget {
     );
   }
 
-  List<Widget> _getRsvpButtons(c) {
+  List<Widget> _getRsvpButtons(RunTabsController c) {
     // A past run cannot be RSVP'd to. The three buttons were still offered on
     // finished runs, where they say nothing useful and take most of the screen
     // above the attendee list. The counts and the roster stay — those are the
