@@ -67,6 +67,14 @@ status and a note. When you fix something, change its line to `fixed:<next
 build>` in the same commit, so the next triage proves the fix held. Use the
 sweep below to drill into anything triage raises.
 
+It also runs **by itself every morning at 08:00** (launchd,
+`tools/log_triage_daily.sh`; install with `tools/install_log_triage_job.sh`)
+and iMessages James only on exit 1 or 2. Reports land in
+`~/Library/Logs/hc-log-triage/`. An Azure Monitor alert, **HC API 5xx burst**
+(>40 5xx in 15 min, RG `harriercentralpublicapi`, action group
+`hc-api-alerts`), covers shim 500s that never reach `HC.ErrorLog`.
+Plain-English explainer: `docs/log-triage.md`.
+
 Fingerprints key on the function, not the file line, so a fix that moves code
 does not make an old bug look new; moving code to a different CLASS (e.g. a
 GetX migration) does, and shows up once as NEW. Baseline it as the same bug.

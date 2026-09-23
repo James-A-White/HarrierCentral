@@ -332,6 +332,8 @@ def main() -> int:
     ap.add_argument("--since", help="UTC date to start from (default: --days ago)")
     ap.add_argument("--days", type=int, default=3)
     ap.add_argument("--all", action="store_true", help="also list every noise fingerprint")
+    ap.add_argument("--brief", metavar="FILE",
+                    help="also write a few-line summary here, for a phone notification")
     a = ap.parse_args()
     since = a.since or (datetime.now(timezone.utc) - timedelta(days=a.days)).strftime("%Y-%m-%d")
 
@@ -404,8 +406,24 @@ def main() -> int:
             print(summarise(fp, by_fp[fp]))
     if not (new or regressed or spiking):
         print("\nNothing new, nothing regressed.")
+    if a.brief:
+        short = lambda fp: fp if len(fp) <= 90 else fp[:87] + "…"
+        lines = [f"HC logs since {since}: {len(new)} new, {len(regressed)} regressed, "
+                 f"{len(spiking)} spiking"]
+        lines += [f"↩ {short(fp)} ({len(late)}×)" for fp, late in regressed[:3]]
+        lines += [f"+ {short(fp)} ({len(by_fp[fp])}×, {len({h.who for h in by_fp[fp]})} who)"
+                  for fp in order(new)[:4]]
+        lines += [f"⚡ {short(fp)}: {w[0]}" for fp, w in spiking[:2]]
+        Path(a.brief).write_text("\n".join(lines) + "\n")
     return 1 if (new or regressed or spiking) else 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # 0 = quiet, 1 = something to look at, 2 = the triage itself could not
+    # run (no network, bad credentials). A scheduled run must tell 2 from 0,
+    # or an outage of the checker reads as a healthy day.
+    try:
+        sys.exit(main())
+    except Exception as e:  # noqa: BLE001 — any failure to run is exit 2
+        print(f"log_triage failed: {type(e).__name__}: {e}", file=sys.stderr)
+        sys.exit(2)
