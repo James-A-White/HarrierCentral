@@ -283,6 +283,8 @@ export async function getSongs(publicKennelId: string): Promise<Song[]> {
   return rows ?? [];
 }
 
+const SONG_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Fetches a single song by its ID, scoped to the kennel.
  * Returns null when the song is not found or not assigned to this kennel.
@@ -291,6 +293,11 @@ export async function getSong(
   publicKennelId: string,
   songId: string
 ): Promise<Song | null> {
+  // songId is a URL segment. Anything that is not a GUID (a truncated link, a
+  // crawler guessing) made the SP's parameter conversion throw in the shim —
+  // "Error converting data type nvarchar to uniqueidentifier" in HC.ErrorLog
+  // (2026-09-23) — for what is simply a song that does not exist.
+  if (!SONG_ID_RE.test(songId)) return null;
   const rows = await callPublicWebApi<Song>("getSong", { publicKennelId, songId });
   if (!rows || rows.length === 0) return null;
   return rows[0];

@@ -295,7 +295,7 @@
     <div><b>17</b> epics</div>
     <div><b>84</b> features</div>
     <div><b>311</b> stories</div>
-    <div><b>48</b> NFR requirements</div>
+    <div><b>49</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
   <div class="legend">
@@ -331,7 +331,7 @@
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 22 stories</span></a>
   <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">5 features · 16 stories</span></a>
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 15 requirements</span></a>
-  <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 19 requirements</span></a>
+  <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 20 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
   <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">5 features · 19 stories</span></a>
   <a class="idx" href="#e17"><span class="idx-id">E17</span><span class="idx-name">Speaking the hasher's language</span><span class="idx-count">1 features · 1 stories</span></a>
@@ -1281,6 +1281,7 @@
       <div class="req"><span class="s-id">E14.G3.R3</span><span class="req-what">Log wording states what actually happened — retained data is never reported as lost.</span><span class="req-how"><b>Enforced by</b> Review after a buffer log implied 16,798 points were dropped when they were retained.</span></div>
       <div class="req"><span class="s-id">E14.G3.R4</span><span class="req-what">An error record names the build that produced it, not the build that reported it.</span><span class="req-how"><b>Enforced by</b> <code>HC.ErrorLog.HcVersion</code> is stamped from the calling device via <code>HC6.DeviceHcVersion</code>; <code>HC.ClientErrorLog</code> stores the version the app recorded when the session started, because the log is uploaded one boot later, possibly after an upgrade.</span></div>
       <div class="req"><span class="s-id">E14.G3.R5</span><span class="req-what">Every harvested session log carries the device's memory, network and battery figures over time, so a resource problem is measurable per device without a repro.</span><span class="req-how"><b>Enforced by</b> <code>[METRICS]</code> lines from <code>DeviceMetricsService</code>: start, every background/foreground edge, every 15 min; process CPU time and share, RSS/PSS/headroom, app-layer bytes and latency plus (Android) process-level bytes, location-stream minutes per cost tier, database/documents/cache footprint and free disk, battery level and unplugged drain, Low Power Mode and thermal state. Plus a one-row-a-minute ring of the last two hours and a timestamped-peaks record, persisted separately and appended to the next upload, bounded at ~8 KB so they never displace breadcrumbs. Native snapshot channel on both platforms. <em>Building</em> — iOS gives no per-app network or battery attribution; the line records the device's condition beside the app's own footprint instead.</span></div>
+      <div class="req"><span class="s-id">E14.G3.R6</span><span class="req-what">A new error is told apart from a known one without reading the logs, and a fixed error that comes back is flagged as a regression.</span><span class="req-how"><b>Enforced by</b> <code>tools/log_triage.py</code> reduces every <code>HC.ErrorLog</code> and <code>HC.ClientErrorLog</code> entry to a fingerprint (source, normalised message, first frame in our code without its line number) and checks it against <code>tools/known_errors.tsv</code> (<code>noise</code> / <code>open</code> / <code>fixed:&lt;build, version or date&gt;</code>). It prints only what is new, regressed, or a noise burst across five or more devices in an hour, and exits 1 when there is any. Seeded 2026-09-23 from 30 days: 100 fingerprints. Runs daily at 08:00 via launchd and iMessages only when there is something to see; an Azure Monitor alert (&gt;40 5xx in 15 min) covers shim failures that never reach the log.</span></div>
     </div>
   </div>
   <div class="feature">

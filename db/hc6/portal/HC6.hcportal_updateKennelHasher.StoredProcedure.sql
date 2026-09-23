@@ -63,6 +63,10 @@ AS
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 --   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
+--   - 2026-09-23: name/hash name/email edits refused once the hasher has
+--     signed in (app, web or portal) unless the editor is the hasher or
+--     SuperAdmin, and refused for a not-yet-signed-in hasher whose home
+--     kennel is not @publicKennelId. '<hidden>' is never written as an email.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -132,6 +136,49 @@ BEGIN TRY
     BEGIN
         SELECT 0 AS Success, 'No record found with provided @publicKennelId' AS ErrorMessage;
         RETURN;
+    END
+
+    -- The portal shows '<hidden>' in place of a non-member's email; an edit
+    -- of that cell must not write the placeholder into HC.Hasher.
+    IF (@eMail = '<hidden>') SET @eMail = NULL;
+
+    -- Personal details (name, hash name, email) belong to the PERSON once
+    -- they have signed in anywhere: the app stamps LastLoginDateTime, and the
+    -- web and portal sign-ins create an HC.Device row. Before that first
+    -- sign-in the record was typed in by a kennel admin, often with a
+    -- placeholder email, and it must stay editable by the admins of the
+    -- kennel that holds it (the home kennel). After it, only the hasher edits
+    -- it: an admin who can set someone else's email can have that person's
+    -- invite code sent to an address they control and take the account
+    -- (James, 2026-09-23). Kennel-scoped fields (membership, discounts,
+    -- alerts, historical counts) are the kennel's and stay admin-editable.
+    -- SuperAdmin keeps the platform-support bypass.
+    IF (@eMail IS NOT NULL OR @firstName IS NOT NULL OR @lastName IS NOT NULL OR @hashName IS NOT NULL)
+       AND @callerType = 0
+       AND (@appAccessFlags & 0x40000000) = 0
+       AND @hasherBeingEditedId <> @hasherId
+    BEGIN
+        DECLARE @targetName NVARCHAR(250), @targetHomeKennelId UNIQUEIDENTIFIER, @targetSignedIn SMALLINT;
+        SELECT @targetName         = COALESCE(NULLIF(h.HashName, ''), NULLIF(LTRIM(RTRIM(CONCAT(h.FirstName, ' ', h.LastName))), ''), 'This hasher'),
+               @targetHomeKennelId = h.HomeKennelId,
+               @targetSignedIn     = CASE WHEN h.LastLoginDateTime IS NOT NULL
+                                            OR EXISTS (SELECT 1 FROM HC.Device d WHERE d.UserId = h.id)
+                                          THEN 1 ELSE 0 END
+        FROM HC.Hasher h
+        WHERE h.id = @hasherBeingEditedId;
+
+        IF (@targetSignedIn = 1)
+        BEGIN
+            SELECT 0 AS Success,
+                   @targetName + ' has signed in to Harrier Central, so only they can change their name, hash name or email (My Account in the app).' AS ErrorMessage;
+            RETURN;
+        END
+        IF (@targetHomeKennelId IS NULL OR @targetHomeKennelId <> @kennelId)
+        BEGIN
+            SELECT 0 AS Success,
+                   @targetName + ' belongs to another kennel (their home kennel), so only that kennel''s admins can change their details.' AS ErrorMessage;
+            RETURN;
+        END
     END
 
     -- Wrap all writes in a single transaction

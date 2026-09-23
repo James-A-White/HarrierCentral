@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from "react-leaflet";
 import L from "leaflet";
-import "@/lib/leaflet-teardown";
+import { safeFlyTo } from "@/lib/leaflet-teardown";
 import Link from "next/link";
 import type { MyRun } from "@/lib/member-api";
 import { formatRunDate, relativeTime } from "@/lib/member-format";
@@ -27,7 +27,7 @@ function FitToRuns({ points }: { points: [number, number][] }) {
 
 function FlyTo({ pos }: { pos: [number, number] | null }) {
   const map = useMap();
-  useEffect(() => { if (pos) map.flyTo(pos, 13); }, [map, pos]);
+  useEffect(() => { if (pos) safeFlyTo(map, pos, 13); }, [map, pos]);
   return null;
 }
 

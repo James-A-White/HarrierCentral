@@ -399,9 +399,7 @@ class ServiceCommon {
       // "Reconnecting…" toast raised from inside a retry loop: failing to
       // draw it must never become an app error on top of the network one it
       // was reporting.
-      try {
-        Get.closeAllSnackbars();
-      } catch (_) {}
+      closeAllSnackbarsSafely();
       try {
         Get.showSnackbar(
           GetSnackBar(

@@ -746,6 +746,7 @@ class CheckInPackController extends GetxController
               messenger,
               paymentType,
               index,
+              updated as CheckInPackModel,
               userInput?.totalAmount,
               specialRunPrice: userInput?.specialPriceAmount,
               specialRunPriceReason: userInput?.specialPriceReason,
@@ -783,10 +784,18 @@ class CheckInPackController extends GetxController
 
   /// Takes the messenger rather than a BuildContext, for the same reason as
   /// [bulkPayForEvent].
+  ///
+  /// [member] is the row that was tapped, captured at tap time. [index] is
+  /// only for the row spinners. Never read `filteredList[index]` for WHO is
+  /// paying: by the time the snackbar button is pressed (or the extras dialog
+  /// answered) the list may have been re-filtered, re-sorted or refreshed by
+  /// a background delivery, and the index then names someone else — or no
+  /// one, which is the RangeError seen on build 1327 (2026-09-18).
   Future<void> payForEvent(
     ScaffoldMessengerState messenger,
     int paymentType,
     int index,
+    CheckInPackModel member,
     double? otherAmount, {
     double? specialRunPrice,
     String? specialRunPriceReason,
@@ -805,7 +814,7 @@ class CheckInPackController extends GetxController
       final double runOnlyPrice = (paymentType == paymentFreeRun.value)
           ? 0.0
           : (specialRunPrice ??
-                (filteredList[index].isMember != 0
+                (member.isMember != 0
                     ? eventAggregate.extensions.memberPrice
                     : eventAggregate.extensions.nonMemberPrice));
       final double runPlusExtrasPrice =
@@ -862,6 +871,7 @@ class CheckInPackController extends GetxController
     }
     final List<dynamic>? results = await _processPayment(
       index,
+      member,
       paymentType,
       otherAmount: otherAmount,
       doPayForExtras: payForExtras,
@@ -869,16 +879,19 @@ class CheckInPackController extends GetxController
       specialRunPriceReason: specialRunPriceReason,
       useSpecialPriceAsDefault: useSpecialPriceAsDefault,
     );
-    if (results != null) {
-      if ((results[0]['terminalWasUsedForPayment'] == null) ||
-          (!results[0]['terminalWasUsedForPayment'])) {
+    // Empty is what an error envelope or a dropped reply looks like — the
+    // refresh below must still run, so no [0] on it.
+    final Map<String, dynamic>? paid = firstRow(results);
+    if (results != null && paid != null) {
+      if ((paid['terminalWasUsedForPayment'] == null) ||
+          (!paid['terminalWasUsedForPayment'])) {
         BankTransferQr.showBankTransferSnackbar(
           eventAggregate,
           results,
           paymentType,
           navigatorKey.currentContext!,
-          filteredList[index].nameForDisplay,
-          filteredList[index].isMember,
+          member.nameForDisplay,
+          member.isMember,
           otherAmount,
         );
       }
@@ -909,6 +922,7 @@ class CheckInPackController extends GetxController
 
   Future<List<dynamic>?> _processPayment(
     int index,
+    CheckInPackModel member,
     int paymentType, {
     double? otherAmount = -1,
     EnumPayForExtras doPayForExtras = payForRunOnly,
@@ -922,9 +936,9 @@ class CheckInPackController extends GetxController
     rsvpIndexUpdating.value = index;
     attendanceIndexUpdating.value = index;
 
-    final String? hemId = filteredList[index].hemId;
-    final String? hasherId = filteredList[index].hasherId;
-    double amount = filteredList[index].isMember != 0
+    final String? hemId = member.hemId;
+    final String? hasherId = member.hasherId;
+    double amount = member.isMember != 0
         ? eventAggregate.extensions.memberPrice
         : eventAggregate.extensions.nonMemberPrice;
     if ((otherAmount != null) && (otherAmount != -1)) {
@@ -967,14 +981,14 @@ class CheckInPackController extends GetxController
             specialRunPrice: specialRunPrice,
             specialRunPriceReason: specialRunPriceReason,
             useSpecialPriceAsDefault: useSpecialPriceAsDefault,
-            displayLabel: 'Run fee — ${filteredList[index].nameForDisplay}',
+            displayLabel: 'Run fee — ${member.nameForDisplay}',
           ),
         );
 
     if (outcome.queued) {
       showHcSnackbar(
         'No connection — the payment for '
-        '${filteredList[index].nameForDisplay} is saved on this phone and '
+        '${member.nameForDisplay} is saved on this phone and '
         'will send automatically. The list will update when it lands.',
       );
       return null;

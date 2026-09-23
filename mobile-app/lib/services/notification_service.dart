@@ -936,7 +936,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       isDismissible: true,
       mainButton: TextButton(
         onPressed: () {
-          Get.closeCurrentSnackbar();
+          // Best-effort, and its future would otherwise fail uncaught.
+          unawaited(Get.closeCurrentSnackbar().catchError((_) {}));
           _navigateToSongbook(eventId);
         },
         child: const Text(
