@@ -44,6 +44,35 @@ device rows by their current version and includes stale devices.
 
 ---
 
+## Triage first — what is NEW?
+
+```bash
+python3 tools/log_triage.py            # last 3 days; --days N / --since DATE; --all lists noise too
+```
+
+Run this before the sweep. The sweep shows everything; triage shows only
+what is not already understood. Every error becomes a **fingerprint**
+(source, message with numbers/ids/urls stripped, first frame in our code
+without its line number), looked up in `tools/known_errors.tsv`:
+
+| Status | Meaning | Shown as |
+|---|---|---|
+| `noise` | Expected: 599s, empty 500s, stale avatars, bad tokens | a total, unless it **spikes** (≥5 devices in an hour) |
+| `open` | Known bug, not fixed | one line each, when it fires |
+| `fixed:X` | Fixed in build `1397`, version `web 0.21.74`, or on date `2026-09-24` (SP deploys) | **REGRESSED** if seen at/after X |
+
+Exit code 1 = something new, regressed or spiking. Anything **NEW** ends with
+a paste-ready `↳` line: investigate it, then add it to the baseline with a
+status and a note. When you fix something, change its line to `fixed:<next
+build>` in the same commit, so the next triage proves the fix held. Use the
+sweep below to drill into anything triage raises.
+
+Fingerprints key on the function, not the file line, so a fix that moves code
+does not make an old bug look new; moving code to a different CLASS (e.g. a
+GetX migration) does, and shows up once as NEW. Baseline it as the same bug.
+
+---
+
 ## The sweep — what the dashboard cannot see
 
 ```bash

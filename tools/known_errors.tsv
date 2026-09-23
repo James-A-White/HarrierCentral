@@ -1,0 +1,108 @@
+# Known error fingerprints for tools/log_triage.py — fingerprint<TAB>status<TAB>note
+#   noise      expected; counted, never listed (unless it spikes across devices)
+#   open       known bug, not fixed; listed as one line when it fires
+#   fixed:X    fixed in build X (1397), web/portal version X (web 0.21.74), or on date X
+#              (YYYY-MM-DD, for SP deploys). Seen at/after X ⇒ REGRESSED.
+# Fingerprints must match exactly: copy the ↳ line log_triage.py prints for a NEW one.
+# Seeded 2026-09-23 from 30 days of logs.
+
+api hcportal_confirmAuthentication HC6 Portal Error: confirmAuthentication — Authentication failed	noise	portal session expired / clock
+api hcportal_getLandingPageData HC6 Portal Error: getLandingPageData — Authentication failed	noise	portal session expired / clock
+api hcportal_logClientError HC6 Portal Error: logClientError — Unknown device	fixed:2026-09-24	pre-sign-in reports refused; portal 2.0.85
+api publicWeb_getSong HC6 Public Web Error: getSong — Error converting data type nvarchar to uniqueidentifier.	open	non-GUID song id from a URL; fixed in d37e8868 — set fixed:<date> once web 0.21.74 is deployed
+app ASYNC "Database" not found. You need to call "Get.put(Database())" or "Get.lazyPut(()=>Database())" @ globals.dart database	open	Get.find<Database> before boot registered it; last 08-31
+app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController._fetchDelta	fixed:1386	write to a disposed chat stream (14 Sep)
+app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController.handleSendPressed	fixed:1386	write to a disposed chat stream (14 Sep)
+app ASYNC Bad state: No element @ app_boot_service.dart AppBootService._handleExistingUser	open	'No element' at boot, once on 1327 (09-21)
+app ASYNC Bad state: Stream has been disposed. @ flutter ImageStreamCompleter._checkDisposed	noise	Flutter image cache: stream disposed before a chunk event
+app ASYNC DatabaseException(Error Domain=SqfliteDarwinDatabase Code=N "unable to open database file" UserInfo={NSLocalizedDescription=unable to open d @ package:sqflite_platform_interface wrapDatabaseException	open	sqflite could not open the DB on iOS; once, 09-01
+app ASYNC FormatException: Invalid radix-N number (at character N) @ filter_events_controller.dart FilterEventsController.setRunNumber	fixed:1386	int.parse on '729.5' (16 Sep)
+app ASYNC LateInitializationError: Field '_controller' has not been initialized. @ service_common.dart ServiceCommon._showSnackbarSafely.show	fixed:1386	GetX snackbar LateInitializationError (12 Sep)
+app ASYNC NoSuchMethodError: Class '_KennelMemberResultsModel' has no instance setter 'kennelEmailAlertPreference='. @ kennel_members.dart KennelMemberListState._getKennelMemberList	fixed:1394	setter on a Freezed model (3f5a4393)
+app ASYNC Null check operator used on a null value @ check_in_pack_page_controller.dart CheckInPackController.onHasherTapped	fixed:1386	stale BuildContext for the messenger (16 Sep)
+app ASYNC Null check operator used on a null value @ package:get SnackbarController._removeEntry	fixed:1397	closeAllSnackbars' async future escaped try/catch; closeAllSnackbarsSafely (3c621239)
+app ASYNC PlatformException(multiple_request, Cancelled by a second request, null, null) @ kennel_photo_service.dart KennelPhotoService._pickImage	noise	image picker double-tap
+app ASYNC RangeError (length): Invalid value: Only valid value is N: N @ check_in_pack_page_controller.dart CheckInPackController._processPayment	fixed:1397	stale filteredList[index] after snackbar tap; tapped row passed through (f18479c3)
+app ASYNC RangeError (length): Invalid value: Valid value range is empty: N @ check_in_pack_page_controller.dart CheckInPackController.updateRsvpState	fixed:1386	empty SP reply read at [0] → firstRow (17 Sep)
+app ASYNC RangeError (length): Invalid value: Valid value range is empty: N @ run_tabs.dart RunTabsState._setRsvpState	fixed:1386	empty SP reply read at [0]; firstRow in run_tabs (f7cf51cb, 18 Sep)
+app ASYNC setState() or markNeedsBuild() called during build. @ package:get ObxState._updateTree	open	Obx rebuilding during build; 08-28, pre-3.1
+app ASYNC type 'EnumFollowType' is not a subtype of type 'EnumEmailAlertState' @ run_list_item.dart RunListItem._showEmailAlertPopup	fixed:1325	04cd0c7a
+app ASYNC type 'EnumFollowType' is not a subtype of type 'EnumEventFilterType' in type cast @ filter_events_page.dart AddEditEventsPageState._listView	fixed:1346	filter_events_page cast (d19f2f3e)
+app ASYNC type 'EnumFollowType' is not a subtype of type 'int' @ user_event_list_item.dart UserEventListItem._showRunAttendencePopup	fixed:1325	04cd0c7a
+app ASYNC type 'Null' is not a subtype of type 'String' @ notification_service.dart NotificationService._dispatchMessageToControllers	open	push payload missing a field; last 08-31
+app FLUTTER "LocationService" not found. You need to call "Get.put(LocationService())" or "Get.lazyPut(()=>LocationService())" @ run_tabs.dart RunTabsState._buildMapView	fixed:1325	04cd0c7a
+app FLUTTER Bad state: Cannot add new events after calling close @ package:flutter_map MapControllerImpl._emitMapEvent	open	flutter_map MapController closed while FlutterMap still laid out; 81× in one 1392 session after a notification-tap replay + resume; needs repro
+app FLUTTER FileSystemException: Cannot open file, path = '/var/mobile/Containers/Data/Application/<id>/Library/Caches/libCachedImageData/<id>.png' (OS  @ package:cached_network_image ImageLoader._load	noise	cached image file evicted under us
+app FLUTTER Invalid argument(s): Unsupported scheme 'bundle' in URI bundle://c-N @ package:http IOClient.send	open	a bundle:// avatar URL survived the 2026-07-18 blob migration in a local row
+app FLUTTER Null check operator used on a null value @ flutter RenderSliverMultiBoxAdaptor.childMainAxisPosition	open	framework null-check in a sliver list, 61× one device on 1327 (09-12); suspect stale itemCount (memory getbuilder-stale-itemcount)
+app FLUTTER Null check operator used on a null value @ payment_snackbar.dart PaymentSnackBar.content	fixed:1386	stale BuildContext for the messenger (0c59f750)
+app FLUTTER PathNotFoundException: Cannot open file, path = '/data/user/N/com.harriercentral.app/cache/libCachedImageData/<id>.jpg' (OS Error: No such f @ package:cached_network_image ImageLoader._load	noise	cached image file evicted under us
+app FLUTTER PlatformException(error, No active stream to cancel, null, null) @ flutter StandardMethodCodec.decodeEnvelope	noise	geolocator cancel after the stream already ended
+app FLUTTER PlatformException(error, Service.startForeground() not allowed due to mAllowStartForeground false: service com.harriercentral.app/com.basefl @ flutter StandardMethodCodec.decodeEnvelope	open	Android 12+ refuses geolocator foreground service started from background
+app FLUTTER PlatformException(error, Service.startForeground() not allowed: service com.harriercentral.app/com.baseflow.geolocator.GeolocatorLocationSer @ flutter StandardMethodCodec.decodeEnvelope	open	Android 12+ refuses geolocator foreground service started from background
+app FLUTTER There are multiple heroes that share the same tag within a subtree. @ flutter Hero._allHeroesFor.inviteHero	open	duplicate Hero tag; once, 08-29
+app FLUTTER [Get] the improper use of a GetX has been detected. @ package:get RxInterface.notifyChildren	fixed:1396	map tab Obx returned before observing anything at boot (3.1.1)
+app HTTP 400 approveLogin	noise	an SP said no on purpose; its reason is in the sp … row
+app HTTP 400 authorizeDevice	noise	an SP said no on purpose; its reason is in the sp … row
+app HTTP 400 getInviteCode	noise	an SP said no on purpose; its reason is in the sp … row
+app HTTP 400 processPayment	fixed:2026-09-07	processPayment error path hidden by a rolled-back log (fixed 2026-09-06)
+app HTTP 400 sendRoomMessage	fixed:2026-09-20	emoji-only room message read as empty (SP 2026-09-19)
+app HTTP 400 setEventAttendence	noise	an SP said no on purpose; its reason is in the sp … row
+app HTTP 400 syncEventAdminData	noise	an SP said no on purpose; its reason is in the sp … row
+app HTTP 500 approveLogin	open	approveLogin 500 with a body — see sp hcapp_approveLogin Unhandled error
+app HTTP 500 empty	noise	empty 500 = shim or link; many devices at once = Function app (spike check)
+app HTTP 599	noise	local 30 s stall; phone's link. Spike check covers the server
+app HTTP transport	noise	DNS/socket failure before sending; Bad file descriptor = iOS suspend
+app IMG 403 facebook	noise	expired Facebook / external avatar
+app IMG 404 ?	noise	expired Facebook / external avatar
+app IMG 404 blob/profile-photos	noise	cached avatar whose blob is gone
+app IMG 404 facebook	noise	expired Facebook / external avatar
+app NET abort blob	noise	image / tile / blob fetch failed on the phone's link
+app NET abort google-tiles	noise	image / tile / blob fetch failed on the phone's link
+app NET closed ?	noise	image / tile / blob fetch failed on the phone's link
+app NET closed blob	noise	image / tile / blob fetch failed on the phone's link
+app NET host lookup blob	noise	image / tile / blob fetch failed on the phone's link
+app NET host lookup google-tiles	noise	image / tile / blob fetch failed on the phone's link
+app NET refused blob	noise	image / tile / blob fetch failed on the phone's link
+app NET refused google-tiles	noise	image / tile / blob fetch failed on the phone's link
+app NET reset blob	noise	image / tile / blob fetch failed on the phone's link
+app NET timed out blob	noise	image / tile / blob fetch failed on the phone's link
+func GenericJsonQueryHC6.ImportEvents A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed be	noise	a kennel's external feed timed out
+portal portal-smoke Dance smoke: portal telemetry chain	noise	deliberate Dance-baby smoke test
+sp hcapp_addDownDown Not authorised	noise	permission gate doing its job
+sp hcapp_addEditEvent Invalid access token	noise	phone clock / stale token
+sp hcapp_addEditUser Duplicate email	noise	contractual — part of signup (errorType 10005)
+sp hcapp_approveLogin Attempt to load a removed user (…)	noise	removed account trying to sign in
+sp hcapp_approveLogin Attempt to login as removed user (…)	noise	removed account trying to sign in
+sp hcapp_approveLogin Invalid access token	noise	phone clock / stale token
+sp hcapp_approveLogin Unhandled error	open	one unhandled error in approveLogin on 3.1.0 (09-13), cause not traced
+sp hcapp_authorizeDevice Attempt to load a removed user (…)	noise	removed account trying to sign in
+sp hcapp_authorizeDevice Attempt to load removed user (…)	noise	removed account trying to sign in
+sp hcapp_authorizeDevice Invalid access token	noise	phone clock / stale token
+sp hcapp_authorizeDevice Invite code not found	noise	mistyped or expired invite code
+sp hcapp_findHashersByHashName Invalid access token	noise	phone clock / stale token
+sp hcapp_getEventBadgeCount Invalid access token	noise	phone clock / stale token
+sp hcapp_getInviteCode Invite code not available	noise	mistyped or expired invite code
+sp hcapp_getTrackImports Invalid access token	noise	phone clock / stale token
+sp hcapp_processPayment Invalid access token	noise	phone clock / stale token
+sp hcapp_processPayment Not authorised to take payment	noise	permission gate doing its job
+sp hcapp_sendEventMessage Not authorised to post	noise	permission gate doing its job
+sp hcapp_sendRoomMessage Missing fields	fixed:2026-09-20	emoji-only message equals '' in this collation (SP 2026-09-19)
+sp hcapp_setChatRoomParticipation Unhandled error in hcapp_setChatRoomParticipation	fixed:2026-09-15	launch day of chat rooms (09-14)
+sp hcapp_syncEventAdminData Invalid access token	noise	phone clock / stale token
+sp hcapp_syncEventAdminData Not authorised for event admin sync	noise	permission gate doing its job
+sp hcapp_syncUserData Invalid access token	noise	phone clock / stale token
+sp publicWeb_getChatMessages Chat thread not found or bad request	noise	bad chat thread id from a URL
+sp publicWeb_getMyHistory Device not registered	noise	web visitor without a device
+sp publicWeb_getRunPack Device not registered	noise	web visitor without a device
+sp publicWeb_setRunRsvp Run not found or bad RSVP state	noise	stale run link
+web /api/member/chat PublicWebAdminApi getChatMessages: N	open	19× 500 burst from one member 2026-09-17 12:18, 0.21.65; not since, cause not traced
+web /api/run-photos upstream N	open	one upstream 404 during the 0.21.73 deploy (07:47); watch
+web app-error Cannot read properties of null (reading '_updatePath')	fixed:web 0.21.72	Leaflet teardown guard
+web app-error Cannot use 'in' operator to search for '_leaflet_id' in null	fixed:web 0.21.72	Leaflet teardown guard
+web app-error Invalid LatLng object: (…)	fixed:web 0.21.74	flyTo on a zero-size map (bb306702)
+web global-error Cannot read properties of undefined (reading '_removePath')	fixed:web 0.21.72	Leaflet teardown guard
+web global-error Cannot use 'in' operator to search for '_leaflet_id' in null	fixed:web 0.21.72	Leaflet teardown guard
+web global-error Failed to load chunk /_next/static/chunks/08phz.1yujzg7.js from module N	noise	visitor kept a page open across a deploy
+web leaflet-guard Leaflet teardown guard: addLayer called with no layer (map has no renderer)	fixed:web 0.21.72	Leaflet teardown guard
+web packtrack-client/run-photos Failed to fetch	noise	visitor's network
