@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_findHashersByHashName",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Pre-login account discovery. Searches for active hashers by hash name or last name and returns each matched hasher with their kennel memberships and run counts, so a new user can identify their existing account and request an invite code. Uses a global shared token validated against the null UUID (same mechanism as hcapp_authorizeDevice) — no device record is required. Optionally filters kennels by proximity: if @lat and @lon are provided, only kennels whose home city is within 500 miles (804,672 m) are returned.",
   "parameters": [
     {
@@ -49,7 +49,7 @@
       "name": "ErrorDetail",
       "description": "Returned at index 1 when success=0. Contains the standard HC6 app error shape. Mutually exclusive with HasherResults rowset.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID for auth failures (not written for search-term validation errors)." },
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID. As of 1.1.0 a row is written for BOTH error branches, so this id is always resolvable in HC.ErrorLog." },
         { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification: 11 = auth failure, 2 = validation error." },
         { "name": "errorCode", "type": "INT", "nullable": false, "description": "1312 = auth failure, 1313 = search term too short." },
         { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "'Invalid access token' or 'Search term too short'." },
@@ -108,24 +108,14 @@
     }
   ],
   "sideEffects": [
-    "Writes to HC.ErrorLog on auth failure (errorId is a NEWID() value).",
-    "No write to HC.ErrorLog on search-term validation failure (errorId is NEWID() but not persisted — note: SP code sets @errorId = NEWID() but does NOT insert into HC.ErrorLog for the search-term-too-short case)."
+    "Writes to HC.ErrorLog on auth failure (errorCode 1312), on search-term validation failure (errorCode 1313) and from the CATCH block. Every one of those rows carries the raw @searchTerm in string_1 and quotes it in ErrorDescription.",
+    "Logging the search term is deliberate: this is a pre-login SP with no userId and no deviceId, so the term typed is the only identifying detail available when troubleshooting a blocked sign-in. The term is a hash name or last name the user entered; HC.ErrorLog is pruned at 90 days by HC.nonApi_pruneLogs."
   ],
   "codeSmells": [
     {
       "severity": "low",
-      "issue": "errorId populated but not logged for search-term validation failure",
-      "detail": "When @searchTerm is too short (errorCode 1313), the SP sets @errorId = NEWID() and returns it in the error rowset, but never inserts into HC.ErrorLog. The client receives a GUID that does not correspond to any error log entry. This is inconsistent with auth failures where the log entry is always written."
-    },
-    {
-      "severity": "low",
       "issue": "FLOAT used for @lat and @lon parameters",
       "detail": "@lat and @lon are FLOAT. While FLOAT is appropriate for geographic coordinates (not monetary values), it is inconsistent with the HC.Device table which stores Latitude and Longitude as DECIMAL(18,15)/DECIMAL(19,15). The geography::Point() call still works correctly since SQL Server converts implicitly."
-    },
-    {
-      "severity": "low",
-      "issue": "No TRY/CATCH block",
-      "detail": "The main SELECT has no error handling. An unexpected DB error (geography::Point() failure on bad coordinates, deadlock, timeout) will propagate as a raw SQL error rather than a structured error rowset."
     },
     {
       "severity": "low",
@@ -135,7 +125,6 @@
   ],
   "breakingChanges": [
     "This SP does not call HC6.ValidateAppAuth — it uses a direct HC.CHECK_ACCESS_TOKEN_V2 call with the null UUID. Auth errorType is 11 (not the standard 1 or 3 used by device-authenticated SPs).",
-    "The errorId for search-term validation errors is a client-generated NEWID() with no corresponding HC.ErrorLog row — support lookup by errorId will return no results for errorCode 1313.",
     "Returned UUIDs (publicHasherId, kennelId) are NVARCHAR(40) lowercase strings, not UNIQUEIDENTIFIER — callers must not cast them back to GUID without normalising case first."
   ]
 }

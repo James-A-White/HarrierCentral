@@ -28,8 +28,16 @@ AS
 --                          kennelId, kennelName, runCount } — one row
 --                        per hasher+kennel; empty set if no matches
 --   Rowset 1 (error): standard HC6 error detail
+-- Error logging: every error branch records the raw @searchTerm in
+--   HC.ErrorLog.string_1 (and quotes it in ErrorDescription), because this
+--   is a PRE-LOGIN proc — there is no userId and no deviceId to identify
+--   who is stuck, so the term they typed is the only handle troubleshooting
+--   has. Same convention as hcapp_authorizeDevice, which logs @scanText.
 -- Author: Harrier Central
 -- Created: 2026-06-04
+-- Modified: 2026-09-20 — log @searchTerm on every error branch; the
+--   'Search term too short' branch now writes an HC.ErrorLog row at all
+--   (it returned an errorId for a row that was never inserted).
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -47,9 +55,11 @@ IF HC.CHECK_ACCESS_TOKEN_V2(@nullUserId, @procName,
                             COALESCE(@accessToken, 'error'), NULL, 30) = 0
 BEGIN
     SET @errorCode = 1312; SET @errorType = 11; SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
     VALUES (@errorId, '<unknown>', 'Invalid access token',
-            'Global access token failed validation', @procName, @nullUserId);
+            'Global access token failed validation searching for "'
+            + COALESCE(@searchTerm, '<null>') + '"',
+            @procName, @nullUserId, @searchTerm);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Invalid access token' AS errorTitle,
@@ -61,6 +71,11 @@ END
 IF (LEN(COALESCE(@searchTerm, '')) < 2)
 BEGIN
     SET @errorCode = 1313; SET @errorType = 2; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
+    VALUES (@errorId, '<unknown>', 'Search term too short',
+            'Search term "' + COALESCE(@searchTerm, '<null>')
+            + '" is shorter than the 2 character minimum',
+            @procName, @nullUserId, @searchTerm);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Search term too short' AS errorTitle,
@@ -105,8 +120,8 @@ ORDER BY h.PublicHasherId, hkm.HcTotalRunCount DESC;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
     VALUES (NEWID(), '<unknown>', 'Unhandled error in findHashersByHashName',
-            ERROR_MESSAGE(), @procName, NULL);
+            ERROR_MESSAGE(), @procName, NULL, @searchTerm);
     THROW;
 END CATCH
