@@ -256,7 +256,11 @@ BEGIN TRY
                  COALESCE(@includeInGlobalHashDirectory, 0),
                  COALESCE(@preferences, 14 + @useUsaMiles),
                  @latitude, @longitude,
-                 @kennelId,
+                 -- Home kennel: the kennel this admin is working in, or the
+                 -- run's kennel when they are adding from a run's admin
+                 -- screen. It used to be NULL on that path, which left the
+                 -- record with no kennel entitled to fix its details.
+                 COALESCE(@kennelId, (SELECT e.KennelId FROM HC.Event e WHERE e.id = @eventId)),
                  GETDATE());
 
             INSERT HC.LaunchAndLogin (HcVersion, UserId, UserName)
@@ -295,6 +299,91 @@ BEGIN TRY
         END
         ELSE
         BEGIN
+            -- Editing SOMEONE ELSE. Two gates (James, 2026-09-23):
+            --  * the caller must manage members of the kennel this edit is
+            --    for (@kennelId, else the run's kennel, else the target's home
+            --    kennel) — this SP had no authorization at all beyond the
+            --    device token, which any app user can mint for any target;
+            --  * name, hash name and email belong to the person once they
+            --    have signed in anywhere (LastLoginDateTime, or any HC.Device
+            --    row — web and portal sign-ins create one without stamping
+            --    the date). An admin who can set your email can have your
+            --    invite code sent to it. Before first sign-in the record is
+            --    the kennel's to fix. Same rule as hcportal_updateKennelHasher.
+            IF (@targetUserId <> @userId)
+            BEGIN
+                DECLARE @ctxKennelId UNIQUEIDENTIFIER = COALESCE(
+                    @kennelId,
+                    (SELECT e.KennelId FROM HC.Event e WHERE e.id = @eventId),
+                    (SELECT h.HomeKennelId FROM HC.Hasher h WHERE h.id = @targetUserId));
+                DECLARE @mayManage SMALLINT = 0;
+                IF (@ctxKennelId IS NOT NULL)
+                    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @ctxKennelId, @functionKey = 'manageMembers', @allowed = @mayManage OUTPUT;
+                IF (@mayManage = 0)
+                BEGIN
+                    ROLLBACK TRANSACTION;
+                    SET @errorCode = 1340; SET @errorType = 13; SET @errorId = NEWID();
+                    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
+                    VALUES (@errorId, @hcVersion, 'Not authorised',
+                            'Caller may not manage members of the kennel this edit is for.', @procName, @userId,
+                            CAST(@targetUserId AS NVARCHAR(40)));
+                    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+                    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                           'Not authorised' AS errorTitle,
+                           'You do not manage members for this kennel.' AS errorUserMessage,
+                           @procName AS errorProc;
+                    RETURN;
+                END
+
+                IF (@firstName IS NOT NULL OR @lastName IS NOT NULL OR @hashName IS NOT NULL OR @email IS NOT NULL)
+                BEGIN
+                    DECLARE @tName NVARCHAR(250), @tHome UNIQUEIDENTIFIER, @tSignedIn SMALLINT, @callerIsSuper SMALLINT;
+                    SELECT @tName     = COALESCE(NULLIF(h.HashName, ''), NULLIF(LTRIM(RTRIM(CONCAT(h.FirstName, ' ', h.LastName))), ''), 'This hasher'),
+                           @tHome     = h.HomeKennelId,
+                           @tSignedIn = CASE WHEN h.LastLoginDateTime IS NOT NULL
+                                               OR EXISTS (SELECT 1 FROM HC.Device d WHERE d.UserId = h.id)
+                                             THEN 1 ELSE 0 END
+                    FROM HC.Hasher h WHERE h.id = @targetUserId;
+                    SET @callerIsSuper = CASE WHEN EXISTS (SELECT 1 FROM HC.HasherKennelMap m
+                                                           WHERE m.UserId = @userId AND (m.AppAccessFlags & 0x40000000) <> 0)
+                                              THEN 1 ELSE 0 END;
+
+                    IF (@callerIsSuper = 0 AND @tSignedIn = 1)
+                    BEGIN
+                        ROLLBACK TRANSACTION;
+                        SET @errorCode = 1341; SET @errorType = 13; SET @errorId = NEWID();
+                        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
+                        VALUES (@errorId, @hcVersion, 'Personal details are the hasher''s',
+                                'Target has signed in; only they may change name/hash name/email.', @procName, @userId,
+                                CAST(@targetUserId AS NVARCHAR(40)));
+                        SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+                        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                               'Only they can change this' AS errorTitle,
+                               @tName + ' has signed in to Harrier Central, so only they can change their name, hash name or email (My Account in the app).' AS errorUserMessage,
+                               @procName AS errorProc;
+                        RETURN;
+                    END
+                    IF (@callerIsSuper = 0 AND @tSignedIn = 0
+                        AND NOT (@tHome = @ctxKennelId
+                                 OR (@tHome IS NULL AND EXISTS (SELECT 1 FROM HC.HasherKennelMap m
+                                                                WHERE m.UserId = @targetUserId AND m.KennelId = @ctxKennelId))))
+                    BEGIN
+                        ROLLBACK TRANSACTION;
+                        SET @errorCode = 1342; SET @errorType = 13; SET @errorId = NEWID();
+                        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
+                        VALUES (@errorId, @hcVersion, 'Another kennel''s hasher',
+                                'Target belongs to another home kennel.', @procName, @userId,
+                                CAST(@targetUserId AS NVARCHAR(40)));
+                        SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+                        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                               'Another kennel''s hasher' AS errorTitle,
+                               @tName + ' belongs to another kennel (their home kennel), so only that kennel''s admins can change their details.' AS errorUserMessage,
+                               @procName AS errorProc;
+                        RETURN;
+                    END
+                END
+            END
+
             -- UPDATE — edit existing user
             UPDATE HC.Hasher
             SET FirstName                    = COALESCE(@firstName, FirstName),

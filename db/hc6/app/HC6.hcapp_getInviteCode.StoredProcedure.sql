@@ -67,7 +67,8 @@ BEGIN TRY
 
 -- ---------------------------------------------------------------
 -- Fetch invite code — conditions must all be met:
---   1. Target user has not yet logged in (LastLoginDateTime IS NULL)
+--   1. Target user has not yet signed in anywhere (LastLoginDateTime IS NULL
+--      and no HC.Device row — web/portal sign-ins create one without the stamp)
 --   2. Target user is not removed
 --   3. Calling user has manage-members permission (AppAccessFlags & 0x40000010)
 --      on the kennel that is the target's home kennel
@@ -78,6 +79,10 @@ SELECT TOP 1 @inviteCode = h.ResetCode
 FROM HC.Hasher h
 WHERE h.id = @targetUserId
   AND h.LastLoginDateTime IS NULL
+  -- A web or portal sign-in creates an HC.Device row without stamping
+  -- LastLoginDateTime; it is a sign-in all the same, and an invite code for
+  -- a signed-in account is a takeover (2026-09-23).
+  AND NOT EXISTS (SELECT 1 FROM HC.Device d WHERE d.UserId = h.id)
   AND h.Removed = 0
   AND h.HomeKennelId IN (
       SELECT hkm.KennelId

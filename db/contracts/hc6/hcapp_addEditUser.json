@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_addEditUser",
   "version": "1.0.0",
-  "description": "Creates or updates a Hasher record. Dual-mode: when @deviceId is NULL it operates as a new-user creation flow (first app launch, no device record exists yet) — no token validation is performed. When @deviceId is provided it validates the access token (bound to DeviceSecret + UPPER(@targetUserId)) and performs an edit against an existing user. On success, delegates to hcapp_syncEventAdminData, hcapp_syncKennelAdminData, or hcapp_syncUserData depending on context, or returns the new HasherProfile directly in new-user mode.",
+  "description": "Creates or updates a Hasher record. Dual-mode: when @deviceId is NULL it operates as a new-user creation flow (first app launch, no device record exists yet) — no token validation is performed. When @deviceId is provided it validates the access token (bound to DeviceSecret + UPPER(@targetUserId)) and performs an edit against an existing user. On success, delegates to hcapp_syncEventAdminData, hcapp_syncKennelAdminData, or hcapp_syncUserData depending on context, or returns the new HasherProfile directly in new-user mode. 2026-09-23: editing SOMEONE ELSE (@targetUserId <> caller) now requires manageMembers on the kennel the edit is for (@kennelId, else the run's kennel, else the target's home kennel) — errorCode 1340; and name/hash name/email are refused once the target has signed in anywhere (LastLoginDateTime set or any HC.Device row) unless the caller is SuperAdmin — 1341; or when a never-signed-in target's home kennel is another kennel — 1342. A new user's HomeKennelId is now the run's kennel when only @eventId is given.",
   "parameters": [
     {
       "name": "deviceId",
@@ -176,9 +176,24 @@
       "name": "SuccessEnvelope",
       "description": "Always returned as the first rowset. success=1 on success, success=0 on any error path.",
       "columns": [
-        { "name": "success", "type": "BIT", "nullable": false, "description": "1 on success, 0 on error." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. Error code on failure: 1110=invalid token, 1310=device/user not found, 1510=duplicate email, 1910=unhandled DB error." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 11=auth failure (token invalid), 13=device or target user not found, 15=business rule violation (duplicate email), 19=unhandled CATCH error." }
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 on success, 0 on error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. Error code on failure: 1110=invalid token, 1310=device/user not found, 1510=duplicate email, 1910=unhandled DB error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 11=auth failure (token invalid), 13=device or target user not found, 15=business rule violation (duplicate email), 19=unhandled CATCH error."
+        }
       ]
     },
     {
@@ -186,12 +201,42 @@
       "name": "ErrorDetail",
       "description": "Only returned when success=0. Provides human-readable and debug context for the error.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID for this error instance." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Matches errorType in the SuccessEnvelope rowset." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Matches errorCode in the SuccessEnvelope rowset." },
-        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Short error title." },
-        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID for this error instance."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Matches errorType in the SuccessEnvelope rowset."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Matches errorCode in the SuccessEnvelope rowset."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Short error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "SP name from OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -199,19 +244,84 @@
       "name": "NewUserProfile",
       "description": "Only returned when success=1 AND new-user mode (@deviceId IS NULL, or @userId resolved to null-UUID). Returns the newly created Hasher record directly instead of delegating to a sync SP.",
       "columns": [
-        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The new user's Hasher.id." },
-        { "name": "firstName", "type": "NVARCHAR(250)", "nullable": false, "description": "Coalesced to empty string." },
-        { "name": "lastName", "type": "NVARCHAR(250)", "nullable": false, "description": "Coalesced to empty string." },
-        { "name": "dispName", "type": "NVARCHAR", "nullable": false, "description": "Hasher.DisplayName computed column, coalesced to empty string." },
-        { "name": "hashName", "type": "NVARCHAR(250)", "nullable": false, "description": "Coalesced to empty string." },
-        { "name": "photo", "type": "NVARCHAR(1000)", "nullable": false, "description": "Coalesced to empty string." },
-        { "name": "dispPref", "type": "INT", "nullable": false, "description": "Hasher.NameDisplayPreference, coalesced to 0." },
-        { "name": "supportCode", "type": "NVARCHAR(50)", "nullable": true, "description": "Hasher.SupportCode." },
-        { "name": "resetCode", "type": "NVARCHAR(50)", "nullable": true, "description": "Hasher.ResetCode." },
-        { "name": "qrCode", "type": "NVARCHAR(50)", "nullable": false, "description": "Hasher.QR_code, coalesced to empty string." },
-        { "name": "preferences", "type": "NVARCHAR(20)", "nullable": false, "description": "Hasher.Preferences cast to NVARCHAR — string representation of the INT bitfield." },
-        { "name": "updatedAt", "type": "DATETIMEOFFSET", "nullable": false, "description": "Hasher.updatedAt." },
-        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "Hasher.Removed, coalesced to 0." }
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The new user's Hasher.id."
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Coalesced to empty string."
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Coalesced to empty string."
+        },
+        {
+          "name": "dispName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Hasher.DisplayName computed column, coalesced to empty string."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Coalesced to empty string."
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": "Coalesced to empty string."
+        },
+        {
+          "name": "dispPref",
+          "type": "INT",
+          "nullable": false,
+          "description": "Hasher.NameDisplayPreference, coalesced to 0."
+        },
+        {
+          "name": "supportCode",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Hasher.SupportCode."
+        },
+        {
+          "name": "resetCode",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Hasher.ResetCode."
+        },
+        {
+          "name": "qrCode",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Hasher.QR_code, coalesced to empty string."
+        },
+        {
+          "name": "preferences",
+          "type": "NVARCHAR(20)",
+          "nullable": false,
+          "description": "Hasher.Preferences cast to NVARCHAR — string representation of the INT bitfield."
+        },
+        {
+          "name": "updatedAt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": "Hasher.updatedAt."
+        },
+        {
+          "name": "removed",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Hasher.Removed, coalesced to 0."
+        }
       ]
     },
     {
