@@ -584,7 +584,7 @@ class RunTabs extends StatelessWidget {
                                     url: url,
                                   );
 
-                                  Get.closeAllSnackbars();
+                                  closeAllSnackbarsSafely();
 
                                   if (!context.mounted) return;
 

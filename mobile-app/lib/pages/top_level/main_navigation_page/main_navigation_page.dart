@@ -231,7 +231,7 @@ class MainNavigationPage extends StatelessWidget {
 
                                     // // Delay to ensure overlay is ready
 
-                                    Get.closeAllSnackbars();
+                                    closeAllSnackbarsSafely();
 
                                     if (context.mounted) {
                                       // Use ScaffoldMessenger to avoid missing Overlay issues
