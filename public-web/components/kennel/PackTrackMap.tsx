@@ -6,7 +6,7 @@ import {
   MapContainer, TileLayer, Polyline, Marker, Circle, Pane, useMap, useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
-import "@/lib/leaflet-teardown";
+import { safeFlyTo } from "@/lib/leaflet-teardown";
 import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera, Download } from "lucide-react";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, trackUpTo, sumDistanceMeters,
@@ -207,7 +207,7 @@ function ViewerPanner({ target, nonce }: { target: [number, number] | null; nonc
   const map = useMap();
   useEffect(() => {
     if (nonce > 0 && target) {
-      map.flyTo(target, Math.max(map.getZoom(), 16));
+      safeFlyTo(map, target, Math.max(map.getZoom(), 16));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nonce]);
@@ -259,7 +259,7 @@ function FollowController({
       // until the fly settles so it isn't interrupted.
       engagedRunner.current = selectedId;
       settling.current = true;
-      map.flyTo(target, Math.max(map.getZoom(), FOLLOW_ZOOM), { duration: 0.6 });
+      safeFlyTo(map, target, Math.max(map.getZoom(), FOLLOW_ZOOM), { duration: 0.6 });
       map.once("moveend", () => { settling.current = false; });
       return;
     }

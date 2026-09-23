@@ -136,3 +136,28 @@ export function hardenLeafletTeardown(): void {
 }
 
 hardenLeafletTeardown();
+
+/**
+ * `map.flyTo`, falling back to `setView` when the map has no size.
+ *
+ * Leaflet's fly animation divides by the container's larger dimension, so a
+ * map sitting in a hidden tab or a collapsed panel (0×0) computes NaN on its
+ * first frame and throws "Invalid LatLng object: (NaN, NaN)" from inside
+ * requestAnimationFrame — HC.ErrorLog, web 0.21.73, 2026-09-23, from both the
+ * run page's past tab and the PackTrack page. A zero-size map has nothing to
+ * animate anyway; jumping puts the camera in the right place for when it is
+ * shown.
+ */
+export function safeFlyTo(
+  map: L.Map,
+  target: L.LatLngExpression,
+  zoom: number,
+  options?: L.ZoomPanOptions,
+): void {
+  const size = map.getSize();
+  if (size.x > 0 && size.y > 0) {
+    map.flyTo(target, zoom, options);
+  } else {
+    map.setView(target, zoom, { animate: false });
+  }
+}
