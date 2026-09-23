@@ -1,148 +1,123 @@
 import 'package:harrier_central/imports.dart';
 
-import 'package:intl/intl.dart';
-
-class UserQrCodePage extends StatefulWidget {
+/// The "Run check in page": Scan / Be Scanned. Stateless over
+/// [UserQrCodeController], which owns the tab and the scanner for as long as
+/// the page is open.
+class UserQrCodePage extends StatelessWidget {
   const UserQrCodePage({super.key});
 
-  @override
-  UserQrCodePageState createState() => UserQrCodePageState();
-}
-
-class UserQrCodePageState extends State<UserQrCodePage>
-    with SingleTickerProviderStateMixin {
-  final List<Tab> _tabs = <Tab>[];
-
-  //PageController _pageController;
-  late TabController _tabController;
-
-  late AppBar _appBar;
-
-  @override
-  void initState() {
-    super.initState();
-    _initTabs();
-    _tabController = TabController(vsync: this, length: _tabs.length);
-
-    _appBar = AppBar(
-      centerTitle: true,
-      backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-      actions: <IconButton>[
-        IconButton(
-          icon: const Icon(Icons.info_outline),
-          onPressed: () async {
-            await _displayInstructions(context);
-          },
-        ),
-      ],
-      title: Text('Run check in page', style: ts_appBarTitle),
-    );
-  }
+  static const List<Tab> _tabs = <Tab>[
+    Tab(text: 'Scan'),
+    Tab(text: 'Be Scanned'),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        SizedBox(
-          height: MediaQuery.sizeOf(context).height,
-          width: MediaQuery.sizeOf(context).width,
-        ),
-        Positioned(
-          top: 0,
-          left: 0,
-          width: MediaQuery.sizeOf(context).width,
-          height: MediaQuery.sizeOf(context).height,
-          child: AppScaffold(
-            appBar: _appBar,
-            body: Container(
-              decoration: Backgrounds.defaultHcBackground(),
-              child: Stack(
-                alignment: AlignmentDirectional.center,
-                children: <Widget>[
-                  Positioned(
-                    top: 20,
-                    left: 20,
-                    right: 20,
-                    child: Container(
-                      width: 340.0,
-                      height: 45.0,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColorLight,
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(35.0),
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 1.0, right: 1.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          padding: const EdgeInsets.all(5.0),
-                          // Reviewed for 2.0+
-                          child: TabBar(
-                            labelStyle: ts_tabSelected,
-                            unselectedLabelStyle: ts_tabUnselected,
-                            isScrollable: false,
-                            unselectedLabelColor: Colors.black,
-                            labelColor: Colors.white,
-                            labelPadding: const EdgeInsets.only(
-                              top: 5,
-                              left: 20,
-                              right: 20,
-                            ),
-                            indicatorSize: TabBarIndicatorSize.tab,
-                            indicator: BoxDecoration(
-                              color: hc_red,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            indicatorColor: Colors
-                                .transparent, // make sure underline isn’t drawn
-                            // BubbleTabIndicator(
-                            //   indicatorHeight: 35.0,
-                            //   indicatorColor: hc_red,
-                            //   tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                            //   indicatorRadius: 20.0,
-                            // ),
-                            tabs: _tabs,
-                            controller: _tabController,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // left/right pin the tab view to the body's actual width
-                  // (a MediaQuery width here would be the whole window on a
-                  // tablet, overflowing the centred content column).
-                  Positioned(
-                    top: 80,
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: const <Widget>[QrScannerTab(), QrCodeTab()],
-                    ),
+    return GetBuilder<UserQrCodeController>(
+      init: UserQrCodeController(),
+      tag: UserQrCodeController.tag,
+      builder: (UserQrCodeController c) => Stack(
+        children: <Widget>[
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height,
+            width: MediaQuery.sizeOf(context).width,
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            width: MediaQuery.sizeOf(context).width,
+            height: MediaQuery.sizeOf(context).height,
+            child: AppScaffold(
+              appBar: AppBar(
+                centerTitle: true,
+                backgroundColor: themeAppBarBackground,
+                iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+                actions: <IconButton>[
+                  IconButton(
+                    icon: const Icon(Icons.info_outline),
+                    onPressed: () => _displayInstructions(context, c),
                   ),
                 ],
+                title: Text('Run check in page', style: ts_appBarTitle),
+              ),
+              body: Container(
+                decoration: Backgrounds.defaultHcBackground(),
+                child: Stack(
+                  alignment: AlignmentDirectional.center,
+                  children: <Widget>[
+                    Positioned(
+                      top: 20,
+                      left: 20,
+                      right: 20,
+                      child: Container(
+                        width: 340.0,
+                        height: 45.0,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColorLight,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(35.0),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 1.0, right: 1.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            padding: const EdgeInsets.all(5.0),
+                            // Reviewed for 2.0+
+                            child: TabBar(
+                              labelStyle: ts_tabSelected,
+                              unselectedLabelStyle: ts_tabUnselected,
+                              isScrollable: false,
+                              unselectedLabelColor: Colors.black,
+                              labelColor: Colors.white,
+                              labelPadding: const EdgeInsets.only(
+                                top: 5,
+                                left: 20,
+                                right: 20,
+                              ),
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              indicator: BoxDecoration(
+                                color: hc_red,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              indicatorColor: Colors.transparent,
+                              tabs: _tabs,
+                              controller: c.tabController,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // left/right pin the tab view to the body's actual width
+                    // (a MediaQuery width here would be the whole window on a
+                    // tablet, overflowing the centred content column).
+                    Positioned(
+                      top: 80,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: TabBarView(
+                        controller: c.tabController,
+                        children: const <Widget>[QrScannerTab(), QrCodeTab()],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  @override
-  void dispose() {
-    //_pageController?.dispose();
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<bool?> _displayInstructions(BuildContext context) async {
+  Future<bool?> _displayInstructions(
+    BuildContext context,
+    UserQrCodeController c,
+  ) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -153,12 +128,9 @@ class UserQrCodePageState extends State<UserQrCodePage>
             child: ListBody(
               children: <Widget>[
                 Text(
-                  _tabController.index == 0
-                      ?
-                        //'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
-                        'Mis-management can scan this code to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.\r\n\r\nThis is your unique code. If you don\'t normally carry a phone, you can //print this code as a way to be quickly checked in at Hash runs.'
+                  c.tabController.index == 0
+                      ? 'Mis-management can scan this code to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.\r\n\r\nThis is your unique code. If you don\'t normally carry a phone, you can //print this code as a way to be quickly checked in at Hash runs.'
                       : 'You can use your QR scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out on trail.',
-                  //'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code.\r\n\r\nYou can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
                   style: ts_alertDialogBody,
                 ),
@@ -178,38 +150,6 @@ class UserQrCodePageState extends State<UserQrCodePage>
       },
     );
   }
-
-  //     width: 300.0,
-  //     height: 50.0,
-  //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //         children: <Widget>[
-  //           Expanded(
-  //             child:             TextButton(
-  //               splashColor: Colors.transparent,
-  //               highlightColor: Colors.transparent,
-  //               onPressed: _onSwitchToQrScanner,
-  //               child: Text(
-  //                 'Scan',
-  //                 style: const TextStyle(
-  //                     color: left,
-  //                     fontSize: 14.0,
-  //               splashColor: Colors.transparent,
-  //               highlightColor: Colors.transparent,
-  //               onPressed: _onSwitchToQrCode,
-  //               child: Text(
-  //                 'My Scanner',
-  //                 style: const TextStyle(
-  //                     color: right,
-  //                     fontSize: 14.0,
-  //         ],
-
-  void _initTabs() {
-    if (_tabs.isEmpty) {
-      _tabs.add(const Tab(text: 'Scan'));
-      _tabs.add(const Tab(text: 'Be Scanned'));
-    }
-  }
-
 }
 
 class QrCodeTab extends StatefulWidget {
@@ -313,301 +253,17 @@ class QrCodeTabState extends State<QrCodeTab>
   }
 }
 
-class QrScannerTab extends StatefulWidget {
+/// The Scan tab. Stateless; its state is the page's [UserQrCodeController],
+/// so swiping away and back does not restart the scanner.
+class QrScannerTab extends StatelessWidget {
   const QrScannerTab({super.key});
 
   @override
-  QrScannerTabState createState() => QrScannerTabState();
-}
-
-enum EQrScannerState {
-  waitingForScan,
-  scanning,
-  isProcessing,
-  qrNotRecognized,
-  dataRecorded,
-}
-
-class QrScannerTabState extends State<QrScannerTab>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  String _onScreenMessage = 'Scanning paused';
-
-  MobileScannerController? _scannerController;
-  EQrScannerState _state = EQrScannerState.waitingForScan;
-  bool _isScanning = false;
-
-  //final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
-
-  @override
-  void initState() {
-    super.initState();
-    _scannerController = MobileScannerController(
-      facing: CameraFacing.back,
-      torchEnabled: false,
-      detectionSpeed: DetectionSpeed.noDuplicates,
-      formats: [BarcodeFormat.qrCode],
-    );
-  }
-
-  @override
-  void dispose() {
-    if (_scannerController != null) {
-      unawaited(
-        Future.microtask(() async {
-          await _scannerController!.stop();
-          unawaited(_scannerController!.dispose());
-        }),
-      );
-    }
-    super.dispose();
-  }
-
-  @override
-  bool get wantKeepAlive => true;
-
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  // QR Code Scanner support
-  //
-  //
-  //
-  //
-  //
-  //
-
-  DateTime? _lastScan;
-
-  @override
-  void reassemble() {
-    super.reassemble();
-    final c = _scannerController;
-    if (c == null) return;
-
-    // Only meaningful during hot-reload (debug)
-    assert(() {
-      if (Platform.isAndroid) {
-        // Use pause()/resume() if available; otherwise swap to stop()/start()
-        unawaited(
-          c
-              .pause()
-              .then((_) {
-                if (!mounted) return;
-                setStateIfMounted(() {
-                  _isScanning = false;
-                  _onScreenMessage = 'Scanning paused';
-                  _state = EQrScannerState.waitingForScan;
-                });
-              })
-              .catchError((e, st) {
-                // Optional: log pause error
-              }),
-        );
-      } else if (Platform.isIOS) {
-        unawaited(
-          c
-              .start()
-              .then((_) {
-                if (!mounted) return;
-                setStateIfMounted(() {
-                  _isScanning = true;
-                  _onScreenMessage = 'Looking for QR Code';
-                  _state = EQrScannerState.scanning;
-                });
-              })
-              .catchError((e, st) {
-                // Optional: log start error
-              }),
-        );
-      }
-      return true;
-    }());
-  }
-
-  Future<void> _toggleScanning({bool? doScanning}) async {
-    if (_scannerController != null) {
-      if (_isScanning && ((doScanning == null) || !doScanning)) {
-        await _scannerController!.pause();
-        _isScanning = false;
-        setStateIfMounted(() {
-          _onScreenMessage = 'Scanning paused';
-        });
-        _state = EQrScannerState.waitingForScan;
-      } else {
-        if ((doScanning == null) || doScanning) {
-          await _scannerController!.start();
-          _isScanning = true;
-          setStateIfMounted(() {
-            _onScreenMessage = 'Looking for QR Code';
-          });
-          _state = EQrScannerState.scanning;
-        }
-      }
-    }
-  }
-
-  Future<void> _onCodeRead(String scanResult) async {
-    // final AudioPlayer audioPlayer = AudioPlayer();
-    // // ignore: unawaited_futures
-    // audioPlayer.play(AssetSource('assets/sounds/camera.mp3'));
-
-    final player = AudioPlayer();
-    await player.setAsset('assets/sounds/camera.mp3'); // or setFilePath/setUrl
-    //NOTE: Unawaited future is OK
-    await player.play();
-    await player.dispose();
-
-    setStateIfMounted(() {
-      _onScreenMessage = 'Processing QR Scan';
-      _state = EQrScannerState.isProcessing;
-    });
-    //await stopScanning();
-
-    //final Map<String,String> result = Utilities.validateScan(scanResult, Utilities.qrScanTypeFlag_user | Utilities.qrScanTypeFlag_kennelRunEnd| Utilities.qrScanTypeFlag_kennelRunStart| Utilities.qrScanTypeFlag_runStart| Utilities.qrScanTypeFlag_runEnd);
-    final Map<String, String> result = Utilities.validateScan(
-      scanResult,
-      //Utilities.qrScanTypeFlag_user |
-      Utilities.qrScanTypeFlag_runStart |
-          Utilities.qrScanTypeFlag_runEnd |
-          Utilities.qrScanTypeFlag_kennelRunEnd |
-          Utilities.qrScanTypeFlag_kennelRunStart |
-          Utilities.qrScanTypeFlag_authenticateWebPortal,
-    );
-
-    if (result['validScan'] == 'false') {
-      setStateIfMounted(() {
-        _state = EQrScannerState.qrNotRecognized;
-        _onScreenMessage = result['validHcQr'] == 'true'
-            ? 'This QR code is not valid here'
-            : 'QR code not recignized';
-      });
-    } else {
-      final String prefix = result['prefix'] ?? '';
-      final String scanData = result['content'] ?? '';
-
-      if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) ||
-          (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
-        final int attendenceState = (prefix == QR_PREFIX_SPECIFIC_RUN_START)
-            ? attendenceAtHash.value
-            : attendenceOnIn.value;
-
-        final String userId = currentUserId;
-
-        final List<dynamic> adHocData = await tableModel.hasherEventMapService
-            .setEventAttendence(
-              scanData,
-              userId,
-              AppDomainType.user,
-              attendenceState,
-              isHare: isHareNo.value,
-            );
-
-        setStateIfMounted(() {
-          _state = EQrScannerState.dataRecorded;
-          _onScreenMessage =
-              firstRow(adHocData)?['userMessage'] ?? 'Processing Complete';
-        });
-      } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) ||
-          (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
-        final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START
-            ? attendenceAtHash.value
-            : attendenceOnIn.value;
-
-        // the eventId variable can either have the number of hours
-        // to the closest event or an actual eventId for one event
-        final String queryResult = await CommonQueries.getClosestEventInTime(
-          scanData,
-        );
-        if (double.tryParse(queryResult) != null) {
-          final double? hoursUntilNextEvent = double.tryParse(
-            queryResult.replaceAll(',', '.'),
-          );
-          if (hoursUntilNextEvent != null) {
-            setStateIfMounted(() {
-              if (hoursUntilNextEvent > 24) {
-                _onScreenMessage =
-                    'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
-              } else {
-                if (hoursUntilNextEvent >= 2) {
-                  _onScreenMessage =
-                      'The next event does not open for check-in for another ${NumberFormat('##').format(hoursUntilNextEvent)} hours';
-                } else {
-                  _onScreenMessage =
-                      'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute${NumberFormat('###').format(hoursUntilNextEvent * 60)}' !=
-                          '1'
-                      ? 's'
-                      : '';
-                }
-              }
-            });
-          }
-        } else {
-          if (queryResult == EMPTY_RESULT) {
-            setStateIfMounted(() {
-              _onScreenMessage =
-                  'There is no event for this Kennel at this time';
-            });
-          } else {
-            final String userId = currentUserId;
-
-            final List<dynamic> adHocData = await tableModel
-                .hasherEventMapService
-                .setEventAttendence(
-                  scanData,
-                  userId,
-                  AppDomainType.user,
-                  attendenceState,
-                  isHare: isHareNo.value,
-                );
-
-            setStateIfMounted(() {
-              _onScreenMessage =
-                  firstRow(adHocData)?['userMessage'] ?? 'Processing Complete';
-            });
-          }
-        }
-      } else if (prefix == QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN) {
-        final AuthenticateWebPortalService svc = AuthenticateWebPortalService();
-        final SingleResultModel? returnValue = await svc.authenticateWebPortal(
-          scanData,
-        );
-
-        setStateIfMounted(() {
-          if ((returnValue != null) &&
-              (returnValue.result != null) &&
-              (returnValue.result!.isNotEmpty)) {
-            _onScreenMessage = returnValue.result!;
-          } else {
-            _onScreenMessage = 'Processing Complete';
-          }
-        });
-      }
-    }
-
-    // return Future<void>(() {});(() {});
-  }
-
-  //       height: constraint.biggest.height,
-  //       width: constraint.biggest.height,
-
-  //   // If the controller is updated then update the UI.
-
-  // void showInSnackBar(String message) {
-  //   // _ScaffoldKey.currentState
-
-  String? _result;
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context);
+    final UserQrCodeController c = Get.find<UserQrCodeController>(
+      tag: UserQrCodeController.tag,
+    );
     return Column(
-      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      // mainAxisSize: MainAxisSize.min,
-      // crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         SizedBox(
           width: 10,
@@ -617,7 +273,6 @@ class QrScannerTabState extends State<QrScannerTab>
           padding: const EdgeInsets.only(left: 20, right: 20),
           child: AutoSizeText(
             'Use this scanner to scan QR codes at the beginning and end of runs to check in.',
-            //'Use this scanner to scan the QR codes at theor end of runs or to scan the QR codes of other Hashers who you want to add to your friend list.',
             textAlign: TextAlign.justify,
             maxLines: 4,
             style: ts_titleMedium.copyWith(
@@ -625,87 +280,60 @@ class QrScannerTabState extends State<QrScannerTab>
             ),
           ),
         ),
-
-        //_cameraPreviewWidget(),
         Expanded(
           child: Container(
             padding: EdgeInsets.all(
               10 * (deviceInfo.deviceMaxScaleFactor * 1.5),
             ),
-            child: Stack(
-              alignment: AlignmentDirectional.center,
-              children: <Widget>[
-                Image.asset('images/other/qr_scanner.png'),
-                Container(
-                  padding: const EdgeInsets.all(11.0),
-                  child: AspectRatio(
-                    aspectRatio: 1.0,
-                    child: MobileScanner(
-                      controller: _scannerController,
-                      onDetect: (result) async {
-                        if (result.barcodes.isEmpty) return;
-                        _result = result.barcodes.first.rawValue;
-
-                        if ((_lastScan == null) ||
-                            (_lastScan!
-                                    .difference(DateTime.now())
-                                    .inSeconds
-                                    .abs() >
-                                5)) {
-                          _lastScan = DateTime.now();
-                          await _toggleScanning();
-                          if (_result != null) {
-                            await _onCodeRead(_result!);
-                          }
-                        }
-                      },
+            child: Obx(() {
+              final bool scanning = c.isScanning.value;
+              final EQrScannerState state = c.state.value;
+              return Stack(
+                alignment: AlignmentDirectional.center,
+                children: <Widget>[
+                  Image.asset('images/other/qr_scanner.png'),
+                  Container(
+                    padding: const EdgeInsets.all(11.0),
+                    child: AspectRatio(
+                      aspectRatio: 1.0,
+                      child: MobileScanner(
+                        controller: c.scanner,
+                        onDetect: c.onDetect,
+                      ),
                     ),
                   ),
-                ),
-                if ((!_isScanning) &&
-                    (_state == EQrScannerState.waitingForScan)) ...<Widget>[
-                  Image.asset('images/other/qr_scanner.png'),
+                  if (!scanning && state == EQrScannerState.waitingForScan)
+                    Image.asset('images/other/qr_scanner.png'),
+                  if (!scanning && state == EQrScannerState.isProcessing)
+                    Image.asset('images/other/uploading_to_cloud.png'),
+                  if (!scanning && state == EQrScannerState.dataRecorded)
+                    Image.asset('images/other/run_info_recorded.png'),
+                  if (!scanning && state == EQrScannerState.qrNotRecognized)
+                    Image.asset('images/other/qr_not_recognized.png'),
                 ],
-                if ((!_isScanning) &&
-                    (_state == EQrScannerState.isProcessing)) ...<Widget>[
-                  Image.asset('images/other/uploading_to_cloud.png'),
-                ],
-                if ((!_isScanning) &&
-                    (_state == EQrScannerState.dataRecorded)) ...<Widget>[
-                  Image.asset('images/other/run_info_recorded.png'),
-                ],
-                if ((!_isScanning) &&
-                    (_state == EQrScannerState.qrNotRecognized)) ...<Widget>[
-                  Image.asset('images/other/qr_not_recognized.png'),
-                ],
-              ],
-            ),
+              );
+            }),
           ),
         ),
-        if (_state != EQrScannerState.dataRecorded) ...<Widget>[
-          Container(
+        Obx(() {
+          if (c.state.value == EQrScannerState.dataRecorded) {
+            return const SizedBox.shrink();
+          }
+          return Container(
             margin: const EdgeInsets.all(10.0),
-            //width: 280.0,
             height: 40.0,
             child: StyleForConnected(
               child: ElevatedButton(
                 child: Text(
-                  _isScanning ? 'Stop Scanning' : 'Start Scanning',
+                  c.isScanning.value ? 'Stop Scanning' : 'Start Scanning',
                   style: ts_title,
                 ),
-                onPressed: () async {
-                  if (Utilities.isConnected(showDialog: true)) {
-                    await _toggleScanning();
-                  }
-                },
+                onPressed: () => unawaited(c.tapStartStop()),
               ),
             ),
-          ),
-        ],
-
+          );
+        }),
         Container(
-          //color:Colors.yellow,
-          //height: 80,
           padding: const EdgeInsets.only(
             top: 20,
             bottom: 30,
@@ -713,14 +341,13 @@ class QrScannerTabState extends State<QrScannerTab>
             right: 20,
           ),
           child: Center(
-            child: AutoSizeText(
-              _onScreenMessage,
-              //'This is a test of how ',
-              //'This is a test of how this works with 2 lines ',
-              //'this is a test of how 3 lines will fit Ill need a lot more text than that to make it work',
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              style: ts_headingLarge,
+            child: Obx(
+              () => AutoSizeText(
+                c.onScreenMessage.value,
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                style: ts_headingLarge,
+              ),
             ),
           ),
         ),

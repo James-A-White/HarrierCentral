@@ -216,6 +216,7 @@ export 'package:harrier_central/pages/init/onboarding_flow_page.dart';
 export 'package:harrier_central/pages/init/new_account.dart';
 export 'package:harrier_central/pages/init/third_party_login.dart';
 export 'package:harrier_central/pages/init/use_invite_code_page.dart';
+export 'package:harrier_central/pages/init/invite_code_controller.dart';
 export 'package:harrier_central/data/services/passkey_sign_in_service.dart';
 export 'package:harrier_central/widgets/passkey_sign_in_button.dart';
 
@@ -246,6 +247,7 @@ export 'package:harrier_central/widgets/runner_list_canvas.dart';
 export 'package:harrier_central/pages/menu_pages/settings_page.dart';
 export 'package:harrier_central/pages/menu_pages/import_gpx_page.dart';
 export 'package:harrier_central/pages/menu_pages/support_page.dart';
+export 'package:harrier_central/pages/menu_pages/support_controller.dart';
 
 // pages/misc_pages
 export 'package:harrier_central/pages/misc_pages/generic_widget_page.dart';
@@ -260,6 +262,7 @@ export 'package:harrier_central/pages/run_admin/create_new_event_popup.dart';
 export 'package:harrier_central/pages/run_admin/drinks_list.dart';
 export 'package:harrier_central/pages/run_admin/drinks_list_controller.dart';
 export 'package:harrier_central/util/hc_snack.dart';
+export 'package:harrier_central/util/qr_scan_controller.dart';
 export 'package:harrier_central/pages/run_admin/edit_run_details.dart';
 export 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';
 export 'package:harrier_central/pages/run_admin/find_hasher_page.dart';
@@ -289,6 +292,7 @@ export 'package:harrier_central/pages/top_level/songs_page_controller.dart';
 export 'package:harrier_central/pages/shared/haberdashery_sale_sheet.dart';
 export 'package:harrier_central/pages/shared/membership_charge_sheet.dart';
 export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
+export 'package:harrier_central/pages/top_level/user_qr_code_controller.dart';
 
 // services
 export 'package:harrier_central/services/connectivity_service.dart';
@@ -404,4 +408,5 @@ export 'package:harrier_central/widgets/zoomable_image.dart';
 export 'package:harrier_central/main.dart';
 export 'package:harrier_central/widgets/run_photo_gallery_controller.dart';
 export 'package:harrier_central/pages/run_admin/down_downs_controller.dart';
+export 'package:harrier_central/pages/run_admin/down_down_form_controller.dart';
 export 'package:harrier_central/pages/live_run_pages/live_run_charges_controller.dart';
