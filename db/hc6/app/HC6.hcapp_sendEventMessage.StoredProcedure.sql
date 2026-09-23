@@ -5,7 +5,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendEventMessage]
     @eventId                     UNIQUEIDENTIFIER = NULL,
     @messageId                   UNIQUEIDENTIFIER = NULL,
     @messageTitle                NVARCHAR(250)    = NULL,
-    @messageContent              NVARCHAR(500)    = NULL,
+    @messageContent              NVARCHAR(MAX)    = NULL,
     @messageReleasabilityFlags   INT              = NULL
 
 AS
@@ -119,6 +119,26 @@ BEGIN
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing message fields' AS errorTitle,
            'Message content and a valid releasability flag are required.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
+-- The column is NVARCHAR(4000) since 2026-09-23 and this parameter is MAX so
+-- that an over-long message is REFUSED, not cut: an NVARCHAR(500) parameter
+-- silently truncated the first admin-room announcement at exactly 500
+-- characters, with no error and no log (James, 2026-09-23). LEN counts
+-- UTF-16 code units, the same measure the column enforces.
+IF (LEN(@messageContent) > 4000)
+BEGIN
+    SET @errorCode = 1264; SET @errorType = 2; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Message too long',
+            CONCAT('eventId=', CAST(@eventId AS VARCHAR(40)), ' contentLen=', LEN(@messageContent)),
+            @procName, @userId);
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Message too long' AS errorTitle,
+           CONCAT('Messages can be up to 4,000 characters; this one is ', LEN(@messageContent),
+                  '. Please shorten it and send again.') AS errorUserMessage,
            @procName AS errorProc;
     RETURN;
 END

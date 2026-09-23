@@ -6,7 +6,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_sendEventMessage]
 @publicEventId uniqueidentifier = NULL,
 @messageId uniqueidentifier = NULL,
 @messageTitle nvarchar(250) = NULL,
-@messageContent nvarchar(500) = NULL,
+@messageContent nvarchar(MAX) = NULL,
 @messageReleasabilityFlags int = NULL
 
 AS
@@ -116,6 +116,19 @@ BEGIN
         SET @errorDetail = REPLACE(TRIM(@errorDetail), ' ', ', ');
 
         SELECT 0 AS Success, 'Missing or empty fields: ' + @errorDetail AS ErrorMessage;
+        RETURN;
+END
+
+-- The column is NVARCHAR(4000) since 2026-09-23 and this parameter is MAX so
+-- that an over-long message is REFUSED, not cut: an NVARCHAR(500) parameter
+-- silently truncated the first admin-room announcement at exactly 500
+-- characters, with no error and no log (James, 2026-09-23). LEN counts
+-- UTF-16 code units, the same measure the column enforces.
+IF (LEN(@messageContent) > 4000)
+BEGIN
+        SELECT 0 AS Success,
+               CONCAT('Messages can be up to 4,000 characters; this one is ', LEN(@messageContent),
+                      '. Please shorten it and send again.') AS ErrorMessage;
         RETURN;
 END
 

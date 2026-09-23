@@ -3,6 +3,12 @@ import 'package:harrier_central/imports.dart';
 
 const int kChatReleasabilityAll = 63;
 
+/// HC.EventMessage.MessageContent is NVARCHAR(4000) and the send SPs refuse
+/// more. The composer stops typing at this length, so the server's refusal
+/// is a backstop, not something a hasher meets. (The old NVARCHAR(500) cut
+/// the first admin-room announcement in half, silently — 2026-09-23.)
+const int kChatMessageMaxLength = 4000;
+
 /// Assistance / all-clear broadcasts: Mismanagement (0x01) + RSVPs (0x08) +
 /// Hares (0x10) — the people actually involved in the run, not every hasher
 /// who ever had a kennel association.

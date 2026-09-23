@@ -3,7 +3,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendRoomMessage]
     @accessToken    NVARCHAR(1000)   = NULL,
     @roomType       INT              = NULL,
     @messageId      UNIQUEIDENTIFIER = NULL,
-    @messageContent NVARCHAR(500)    = NULL
+    @messageContent NVARCHAR(MAX)    = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_sendRoomMessage
@@ -89,6 +89,27 @@ BEGIN
     SELECT @errorId AS errorId, 2 AS errorType, 1941 AS errorCode,
            'Missing fields' AS errorTitle,
            'The message could not be sent. Please try again.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
+-- The column is NVARCHAR(4000) since 2026-09-23 and this parameter is MAX so
+-- that an over-long message is REFUSED, not cut: an NVARCHAR(500) parameter
+-- silently truncated the first admin-room announcement at exactly 500
+-- characters, with no error and no log (James, 2026-09-23). LEN counts
+-- UTF-16 code units, the same measure the column enforces.
+IF (LEN(@messageContent) > 4000)
+BEGIN
+    SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Message too long',
+            CONCAT('roomType=', ISNULL(CAST(@roomType AS VARCHAR(12)), 'NULL'),
+                   ' contentLen=', LEN(@messageContent)),
+            @procName, @userId);
+    SELECT @errorId AS errorId, 2 AS errorType, 1942 AS errorCode,
+           'Message too long' AS errorTitle,
+           CONCAT('Messages can be up to 4,000 characters; this one is ', LEN(@messageContent),
+                  '. Please shorten it and send again.') AS errorUserMessage,
            @procName AS errorProc;
     RETURN;
 END

@@ -17,7 +17,9 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_sendChatMessage]
     @publicKennelId UNIQUEIDENTIFIER = NULL,
     @roomType       INT              = NULL,
     @messageId      UNIQUEIDENTIFIER,
-    @messageContent NVARCHAR(500)
+    -- MAX, not a width: an NVARCHAR(n) parameter truncates silently. The app
+    -- SP this delegates to refuses anything over 4,000 (2026-09-23).
+    @messageContent NVARCHAR(MAX)
 AS
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
