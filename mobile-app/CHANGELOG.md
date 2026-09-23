@@ -18,7 +18,7 @@
   pages (one shared controller), payment report, kennel members,
   leaderboard, check-in QR page, invite code, support, add/edit down down
   (one shared form controller), profile, and the run detail tabs. Pure rules
-  became unit-tested statics (152 tests). **Beta track only until these are
+  became unit-tested statics (143 tests on this train). **Beta track only until these are
   device-tested** — the widget trees are unchanged but the state lives
   elsewhere now.
 - Two latent faults fixed on the way: the historical-count form copied a

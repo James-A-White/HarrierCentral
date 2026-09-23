@@ -319,6 +319,7 @@ class CheckInPackPage extends StatelessWidget {
 
                                                   paymentBankTransfer.value,
                                                   index,
+                                                  packMember,
                                                   -1,
                                                 ),
                                               );
@@ -432,6 +433,7 @@ class CheckInPackPage extends StatelessWidget {
 
                                                   paymentCash.value,
                                                   index,
+                                                  packMember,
                                                   -1,
                                                 ),
                                               );
