@@ -173,7 +173,14 @@ BEGIN TRY
                    @targetName + ' has signed in to Harrier Central, so only they can change their name, hash name or email (My Account in the app).' AS ErrorMessage;
             RETURN;
         END
-        IF (@targetHomeKennelId IS NULL OR @targetHomeKennelId <> @kennelId)
+        -- Home kennel = the kennel that holds them. Hashers added from a
+        -- run's admin screen have no home kennel (121 of BMPH3's 199 on
+        -- 2026-09-23), so a NULL home counts as ours when they have a row in
+        -- this kennel's HasherKennelMap.
+        IF NOT (@targetHomeKennelId = @kennelId
+                OR (@targetHomeKennelId IS NULL
+                    AND EXISTS (SELECT 1 FROM HC.HasherKennelMap m
+                                WHERE m.UserId = @hasherBeingEditedId AND m.KennelId = @kennelId)))
         BEGIN
             SELECT 0 AS Success,
                    @targetName + ' belongs to another kennel (their home kennel), so only that kennel''s admins can change their details.' AS ErrorMessage;

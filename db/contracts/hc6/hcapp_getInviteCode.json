@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_getInviteCode",
   "version": "1.0.0",
-  "description": "Returns the invite code (ResetCode) for a target user. The caller must be authenticated, the target user must not have logged in yet, must not be removed, and the calling user must hold manage-members permission (AppAccessFlags & 0x40000010) on the target's home kennel. This is a read SP — no success envelope is returned; errors use the HC6 standard error rowset and success returns a single inviteCode column.",
+  "description": "Returns the invite code (ResetCode) for a target user. The caller must be authenticated, the target user must not have logged in yet, must not be removed, and the calling user must hold manage-members permission (AppAccessFlags & 0x40000010) on the target's home kennel. This is a read SP — no success envelope is returned; errors use the HC6 standard error rowset and success returns a single inviteCode column. 2026-09-23: an HC.Device row (web/portal sign-in) also counts as 'has signed in' — no invite code is returned for such an account.",
   "parameters": [
     {
       "name": "deviceId",
@@ -32,12 +32,42 @@
       "name": "AuthError",
       "description": "Returned when HC6.ValidateAppAuth fails (auth, device not found, etc.). Mutually exclusive with InviteCodeResult and PermissionError.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry created by ValidateAppAuth." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "HC6 app error type code (11=auth)." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code set by ValidateAppAuth." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "Name of this stored procedure." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry created by ValidateAppAuth."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC6 app error type code (11=auth)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code set by ValidateAppAuth."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "Name of this stored procedure."
+        }
       ]
     },
     {
@@ -45,12 +75,42 @@
       "name": "PermissionError",
       "description": "Returned when the invite code cannot be retrieved — target not found, already logged in, already removed, or caller lacks manage-members permission. errorCode=1312, errorType=13. Mutually exclusive with AuthError and InviteCodeResult.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry created by this SP." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 13 in this SP (not found / permission denied)." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Always 1312." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Always 'Invite code not available'." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing message explaining the member may have already logged in or caller lacks permission." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "Name of this stored procedure." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry created by this SP."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 13 in this SP (not found / permission denied)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1312."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Always 'Invite code not available'."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing message explaining the member may have already logged in or caller lacks permission."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "Name of this stored procedure."
+        }
       ]
     },
     {
@@ -58,7 +118,12 @@
       "name": "InviteCodeResult",
       "description": "Returned on success — a single row with the target user's invite code. Mutually exclusive with AuthError and PermissionError.",
       "columns": [
-        { "name": "inviteCode", "type": "NVARCHAR(250)", "nullable": false, "description": "The URC: prefixed reset code from HC.Hasher.ResetCode. Note: declared as NVARCHAR(250) in the SP but the table column is NVARCHAR(50). See code smells." }
+        {
+          "name": "inviteCode",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The URC: prefixed reset code from HC.Hasher.ResetCode. Note: declared as NVARCHAR(250) in the SP but the table column is NVARCHAR(50). See code smells."
+        }
       ]
     }
   ],
