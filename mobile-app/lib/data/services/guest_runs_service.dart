@@ -49,7 +49,8 @@ class GuestRunsService {
           .toList();
 
       return (success: true, total: total, runs: runs);
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][GUEST]', 'guest runs call failed: $e', s);
       return (success: false, total: 0, runs: <GuestRunModel>[]);
     }
   }
@@ -90,7 +91,8 @@ class GuestRunsService {
           .toList();
 
       return (success: true, photos: photos);
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][GUEST]', 'guest photos call failed: $e', s);
       return (success: false, photos: <RunPhotoModel>[]);
     }
   }

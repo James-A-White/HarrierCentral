@@ -28,7 +28,8 @@ class RunContentService {
       final List<dynamic> rowsets = jsonDecode(result) as List<dynamic>;
       if (rowsets.isEmpty || (rowsets[0] as List).isEmpty) return null;
       return HashTrashModel.fromJson((rowsets[0] as List)[0] as Map<String, dynamic>);
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][CONTENT]', 'run content call failed: $e', s);
       return null;
     }
   }
@@ -106,7 +107,8 @@ class RunContentService {
       final List<dynamic> rowsets = jsonDecode(result) as List<dynamic>;
       if (rowsets.isEmpty || (rowsets[0] as List).isEmpty) return null;
       return ((rowsets[0] as List)[0] as Map<String, dynamic>)['downDownId'] as String?;
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][CONTENT]', 'run content call failed: $e', s);
       return null;
     }
   }
@@ -147,7 +149,8 @@ class RunContentService {
           .toList();
 
       return (downDowns: downDowns, hashers: hashers);
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][CONTENT]', 'run content call failed: $e', s);
       return null;
     }
   }
@@ -190,7 +193,8 @@ class RunContentService {
           .toList();
 
       return (downDowns: downDowns, hashers: hashers);
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][CONTENT]', 'run content call failed: $e', s);
       return null;
     }
   }

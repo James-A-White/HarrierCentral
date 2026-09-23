@@ -862,7 +862,8 @@ class FutureRunListPageController extends GetxController {
 
       try {
         await database.rawQuery(query);
-      } catch (e) {
+      } catch (e, s) {
+        BootLogger.logError('[ERROR][RUNS]', 'clearTables failed: $e', s);
         debugPrint('[FutureRunListPageController.clearTables] error: $e');
       }
     }
@@ -897,7 +898,8 @@ class FutureRunListPageController extends GetxController {
         true,
         debugText: 'background sync',
       );
-    } catch (e) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][SYNC]', 'triggerBackgroundSync failed: $e', s);
       debugPrint('[SYNC] triggerBackgroundSync error: $e');
     }
 
@@ -1154,7 +1156,8 @@ class FutureRunListPageController extends GetxController {
       try {
         await database.execute('DELETE FROM $name');
         await database.execute('INSERT INTO $name SELECT * FROM $bak');
-      } catch (e) {
+      } catch (e, s) {
+        BootLogger.logError('[ERROR][RUNS]', '_restoreRunTables failed: $e', s);
         debugPrint('[RUNS] _restoreRunTables: restore of $name failed: $e');
       }
     }
@@ -1166,7 +1169,8 @@ class FutureRunListPageController extends GetxController {
       final bak = _runBackupName(_runTableName(t));
       try {
         await database.execute('DROP TABLE IF EXISTS $bak');
-      } catch (e) {
+      } catch (e, s) {
+        BootLogger.logError('[ERROR][RUNS]', '_dropRunTableBackups failed: $e', s);
         debugPrint('[RUNS] _dropRunTableBackups failed for ${t.name}: $e');
       }
     }

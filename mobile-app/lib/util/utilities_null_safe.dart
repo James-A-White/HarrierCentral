@@ -736,7 +736,8 @@ class Utilities {
       } else {
         return false;
       }
-    } catch (e) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][NET]', 'checkHcServer failed: $e', s);
       debugPrint('[Utilities.checkHcServer] error: $e');
     }
 

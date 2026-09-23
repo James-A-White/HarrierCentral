@@ -1,3 +1,4 @@
+import 'package:harrier_central/util/boot_logger.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Keychain keys. Prefixed to avoid collisions with any other secure entries.
@@ -15,7 +16,8 @@ const _storage = FlutterSecureStorage(
 Future<String?> _readSecure(String key) async {
   try {
     return await _storage.read(key: key);
-  } catch (_) {
+  } catch (e, s) {
+    BootLogger.logError('[ERROR][SECURE]', 'secure read failed for $key: $e', s);
     return null;
   }
 }
@@ -27,7 +29,9 @@ Future<bool> _writeSecure(String key, String value) async {
     try {
       await _storage.write(key: key, value: value);
       return true;
-    } catch (_) {}
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][SECURE]', 'secure write failed for $key (attempt $attempt): $e', s);
+      }
   }
   return false;
 }
@@ -50,5 +54,7 @@ Future<bool> writeSecureQrSecretCode(String code) =>
 Future<void> deleteAllSecure() async {
   try {
     await _storage.deleteAll();
-  } catch (_) {}
+  } catch (e, s) {
+    BootLogger.logError('[ERROR][SECURE]', 'deleteAll failed: $e', s);
+    }
 }

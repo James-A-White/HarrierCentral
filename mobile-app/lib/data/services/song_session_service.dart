@@ -127,7 +127,9 @@ class SongSessionService {
           recipientCount: adHoc['recipientCount'] as int?,
         );
       }
-    } catch (_) {}
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][SONG]', 'selectSong reply unparseable: $e', s);
+      }
     return SelectSongResult(songTitle: '');
   }
 
@@ -172,7 +174,9 @@ class SongSessionService {
         selectedByName: row['selectedByName'] as String? ?? 'Someone',
         songTitle: row['songName'] as String? ?? '',
       );
-    } catch (_) {}
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][SONG]', 'currentSong reply unparseable: $e', s);
+      }
     return null;
   }
 }

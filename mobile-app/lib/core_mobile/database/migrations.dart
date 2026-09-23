@@ -19,6 +19,7 @@
 // ignore_for_file: prefer_interpolation_to_compose_strings
 // ignore_for_file: constant_identifier_names
 
+import 'package:harrier_central/util/boot_logger.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -145,7 +146,8 @@ class MigrationsTableHelper {
           line++;
         }
       }
-    } catch (e) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][DB]', 'migrations failed: $e', s);
       migrationsSuccessful = false;
       print('Migrations failed');
       print(e.toString());

@@ -107,7 +107,8 @@ class QueryKennels {
       );
       final count = (results.first['c'] as int?) ?? 0;
       return count > 0;
-    } catch (e) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][DB]', 'isUserAdminOfAnyKennel failed: $e', s);
       if (kDebugMode) debugPrint('isUserAdminOfAnyKennel error: $e');
       return false;
     }

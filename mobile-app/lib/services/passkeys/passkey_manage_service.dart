@@ -160,7 +160,8 @@ class PasskeyManageService {
             (dynamic r) => AccountPasskey.fromJson(r as Map<String, dynamic>),
           )
           .toList();
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][PASSKEY]', 'passkey call failed: $e', s);
       return null;
     }
   }

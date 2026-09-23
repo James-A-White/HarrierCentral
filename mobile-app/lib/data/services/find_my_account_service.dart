@@ -78,7 +78,8 @@ class FindMyAccountService {
           runCount: (row['runCount'] as num?)?.toInt() ?? 0,
         );
       }).toList();
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][ACCOUNT]', 'find-my-account call failed: $e', s);
       return null;
     }
   }
@@ -125,7 +126,8 @@ class FindMyAccountService {
         body: jsonEncode(<String, String>{'publicHasherId': publicHasherId}),
       ).timeout(const Duration(seconds: 30));
       return response.statusCode >= 200 && response.statusCode < 300;
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][ACCOUNT]', 'find-my-account call failed: $e', s);
       return false;
     }
   }

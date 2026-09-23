@@ -2655,7 +2655,8 @@ class _HashTrashViewState extends State<_HashTrashView> {
           _loaded = true;
         });
       }
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][RUN]', 'tab load failed: $e', s);
       if (mounted) setState(() => _loaded = true);
     }
   }
@@ -2798,7 +2799,8 @@ class _DownDownsHistoryViewState extends State<_DownDownsHistoryView> {
       } else {
         if (mounted) setState(() => _loaded = true);
       }
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][RUN]', 'tab load failed: $e', s);
       if (mounted) setState(() => _loaded = true);
     }
   }

@@ -102,7 +102,8 @@ class ChatRoomService {
       return rows
           .map((dynamic r) => ChatRoom.fromJson(r as Map<String, dynamic>))
           .toList();
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][CHAT]', 'room call failed: $e', s);
       return null;
     }
   }
@@ -142,7 +143,8 @@ class ChatRoomService {
       if (rows.isEmpty) return false;
       final row = rows[0] as Map<String, dynamic>;
       return row['Success'] == 1 || row['Success'] == true;
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][CHAT]', 'room call failed: $e', s);
       return false;
     }
   }
@@ -198,7 +200,8 @@ class ChatPinService {
       final ok = row['Success'] == 1 || row['Success'] == true;
       if (ok) await _writeLocal(eventId, kennelId, pinned);
       return ok;
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][CHAT]', 'room call failed: $e', s);
       return false;
     }
   }
@@ -263,7 +266,8 @@ class ChatPinService {
         if (explicit != null) return explicit == 1;
         return (rows.first[h.colIsHomeKennel] as int?) == 1;
       }
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][CHAT]', 'room call failed: $e', s);
       return false;
     }
     return false;

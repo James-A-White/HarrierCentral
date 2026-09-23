@@ -444,7 +444,8 @@ class ServiceCommon {
       if (rowsets.length <= 1) return responseBody;
       rowsets.removeAt(0);
       return jsonEncode(rowsets);
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[ERROR][HTTP]', 'response handling failed: $e', s);
       return responseBody;
     }
   }

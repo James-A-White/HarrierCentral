@@ -138,7 +138,8 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                     dynamic rda;
                     try {
                       rda = await Future<dynamic>.sync(refresh);
-                    } catch (_) {
+                    } catch (e, s) {
+                      BootLogger.logError('[ERROR][RUN]', 'run details load failed: $e', s);
                       rda = null;
                     }
 

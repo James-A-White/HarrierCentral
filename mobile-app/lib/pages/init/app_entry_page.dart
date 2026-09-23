@@ -34,7 +34,9 @@ class AppEntryPageState extends State<AppEntryPage>
           const AssetAvifImage('images/backgrounds/hash_foot_background.avif'),
           navigatorKey.currentState!.context,
         );
-      } catch (_) {}
+      } catch (e, s) {
+        BootLogger.logError('[ERROR][BOOT]', 'background precache failed: $e', s);
+        }
       await _runBoot();
     });
   }
