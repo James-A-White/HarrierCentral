@@ -1,3 +1,4 @@
+import { reportClientError } from "@/lib/client-error";
 export interface TrackPoint {
   lat: number;
   lng: number;
@@ -733,7 +734,7 @@ export async function fetchRunnerNames(
     }
     return map;
   } catch (err) {
-    console.error("[runner-names] client fetch error:", err);
+    reportClientError("packtrack-client/runner-names", err);
     return empty;
   }
 }
@@ -839,11 +840,11 @@ export async function fetchRunPhotos(
         }
       }
     } catch (err) {
-      console.error("[run-photo-pins] client fetch error:", err);
+      reportClientError("packtrack-client/run-photo-pins", err);
     }
     return map;
   } catch (err) {
-    console.error("[run-photos] client fetch error:", err);
+    reportClientError("packtrack-client/run-photos", err);
     return {};
   }
 }
@@ -852,14 +853,14 @@ export async function fetchPackTrack(eventId: string): Promise<PackTrackPayload 
   try {
     const res = await fetch(`/api/packtrack?eventId=${encodeURIComponent(eventId)}`);
     if (!res.ok) {
-      console.error(`[packtrack] client fetch failed: ${res.status}`, await res.text());
+      reportClientError("packtrack-client/packtrack", new Error(`fetch failed: ${res.status}`), await res.text());
       return null;
     }
     const data = await res.json() as PackTrackPayload;
     console.log(`[packtrack] eventId=${eventId} users=${data.users?.length ?? 0}`, data);
     return data;
   } catch (err) {
-    console.error("[packtrack] client fetch error:", err);
+    reportClientError("packtrack-client/packtrack", err);
     return null;
   }
 }

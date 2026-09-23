@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logWebError } from "@/lib/web-log";
 
 // Proxies to the PublicWebApi shim's publicWeb_getRunPhotos SP, keeping the
 // upstream URL server-side. Returns the Hash Flash-approved PUBLIC photos
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest) {
     // 404 (event not found) / 400 (SP error) — photos are optional, fall back gracefully.
     if (!res.ok) {
       console.warn(`[run-photos] upstream ${res.status}`);
+      void logWebError({ source: "/api/run-photos", error: `upstream ${res.status}`, url: req.nextUrl.pathname });
       return NextResponse.json({ photos: [] });
     }
     // Shape: [[{ EventFound: 1 }], [{ photoId, BlobUrl, Title, ... }, ...]]
@@ -43,7 +45,7 @@ export async function GET(req: NextRequest) {
       { headers: { "Cache-Control": "public, s-maxage=30, max-age=0" } },
     );
   } catch (err) {
-    console.error("[run-photos] fetch error:", err);
+    void logWebError({ source: "/api/run-photos", error: err, url: req.nextUrl.pathname });
     return NextResponse.json({ photos: [] });
   }
 }

@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.73 (2026-09-23)
+
+- **Failures that only reached the console now reach the log.** Five PackTrack
+  fetch errors in the browser and four API routes wrote to `console.error`,
+  which on a visitor's phone nobody sees and on App Service nobody reads. They
+  go to HC.ErrorLog like every other web error, under their own sources.
+
 ## 0.21.72 (2026-09-23)
 
 - **The map guards now cover a path's whole life**, not just its birth and

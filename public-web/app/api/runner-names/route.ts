@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logWebError } from "@/lib/web-log";
 
 // Proxies to the PublicWebApi shim's publicWeb_getEventRunners SP, keeping the
 // upstream URL server-side. Resolves PackTrack runner ids to display names.
@@ -23,6 +24,7 @@ export async function GET(req: NextRequest) {
     // 404 (event not found) / 400 (SP error) — names are optional, fall back gracefully.
     if (!res.ok) {
       console.warn(`[runner-names] upstream ${res.status}`);
+      void logWebError({ source: "/api/runner-names", error: `upstream ${res.status}`, url: req.nextUrl.pathname });
       return NextResponse.json({ runners: [] });
     }
     // Shape: [[{ EventFound: 1 }], [{ userId, displayName, photo }, ...]]
@@ -33,7 +35,7 @@ export async function GET(req: NextRequest) {
       { headers: { "Cache-Control": "public, s-maxage=300" } },
     );
   } catch (err) {
-    console.error("[runner-names] fetch error:", err);
+    void logWebError({ source: "/api/runner-names", error: err, url: req.nextUrl.pathname });
     return NextResponse.json({ runners: [] });
   }
 }
