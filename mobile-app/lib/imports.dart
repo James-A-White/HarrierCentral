@@ -200,6 +200,8 @@ export 'package:harrier_central/pages/guest/guest_run_detail_page.dart';
 // pages/history_sub_pages
 export 'package:harrier_central/pages/history_sub_pages/user_country_history_list_page.dart';
 export 'package:harrier_central/pages/history_sub_pages/user_run_history_list_page.dart';
+export 'package:harrier_central/pages/history_sub_pages/user_run_history_controller.dart';
+export 'package:harrier_central/pages/history_sub_pages/user_run_history_list.dart';
 
 // pages/init
 export 'package:harrier_central/pages/init/account_question_page.dart';
@@ -273,6 +275,7 @@ export 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 export 'package:harrier_central/pages/top_level/future_run_list_page/future_run_list_controller.dart';
 export 'package:harrier_central/pages/top_level/future_run_list_page/future_run_list_page.dart';
 export 'package:harrier_central/pages/top_level/history_list_page.dart';
+export 'package:harrier_central/pages/top_level/history_list_controller.dart';
 export 'package:harrier_central/pages/top_level/kennel_list_controller.dart';
 export 'package:harrier_central/pages/top_level/kennel_list_page.dart';
 export 'package:harrier_central/pages/top_level/main_navigation_page/main_navigation_page.dart';

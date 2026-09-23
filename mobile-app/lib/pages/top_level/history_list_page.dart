@@ -1,377 +1,95 @@
 import 'package:harrier_central/imports.dart';
 
-class CountryStats {
-  int runCount;
-  int hareCount;
-  String countryName;
-  String flagFile;
-  String countryId;
-
-  CountryStats({
-    required this.runCount,
-    required this.hareCount,
-    required this.countryName,
-    required this.flagFile,
-    required this.countryId,
-  });
-
-  factory CountryStats.fromMap(Map<String, dynamic> map) {
-    return CountryStats(
-      runCount: map['runCount'] ?? 0,
-      hareCount: map['hareCount'] ?? 0,
-      countryName: map['countryName'] ?? '',
-      flagFile: map['flagFile'] ?? '',
-      countryId: normalizeUuid((map['countryId'] ?? '').toString()),
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'runCount': runCount,
-      'hareCount': hareCount,
-      'countryName': countryName,
-      'flagFile': flagFile,
-      'countryId': countryId,
-    };
-  }
-}
-
-class HistoryListPage extends StatefulWidget {
+/// The History tab: my run counts by kennel and by country. Stateless over
+/// [HistoryListController], which lives for the session like this tab does.
+class HistoryListPage extends StatelessWidget {
   const HistoryListPage({super.key});
 
   @override
-  HistoryListPageState createState() => HistoryListPageState();
-}
-
-class HistoryListPageState extends State<HistoryListPage>
-    with SingleTickerProviderStateMixin {
-  HistoryListPageState();
-
-  bool _isLoading = false;
-  List<RunHistoryModel> _runCountsListByKennel = <RunHistoryModel>[];
-  Map<String, CountryStats> _runCountsListByCountry = <String, CountryStats>{};
-  late TabController _tabController;
-  int _totalHaring = 0;
-  int _totalRuns = 0;
-  StreamSubscription<DataChangeEvent>? _dataChangeSub;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(_handleTabSelection);
-
-    unawaited(setupInitialValues());
-
-    // The History tab does its one-time load at boot against cached data. When
-    // the returning-user background sync lands fresh data, re-read the stats.
-    if (Get.isRegistered<DataChangeService>()) {
-      _dataChangeSub = Get.find<DataChangeService>().stream.listen((event) {
-        if (event.type == DataChangeType.fullSyncCompleted && mounted) {
-          unawaited(setupInitialValues());
-        }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    unawaited(_dataChangeSub?.cancel());
-    _tabController.removeListener(_handleTabSelection);
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<void> setupInitialValues() async {
-    await queryKennelStats(true);
-    await queryCountryStats(true);
-  }
-
-  Future<void> queryCountryStats(bool forceRefresh) async {
-    final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
-    final String userId = currentUserId;
-
-    final String hcRunsQuery =
-        '''
-          SELECT
-          COUNT(case when hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= ${attendenceAtHash.value} then 1 else null end) as runCount,
-          COUNT(case when hem.${tableModel.hasherEventMapTableHelper.colIsHare} != 0 AND hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= ${attendenceAtHash.value} then 1 else null end) as hareCount,
-          countries.${tableModel.countriesTableHelper.colCountryName},
-          countries.${tableModel.countriesTableHelper.colCountryId},
-          countries.${tableModel.countriesTableHelper.colFlagFile}
-          FROM ${EnumDataTables.hasherEventMap.commonTableName} hem
-          INNER JOIN ${EnumDataTables.countries.commonTableName} countries on hem.${tableModel.hasherEventMapTableHelper.colCountryId} = countries.${tableModel.countriesTableHelper.colCountryId}
-          INNER JOIN ${EnumDataTables.events.commonTableName} evt on hem.${tableModel.hasherEventMapTableHelper.colEventId} = evt.${tableModel.eventsTableHelper.colEventId}
-          WHERE evt.${tableModel.eventsTableHelper.colRemoved} = 0
-          AND evt.${tableModel.eventsTableHelper.colIsCountedRun} != 0
-          AND evt.${tableModel.eventsTableHelper.colIsVisible} != 0
-          AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
-          AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal') 
-          GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colCountryId}, countries.${tableModel.countriesTableHelper.colFlagFile}
-          ORDER BY runCount desc
-          ''';
-
-    final String historicalRunsQuery =
-        '''
-          SELECT
-          SUM(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount}) as runCount,
-          SUM(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount})  as hareCount,
-          countries.${tableModel.countriesTableHelper.colCountryName},
-          countries.${tableModel.countriesTableHelper.colCountryId},
-          countries.${tableModel.countriesTableHelper.colFlagFile}
-          FROM ${EnumDataTables.hasherKennelMap.commonTableName} hkm
-          INNER JOIN ${EnumDataTables.kennels.commonTableName} ken on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
-          INNER JOIN ${EnumDataTables.countries.commonTableName} countries on ken.${tableModel.kennelsTableHelper.colCountryId} = countries.${tableModel.countriesTableHelper.colCountryId}
-          WHERE hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"
-          GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colCountryId}, countries.${tableModel.countriesTableHelper.colFlagFile}
-          ORDER BY runCount desc
-          ''';
-
-    // final String query = '''
-    //       SELECT
-    //       10 as runCount,
-    //       5 as hareCount,
-    //       countries.${tableModel.countriesTableHelper.colCountryName},
-    //       ORDER BY runCount desc
-    //       ''';
-
-    _runCountsListByCountry = <String, CountryStats>{};
-    try {
-      final List<Map<String, dynamic>> hcResults = await database.rawQuery(
-        hcRunsQuery,
-      );
-
-      final List<Map<String, dynamic>> historicResults = await database
-          .rawQuery(historicalRunsQuery);
-
-      for (int i = 0; i < historicResults.length; i++) {
-        final CountryStats historicItem = CountryStats.fromMap(
-          historicResults[i],
-        );
-        if (historicItem.runCount > 0) {
-          // print(
-          //   'Historic - Country = ${historicItem.countryName} / Count = ${historicItem.runCount} / Hare = ${historicItem.hareCount}',
-          // );
-
-          _runCountsListByCountry[historicItem.countryId] = historicItem;
-        }
-      }
-
-      for (int i = 0; i < hcResults.length; i++) {
-        final CountryStats hcItem = CountryStats.fromMap(hcResults[i]);
-
-        if (hcItem.runCount > 0) {
-          // print(
-          //   'HC - Country = ${hcItem.countryName} / Count = ${hcItem.runCount} / Hare = ${hcItem.hareCount}',
-          // );
-
-          if (_runCountsListByCountry[hcItem.countryId] != null) {
-            _runCountsListByCountry[hcItem.countryId]!.hareCount +=
-                hcItem.hareCount;
-            _runCountsListByCountry[hcItem.countryId]!.runCount +=
-                hcItem.runCount;
-          } else {
-            _runCountsListByCountry[hcItem.countryId] = hcItem;
-          }
-        }
-      }
-
-    } catch (e) {
-      //print(e);
-    }
-  }
-
-  Future<void> queryKennelStats(bool forceRefresh) async {
-    final String userId = currentUserId;
-
-    final String query =
-        '''
-          SELECT 
-          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount} + hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},0) as totalRunsThisKennel,
-          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount} + ${tableModel.hasherKennelMapTableHelper.colHcHaringCount},0) as totalHaringThisKennel,
-
-          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},0) as hcRunsThisKennel,
-          coalesce(${tableModel.hasherKennelMapTableHelper.colHcHaringCount},0) as hcHaringThisKennel,
-
-          k.${tableModel.kennelsTableHelper.colKennelShortName},
-          k.${tableModel.kennelsTableHelper.colKennelName},
-          k.${tableModel.kennelsTableHelper.colKennelId},
-          k.${tableModel.kennelsTableHelper.colKennelLogo},
-          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},0) as ${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},0) as ${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
-          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as ${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
-          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},0) as ${tableModel.hasherKennelMapTableHelper.colFollowing},
-          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit},0) as kennelCredit,
-          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},c.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as digitsAfterDecimal,
-          coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},c.${tableModel.countriesTableHelper.colCurrencySymbol}) as currencySymbol
-          FROM ${EnumDataTables.kennels.commonTableName} k
-          INNER JOIN ${EnumDataTables.countries.commonTableName} c on c.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
-          LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.commonTableName} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
-          ORDER BY totalRunsThisKennel desc
-          ''';
-
-    // Build into a LOCAL list and swap it in atomically.
-    //
-    // This used to empty _runCountsListByKennel BEFORE the await and refill it
-    // one row at a time afterwards. Any frame painted in between rendered the
-    // ListView with the item count from the old list against the new, empty
-    // one — "RangeError (length): Invalid value: Valid value range is empty: 6"
-    // on the History tab, seen in the wild 2026-07-31. The field must never be
-    // left inconsistent across an await.
-    try {
-      final List<Map<String, dynamic>> results = await database.rawQuery(query);
-
-      final List<RunHistoryModel> next = <RunHistoryModel>[];
-      // Accumulate locally too: these are totals, so a second refresh landing
-      // while the first is mid-flight would otherwise double-count into them.
-      int totalHaring = 0;
-      int totalRuns = 0;
-
-      for (final Map<String, dynamic> row in results) {
-        final RunHistoryModel hlrItem = RunHistoryModel.fromMap(row);
-        totalHaring += hlrItem.totalHaringThisKennel;
-        totalRuns += hlrItem.totalRunsThisKennel;
-        if ((hlrItem.totalRunsThisKennel > 0) || (hlrItem.following == 1)) {
-          next.add(hlrItem);
-        }
-      }
-
-      setStateIfMounted(() {
-        _runCountsListByKennel = next;
-        _totalHaring = totalHaring;
-        _totalRuns = totalRuns;
-        // Previously only cleared inside the loop on the last row, so a user
-        // with no qualifying kennels sat on the spinner forever.
-        if (forceRefresh) _isLoading = false;
-      });
-    } catch (e, s) {
-      BootLogger.logError('[ERROR][HISTORY]', 'queryKennelStats failed: $e', s);
-      if (kDebugMode) debugPrint('[HistoryList] queryKennelStats failed: $e');
-      setStateIfMounted(() {
-        if (forceRefresh) _isLoading = false;
-      });
-    }
-  }
-
-  void _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
-      // This means the user tapped a new tab, but the animation hasn't finished yet.
-      setStateIfMounted(() {});
-    } else if (_tabController.index != _tabController.previousIndex) {
-      // This is triggered after the tab has finished changing.
-      setStateIfMounted(() {});
-    }
-  }
-
-  Widget _buildCircularProgressIndicator() {
-    return const Center(
-      child: HcAppCircularProgressIndicator(key: Key('600193968')),
+  Widget build(BuildContext context) {
+    return GetBuilder<HistoryListController>(
+      init: HistoryListController(),
+      tag: HistoryListController.tag,
+      builder: (HistoryListController c) => AppScaffold(
+        body: Obx(
+          () => c.isLoading.value
+              ? const Center(
+                  child: HcAppCircularProgressIndicator(key: Key('600193968')),
+                )
+              : _buildListView(context, c),
+        ),
+      ),
     );
   }
 
-  Widget _buildCountryStatsList() {
-    final sortedEntries = _runCountsListByCountry.entries.toList()
-      ..sort((b, a) => a.value.runCount.compareTo(b.value.runCount));
-
+  Widget _buildCountryStatsList(HistoryListController c) {
+    final List<CountryStats> countries = c.countries;
     return Expanded(
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        //itemCount: runCountsList.length + 1,
-        itemCount: sortedEntries.length,
+        itemCount: countries.length,
         padding: const EdgeInsets.only(top: 20),
         itemExtent: 100.0,
         itemBuilder: (BuildContext context, int index) {
-          //String countryNameKey = _runCountsListByCountry.keys.elementAt(index);
-
-          if (sortedEntries[index].value.runCount == 0) {
-            return Container();
-          }
-
+          if (index >= countries.length) return const SizedBox.shrink();
+          final CountryStats stats = countries[index];
+          if (stats.runCount == 0) return Container();
           return CountryRunHistoryCountListItem(
-            countryId: sortedEntries[index].value.countryId,
-            countryName: sortedEntries[index].value.countryName,
-            flagFile: sortedEntries[index].value.flagFile,
-            runCount: sortedEntries[index].value.runCount,
-            hareCount: sortedEntries[index].value.hareCount,
+            countryId: stats.countryId,
+            countryName: stats.countryName,
+            flagFile: stats.flagFile,
+            runCount: stats.runCount,
+            hareCount: stats.hareCount,
           );
-          //}
         },
       ),
     );
   }
 
-  Widget _buildKennelStatsList() {
+  Widget _buildKennelStatsList(HistoryListController c) {
     // Snapshot the list for this build so itemCount and itemBuilder can never
     // disagree, however the field is mutated while the frame is in flight.
-    final List<RunHistoryModel> kennels = _runCountsListByKennel;
+    final List<RunHistoryModel> kennels = c.kennels;
     return Expanded(
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        //itemCount: runCountsList.length + 1,
         itemCount: kennels.length,
         padding: const EdgeInsets.only(top: 20),
         itemExtent: 100.0,
         itemBuilder: (BuildContext context, int index) {
           if (index >= kennels.length) return const SizedBox.shrink();
-
           return KennelRunHistoryCountListItem(
             kennelInfo: kennels[index],
-            // Reads the FIELD, not the snapshot: this runs after the refresh
-            // has swapped a new list in, and the caller wants the fresh row.
-            refreshCounters: (String kennelId) async {
-              await queryKennelStats(true);
-              if (kennelId.isNotEmpty) {
-                for (final RunHistoryModel k in _runCountsListByKennel) {
-                  if (k.kennelId == kennelId) return k;
-                }
-              }
-            },
+            // Re-reads the stats and hands back the fresh row: this runs after
+            // the refresh has swapped a new list in, and the caller wants it.
+            refreshCounters: (String kennelId) => c.refreshKennelRow(kennelId),
           );
-          //}
         },
       ),
     );
   }
 
-  Future<void> _handleRefresh() async {
-    setStateIfMounted(() {
-      _isLoading = true;
-    });
-
-    await tableModel.syncUserDataService.updateFromBackend(
-      EnumDataTables.hasherEventMap.flag |
-          EnumDataTables.hasherKennelMap.flag |
-          EnumDataTables.events.flag |
-          EnumDataTables.kennels.flag,
-      true,
-      debugText: 'history_list_page: HEM,HKM,Events,Kennels',
-    );
-    await queryKennelStats(true);
-    await queryCountryStats(true);
-    setStateIfMounted(() {
-      _isLoading = false;
-    });
-  }
-
-  Widget _buildListView() {
+  Widget _buildListView(BuildContext context, HistoryListController c) {
     final String? photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
+    final int tabIndex = c.tabIndex.value;
+    final int kennelCount = c.kennels.length;
+    final int countryCount = c.countries.length;
     return Stack(
       children: <Widget>[
         Container(
           margin: const EdgeInsets.only(top: 105),
           decoration: Backgrounds.defaultHcBackgroundLight(),
           padding: const EdgeInsets.only(top: 0.0),
-          child: _runCountsListByKennel.isEmpty
+          child: kennelCount == 0
               ? Center(child: Text('No runs logged yet.', style: ts_title))
               : RefreshIndicator(
-                  onRefresh: _handleRefresh,
+                  onRefresh: c.pullToRefresh,
                   displacement: 40.0,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
                       Container(
-                        //color: Colors.red,
                         width: 200,
                         padding: const EdgeInsets.only(
                           left: 30,
@@ -386,9 +104,6 @@ class HistoryListPageState extends State<HistoryListPage>
                             height: 75.0,
                             // reviewed for 2.0+
                             child: TabBar(
-                              onTap: (void _) {
-                                setStateIfMounted(() {});
-                              },
                               labelStyle: ts_tabSelected,
                               unselectedLabelStyle: ts_tabUnselected,
                               isScrollable: false,
@@ -400,9 +115,6 @@ class HistoryListPageState extends State<HistoryListPage>
                                 right: 0,
                               ),
                               indicatorSize: TabBarIndicatorSize.label,
-                              // labelPadding: EdgeInsets.symmetric(
-                              //   horizontal: 20.0,
-                              // ),
                               indicatorPadding: EdgeInsets.symmetric(
                                 horizontal: -5.0,
                                 vertical: 13.0,
@@ -411,7 +123,6 @@ class HistoryListPageState extends State<HistoryListPage>
                                 color: hc_red,
                                 borderRadius: BorderRadius.circular(999),
                               ),
-
                               tabs: <Tab>[
                                 Tab(
                                   child: Container(
@@ -420,7 +131,7 @@ class HistoryListPageState extends State<HistoryListPage>
                                     child: Text(
                                       'By Kennel',
                                       style: ts_numberStyle.copyWith(
-                                        color: _tabController.index == 0
+                                        color: tabIndex == 0
                                             ? Colors.white
                                             : Colors.black,
                                       ),
@@ -434,7 +145,7 @@ class HistoryListPageState extends State<HistoryListPage>
                                     child: Text(
                                       'By Country',
                                       style: ts_numberStyle.copyWith(
-                                        color: _tabController.index == 1
+                                        color: tabIndex == 1
                                             ? Colors.white
                                             : Colors.black,
                                       ),
@@ -442,14 +153,14 @@ class HistoryListPageState extends State<HistoryListPage>
                                   ),
                                 ),
                               ],
-                              controller: _tabController,
+                              controller: c.tabController,
                             ),
                           ),
                         ),
                       ),
-                      _tabController.index == 0
-                          ? _buildKennelStatsList()
-                          : _buildCountryStatsList(),
+                      tabIndex == 0
+                          ? _buildKennelStatsList(c)
+                          : _buildCountryStatsList(c),
                     ],
                   ),
                 ),
@@ -459,8 +170,6 @@ class HistoryListPageState extends State<HistoryListPage>
           left: 0,
           child: Container(
             decoration: const BoxDecoration(
-              // border: new Border.all(width: 1.0, color: Colors.black),
-              //shape: BoxShape.circle,
               color: Colors.white,
               boxShadow: <BoxShadow>[
                 BoxShadow(
@@ -480,7 +189,7 @@ class HistoryListPageState extends State<HistoryListPage>
                   profilePhotoUrl: photo,
                 ),
                 const SizedBox(width: 20),
-                _runCountsListByKennel.isEmpty
+                kennelCount == 0
                     ? Container()
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -495,7 +204,7 @@ class HistoryListPageState extends State<HistoryListPage>
                             textAlign: TextAlign.center,
                           ),
                           Text(
-                            'Total runs: $_totalRuns',
+                            'Total runs: ${c.totalRuns.value}',
                             style: ts_titleMedium.copyWith(
                               height: 1.2,
                               color: Colors.black87,
@@ -503,7 +212,7 @@ class HistoryListPageState extends State<HistoryListPage>
                             textAlign: TextAlign.left,
                           ),
                           Text(
-                            'Total times hared: $_totalHaring',
+                            'Total times hared: ${c.totalHaring.value}',
                             style: ts_titleMedium.copyWith(
                               height: 1.2,
                               color: Colors.black87,
@@ -515,10 +224,10 @@ class HistoryListPageState extends State<HistoryListPage>
                           // lists are filled by setupInitialValues() before
                           // this builds, whichever tab is showing.
                           Text(
-                            '${_runCountsListByKennel.length} '
-                            '${_runCountsListByKennel.length == 1 ? 'kennel' : 'kennels'} '
-                            'in ${_runCountsListByCountry.length} '
-                            '${_runCountsListByCountry.length == 1 ? 'country' : 'countries'}',
+                            '$kennelCount '
+                            '${kennelCount == 1 ? 'kennel' : 'kennels'} '
+                            'in $countryCount '
+                            '${countryCount == 1 ? 'country' : 'countries'}',
                             style: ts_titleMedium.copyWith(
                               height: 1.2,
                               color: Colors.black87,
@@ -532,13 +241,6 @@ class HistoryListPageState extends State<HistoryListPage>
           ),
         ),
       ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AppScaffold(
-      body: _isLoading ? _buildCircularProgressIndicator() : _buildListView(),
     );
   }
 }

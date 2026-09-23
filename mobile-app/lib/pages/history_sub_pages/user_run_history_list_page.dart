@@ -1,6 +1,9 @@
 import 'package:harrier_central/imports.dart';
 
-class UserRunHistoryListPage extends StatefulWidget {
+/// A hasher's runs for one kennel, with the kennel's header card and the
+/// My Runs / All Runs tab. Stateless over [UserRunHistoryController]; the
+/// list itself is [UserRunHistoryList], shared with the country page.
+class UserRunHistoryListPage extends StatelessWidget {
   const UserRunHistoryListPage({
     super.key,
     required this.kennelInfo,
@@ -17,402 +20,147 @@ class UserRunHistoryListPage extends StatefulWidget {
   final String? hashName;
 
   @override
-  UserRunHistoryPageState createState() => UserRunHistoryPageState();
-}
-
-class UserRunHistoryPageState extends State<UserRunHistoryListPage>
-    with SingleTickerProviderStateMixin {
-  UserRunHistoryPageState();
-  bool _isLoading = false;
-
-  List<UserRunHistoryModel> _runCountsList = <UserRunHistoryModel>[];
-  int _countryCount = 1;
-  late final String userId;
-
-  RunHistoryModel? _kennelInfo;
-
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(_handleTabSelection);
-    userId = widget.hasherId ?? currentUserId;
-    unawaited(_refreshRunHistoryFromTable(true));
-  }
-
-  Future<void> _handleTabSelection() async {
-    if (_tabController.indexIsChanging) {
-      // This means the user tapped a new tab, but the animation hasn't finished yet.
-      //('Tab is changing to index: ${_tabController.index}');
-      await _refreshRunHistoryFromTable(true);
-      //setStateIfMounted(() {});
-    } else if (_tabController.index != _tabController.previousIndex) {
-      // This is triggered after the tab has finished changing.
-      //print('Tab changed to index: ${_tabController.index}');
-      await _refreshRunHistoryFromTable(true);
-      //setStateIfMounted(() {});
-    }
-  }
-
-  Future<void> _refreshRunHistoryFromTable(bool forceRefresh) async {
-    // This query looks at two places for historical runs. First it looks at all
-    // of the current runs for a kennel that are cached on the phone and joins to HEM.
-    // But for runs that are old and no longer cached on the phone, it looks at the
-    // HEM record only in the second half of the UNION statement.
-
-    int attendenceState = 0;
-
-    if (_tabController.index == 0) {
-      attendenceState = 20;
-    }
-
-    const String dollarSign = r'$^';
-
-    final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
-
-    String query =
-        '''
-          SELECT
-          hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
-          hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
-          e.${tableModel.eventsTableHelper.colEventId} as eventId,
-          e.${tableModel.eventsTableHelper.colEventName} as eventName,
-          e.${tableModel.eventsTableHelper.colEventNumber} as eventNumber,
-          n.${tableModel.countriesTableHelper.colCountryName} as countryName,
-          n.${tableModel.countriesTableHelper.colFlagFile} as flagFile,
-          k.${tableModel.kennelsTableHelper.colKennelName} as kennelName,
-          k.${tableModel.kennelsTableHelper.colKennelShortName} as kennelShortName,
-          k.${tableModel.kennelsTableHelper.colKennelLogo} as kennelLogo,
-          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
-          coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
-          e.${tableModel.eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
-          e.${tableModel.eventsTableHelper.colExtrasDescription} as extrasDescription,
-          e.${tableModel.eventsTableHelper.colEventPriceForExtras} as extrasPrice,
-          coalesce(e.${tableModel.eventsTableHelper.colCanEditRunAttendence},k.${tableModel.kennelsTableHelper.colCanEditRunAttendence}) as canEditRunAttendence,
-          hem.${tableModel.hasherEventMapTableHelper.colHemId} as hemId,
-          coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
-          coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
-          pay.${tableModel.paymentsTableHelper.colCreditAmount} as creditAmount,
-          pay.${tableModel.paymentsTableHelper.colDebitAmount} as debitAmount,
-          pay.${tableModel.paymentsTableHelper.colCreditAvailable} as creditAvailable,
-          pay.${tableModel.paymentsTableHelper.colPaymentType} as paymentType,
-          pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
-          FROM ${EnumDataTables.events.commonTableName} e
-          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
-          INNER JOIN ${EnumDataTables.countries.commonTableName} n on e.${tableModel.eventsTableHelper.colCountryId} = n.${tableModel.countriesTableHelper.colCountryId}
-          LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId} 
-          AND hem.${tableModel.hasherEventMapTableHelper.colUserId}  = "$userId"
-          LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
-          WHERE e.${tableModel.eventsTableHelper.colIsCountedRun} = 1 
-          AND e.${tableModel.eventsTableHelper.colIsVisible} = 1 
-          AND e.${tableModel.eventsTableHelper.colRemoved} = 0
-          AND e.${tableModel.eventsTableHelper.colKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
-          AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
-          AND julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal')
-        UNION
-          -- this part of the query is for where we want to cache run details in cases
-          -- where the user is not following the Kennel and the run detail information will
-          -- not be present on the device as a part of a run record
-          SELECT 
-          hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
-          hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
-          hem.${tableModel.hasherEventMapTableHelper.colEventId} as eventId,
-          hem.${tableModel.hasherEventMapTableHelper.colEventName} as eventName,
-          hem.${tableModel.hasherEventMapTableHelper.colEventNumber} as eventNumber,
-          n.${tableModel.countriesTableHelper.colCountryName} as countryName,
-          n.${tableModel.countriesTableHelper.colFlagFile} as flagFile,
-          k.${tableModel.kennelsTableHelper.colKennelName} as kennelName,
-          k.${tableModel.kennelsTableHelper.colKennelShortName} as kennelShortName,
-          k.${tableModel.kennelsTableHelper.colKennelLogo} as kennelLogo,
-          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
-          coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
-          hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime} as eventStartDatetime,
-          null as extrasDescription,
-          null as extrasPrice,
-          hem.${tableModel.hasherEventMapTableHelper.colCanEditRunAttendence} as canEditRunAttendence,
-          hem.${tableModel.hasherEventMapTableHelper.colHemId} as hemId,
-          coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
-          coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
-          pay.${tableModel.paymentsTableHelper.colCreditAmount} as creditAmount,
-          pay.${tableModel.paymentsTableHelper.colDebitAmount} as debitAmount,
-          pay.${tableModel.paymentsTableHelper.colPaymentType} as paymentType,
-          pay.${tableModel.paymentsTableHelper.colCreditAvailable} as creditAvailable,
-          pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
-          FROM ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem
-          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.${tableModel.kennelsTableHelper.colKennelId} = hem.${tableModel.hasherEventMapTableHelper.colEventKennelId}
-          INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = hem.${tableModel.hasherEventMapTableHelper.colCountryId}
-          LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
-          WHERE 
-          hem.${tableModel.hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM ${EnumDataTables.events.commonTableName})
-          AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
-          AND hem.${tableModel.hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
-          AND hem.${tableModel.hasherEventMapTableHelper.colRemoved} = 0 
-          AND hem.${tableModel.hasherEventMapTableHelper.colEventKennelId} = "${(_kennelInfo ?? widget.kennelInfo).kennelId}" 
-          AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
-          AND julianday(hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal') 
-          ORDER BY eventStartDatetime desc
-          ''';
-
-    _runCountsList = <UserRunHistoryModel>[];
-    try {
-      final List<Map<String, dynamic>> results = await database.rawQuery(query);
-
-      for (int i = 0; i < results.length; i++) {
-        final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(
-          results[i],
-        );
-        _runCountsList.add(hlrItem);
-
-        if (forceRefresh && (i == results.length - 1)) {
-          _countryCount = _runCountsList
-              .map((run) => run.flagFile)
-              .toSet()
-              .length;
-          setStateIfMounted(() {
-            _isLoading = false;
-          });
-        }
-      }
-    } catch (e, s) {
-      if (kDebugMode) {
-        debugPrint('[UserRunHistoryListPage] query error: $e');
-      }
-      BootLogger.logError('[UserRunHistoryListPage._refreshFromTable] userId=$userId', e, s);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        SizedBox(
-          height: MediaQuery.sizeOf(context).height,
-          width: MediaQuery.sizeOf(context).width,
-        ),
-        Positioned(
-          top: 0,
-          left: 0,
-          width: MediaQuery.sizeOf(context).width,
-          height: MediaQuery.sizeOf(context).height,
-          child: AppScaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              backgroundColor: themeAppBarBackground,
-              iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-              title: Text(
-                widget.hashName ??
-                    'My runs for ${(_kennelInfo ?? widget.kennelInfo).kennelShortName}',
-                style: ts_appBarTitle,
+    return GetBuilder<UserRunHistoryController>(
+      init: UserRunHistoryController(
+        appDomain: appDomain,
+        hasherId: hasherId,
+        kennelInfo: kennelInfo,
+        refreshKennelInfo: refreshKennelInfo,
+      ),
+      tag: UserRunHistoryController.tagFor(
+        kennelId: kennelInfo.kennelId,
+        hasherId: hasherId,
+      ),
+      builder: (UserRunHistoryController c) => Stack(
+        children: <Widget>[
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height,
+            width: MediaQuery.sizeOf(context).width,
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            width: MediaQuery.sizeOf(context).width,
+            height: MediaQuery.sizeOf(context).height,
+            child: AppScaffold(
+              appBar: AppBar(
+                centerTitle: true,
+                backgroundColor: themeAppBarBackground,
+                iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+                title: Obx(
+                  () => Text(
+                    hashName ??
+                        'My runs for ${(c.kennel.value ?? kennelInfo).kennelShortName}',
+                    style: ts_appBarTitle,
+                  ),
+                ),
+              ),
+              floatingActionButton: SpeedDial(
+                animatedIcon: AnimatedIcons.menu_close,
+                animatedIconTheme: const IconThemeData(size: 22.0),
+                visible: true,
+                curve: Curves.bounceIn,
+                overlayColor: Colors.black,
+                overlayOpacity: 0.5,
+                onOpen: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+                tooltip: 'Speed Dial',
+                heroTag: 'speed-dial-hero-tag-4312315',
+                backgroundColor:
+                    Theme.of(context).buttonTheme.colorScheme?.primary ?? hc_red,
+                foregroundColor: Colors.white,
+                elevation: 8.0,
+                shape: const CircleBorder(),
+                children: <SpeedDialChild>[
+                  SpeedDialChild(
+                    child: const Icon(
+                      MaterialCommunityIcons.email,
+                      color: Colors.white,
+                    ),
+                    backgroundColor: Colors.teal[800],
+                    label: 'Email run counts\r\n(this kennel)',
+                    labelStyle: const TextStyle(fontSize: 18.0),
+                    onTap: () => _emailRunCounts(
+                      kennelId: (c.kennel.value ?? kennelInfo).kennelId,
+                      kennelName: (c.kennel.value ?? kennelInfo).kennelName,
+                    ),
+                  ),
+                  SpeedDialChild(
+                    child: const Icon(
+                      MaterialCommunityIcons.email_plus,
+                      color: Colors.white,
+                    ),
+                    backgroundColor: hc_blue,
+                    label: 'Email run counts\r\n(all kennels)',
+                    labelStyle: const TextStyle(fontSize: 18.0),
+                    onTap: () => _emailRunCounts(
+                      kennelId: GUID_EMPTY,
+                      kennelName: 'All of your Hash Kennels',
+                    ),
+                  ),
+                ],
+              ),
+              body: Obx(
+                () => c.isLoading.value
+                    ? const Center(
+                        child: HcAppCircularProgressIndicator(
+                          key: Key('88230302'),
+                        ),
+                      )
+                    : _buildListView(context, c),
               ),
             ),
-            floatingActionButton: SpeedDial(
-              // both default to 16
-
-              // marginEnd: 18,
-              // marginBottom: 30,
-              animatedIcon: AnimatedIcons.menu_close,
-              animatedIconTheme: const IconThemeData(size: 22.0),
-              visible: true,
-              curve: Curves.bounceIn,
-              overlayColor: Colors.black,
-              overlayOpacity: 0.5,
-              onOpen: () {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              },
-              //onClose: () => //print('DIAL CLOSED'),
-              tooltip: 'Speed Dial',
-              heroTag: 'speed-dial-hero-tag-4312315',
-              backgroundColor:
-                  Theme.of(context).buttonTheme.colorScheme?.primary ?? hc_red,
-              foregroundColor: Colors.white,
-              elevation: 8.0,
-              shape: const CircleBorder(),
-              children: <SpeedDialChild>[
-                SpeedDialChild(
-                  child: const Icon(
-                    MaterialCommunityIcons.email,
-                    color: Colors.white,
-                  ),
-                  backgroundColor: Colors.teal[800],
-                  label: 'Email run counts\r\n(this kennel)',
-                  labelStyle: const TextStyle(fontSize: 18.0),
-                  onTap: () async {
-                    await tableModel.hasherEventMapService
-                        .sendRunCountReportByEmail(
-                          kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId,
-                          kennelName:
-                              (_kennelInfo ?? widget.kennelInfo).kennelName,
-                        )
-                        .then((Map<String, String> result) async {
-                          ScaffoldMessenger.of(
-                            navigatorKey.currentContext!,
-                          ).hideCurrentSnackBar();
-                          if ((result['result'] != null) &&
-                              (result['result']!.toLowerCase().startsWith(
-                                'success',
-                              ))) {
-                            await Utilities.showAlert(
-                              'E-mail successfully sent',
-                              'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                              'OK',
-                            );
-                          }
-                        });
-
-                    if (navigatorKey.currentContext != null) {
-                      IveCoreUtilities.showInSnackBar(
-                        navigatorKey.currentContext!,
-                        'Run count report being processed...',
-                        durationInSeconds: 10,
-                      );
-                    }
-                  },
-                ),
-                SpeedDialChild(
-                  child: const Icon(
-                    MaterialCommunityIcons.email_plus,
-                    color: Colors.white,
-                  ),
-                  backgroundColor: hc_blue,
-                  label: 'Email run counts\r\n(all kennels)',
-                  labelStyle: const TextStyle(fontSize: 18.0),
-                  onTap: () async {
-                    await tableModel.hasherEventMapService
-                        .sendRunCountReportByEmail(
-                          kennelId: GUID_EMPTY,
-                          kennelName: 'All of your Hash Kennels',
-                        )
-                        .then((Map<String, String> result) async {
-                          ScaffoldMessenger.of(
-                            navigatorKey.currentContext!,
-                          ).hideCurrentSnackBar();
-                          if ((result['result'] != null) &&
-                              (result['result']!.toLowerCase().startsWith(
-                                'success',
-                              ))) {
-                            await Utilities.showAlert(
-                              'E-mail successfully sent',
-                              'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                              'OK',
-                            );
-                          }
-                        });
-
-                    if (navigatorKey.currentContext != null) {
-                      IveCoreUtilities.showInSnackBar(
-                        navigatorKey.currentContext!,
-                        'Run count report being processed...',
-                        durationInSeconds: 10,
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-            body: _isLoading
-                ? _buildCircularProgressIndicator()
-                : _buildListView(widget.appDomain),
           ),
-        ),
-        OfflineModeRibbon(
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
-          ribbonImage: 'images/icons/offline_mode.png',
-          refreshFunction: () {
-            setStateIfMounted(() {});
-          },
-        ),
-      ],
+          OfflineModeRibbon(
+            lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
+            ribbonImage: 'images/icons/offline_mode.png',
+            refreshFunction: () => c.update(),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildCircularProgressIndicator() {
-    return const Center(
-      child: HcAppCircularProgressIndicator(key: Key('88230302')),
-    );
+  Future<void> _emailRunCounts({
+    required String kennelId,
+    required String kennelName,
+  }) async {
+    final Future<Map<String, String>> sending = tableModel
+        .hasherEventMapService
+        .sendRunCountReportByEmail(kennelId: kennelId, kennelName: kennelName);
+    if (navigatorKey.currentContext != null) {
+      IveCoreUtilities.showInSnackBar(
+        navigatorKey.currentContext!,
+        'Run count report being processed...',
+        durationInSeconds: 10,
+      );
+    }
+    final Map<String, String> result = await sending;
+    final BuildContext? ctx = navigatorKey.currentContext;
+    // The context is fetched AFTER the await, which is the safe order; the
+    // lint cannot see that navigatorKey.currentContext is fresh.
+    // ignore: use_build_context_synchronously
+    if (ctx != null) ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
+    if ((result['result'] != null) &&
+        (result['result']!.toLowerCase().startsWith('success'))) {
+      await Utilities.showAlert(
+        'E-mail successfully sent',
+        'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+        'OK',
+      );
+    }
   }
 
-  Future<void> _handleRefresh() async {
-    setStateIfMounted(() {
-      _isLoading = true;
-    });
-
-    //final bool result = await tableModel
-    await tableModel.syncUserDataService.updateFromBackend(
-      EnumDataTables.hasherEventMap.flag |
-          EnumDataTables.events.flag |
-          EnumDataTables.kennels.flag |
-          EnumDataTables.payments.flag |
-          EnumDataTables.hasherKennelMap.flag,
-      true,
-      debugText: 'user_run_history_list_page: HEM, Events, Kennels',
-    );
-    await _refreshRunHistoryFromTable(true);
-    _kennelInfo = await widget.refreshKennelInfo();
-    setStateIfMounted(() {
-      _isLoading = false;
-    });
-  }
-
-  // bool _isLoading = true;
-
-  // @override
-
-  // }
-
-  // int pageIndex = 1;
-
-  // @override
-  //         // both default to 16
-  //         marginEnd: 18,
-  //         marginBottom: 30,
-  //         animatedIcon: AnimatedIcons.menu_close,
-  //         animatedIconTheme: const IconThemeData(size: 22.0),
-  //         // this is ignored if animatedIcon is non null
-  //         // child:const  Icon(Icons.add),
-  //         visible: true,
-  //         curve: Curves.bounceIn,
-  //         overlayColor: Colors.black,
-  //         overlayOpacity: 0.5,
-  //         tooltip: 'Speed Dial',
-  //         heroTag: 'speed-dial-hero-tag',
-  //         backgroundColor: Theme.of(context).accentColor,
-  //         foregroundColor: Colors.white,
-  //         elevation: 8.0,
-  //         shape: CircleBorder(),
-  //         children: <SpeedDialChild>[
-  //             backgroundColor: Colors.teal[800],
-  //             label: 'Email this kennel\'s run history',
-  //                 },
-  //             backgroundColor: hc_blue,
-  //             label: 'Email all kennels run history',
-  //                 },
-  //           ),
-  //         ],
-  //         centerTitle: true,
-  //         backgroundColor: themeAppBarBackground,
-  //         title: Text(
-  //           'My runs for ${widget.kennelShortName}',
-  //           style: const TextStyle(
-  //             color: Colors.white,
-  //       body:
-
-  //         _isLoading ? _buildCircularProgressIndicator() : _buildListView()
-
-  //     );
-
-  // }
-
-  int myRunCount = 0;
-  int myHaringCount = 0;
-
-  Widget _buildListView(AppDomainType appDomain) {
+  Widget _buildListView(BuildContext context, UserRunHistoryController c) {
+    final RunHistoryModel k = c.kennel.value ?? kennelInfo;
+    final int tabIndex = c.tabIndex.value;
     return Container(
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
       child: RefreshIndicator(
-        onRefresh: _handleRefresh,
+        onRefresh: c.pullToRefresh,
         displacement: 130.0,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -420,8 +168,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           children: <Widget>[
             Container(
               decoration: const BoxDecoration(
-                // border: new Border.all(width: 1.0, color: Colors.black),
-                //shape: BoxShape.circle,
                 color: Colors.white,
                 boxShadow: <BoxShadow>[
                   BoxShadow(
@@ -431,25 +177,21 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                   ),
                 ],
               ),
-              //color:Color.fromARGB(30, 0, 0, 0),
               padding: const EdgeInsets.only(
                 left: 5,
                 top: 5,
                 right: 0,
                 bottom: 5,
               ),
-
               child: Row(
                 children: <Widget>[
                   Container(
                     margin: const EdgeInsets.only(right: 12.0),
                     height: 90,
                     child: KennelLogo(
-                      kennelId: (_kennelInfo ?? widget.kennelInfo).kennelId,
-                      kennelLogoUrl:
-                          (_kennelInfo ?? widget.kennelInfo).kennelLogo,
-                      kennelShortName:
-                          (_kennelInfo ?? widget.kennelInfo).kennelShortName,
+                      kennelId: k.kennelId,
+                      kennelLogoUrl: k.kennelLogo,
+                      kennelShortName: k.kennelShortName,
                       logoHeight: 60.0 * deviceInfo.deviceWidthScaleFactor,
                       leftPadding: 5.0,
                     ),
@@ -460,9 +202,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         AutoSizeText(
-                          (_kennelInfo ?? widget.kennelInfo).kennelName,
-                          //'Super fucking long text thats sure to overflow and more',
-                          //'999',
+                          k.kennelName,
                           overflow: TextOverflow.ellipsis,
                           minFontSize: 18.0,
                           maxLines: 1,
@@ -470,9 +210,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           textAlign: TextAlign.left,
                         ),
                         AutoSizeText(
-                          'My verified run count: ${(_kennelInfo ?? widget.kennelInfo).hcRunsThisKennel}',
-                          //'Super fucking long text thats sure to overflow and more',
-                          //'999',
+                          'My verified run count: ${k.hcRunsThisKennel}',
                           overflow: TextOverflow.ellipsis,
                           minFontSize: 12.0,
                           maxLines: 1,
@@ -480,9 +218,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           textAlign: TextAlign.center,
                         ),
                         AutoSizeText(
-                          'My verified haring count: ${(_kennelInfo ?? widget.kennelInfo).hcHaringThisKennel}',
-                          //'Super fucking long text thats sure to overflow and more',
-                          //'999',
+                          'My verified haring count: ${k.hcHaringThisKennel}',
                           overflow: TextOverflow.ellipsis,
                           minFontSize: 12.0,
                           maxLines: 1,
@@ -490,43 +226,31 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           textAlign: TextAlign.center,
                         ),
                         AutoSizeText(
-                          'Kennel credit: ${IveCoreUtilities.getFormattedMoney((_kennelInfo ?? widget.kennelInfo).kennelCredit, widget.kennelInfo.digitsAfterDecimal, widget.kennelInfo.currencySymbol)}',
-                          //'Super fucking long text thats sure to overflow and more',
-                          //'999',
+                          'Kennel credit: ${IveCoreUtilities.getFormattedMoney(k.kennelCredit, kennelInfo.digitsAfterDecimal, kennelInfo.currencySymbol)}',
                           overflow: TextOverflow.ellipsis,
                           minFontSize: 12.0,
                           maxLines: 1,
                           style: ts_numberStyle,
                           textAlign: TextAlign.center,
                         ),
-                        ((_kennelInfo ?? widget.kennelInfo)
-                                    .historicalTotalRunCount) ==
-                                0
-                            ? Container()
-                            : AutoSizeText(
-                                'Historical run count: ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalTotalRunCount}',
-                                //'Super fucking long text thats sure to overflow and more',
-                                //'999',
-                                overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
-                                maxLines: 1,
-                                style: ts_numberStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                        ((_kennelInfo ?? widget.kennelInfo)
-                                    .historicalTotalRunCount) ==
-                                0
-                            ? Container()
-                            : AutoSizeText(
-                                'Historical haring count ${(_kennelInfo ?? widget.kennelInfo).historicalCountIsEstimate != 0 ? '~' : ''}${(_kennelInfo ?? widget.kennelInfo).historicalHaringCount}',
-                                //'Super fucking long text thats sure to overflow and more',
-                                //'999',
-                                overflow: TextOverflow.ellipsis,
-                                minFontSize: 18.0,
-                                maxLines: 1,
-                                style: ts_numberStyle,
-                                textAlign: TextAlign.center,
-                              ),
+                        if (k.historicalTotalRunCount != 0) ...<Widget>[
+                          AutoSizeText(
+                            'Historical run count: ${k.historicalCountIsEstimate != 0 ? '~' : ''}${k.historicalTotalRunCount}',
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 18.0,
+                            maxLines: 1,
+                            style: ts_numberStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                          AutoSizeText(
+                            'Historical haring count ${k.historicalCountIsEstimate != 0 ? '~' : ''}${k.historicalHaringCount}',
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 18.0,
+                            maxLines: 1,
+                            style: ts_numberStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -534,7 +258,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
               ),
             ),
             Container(
-              // color: Colors.red,
               width: 100,
               padding: const EdgeInsets.only(left: 60, right: 60, top: 0.0),
               child: DefaultTabController(
@@ -545,9 +268,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                   height: 70.0,
                   // reviewed for 2.0+
                   child: TabBar(
-                    onTap: (void _) {
-                      setStateIfMounted(() {});
-                    },
                     labelStyle: ts_tabSelected,
                     unselectedLabelStyle: ts_tabUnselected,
                     isScrollable: false,
@@ -575,7 +295,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           child: Text(
                             'My Runs',
                             style: ts_numberStyle.copyWith(
-                              color: _tabController.index == 0
+                              color: tabIndex == 0
                                   ? Colors.white
                                   : Colors.black,
                             ),
@@ -589,7 +309,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                           child: Text(
                             'All Runs',
                             style: ts_numberStyle.copyWith(
-                              color: _tabController.index == 1
+                              color: tabIndex == 1
                                   ? Colors.white
                                   : Colors.black,
                             ),
@@ -597,358 +317,23 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                         ),
                       ),
                     ],
-                    controller: _tabController,
+                    controller: c.tabController,
                   ),
                 ),
               ),
             ),
             Expanded(
-              child: _runCountsList.isEmpty
-                  ? Center(
-                      child: Text('No runs logged yet.', style: ts_regular),
-                    )
-                  : ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: _runCountsList.length,
-                      padding: const EdgeInsets.only(top: 5),
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const Divider(height: 1.0, color: Colors.black45),
-                      //itemExtent: 58.0,
-                      //shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        UserRunHistoryModel item = _runCountsList[index];
-
-                        return Dismissible(
-                          key: Key(item.eventId),
-                          confirmDismiss: (DismissDirection direction) async {
-                            if (item.canEditRunAttendence != 0) {
-                              // swipe from right to left to indicate that
-                              // the hasher either attended the run as a pack
-                              // member or as a hare
-                              if (direction == DismissDirection.endToStart) {
-                                // here, we're going from an attendence state of
-                                // not at the Hash to being at the Hash,
-                                // so assume that the person was not a hare
-                                if (item.attendenceState <
-                                    attendenceAtHash.value) {
-                                  _runCountsList[index] = _runCountsList[index]
-                                      .copyWith(isUpdating: true);
-                                  item = _runCountsList[index];
-                                  await _setAttendenceState(
-                                    item,
-                                    rsvpYes,
-                                    attendenceAtHash,
-                                    isHareNo,
-                                    appDomain,
-                                  );
-                                } else {
-                                  _runCountsList[index] = _runCountsList[index]
-                                      .copyWith(isUpdating: true);
-                                  item = _runCountsList[index];
-                                  await _setAttendenceState(
-                                    item,
-                                    rsvpYes,
-                                    attendenceAtHash,
-                                    item.isHare == 1 ? isHareNo : isHareYes,
-                                    appDomain,
-                                  );
-                                }
-                              } else {
-                                // swipe from left to right to
-                                // indicate that the hasher did
-                                // not participate in this event
-                                await _setAttendenceState(
-                                  item,
-                                  rsvpNo,
-                                  attendenceNo,
-                                  isHareNo,
-                                  appDomain,
-                                );
-                              }
-
-                              _kennelInfo = await widget.refreshKennelInfo();
-
-                              // await historyListPageKey.currentState.refreshRunHistoryFromTable(true);
-
-                              setStateIfMounted(() {});
-                            }
-                            return Future<bool>.value(false);
-                          },
-                          background: item.canEditRunAttendence == 0
-                              ? Container(
-                                  color: Colors.grey,
-                                  child: Row(
-                                    children: <Widget>[
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 10.0),
-                                        child: Icon(
-                                          FontAwesome.lock,
-                                          color: Colors.white,
-                                          size: 35.0,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 15.0,
-                                        ),
-                                        child: Text(
-                                          // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                          'Run locked',
-                                          style: ts_titleMedium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container(
-                                  color: hc_red,
-                                  child: Row(
-                                    children: <Widget>[
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 10.0),
-                                        child: Icon(
-                                          FontAwesome.times_circle,
-                                          color: Colors.white,
-                                          size: 35.0,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 15.0,
-                                        ),
-                                        child: Text(
-                                          // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                          'I was not\r\nat the Hash',
-                                          maxLines: 2,
-                                          style: ts_titleMedium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                          secondaryBackground: item.canEditRunAttendence == 0
-                              ? Container(
-                                  color: Colors.grey,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[
-                                      const Padding(
-                                        padding: EdgeInsets.only(right: 15.0),
-                                        child: Icon(
-                                          FontAwesome.lock,
-                                          color: Colors.white,
-                                          size: 35.0,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 15.0,
-                                        ),
-                                        child: Text(
-                                          //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                          'Run locked',
-                                          style: ts_titleMedium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : (item.attendenceState <
-                                        attendenceAtHash.value) ||
-                                    ((item.attendenceState >=
-                                            attendenceAtHash.value) &&
-                                        (item.isHare == isHareYes.value))
-                              ? Container(
-                                  color: Colors.green,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[
-                                      const Padding(
-                                        padding: EdgeInsets.only(right: 15.0),
-                                        child: Icon(
-                                          FontAwesome.check_circle,
-                                          color: Colors.white,
-                                          size: 35.0,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 15.0,
-                                        ),
-                                        child: Text(
-                                          //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                          'I was at\r\nthe Hash',
-                                          maxLines: 2,
-                                          textAlign: TextAlign.right,
-                                          style: ts_titleMedium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container(
-                                  color: Colors.purple,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[
-                                      const Padding(
-                                        padding: EdgeInsets.only(right: 15.0),
-                                        child: Padding(
-                                          padding: EdgeInsets.only(
-                                            left: 2.5,
-                                            right: 2.5,
-                                          ),
-                                          child: ImageIcon(
-                                            AssetImage(
-                                              'images/icons/hare_icon.png',
-                                            ),
-                                            color: Colors.white,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 15.0,
-                                        ),
-                                        child: Text(
-                                          //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                          'I was a Hare',
-                                          style: ts_titleMedium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                          onDismissed: (DismissDirection direction) {
-                            //print(direction.toString() + ' NOTE: We should never reach this point');
-                          },
-                          child: GestureDetector(
-                            onTapUp: (TapUpDetails details) async {
-                              final List<dynamic> run =
-                                  await QueryRuns.getRunDetailsAggregates(
-                                    true,
-                                    eventId: item.eventId,
-                                    queryType: EnumRunQueryType.singleRun,
-                                    runsTimeScope: RunsTimeScope.future,
-                                    runsToDisplay: RunsToDisplay.allRuns,
-                                  );
-
-                              if (run.isNotEmpty) {
-                                if (!mounted) return;
-                                await Navigator.push<dynamic>(
-                                  navigatorKey.currentContext!,
-                                  MaterialPageRoute<dynamic>(
-                                    builder: (BuildContext context) {
-                                      return RunDetailsPage(
-                                        futureRun: run[0],
-                                        //refreshPage: () async {},
-                                      );
-                                    },
-                                  ),
-                                );
-                              }
-                            },
-                            child: UserEventListItem(
-                              item: item,
-                              historicalHaringCount:
-                                  (_kennelInfo ?? widget.kennelInfo)
-                                      .historicalHaringCount,
-                              historicalTotalRunCount:
-                                  (_kennelInfo ?? widget.kennelInfo)
-                                      .historicalTotalRunCount,
-                              showCountry: _countryCount > 1,
-                              showKennel: false,
-                              setAttendenceStateCallback:
-                                  (
-                                    EnumAttendenceState attendenceState,
-                                    EnumIsHare isHare,
-                                  ) async {
-                                    setStateIfMounted(() {
-                                      _runCountsList[index] =
-                                          _runCountsList[index].copyWith(
-                                            isUpdating: true,
-                                          );
-                                      item = _runCountsList[index];
-                                    });
-
-                                    if (attendenceState == attendenceNo) {
-                                      await _setAttendenceState(
-                                        item,
-                                        rsvpNo,
-                                        attendenceNo,
-                                        isHareNo,
-                                        appDomain,
-                                      );
-                                    } else {
-                                      if (isHare == isHareYes) {
-                                        await _setAttendenceState(
-                                          item,
-                                          rsvpYes,
-                                          attendenceAtHash,
-                                          isHareYes,
-                                          appDomain,
-                                        );
-                                      } else {
-                                        await _setAttendenceState(
-                                          item,
-                                          rsvpYes,
-                                          attendenceAtHash,
-                                          isHareNo,
-                                          appDomain,
-                                        );
-                                      }
-                                    }
-
-                                    setStateIfMounted(() {
-                                      _runCountsList[index] =
-                                          _runCountsList[index].copyWith(
-                                            isUpdating: false,
-                                          );
-                                    });
-                                  },
-                            ),
-                          ),
-                        );
-
-                        // Container(
-                        //   height: 60.0,
-                        //   //padding: const EdgeInsets.only(top: 10.0),
-                        //   child:
-
-                        // KennelRunHistoryCountListItem(
-                        //     kennelRunHistoryCount:
-                        //         model.kennelRunCountList[index]);
-
-                        // );
-                      },
-                    ),
+              child: UserRunHistoryList(
+                c: c,
+                historicalHaringCount: k.historicalHaringCount,
+                historicalTotalRunCount: k.historicalTotalRunCount,
+                showCountry: c.countryCount.value > 1,
+                showKennel: false,
+              ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _setAttendenceState(
-    UserRunHistoryModel item,
-    EnumRsvpState rsvpState,
-    EnumAttendenceState attendenceState,
-    EnumIsHare isHare,
-    AppDomainType appDomain,
-  ) async {
-    await tableModel.hasherEventMapService.setEventAttendence(
-      item.eventId,
-      userId,
-      appDomain,
-      attendenceState.value,
-      isHare: isHare.value,
-      hemId: item.hemId,
-    );
-
-    await _refreshRunHistoryFromTable(true);
-    setStateIfMounted(() {
-      _isLoading = false;
-    });
   }
 }
