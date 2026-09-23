@@ -14,11 +14,17 @@ import L from "leaflet";
  *   Path.onRemove()    → `this._renderer._removePath(this)` with no renderer
  *                        "Cannot read properties of undefined (reading '_removePath')"
  *
- * and two on the way in, when a layer is *added* to a map whose panes have
- * gone (or before the pane it names exists):
+ * two on the way in, when a layer is *added* to a map whose panes have gone
+ * (or in a client with neither SVG nor canvas, where `getRenderer` returns
+ * null by design):
  *
  *   Map.getRenderer()  → `hasLayer(renderer)` where the renderer came back null
  *   Path.onAdd()       → `this._renderer._initPath(this)` with no renderer
+ *
+ * and then, once such a path exists, every later touch of it:
+ *
+ *   Path.redraw() / _reset() / _update() / bringToFront() / bringToBack()
+ *                      → `this._renderer.<...>` on null
  *
  * All four fire around a map that cannot draw anything, so there is nothing
  * to salvage — except that an error thrown during a React commit reaches the
@@ -108,6 +114,25 @@ export function hardenLeafletTeardown(): void {
     }
     return pathOnAdd.call(this, map);
   };
+
+  // ── After the way in ────────────────────────────────────────────────────
+  // A path that was let in with no renderer is still held by react-leaflet,
+  // which calls setLatLngs → redraw when its positions prop changes, and
+  // Leaflet's move/zoom handlers call _reset → _update. Every one of those
+  // ends at `this._renderer.<something>`. Six visitors found this the day
+  // after the inbound guards shipped: the throw had moved from mount to the
+  // first update. This closes the set — there is nothing else on Path that
+  // dereferences the renderer.
+  type RendererMethod = "redraw" | "bringToFront" | "bringToBack" | "_reset" | "_update";
+  const proto = L.Path.prototype as unknown as Record<RendererMethod, (this: L.Path) => unknown>;
+  for (const name of ["redraw", "bringToFront", "bringToBack", "_reset", "_update"] as RendererMethod[]) {
+    const original = proto[name];
+    if (typeof original !== "function") continue;
+    proto[name] = function (this: L.Path) {
+      if (!(this as unknown as PathInternals)._renderer) return this;
+      return original.call(this);
+    };
+  }
 }
 
 hardenLeafletTeardown();

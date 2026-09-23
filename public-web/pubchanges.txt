@@ -1,3 +1,7 @@
+0.21.72
+    • Map guards cover a trail's updates as well as its mount and teardown — the last way a renderer-less path could throw.
+    • Web errors record the user agent, so a bot tripping a guard is identifiable as one.
+
 0.21.71
     • A photo on a run page opens the carousel at that photo, rather than the raw image with no way back and no way on.
     • One download route instead of two.
