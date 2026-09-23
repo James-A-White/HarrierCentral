@@ -126,7 +126,6 @@ class DrinksListState extends State<DrinksList>
       return;
     }
     await _refreshSqlTablesFromBackend(true);
-    await _refreshDrinksFromTable(false);
   }
 
   @override
@@ -150,8 +149,9 @@ class DrinksListState extends State<DrinksList>
   }
 
   Future<void> initStateAsync() async {
+    // _refreshSqlTablesFromBackend already queries and renders; a second
+    // query here was the other half of the race (see _refreshDrinksFromTable).
     await _refreshSqlTablesFromBackend(true);
-    await _refreshDrinksFromTable(false);
   }
 
   Future<void> _refreshDrinksFromTable(bool forceRefresh) async {
@@ -195,9 +195,16 @@ class DrinksListState extends State<DrinksList>
           ORDER BY totalHaringThisKennel, totalRunsThisKennel
           ''';
 
+    // Build into a LOCAL list and swap it in with setState in one synchronous
+    // step. This used to _awards.clear() BEFORE the await and refill after it
+    // with no setState — so any frame that built in between painted the empty
+    // state ("No awards yet for this Trail") and nothing repainted when the
+    // rows arrived. On a cold start the first query is slow enough to lose
+    // that race; a refresh re-ran the same race, which is why it sometimes
+    // took two. James, BH3 #2350, 2026-09-23: 53 bytes received in the whole
+    // session — the awards were on the phone throughout.
+    final List<DrinksResults> found = <DrinksResults>[];
     try {
-      _awards.clear();
-
       final List<Map<String, dynamic>> results = await database.rawQuery(query);
       for (int i = 0; i < results.length; i++) {
         final DrinksResults hlrItem = DrinksResults.fromMap(results[i]);
@@ -214,9 +221,14 @@ class DrinksListState extends State<DrinksList>
 
         if ((hlrItem.specialRunCount != specialRunNo) ||
             (hlrItem.specialHaringCount != specialRunNo)) {
-          _awards.add(hlrItem);
+          found.add(hlrItem);
         }
       }
+      setStateIfMounted(() {
+        _awards
+          ..clear()
+          ..addAll(found);
+      });
     } catch (e, s) {
       if (kDebugMode) {
         debugPrint('[DrinksList._buildAwardsList] error: $e');
