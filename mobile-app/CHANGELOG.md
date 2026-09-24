@@ -1,3 +1,13 @@
+## 3.1.6+1405 (2026-09-24)
+Android-only hotfix, built from the 3.1.0+1394 production code plus one line.
+### Fixes
+- **Run links opened a black screen on Android.** Tapping a hashruns.org
+  run link from another app (Signal, WhatsApp) while Harrier Central was
+  closed showed a black screen: Flutter tried to open the link's path as the
+  first screen, alongside the app's own link handling, and there is no such
+  screen. Flutter's handling is switched off; the app's own handler opens
+  the run as it does on iPhone.
+
 ## 3.1.0+1394 (2026-09-20)
 ### Fixes
 - **Battery**: the precise-GPS boost is now suspended while the app is in the
