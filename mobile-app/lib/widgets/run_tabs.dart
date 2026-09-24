@@ -1182,32 +1182,46 @@ class RunTabs extends StatelessWidget {
                       // just above the playback panel, whose laid-out height
                       // the map controller publishes.
                       Positioned.fill(
-                        child: Obx(() {
-                          final String tag = futureRun.event.eventId;
-                          final double panel =
-                              Get.isRegistered<RunTrackerMapController>(
-                                tag: tag,
-                              )
-                              ? Get.find<RunTrackerMapController>(
+                        child: Builder(
+                          builder: (BuildContext context) {
+                            final String tag = futureRun.event.eventId;
+                            Widget overlay(double panel) {
+                              final double clearance = panel > 0
+                                  ? panel + 12
+                                  : 250;
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  left: 12,
+                                  right: 12,
+                                  bottom: clearance,
+                                ),
+                                child: Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: TrimEditorOverlay(
+                                    trimController: c.trimController(),
+                                    showCollapsedPill: false,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            // No map controller yet means nothing reactive to
+                            // read, and an Obx that reads no Rx throws
+                            // "improper use" — so no Obx in that case.
+                            if (!Get.isRegistered<RunTrackerMapController>(
+                              tag: tag,
+                            )) {
+                              return overlay(0.0);
+                            }
+                            return Obx(
+                              () => overlay(
+                                Get.find<RunTrackerMapController>(
                                   tag: tag,
-                                ).playbackPanelHeight.value
-                              : 0.0;
-                          final double clearance = panel > 0 ? panel + 12 : 250;
-                          return Padding(
-                            padding: EdgeInsets.only(
-                              left: 12,
-                              right: 12,
-                              bottom: clearance,
-                            ),
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: TrimEditorOverlay(
-                                trimController: c.trimController(),
-                                showCollapsedPill: false,
+                                ).playbackPanelHeight.value,
                               ),
-                            ),
-                          );
-                        }),
+                            );
+                          },
+                        ),
                       ),
                       if (futureRun.extensions.isMapAndDistanceValid ==
                           0) ...<Widget>[

@@ -9,7 +9,7 @@
 api hcportal_confirmAuthentication HC6 Portal Error: confirmAuthentication — Authentication failed	noise	portal session expired / clock
 api hcportal_getLandingPageData HC6 Portal Error: getLandingPageData — Authentication failed	noise	portal session expired / clock
 api hcportal_logClientError HC6 Portal Error: logClientError — Unknown device	fixed:2026-09-24	pre-sign-in reports refused; portal 2.0.85
-api publicWeb_getSong HC6 Public Web Error: getSong — Error converting data type nvarchar to uniqueidentifier.	open	non-GUID song id from a URL; fixed in d37e8868 — set fixed:<date> once web 0.21.74 is deployed
+api publicWeb_getSong HC6 Public Web Error: getSong — Error converting data type nvarchar to uniqueidentifier.	fixed:web 0.21.74	non-GUID song id from a URL returns null → 404 (d37e8868)
 app ASYNC "Database" not found. You need to call "Get.put(Database())" or "Get.lazyPut(()=>Database())" @ globals.dart database	open	Get.find<Database> before boot registered it; last 08-31
 app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController._fetchDelta	fixed:1386	write to a disposed chat stream (14 Sep)
 app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController.handleSendPressed	fixed:1386	write to a disposed chat stream (14 Sep)
@@ -41,7 +41,7 @@ app FLUTTER PlatformException(error, No active stream to cancel, null, null) @ f
 app FLUTTER PlatformException(error, Service.startForeground() not allowed due to mAllowStartForeground false: service com.harriercentral.app/com.basefl @ flutter StandardMethodCodec.decodeEnvelope	open	Android 12+ refuses geolocator foreground service started from background
 app FLUTTER PlatformException(error, Service.startForeground() not allowed: service com.harriercentral.app/com.baseflow.geolocator.GeolocatorLocationSer @ flutter StandardMethodCodec.decodeEnvelope	open	Android 12+ refuses geolocator foreground service started from background
 app FLUTTER There are multiple heroes that share the same tag within a subtree. @ flutter Hero._allHeroesFor.inviteHero	open	duplicate Hero tag; once, 08-29
-app FLUTTER [Get] the improper use of a GetX has been detected. @ package:get RxInterface.notifyChildren	fixed:1396	map tab Obx returned before observing anything at boot (3.1.1)
+app FLUTTER [Get] the improper use of a GetX has been detected. @ package:get RxInterface.notifyChildren	fixed:1399	map tab Obx at boot (fixed 1396); REGRESSED 1397: run-history title Obx read c.kennel only behind ?? — fixed next build
 app HTTP 400 approveLogin	noise	an SP said no on purpose; its reason is in the sp … row
 app HTTP 400 authorizeDevice	noise	an SP said no on purpose; its reason is in the sp … row
 app HTTP 400 getInviteCode	noise	an SP said no on purpose; its reason is in the sp … row

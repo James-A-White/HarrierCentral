@@ -48,13 +48,17 @@ class UserRunHistoryListPage extends StatelessWidget {
                 centerTitle: true,
                 backgroundColor: themeAppBarBackground,
                 iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-                title: Obx(
-                  () => Text(
-                    hashName ??
-                        'My runs for ${(c.kennel.value ?? kennelInfo).kennelShortName}',
+                title: Obx(() {
+                  // Read the Rx before the `??`: when hashName is set the
+                  // right-hand side would never run, the Obx would observe
+                  // nothing, and GetX throws "improper use" (build 1397).
+                  final String shortName =
+                      (c.kennel.value ?? kennelInfo).kennelShortName;
+                  return Text(
+                    hashName ?? 'My runs for $shortName',
                     style: ts_appBarTitle,
-                  ),
-                ),
+                  );
+                }),
               ),
               floatingActionButton: SpeedDial(
                 animatedIcon: AnimatedIcons.menu_close,
@@ -69,7 +73,8 @@ class UserRunHistoryListPage extends StatelessWidget {
                 tooltip: 'Speed Dial',
                 heroTag: 'speed-dial-hero-tag-4312315',
                 backgroundColor:
-                    Theme.of(context).buttonTheme.colorScheme?.primary ?? hc_red,
+                    Theme.of(context).buttonTheme.colorScheme?.primary ??
+                    hc_red,
                 foregroundColor: Colors.white,
                 elevation: 8.0,
                 shape: const CircleBorder(),
@@ -127,8 +132,7 @@ class UserRunHistoryListPage extends StatelessWidget {
     required String kennelId,
     required String kennelName,
   }) async {
-    final Future<Map<String, String>> sending = tableModel
-        .hasherEventMapService
+    final Future<Map<String, String>> sending = tableModel.hasherEventMapService
         .sendRunCountReportByEmail(kennelId: kennelId, kennelName: kennelName);
     if (navigatorKey.currentContext != null) {
       IveCoreUtilities.showInSnackBar(
