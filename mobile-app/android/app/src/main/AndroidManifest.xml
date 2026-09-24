@@ -81,6 +81,16 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Links are ours (app_links → DeepLinkService), not Flutter's.
+                 Since Flutter 3.27 the engine ALSO handles a VIEW intent by
+                 making its path the initial route; GetX has no page for
+                 "/BMPH3/2064?RSVP=Yes", PageRedirect.page null-checks, and a
+                 cold start from a shared run link was a black screen
+                 (BMPH3, Signal, 2026-09-24). -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="false"
+              />
             <!-- GPX files handed to the app (E5.F5.S6): "Open with" from a
                  file manager, mail or a browser download, and Share from any
                  app holding a .gpx. Delivered to Flutter over
