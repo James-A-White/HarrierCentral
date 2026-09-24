@@ -101,7 +101,13 @@ class UserQrCodePage extends StatelessWidget {
                       right: 0,
                       child: TabBarView(
                         controller: c.tabController,
-                        children: const <Widget>[QrScannerTab(), QrCodeTab()],
+                        // The scanner tab must stay mounted while Be Scanned
+                        // is showing, or the camera stops and restarts on
+                        // every swipe (see KeepAliveTab).
+                        children: const <Widget>[
+                          KeepAliveTab(child: QrScannerTab()),
+                          QrCodeTab(),
+                        ],
                       ),
                     ),
                   ],
