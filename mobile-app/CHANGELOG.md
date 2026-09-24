@@ -1,3 +1,21 @@
+## 3.1.4+1401 (2026-09-24)
+### Fixes
+- **Add / Edit Down Down hung after saving** (1397, 1399): the charge was
+  saved but the page never closed and the spinner never stopped. GetX's
+  `Get.back()` closes an open toast instead of popping the page; the pages
+  now pop through the navigator first and toast after.
+- **Check-in QR page**: swiping Scan → Be Scanned → Scan stopped the camera
+  and threw on the restart. The scanner tab stays mounted across swipes.
+- **Run cards in the live-run window**: the reactive refresh ran inside the
+  list's build ("setState() called during build" in the log, live-run button
+  one rebuild late). It now waits for the frame.
+
+### Improvements
+- **On-device screen walk**: `integration_test/screens_test.dart` boots the
+  app on a simulator and opens every migrated screen, recording framework
+  errors per screen. Green on this build (29 screens, 4 minutes). The
+  `HC_UI_TEST` build define it needs is never set for a release.
+
 ## 3.1.3+1399 (2026-09-24)
 ### Fixes
 - **GetX "improper use" errors**: three `Obx` builders could finish without
