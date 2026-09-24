@@ -725,6 +725,29 @@ all clients — unnecessary load for every user.
 synced table without explicitly noting that James must disable the `UpdatedAt`
 trigger first, run the ALTER, then re-enable it. Do not run this autonomously.
 
+**After any page migration or new `Obx`, run the on-device screen walk
+(Flutter/Dart):**
+
+`mobile-app/integration_test/screens_test.dart` boots the real app on a
+simulator, signs in if it has to, and opens the screens that moved to GetX
+controllers — recording every framework error against the screen that was
+open. It needs no window, so the Mac can stay locked; it does not need
+Puppeteer, which cannot drive a Flutter app. Usage, defines and footguns are
+in `mobile-app/integration_test/README.md`; the one-line version:
+
+```bash
+cd mobile-app && flutter drive --driver=test_driver/integration_test.dart \
+  --target=integration_test/screens_test.dart -d <simulator udid> --dart-define=HC_UI_TEST=true
+```
+
+`HC_UI_TEST` skips the notification permission request (a native alert the
+walk cannot answer); it is never set for a release build. Two rules that
+came out of building it (2026-09-24): an `Obx` must read its Rx before any
+`??` / ternary / early return that could skip it (`tools/obx_scan.py` lists
+the candidates), and a tab that owns a camera preview must stay mounted
+across swipes (`KeepAliveTab`). `flutter clean` before the next release
+archive — a simulator build poisons it.
+
 **Fixing a crash? Find the other call sites BEFORE you commit.**
 
 A stack trace names one file and one line, so the natural fix is that line.
