@@ -507,8 +507,8 @@ class FutureRunListPageController extends GetxController {
     MessageType messageType = MessageType.fromId(
       int.tryParse('${data['MessageType'] ?? ''}') ?? 0,
     );
-    if ((eventId != null) && (allRuns != null)) {
-      dynamic runs = allRuns!
+    if (eventId != null) {
+      List<dynamic> runs = (allRuns ?? <dynamic>[])
           .where(
             (dynamic a) =>
                 normalizeUuid(a.event?.eventId as String?) ==
@@ -516,7 +516,23 @@ class FutureRunListPageController extends GetxController {
           )
           .toList();
 
-      if ((runs != null) && (runs.length > 0)) {
+      // The loaded list is the current date view of followed kennels; a
+      // reminder for a run outside it (or before the list has loaded) used
+      // to be dropped on the floor with no trace. Look the run up directly.
+      if (runs.isEmpty) {
+        runs = await QueryRuns.getRunDetailsAggregates(
+          true,
+          eventId: eventId,
+          queryType: EnumRunQueryType.singleRun,
+          runsTimeScope: RunsTimeScope.future,
+          runsToDisplay: RunsToDisplay.allRuns,
+        );
+        BootLogger.logBreadcrumb(
+          '[NOTIFY] tap: run $eventId not in the list; lookup found ${runs.length}',
+        );
+      }
+
+      if (runs.isNotEmpty) {
         var run = runs[0];
 
         RunTab? openToTab;
@@ -533,10 +549,19 @@ class FutureRunListPageController extends GetxController {
             break;
         }
 
+        BootLogger.logBreadcrumb(
+          '[NOTIFY] tap: type=${messageType.name} run=$eventId tab=${openToTab?.name ?? '-'}',
+        );
         if (openToTab != null) {
           await openRun(run, openToTab: openToTab);
         }
+      } else {
+        BootLogger.logBreadcrumb(
+          '[NOTIFY] tap: run $eventId not found; nothing opened',
+        );
       }
+    } else {
+      BootLogger.logBreadcrumb('[NOTIFY] tap: no EventId in payload');
     }
   }
 
@@ -598,7 +623,6 @@ class FutureRunListPageController extends GetxController {
     //       },
     //     // this means the user went to the chat page, so reset to zero to hide the badge
     //     // I don't like this logic, but it will have to do for now.
-
   }
 
   DateTime _toDateOnly(DateTime dt) {
@@ -899,7 +923,11 @@ class FutureRunListPageController extends GetxController {
         debugText: 'background sync',
       );
     } catch (e, s) {
-      BootLogger.logError('[ERROR][SYNC]', 'triggerBackgroundSync failed: $e', s);
+      BootLogger.logError(
+        '[ERROR][SYNC]',
+        'triggerBackgroundSync failed: $e',
+        s,
+      );
       debugPrint('[SYNC] triggerBackgroundSync error: $e');
     }
 
@@ -1170,7 +1198,11 @@ class FutureRunListPageController extends GetxController {
       try {
         await database.execute('DROP TABLE IF EXISTS $bak');
       } catch (e, s) {
-        BootLogger.logError('[ERROR][RUNS]', '_dropRunTableBackups failed: $e', s);
+        BootLogger.logError(
+          '[ERROR][RUNS]',
+          '_dropRunTableBackups failed: $e',
+          s,
+        );
         debugPrint('[RUNS] _dropRunTableBackups failed for ${t.name}: $e');
       }
     }
