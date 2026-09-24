@@ -295,6 +295,11 @@ def after_fix(hit: Hit, fixed: str) -> bool:
     # An app build (1396) vs an SP-row HcVersion (3.1.1+1396): compare builds.
     if len(want) == 1 and len(got) > 1:
         got = got[-1:]
+    # A label with fewer parts than the fix version is not a version of the
+    # same thing: 'HC6-API' is (6,), which would otherwise out-rank
+    # 'web 0.21.74'. Use fixed:<date> for fingerprints without versions.
+    elif len(got) < len(want):
+        return False
     return got >= want
 
 
