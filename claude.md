@@ -1031,7 +1031,7 @@ Before doing anything irreversible, present:
 3. **Push dev**
 4. **Merge dev → master and push master** — portal auto-deploys via CI on master push
 5. **Deploy SPs** — `./tools/deploy_hc6.sh` (only if `db/hc6/` changed)
-6. **Deploy API** — `func publish harriercentralpublicapi` from `api/` dir (only if `api/` changed)
+6. **Deploy API** — `func azure functionapp publish harriercentralpublicapi` from `api/` dir (only if `api/` changed; the short `func publish` form prints help and deploys nothing)
 7. **Deploy public web** — standalone build → zip → `az webapp deploy` to harriercentralpublicweb (only if `public-web/` changed)
 8. **Deploy mobile app** — TestFlight via xcodebuild + xcrun altool (only if `mobile-app/` changed)
 
