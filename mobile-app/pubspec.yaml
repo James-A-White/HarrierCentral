@@ -123,6 +123,10 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_driver:
+    sdk: flutter
   build_runner: ^2.10.3
   flutter_launcher_icons: ^0.14.4
   # intl_translation: ^0.17.10+1

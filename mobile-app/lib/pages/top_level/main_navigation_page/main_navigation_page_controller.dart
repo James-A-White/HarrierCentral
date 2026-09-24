@@ -597,6 +597,7 @@ class MainNavigationController extends GetxController
   }
 
   Future<void> requestNotificationPermission() async {
+    if (kUiTest) return; // headless screen walk: no native alert
     FirebaseMessaging messaging = FirebaseMessaging.instance;
 
     await messaging.requestPermission(alert: true, badge: true, sound: true);

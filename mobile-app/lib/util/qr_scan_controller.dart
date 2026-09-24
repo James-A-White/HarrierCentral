@@ -36,7 +36,16 @@ abstract class QrScanController extends GetxController {
       isScanning.value = false;
       onScanningPaused();
     } else if ((doScanning == null) || doScanning) {
-      await scanner.start();
+      try {
+        await scanner.start();
+      } on MobileScannerException catch (e) {
+        // autoStart is still bringing the camera up (a tab switch straight
+        // after the page opened); the pending start will finish on its own.
+        if (e.errorCode == MobileScannerErrorCode.controllerInitializing) {
+          return;
+        }
+        rethrow;
+      }
       if (isClosed) return;
       isScanning.value = true;
       onScanningStarted();

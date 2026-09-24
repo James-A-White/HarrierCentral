@@ -305,7 +305,9 @@ class OnboardingFlowController extends GetxController {
       );
     }
 
-    if (!await Permission.notification.status.isGranted) {
+    // The headless screen walk cannot answer the native alert this page
+    // raises, and a simulator has no push anyway — leave the page out there.
+    if (!kUiTest && !await Permission.notification.status.isGranted) {
       slides.add(
         OnboardingSlide(
           title: 'Keep up to date',

@@ -52,7 +52,10 @@ class AuthorizeDeviceService {
       params['userId'] = userId;
     }
 
-    if (Firebase.apps.isNotEmpty) {
+    // The token fetch registers for remote notifications, which on iOS puts
+    // up the permission alert; the headless screen walk cannot answer it and
+    // a simulator has no APNs anyway.
+    if (Firebase.apps.isNotEmpty && !kUiTest) {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       // Ensure APNs token is set
       String? apnsToken = await messaging.getAPNSToken();
