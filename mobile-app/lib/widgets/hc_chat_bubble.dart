@@ -22,44 +22,57 @@ class HcChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final NotificationService? ns = notificationServiceOrNull;
+    // No service, or no thread, means nothing reactive to read — and an Obx
+    // whose builder reads no Rx throws "improper use". Draw the plain icon
+    // outside one.
+    if (ns == null || threadId.isEmpty) {
+      return _forState(ChatThreadState.none, 0);
+    }
     return Obx(() {
-      final NotificationService? ns = notificationServiceOrNull;
-      final ChatThreadState state =
-          ns?.chatThreadState(threadId, isKennelThread: isKennelThread) ??
-          ChatThreadState.none;
-      switch (state) {
-        case ChatThreadState.unread:
-          final int count = ns?.unreadCountFor(threadId) ?? 0;
-          return badges.Badge(
-            position: badges.BadgePosition.topEnd(top: -6, end: -8),
-            badgeContent: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              constraints: const BoxConstraints(minWidth: 14),
-              height: 13,
-              child: AutoSizeText(
-                count.toString(),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                minFontSize: 10,
-                maxFontSize: 13,
-                style: ts_badge,
-              ),
-            ),
-            badgeStyle: badges.BadgeStyle(
-              badgeColor: Colors.red.shade800,
-              padding: const EdgeInsets.all(4),
-            ),
-            child: Icon(MaterialCommunityIcons.chat, color: hc_red),
-          );
-        case ChatThreadState.read:
-          return const Icon(MaterialCommunityIcons.chat, color: Colors.black54);
-        case ChatThreadState.none:
-          return Icon(
-            MaterialCommunityIcons.chat_outline,
-            color: Colors.grey.shade500,
-          );
-      }
+      final ChatThreadState state = ns.chatThreadState(
+        threadId,
+        isKennelThread: isKennelThread,
+      );
+      final int count = state == ChatThreadState.unread
+          ? ns.unreadCountFor(threadId)
+          : 0;
+      return _forState(state, count);
     });
+  }
+
+  Widget _forState(ChatThreadState state, int count) {
+    switch (state) {
+      case ChatThreadState.unread:
+        return badges.Badge(
+          position: badges.BadgePosition.topEnd(top: -6, end: -8),
+          badgeContent: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            constraints: const BoxConstraints(minWidth: 14),
+            height: 13,
+            child: AutoSizeText(
+              count.toString(),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              minFontSize: 10,
+              maxFontSize: 13,
+              style: ts_badge,
+            ),
+          ),
+          badgeStyle: badges.BadgeStyle(
+            badgeColor: Colors.red.shade800,
+            padding: const EdgeInsets.all(4),
+          ),
+          child: Icon(MaterialCommunityIcons.chat, color: hc_red),
+        );
+      case ChatThreadState.read:
+        return const Icon(MaterialCommunityIcons.chat, color: Colors.black54);
+      case ChatThreadState.none:
+        return Icon(
+          MaterialCommunityIcons.chat_outline,
+          color: Colors.grey.shade500,
+        );
+    }
   }
 }
 
