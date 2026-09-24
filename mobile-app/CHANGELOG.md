@@ -1,3 +1,12 @@
+## 3.1.5+1403 (2026-09-24)
+### Fixes
+- **Notification taps open the RSVP (or chat) tab every time.** If the run's
+  page was already open somewhere in the stack, a tapped reminder reused it
+  and landed on whatever tab it was last on; the requested tab is now applied
+  on every open. A reminder for a run outside the loaded list, or arriving
+  before the list had loaded, used to do nothing — it now looks the run up
+  directly. `[NOTIFY]` breadcrumbs record each tap in the session log.
+
 ## 3.1.4+1401 (2026-09-24)
 ### Fixes
 - **Add / Edit Down Down hung after saving** (1397, 1399): the charge was
