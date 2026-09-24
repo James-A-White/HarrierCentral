@@ -1,3 +1,18 @@
+## 3.1.3+1399 (2026-09-24)
+### Fixes
+- **GetX "improper use" errors**: three `Obx` builders could finish without
+  reading anything reactive and threw on that path — another hasher's run
+  history (the title, hit on 1397), the live-run map for a run with no
+  location, and the chat bubble before the notification service is up. Each
+  now reads its Rx first or draws the non-reactive case outside the Obx.
+  Found by a scan of all 363 Obx sites (`tools/obx_scan.py`).
+- **Check-in**: the two swipe-to-pay gestures pass the tapped member (a
+  compile break on the 1397 tree, caught by the release's analyze step).
+
+### Server-side (no app update needed)
+- Setting a member's email to one another hasher already has now says whose
+  it is instead of a duplicate-key error (portal member grid).
+
 ## 3.1.2+1397 (2026-09-23)
 ### Fixes
 - **Chat**: a message longer than 4,000 characters is refused with a clear
