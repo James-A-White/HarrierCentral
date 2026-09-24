@@ -748,6 +748,22 @@ the candidates), and a tab that owns a camera preview must stay mounted
 across swipes (`KeepAliveTab`). `flutter clean` before the next release
 archive — a simulator build poisons it.
 
+**`Get.back()` does not pop while a GetX snackbar is open (Flutter/Dart):**
+
+GetX 4.7.3's `Get.back()` starts with a compatibility shim: if a GetX
+snackbar is showing it closes the snackbar and RETURNS. A page that shows
+"Saved!" with `hcSnack` / `Get.rawSnackbar` / `Get.snackbar` and then calls
+`Get.back()` stays on screen, and any `isSaving` flag behind the button never
+clears. That hung Add Down Down on 1397 and 1399 (2026-09-24): the charge was
+saved, the spinner never stopped. The old page used a ScaffoldMessenger
+SnackBar, which GetX does not count, so the migration to `hcSnack` exposed it.
+
+Rules: pop a page with `hcPop()` (`lib/util/hc_nav.dart`, pops through the
+navigator itself), never `Get.back()`, and show the toast AFTER the pop —
+it draws on the app overlay and survives it. `test/unit/hc_pop_test.dart`
+pins both behaviours. The same shim bites `Get.back()` used to close a
+dialog while a toast is up.
+
 **Fixing a crash? Find the other call sites BEFORE you commit.**
 
 A stack trace names one file and one line, so the natural fix is that line.
