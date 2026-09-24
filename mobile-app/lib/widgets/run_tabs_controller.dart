@@ -159,6 +159,18 @@ class RunTabsController extends GetxController
     unawaited(_onTabSettled());
   }
 
+  /// Moves an already-open run page to [tab]. A RunTabs instance is bound to
+  /// its controller by event id, so a second open of the same run — a tapped
+  /// RSVP or chat notification while that run's page is already in the stack
+  /// — reuses this controller, and onInit's initialIndex never runs again.
+  /// The old State animated to its tab on every instance; this is that.
+  void showTab(RunTab tab) {
+    if (isClosed || tabController.index == tab.id) return;
+    tabController.animateTo(tab.id);
+    tabIndex.value = tab.id;
+    unawaited(_onTabSettled());
+  }
+
   Future<void> _onTabSettled() async {
     FocusManager.instance.primaryFocus?.unfocus();
     final String label = tabs[tabController.index].text ?? '';

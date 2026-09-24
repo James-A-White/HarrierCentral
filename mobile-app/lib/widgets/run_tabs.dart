@@ -56,13 +56,23 @@ class RunTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String tag = RunTabsController.tagFor(futureRun.event.eventId);
     return GetBuilder<RunTabsController>(
       init: RunTabsController(
         futureRun: futureRun,
         relayActiveTab: relayActiveTab,
         openToTab: openToTab,
       ),
-      tag: RunTabsController.tagFor(futureRun.event.eventId),
+      tag: tag,
+      // `init` is ignored when a controller with this tag already exists
+      // (the run's page is already in the stack and a notification opened it
+      // again), so the requested tab is applied to whichever controller the
+      // page ends up with. A no-op on a fresh one.
+      initState: (_) => WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (Get.isRegistered<RunTabsController>(tag: tag)) {
+          Get.find<RunTabsController>(tag: tag).showTab(openToTab);
+        }
+      }),
       builder: (RunTabsController c) => Obx(() => _body(context, c)),
     );
   }
