@@ -1,3 +1,11 @@
+## 3.1.6+1405 (2026-09-24) — Android production hotfix, branch `hotfix/3.1.6`
+Built from the 3.1.0+1394 production code plus one manifest line (ab51ff00);
+NOT from this train. Promoted straight to Play production. iOS unaffected.
+### Fixes
+- **Run links opened a black screen on Android** when the app was closed:
+  Flutter's own deep-link handling made the link's path the first route,
+  which GetX cannot resolve. `flutter_deeplinking_enabled=false`.
+
 ## 3.1.5+1403 (2026-09-24)
 ### Fixes
 - **Notification taps open the RSVP (or chat) tab every time.** If the run's
