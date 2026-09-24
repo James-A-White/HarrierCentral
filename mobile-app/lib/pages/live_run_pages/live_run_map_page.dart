@@ -61,26 +61,30 @@ class LiveRunMapPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The locations come from the run row, not from an Rx, so the "no map"
+    // case is decided OUTSIDE the Obx: returned from inside it, the builder
+    // would have read no Rx and GetX would throw "improper use".
+    final center = controller.mapCenter;
+    final kennel = controller.kennelLocation;
+    final eventLoc = controller.eventLocation;
+    if (center == null || kennel == null) {
+      return Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Text(
+              'Map not available for this run yet.',
+              style: ts_headingLarge,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
     return Container(
       decoration: Backgrounds.defaultHcBackground(),
       child: Obx(() {
-        final center = controller.mapCenter;
-        final kennel = controller.kennelLocation;
-        final eventLoc = controller.eventLocation;
-
-        if (center == null || kennel == null) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Text(
-                'Map not available for this run yet.',
-                style: ts_headingLarge,
-                textAlign: TextAlign.center,
-              ),
-            ),
-          );
-        }
-
         // Radar and list are canvas swaps, not routes, so the system back
         // button would otherwise pop the whole live run — the most likely way
         // someone tries to leave them. Intercept it and return to the map.
