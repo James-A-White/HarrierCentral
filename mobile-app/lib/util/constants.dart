@@ -526,3 +526,9 @@ const Map<String, int> runTags2 = <String, int>{
   // 'Bag drop available': 0x20000000,
   // 'AGM': 0x40000000,
 };
+
+/// True only when built with `--dart-define=HC_UI_TEST=true` — the on-device
+/// screen walk in integration_test/. It skips the notification permission
+/// request, a native alert a headless simulator run cannot answer. Never set
+/// for a release build.
+const bool kUiTest = bool.fromEnvironment('HC_UI_TEST');

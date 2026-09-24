@@ -266,7 +266,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   // --- Permission and Token Management ---
 
   Future<void> requestPermission() async {
-    // ... (Your existing permission and token saving logic remains here) ...
+    if (kUiTest) return; // headless screen walk: no native alert
     if (Firebase.apps.isNotEmpty) {
       _messaging ??= FirebaseMessaging.instance;
 
