@@ -7,8 +7,8 @@
 //   flutter drive --driver=test_driver/integration_test.dart \
 //     --target=integration_test/screens_test.dart -d <simulator udid> \
 //     [--dart-define=HC_TEST_INVITE_CODE=ABCDEF]   # only when signed out
-//     [--dart-define=HC_TEST_KENNEL="City H3"]     # a kennel you manage
-//     [--dart-define=HC_TEST_RUN=Paddington]       # search text for one of its past runs
+//     [--dart-define=HC_TEST_KENNEL=HCTEST-ABC]     # a kennel you manage (default)
+//     [--dart-define=HC_TEST_RUN="Test image upload"] # search text for one of its runs (default)
 //
 // Screenshots land in integration_test/screenshots/ (see test_driver/).
 import 'package:flutter_test/flutter_test.dart';
@@ -18,13 +18,16 @@ import 'package:integration_test/integration_test.dart';
 import 'harness/hc_harness.dart';
 
 const String kInviteCode = String.fromEnvironment('HC_TEST_INVITE_CODE');
+// Defaults: the test kennel and the run James set up on it on 2026-09-24 —
+// attended, RSVP'd, with a charge — so Add Down Down, run admin and Edit
+// Down Down are all reachable. Override with --dart-define for another.
 const String kKennel = String.fromEnvironment(
   'HC_TEST_KENNEL',
-  defaultValue: 'City H3',
+  defaultValue: 'HCTEST-ABC',
 );
 const String kRunSearch = String.fromEnvironment(
   'HC_TEST_RUN',
-  defaultValue: 'Paddington',
+  defaultValue: 'Test image upload',
 );
 
 void main() {

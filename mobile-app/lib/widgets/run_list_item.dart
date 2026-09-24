@@ -1,4 +1,5 @@
 import 'package:harrier_central/widgets/hc_badges.dart' as badges;
+import 'package:flutter/scheduler.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
@@ -112,6 +113,21 @@ class RunListItemController extends GetxController {
   /// the button can still appear/disappear as the start time approaches without
   /// re-running on every rebuild for the (majority) far-off runs.
   void syncWithRun(RunDetailsAggregate run) {
+    // The card is constructed inside the list's build, so this runs during a
+    // build — and an Rx write here marks every Obx that watches it while the
+    // framework is still building ("setState() or markNeedsBuild() called
+    // during build", 2026-09-24, a run inside its live window). Apply the
+    // refresh once the frame is done; outside a build, apply it now.
+    final SchedulerPhase phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _applyRun(run));
+      return;
+    }
+    _applyRun(run);
+  }
+
+  void _applyRun(RunDetailsAggregate run) {
     final now = DateTime.now();
     final eventStart = run.event.eventStartDatetime;
     final nearLiveWindow =

@@ -20,8 +20,8 @@ xcrun simctl list devices | grep Booted          # or boot one
 flutter drive --driver=test_driver/integration_test.dart \
   --target=integration_test/screens_test.dart -d <udid> \
   --dart-define=HC_TEST_INVITE_CODE=ABCDEF \     # only if the simulator is signed out
-  --dart-define=HC_TEST_KENNEL="City H3" \       # a kennel you manage (default City H3)
-  --dart-define=HC_TEST_RUN=Paddington           # search text for one of its runs
+  --dart-define=HC_TEST_KENNEL=HCTEST-ABC \      # a kennel you manage (default)
+  --dart-define=HC_TEST_RUN="Test image upload"  # one of its runs you attended, with a charge (default)
 ```
 
 The app talks to the **production** server as you. The invite code is the six
