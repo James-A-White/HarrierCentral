@@ -263,6 +263,7 @@ export 'package:harrier_central/pages/run_admin/create_new_event_popup.dart';
 export 'package:harrier_central/pages/run_admin/drinks_list.dart';
 export 'package:harrier_central/pages/run_admin/drinks_list_controller.dart';
 export 'package:harrier_central/util/hc_snack.dart';
+export 'package:harrier_central/util/hc_nav.dart';
 export 'package:harrier_central/util/qr_scan_controller.dart';
 export 'package:harrier_central/pages/run_admin/edit_run_details.dart';
 export 'package:harrier_central/pages/run_admin/event_qr_code_page.dart';

@@ -314,8 +314,10 @@ class AddDownDownController extends DownDownFormController {
       );
       if (isClosed) return;
       if (id != null) {
+        // Pop FIRST, then the toast: Get.back() with a GetX snackbar open
+        // closes the snackbar and does not pop (see hcPop).
+        hcPop();
         hcSnack('Down Down recorded!');
-        Get.back();
         return;
       }
       hcSnack('Failed to save. Are you a run attendee?', error: true);
@@ -379,7 +381,7 @@ class EditDownDownController extends DownDownFormController {
     );
     if (isClosed) return;
     if (ok) {
-      Get.back(result: true);
+      hcPop(result: true);
       return;
     }
     isSaving.value = false;
