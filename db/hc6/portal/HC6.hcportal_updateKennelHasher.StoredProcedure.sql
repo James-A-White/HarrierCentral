@@ -188,6 +188,31 @@ BEGIN TRY
         END
     END
 
+    -- An email is unique across HC.Hasher (IX_HasherUniqueEmail). Check it
+    -- here and say whose it is, instead of letting the index throw
+    -- "Cannot insert duplicate key row" from the CATCH (Kilty, twice,
+    -- 2026-09-23). The owner is named only when they are in this kennel;
+    -- an admin should not learn from a failed edit which account outside
+    -- their kennel an email belongs to.
+    IF (@eMail IS NOT NULL)
+    BEGIN
+        DECLARE @emailOwnerId UNIQUEIDENTIFIER, @emailOwnerName NVARCHAR(300);
+        SELECT TOP 1 @emailOwnerId = h.id,
+                     @emailOwnerName = h.DisplayName + CASE WHEN h.deleted = 1 THEN ' (a deleted account)' ELSE '' END
+        FROM HC.Hasher h
+        WHERE h.Email = @eMail AND h.id <> @hasherBeingEditedId;
+
+        IF (@emailOwnerId IS NOT NULL)
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap m
+                           WHERE m.UserId = @emailOwnerId AND m.KennelId = @kennelId)
+                SET @emailOwnerName = 'another hasher outside this kennel';
+            SELECT 0 AS Success,
+                   'The email ' + @eMail + ' already belongs to ' + @emailOwnerName + '. Each hasher needs their own email address.' AS ErrorMessage;
+            RETURN;
+        END
+    END
+
     -- Wrap all writes in a single transaction
     BEGIN TRANSACTION;
 

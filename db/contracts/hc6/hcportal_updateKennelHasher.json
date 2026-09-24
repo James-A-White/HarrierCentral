@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_updateKennelHasher",
-  "version": "1.0.0",
-  "description": "Updates a hasher's profile and kennel-specific settings for a given kennel. Allows editing of personal details (name, email, hash name), discount settings, membership status, notification preferences, historical run counts, and historical count estimates. The SP determines which fields to update based on which parameters are non-NULL. All writes are wrapped in a single transaction. 2026-09-23: personal details (@firstName/@lastName/@hashName/@eMail) are refused with Success=0 when the target has signed in (HC.Hasher.LastLoginDateTime set, or any HC.Device row) unless the caller is the target or SuperAdmin; and refused for a never-signed-in target whose HomeKennelId is not the @publicKennelId kennel. @eMail = '<hidden>' (the portal's non-member placeholder) is ignored.",
+  "version": "1.1.0",
+  "description": "Updates a hasher's profile and kennel-specific settings for a given kennel. Allows editing of personal details (name, email, hash name), discount settings, membership status, notification preferences, historical run counts, and historical count estimates. The SP determines which fields to update based on which parameters are non-NULL. All writes are wrapped in a single transaction. 2026-09-23: personal details (@firstName/@lastName/@hashName/@eMail) are refused with Success=0 when the target has signed in (HC.Hasher.LastLoginDateTime set, or any HC.Device row) unless the caller is the target or SuperAdmin; and refused for a never-signed-in target whose HomeKennelId is not the @publicKennelId kennel. @eMail = '<hidden>' (the portal's non-member placeholder) is ignored. 2026-09-24: a non-NULL @eMail already held by another HC.Hasher row (IX_HasherUniqueEmail) is refused before the transaction with Success=0 and 'The email <x> already belongs to <DisplayName>…' — the owner is named only when they hold a HasherKennelMap row in @kennelId, otherwise 'another hasher outside this kennel'. Previously the unique index threw from the CATCH.",
   "parameters": [
     {
       "name": "deviceId",
