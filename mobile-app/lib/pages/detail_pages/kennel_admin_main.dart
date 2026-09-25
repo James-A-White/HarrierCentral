@@ -396,10 +396,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                             right: 10,
                             top: 8,
                           ),
-                          child: Text(
+                          child: AutoSizeText(
                             'Email run stats',
                             textAlign: TextAlign.center,
                             style: ts_buttonLabelMedium,
+                            maxLines: 3,
+                            minFontSize: 8,
+                            wrapWords: false,
                           ),
                         ),
                       ],
@@ -500,10 +503,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                               right: 10,
                               top: 4,
                             ),
-                            child: Text(
+                            child: AutoSizeText(
                               'Manage Members',
                               textAlign: TextAlign.center,
                               style: ts_buttonLabelMedium,
+                              maxLines: 3,
+                              minFontSize: 8,
+                              wrapWords: false,
                             ),
                           ),
                         ],
@@ -572,10 +578,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     right: 10,
                     top: labelTopPadding,
                   ),
-                  child: Text(
+                  // Shrinks the words rather than splitting one across lines
+                  // ("Membe / rs", "location / s" at 1.5x).
+                  child: AutoSizeText(
                     label,
                     textAlign: TextAlign.center,
                     style: ts_buttonLabelMedium,
+                    maxLines: 3,
+                    minFontSize: 8,
+                    wrapWords: false,
                   ),
                 ),
               ],

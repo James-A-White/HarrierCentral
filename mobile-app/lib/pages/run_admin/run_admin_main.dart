@@ -556,10 +556,14 @@ class RunAdminPage extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                child: Text(
+                // Shrinks rather than splitting a word across lines.
+                child: AutoSizeText(
                   label,
                   style: ts_buttonLabelSmallCompressedLines,
                   textAlign: TextAlign.center,
+                  maxLines: 3,
+                  minFontSize: 8,
+                  wrapWords: false,
                 ),
               ),
             ],

@@ -249,815 +249,896 @@ class HasherProfilePage extends StatelessWidget {
                   )
                 : Container(
                     decoration: Backgrounds.defaultHcBackground(),
-                    height:
-                        MediaQuery.sizeOf(context).height -
-                        appBar.preferredSize.height,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onPanDown: (_) {
-                        FocusScope.of(context).requestFocus(FocusNode());
-                      },
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: 30,
-                            left: 20,
-                            right: 20,
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              SizedBox(
-                                width: MediaQuery.sizeOf(context).width,
+                    // No fixed height: the body fills what the Scaffold
+                    // gives it, which shrinks when the keyboard opens.
+                    // The Save bar is part of the body, below the form: the
+                    // body shrinks for the keyboard, so the bar sits just
+                    // above it and a focused field scrolls into view above
+                    // the bar. It used to float over the page from outside
+                    // the Scaffold, hidden behind the keyboard (2026-09-25).
+                    child: Column(
+                      children: <Widget>[
+                        Expanded(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onPanDown: (_) {
+                              FocusScope.of(context).requestFocus(FocusNode());
+                            },
+                            child: SingleChildScrollView(
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 30,
+                                  left: 20,
+                                  right: 20,
+                                ),
                                 child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: <Widget>[
-                                    Text(
-                                      pageType ==
-                                              EnumMyProfilePageType.myProfile
-                                          ? 'My Profile Information'
-                                          : 'Hasher Profile Information',
-                                      style: ts_headingLarge,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Container(
-                                      padding: EdgeInsets.only(
-                                        top: 30.0,
-                                        left:
-                                            (deviceInfo.deviceWidthScaleFactor -
-                                                1) *
-                                            30,
-                                        right:
-                                            (deviceInfo.deviceWidthScaleFactor -
-                                                1) *
-                                            30,
-                                      ),
-                                      child: Center(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Container(
-                                              padding: const EdgeInsets.all(
-                                                10.0,
-                                              ),
-                                              margin: const EdgeInsets.only(
-                                                bottom: 30,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.yellow[100],
-                                                borderRadius:
-                                                    BorderRadius.circular(5.0),
-                                              ),
-                                              child: Form(
-                                                key: c.profileFormKey,
-                                                autovalidateMode:
-                                                    c.autoValidate.value
-                                                    ? AutovalidateMode.always
-                                                    : AutovalidateMode.disabled,
-                                                child: _profileFormUi(c),
+                                    SizedBox(
+                                      width: MediaQuery.sizeOf(context).width,
+                                      child: Column(
+                                        children: <Widget>[
+                                          Text(
+                                            pageType ==
+                                                    EnumMyProfilePageType
+                                                        .myProfile
+                                                ? 'My Profile Information'
+                                                : 'Hasher Profile Information',
+                                            style: ts_headingLarge,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.only(
+                                              top: 30.0,
+                                              left:
+                                                  (deviceInfo
+                                                          .deviceWidthScaleFactor -
+                                                      1) *
+                                                  30,
+                                              right:
+                                                  (deviceInfo
+                                                          .deviceWidthScaleFactor -
+                                                      1) *
+                                                  30,
+                                            ),
+                                            child: Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                          10.0,
+                                                        ),
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                          bottom: 30,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.yellow[100],
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            5.0,
+                                                          ),
+                                                    ),
+                                                    child: Form(
+                                                      key: c.profileFormKey,
+                                                      autovalidateMode:
+                                                          c.autoValidate.value
+                                                          ? AutovalidateMode
+                                                                .always
+                                                          : AutovalidateMode
+                                                                .disabled,
+                                                      child: _profileFormUi(c),
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.yellow[100],
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            5.0,
+                                                          ),
+                                                    ),
+                                                    child: RadioGroup(
+                                                      groupValue: c
+                                                          .nameDisplayPreference
+                                                          .value,
+                                                      onChanged: c
+                                                          .setNameDisplayPreference,
+                                                      child: Column(
+                                                        children: <Widget>[
+                                                          const SizedBox(
+                                                            height: 10,
+                                                            width: 10,
+                                                          ),
+                                                          Text(
+                                                            'Name Preference',
+                                                            style:
+                                                                ts_headingBlack,
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 10,
+                                                            width: 10,
+                                                          ),
+
+                                                          Row(
+                                                            children: <Widget>[
+                                                              Radio<int>(
+                                                                value: 1,
+                                                              ),
+                                                              const Text(
+                                                                'Use Hash name',
+                                                                style:
+                                                                    TextStyle(
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: <Widget>[
+                                                              Radio<int>(
+                                                                value: 2,
+                                                              ),
+                                                              const Text(
+                                                                'Use mortal name',
+                                                                style:
+                                                                    TextStyle(
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const FancyDivider(
+                                                    key: Key('11203961'),
+                                                    innerColor: Colors.white,
+                                                    topMargin: 45.0,
+                                                    bottomMargin: 5.0,
+                                                  ),
+                                                  Container(
+                                                    height: 220,
+                                                    color: Colors.white,
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                          10.0,
+                                                        ),
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                          top: 20,
+                                                          bottom: 30,
+                                                        ),
+                                                    child: newPhoto.isEmpty
+                                                        ? Image.asset(
+                                                            'images/icons/create_profile_photo.png',
+                                                          )
+                                                        : Padding(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  left: 0,
+                                                                  right: 0,
+                                                                ),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1.0,
+                                                              child: ProfilePhoto(
+                                                                profilePhotoUrl:
+                                                                    newPhoto,
+                                                                photoHeight:
+                                                                    200.0,
+                                                                //leftPadding: 0.0,
+                                                              ),
+
+                                                              // Container(
+                                                              //   decoration: BoxDecoration(
+                                                              //     shape: BoxShape.rectangle,
+                                                              //       fit: BoxFit.fill,
+                                                              //       image: NetworkImage(
+                                                              //         newPhoto,
+                                                            ),
+                                                          ),
+                                                  ),
+                                                  StyleForConnected(
+                                                    child: ElevatedButton(
+                                                      style: ElevatedButton.styleFrom(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              top: 8,
+                                                              bottom: 8,
+                                                              left: 20,
+                                                              right: 20,
+                                                            ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        if (!Utilities.isConnected(
+                                                          showDialog: true,
+                                                        )) {
+                                                          return;
+                                                        }
+
+                                                        final String?
+                                                        result = await Navigator.push<String>(
+                                                          context,
+                                                          MaterialPageRoute<
+                                                            String
+                                                          >(
+                                                            builder:
+                                                                (
+                                                                  BuildContext
+                                                                  context,
+                                                                ) => ChooseProfileImage(
+                                                                  isForThisDevice:
+                                                                      pageType ==
+                                                                      EnumMyProfilePageType
+                                                                          .myProfile,
+                                                                  fileNamePrefix:
+                                                                      c.photoPrefix,
+                                                                  currentProfileImage:
+                                                                      c
+                                                                          .hasher
+                                                                          .photo ??
+                                                                      newPhoto,
+                                                                ),
+                                                          ),
+                                                        );
+
+                                                        if (result != null &&
+                                                            result.isNotEmpty) {
+                                                          c.onPhotoChosen(
+                                                            result,
+                                                          );
+                                                        }
+                                                      },
+                                                      child: Text(
+                                                        'Update Profile Image',
+                                                        style: ts_button,
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 15),
+                                                ],
                                               ),
                                             ),
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.yellow[100],
-                                                borderRadius:
-                                                    BorderRadius.circular(5.0),
-                                              ),
-                                              child: RadioGroup(
-                                                groupValue: c
-                                                    .nameDisplayPreference
-                                                    .value,
-                                                onChanged:
-                                                    c.setNameDisplayPreference,
-                                                child: Column(
+                                          ),
+                                          (uiElementsToDisplay &
+                                                      HasherProfilePage
+                                                          .flagUiElement_followKennel ==
+                                                  0)
+                                              ? Container()
+                                              : Column(
                                                   children: <Widget>[
-                                                    const SizedBox(
-                                                      height: 10,
-                                                      width: 10,
+                                                    const FancyDivider(
+                                                      key: Key('882552302'),
+                                                      innerColor: Colors.white,
+                                                      bottomMargin: 20.0,
                                                     ),
-                                                    Text(
-                                                      'Name Preference',
-                                                      style: ts_headingBlack,
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 10,
-                                                      width: 10,
-                                                    ),
-
-                                                    Row(
-                                                      children: <Widget>[
-                                                        Radio<int>(value: 1),
-                                                        const Text(
-                                                          'Use Hash name',
-                                                          style: TextStyle(
-                                                            fontSize: 16.0,
+                                                    Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            10.0,
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      children: <Widget>[
-                                                        Radio<int>(value: 2),
-                                                        const Text(
-                                                          'Use mortal name',
-                                                          style: TextStyle(
-                                                            fontSize: 16.0,
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                            bottom: 45,
                                                           ),
-                                                        ),
-                                                      ],
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            Colors.yellow[100],
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              5.0,
+                                                            ),
+                                                      ),
+                                                      child: Row(
+                                                        children: <Widget>[
+                                                          Container(
+                                                            margin:
+                                                                const EdgeInsets.only(
+                                                                  right: 10,
+                                                                ),
+                                                            height: 25,
+                                                            width: 25,
+                                                            color: Colors
+                                                                .yellow[100],
+                                                            child: Checkbox(
+                                                              value: c
+                                                                  .addAsKennelFollower
+                                                                  .value,
+                                                              onChanged:
+                                                                  (
+                                                                    bool? value,
+                                                                  ) => c.addAsKennelFollower.value =
+                                                                      value ??
+                                                                      false,
+                                                            ),
+                                                          ),
+                                                          const Text(
+                                                            'Follow this Kennel',
+                                                            //style: headingStyle,
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
-                                              ),
-                                            ),
-                                            const FancyDivider(
-                                              key: Key('11203961'),
-                                              innerColor: Colors.white,
-                                              topMargin: 45.0,
-                                              bottomMargin: 5.0,
-                                            ),
-                                            Container(
-                                              height: 220,
-                                              color: Colors.white,
-                                              padding: const EdgeInsets.all(
-                                                10.0,
-                                              ),
-                                              margin: const EdgeInsets.only(
-                                                top: 20,
-                                                bottom: 30,
-                                              ),
-                                              child: newPhoto.isEmpty
-                                                  ? Image.asset(
-                                                      'images/icons/create_profile_photo.png',
-                                                    )
-                                                  : Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                            left: 0,
-                                                            right: 0,
-                                                          ),
-                                                      child: AspectRatio(
-                                                        aspectRatio: 1.0,
-                                                        child: ProfilePhoto(
-                                                          profilePhotoUrl:
-                                                              newPhoto,
-                                                          photoHeight: 200.0,
-                                                          //leftPadding: 0.0,
-                                                        ),
-
-                                                        // Container(
-                                                        //   decoration: BoxDecoration(
-                                                        //     shape: BoxShape.rectangle,
-                                                        //       fit: BoxFit.fill,
-                                                        //       image: NetworkImage(
-                                                        //         newPhoto,
-                                                      ),
-                                                    ),
-                                            ),
-                                            StyleForConnected(
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        top: 8,
-                                                        bottom: 8,
-                                                        left: 20,
-                                                        right: 20,
-                                                      ),
-                                                ),
-                                                onPressed: () async {
-                                                  if (!Utilities.isConnected(
-                                                    showDialog: true,
-                                                  )) {
-                                                    return;
-                                                  }
-
-                                                  final String?
-                                                  result = await Navigator.push<String>(
-                                                    context,
-                                                    MaterialPageRoute<String>(
-                                                      builder:
-                                                          (
-                                                            BuildContext
-                                                            context,
-                                                          ) => ChooseProfileImage(
-                                                            isForThisDevice:
-                                                                pageType ==
-                                                                EnumMyProfilePageType
-                                                                    .myProfile,
-                                                            fileNamePrefix:
-                                                                c.photoPrefix,
-                                                            currentProfileImage:
-                                                                c
-                                                                    .hasher
-                                                                    .photo ??
-                                                                newPhoto,
-                                                          ),
-                                                    ),
-                                                  );
-
-                                                  if (result != null &&
-                                                      result.isNotEmpty) {
-                                                    c.onPhotoChosen(result);
-                                                  }
-                                                },
-                                                child: Text(
-                                                  'Update Profile Image',
-                                                  style: ts_button,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 15),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    (uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_followKennel ==
-                                            0)
-                                        ? Container()
-                                        : Column(
-                                            children: <Widget>[
-                                              const FancyDivider(
-                                                key: Key('882552302'),
-                                                innerColor: Colors.white,
-                                                bottomMargin: 20.0,
-                                              ),
-                                              Container(
-                                                padding: const EdgeInsets.all(
-                                                  10.0,
-                                                ),
-                                                margin: const EdgeInsets.only(
-                                                  bottom: 45,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.yellow[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        5.0,
-                                                      ),
-                                                ),
-                                                child: Row(
+                                          (uiElementsToDisplay &
+                                                      HasherProfilePage
+                                                          .flagUiElement_previousRunCount ==
+                                                  0)
+                                              ? Container()
+                                              : Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .stretch,
                                                   children: <Widget>[
-                                                    Container(
-                                                      margin:
-                                                          const EdgeInsets.only(
-                                                            right: 10,
-                                                          ),
-                                                      height: 25,
-                                                      width: 25,
-                                                      color: Colors.yellow[100],
-                                                      child: Checkbox(
-                                                        value: c
-                                                            .addAsKennelFollower
-                                                            .value,
-                                                        onChanged: (bool? value) =>
-                                                            c
-                                                                    .addAsKennelFollower
-                                                                    .value =
-                                                                value ?? false,
-                                                      ),
+                                                    const FancyDivider(
+                                                      key: Key('612233999'),
+                                                      innerColor: Colors.white,
+                                                      bottomMargin: 20.0,
                                                     ),
-                                                    const Text(
-                                                      'Follow this Kennel',
-                                                      //style: headingStyle,
+                                                    Text(
+                                                      'Previous run count:',
+                                                      style: ts_headingLarge,
                                                       textAlign:
                                                           TextAlign.center,
                                                     ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                    (uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_previousRunCount ==
-                                            0)
-                                        ? Container()
-                                        : Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            children: <Widget>[
-                                              const FancyDivider(
-                                                key: Key('612233999'),
-                                                innerColor: Colors.white,
-                                                bottomMargin: 20.0,
-                                              ),
-                                              Text(
-                                                'Previous run count:',
-                                                style: ts_headingLarge,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              Text(
-                                                'Number of runs with $kennelShortName that are not listed in Harrier Central',
-                                                style: ts_headingItalic,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              Container(
-                                                padding: const EdgeInsets.all(
-                                                  10.0,
-                                                ),
-                                                margin: const EdgeInsets.only(
-                                                  top: 20,
-                                                  bottom: 40,
-                                                ),
-                                                // width: 100,
-                                                // height: 50,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.yellow[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        5.0,
+                                                    Text(
+                                                      'Number of runs with $kennelShortName that are not listed in Harrier Central',
+                                                      style: ts_headingItalic,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                    Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            10.0,
+                                                          ),
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                            top: 20,
+                                                            bottom: 40,
+                                                          ),
+                                                      // width: 100,
+                                                      // height: 50,
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            Colors.yellow[100],
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              5.0,
+                                                            ),
                                                       ),
-                                                ),
-                                                child: Form(
-                                                  key: c.runCountFormKey,
-                                                  autovalidateMode:
-                                                      c.autoValidate.value
-                                                      ? AutovalidateMode.always
-                                                      : AutovalidateMode
-                                                            .disabled,
-                                                  child: _runCountUi(c),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                    (uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_getInviteCodeButton ==
-                                            0)
-                                        ? Container()
-                                        : Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            children: <Widget>[
-                                              const FancyDivider(
-                                                key: Key('4542543'),
-                                                innerColor: Colors.white,
-                                                bottomMargin: 20.0,
-                                                topMargin: 10.0,
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  top: 15,
-                                                  bottom: 40,
-                                                ),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
-                                                  children: <Widget>[
-                                                    StyleForConnected(
-                                                      child: ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                top: 8,
-                                                                bottom: 8,
-                                                                left: 20,
-                                                                right: 20,
-                                                              ),
-                                                        ),
-                                                        onPressed: () async {
-                                                          final SingleResultModel?
-                                                          result = await c
-                                                              .getInviteCode();
-
-                                                          if ((result?.result ??
-                                                                  '')
-                                                              .startsWith(
-                                                                QR_PREFIX_USER_RESET_CODE,
-                                                              )) {
-                                                            final QrPopup
-                                                            pp = QrPopup(
-                                                              key: const Key(
-                                                                '43930293',
-                                                              ),
-                                                              dialogTitle:
-                                                                  'The invite code for ${c.hasher.dispName} is: \r\n\r\n${result!.result!.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
-                                                              qrText: result
-                                                                  .result!,
-                                                            );
-
-                                                            await showDialog<
-                                                              void
-                                                            >(
-                                                              context: navigatorKey
-                                                                  .currentContext!,
-                                                              barrierDismissible:
-                                                                  false, // user must tap button!
-                                                              builder:
-                                                                  (
-                                                                    BuildContext
-                                                                    context,
-                                                                  ) {
-                                                                    return pp;
-                                                                  },
-                                                            );
-                                                          } else {
-                                                            await Utilities.showAlert(
-                                                              'Code Not Available',
-                                                              'The invite code for this user is not available because the user has already installed Harrier Central and has used the app recently.\r\n\r\nThis is a security feature to prevent unauthorized access to active Harrier Central accounts.',
-                                                              'OK',
-                                                            );
-                                                          }
-                                                        },
-                                                        child: Text(
-                                                          'Get invite code',
-                                                          style: ts_button,
-                                                          textAlign: TextAlign.center,
-                                                        ),
+                                                      child: Form(
+                                                        key: c.runCountFormKey,
+                                                        autovalidateMode:
+                                                            c.autoValidate.value
+                                                            ? AutovalidateMode
+                                                                  .always
+                                                            : AutovalidateMode
+                                                                  .disabled,
+                                                        child: _runCountUi(c),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                    (uiElementsToDisplay &
-                                                HasherProfilePage
-                                                    .flagUiElement_getUserRunHistory ==
-                                            0)
-                                        ? Container()
-                                        : Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            children: <Widget>[
-                                              const FancyDivider(
-                                                key: Key('4542543'),
-                                                innerColor: Colors.white,
-                                                bottomMargin: 20.0,
-                                                topMargin: 10.0,
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  top: 15,
-                                                  bottom: 40,
-                                                ),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
+                                          (uiElementsToDisplay &
+                                                      HasherProfilePage
+                                                          .flagUiElement_getInviteCodeButton ==
+                                                  0)
+                                              ? Container()
+                                              : Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .stretch,
                                                   children: <Widget>[
-                                                    StyleForConnected(
-                                                      child: ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                top: 8,
-                                                                bottom: 8,
-                                                                left: 20,
-                                                                right: 20,
-                                                              ),
-                                                        ),
-                                                        onPressed:
-                                                            userRunHistoryLoading
-                                                            ? null
-                                                            : () =>
-                                                                  _openRunHistory(
-                                                                    context,
-                                                                    c,
-                                                                  ),
-                                                        child:
-                                                            userRunHistoryLoading
-                                                            ? Row(
-                                                                children: [
-                                                                  Text(
-                                                                    'Please wait...',
-                                                                    style:
-                                                                        ts_button,
-                                                                  ),
-                                                                  const SizedBox(
-                                                                    width: 20,
-                                                                  ),
-                                                                  SizedBox(
-                                                                    height: 20,
-                                                                    width: 20,
-
-                                                                    child: HcAppCircularProgressIndicator(
-                                                                      color1: Colors
-                                                                          .white,
-                                                                      size: 20,
-                                                                      key:
-                                                                          UniqueKey(),
+                                                    const FancyDivider(
+                                                      key: Key('4542543'),
+                                                      innerColor: Colors.white,
+                                                      bottomMargin: 20.0,
+                                                      topMargin: 10.0,
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            top: 15,
+                                                            bottom: 40,
+                                                          ),
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceAround,
+                                                        children: <Widget>[
+                                                          StyleForConnected(
+                                                            child: ElevatedButton(
+                                                              style: ElevatedButton.styleFrom(
+                                                                padding:
+                                                                    const EdgeInsets.only(
+                                                                      top: 8,
+                                                                      bottom: 8,
+                                                                      left: 20,
+                                                                      right: 20,
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              )
-                                                            : Text(
-                                                                'View Run History',
+                                                              ),
+                                                              onPressed: () async {
+                                                                final SingleResultModel?
+                                                                result = await c
+                                                                    .getInviteCode();
+
+                                                                if ((result?.result ??
+                                                                        '')
+                                                                    .startsWith(
+                                                                      QR_PREFIX_USER_RESET_CODE,
+                                                                    )) {
+                                                                  final QrPopup
+                                                                  pp = QrPopup(
+                                                                    key: const Key(
+                                                                      '43930293',
+                                                                    ),
+                                                                    dialogTitle:
+                                                                        'The invite code for ${c.hasher.dispName} is: \r\n\r\n${result!.result!.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
+                                                                    qrText: result
+                                                                        .result!,
+                                                                  );
+
+                                                                  await showDialog<
+                                                                    void
+                                                                  >(
+                                                                    context:
+                                                                        navigatorKey
+                                                                            .currentContext!,
+                                                                    barrierDismissible:
+                                                                        false, // user must tap button!
+                                                                    builder:
+                                                                        (
+                                                                          BuildContext
+                                                                          context,
+                                                                        ) {
+                                                                          return pp;
+                                                                        },
+                                                                  );
+                                                                } else {
+                                                                  await Utilities.showAlert(
+                                                                    'Code Not Available',
+                                                                    'The invite code for this user is not available because the user has already installed Harrier Central and has used the app recently.\r\n\r\nThis is a security feature to prevent unauthorized access to active Harrier Central accounts.',
+                                                                    'OK',
+                                                                  );
+                                                                }
+                                                              },
+                                                              child: Text(
+                                                                'Get invite code',
                                                                 style:
                                                                     ts_button,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
                                                               ),
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                    if (uiElementsToDisplay &
-                                            HasherProfilePage
-                                                .flagUiElement_logOutButton !=
-                                        0) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('655522013'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Log out of Harrier Central',
-                                              style: ts_heading,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            // A Wrap: side by side where they
-                                            // fit, stacked (centred) where they
-                                            // do not — a Row overflowed at 1.5x.
-                                            child: Wrap(
-                                              alignment:
-                                                  WrapAlignment.spaceAround,
-                                              runSpacing: 12,
-                                              spacing: 12,
-                                              children: <Widget>[
-                                                StyleForConnected(
-                                                  child: ElevatedButton(
-                                                    style: ElevatedButton.styleFrom(
+                                          (uiElementsToDisplay &
+                                                      HasherProfilePage
+                                                          .flagUiElement_getUserRunHistory ==
+                                                  0)
+                                              ? Container()
+                                              : Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .stretch,
+                                                  children: <Widget>[
+                                                    const FancyDivider(
+                                                      key: Key('4542543'),
+                                                      innerColor: Colors.white,
+                                                      bottomMargin: 20.0,
+                                                      topMargin: 10.0,
+                                                    ),
+                                                    Padding(
                                                       padding:
                                                           const EdgeInsets.only(
-                                                            top: 8,
-                                                            bottom: 8,
-                                                            left: 20,
-                                                            right: 20,
+                                                            top: 15,
+                                                            bottom: 40,
                                                           ),
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceAround,
+                                                        children: <Widget>[
+                                                          StyleForConnected(
+                                                            child: ElevatedButton(
+                                                              style: ElevatedButton.styleFrom(
+                                                                padding:
+                                                                    const EdgeInsets.only(
+                                                                      top: 8,
+                                                                      bottom: 8,
+                                                                      left: 20,
+                                                                      right: 20,
+                                                                    ),
+                                                              ),
+                                                              onPressed:
+                                                                  userRunHistoryLoading
+                                                                  ? null
+                                                                  : () => _openRunHistory(
+                                                                      context,
+                                                                      c,
+                                                                    ),
+                                                              child:
+                                                                  userRunHistoryLoading
+                                                                  ? Row(
+                                                                      children: [
+                                                                        Text(
+                                                                          'Please wait...',
+                                                                          style:
+                                                                              ts_button,
+                                                                        ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              20,
+                                                                        ),
+                                                                        SizedBox(
+                                                                          height:
+                                                                              20,
+                                                                          width:
+                                                                              20,
+
+                                                                          child: HcAppCircularProgressIndicator(
+                                                                            color1:
+                                                                                Colors.white,
+                                                                            size:
+                                                                                20,
+                                                                            key:
+                                                                                UniqueKey(),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    )
+                                                                  : Text(
+                                                                      'View Run History',
+                                                                      style:
+                                                                          ts_button,
+                                                                    ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
-                                                    onPressed: () async {
-                                                      await IveCoreUtilities.showAlert(
-                                                        context,
-                                                        'Log out?',
-                                                        'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
-                                                        'Log out',
-                                                        showCancelButton: true,
-                                                        cancelButtonText:
-                                                            'Stay logged in',
-                                                      ).then((
-                                                        bool? result,
-                                                      ) async {
-                                                        if (result ?? false) {
-                                                          await AppBootService.resetAndReboot(
-                                                            keepResetCode:
-                                                                false,
-                                                          );
-                                                        }
-                                                      });
-                                                    },
-                                                    child: Text(
-                                                      'Log out of Harrier Central',
-                                                      style: ts_button,
-                                                      textAlign: TextAlign.center,
-                                                    ),
+                                                  ],
+                                                ),
+                                          if (uiElementsToDisplay &
+                                                  HasherProfilePage
+                                                      .flagUiElement_logOutButton !=
+                                              0) ...<Widget>[
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
+                                              children: <Widget>[
+                                                const FancyDivider(
+                                                  key: Key('655522013'),
+                                                  innerColor: Colors.white,
+                                                  topMargin: 30.0,
+                                                  bottomMargin: 20.0,
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Text(
+                                                    'Log out of Harrier Central',
+                                                    style: ts_heading,
+                                                    textAlign: TextAlign.center,
                                                   ),
                                                 ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                    // Passkeys: how you get in, so it sits
-                                    // with Third Party Login rather than on
-                                    // Settings, which is now preferences only
-                                    // (James, 2026-09-20). Self-contained —
-                                    // it fetches, draws and revokes on its
-                                    // own and needs nothing from this page.
-                                    if (pageType ==
-                                        EnumMyProfilePageType.myProfile)
-                                      PasskeysSection(),
-                                    if (uiElementsToDisplay &
-                                            HasherProfilePage
-                                                .flagUiElement_refresh3rdPartyLogin !=
-                                        0) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('655522013'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Third Party Login',
-                                              style: ts_headingLarge,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'For Kennels that are using integration with backends such as Facebook, it is required that we have permission to access the group\'s data. This is done by logging into that third party service using your phone.\r\n\r\nIf you are the administrator of a group that is using third party integration, please ensure your account is up to date by pressing the "Login with 3rd Party" button below.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                StyleForConnected(
-                                                  child: ElevatedButton(
-                                                    style: ElevatedButton.styleFrom(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                            top: 8,
-                                                            bottom: 8,
-                                                            left: 20,
-                                                            right: 20,
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Text(
+                                                    'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
+                                                    style: ts_body,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 15,
+                                                        bottom: 15,
+                                                      ),
+                                                  // A Wrap: side by side where they
+                                                  // fit, stacked (centred) where they
+                                                  // do not — a Row overflowed at 1.5x.
+                                                  child: Wrap(
+                                                    alignment: WrapAlignment
+                                                        .spaceAround,
+                                                    runSpacing: 12,
+                                                    spacing: 12,
+                                                    children: <Widget>[
+                                                      StyleForConnected(
+                                                        child: ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  top: 8,
+                                                                  bottom: 8,
+                                                                  left: 20,
+                                                                  right: 20,
+                                                                ),
                                                           ),
-                                                    ),
-                                                    onPressed: () async {
-                                                      await Navigator.push<
-                                                        dynamic
-                                                      >(
-                                                        context,
-                                                        MaterialPageRoute<
-                                                          dynamic
-                                                        >(
-                                                          builder:
-                                                              (
-                                                                BuildContext
-                                                                context,
-                                                              ) =>
-                                                                  const ThirdPartyLogin(
-                                                                    false,
-                                                                  ),
+                                                          onPressed: () async {
+                                                            await IveCoreUtilities.showAlert(
+                                                              context,
+                                                              'Log out?',
+                                                              'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                                              'Log out',
+                                                              showCancelButton:
+                                                                  true,
+                                                              cancelButtonText:
+                                                                  'Stay logged in',
+                                                            ).then((
+                                                              bool? result,
+                                                            ) async {
+                                                              if (result ??
+                                                                  false) {
+                                                                await AppBootService.resetAndReboot(
+                                                                  keepResetCode:
+                                                                      false,
+                                                                );
+                                                              }
+                                                            });
+                                                          },
+                                                          child: Text(
+                                                            'Log out of Harrier Central',
+                                                            style: ts_button,
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                          ),
                                                         ),
-                                                      );
-                                                    },
-                                                    child: Text(
-                                                      'Login with 3rd Party',
-                                                      style: ts_button,
-                                                      textAlign: TextAlign.center,
-                                                    ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               ],
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                    if (uiElementsToDisplay &
-                                            HasherProfilePage
-                                                .flagUiElement_gdprDeleteAccount !=
-                                        0) ...<Widget>[
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: <Widget>[
-                                          const FancyDivider(
-                                            key: Key('655522013'),
-                                            innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 20.0,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Delete Account',
-                                              style: ts_headingLarge,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'In order to protect your privacy and ensure compliance with various national and international regulations, we offer you the ability to permanently delete your account. THIS ACTION CANNOT BE UNDONE.\r\n\r\nPerhaps instead you would like to keep your app and run counts but wish to anonymize your personal information? If so, scroll upwards and change your name and email address to anything you desire, understanding that your Kennel will not be able to email you through the app if you provide a fake email address. Click on Save Changes when you are done.',
-                                              style: ts_body,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
+                                          ],
+                                          // Passkeys: how you get in, so it sits
+                                          // with Third Party Login rather than on
+                                          // Settings, which is now preferences only
+                                          // (James, 2026-09-20). Self-contained —
+                                          // it fetches, draws and revokes on its
+                                          // own and needs nothing from this page.
+                                          if (pageType ==
+                                              EnumMyProfilePageType.myProfile)
+                                            PasskeysSection(),
+                                          if (uiElementsToDisplay &
+                                                  HasherProfilePage
+                                                      .flagUiElement_refresh3rdPartyLogin !=
+                                              0) ...<Widget>[
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
                                               children: <Widget>[
-                                                StyleForConnected(
-                                                  child: ElevatedButton(
-                                                    style: ElevatedButton.styleFrom(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                            top: 8,
-                                                            bottom: 8,
-                                                            left: 20,
-                                                            right: 20,
+                                                const FancyDivider(
+                                                  key: Key('655522013'),
+                                                  innerColor: Colors.white,
+                                                  topMargin: 30.0,
+                                                  bottomMargin: 20.0,
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Text(
+                                                    'Third Party Login',
+                                                    style: ts_headingLarge,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Text(
+                                                    'For Kennels that are using integration with backends such as Facebook, it is required that we have permission to access the group\'s data. This is done by logging into that third party service using your phone.\r\n\r\nIf you are the administrator of a group that is using third party integration, please ensure your account is up to date by pressing the "Login with 3rd Party" button below.',
+                                                    style: ts_body,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 15,
+                                                        bottom: 15,
+                                                      ),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceAround,
+                                                    children: <Widget>[
+                                                      StyleForConnected(
+                                                        child: ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  top: 8,
+                                                                  bottom: 8,
+                                                                  left: 20,
+                                                                  right: 20,
+                                                                ),
                                                           ),
-                                                    ),
-                                                    onPressed: () => unawaited(
-                                                      c.deleteAccount(),
-                                                    ),
-                                                    child: Text(
-                                                      'Delete Account',
-                                                      style: ts_button,
-                                                      textAlign: TextAlign.center,
-                                                    ),
+                                                          onPressed: () async {
+                                                            await Navigator.push<
+                                                              dynamic
+                                                            >(
+                                                              context,
+                                                              MaterialPageRoute<
+                                                                dynamic
+                                                              >(
+                                                                builder:
+                                                                    (
+                                                                      BuildContext
+                                                                      context,
+                                                                    ) =>
+                                                                        const ThirdPartyLogin(
+                                                                          false,
+                                                                        ),
+                                                              ),
+                                                            );
+                                                          },
+                                                          child: Text(
+                                                            'Login with 3rd Party',
+                                                            style: ts_button,
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               ],
                                             ),
-                                          ),
+                                          ],
+                                          if (uiElementsToDisplay &
+                                                  HasherProfilePage
+                                                      .flagUiElement_gdprDeleteAccount !=
+                                              0) ...<Widget>[
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
+                                              children: <Widget>[
+                                                const FancyDivider(
+                                                  key: Key('655522013'),
+                                                  innerColor: Colors.white,
+                                                  topMargin: 30.0,
+                                                  bottomMargin: 20.0,
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Text(
+                                                    'Delete Account',
+                                                    style: ts_headingLarge,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Text(
+                                                    'In order to protect your privacy and ensure compliance with various national and international regulations, we offer you the ability to permanently delete your account. THIS ACTION CANNOT BE UNDONE.\r\n\r\nPerhaps instead you would like to keep your app and run counts but wish to anonymize your personal information? If so, scroll upwards and change your name and email address to anything you desire, understanding that your Kennel will not be able to email you through the app if you provide a fake email address. Click on Save Changes when you are done.',
+                                                    style: ts_body,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 15,
+                                                        bottom: 15,
+                                                      ),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceAround,
+                                                    children: <Widget>[
+                                                      StyleForConnected(
+                                                        child: ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  top: 8,
+                                                                  bottom: 8,
+                                                                  left: 20,
+                                                                  right: 20,
+                                                                ),
+                                                          ),
+                                                          onPressed: () =>
+                                                              unawaited(
+                                                                c.deleteAccount(),
+                                                              ),
+                                                          child: Text(
+                                                            'Delete Account',
+                                                            style: ts_button,
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ],
                                       ),
-                                    ],
+                                    ),
+                                    const SizedBox(width: 70, height: 20),
                                   ],
                                 ),
                               ),
-                              // Clears the Save bar, which grows by the
-                              // system inset below.
-                              SizedBox(
-                                width: 70,
-                                height:
-                                    70 +
-                                    MediaQuery.viewPaddingOf(context).bottom,
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
+                        // A Builder, so paddingOf reads the context inside
+                        // AppScaffold's SafeArea: the home indicator on iOS,
+                        // 0 on Android (the SafeArea already cleared the
+                        // system bar) and 0 while the keyboard is up.
+                        Builder(
+                          builder: (context) => Container(
+                            padding: EdgeInsets.only(
+                              top: 10,
+                              right: 20,
+                              bottom: 10 + MediaQuery.paddingOf(context).bottom,
+                              left: 20,
+                            ),
+                            height: 60 + MediaQuery.paddingOf(context).bottom,
+                            width: double.infinity,
+                            color: Colors.yellow[100],
+                            child: StyleForConnected(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: c.isDirty.value
+                                      ? hc_red
+                                      : Colors.grey,
+                                ),
+                                onPressed: () async {
+                                  if (Utilities.isConnected(showDialog: true) &&
+                                      c.isDirty.value) {
+                                    await _save(context, c);
+                                  }
+                                },
+                                child: Text(
+                                  pageType ==
+                                          EnumMyProfilePageType.newHasherProfile
+                                      ? 'Add Hasher'
+                                      : 'Save Changes',
+                                  style: ts_button,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-          ),
-        ),
-        Positioned(
-          bottom: 0,
-          // Edge to edge (Android 15+, and iOS's home indicator): the bar
-          // reaches the screen's bottom edge, so it takes the system inset
-          // as extra padding or the gesture handle sits across the button.
-          child: Container(
-            padding: EdgeInsets.only(
-              top: 10,
-              right: 20,
-              bottom: 10 + MediaQuery.viewPaddingOf(context).bottom,
-              left: 20,
-            ),
-            height: 60 + MediaQuery.viewPaddingOf(context).bottom,
-            width: MediaQuery.sizeOf(context).width,
-            color: Colors.yellow[100],
-            child: StyleForConnected(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: c.isDirty.value ? hc_red : Colors.grey,
-                ),
-                onPressed: () async {
-                  if (Utilities.isConnected(showDialog: true) &&
-                      c.isDirty.value) {
-                    await _save(context, c);
-                  }
-                },
-                child: Text(
-                  pageType == EnumMyProfilePageType.newHasherProfile
-                      ? 'Add Hasher'
-                      : 'Save Changes',
-                  style: ts_button,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
           ),
         ),
         OfflineModeRibbon(

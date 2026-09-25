@@ -1061,65 +1061,86 @@ class RunTabs extends StatelessWidget {
   }
 
   Widget _buildChatView(RunTabsController c) {
-    return ColoredBox(
-      color: Colors.yellow.shade100,
-      child: Column(
-        children: [
-          AnimatedSize(
-            duration: Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-            alignment: Alignment.topCenter,
-            child: !c.slideTopWidget.value
-                ? AnimatedOpacity(
-                    opacity: c.showTopWidget.value ? 1.0 : 0.0,
-                    duration: Duration(milliseconds: 400),
-                    onEnd: c.onTopWidgetFaded,
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 15, left: 20, bottom: 15),
-                      child: Column(
-                        children: [
-                          Row(
+    // Read here, in the enclosing Obx's build, not inside the Builder below:
+    // a Builder's builder runs later, where these reads would not be tracked.
+    final bool slid = c.slideTopWidget.value;
+    final bool shown = c.showTopWidget.value;
+    // The run header steps aside whenever the tab is too short to hold it
+    // AND a usable chat: with the keyboard up on a small phone it left the
+    // message box under the keyboard, so you could not see what you typed
+    // (2026-09-25). Decided from the space actually available rather than
+    // the keyboard inset, which the nested Scaffolds strip from MediaQuery.
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints box) {
+        // About 490 dp on a 360 x 640 phone with no keyboard, ~210 with one.
+        final bool cramped = box.maxHeight < 420;
+        return ColoredBox(
+          color: Colors.yellow.shade100,
+          child: Column(
+            children: [
+              AnimatedSize(
+                duration: Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child: (!slid && !cramped)
+                    ? AnimatedOpacity(
+                        opacity: shown ? 1.0 : 0.0,
+                        duration: Duration(milliseconds: 400),
+                        onEnd: c.onTopWidgetFaded,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: 15,
+                            left: 20,
+                            bottom: 15,
+                          ),
+                          child: Column(
                             children: [
-                              KennelLogo(
-                                kennelLogoUrl: futureRun.kennel.kennelLogo,
-                                kennelShortName:
-                                    futureRun.kennel.kennelShortName,
-                                logoHeight: 70,
+                              Row(
+                                children: [
+                                  KennelLogo(
+                                    kennelLogoUrl: futureRun.kennel.kennelLogo,
+                                    kennelShortName:
+                                        futureRun.kennel.kennelShortName,
+                                    logoHeight: 70,
+                                  ),
+                                  SizedBox(width: 30),
+                                  Expanded(
+                                    child: _getRunDetails(
+                                      themeAppBarBackground,
+                                    ),
+                                  ),
+                                  SizedBox(width: 20),
+                                ],
                               ),
-                              SizedBox(width: 30),
-                              Expanded(
-                                child: _getRunDetails(themeAppBarBackground),
-                              ),
-                              SizedBox(width: 20),
+                              //   innerColor: Colors.black,
+                              // ),
                             ],
                           ),
-                          //   innerColor: Colors.black,
-                          // ),
-                        ],
-                      ),
-                    ),
-                  )
-                : SizedBox(),
-            //: SizedBox.expand(child: ColoredBox(color: Colors.white)),
-          ), // Collapses cleanly
+                        ),
+                      )
+                    : SizedBox(),
+                //: SizedBox.expand(child: ColoredBox(color: Colors.white)),
+              ), // Collapses cleanly
 
-          Expanded(
-            child: Stack(
-              children: [
-                ChatPage(
-                  eventId: futureRun.event.eventId,
-                  publicEventId: futureRun.event.publicEventId,
+              Expanded(
+                child: Stack(
+                  children: [
+                    ChatPage(
+                      eventId: futureRun.event.eventId,
+                      publicEventId: futureRun.event.publicEventId,
+                    ),
+                    BetaRibbon(
+                      title: 'Trail Chat',
+                      text:
+                          'Trail Chat is a brand-new feature currently in beta. Over the next few releases, we’ll be continuing to improve and expand it — fixing any bugs and adding new functionality based on your feedback.\r\n\r\nYou may encounter occasional glitches as we refine the experience, but rest assured we’re actively working on updates in each release.\r\n\r\nOnce Trail Chat reaches full stability and feature completeness, this beta label will be removed.\r\n\r\nWe appreciate your patience and support as we make Trail Chat the best way to stay connected on the trail!',
+                    ),
+                  ],
                 ),
-                BetaRibbon(
-                  title: 'Trail Chat',
-                  text:
-                      'Trail Chat is a brand-new feature currently in beta. Over the next few releases, we’ll be continuing to improve and expand it — fixing any bugs and adding new functionality based on your feedback.\r\n\r\nYou may encounter occasional glitches as we refine the experience, but rest assured we’re actively working on updates in each release.\r\n\r\nOnce Trail Chat reaches full stability and feature completeness, this beta label will be removed.\r\n\r\nWe appreciate your patience and support as we make Trail Chat the best way to stay connected on the trail!',
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

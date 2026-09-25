@@ -66,21 +66,21 @@ class FutureRunsListPage extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text('Updating run data...', style: ts_titleLarge),
-                ],
-              ),
+                    const SizedBox(width: 10),
+                    Text('Updating run data...', style: ts_titleLarge),
+                  ],
+                ),
               ),
             ),
           ),
@@ -454,43 +454,59 @@ class FutureRunsListPage extends StatelessWidget {
                                 key: Key('runs-filter-loading'),
                               ),
                             )
+                          // Scrolls when the message is taller than the space
+                          // (1.5x text, or the keyboard up while searching,
+                          // overflowed by up to 278 px); centred as before where
+                          // it fits.
                           : noRunsAvaiable
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 25,
-                                    right: 25,
-                                    bottom: 30,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      noRunsTitle,
-                                      style: ts_headingVeryLarge,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 25.0,
-                                    right: 25.0,
-                                    bottom: 30,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      noRunsDescription,
-                                      style: ts_title,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                                //     style: text_button_style,
-                                //         clearLocalTables: true,
-                                //       );
-                                //     },
-                              ],
+                          ? LayoutBuilder(
+                              builder:
+                                  (BuildContext context, BoxConstraints box) =>
+                                      SingleChildScrollView(
+                                        child: ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            minHeight: box.maxHeight,
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: <Widget>[
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  left: 25,
+                                                  right: 25,
+                                                  bottom: 30,
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    noRunsTitle,
+                                                    style: ts_headingVeryLarge,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  left: 25.0,
+                                                  right: 25.0,
+                                                  bottom: 30,
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    noRunsDescription,
+                                                    style: ts_title,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
+                                              //     style: text_button_style,
+                                              //         clearLocalTables: true,
+                                              //       );
+                                              //     },
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                             )
                           : Obx(() {
                               // Re-read INSIDE the Obx. displayRuns merges pastRuns and
@@ -549,184 +565,185 @@ class FutureRunsListPage extends StatelessWidget {
                                           // bar: at a large text size "Learn
                                           // about RSVPs →" overflowed by 96 px.
                                           child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: <Widget>[
-                                              if ((items[index] == 2) &&
-                                                  (Utilities.isConnected())) ...<
-                                                Widget
-                                              >[const SizedBox(width: 36.0)],
-                                              if ((items[index] == 1) &&
-                                                  listController
-                                                      .showRsvpInstructions) ...<
-                                                Widget
-                                              >[const SizedBox(width: 36.0)],
-                                              Text(
-                                                items[index] == 1
-                                                    ? listController
-                                                              .showRsvpInstructions
-                                                          ? 'Learn about RSVPs →'
-                                                          : 'My upcoming runs'
-                                                    : items[index] == 2
-                                                    ? _getDistancePreferenceString(
-                                                        'Runs within ',
-                                                      )
-                                                    : items[index] == 3
-                                                    ? 'Runs from Kennels I follow'
-                                                    : 'All other upcoming runs',
-                                                textAlign: TextAlign.center,
-                                                //textScaleFactor: deviceInfo.textClamp15,
-                                                style: ts_titleLarge,
-                                              ),
-                                              if ((items[index] == 1) &&
-                                                  listController
-                                                      .showRsvpInstructions) ...<
-                                                Widget
-                                              >[
-                                                GestureDetector(
-                                                  onTap: () async {
-                                                    await Utilities.showAlert(
-                                                      'Why should I RSVP?',
-                                                      'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
-                                                      'OK',
-                                                    );
-                                                  },
-                                                  child: const Padding(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                          horizontal: 8.0,
-                                                        ),
-                                                    child: Icon(
-                                                      FontAwesome
-                                                          .graduation_cap,
-                                                      size: 28.0,
+                                            fit: BoxFit.scaleDown,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: <Widget>[
+                                                if ((items[index] == 2) &&
+                                                    (Utilities.isConnected())) ...<
+                                                  Widget
+                                                >[const SizedBox(width: 36.0)],
+                                                if ((items[index] == 1) &&
+                                                    listController
+                                                        .showRsvpInstructions) ...<
+                                                  Widget
+                                                >[const SizedBox(width: 36.0)],
+                                                Text(
+                                                  items[index] == 1
+                                                      ? listController
+                                                                .showRsvpInstructions
+                                                            ? 'Learn about RSVPs →'
+                                                            : 'My upcoming runs'
+                                                      : items[index] == 2
+                                                      ? _getDistancePreferenceString(
+                                                          'Runs within ',
+                                                        )
+                                                      : items[index] == 3
+                                                      ? 'Runs from Kennels I follow'
+                                                      : 'All other upcoming runs',
+                                                  textAlign: TextAlign.center,
+                                                  //textScaleFactor: deviceInfo.textClamp15,
+                                                  style: ts_titleLarge,
+                                                ),
+                                                if ((items[index] == 1) &&
+                                                    listController
+                                                        .showRsvpInstructions) ...<
+                                                  Widget
+                                                >[
+                                                  GestureDetector(
+                                                    onTap: () async {
+                                                      await Utilities.showAlert(
+                                                        'Why should I RSVP?',
+                                                        'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
+                                                        'OK',
+                                                      );
+                                                    },
+                                                    child: const Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            horizontal: 8.0,
+                                                          ),
+                                                      child: Icon(
+                                                        FontAwesome
+                                                            .graduation_cap,
+                                                        size: 28.0,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
-                                              if ((items[index] == 2) &&
-                                                  (Utilities.isConnected())) ...<
-                                                Widget
-                                              >[
-                                                GestureDetector(
-                                                  onTap: () async {
-                                                    bool success = false;
+                                                ],
+                                                if ((items[index] == 2) &&
+                                                    (Utilities.isConnected())) ...<
+                                                  Widget
+                                                >[
+                                                  GestureDetector(
+                                                    onTap: () async {
+                                                      bool success = false;
 
-                                                    if (!await Permission
-                                                        .location
-                                                        .isGranted) {
-                                                      final bool?
-                                                      allow = await Utilities.showAlert(
-                                                        'Location Services Required',
-                                                        'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
-                                                        'Yes',
-                                                        showCancelButton: true,
-                                                        cancelButtonText: 'No',
-                                                      );
+                                                      if (!await Permission
+                                                          .location
+                                                          .isGranted) {
+                                                        final bool?
+                                                        allow = await Utilities.showAlert(
+                                                          'Location Services Required',
+                                                          'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
+                                                          'Yes',
+                                                          showCancelButton:
+                                                              true,
+                                                          cancelButtonText:
+                                                              'No',
+                                                        );
 
-                                                      if (allow ?? false) {
-                                                        final PermissionStatus
-                                                        ps = await Permission
-                                                            .location
-                                                            .request();
-
-                                                        if (ps
-                                                            .isPermanentlyDenied) {
-                                                          final bool?
-                                                          openSettings =
-                                                              await Utilities.showAlert(
-                                                                'Phone Settings',
-                                                                'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
-                                                                'Open Settings',
-                                                                showCancelButton:
-                                                                    true,
-                                                                cancelButtonText:
-                                                                    'Cancel',
-                                                              );
-                                                          if (openSettings ??
-                                                              false) {
-                                                            await openAppSettings();
-
-                                                            success =
-                                                                await Utilities.showAlert(
-                                                                  'Success?',
-                                                                  'Were you able to change the settings to enable location services?',
-                                                                  'Yes',
-                                                                  showCancelButton:
-                                                                      true,
-                                                                  cancelButtonText:
-                                                                      'No',
-                                                                ) ??
-                                                                false;
-                                                          }
-                                                        }
-
-                                                        if ((ps.isGranted) ||
-                                                            success) {
-                                                          if (await Permission
+                                                        if (allow ?? false) {
+                                                          final PermissionStatus
+                                                          ps = await Permission
                                                               .location
-                                                              .serviceStatus
-                                                              .isEnabled) {
-                                                            appModel.hasLocationPermissions =
-                                                                true;
+                                                              .request();
 
-                                                            final locService =
-                                                                Get.isRegistered<
-                                                                  LocationService
-                                                                >()
-                                                                ? Get.find<
+                                                          if (ps
+                                                              .isPermanentlyDenied) {
+                                                            final bool?
+                                                            openSettings = await Utilities.showAlert(
+                                                              'Phone Settings',
+                                                              'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+                                                              'Open Settings',
+                                                              showCancelButton:
+                                                                  true,
+                                                              cancelButtonText:
+                                                                  'Cancel',
+                                                            );
+                                                            if (openSettings ??
+                                                                false) {
+                                                              await openAppSettings();
+
+                                                              success =
+                                                                  await Utilities.showAlert(
+                                                                    'Success?',
+                                                                    'Were you able to change the settings to enable location services?',
+                                                                    'Yes',
+                                                                    showCancelButton:
+                                                                        true,
+                                                                    cancelButtonText:
+                                                                        'No',
+                                                                  ) ??
+                                                                  false;
+                                                            }
+                                                          }
+
+                                                          if ((ps.isGranted) ||
+                                                              success) {
+                                                            if (await Permission
+                                                                .location
+                                                                .serviceStatus
+                                                                .isEnabled) {
+                                                              appModel.hasLocationPermissions =
+                                                                  true;
+
+                                                              final locService =
+                                                                  Get.isRegistered<
                                                                     LocationService
                                                                   >()
-                                                                : Get.put(
-                                                                    LocationService(),
-                                                                  );
-                                                            if (locService
-                                                                .initialized) {
-                                                              await Utilities.showAlert(
-                                                                'Location Services Enabled',
-                                                                'Location Services have been enabled.',
-                                                                'OK',
-                                                              );
-                                                              if (context
-                                                                  .mounted) {
-                                                                await _showConfigureDistancePopup(
-                                                                  context,
+                                                                  ? Get.find<
+                                                                      LocationService
+                                                                    >()
+                                                                  : Get.put(
+                                                                      LocationService(),
+                                                                    );
+                                                              if (locService
+                                                                  .initialized) {
+                                                                await Utilities.showAlert(
+                                                                  'Location Services Enabled',
+                                                                  'Location Services have been enabled.',
+                                                                  'OK',
                                                                 );
+                                                                if (context
+                                                                    .mounted) {
+                                                                  await _showConfigureDistancePopup(
+                                                                    context,
+                                                                  );
+                                                                }
                                                               }
-                                                            }
 
-                                                            //     'Location Services Enabled',
-                                                            //     'Location Services have been enabled.',
-                                                            //     'OK',
-                                                            //       context,
+                                                              //     'Location Services Enabled',
+                                                              //     'Location Services have been enabled.',
+                                                              //     'OK',
+                                                              //       context,
+                                                            }
                                                           }
                                                         }
+                                                      } else {
+                                                        if (context.mounted) {
+                                                          await _showConfigureDistancePopup(
+                                                            context,
+                                                          );
+                                                        }
                                                       }
-                                                    } else {
-                                                      if (context.mounted) {
-                                                        await _showConfigureDistancePopup(
-                                                          context,
-                                                        );
-                                                      }
-                                                    }
-                                                  },
-                                                  child: const Padding(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                          horizontal: 8.0,
-                                                        ),
-                                                    child: Icon(
-                                                      FontAwesome.gear,
-                                                      size: 28.0,
+                                                    },
+                                                    child: const Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            horizontal: 8.0,
+                                                          ),
+                                                      child: Icon(
+                                                        FontAwesome.gear,
+                                                        size: 28.0,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
+                                                ],
                                               ],
-                                            ],
-                                          ),
+                                            ),
                                           ),
                                         ),
                                         // add some text if no runs are found within the distance filter
