@@ -1,3 +1,9 @@
+## 3.1.8+1409 (2026-09-25)
+iOS only (TestFlight, Hash beta testers). Build number only; same version.
+### Improvements
+- **Award list: most runs on top.** Checked-in and greyed-out hashers sort
+  together by run count, highest first, so the big milestones lead.
+
 ## 3.1.8+1408 (2026-09-25)
 iOS only (TestFlight, Hash beta testers). Build number only; same version.
 ### Fixes
