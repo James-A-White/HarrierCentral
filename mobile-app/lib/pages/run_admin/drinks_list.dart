@@ -46,16 +46,16 @@ class DrinksList extends StatelessWidget {
               // Every Rx the page depends on is read here, in this builder:
               // the children below get plain values.
               final List<DrinksResults> shown = controller.visible;
-              final bool all = controller.showAll.value;
+              final AwardFilter filter = controller.filter.value;
               final bool anyExpected = controller.expected.isNotEmpty;
               final bool failed = controller.loadFailed.value;
               final bool predict = controller.canPredict;
               return Column(
                 children: <Widget>[
                   if (predict)
-                    _AllAtRunHeader(
-                      all: all,
-                      onSelect: (bool v) => controller.showAll.value = v,
+                    _FilterHeader(
+                      filter: filter,
+                      onSelect: (AwardFilter f) => controller.filter.value = f,
                     ),
                   Expanded(
                     child: shown.isEmpty
@@ -63,7 +63,7 @@ class DrinksList extends StatelessWidget {
                             controller: controller,
                             failed: failed,
                             predict: predict,
-                            all: all,
+                            filter: filter,
                             anyExpected: anyExpected,
                           )
                         : _AwardsList(awards: shown),
@@ -83,14 +83,14 @@ class _EmptyState extends StatelessWidget {
     required this.controller,
     required this.failed,
     required this.predict,
-    required this.all,
+    required this.filter,
     required this.anyExpected,
   });
 
   final DrinksListController controller;
   final bool failed;
   final bool predict;
-  final bool all;
+  final AwardFilter filter;
   final bool anyExpected;
 
   @override
@@ -104,9 +104,14 @@ class _EmptyState extends StatelessWidget {
       detail =
           'A connection is required to get the current run counts. This '
           'run may well have awards — they just could not be fetched.';
-    } else if (predict && !all && anyExpected) {
+    } else if (predict && filter == AwardFilter.atHash && anyExpected) {
       title = 'Nobody here has an award yet';
-      detail = 'Switch to All to see who is due one if they come.';
+      detail = 'Switch to All or Coming to see who is due one if they come.';
+    } else if (predict && filter == AwardFilter.coming && anyExpected) {
+      title = 'No awards due for anyone coming';
+      detail =
+          'Nobody checked in, RSVP\'d Yes or Maybe, or haring has a milestone '
+          'coming up. Switch to All to see everyone who is due one.';
     } else if (predict) {
       title = 'No awards due for this Trail';
       detail =
@@ -156,13 +161,13 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-/// The All | At Run switch and what grey means. Only for today's and upcoming
-/// runs ([DrinksListController.canPredict]).
-class _AllAtRunHeader extends StatelessWidget {
-  const _AllAtRunHeader({required this.all, required this.onSelect});
+/// The All | Coming | At Hash switch and what grey means. Only for today's
+/// and upcoming runs ([DrinksListController.canPredict]).
+class _FilterHeader extends StatelessWidget {
+  const _FilterHeader({required this.filter, required this.onSelect});
 
-  final bool all;
-  final void Function(bool all) onSelect;
+  final AwardFilter filter;
+  final void Function(AwardFilter f) onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -172,26 +177,36 @@ class _AllAtRunHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Center(
-            child: Material(
-              color: themeAppBarBackground,
-              borderRadius: BorderRadius.circular(20),
-              child: Padding(
-                padding: const EdgeInsets.all(3),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    _segment('All', selected: all, onTap: () => onSelect(true)),
-                    _segment(
-                      'At Run',
-                      selected: !all,
-                      onTap: () => onSelect(false),
-                    ),
-                  ],
+            // Three labels at 1.5x text are wider than a 360 dp phone; the
+            // pill shrinks to fit there and is unchanged everywhere else.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Material(
+                color: themeAppBarBackground,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      for (final (AwardFilter f, String label)
+                          in const <(AwardFilter, String)>[
+                            (AwardFilter.all, 'All'),
+                            (AwardFilter.coming, 'Coming'),
+                            (AwardFilter.atHash, 'At Hash'),
+                          ])
+                        _segment(
+                          label,
+                          selected: filter == f,
+                          onTap: () => onSelect(f),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-          if (all) ...<Widget>[
+          if (filter != AwardFilter.atHash) ...<Widget>[
             const SizedBox(height: 6),
             Text(
               'Greyed out: not checked in — the award they get if they come. '
@@ -220,7 +235,7 @@ class _AllAtRunHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(17),
         onTap: selected ? null : onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
           decoration: BoxDecoration(
             color: selected ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(17),

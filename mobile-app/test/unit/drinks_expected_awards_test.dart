@@ -192,6 +192,65 @@ void main() {
     expect(await expected(), isEmpty);
   });
 
+  test('the filters: All, Coming (RSVP Yes/Maybe or hare), At Hash', () async {
+    await hasher('yes');
+    await member('yes', runs: 4, lastRun: recent);
+    await onRun('yes', rsvp: 3);
+    await hasher('maybe');
+    await member('maybe', runs: 9, lastRun: recent);
+    await onRun('maybe', rsvp: 2);
+    await hasher('hare');
+    await member('hare', runs: 30, haring: 4, lastRun: recent);
+    await onRun('hare', isHare: 1);
+    await hasher('noRsvp');
+    await member('noRsvp', runs: 24, lastRun: recent);
+
+    final List<DrinksResults> due = await DrinksListController.expectedAwards(
+      db,
+      eventId: event,
+      kennelId: kennel,
+      nowUtc: now,
+    );
+    final List<DrinksResults> here = DrinksListController.awardsFromRows(
+      <Map<String, dynamic>>[
+        <String, dynamic>{
+          'hasherId': 'checkedIn',
+          'dispName': 'checkedIn',
+          'nameForSort': ' checkedin ',
+          'totalRunsThisKennel': 50,
+          'totalHaringThisKennel': 0,
+        },
+      ],
+    );
+    Set<String> ids(AwardFilter f, {bool predict = true}) =>
+        DrinksListController.visibleFor(
+          f,
+          here,
+          due,
+          predict,
+        ).map((DrinksResults a) => a.hasherId).toSet();
+
+    expect(ids(AwardFilter.all), <String>{
+      'checkedIn',
+      'yes',
+      'maybe',
+      'hare',
+      'noRsvp',
+    });
+    expect(ids(AwardFilter.coming), <String>{
+      'checkedIn',
+      'yes',
+      'maybe',
+      'hare',
+    });
+    expect(ids(AwardFilter.atHash), <String>{'checkedIn'});
+    expect(
+      ids(AwardFilter.all, predict: false),
+      <String>{'checkedIn'},
+      reason: 'past runs show only who was there',
+    );
+  });
+
   group('predictionApplies', () {
     test('upcoming and today (within the grace hours) yes; past no', () {
       expect(

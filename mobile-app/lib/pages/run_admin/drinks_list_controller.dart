@@ -15,6 +15,7 @@ class DrinksResults {
     this.specialHaringCount = 0,
     this.isHare = 0,
     this.atRun = true,
+    this.rsvpState = 0,
   });
 
   final String hasherId;
@@ -28,8 +29,17 @@ class DrinksResults {
   int isHare;
 
   /// Checked in at this run. False for someone who is not here (yet) but
-  /// would earn this award if they came — drawn greyed out under "All".
+  /// would earn this award if they came — drawn greyed out under "All" and
+  /// "Coming".
   final bool atRun;
+
+  /// RSVP for this run: 3 Yes, 2 Maybe, 1 No, 0 none.
+  final int rsvpState;
+
+  /// Counts as "Coming": checked in, RSVP'd Yes or Maybe, or named as a hare.
+  /// Maybe is in on purpose — on an award list a name too many costs nothing,
+  /// a missed milestone does.
+  bool get isComing => atRun || rsvpState == 3 || rsvpState == 2 || isHare == 1;
 
   static DrinksResults fromMap(Map<String, dynamic> map, {bool atRun = true}) =>
       DrinksResults(
@@ -41,7 +51,20 @@ class DrinksResults {
         totalHaringThisKennel: (map['totalHaringThisKennel'] as int?) ?? 0,
         isHare: (map['isHare'] as int?) ?? 0,
         atRun: atRun,
+        rsvpState: (map['rsvpState'] as int?) ?? 0,
       );
+}
+
+/// The award list's filter (the pill at the top).
+enum AwardFilter {
+  /// Checked in, plus everyone due an award if they came (greyed out).
+  all,
+
+  /// Checked in, plus those not yet here who RSVP'd Yes/Maybe or are hares.
+  coming,
+
+  /// Checked in only.
+  atHash,
 }
 
 /// The "Drink chug-a-lug" list: who at this run has earned a down-down for a
@@ -79,8 +102,9 @@ class DrinksListController extends GetxController {
   /// Yes or Maybe, or named as a hare. Only for runs where [canPredict].
   final RxList<DrinksResults> expected = <DrinksResults>[].obs;
 
-  /// The All | At Run switch. All shows [expected] too, greyed out.
-  final RxBool showAll = true.obs;
+  /// The All | Coming | At Hash switch. All and Coming add rows from
+  /// [expected], greyed out.
+  final Rx<AwardFilter> filter = AwardFilter.all.obs;
 
   static const int activeWithinDays = 365;
 
@@ -113,14 +137,26 @@ class DrinksListController extends GetxController {
       .toUtc()
       .isAfter(nowUtc.subtract(const Duration(hours: predictGraceHours)));
 
-  /// What the list shows now: the attendees, then (under All) the hashers who
-  /// would earn an award if they came. Reads [showAll], [awards] and
-  /// [expected], so an Obx calling it tracks all three.
-  List<DrinksResults> get visible {
-    final bool all = showAll.value;
-    final List<DrinksResults> here = awards.toList();
-    final List<DrinksResults> due = expected.toList();
-    return (all && canPredict) ? <DrinksResults>[...here, ...due] : here;
+  /// What the list shows now: the attendees, then (under All or Coming) the
+  /// hashers who would earn an award if they came. Reads [filter], [awards]
+  /// and [expected], so an Obx calling it tracks all three.
+  List<DrinksResults> get visible =>
+      visibleFor(filter.value, awards.toList(), expected.toList(), canPredict);
+
+  static List<DrinksResults> visibleFor(
+    AwardFilter f,
+    List<DrinksResults> here,
+    List<DrinksResults> due,
+    bool predict,
+  ) {
+    if (!predict || f == AwardFilter.atHash) return here;
+    if (f == AwardFilter.coming) {
+      return <DrinksResults>[
+        ...here,
+        ...due.where((DrinksResults d) => d.isComing),
+      ];
+    }
+    return <DrinksResults>[...here, ...due];
   }
 
   @override
@@ -321,7 +357,8 @@ class DrinksListController extends GetxController {
           coalesce(hkm.${hk.colHcTotalRunCount},0)
             + coalesce(hkm.${hk.colHistoricalTotalRunCount},0) + 1
             as totalRunsThisKennel,
-          hem.${he.colIsHare}
+          hem.${he.colIsHare},
+          hem.${he.colRsvpState}
         FROM ids
         INNER JOIN ${EnumDataTables.hashers.commonTableName} h ON h.${hs.colHasherId} = ids.id
         LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm
