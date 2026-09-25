@@ -1128,7 +1128,6 @@ class RunDetails extends StatelessWidget {
   }
 
   Widget _addressContextMenu(EditableTextState editableTextState) {
-
     final List<ContextMenuButtonItem> buttonItems = [];
 
     buttonItems.add(editableTextState.contextMenuButtonItems[0]);
@@ -1446,7 +1445,7 @@ class _MyNotesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<RunNotesController>(
       init: RunNotesController(eventId),
-      tag: 'notes-$eventId',
+      tag: routeScopedTag(context, 'notes-$eventId'),
       builder: (RunNotesController c) => Obx(() {
         if (!c.hasRow.value) return const SizedBox.shrink();
         return Padding(

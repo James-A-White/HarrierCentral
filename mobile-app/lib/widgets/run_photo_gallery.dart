@@ -41,7 +41,10 @@ class RunPhotoGallery extends StatelessWidget {
         eventName: eventName,
         run: run,
       ),
-      tag: RunPhotoGalleryController.tagFor(run, eventName),
+      tag: routeScopedTag(
+        context,
+        RunPhotoGalleryController.tagFor(run, eventName),
+      ),
       builder: (RunPhotoGalleryController controller) {
         final body = Container(
           decoration: Backgrounds.defaultHcBackground(),
@@ -190,7 +193,10 @@ class RunPhotoGallery extends StatelessWidget {
     );
   }
 
-  Widget _buildGrid(BuildContext context, RunPhotoGalleryController controller) {
+  Widget _buildGrid(
+    BuildContext context,
+    RunPhotoGalleryController controller,
+  ) {
     // Snapshot inside the caller's Obx so itemCount and itemBuilder agree.
     final List<RunPhotoModel> photos = controller.photos;
     return GridView.builder(

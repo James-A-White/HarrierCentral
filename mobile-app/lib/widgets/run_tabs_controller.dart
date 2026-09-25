@@ -33,11 +33,17 @@ class RunTabsController extends GetxController
     required this.futureRun,
     required this.relayActiveTab,
     required this.openToTab,
-  });
+    String? mapTag,
+  }) : mapTag = mapTag ?? futureRun.event.eventId;
 
   final RunDetailsAggregate futureRun;
   final Function relayActiveTab;
   final RunTab openToTab;
+
+  /// Tag of THIS page's embedded map controller. Route-scoped by RunTabs
+  /// (see routeScopedTag) so two pages for one run never share a
+  /// MapController; defaults to the event id where no page supplies one.
+  final String mapTag;
 
   static String tagFor(String eventId) => 'runtabs-$eventId';
 
@@ -424,23 +430,26 @@ class RunTabsController extends GetxController
   /// The run-detail map creates its controller BELOW the tabs, so this
   /// resolves it lazily at tap time rather than while the column builds.
   void recenterMapOnUser() {
-    if (!Get.isRegistered<RunTrackerMapController>(tag: _eventId)) return;
-    Get.find<RunTrackerMapController>(tag: _eventId).recenterOnUser();
+    if (!Get.isRegistered<RunTrackerMapController>(tag: mapTag)) return;
+    Get.find<RunTrackerMapController>(tag: mapTag).recenterOnUser();
   }
 
   /// The admin trim editor for THIS embedded map. Its own controller,
-  /// targeting the embedded map's controller (tag = eventId), so it and the
+  /// targeting the embedded map's controller ([mapTag]), so it and the
   /// full-screen route's editor never fight over one MapController.
   PackTrackTrimController trimController() {
-    final String trimTag = 'trim-$_eventId';
+    final String trimTag = 'trim-$mapTag';
     return Get.isRegistered<PackTrackTrimController>(tag: trimTag)
         ? Get.find<PackTrackTrimController>(tag: trimTag)
-        : Get.put(PackTrackTrimController(run: futureRun), tag: trimTag);
+        : Get.put(
+            PackTrackTrimController(run: futureRun, mapControllerTag: mapTag),
+            tag: trimTag,
+          );
   }
 
   RunTrackerMapController? get mapControllerOrNull =>
-      Get.isRegistered<RunTrackerMapController>(tag: _eventId)
-      ? Get.find<RunTrackerMapController>(tag: _eventId)
+      Get.isRegistered<RunTrackerMapController>(tag: mapTag)
+      ? Get.find<RunTrackerMapController>(tag: mapTag)
       : null;
 
   UserTrack? currentUserTrack(RunTrackerMapController controller) {

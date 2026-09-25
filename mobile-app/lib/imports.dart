@@ -376,6 +376,7 @@ export 'package:harrier_central/widgets/kennel_filter_cell.dart';
 export 'package:harrier_central/widgets/hc_chat_bubble.dart';
 export 'package:harrier_central/widgets/kennel_list_item.dart';
 export 'package:harrier_central/util/sp_reply.dart';
+export 'package:harrier_central/util/route_tag.dart';
 export 'package:harrier_central/widgets/chat_room_coin.dart';
 export 'package:harrier_central/widgets/passkeys_section.dart';
 export 'package:harrier_central/widgets/kennel_logo.dart';

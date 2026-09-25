@@ -56,18 +56,25 @@ class RunTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String tag = RunTabsController.tagFor(futureRun.event.eventId);
+    // Route-scoped: this PAGE's controllers, not the run's. Two pages for one
+    // run (a notification tap pops the open one and pushes a fresh one in the
+    // same frame) must not share them — the popped page deletes what it
+    // created when its animation ends, under the page on screen.
+    final String tag = routeScopedTag(
+      context,
+      RunTabsController.tagFor(futureRun.event.eventId),
+    );
     return GetBuilder<RunTabsController>(
       init: RunTabsController(
         futureRun: futureRun,
         relayActiveTab: relayActiveTab,
         openToTab: openToTab,
+        mapTag: routeScopedTag(context, futureRun.event.eventId),
       ),
       tag: tag,
-      // `init` is ignored when a controller with this tag already exists
-      // (the run's page is already in the stack and a notification opened it
-      // again), so the requested tab is applied to whichever controller the
-      // page ends up with. A no-op on a fresh one.
+      // `init` is ignored when this page's controller already exists (a
+      // rebuild of the same page), so the requested tab is applied to
+      // whichever controller the page has. A no-op on a fresh one.
       initState: (_) => WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.isRegistered<RunTabsController>(tag: tag)) {
           Get.find<RunTabsController>(tag: tag).showTab(openToTab);
@@ -1173,6 +1180,8 @@ class RunTabs extends StatelessWidget {
                         22.0,
                         14.0,
                         c.trueNorthLock.value,
+                        // This page's own map controller (route-scoped).
+                        controllerTag: c.mapTag,
                         // The map draws no controls of its own: they all
                         // live in the one left-hand column below, which the
                         // map positions over whichever canvas is showing.
@@ -1194,7 +1203,7 @@ class RunTabs extends StatelessWidget {
                       Positioned.fill(
                         child: Builder(
                           builder: (BuildContext context) {
-                            final String tag = futureRun.event.eventId;
+                            final String tag = c.mapTag;
                             Widget overlay(double panel) {
                               final double clearance = panel > 0
                                   ? panel + 12
@@ -1366,7 +1375,7 @@ class RunTabs extends StatelessWidget {
   /// one. Reactive: the column is built inside RunTrackerMap's GetBuilder, so
   /// the map controller exists here, and the Obx rebuilds when positions land.
   Widget _trackOnlyControls(BuildContext context, RunTabsController c) {
-    final String tag = futureRun.event.eventId;
+    final String tag = c.mapTag;
     if (!Get.isRegistered<RunTrackerMapController>(tag: tag)) {
       return const SizedBox.shrink();
     }
@@ -1405,7 +1414,7 @@ class RunTabs extends StatelessWidget {
     RunTabsController c,
   ) async {
     if (c.isExportingTrack.value) return;
-    final String tag = futureRun.event.eventId;
+    final String tag = c.mapTag;
     if (!Get.isRegistered<RunTrackerMapController>(tag: tag)) {
       _showExportMessage(context, 'No track data available yet.');
       return;
@@ -1930,7 +1939,7 @@ class _HashTrashView extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<HashTrashViewController>(
       init: HashTrashViewController(kennelId: kennelId, eventId: eventId),
-      tag: HashTrashViewController.tagFor(eventId),
+      tag: routeScopedTag(context, HashTrashViewController.tagFor(eventId)),
       builder: (HashTrashViewController c) => Obx(() {
         final HashTrashModel? model = c.model.value;
         if (!c.loaded.value ||
@@ -2053,7 +2062,7 @@ class _DownDownsHistoryView extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<DownDownsHistoryController>(
       init: DownDownsHistoryController(kennelId: kennelId, eventId: eventId),
-      tag: DownDownsHistoryController.tagFor(eventId),
+      tag: routeScopedTag(context, DownDownsHistoryController.tagFor(eventId)),
       builder: (DownDownsHistoryController c) => Obx(() {
         if (!c.loaded.value) return const SizedBox.shrink();
         final List<DownDownModel> charges = c.charges;
