@@ -1435,8 +1435,16 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
                   ),
                 ),
 
-                // Fixed button panel — safe-area padded, never overflows
-                Container(
+                // Fixed button panel — safe-area padded. Capped at 60% of
+                // the height and scrollable: with the keyboard up for the
+                // caption, a 3-line caption pushed "Save and share" off a
+                // short phone (2026-09-25). Where it fits nothing changes.
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.sizeOf(context).height * 0.6,
+                  ),
+                  child: SingleChildScrollView(
+                  child: Container(
                   color: Colors.black.withValues(alpha: 0.75),
                   padding: EdgeInsets.only(
                     left: 12,
@@ -1533,6 +1541,8 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
                         ),
                       ),
                     ],
+                  ),
+                ),
                   ),
                 ),
               ],

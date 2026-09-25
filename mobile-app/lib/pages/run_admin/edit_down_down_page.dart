@@ -86,143 +86,150 @@ class EditDownDownPage extends StatelessWidget {
                 ),
         ],
       ),
+      // A scroll view, not a Column with an Expanded list: on a short phone
+      // with the keyboard up the form was taller than the space, and the song
+      // results got zero height (2026-09-25). The results now follow the form
+      // and scroll with it; large screens look the same.
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Charge text field
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _fieldLabel('Charge'),
-                  TextField(
-                    controller: c.chargeController,
-                    maxLines: 3,
-                    autofocus: true,
-                    style: const TextStyle(color: Colors.black87),
-                    decoration: _fieldDecoration.copyWith(
-                      hintText: 'Enter the charge…',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Song field
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _fieldLabel('Recommended song (optional)'),
-                  TextField(
-                    controller: c.songController,
-                    style: const TextStyle(color: Colors.black87),
-                    decoration: _fieldDecoration.copyWith(
-                      hintText: 'Start typing to search…',
-                      prefixIcon: const Icon(Icons.music_note),
-                      suffixIcon: linkedSongId != null
-                          ? Tooltip(
-                              message: 'Unlink song',
-                              child: IconButton(
-                                icon: const Icon(Icons.link_off, size: 18),
-                                onPressed: () =>
-                                    c.unlinkSong(clearResults: true),
-                              ),
-                            )
-                          : null,
-                    ),
-                    onChanged: c.onSongChanged,
-                  ),
-                ],
-              ),
-            ),
-
-            if (linkedSongId != null)
+        height: double.infinity,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Charge text field
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _fieldLabel('Charge'),
+                    TextField(
+                      controller: c.chargeController,
+                      maxLines: 3,
+                      autofocus: true,
+                      style: const TextStyle(color: Colors.black87),
+                      decoration: _fieldDecoration.copyWith(
+                        hintText: 'Enter the charge…',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Song field
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _fieldLabel('Recommended song (optional)'),
+                    TextField(
+                      controller: c.songController,
+                      style: const TextStyle(color: Colors.black87),
+                      decoration: _fieldDecoration.copyWith(
+                        hintText: 'Start typing to search…',
+                        prefixIcon: const Icon(Icons.music_note),
+                        suffixIcon: linkedSongId != null
+                            ? Tooltip(
+                                message: 'Unlink song',
+                                child: IconButton(
+                                  icon: const Icon(Icons.link_off, size: 18),
+                                  onPressed: () =>
+                                      c.unlinkSong(clearResults: true),
+                                ),
+                              )
+                            : null,
+                      ),
+                      onChanged: c.onSongChanged,
+                    ),
+                  ],
+                ),
+              ),
+
+              if (linkedSongId != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.link, size: 14, color: Colors.yellow),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Song linked',
+                        style: TextStyle(fontSize: 12, color: Colors.yellow),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Photo row
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                 child: Row(
                   children: [
-                    const Icon(Icons.link, size: 14, color: Colors.yellow),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'Song linked',
-                      style: TextStyle(fontSize: 12, color: Colors.yellow),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Photo row
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: isCapturingPhoto
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: isCapturingPhoto
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Icon(
+                                chargePhotoUrl != null
+                                    ? Icons.check_circle_outline
+                                    : Icons.camera_alt,
+                                color: Colors.white70,
                               ),
-                            )
-                          : Icon(
-                              chargePhotoUrl != null
-                                  ? Icons.check_circle_outline
-                                  : Icons.camera_alt,
-                              color: Colors.white70,
-                            ),
-                      label: Text(
-                        chargePhotoUrl != null
-                            ? 'Photo added'
-                            : 'Add photo (optional)',
-                        style: const TextStyle(color: Colors.white70),
-                        textAlign: TextAlign.center,
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.white30),
-                      ),
-                      onPressed: isCapturingPhoto
-                          ? null
-                          : () => unawaited(c.takeChargePhoto()),
-                    ),
-                  ),
-                  if (chargePhotoUrl != null) ...[
-                    const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: Image.network(
-                        chargePhotoUrl,
-                        width: 44,
-                        height: 44,
-                        cacheWidth: 132,
-                        cacheHeight: 132,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        label: Text(
+                          chargePhotoUrl != null
+                              ? 'Photo added'
+                              : 'Add photo (optional)',
+                          style: const TextStyle(color: Colors.white70),
+                          textAlign: TextAlign.center,
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.white30),
+                        ),
+                        onPressed: isCapturingPhoto
+                            ? null
+                            : () => unawaited(c.takeChargePhoto()),
                       ),
                     ),
+                    if (chargePhotoUrl != null) ...[
+                      const SizedBox(width: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.network(
+                          chargePhotoUrl,
+                          width: 44,
+                          height: 44,
+                          cacheWidth: 132,
+                          cacheHeight: 132,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
-              ),
-            ),
-
-            if (songResults.isNotEmpty) ...[
-              const Divider(height: 1, thickness: 1, color: Colors.white24),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
-                child: const Text(
-                  'Select a song to link it',
-                  style: TextStyle(fontSize: 11, color: Colors.white54),
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
+
+              if (songResults.isNotEmpty) ...[
+                const Divider(height: 1, thickness: 1, color: Colors.white24),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
+                  child: const Text(
+                    'Select a song to link it',
+                    style: TextStyle(fontSize: 11, color: Colors.white54),
+                  ),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: songResults.length,
                   itemBuilder: (context, index) {
                     final song = songResults[index];
@@ -243,9 +250,9 @@ class EditDownDownPage extends StatelessWidget {
                     );
                   },
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

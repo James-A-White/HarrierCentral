@@ -657,7 +657,10 @@ class PaymentReportPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text('Total transactions: $f.transactionCount', style: ts_titleBlack),
+        Text(
+          'Total transactions: ${f.transactionCount}',
+          style: ts_titleBlack,
+        ),
         Text(
           'Run fees: ${money(f.runGross - f.runPending - extrasAmount)}',
           style: ts_titleBlack,
@@ -679,7 +682,7 @@ class PaymentReportPage extends StatelessWidget {
           ),
         if (f.pendingCount > 0)
           Text(
-            'Card pending: ${money(f.pendingTotal)} ($f.pendingCount to confirm)',
+            'Card pending: ${money(f.pendingTotal)} (${f.pendingCount} to confirm)',
             style: ts_titleBlack.copyWith(color: Colors.amber.shade900),
           ),
         Text(

@@ -34,17 +34,20 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
               iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
               title: Text('Use Invite Code', style: ts_appBarTitle),
             ),
-            body: SingleChildScrollView(
-              child: Container(
-                decoration: Backgrounds.defaultHcBackground(),
-                height: MediaQuery.sizeOf(context).height,
-                width: MediaQuery.sizeOf(context).width,
-                child: UseInviteCodePageContent(
-                  initialCode: widget.initialCode,
-                ),
+            // The body resizes for the keyboard and the content (which has its
+            // own SingleChildScrollView) fills what is left, so Get Started!
+            // can be scrolled to above the keyboard. It used to be a
+            // screen-height box inside a scroll view with resizing turned off:
+            // nothing could scroll, and on a short phone Get Started! sat
+            // under the keyboard (2026-09-25).
+            body: Container(
+              decoration: Backgrounds.defaultHcBackground(),
+              width: double.infinity,
+              height: double.infinity,
+              child: UseInviteCodePageContent(
+                initialCode: widget.initialCode,
               ),
             ),
-            resizeToAvoidBottomInset: false,
           ),
         ),
         OfflineModeRibbon(

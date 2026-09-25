@@ -450,157 +450,167 @@ class MembershipChargeSheetBody extends StatelessWidget {
             MediaQuery.of(context).viewInsets.bottom +
             MediaQuery.of(context).padding.bottom,
       ),
-      child: Obx(() {
-        if (c.isLoading.value) {
-          return const SizedBox(
-            height: 180,
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        final String? error = c.loadError.value;
-        if (error != null) {
-          return SizedBox(
-            height: 160,
-            child: Center(
-              child: Text(error, textAlign: TextAlign.center, style: ts_body),
-            ),
-          );
-        }
-        // Lifetime members get a statement, not a form — there is nothing
-        // to sell them, so no fee field, no payment method, no charge button.
-        if (c.isLifetimeMember) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text('Lifetime membership', style: ts_headingLarge),
-              const SizedBox(height: 2),
-              Text(c.displayName, style: ts_body),
-              const SizedBox(height: 6),
-              Text(
-                'Lifetime member — there is nothing to charge.',
-                style: ts_body.copyWith(
-                  color: Colors.greenAccent.shade100,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-          );
-        }
-        if (c.fixedYearUnset) {
-          return SizedBox(
-            height: 180,
-            child: Center(
-              child: Text(
-                'This kennel\'s membership year is not set up.\n'
-                'Set the membership year end in kennel settings first.',
-                textAlign: TextAlign.center,
-                style: ts_body,
-              ),
-            ),
-          );
-        }
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text('Annual membership', style: ts_headingLarge),
-            const SizedBox(height: 2),
-            Text(c.displayName, style: ts_body),
-            const SizedBox(height: 6),
-            Text(
-              c.currentStatusLabel,
-              style: ts_body.copyWith(
-                // Lightened for the dark jungle background.
-                color: c.isCurrentMember
-                    ? Colors.greenAccent.shade100
-                    : Colors.red.shade200,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: c.feeController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              style: const TextStyle(color: Colors.black),
-              decoration: InputDecoration(
-                labelText: 'Membership fee',
-                labelStyle: const TextStyle(color: Colors.black54),
-                prefixText: c.currencySymbol.value ?? '',
-                prefixStyle: const TextStyle(color: Colors.black),
-                border: const OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors.white,
-                isDense: true,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              children: <Widget>[
-                _methodChip('Cash', paymentCash.value),
-                _methodChip('Bank transfer', paymentBankTransfer.value),
-                _methodChip('Hash Credit', paymentHashCredit.value),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              c.renewalPreview,
-              style: ts_body.copyWith(fontStyle: FontStyle.italic),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: c.isCharging.value
-                    ? null
-                    : () => unawaited(c.charge(context)),
-                child: c.isCharging.value
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(
-                        _showCombinedButton(c)
-                            ? 'Charge membership only'
-                            : 'Charge membership',
+      child: // Scrolls when the form plus the keyboard is taller than the screen
+          // (a short phone: the Charge buttons were cut off, 2026-09-25).
+          SingleChildScrollView(
+            child: Obx(() {
+              if (c.isLoading.value) {
+                return const SizedBox(
+                  height: 180,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final String? error = c.loadError.value;
+              if (error != null) {
+                return SizedBox(
+                  height: 160,
+                  child: Center(
+                    child: Text(
+                      error,
+                      textAlign: TextAlign.center,
+                      style: ts_body,
+                    ),
+                  ),
+                );
+              }
+              // Lifetime members get a statement, not a form — there is nothing
+              // to sell them, so no fee field, no payment method, no charge button.
+              if (c.isLifetimeMember) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text('Lifetime membership', style: ts_headingLarge),
+                    const SizedBox(height: 2),
+                    Text(c.displayName, style: ts_body),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Lifetime member — there is nothing to charge.',
+                      style: ts_body.copyWith(
+                        color: Colors.greenAccent.shade100,
+                        fontWeight: FontWeight.w600,
                       ),
-              ),
-            ),
-            // Check-in flow only: the combined atomic action — membership +
-            // run fee (member pricing) + check-in in one SP call. Hidden when
-            // the run is already paid (nothing to combine) or the run price
-            // could not be loaded.
-            if (_showCombinedButton(c)) ...[
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: hc_red,
-                    foregroundColor: Colors.white,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                );
+              }
+              if (c.fixedYearUnset) {
+                return SizedBox(
+                  height: 180,
+                  child: Center(
+                    child: Text(
+                      'This kennel\'s membership year is not set up.\n'
+                      'Set the membership year end in kennel settings first.',
+                      textAlign: TextAlign.center,
+                      style: ts_body,
+                    ),
                   ),
-                  onPressed: c.isCharging.value
-                      ? null
-                      : () => unawaited(c.charge(context, alsoPayRun: true)),
-                  child: Text(
-                    (c.memberRunPrice.value ?? 0) <= 0
-                        ? 'Membership + check in (run free)'
-                        : 'Membership + run fee '
-                              '(${c.formatMoney(c.memberRunPrice.value!)})',
-                              textAlign: TextAlign.center,
+                );
+              }
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text('Annual membership', style: ts_headingLarge),
+                  const SizedBox(height: 2),
+                  Text(c.displayName, style: ts_body),
+                  const SizedBox(height: 6),
+                  Text(
+                    c.currentStatusLabel,
+                    style: ts_body.copyWith(
+                      // Lightened for the dark jungle background.
+                      color: c.isCurrentMember
+                          ? Colors.greenAccent.shade100
+                          : Colors.red.shade200,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ],
-        );
-      }),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: c.feeController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    style: const TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      labelText: 'Membership fee',
+                      labelStyle: const TextStyle(color: Colors.black54),
+                      prefixText: c.currencySymbol.value ?? '',
+                      prefixStyle: const TextStyle(color: Colors.black),
+                      border: const OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.white,
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    children: <Widget>[
+                      _methodChip('Cash', paymentCash.value),
+                      _methodChip('Bank transfer', paymentBankTransfer.value),
+                      _methodChip('Hash Credit', paymentHashCredit.value),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    c.renewalPreview,
+                    style: ts_body.copyWith(fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: c.isCharging.value
+                          ? null
+                          : () => unawaited(c.charge(context)),
+                      child: c.isCharging.value
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(
+                              _showCombinedButton(c)
+                                  ? 'Charge membership only'
+                                  : 'Charge membership',
+                            ),
+                    ),
+                  ),
+                  // Check-in flow only: the combined atomic action — membership +
+                  // run fee (member pricing) + check-in in one SP call. Hidden when
+                  // the run is already paid (nothing to combine) or the run price
+                  // could not be loaded.
+                  if (_showCombinedButton(c)) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: hc_red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: c.isCharging.value
+                            ? null
+                            : () => unawaited(
+                                c.charge(context, alsoPayRun: true),
+                              ),
+                        child: Text(
+                          (c.memberRunPrice.value ?? 0) <= 0
+                              ? 'Membership + check in (run free)'
+                              : 'Membership + run fee '
+                                    '(${c.formatMoney(c.memberRunPrice.value!)})',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            }),
+          ),
     );
   }
 

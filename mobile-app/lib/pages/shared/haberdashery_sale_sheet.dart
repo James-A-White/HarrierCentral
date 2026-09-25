@@ -200,80 +200,84 @@ class HaberdasherySaleSheetBody extends StatelessWidget {
             MediaQuery.of(context).viewInsets.bottom +
             MediaQuery.of(context).padding.bottom,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text('Sell haberdashery', style: ts_headingLarge),
-          const SizedBox(height: 2),
-          Text(c.displayName, style: ts_body),
-          const SizedBox(height: 14),
-          Obx(
-            () => TextField(
-              controller: c.amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              style: const TextStyle(color: Colors.black),
-              decoration: InputDecoration(
-                labelText: 'Amount',
-                labelStyle: const TextStyle(color: Colors.black54),
-                prefixText: c.currencySymbol.value ?? '',
-                prefixStyle: const TextStyle(color: Colors.black),
-                border: const OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors.white,
-                isDense: true,
-              ),
+      child: // Scrolls when the form plus the keyboard is taller than the screen
+          // (a short phone: Sell was cut off, 2026-09-25).
+          SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('Sell haberdashery', style: ts_headingLarge),
+                const SizedBox(height: 2),
+                Text(c.displayName, style: ts_body),
+                const SizedBox(height: 14),
+                Obx(
+                  () => TextField(
+                    controller: c.amountController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    style: const TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      labelText: 'Amount',
+                      labelStyle: const TextStyle(color: Colors.black54),
+                      prefixText: c.currencySymbol.value ?? '',
+                      prefixStyle: const TextStyle(color: Colors.black),
+                      border: const OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.white,
+                      isDense: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: c.descriptionController,
+                  textCapitalization: TextCapitalization.sentences,
+                  maxLength: 500,
+                  style: const TextStyle(color: Colors.black),
+                  decoration: const InputDecoration(
+                    labelText: 'What was sold',
+                    labelStyle: TextStyle(color: Colors.black54),
+                    hintText: 'e.g. T-shirt (L), club badge',
+                    hintStyle: TextStyle(color: Colors.black38),
+                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
+                    isDense: true,
+                    counterStyle: TextStyle(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 8,
+                  children: <Widget>[
+                    _methodChip('Cash', paymentCash.value),
+                    _methodChip('Bank transfer', paymentBankTransfer.value),
+                    _methodChip('Hash Credit', paymentHashCredit.value),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: Obx(
+                    () => ElevatedButton(
+                      onPressed: c.isSaving.value
+                          ? null
+                          : () => unawaited(c.sell(context)),
+                      child: c.isSaving.value
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Record sale'),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: c.descriptionController,
-            textCapitalization: TextCapitalization.sentences,
-            maxLength: 500,
-            style: const TextStyle(color: Colors.black),
-            decoration: const InputDecoration(
-              labelText: 'What was sold',
-              labelStyle: TextStyle(color: Colors.black54),
-              hintText: 'e.g. T-shirt (L), club badge',
-              hintStyle: TextStyle(color: Colors.black38),
-              border: OutlineInputBorder(),
-              filled: true,
-              fillColor: Colors.white,
-              isDense: true,
-              counterStyle: TextStyle(color: Colors.white),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Wrap(
-            spacing: 8,
-            children: <Widget>[
-              _methodChip('Cash', paymentCash.value),
-              _methodChip('Bank transfer', paymentBankTransfer.value),
-              _methodChip('Hash Credit', paymentHashCredit.value),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: Obx(
-              () => ElevatedButton(
-                onPressed: c.isSaving.value
-                    ? null
-                    : () => unawaited(c.sell(context)),
-                child: c.isSaving.value
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Record sale'),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

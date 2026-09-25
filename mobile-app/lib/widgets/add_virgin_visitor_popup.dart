@@ -28,6 +28,10 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
     return TextScaleFactorClamper(
       textScaleFactor: deviceInfo.textClamp25,
       child: AlertDialog(
+        // Three fields plus two tall buttons are taller than a short phone
+        // with the keyboard up; scrollable lets the dialog scroll instead of
+        // clipping Cancel / Add.
+        scrollable: true,
         title: Text('Add Visitor or Virgin', style: ts_alertDialogTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,

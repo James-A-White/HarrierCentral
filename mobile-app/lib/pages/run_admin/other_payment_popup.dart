@@ -117,6 +117,13 @@ class OtherPaymentPopup extends StatelessWidget {
       OtherPaymentPopupController(normalPrice, decimalDigits),
     );
     controller.resetUi(normalPrice);
+    // With the keyboard up (typing a special price or a top-up) the stacked
+    // Cancel / Cash / Bank / credit buttons took nearly all of a short
+    // phone's remaining height and squeezed the field being typed into to
+    // nothing (2026-09-25). They step aside while the keyboard is up and
+    // return when it closes. Only the actions are wrapped, and always, so
+    // the tree around the text field never changes and focus is kept.
+    final bool keyboardUp = MediaQuery.viewInsetsOf(context).bottom > 0;
     return AlertDialog(
       actionsOverflowButtonSpacing: 30.0,
       actionsOverflowAlignment: OverflowBarAlignment.start,
@@ -640,7 +647,10 @@ class OtherPaymentPopup extends StatelessWidget {
       actions: <Widget>[
         //   width: 60.0,
         //child:
-        Obx(
+        Visibility(
+          visible: !keyboardUp,
+          maintainState: true,
+          child: Obx(
           () => OverflowBar(
             spacing: 9.0,
             children: [
@@ -762,7 +772,11 @@ class OtherPaymentPopup extends StatelessWidget {
             ],
           ),
         ),
-        Obx(
+        ),
+        Visibility(
+          visible: !keyboardUp,
+          maintainState: true,
+          child: Obx(
           () => Column(
             children: [
               if ((controller.specialPriceEnabled.value ||
@@ -810,6 +824,7 @@ class OtherPaymentPopup extends StatelessWidget {
               ],
             ],
           ),
+        ),
         ),
         // ),
       ],

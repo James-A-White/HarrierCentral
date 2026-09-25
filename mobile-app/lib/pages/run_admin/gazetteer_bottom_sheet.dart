@@ -92,7 +92,14 @@ class GazetteerBottomSheetState extends State<GazetteerBottomSheet> {
         ),
         // Android 15/16 edge-to-edge: keep the last result rows tappable
         // above the system navigation area.
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+        // ...and above the keyboard: the sheet did not pad for it, so the
+        // last results sat behind it (2026-09-25). padding.bottom collapses
+        // to 0 while the keyboard is up, so the two never double-pad.
+        padding: EdgeInsets.only(
+          bottom:
+              MediaQuery.of(context).padding.bottom +
+              MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Column(
           children: [
             _buildHandle(),
