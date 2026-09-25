@@ -1,5 +1,7 @@
-## 3.1.8+1409 (2026-09-25)
+## 3.1.8+1410 (2026-09-25)
 iOS only (TestFlight, Hash beta testers). Build number only; same version.
+Same code as 1409, whose upload reported success but never registered at
+Apple (like 1387); re-uploaded under the next build number.
 ### Improvements
 - **Award list: most runs on top.** Checked-in and greyed-out hashers sort
   together by run count, highest first, so the big milestones lead.
