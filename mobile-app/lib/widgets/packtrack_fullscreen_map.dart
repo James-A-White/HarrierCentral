@@ -50,70 +50,78 @@ class PackTrackFullScreenMap extends StatelessWidget {
     PackTrackTrimController trimController,
     bool isAdmin,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        // Close comes FIRST, and is set apart from everything below it.
-        //
-        // It was second, under the compass, which put "leave this screen" in
-        // the middle of a run of controls that all act ON the run, and made it
-        // easy to hit the compass reaching for it (James, 2026-09-13).
-        MapOverlayButton(
-          tooltip: 'Close',
-          icon: Icons.close,
-          onTap: () => Navigator.of(context).maybePop(),
-        ),
-        const SizedBox(height: _closeGap),
-        // Same slot, same circle, same toggle as the run-detail map. North
-        // lock has an orientation to lock on the map and the radar; nothing
-        // on the list. Toggled through the controller, which RunTrackerMap
-        // no longer overrides on rebuild (applyHostNorthLock).
-        if (canvas != PackTrackCanvas.list &&
-            Get.isRegistered<RunTrackerMapController>(tag: mapTag)) ...<Widget>[
-          Obx(() {
-            final RunTrackerMapController c =
-                Get.find<RunTrackerMapController>(tag: mapTag);
-            final bool locked = c.trueNorthLock;
-            return MapOverlayButton(
-              icon: locked ? Icons.explore : Icons.navigation,
-              tooltip: locked ? 'North up' : 'Rotate with heading',
-              onTap: c.toggleTrueNorthLock,
-            );
-          }),
-          const SizedBox(height: _gap),
-        ],
-        // Interactive-map / Trail TV chooser, then the OS share sheet — so
-        // spectators can watch in a browser without the app. Same flow as
-        // Run Tools and the run-detail map.
-        MapOverlayButton(
-          tooltip: 'Share this run',
-          icon: Icons.ios_share,
-          onTap: () => unawaited(RunShareLinks(run).showShareSheet(context)),
-        ),
-        // Same gate as the run-detail map: no point offering to centre on a
-        // location we do not have. This used to appear unconditionally here
-        // and do nothing when tapped.
-        if (canvas == PackTrackCanvas.map &&
-            appModel.hasLocationPermissions &&
-            deviceInfo.deviceLat != null &&
-            deviceInfo.deviceLon != null) ...<Widget>[
-          const SizedBox(height: _gap),
+    // Scrolls only if a very short screen (landscape) cannot fit the column
+    // in the space above the playback panel, which RunTrackerMap now bounds.
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // Close comes FIRST, and is set apart from everything below it.
+          //
+          // It was second, under the compass, which put "leave this screen" in
+          // the middle of a run of controls that all act ON the run, and made it
+          // easy to hit the compass reaching for it (James, 2026-09-13).
           MapOverlayButton(
-            tooltip: 'My location',
-            icon: Icons.near_me,
-            onTap: () {
-              if (Get.isRegistered<RunTrackerMapController>(tag: mapTag)) {
-                Get.find<RunTrackerMapController>(tag: mapTag).recenterOnUser();
-              }
-            },
+            tooltip: 'Close',
+            icon: Icons.close,
+            onTap: () => Navigator.of(context).maybePop(),
           ),
+          const SizedBox(height: _closeGap),
+          // Same slot, same circle, same toggle as the run-detail map. North
+          // lock has an orientation to lock on the map and the radar; nothing
+          // on the list. Toggled through the controller, which RunTrackerMap
+          // no longer overrides on rebuild (applyHostNorthLock).
+          if (canvas != PackTrackCanvas.list &&
+              Get.isRegistered<RunTrackerMapController>(
+                tag: mapTag,
+              )) ...<Widget>[
+            Obx(() {
+              final RunTrackerMapController c =
+                  Get.find<RunTrackerMapController>(tag: mapTag);
+              final bool locked = c.trueNorthLock;
+              return MapOverlayButton(
+                icon: locked ? Icons.explore : Icons.navigation,
+                tooltip: locked ? 'North up' : 'Rotate with heading',
+                onTap: c.toggleTrueNorthLock,
+              );
+            }),
+            const SizedBox(height: _gap),
+          ],
+          // Interactive-map / Trail TV chooser, then the OS share sheet — so
+          // spectators can watch in a browser without the app. Same flow as
+          // Run Tools and the run-detail map.
+          MapOverlayButton(
+            tooltip: 'Share this run',
+            icon: Icons.ios_share,
+            onTap: () => unawaited(RunShareLinks(run).showShareSheet(context)),
+          ),
+          // Same gate as the run-detail map: no point offering to centre on a
+          // location we do not have. This used to appear unconditionally here
+          // and do nothing when tapped.
+          if (canvas == PackTrackCanvas.map &&
+              appModel.hasLocationPermissions &&
+              deviceInfo.deviceLat != null &&
+              deviceInfo.deviceLon != null) ...<Widget>[
+            const SizedBox(height: _gap),
+            MapOverlayButton(
+              tooltip: 'My location',
+              icon: Icons.near_me,
+              onTap: () {
+                if (Get.isRegistered<RunTrackerMapController>(tag: mapTag)) {
+                  Get.find<RunTrackerMapController>(
+                    tag: mapTag,
+                  ).recenterOnUser();
+                }
+              },
+            ),
+          ],
+          // GPX and trim both act ON a track, so both wait for one to exist.
+          // The old gate was `trackingHasOpened`, a clock test — a run can open,
+          // and finish, with nobody pressing start, and GPX was offered anyway.
+          // Trim had no gate at all beyond being an admin.
+          _trackOnlyControls(context, mapTag, trimController, isAdmin),
         ],
-        // GPX and trim both act ON a track, so both wait for one to exist.
-        // The old gate was `trackingHasOpened`, a clock test — a run can open,
-        // and finish, with nobody pressing start, and GPX was offered anyway.
-        // Trim had no gate at all beyond being an admin.
-        _trackOnlyControls(context, mapTag, trimController, isAdmin),
-      ],
+      ),
     );
   }
 

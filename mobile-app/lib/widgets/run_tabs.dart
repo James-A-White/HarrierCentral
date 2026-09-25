@@ -1319,94 +1319,132 @@ class RunTabs extends StatelessWidget {
     PackTrackCanvas canvas,
   ) {
     final bool isMap = canvas == PackTrackCanvas.map;
-    return Column(
+    // Read every Rx here, before the LayoutBuilder: its builder runs at
+    // layout, outside the tracking of the Obx this is built in.
+    final bool northLocked = c.trueNorthLock.value;
+    final List<Widget> buttons = <Widget>[
+      if (canvas != PackTrackCanvas.list)
+        // Same circle as every other control, here and on the full-screen
+        // route: the compass used to be a bare image in its own artwork,
+        // the one button in the column that did not match the rest.
+        MapOverlayButton(
+          icon: northLocked ? Icons.explore : Icons.navigation,
+          tooltip: northLocked ? 'North up' : 'Rotate with heading',
+          onTap: c.toggleTrueNorthLock,
+        ),
+      // Opens on the canvas you were looking at, so this enlarges the
+      // radar or the list rather than quietly switching you to the map.
+      MapOverlayButton(
+        icon: Icons.fullscreen,
+        tooltip: 'Full screen',
+        onTap: () => Get.to<void>(
+          () => PackTrackFullScreenMap(run: futureRun, initialCanvas: canvas),
+        ),
+      ),
+      MapOverlayButton(
+        icon: Icons.ios_share,
+        tooltip: 'Share this run',
+        onTap: () =>
+            unawaited(RunShareLinks(futureRun).showShareSheet(context)),
+      ),
+      // Map only — it moves the map camera. Same gate the map itself used:
+      // no point offering to centre on a location we do not have.
+      if (isMap &&
+          appModel.hasLocationPermissions &&
+          deviceInfo.deviceLat != null &&
+          deviceInfo.deviceLon != null)
+        MapOverlayButton(
+          icon: Icons.near_me,
+          tooltip: 'My location',
+          onTap: c.recenterMapOnUser,
+        ),
+      // Only when a track actually exists. It used to be gated on the run
+      // having OPENED, which is a clock test — a run can open, and finish,
+      // with nobody pressing start, and the button was then offered for a
+      // run with nothing to export. Same gate on the full-screen map.
+      ..._trackOnlyControls(context, c),
+    ];
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) =>
+          _fitControlColumn(buttons, constraints.maxHeight),
+    );
+  }
+
+  static const double _controlSize = 44.0;
+  static const double _controlGap = 10.0;
+
+  /// One column, 10 dp apart — unless the map has bounded it (to the space
+  /// above the playback panel) and it does not fit, which happens on a small
+  /// phone. Then the buttons that fit stay in the column from the top and the
+  /// rest go in a second column anchored at the BOTTOM, just above the panel:
+  /// clear of the Map/Radar/List switch, which sits at the top centre. A
+  /// larger phone, where they fit, gets the single column it always had.
+  Widget _fitControlColumn(List<Widget> buttons, double maxHeight) {
+    List<Widget> spaced(List<Widget> list) => <Widget>[
+      for (int i = 0; i < list.length; i++) ...<Widget>[
+        if (i > 0) const SizedBox(height: _controlGap),
+        list[i],
+      ],
+    ];
+    double need(int n) => n == 0 ? 0 : n * _controlSize + (n - 1) * _controlGap;
+
+    if (!maxHeight.isFinite || need(buttons.length) <= maxHeight) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: spaced(buttons),
+      );
+    }
+    int fit = 0;
+    while (fit < buttons.length && need(fit + 1) <= maxHeight) {
+      fit++;
+    }
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        if (canvas != PackTrackCanvas.list) ...<Widget>[
-          // Same circle as every other control, here and on the full-screen
-          // route: the compass used to be a bare image in its own artwork,
-          // the one button in the column that did not match the rest.
-          MapOverlayButton(
-            icon: c.trueNorthLock.value ? Icons.explore : Icons.navigation,
-            tooltip: c.trueNorthLock.value ? 'North up' : 'Rotate with heading',
-            onTap: c.toggleTrueNorthLock,
-          ),
-          const SizedBox(height: 10.0),
-        ],
-        // Opens on the canvas you were looking at, so this enlarges the
-        // radar or the list rather than quietly switching you to the map.
-        MapOverlayButton(
-          icon: Icons.fullscreen,
-          tooltip: 'Full screen',
-          onTap: () => Get.to<void>(
-            () => PackTrackFullScreenMap(run: futureRun, initialCanvas: canvas),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: spaced(buttons.sublist(0, fit)),
+        ),
+        const SizedBox(width: _controlGap),
+        SizedBox(
+          height: maxHeight,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: spaced(buttons.sublist(fit)),
           ),
         ),
-        const SizedBox(height: 10.0),
-        MapOverlayButton(
-          icon: Icons.ios_share,
-          tooltip: 'Share this run',
-          onTap: () =>
-              unawaited(RunShareLinks(futureRun).showShareSheet(context)),
-        ),
-        // Map only — it moves the map camera. Same gate the map itself used:
-        // no point offering to centre on a location we do not have.
-        if (isMap &&
-            appModel.hasLocationPermissions &&
-            deviceInfo.deviceLat != null &&
-            deviceInfo.deviceLon != null) ...<Widget>[
-          const SizedBox(height: 10.0),
-          MapOverlayButton(
-            icon: Icons.near_me,
-            tooltip: 'My location',
-            onTap: c.recenterMapOnUser,
-          ),
-        ],
-        // Only when a track actually exists. It used to be gated on the run
-        // having OPENED, which is a clock test — a run can open, and finish,
-        // with nobody pressing start, and the button was then offered for a
-        // run with nothing to export. Same gate on the full-screen map.
-        _trackOnlyControls(context, c),
       ],
     );
   }
 
   /// Controls that act ON a recorded track, so they appear only once there is
-  /// one. Reactive: the column is built inside RunTrackerMap's GetBuilder, so
-  /// the map controller exists here, and the Obx rebuilds when positions land.
-  Widget _trackOnlyControls(BuildContext context, RunTabsController c) {
+  /// one. Built inside RunTrackerMap's Obx, so reading hasRecordedTrack here
+  /// rebuilds the column when positions land.
+  List<Widget> _trackOnlyControls(BuildContext context, RunTabsController c) {
     final String tag = c.mapTag;
     if (!Get.isRegistered<RunTrackerMapController>(tag: tag)) {
-      return const SizedBox.shrink();
+      return const <Widget>[];
     }
     final RunTrackerMapController controller =
         Get.find<RunTrackerMapController>(tag: tag);
+    if (!controller.hasRecordedTrack) return const <Widget>[];
 
     final PackTrackTrimController trimController = c.trimController();
-
-    return Obx(() {
-      if (!controller.hasRecordedTrack) return const SizedBox.shrink();
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          const SizedBox(height: 10.0),
-          MapOverlayButton(
-            label: 'GPX',
-            tooltip: 'Export GPX',
-            onTap: () => unawaited(_exportOwnTrack(context, c)),
-          ),
-          // Same control, same slot, same gate as the full-screen route.
-          if (trimController.isAdmin) ...<Widget>[
-            const SizedBox(height: 10.0),
-            MapOverlayButton(
-              tooltip: 'Trim run',
-              icon: Icons.content_cut,
-              onTap: trimController.toggleEditing,
-            ),
-          ],
-        ],
-      );
-    });
+    return <Widget>[
+      MapOverlayButton(
+        label: 'GPX',
+        tooltip: 'Export GPX',
+        onTap: () => unawaited(_exportOwnTrack(context, c)),
+      ),
+      // Same control, same slot, same gate as the full-screen route.
+      if (trimController.isAdmin)
+        MapOverlayButton(
+          tooltip: 'Trim run',
+          icon: Icons.content_cut,
+          onTap: trimController.toggleEditing,
+        ),
+    ];
   }
 
   Future<void> _exportOwnTrack(

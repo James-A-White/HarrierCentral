@@ -625,9 +625,26 @@ class RunTrackerMap extends StatelessWidget {
     });
   }
 
+  /// The embedded map passes a NEGATIVE bottom (-25) that expects the
+  /// SafeArea below to add the home-indicator inset back: on iOS 34 - 25
+  /// leaves the panel ~9 dp above the map's edge. On Android AppScaffold's
+  /// AndroidSafeArea has already consumed that inset, the SafeArea adds 0,
+  /// and the panel hung 25 dp below the rounded edge, hiding the time
+  /// slider and half the transport row on every Android phone (seen at
+  /// 360 dp, 2026-09-25). Where no inset remains, sit where iOS sits.
+  double _panelBottomOffset(BuildContext context) =>
+      (overlayBottomPadding < 0 && MediaQuery.paddingOf(context).bottom == 0)
+      ? overlayBottomPadding + 34.0
+      : overlayBottomPadding;
+
   /// The host's control column, in the same slot on every canvas so switching
   /// view never moves a button. Nothing at all when the host supplies none —
   /// the live-run map still draws its controls in its own Stack.
+  ///
+  /// Bounded to the space ABOVE the playback
+  /// panel so the host can lay it out to fit (a vertical Wrap takes a second
+  /// column when the map is short, rather than running under the panel).
+  /// Reads playbackPanelHeight, so it follows the panel as it is measured.
   Widget _hostControls(
     BuildContext context,
     double topInset,
@@ -636,9 +653,18 @@ class RunTrackerMap extends StatelessWidget {
     final Widget Function(BuildContext, PackTrackCanvas)? builder =
         overlayControls;
     if (builder == null) return const SizedBox.shrink();
+    final RunTrackerMapController controller =
+        Get.find<RunTrackerMapController>(tag: _controllerTag);
+    final double panel = controller.timelineAvailable
+        ? controller.playbackPanelHeight.value
+        : 0.0;
+    final double bottom = controller.timelineAvailable
+        ? math.max(12.0, _panelBottomOffset(context) + panel + 8.0)
+        : 12.0;
     return Positioned(
       top: 12 + topInset,
       left: 12,
+      bottom: bottom,
       child: builder(context, canvas),
     );
   }
@@ -683,11 +709,32 @@ class RunTrackerMap extends StatelessWidget {
   /// Hidden entirely when the run has no track points (future / untracked
   /// runs) — the rose and list would have nothing to draw, and a lone "Map"
   /// pill is just furniture.
+  ///
+  /// Centred over the whole map, it met the 44 dp control column on a small
+  /// phone (12 dp margin + 44 + 6 gap each side = 62). Capped to the space
+  /// between the columns and scaled down only when the cap bites, so a wider
+  /// map, where it already fits, is unchanged.
   Widget _viewSwitch(RunTrackerMapController controller) {
     if (!controller.hasAnyTrackData) return const SizedBox.shrink();
-    return MapViewSwitch(
-      selected: controller.canvasView.value,
-      onSelect: (canvas) => controller.canvasView.value = canvas,
+    // Read the Rx HERE, not in the LayoutBuilder: its builder runs at layout,
+    // outside any enclosing Obx's tracking.
+    final PackTrackCanvas selected = controller.canvasView.value;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double maxWidth = constraints.maxWidth.isFinite
+            ? math.max(0.0, constraints.maxWidth - 2 * 62.0)
+            : double.infinity;
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: MapViewSwitch(
+              selected: selected,
+              onSelect: (canvas) => controller.canvasView.value = canvas,
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -699,10 +746,12 @@ class RunTrackerMap extends StatelessWidget {
 
     final bool hasRunners = controller.hasAnyTrackData;
 
+    final double bottomOffset = _panelBottomOffset(context);
+
     return Positioned(
       left: 0,
       right: 0,
-      bottom: overlayBottomPadding,
+      bottom: bottomOffset,
       // Publish the panel's real height so overlays that must clear it (the
       // admin trim bar) can position themselves against a measurement rather
       // than a hardcoded guess. Its height moves with its content.

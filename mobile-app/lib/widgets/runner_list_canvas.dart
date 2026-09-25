@@ -74,36 +74,42 @@ class RunnerListCanvas extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _sortPill(
-              label: 'Longest trail',
-              icon: Icons.route,
-              selected: !sortByProximity,
-              onTap: () => onSortChanged(false),
-            ),
-            const SizedBox(width: 8),
-            // NOT "Closest to me": rows are measured from the focused
-            // runner, so with Tuna Melt selected this sorts by closest to
-            // Tuna. The origin is named once in the caption below rather
-            // than in the pill, where a long hash name would not fit.
-            _sortPill(
-              label: 'Closest Hashers',
-              icon: Icons.near_me,
-              selected: sortByProximity,
-              onTap: () {
-                if (!originAvailable) {
-                  Get.snackbar(
-                    'Closest Hashers',
-                    'No position to measure from yet — sorting stays by trail distance until one lands.',
-                    snackPosition: SnackPosition.BOTTOM,
-                  );
-                }
-                onSortChanged(true);
-              },
-            ),
-          ],
+        // Scaled down only if the pair is wider than the list (a 360 dp phone,
+        // where they overflowed by 25 px beside the control column).
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              _sortPill(
+                label: 'Longest trail',
+                icon: Icons.route,
+                selected: !sortByProximity,
+                onTap: () => onSortChanged(false),
+              ),
+              const SizedBox(width: 8),
+              // NOT "Closest to me": rows are measured from the focused
+              // runner, so with Tuna Melt selected this sorts by closest to
+              // Tuna. The origin is named once in the caption below rather
+              // than in the pill, where a long hash name would not fit.
+              _sortPill(
+                label: 'Closest Hashers',
+                icon: Icons.near_me,
+                selected: sortByProximity,
+                onTap: () {
+                  if (!originAvailable) {
+                    Get.snackbar(
+                      'Closest Hashers',
+                      'No position to measure from yet — sorting stays by trail distance until one lands.',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  }
+                  onSortChanged(true);
+                },
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 8),
         // Said once here rather than on all N rows. Repeating "from Pussy
