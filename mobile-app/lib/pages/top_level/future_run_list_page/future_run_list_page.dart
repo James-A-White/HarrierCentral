@@ -810,11 +810,11 @@ class FutureRunsListPage extends StatelessWidget {
         leading: s.isRoomThread
             ? ChatRoomCoin(iconUrl: s.roomIcon, size: 44)
             : KennelLogo(
-          kennelId: s.kennelId,
-          kennelLogoUrl: s.kennelLogo,
-          kennelShortName: s.kennelShortName ?? '',
-          logoHeight: 44,
-        ),
+                kennelId: s.kennelId,
+                kennelLogoUrl: s.kennelLogo,
+                kennelShortName: s.kennelShortName ?? '',
+                logoHeight: 44,
+              ),
         title: Text(title, style: ts_tileText),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1319,12 +1319,9 @@ class FutureRunsListPage extends StatelessWidget {
         (getIntPref(IntPrefsEnum.hasherPreferences) ?? 3) &
         hasherPref_distanceForAutoDisplay;
 
-    final String units =
-        (getIntPref(IntPrefsEnum.hasherPreferences) ?? 3) &
-                hasherPref_distanceMeasuredIn ==
-            2
-        ? ' km'
-        : ' miles';
+    // Same rule as the radius itself (RunQueryExtensionsModel): the hasher's
+    // choice, or on Auto the phone's region.
+    final String units = Utilities.prefersImperial() ? ' miles' : ' km';
 
     if (!appModel.hasLocationPermissions) {
       distancePref = hasherPref_0;

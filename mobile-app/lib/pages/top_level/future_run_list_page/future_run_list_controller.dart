@@ -9,6 +9,42 @@ class PastRunsDivider {
 }
 
 class FutureRunListPageController extends GetxController {
+  /// Puts a section header (an int, 1-4, as the page expects) in front of
+  /// the first run of each classification, the runs already sorted by it:
+  /// 1 my upcoming runs, 2 runs nearby, 3 kennels I follow, 4 all others.
+  /// Every header is present even over an empty section, and those after
+  /// the last run go at the END. An empty list gets header 1 alone.
+  ///
+  /// The old loop walked back from the end assuming the last run was class
+  /// 4. When a search left a followed kennel's run last (class 3), headers 3
+  /// AND 4 were both put in front of it, so it showed under "All other
+  /// upcoming runs" (London Eye test run, 2026-09-25). Pure, for tests.
+  static void insertClassificationHeaders(
+    List<dynamic> runs,
+    int Function(dynamic run) classOf,
+  ) {
+    final int n = runs.length;
+    if (n == 0) {
+      runs.insert(0, 1); // unchanged: an empty list gets header 1 alone
+      return;
+    }
+    final int lastClass = classOf(runs[n - 1]).clamp(1, 4);
+    for (int c = lastClass + 1; c <= 4; c++) {
+      runs.add(c);
+    }
+    int lastInserted = lastClass;
+    for (int i = n - 1; i >= 0; i--) {
+      final int current = i > 0 ? classOf(runs[i - 1]).clamp(1, 4) : 1;
+      if (current != lastInserted) {
+        for (int j = lastInserted - current - 1; j >= 0; j--) {
+          runs.insert(i, current + j + 1);
+        }
+        lastInserted = current;
+      }
+    }
+    runs.insert(0, 1);
+  }
+
   FutureRunListPageController();
 
   StreamSubscription<DataChangeEvent>? _dataChangeSub;
@@ -790,39 +826,22 @@ class FutureRunListPageController extends GetxController {
         '[BOOT] filterRuns: sort done: ${DateTime.now().millisecondsSinceEpoch}ms',
       );
 
-      int lastInsertedClassification = 4;
-
       final int listLength = filteredRuns.length;
       resultCount.value = filteredRuns.length;
       debugPrint(
         '[BOOT] filterRuns: header-insertion loop start: listLength=$listLength: ${DateTime.now().millisecondsSinceEpoch}ms',
       );
 
-      for (int i = listLength - 1; i >= 0; i--) {
-        if (filteredRuns[i].extensions.runClassification == 1) {
-          showRsvpInstructions = false;
-        }
-
-        int currentClassification = 1;
-        if (i > 0) {
-          currentClassification =
-              filteredRuns[i - 1].extensions.runClassification ?? 1;
-        }
-
-        if (currentClassification != lastInsertedClassification) {
-          for (
-            int j = lastInsertedClassification - currentClassification - 1;
-            j >= 0;
-            j--
-          ) {
-            filteredRuns.insert(i, currentClassification + j + 1);
-          }
-
-          lastInsertedClassification = currentClassification;
-        }
+      if (filteredRuns.any(
+        (dynamic r) =>
+            r is RunDetailsAggregate && r.extensions.runClassification == 1,
+      )) {
+        showRsvpInstructions = false;
       }
-
-      filteredRuns.insert(0, 1);
+      insertClassificationHeaders(
+        filteredRuns,
+        (dynamic r) => (r as RunDetailsAggregate).extensions.runClassification,
+      );
       debugPrint(
         '[BOOT] filterRuns: header-insertion done: ${DateTime.now().millisecondsSinceEpoch}ms — finalListLength=${filteredRuns.length}',
       );

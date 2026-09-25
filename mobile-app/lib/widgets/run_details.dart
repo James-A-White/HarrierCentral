@@ -616,7 +616,7 @@ class RunDetails extends StatelessWidget {
                             child: Text(
                               appModel.hasLocationPermissions
                                   ? (distToEvent ?? -1) >= 0
-                                        ? '${Utilities.getDistance(distToEvent!, isMetric: ((distancePreference) & 0x01) == 0)} from here'
+                                        ? '${Utilities.getDistance(distToEvent!, isMetric: !Utilities.prefersImperial(kennelDistanceUnitsPref: distancePreference))} from here'
                                         : '<unknown>'
                                   : '',
                               style: ts_listValueStyle,

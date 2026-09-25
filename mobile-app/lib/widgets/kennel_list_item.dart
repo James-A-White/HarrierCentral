@@ -23,20 +23,6 @@ class KennelListItem extends StatefulWidget {
 }
 
 class KennelListItemState extends State<KennelListItem> {
-  int _distancePreference = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _distancePreference =
-        (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
-        hasherPref_distanceMeasuredIn;
-    if (_distancePreference == 0) {
-      _distancePreference =
-          (widget.kennelItem.extensions.distanceUnitsPref ?? 0) + 2;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     String path = 'images/icons/bell_silver_strike_out_50px.png';
@@ -247,7 +233,7 @@ class KennelListItemState extends State<KennelListItem> {
                                 (widget.kennelItem.extensions.distToKennel !=
                                     null)) ...<Widget>[
                               Text(
-                                '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, isMetric: _distancePreference == 2)} from here',
+                                '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, isMetric: !Utilities.prefersImperial(kennelDistanceUnitsPref: widget.kennelItem.extensions.distanceUnitsPref))} from here',
                                 style: ts_regularMediumBlack,
                               ),
                             ],

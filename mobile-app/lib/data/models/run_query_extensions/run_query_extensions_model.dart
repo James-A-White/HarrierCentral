@@ -65,17 +65,14 @@ abstract class RunQueryExtensionsModel
     int runClassification = 4;
 
     if (meters != null) {
-      final int userDistPrefs =
-          (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
-          hasherPref_distanceForAutoDisplay;
-
-      // if the user has set their preferences to miles or
-      // the user has set their preferences to "auto" and the
-      // distance preference associated with the kennel is miles
-      // then convert our range for runs from meters to miles.
-      if (((userDistPrefs & hasherPref_distanceMeasuredIn) == 3) ||
-          (((userDistPrefs & hasherPref_distanceMeasuredIn) == 0) &&
-              (m.distanceUnitsPref == 3))) {
+      // The radius ("Runs within 50 ...") is ONE setting for the whole list,
+      // so it is read in the hasher's unit, not each run's kennel's: their
+      // explicit choice, or on Auto the phone's region. The section header
+      // (_getDistancePreferenceString) uses the same rule. Until 2026-09-25
+      // this test could never be true (it masked the preference with the
+      // wrong bits), so the radius was always km while the header said miles
+      // to every Auto user.
+      if (Utilities.prefersImperial()) {
         meters =
             meters * MILES_TO_METERS / 1000; // this calculation is correct!
       }

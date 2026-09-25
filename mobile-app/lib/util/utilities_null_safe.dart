@@ -480,18 +480,28 @@ class Utilities {
 
   /// Whether distances should be shown in miles for this hasher.
   ///
-  /// The stored preference is 3 = miles, 2 = kilometres, 0 = Auto. Auto means
-  /// "follow the run's kennel", so pass [kennelDistanceUnitsPref] wherever a
-  /// kennel is in hand. Where none is — an imported activity has no run yet —
-  /// Auto falls back to the device's own locale, which is the closest thing
-  /// to the user's country that the phone can answer offline.
+  /// The hasher's stored preference is 3 = miles, 2 = kilometres, 0 = Auto,
+  /// and an explicit choice always wins. Auto means "follow the run's
+  /// kennel", so pass [kennelDistanceUnitsPref] wherever a kennel is in hand.
+  /// Where none is (an imported activity has no run yet) Auto falls back to
+  /// the device's own locale, the closest thing to the user's country the
+  /// phone can answer offline.
+  ///
+  /// The KENNEL value is a different encoding: Kennel.DistancePreference and
+  /// Country.DistancePreference are 0 = kilometres, 1 = miles (the run and
+  /// kennel queries COALESCE them to distanceUnitsPref). Until 2026-09-25
+  /// this compared it with 3, which a kennel never holds, so Auto never gave
+  /// miles; and the run cards read the kennel value directly and ignored an
+  /// explicit choice, so one screen could show miles and kilometres at once.
   static bool prefersImperial({int? kennelDistanceUnitsPref}) {
     final int pref =
         (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
         hasherPref_distanceMeasuredIn;
     if (pref == 3) return true;
     if (pref != 0) return false;
-    if (kennelDistanceUnitsPref != null) return kennelDistanceUnitsPref == 3;
+    if (kennelDistanceUnitsPref != null) {
+      return (kennelDistanceUnitsPref & 0x01) == 1;
+    }
     return _localeUsesMiles();
   }
 

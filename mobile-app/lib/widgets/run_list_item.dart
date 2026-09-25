@@ -28,8 +28,9 @@ class RunListItemController extends GetxController {
       kennelOverrideJson: futureRun.kennel.permissionOverrideJson,
     );
     if (canReviewPhotos) {
-      unawaited(KennelPhotoService()
-          .loadPendingPhotoSummary(futureRun.kennel.kennelId));
+      unawaited(
+        KennelPhotoService().loadPendingPhotoSummary(futureRun.kennel.kennelId),
+      );
     }
   }
 
@@ -204,13 +205,16 @@ class RunListItemController extends GetxController {
           : LiveRunButtonStatus.hidden;
     } catch (e, s) {
       debugPrint('Live run button check failed: $e');
-      BootLogger.logError('[RunListItem._checkLiveRunEligibility] eventId=${futureRun.event.eventId}', e, s);
+      BootLogger.logError(
+        '[RunListItem._checkLiveRunEligibility] eventId=${futureRun.event.eventId}',
+        e,
+        s,
+      );
       liveRunButtonStatus.value = LiveRunButtonStatus.hidden;
     } finally {
       liveRunButtonLoading.value = false;
     }
   }
-
 }
 
 class RunListItem extends StatelessWidget {
@@ -241,7 +245,6 @@ class RunListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     //   rliController
 
     String eventName = futureRun.event.eventName;
@@ -249,11 +252,13 @@ class RunListItem extends StatelessWidget {
       debugPrint('Event Name: $eventName');
     }
 
-    final event = DateTime.tryParse(
+    final event =
+        DateTime.tryParse(
           futureRun.event.eventStartDatetime.toIso8601String().substring(0, 10),
         ) ??
         futureRun.event.eventStartDatetime;
-    final device = DateTime.tryParse(
+    final device =
+        DateTime.tryParse(
           DateTime.now().toLocal().toIso8601String().substring(0, 10),
         ) ??
         DateTime.now();
@@ -279,397 +284,429 @@ class RunListItem extends StatelessWidget {
         // inconsistency James spotted. Clipping gives every card the same slight
         // rounding.
         clipBehavior: Clip.antiAlias,
-        child: Builder(builder: (context) {
-          // Build the heavy card body ONCE per build(); the flash Obx below
-          // reuses it as an identical child, so a "new runs" flash only
-          // recolours the container instead of rebuilding every visible card.
-          final Widget cardColumn = Column(
+        child: Builder(
+          builder: (context) {
+            // Build the heavy card body ONCE per build(); the flash Obx below
+            // reuses it as an identical child, so a "new runs" flash only
+            // recolours the container instead of rebuilding every visible card.
+            final Widget cardColumn = Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                // The RSVP/attendance icon shows on every run — on a past run
-                // it is the record of what happened (attended, hared), drawn
-                // with the same graphics as an upcoming run — but it only
-                // opens the RSVP popup while the run is still ahead. The
-                // enlarged 56x56 hit area below stays past-gated for the same
-                // reason.
-                GestureDetector(
-                  onTap: isRunPast(futureRun) ? null : _showRsvpOptionsPopup,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 5.0,
-                      right: 5.0,
-                      top: 5.0,
-                      bottom: 5.0,
-                    ),
-                    child: Obx(() => _getRsvpWidget()),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    width: MediaQuery.sizeOf(context).width,
-                    padding: const EdgeInsets.only(top: 5.0, left: 5.0),
-                    child: AutoSizeText(
-                      futureRun.event.eventName,
-                      style: ts_tileText,
-                      textAlign: TextAlign.left,
-                      maxLines: 1,
-                      minFontSize: 18,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: GestureDetector(
-                    onTap: () async {
-                      await _showEmailAlertPopup();
-                    },
-                    child: Obx(() => _getEmailWidget()),
-                  ),
-                ),
-                ((futureRun.event.eventStartDatetime.isAfter(
-                      DateTime.now().add(
-                        const Duration(days: NOTIFICATION_DAYS_IN_FUTURE),
-                      ),
-                    )))
-                    ? Container()
-                    : Container(
-                        padding: const EdgeInsets.only(right: 3),
-                        child: GestureDetector(
-                          onTap: () async {
-                            await _showNotificationPopup();
-                          },
-                          child: Obx(() => _getNotificationWidget()),
-                        ),
-                      ),
-                if (rliController.canReviewPhotos)
-                  Obx(() {
-                    final count = KennelPhotoService.pendingPhotosByEvent[
-                            futureRun.event.eventId.toLowerCase()] ??
-                        0;
-                    if (count == 0) return const SizedBox();
-                    return badges.Badge(
-                      position:
-                          badges.BadgePosition.topEnd(top: -5, end: 0),
-                      badgeContent: Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 2),
-                        width: 30,
-                        height: 13,
-                        child: AutoSizeText(
-                          count.toString(),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          minFontSize: 10,
-                          maxFontSize: 13,
-                          style: ts_badge,
-                        ),
-                      ),
-                      badgeStyle: badges.BadgeStyle(
-                        badgeColor: Colors.blue.shade700,
-                        padding: const EdgeInsets.all(6),
-                      ),
-                    );
-                  }),
-                SizedBox(width: 5),
-              ],
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
-              padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
-              height: 1.0,
-              color: Colors.grey[300],
-            ),
-            _buildLiveRunModeButton(context),
-            if (_listImageUrl != null) ...<Widget>[
-              GestureDetector(
-                onLongPress: () async {
-                  await Navigator.push<void>(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (BuildContext context) => ZoomableImagePage2(
-                        key: const Key('51120331'),
-                        pageTitle: futureRun.event.eventName,
-                        imageUrl: _listImageUrl,
-                        appBarBackgroundColor: themeAppBarBackground,
-                        background: Backgrounds.defaultHcBackground(),
-                        margin: 20.0,
-                      ),
-                    ),
-                  );
-                },
-                child: Hero(
-                  tag: 'EventImage-${futureRun.event.eventId}',
-                  // Fit to width at the image's natural aspect ratio on every
-                  // form factor — never crop the run image (James, 2026-08-29).
-                  child: CachedNetworkImage(
-                    imageUrl: _listImageUrl!,
-                    width: double.infinity,
-                    fit: BoxFit.fitWidth,
-                    // Decode the banner at ~display width, not source full-res
-                    // (repeated for every row of the main run list).
-                    memCacheWidth: 900,
-                    // errorWidget:
-                  ),
-                ),
-              ),
-              Container(height: 1.0, color: Colors.grey[300]),
-            ],
-            Stack(
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    Expanded(
-                      flex: 100,
+                    // The RSVP/attendance icon shows on every run — on a past run
+                    // it is the record of what happened (attended, hared), drawn
+                    // with the same graphics as an upcoming run — but it only
+                    // opens the RSVP popup while the run is still ahead. The
+                    // enlarged 56x56 hit area below stays past-gated for the same
+                    // reason.
+                    GestureDetector(
+                      onTap: isRunPast(futureRun)
+                          ? null
+                          : _showRsvpOptionsPopup,
                       child: Padding(
                         padding: const EdgeInsets.only(
-                          top: 10.0,
-                          bottom: 10.0,
-                          left: 4.0,
+                          left: 5.0,
+                          right: 5.0,
+                          top: 5.0,
+                          bottom: 5.0,
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            Hero(
-                              tag: 'KennelLogo-${futureRun.event.eventId}',
-                              child: KennelLogo(
-                                kennelId: futureRun.kennel.kennelId,
-                                kennelLogoUrl: futureRun.kennel.kennelLogo,
-                                kennelShortName:
-                                    futureRun.kennel.kennelShortName,
-                                logoHeight: 70.0,
-                                leftPadding: 7.0,
-                                rightPadding: 7.0,
-                              ),
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      futureRun.kennel.kennelName,
-                                      style: ts_titleMediumDarkBlue,
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      (futureRun.event.isCountedRun == 1
-                                              ? 'Run #${futureRun.event.eventNumber}, '
-                                              : 'Run / Event ') +
-                                          Utilities.describeDayOffset(
-                                            daysUntilEvent.toInt(),
-                                          ),
-
-                                      // (daysUntilEvent <= 14
-                                      //     ? daysUntilEvent.toInt() == -1
-                                      //           ? 'Yesterday'
-                                      //           : daysUntilEvent.toInt() ==
-                                      //                 0
-                                      //           ? 'TODAY'
-                                      //           : daysUntilEvent.toInt() ==
-                                      //                 1
-                                      //           ? 'Tomorrow'
-                                      //           : daysUntilEvent <= -2
-                                      //     : daysUntilEvent <= 365
-                                      style: ts_titleMediumBlack,
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    futureRun.event.eventStartDatetime.year ==
-                                            DateTime.now().year
-                                        ? Text(
-                                            '${DateFormat("E, MMM d 'at' h:mm a").format(futureRun.event.eventStartDatetime)}'
-                                            '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}',
-                                            style: ts_regularMediumBlack,
-                                            textAlign: TextAlign.left,
-                                            overflow: TextOverflow.ellipsis,
-                                          )
-                                        : Text(
-                                            '${DateFormat("E, MMM d yyyy 'at' h:mm a").format(futureRun.event.eventStartDatetime)}'
-                                            '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}',
-                                            style: ts_regularMediumBlack,
-                                            textAlign: TextAlign.left,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                    // Viewer in a different timezone than the
-                                    // kennel — show their own clock too.
-                                    if (viewerLocalStartLabel(
-                                          futureRun.event.eventStartDatetime,
-                                          futureRun.event.eventStartDatetimeGmt,
-                                        )
-                                        case final String viewerTime)
-                                      Text(
-                                        viewerTime,
-                                        style: ts_regularMediumBlack.copyWith(
-                                          color: Colors.grey.shade600,
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                        textAlign: TextAlign.left,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    Obx(() => _getHaresWidget()),
-                                    Obx(() => _getLocationWidget()),
-                                    if ((futureRun.extensions.evtLat != null &&
-                                            futureRun
-                                                    .extensions
-                                                    .isMapAndDistanceValid ==
-                                                1) &&
-                                        ((futureRun.extensions.distToEvent ??
-                                                -1.0) >=
-                                            0) &&
-                                        (appModel.hasLocationPermissions)) ...<
-                                      Widget
-                                    >[
-                                      Text(
-                                        '${Utilities.getDistance(futureRun.extensions.distToEvent!, isMetric: ((futureRun.extensions.distanceUnitsPref) & 0x01) == 0)} from here',
-                                        style: ts_regularMediumBlack,
-                                        textAlign: TextAlign.left,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ] else
-                                      Text(
-                                        'No location provided',
-                                        style: ts_regularMediumBlack,
-                                      ),
-                                    if (futureRun.event.eventGeographicScope >
-                                        1) ...<Widget>[
-                                      Text(
-                                        Utilities.getEventScopeText(
-                                          futureRun.event.eventGeographicScope,
-                                        ),
-                                        style: ts_titleMediumDarkBlue,
-                                        textAlign: TextAlign.left,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-
-                                    // What a finished run has to show —
-                                    // track, photos, chat, down-downs — as
-                                    // a row of small icons along the bottom.
-                                    if (isRunPast(futureRun))
-                                      _ActivityIcons(event: futureRun.event),
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            if (Utilities.isConnected())
-                              // Chat bubble stacked ABOVE the three dots —
-                              // same column treatment as the kennel card, so
-                              // the pair takes one icon-width on the right
-                              // edge instead of eating into the run info.
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  IconButton(
-                                    icon: HcChatBubble(
-                                      threadId: futureRun.event.publicEventId,
-                                      isKennelThread: false,
-                                    ),
-                                    iconSize: Theme.of(context).iconTheme.size,
-                                    splashColor:
-                                        Theme.of(context).highlightColor,
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(
-                                      minWidth: 40,
-                                      minHeight: 40,
-                                    ),
-                                    onPressed: () async {
-                                      await openChatThread(
-                                        title: futureRun.event.eventName,
-                                        threadId: futureRun.event.eventId,
-                                        publicThreadId:
-                                            futureRun.event.publicEventId,
-                                        isKennelThread: false,
-                                      );
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      MaterialCommunityIcons.dots_vertical,
-                                    ),
-                                    iconSize: Theme.of(context).iconTheme.size,
-                                    color: Colors.black54,
-                                    splashColor:
-                                        Theme.of(context).highlightColor,
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(
-                                      minWidth: 40,
-                                      minHeight: 40,
-                                    ),
-                                    onPressed: () async {
-                                      await _showAllOptionsPopup();
-                                    },
-                                  ),
-                                ],
-                              ),
-
-                          ],
+                        child: Obx(() => _getRsvpWidget()),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        width: MediaQuery.sizeOf(context).width,
+                        padding: const EdgeInsets.only(top: 5.0, left: 5.0),
+                        child: AutoSizeText(
+                          futureRun.event.eventName,
+                          style: ts_tileText,
+                          textAlign: TextAlign.left,
+                          maxLines: 1,
+                          minFontSize: 18,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
-                    // Expanded(
-                    //   flex: 10,
-                    //     color: Colors.black54,
-                    //     },
+                    Container(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: GestureDetector(
+                        onTap: () async {
+                          await _showEmailAlertPopup();
+                        },
+                        child: Obx(() => _getEmailWidget()),
+                      ),
+                    ),
+                    ((futureRun.event.eventStartDatetime.isAfter(
+                          DateTime.now().add(
+                            const Duration(days: NOTIFICATION_DAYS_IN_FUTURE),
+                          ),
+                        )))
+                        ? Container()
+                        : Container(
+                            padding: const EdgeInsets.only(right: 3),
+                            child: GestureDetector(
+                              onTap: () async {
+                                await _showNotificationPopup();
+                              },
+                              child: Obx(() => _getNotificationWidget()),
+                            ),
+                          ),
+                    if (rliController.canReviewPhotos)
+                      Obx(() {
+                        final count =
+                            KennelPhotoService.pendingPhotosByEvent[futureRun
+                                .event
+                                .eventId
+                                .toLowerCase()] ??
+                            0;
+                        if (count == 0) return const SizedBox();
+                        return badges.Badge(
+                          position: badges.BadgePosition.topEnd(
+                            top: -5,
+                            end: 0,
+                          ),
+                          badgeContent: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            width: 30,
+                            height: 13,
+                            child: AutoSizeText(
+                              count.toString(),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              minFontSize: 10,
+                              maxFontSize: 13,
+                              style: ts_badge,
+                            ),
+                          ),
+                          badgeStyle: badges.BadgeStyle(
+                            badgeColor: Colors.blue.shade700,
+                            padding: const EdgeInsets.all(6),
+                          ),
+                        );
+                      }),
+                    SizedBox(width: 5),
                   ],
                 ),
-              ],
-            ),
-
-            Obx(() => _getPaymentIconnsWidget()),
-          ],
-        );
-          // The RSVP icon is a 24px image — well under the 44pt minimum — and
-          // the GestureDetector around it defers to the child, so even its own
-          // padding wasn't tappable. Overlay an invisible 56×56 target on the
-          // card's top-left corner (topmost in the Stack, so it wins over the
-          // header row and the image's long-press) without changing the icon
-          // or the layout.
-          final Widget cardBody = Stack(
-            children: <Widget>[
-              cardColumn,
-              // Invisible 56x56 hit area that enlarges the RSVP control's tap
-              // target. It must go with the control: left behind on a past run
-              // it is a transparent widget over the card corner that silently
-              // opens the RSVP popup when someone means to open the run.
-              if (!isRunPast(futureRun))
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  width: 56,
-                  height: 56,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: _showRsvpOptionsPopup,
-                  ),
+                Container(
+                  margin: const EdgeInsets.only(top: 2.0, bottom: 0.0),
+                  padding: const EdgeInsets.only(top: 7.0, bottom: 0.0),
+                  height: 1.0,
+                  color: Colors.grey[300],
                 ),
-            ],
-          );
-          return Obx(() {
-            final isFlashing = Get.isRegistered<FutureRunListPageController>()
-                ? Get.find<FutureRunListPageController>()
-                    .flashingRunIds
-                    .contains(normalizeUuid(futureRun.event.eventId))
-                : false;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              color: isFlashing
-                  ? themeButtonColors.withValues(alpha: 0.35)
-                  : isPastRun
-                      // 20% accent tint over the white card — past-section marker.
-                      ? themeButtonColors.withValues(alpha: 0.2)
-                      : Colors.white,
-              child: cardBody,
+                _buildLiveRunModeButton(context),
+                if (_listImageUrl != null) ...<Widget>[
+                  GestureDetector(
+                    onLongPress: () async {
+                      await Navigator.push<void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (BuildContext context) => ZoomableImagePage2(
+                            key: const Key('51120331'),
+                            pageTitle: futureRun.event.eventName,
+                            imageUrl: _listImageUrl,
+                            appBarBackgroundColor: themeAppBarBackground,
+                            background: Backgrounds.defaultHcBackground(),
+                            margin: 20.0,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Hero(
+                      tag: 'EventImage-${futureRun.event.eventId}',
+                      // Fit to width at the image's natural aspect ratio on every
+                      // form factor — never crop the run image (James, 2026-08-29).
+                      child: CachedNetworkImage(
+                        imageUrl: _listImageUrl!,
+                        width: double.infinity,
+                        fit: BoxFit.fitWidth,
+                        // Decode the banner at ~display width, not source full-res
+                        // (repeated for every row of the main run list).
+                        memCacheWidth: 900,
+                        // errorWidget:
+                      ),
+                    ),
+                  ),
+                  Container(height: 1.0, color: Colors.grey[300]),
+                ],
+                Stack(
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          flex: 100,
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              top: 10.0,
+                              bottom: 10.0,
+                              left: 4.0,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Hero(
+                                  tag: 'KennelLogo-${futureRun.event.eventId}',
+                                  child: KennelLogo(
+                                    kennelId: futureRun.kennel.kennelId,
+                                    kennelLogoUrl: futureRun.kennel.kennelLogo,
+                                    kennelShortName:
+                                        futureRun.kennel.kennelShortName,
+                                    logoHeight: 70.0,
+                                    leftPadding: 7.0,
+                                    rightPadding: 7.0,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          futureRun.kennel.kennelName,
+                                          style: ts_titleMediumDarkBlue,
+                                          textAlign: TextAlign.left,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          (futureRun.event.isCountedRun == 1
+                                                  ? 'Run #${futureRun.event.eventNumber}, '
+                                                  : 'Run / Event ') +
+                                              Utilities.describeDayOffset(
+                                                daysUntilEvent.toInt(),
+                                              ),
+
+                                          // (daysUntilEvent <= 14
+                                          //     ? daysUntilEvent.toInt() == -1
+                                          //           ? 'Yesterday'
+                                          //           : daysUntilEvent.toInt() ==
+                                          //                 0
+                                          //           ? 'TODAY'
+                                          //           : daysUntilEvent.toInt() ==
+                                          //                 1
+                                          //           ? 'Tomorrow'
+                                          //           : daysUntilEvent <= -2
+                                          //     : daysUntilEvent <= 365
+                                          style: ts_titleMediumBlack,
+                                          textAlign: TextAlign.left,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        futureRun
+                                                    .event
+                                                    .eventStartDatetime
+                                                    .year ==
+                                                DateTime.now().year
+                                            ? Text(
+                                                '${DateFormat("E, MMM d 'at' h:mm a").format(futureRun.event.eventStartDatetime)}'
+                                                '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}',
+                                                style: ts_regularMediumBlack,
+                                                textAlign: TextAlign.left,
+                                                overflow: TextOverflow.ellipsis,
+                                              )
+                                            : Text(
+                                                '${DateFormat("E, MMM d yyyy 'at' h:mm a").format(futureRun.event.eventStartDatetime)}'
+                                                '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}',
+                                                style: ts_regularMediumBlack,
+                                                textAlign: TextAlign.left,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                        // Viewer in a different timezone than the
+                                        // kennel — show their own clock too.
+                                        if (viewerLocalStartLabel(
+                                              futureRun
+                                                  .event
+                                                  .eventStartDatetime,
+                                              futureRun
+                                                  .event
+                                                  .eventStartDatetimeGmt,
+                                            )
+                                            case final String viewerTime)
+                                          Text(
+                                            viewerTime,
+                                            style: ts_regularMediumBlack
+                                                .copyWith(
+                                                  color: Colors.grey.shade600,
+                                                  fontStyle: FontStyle.italic,
+                                                ),
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        Obx(() => _getHaresWidget()),
+                                        Obx(() => _getLocationWidget()),
+                                        if ((futureRun.extensions.evtLat !=
+                                                    null &&
+                                                futureRun
+                                                        .extensions
+                                                        .isMapAndDistanceValid ==
+                                                    1) &&
+                                            ((futureRun
+                                                        .extensions
+                                                        .distToEvent ??
+                                                    -1.0) >=
+                                                0) &&
+                                            (appModel
+                                                .hasLocationPermissions)) ...<
+                                          Widget
+                                        >[
+                                          Text(
+                                            '${Utilities.getDistance(futureRun.extensions.distToEvent!, isMetric: !Utilities.prefersImperial(kennelDistanceUnitsPref: futureRun.extensions.distanceUnitsPref))} from here',
+                                            style: ts_regularMediumBlack,
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ] else
+                                          Text(
+                                            'No location provided',
+                                            style: ts_regularMediumBlack,
+                                          ),
+                                        if (futureRun
+                                                .event
+                                                .eventGeographicScope >
+                                            1) ...<Widget>[
+                                          Text(
+                                            Utilities.getEventScopeText(
+                                              futureRun
+                                                  .event
+                                                  .eventGeographicScope,
+                                            ),
+                                            style: ts_titleMediumDarkBlue,
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+
+                                        // What a finished run has to show —
+                                        // track, photos, chat, down-downs — as
+                                        // a row of small icons along the bottom.
+                                        if (isRunPast(futureRun))
+                                          _ActivityIcons(
+                                            event: futureRun.event,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                if (Utilities.isConnected())
+                                  // Chat bubble stacked ABOVE the three dots —
+                                  // same column treatment as the kennel card, so
+                                  // the pair takes one icon-width on the right
+                                  // edge instead of eating into the run info.
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      IconButton(
+                                        icon: HcChatBubble(
+                                          threadId:
+                                              futureRun.event.publicEventId,
+                                          isKennelThread: false,
+                                        ),
+                                        iconSize: Theme.of(
+                                          context,
+                                        ).iconTheme.size,
+                                        splashColor: Theme.of(
+                                          context,
+                                        ).highlightColor,
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 40,
+                                          minHeight: 40,
+                                        ),
+                                        onPressed: () async {
+                                          await openChatThread(
+                                            title: futureRun.event.eventName,
+                                            threadId: futureRun.event.eventId,
+                                            publicThreadId:
+                                                futureRun.event.publicEventId,
+                                            isKennelThread: false,
+                                          );
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          MaterialCommunityIcons.dots_vertical,
+                                        ),
+                                        iconSize: Theme.of(
+                                          context,
+                                        ).iconTheme.size,
+                                        color: Colors.black54,
+                                        splashColor: Theme.of(
+                                          context,
+                                        ).highlightColor,
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 40,
+                                          minHeight: 40,
+                                        ),
+                                        onPressed: () async {
+                                          await _showAllOptionsPopup();
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Expanded(
+                        //   flex: 10,
+                        //     color: Colors.black54,
+                        //     },
+                      ],
+                    ),
+                  ],
+                ),
+
+                Obx(() => _getPaymentIconnsWidget()),
+              ],
             );
-          });
-        }),
+            // The RSVP icon is a 24px image — well under the 44pt minimum — and
+            // the GestureDetector around it defers to the child, so even its own
+            // padding wasn't tappable. Overlay an invisible 56×56 target on the
+            // card's top-left corner (topmost in the Stack, so it wins over the
+            // header row and the image's long-press) without changing the icon
+            // or the layout.
+            final Widget cardBody = Stack(
+              children: <Widget>[
+                cardColumn,
+                // Invisible 56x56 hit area that enlarges the RSVP control's tap
+                // target. It must go with the control: left behind on a past run
+                // it is a transparent widget over the card corner that silently
+                // opens the RSVP popup when someone means to open the run.
+                if (!isRunPast(futureRun))
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    width: 56,
+                    height: 56,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _showRsvpOptionsPopup,
+                    ),
+                  ),
+              ],
+            );
+            return Obx(() {
+              final isFlashing = Get.isRegistered<FutureRunListPageController>()
+                  ? Get.find<FutureRunListPageController>().flashingRunIds
+                        .contains(normalizeUuid(futureRun.event.eventId))
+                  : false;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                color: isFlashing
+                    ? themeButtonColors.withValues(alpha: 0.35)
+                    : isPastRun
+                    // 20% accent tint over the white card — past-section marker.
+                    ? themeButtonColors.withValues(alpha: 0.2)
+                    : Colors.white,
+                child: cardBody,
+              );
+            });
+          },
+        ),
       ),
     );
   }
@@ -1299,7 +1336,11 @@ class RunListItem extends StatelessWidget {
               rliController.automaticallySetNotifiationPrefs.value,
         );
 
-    if (kDebugMode) debugPrint('[_setRsvpState/rli] adHocData length: ${adHocData.length}, contents: $adHocData');
+    if (kDebugMode) {
+      debugPrint(
+        '[_setRsvpState/rli] adHocData length: ${adHocData.length}, contents: $adHocData',
+      );
+    }
 
     // A failed/transient call (e.g. socket torn down while backgrounded during
     // run tracking) returns an empty list. Restore the previous RSVP, tell the
@@ -1342,7 +1383,8 @@ class RunListItem extends StatelessWidget {
     futureRun.extensions = futureRun.extensions.copyWith(
       rsvpState: rsvpResult,
       isHare: willHareResult,
-      notificationPreference: eventNotificationPreference ??
+      notificationPreference:
+          eventNotificationPreference ??
           futureRun.extensions.notificationPreference,
       emailAlertPreference:
           emailAlertPreference ?? futureRun.extensions.emailAlertPreference,
@@ -1663,16 +1705,16 @@ class _ActivityIcons extends StatelessWidget {
     final Color c = Colors.grey.shade700;
     final TextStyle n = ts_regularMediumBlack.copyWith(fontSize: 13, color: c);
     Widget item(IconData icon, int count, String tip) => Tooltip(
-          message: tip,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(icon, size: 18, color: c),
-              const SizedBox(width: 3),
-              Text('$count', style: n),
-            ],
-          ),
-        );
+      message: tip,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 18, color: c),
+          const SizedBox(width: 3),
+          Text('$count', style: n),
+        ],
+      ),
+    );
     return Padding(
       padding: const EdgeInsets.only(top: 6),
       child: Wrap(
@@ -1687,7 +1729,8 @@ class _ActivityIcons extends StatelessWidget {
             ),
           if (photos > 0) item(Icons.photo_library_outlined, photos, 'Photos'),
           if (messages > 0) item(Icons.forum_outlined, messages, 'Trail chat'),
-          if (downDowns > 0) item(Icons.sports_bar_outlined, downDowns, 'Down-downs'),
+          if (downDowns > 0)
+            item(Icons.sports_bar_outlined, downDowns, 'Down-downs'),
         ],
       ),
     );
