@@ -123,7 +123,7 @@ class LegalPageContentState extends State<LegalPageContent> {
                     Container(
                       margin: const EdgeInsets.all(10),
                       child: Text(
-                        'http://www.harriercentral.com/assets/pdf/privacyPolicy.pdf',
+                        'https://www.harriercentral.com/index.php/privacy-policy/',
                         style: ts_medium,
                         textAlign: TextAlign.justify,
                       ),

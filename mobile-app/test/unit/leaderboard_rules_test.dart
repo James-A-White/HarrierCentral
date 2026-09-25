@@ -91,6 +91,32 @@ void main() {
     ]);
   });
 
+  test('a new column starts its natural way round; the same column flips', () {
+    // Never onInit'd: sortLeaderboard only touches the lists and the Rx.
+    final c = LeaderboardController()
+      ..filteredAggregate.assignAll([
+        lm('🇩🇰 Late Commer', 'k1', rolling: 1),
+        lm('Zed', 'k1', rolling: 3),
+        lm('Amy', 'k1', rolling: 2),
+      ]);
+    List<String> names() =>
+        c.filteredAggregate.map((m) => m.displayName).toList();
+
+    c.sortLeaderboard(0, false); // as loaded: 365 days, runs high to low
+    expect(names(), ['Zed', 'Amy', '🇩🇰 Late Commer']);
+
+    // Was Z→A (it kept the runs column's direction), with emoji names first.
+    c.sortLeaderboard(2, true);
+    expect(c.sortAsc.value, isTrue);
+    expect(names(), ['Amy', 'Zed', '🇩🇰 Late Commer']);
+
+    c.sortLeaderboard(2, true);
+    expect(names(), ['🇩🇰 Late Commer', 'Zed', 'Amy']);
+
+    c.sortLeaderboard(1, true); // back to a count: biggest first again
+    expect(c.sortAsc.value, isFalse);
+  });
+
   test('matches: minus terms exclude, plus terms include', () {
     final a = lm('Opee', 'k1')..searchText = ' opee, barbados bh3, ';
     expect(LeaderboardController.matches(a, ['opee'], []), isTrue);

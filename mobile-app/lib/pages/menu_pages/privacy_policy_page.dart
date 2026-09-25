@@ -46,7 +46,8 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                     ElevatedButton(
                       child: Text(
                         'Open Privacy Policy',
-                        style: ts_headingLarge,
+                        // White on the red button, never the heading yellow.
+                        style: ts_headingLarge.copyWith(color: Colors.white),
                       ),
                       onPressed: () => Navigator.push<dynamic>(
                         context,
@@ -58,7 +59,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                     Container(
                       margin: const EdgeInsets.all(30),
                       child: Text(
-                        'The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttp://www.harriercentral.com',
+                        'The Harrier Central Privacy Policy can also be found on our website for easier reading: \r\n\r\nhttps://www.harriercentral.com/index.php/privacy-policy/',
                         textAlign: TextAlign.center,
                         style: ts_medium,
                       ),

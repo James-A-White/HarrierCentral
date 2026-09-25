@@ -997,7 +997,14 @@ class HasherProfilePage extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 70, height: 70),
+                              // Clears the Save bar, which grows by the
+                              // system inset below.
+                              SizedBox(
+                                width: 70,
+                                height:
+                                    70 +
+                                    MediaQuery.viewPaddingOf(context).bottom,
+                              ),
                             ],
                           ),
                         ),
@@ -1008,14 +1015,17 @@ class HasherProfilePage extends StatelessWidget {
         ),
         Positioned(
           bottom: 0,
+          // Edge to edge (Android 15+, and iOS's home indicator): the bar
+          // reaches the screen's bottom edge, so it takes the system inset
+          // as extra padding or the gesture handle sits across the button.
           child: Container(
-            padding: const EdgeInsets.only(
+            padding: EdgeInsets.only(
               top: 10,
               right: 20,
-              bottom: 10,
+              bottom: 10 + MediaQuery.viewPaddingOf(context).bottom,
               left: 20,
             ),
-            height: 60,
+            height: 60 + MediaQuery.viewPaddingOf(context).bottom,
             width: MediaQuery.sizeOf(context).width,
             color: Colors.yellow[100],
             child: StyleForConnected(

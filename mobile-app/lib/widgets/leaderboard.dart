@@ -376,6 +376,10 @@ class Leaderboard extends StatelessWidget {
                                       children: [
                                         const SizedBox(height: 3.0),
                                         Row(
+                                          // Counts sit level with the name's
+                                          // first line when it wraps.
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: <Widget>[
                                             SizedBox(
                                               width: 50.0,
@@ -426,23 +430,22 @@ class Leaderboard extends StatelessWidget {
                                               ),
                                             ),
                                             Expanded(
-                                              child: SingleChildScrollView(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                child: Row(
-                                                  children: [
-                                                    Text(
-                                                      e.displayName,
-                                                      style: const TextStyle(
-                                                        fontFamily:
-                                                            'AvenirNextCondensedMedium',
-                                                        fontStyle:
-                                                            FontStyle.normal,
-                                                        fontSize:
-                                                            LEADER_FONT_SIZE,
-                                                        height: 1.0,
-                                                        color: Colors.white,
-                                                      ),
+                                              // One wrapping line of text, not a sideways
+                                              // scroller: a long kennel name ran off the
+                                              // edge with nothing to say there was more.
+                                              child: Text.rich(
+                                                TextSpan(
+                                                  style: const TextStyle(
+                                                    fontFamily:
+                                                        'AvenirNextCondensedMedium',
+                                                    fontStyle: FontStyle.normal,
+                                                    fontSize: LEADER_FONT_SIZE,
+                                                    height: 1.0,
+                                                    color: Colors.white,
+                                                  ),
+                                                  children: <InlineSpan>[
+                                                    TextSpan(
+                                                      text: e.displayName,
                                                     ),
                                                     if ((kennelId == null) &&
                                                         showHomeKennel &&
@@ -451,16 +454,12 @@ class Leaderboard extends StatelessWidget {
                                                         (c.kennels[e
                                                                 .homeKennelId]?["kennelShortName"] !=
                                                             null))
-                                                      Text(
-                                                        '  -  ${c.kennels[e.homeKennelId]!["kennelShortName"]}',
+                                                      TextSpan(
+                                                        text:
+                                                            '  -  ${c.kennels[e.homeKennelId]!["kennelShortName"]}',
                                                         style: TextStyle(
-                                                          fontFamily:
-                                                              'AvenirNextCondensedMedium',
                                                           fontStyle:
                                                               FontStyle.italic,
-                                                          fontSize:
-                                                              LEADER_FONT_SIZE,
-                                                          height: 1.0,
                                                           color: Colors
                                                               .blue
                                                               .shade100,
@@ -471,16 +470,12 @@ class Leaderboard extends StatelessWidget {
                                                         (c.kennels[e
                                                                 .kennelId]?["kennelName"] !=
                                                             null))
-                                                      Text(
-                                                        '  -  ${c.kennels[e.kennelId]!["kennelName"]}',
+                                                      TextSpan(
+                                                        text:
+                                                            '  -  ${c.kennels[e.kennelId]!["kennelName"]}',
                                                         style: TextStyle(
-                                                          fontFamily:
-                                                              'AvenirNextCondensedMedium',
                                                           fontStyle:
                                                               FontStyle.italic,
-                                                          fontSize:
-                                                              LEADER_FONT_SIZE,
-                                                          height: 1.0,
                                                           color: Colors
                                                               .pink
                                                               .shade100,
@@ -488,20 +483,16 @@ class Leaderboard extends StatelessWidget {
                                                       ),
                                                     if ((kennelId == null) &&
                                                         !showKennels)
-                                                      Text(
-                                                        '  -  ${tab == LeaderboardController.TABINDEX_TOTAL
-                                                            ? e.kennelCountTotal
-                                                            : tab == LeaderboardController.TABINDEX_365_DAYS
-                                                            ? e.kennelCountRollingYear
-                                                            : e.kennelCountYtd} Kennels',
+                                                      TextSpan(
+                                                        text:
+                                                            '  -  ${tab == LeaderboardController.TABINDEX_TOTAL
+                                                                ? e.kennelCountTotal
+                                                                : tab == LeaderboardController.TABINDEX_365_DAYS
+                                                                ? e.kennelCountRollingYear
+                                                                : e.kennelCountYtd} Kennels',
                                                         style: TextStyle(
-                                                          fontFamily:
-                                                              'AvenirNextCondensedMedium',
                                                           fontStyle:
                                                               FontStyle.italic,
-                                                          fontSize:
-                                                              LEADER_FONT_SIZE,
-                                                          height: 1.0,
                                                           color: Colors
                                                               .pink
                                                               .shade100,
@@ -509,6 +500,8 @@ class Leaderboard extends StatelessWidget {
                                                       ),
                                                   ],
                                                 ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                           ],

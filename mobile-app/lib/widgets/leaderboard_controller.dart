@@ -272,6 +272,10 @@ class LeaderboardController extends GetxController
 
   /// Column 0 = runs, 1 = hared, 2 = name; the timespan picks which counts.
   /// Ties on a count fall back to name; ties on name to kennel. Pure.
+  /// How a column sorts when first chosen: counts biggest first, the hasher
+  /// column A→Z. Pure.
+  static bool defaultAscending(int column) => column == 2;
+
   static Comparator<LeaderboardModel> comparator(
     int column,
     int tabIndex,
@@ -311,8 +315,13 @@ class LeaderboardController extends GetxController
 
   void sortLeaderboard(int columnIndex, bool alternateSortOrder) {
     if (filteredRows.isEmpty && filteredAggregate.isEmpty) return;
-    if (alternateSortOrder && (columnIndex == sortColumn.value)) {
-      sortAsc.value = !sortAsc.value;
+    if (alternateSortOrder) {
+      // The same column again flips it; a new column starts the natural way
+      // round (see defaultAscending) rather than inheriting the old column's
+      // direction, which sorted names Z→A after the counts' high→low.
+      sortAsc.value = columnIndex == sortColumn.value
+          ? !sortAsc.value
+          : defaultAscending(columnIndex);
     }
     sortColumn.value = columnIndex;
     final Comparator<LeaderboardModel> cmp = comparator(

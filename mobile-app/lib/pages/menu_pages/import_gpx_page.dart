@@ -379,112 +379,147 @@ class ImportGpxPage extends StatelessWidget {
             iconTheme: const IconThemeData(color: Colors.white),
             title: Text('Import Tracks', style: ts_appBarTitle),
           ),
-          body: Obx(() {
-            final bool busy = c.busy.value;
-            final TrackImportJob? j = c.job.value;
-            final double up = c.uploadProgress.value;
-            final bool uploading = busy && j == null && up > 0 && up < 1;
-            final List<ImportActivity> ordered = j == null
-                ? const <ImportActivity>[]
-                : <ImportActivity>[
-                    ...j.activities.where((ImportActivity a) => a.isHeld),
-                    ...j.activities.where((ImportActivity a) => !a.isHeld),
-                  ];
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: <Widget>[
-                Text(
-                  'Choose a GPX, TCX or FIT file from your watch or running '
-                  'app — or a whole Strava or Garmin archive (zip). Harrier '
-                  'Central finds the hash run each track belongs to, from the '
-                  'time and place of its first point, and uploads it as your '
-                  'PackTrack trail for that run. Runs you already have a track '
-                  'on are left alone.',
-                  style: ts_alertDialogBody,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: busy ? null : c.pickFile,
-                  icon: const Icon(Icons.upload_file, color: Colors.white),
-                  label: Text(
-                    c.fileName.value == null
-                        ? 'Choose a file'
-                        : 'Choose a different file',
-                    style: ts_button,
-                  ),
-                ),
-                if (c.fileName.value != null) ...<Widget>[
-                  const SizedBox(height: 12),
-                  Text(c.fileName.value!, style: ts_alertDialogBody),
-                ],
-                if (uploading) ...<Widget>[
-                  const SizedBox(height: 12),
-                  LinearProgressIndicator(value: up),
-                  const SizedBox(height: 4),
+          body: DecoratedBox(
+            decoration: Backgrounds.defaultHcBackground(),
+            child: Obx(() {
+              final bool busy = c.busy.value;
+              final TrackImportJob? j = c.job.value;
+              final double up = c.uploadProgress.value;
+              final bool uploading = busy && j == null && up > 0 && up < 1;
+              final List<ImportActivity> ordered = j == null
+                  ? const <ImportActivity>[]
+                  : <ImportActivity>[
+                      ...j.activities.where((ImportActivity a) => a.isHeld),
+                      ...j.activities.where((ImportActivity a) => !a.isHeld),
+                    ];
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                children: <Widget>[
                   Text(
-                    'Uploading… ${(up * 100).round()}%',
-                    style: ts_alertDialogBody,
+                    'Choose a GPX, TCX or FIT file from your watch or running '
+                    'app — or a whole Strava or Garmin archive (zip). Harrier '
+                    'Central finds the hash run each track belongs to, from the '
+                    'time and place of its first point, and uploads it as your '
+                    'PackTrack trail for that run. Runs you already have a track '
+                    'on are left alone.',
+                    style: _onJungle,
+                    textAlign: TextAlign.center,
                   ),
-                ] else if (busy &&
-                    c.total.value != null &&
-                    c.total.value! > 1) ...<Widget>[
-                  const SizedBox(height: 12),
-                  LinearProgressIndicator(
-                    value: (c.checked.value / c.total.value!).clamp(0.0, 1.0),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: ElevatedButton.icon(
+                      onPressed: busy ? null : c.pickFile,
+                      icon: const Icon(Icons.upload_file, color: Colors.white),
+                      label: Text(
+                        c.fileName.value == null
+                            ? 'Choose a file'
+                            : 'Choose a different file',
+                        style: ts_button,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${c.checked.value} of ${c.total.value} activities checked'
-                    '  ·  ${c.importedSoFar.value} imported',
-                    style: ts_alertDialogBody,
-                  ),
-                ] else if (busy) ...<Widget>[
-                  const SizedBox(height: 16),
-                  const Center(child: CircularProgressIndicator()),
-                ],
-                if (c.status.value.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: 16),
-                  Text(c.status.value, style: ts_alertDialogBody),
-                ],
-                for (final ImportActivity a in ordered) ...<Widget>[
-                  const SizedBox(height: 10),
-                  _ActivityCard(
-                    activity: a,
-                    title: (j != null && j.isArchive)
-                        ? a.shortName
-                        : (c.fileName.value ?? a.shortName),
-                    busy: busy,
-                    onResolve: (ImportCandidate cand) => c.resolve(a, cand),
-                  ),
-                ],
-                if (c.previous.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: 24),
-                  Text('Previous uploads', style: ts_alertDialogTitle),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Your files are kept. Re-import one to check its '
-                    'activities against your runs again — for runs whose '
-                    'start point was fixed after the first pass.',
-                    style: ts_alertDialogBody,
-                  ),
-                  for (final TrackImportJob p in c.previous) ...<Widget>[
-                    const SizedBox(height: 10),
-                    PreviousUploadCard(
-                      job: p,
-                      busy: busy,
-                      onReimport: () => c.reimport(p),
-                      onDelete: () => c.deleteUpload(p),
+                  if (c.fileName.value != null) ...<Widget>[
+                    const SizedBox(height: 12),
+                    Text(
+                      c.fileName.value!,
+                      style: _onJungle,
+                      textAlign: TextAlign.center,
                     ),
                   ],
+                  if (uploading) ...<Widget>[
+                    const SizedBox(height: 12),
+                    LinearProgressIndicator(value: up),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Uploading… ${(up * 100).round()}%',
+                      style: _onJungle,
+                      textAlign: TextAlign.center,
+                    ),
+                  ] else if (busy &&
+                      c.total.value != null &&
+                      c.total.value! > 1) ...<Widget>[
+                    const SizedBox(height: 12),
+                    LinearProgressIndicator(
+                      value: (c.checked.value / c.total.value!).clamp(0.0, 1.0),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${c.checked.value} of ${c.total.value} activities checked'
+                      '  ·  ${c.importedSoFar.value} imported',
+                      style: _onJungle,
+                      textAlign: TextAlign.center,
+                    ),
+                  ] else if (busy) ...<Widget>[
+                    const SizedBox(height: 16),
+                    const Center(child: CircularProgressIndicator()),
+                  ],
+                  if (c.status.value.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 16),
+                    Text(
+                      c.status.value,
+                      style: _onJungle,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  for (final ImportActivity a in ordered) ...<Widget>[
+                    const SizedBox(height: 10),
+                    _ActivityCard(
+                      activity: a,
+                      title: (j != null && j.isArchive)
+                          ? a.shortName
+                          : (c.fileName.value ?? a.shortName),
+                      busy: busy,
+                      onResolve: (ImportCandidate cand) => c.resolve(a, cand),
+                    ),
+                  ],
+                  if (c.previous.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 24),
+                    Text(
+                      'Previous uploads',
+                      style: ts_alertDialogTitle.copyWith(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Your files are kept. Re-import one to check its '
+                      'activities against your runs again — for runs whose '
+                      'start point was fixed after the first pass.',
+                      style: _onJungle,
+                      textAlign: TextAlign.center,
+                    ),
+                    for (final TrackImportJob p in c.previous) ...<Widget>[
+                      const SizedBox(height: 10),
+                      PreviousUploadCard(
+                        job: p,
+                        busy: busy,
+                        onReimport: () => c.reimport(p),
+                        onDelete: () => c.deleteUpload(p),
+                      ),
+                    ],
+                  ],
                 ],
-              ],
-            );
-          }),
+              );
+            }),
+          ),
         );
       },
     );
   }
 }
+
+/// The page sits on the jungle, so its own text is white. The alert-dialog
+/// styles it used were black (they belong on a white dialog) and set lines
+/// at 0.9, which crowded a paragraph; the white activity cards keep them.
+final TextStyle _onJungle = ts_alertDialogBody.copyWith(
+  color: Colors.white,
+  height: 1.25,
+);
+
+/// The upload card's short lines keep the dialog spacing; only the colour
+/// changes, for the dark fill it now has.
+final TextStyle _onJungleCard = ts_alertDialogBody.copyWith(
+  color: Colors.white,
+);
 
 class _ActivityCard extends StatelessWidget {
   const _ActivityCard({
@@ -690,6 +725,7 @@ class PreviousUploadCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.white24),
+        color: Colors.black.withValues(alpha: 0.28),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -700,16 +736,16 @@ class PreviousUploadCard extends StatelessWidget {
               children: <Widget>[
                 Text(
                   job.fileName ?? 'Upload',
-                  style: ts_alertDialogBody,
+                  style: _onJungleCard,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (when != null)
                   Text(
                     ImportGpxController.describeStart(when),
-                    style: ts_alertDialogBody,
+                    style: _onJungleCard,
                   ),
-                if (found.isNotEmpty) Text(found, style: ts_alertDialogBody),
+                if (found.isNotEmpty) Text(found, style: _onJungleCard),
               ],
             ),
           ),
