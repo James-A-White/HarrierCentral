@@ -1,3 +1,27 @@
+## 3.1.7+1406 (2026-09-25)
+Built from dev. 3.1.6+1405 was the Android-only hotfix branch; this train
+carries its manifest line too (ab51ff00).
+### Fixes
+- **Run page after a notification tap**: opening a run whose page was already
+  open no longer breaks the page underneath (map "add after close", tab-bar
+  crash). Each run page now owns its controllers.
+- **Kennel search**: "City Hash London" finds City Hash — every word must
+  match, in any order. Commas, + and "not" work as before, and now the same
+  way in the kennel list, the run list and the map (the run list's commas used
+  to widen the results). A kennel search that matches nothing says so.
+- **Kennels with a missing short name, city or region** can be found by search
+  again (one missing value blanked the kennel's whole search text).
+- **After signing up**, Back on the main screen no longer walks back into the
+  sign-up pages.
+- **Privacy policy link** points to harriercentral.com/index.php/privacy-policy/
+  (the old PDF address was a 404).
+- **Import Tracks** on the jungle background with readable text; **Privacy
+  Policy** button text white.
+- **Leaderboard**: long names wrap instead of running off the edge; the
+  Hasher column sorts A→Z first.
+- **My Account**: the Save Changes bar sits above Android's gesture bar and
+  the iPhone home indicator.
+
 ## 3.1.6+1405 (2026-09-24) — Android production hotfix, branch `hotfix/3.1.6`
 Built from the 3.1.0+1394 production code plus one manifest line (ab51ff00);
 NOT from this train. Promoted straight to Play production. iOS unaffected.
