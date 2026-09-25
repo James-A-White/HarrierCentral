@@ -30,6 +30,8 @@ AS
 --   UPDATE HC.Event wrapped in TRY/CATCH to prevent reminder stampings
 --   from aborting on transient errors.
 --   Temp tables dropped in CATCH to prevent session leaks on retry.
+--   2026-09-25: recipients skip deleted hashers (Hasher.Removed = 1) and
+--     removed kennel links (HasherKennelMap.removed = 1), as the chat SPs do.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -167,6 +169,7 @@ DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
 SELECT hkm.UserId, d.FcmToken, msg.EventId, msg.id AS MessageId
 FROM #messages msg
 JOIN HC.HasherKennelMap hkm ON hkm.KennelId = msg.KennelId
+JOIN HC.Hasher hs           ON hs.id         = hkm.UserId
 JOIN HC.Device d            ON d.UserId      = hkm.UserId
 LEFT JOIN HC.HasherEventMap hem
                              ON hem.UserId   = hkm.UserId
@@ -176,6 +179,10 @@ WHERE COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference
   -- and each kept a live token. Retired rows and devices that have not
   -- signed in for 180 days are skipped; the next sign-in re-arms them
   -- (James, 2026-09-17). UNION below also de-duplicates the token.
+  -- Deleted hashers and removed kennel links get no reminders
+  -- (2026-09-25): gdprDelete used to leave their tokens live.
+  AND hs.Removed    = 0
+  AND hkm.removed   = 0
   AND d.FcmToken   IS NOT NULL
   AND d.removed     = 0
   AND d.LastLogin  >= @idleCutoff
@@ -190,6 +197,7 @@ UNION
 SELECT hkm.UserId, d.FcmToken, msg.EventId, msg.id
 FROM #messages msg
 JOIN HC.HasherKennelMap hkm ON hkm.KennelId = msg.KennelId
+JOIN HC.Hasher hs           ON hs.id         = hkm.UserId
 JOIN HC.Device d            ON d.UserId      = hkm.UserId
 LEFT JOIN HC.HasherEventMap hem
                              ON hem.UserId   = hkm.UserId
@@ -197,6 +205,8 @@ LEFT JOIN HC.HasherEventMap hem
 WHERE COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference, 0) IN (1, 3, 4)
   AND COALESCE(hem.RsvpState, 0) < 1
   AND msg.MessageType = 2
+  AND hs.Removed  = 0
+  AND hkm.removed = 0
   AND d.FcmToken IS NOT NULL
   AND d.removed    = 0
   AND d.LastLogin >= @idleCutoff;

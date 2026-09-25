@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_checkReminders",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Timer-triggered SP (RunCheckInNotification, every 1 minute) that scans HC.Event for events within the check-in reminder window (±11 minutes from start) or RSVP reminder window (±3 days from start) that have not yet had their reminder sent. Returns two rowsets consumed by the C# timer trigger to dispatch FCM pushes, then stamps CheckInReminderSent / RsvpReminderSent on HC.Event so reminders are not re-sent on the next tick. No parameters — called inside Azure Functions and not publicly accessible.",
   "parameters": [],
   "rowsets": [
@@ -141,11 +141,17 @@
       "severity": "low",
       "issue": "MessageReleasabilityFlags typo preserved for compat",
       "detail": "Column alias 'MessageRelesabilityFlags' (misspelling of 'Releasability') is intentionally preserved to avoid a C# breaking change. This is a known documented smell, not an accidental bug."
+    },
+    {
+      "severity": "low",
+      "issue": "Bare COALESCE on the notification preference (no NULLIF)",
+      "detail": "COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference, 0) treats an event-level 0 ('no override') as the answer, so a hasher with the kennel switched on but an HEM row at 0 gets no reminder. Flagged 2026-09-25, not changed: fixing it would send MORE reminders, which is a product decision."
     }
   ],
   "breakingChanges": [
     "HC5 accepted an @apiKey parameter and validated it against a hardcoded key. HC6 removes @apiKey entirely — the timer trigger is internal to Azure Functions.",
     "HC5 wrote a startup entry to LOG.GeneralLog. HC6 removes this noise (timer runs every minute).",
-    "HC5 stamp failure caused the SP to abort with a raw error. HC6 wraps the stamp in TRY/CATCH and continues — duplicate reminders are possible on transient stamp failures."
+    "HC5 stamp failure caused the SP to abort with a raw error. HC6 wraps the stamp in TRY/CATCH and continues — duplicate reminders are possible on transient stamp failures.",
+    "1.1.0 (2026-09-25): no rowset change. Recipients skip deleted hashers (Hasher.Removed = 1) and removed kennel links (HasherKennelMap.removed = 1)."
   ]
 }
