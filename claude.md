@@ -1036,7 +1036,7 @@ yet deployed. Only process components with actual changes — no nugatory work.
 
 Before doing anything irreversible, present:
 - Which components will be deployed
-- Proposed version bumps for each
+- Proposed build-number bumps for each (version strings unchanged unless James asked)
 - Draft changelog entries for each
 - Order of operations
 
@@ -1057,9 +1057,17 @@ Before doing anything irreversible, present:
 
 ### Version bump and changelog rules per component
 
+**Never bump a version number without James's explicit request** (James,
+2026-09-25). Every release bumps the **build number** (`+N`), and must —
+the stores and the portal refuse a reused one. The version string `X.Y.Z`
+stays as it is unless James asks for a new version in that conversation;
+"Dance baby!" and "no confirmation required" are not that request. A
+version string is a product decision: on the App Store a shipped version
+closes its train.
+
 #### API (`api/`)
-- Bump `<Version>X.Y.Z</Version>` in `api/HcWebApi.csproj` (patch increment)
 - Increment the `+N` build number in `api/pubversion.text`
+- `<Version>X.Y.Z</Version>` in `api/HcWebApi.csproj` changes only on James's request
 - Prepend a new entry at the top of `api/pubversion.text`:
   ```
   X.Y.Z+N
@@ -1067,7 +1075,7 @@ Before doing anything irreversible, present:
   ```
 
 #### Mobile app (`mobile-app/`)
-- Bump `version: X.Y.Z+build` in `mobile-app/pubspec.yaml`
+- Bump the build in `version: X.Y.Z+build` in `mobile-app/pubspec.yaml` (X.Y.Z only on James's request)
 - Prepend to `mobile-app/CHANGELOG.md`:
   ```markdown
   ## X.Y.Z+build (YYYY-MM-DD)
@@ -1077,12 +1085,12 @@ Before doing anything irreversible, present:
 - Deploy via TestFlight (Key ID `7YDRYBL5KS`, Issuer ID in memory `reference_testflight_deploy.md`)
 
 #### Portal (`portal/`)
-- Bump `version: X.Y.Z+build` in `portal/pubspec.yaml`
+- Bump the build in `version: X.Y.Z+build` in `portal/pubspec.yaml` (X.Y.Z only on James's request)
 - Prepend to `portal/CHANGELOG.md`
 - **No manual deploy step** — merging to master triggers auto-deploy via CI
 
 #### Public web (`public-web/`)
-- Bump `"version"` in `public-web/package.json` (patch increment)
+- `"version"` in `public-web/package.json` has no build number — change it only on James's request
 - Prepend to `public-web/CHANGELOG.md`
 - Deploy steps in memory `reference_public_web_deploy.md`
 
