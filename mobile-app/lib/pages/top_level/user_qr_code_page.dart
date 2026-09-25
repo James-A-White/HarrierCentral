@@ -146,7 +146,7 @@ class UserQrCodePage extends StatelessWidget {
           actions: <Widget>[
             TextButton(
               style: text_button_style,
-              child: Text('OK, Got it!', style: ts_button),
+              child: Text('OK, Got it!', style: ts_button, textAlign: TextAlign.center),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -333,6 +333,7 @@ class QrScannerTab extends StatelessWidget {
                 child: Text(
                   c.isScanning.value ? 'Stop Scanning' : 'Start Scanning',
                   style: ts_title,
+                  textAlign: TextAlign.center,
                 ),
                 onPressed: () => unawaited(c.tapStartStop()),
               ),

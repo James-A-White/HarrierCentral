@@ -152,6 +152,7 @@ class _SongsPageState extends State<SongsPage> {
                 child: Text(
                   'X',
                   style: ts_headingBlack.copyWith(color: Colors.grey.shade700),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
@@ -955,7 +956,7 @@ class _SongsPageState extends State<SongsPage> {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 icon: const Icon(Icons.campaign, size: 16),
-                label: const Text('Share Now', style: TextStyle(fontSize: 13)),
+                label: const Text('Share Now', style: TextStyle(fontSize: 13), textAlign: TextAlign.center),
                 onPressed: () => c.shareNow(context),
               ),
             if (expanded)

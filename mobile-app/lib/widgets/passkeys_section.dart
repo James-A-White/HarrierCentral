@@ -125,7 +125,7 @@ class PasskeysSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.refresh, color: Colors.white),
-                label: Text('Try again', style: ts_button),
+                label: Text('Try again', style: ts_button, textAlign: TextAlign.center),
                 onPressed: () => unawaited(controller.load()),
               ),
             ),
@@ -255,7 +255,7 @@ class PasskeysSection extends StatelessWidget {
                         onPressed: busy
                             ? null
                             : () => controller.confirmingId.value = '',
-                        child: Text('Keep', style: ts_button),
+                        child: Text('Keep', style: ts_button, textAlign: TextAlign.center),
                       ),
                     ]
                   : confirmingSignOut
@@ -279,7 +279,7 @@ class PasskeysSection extends StatelessWidget {
                         onPressed: busy
                             ? null
                             : () => controller.confirmingSignOutId.value = '',
-                        child: Text('Leave it', style: ts_button),
+                        child: Text('Leave it', style: ts_button, textAlign: TextAlign.center),
                       ),
                     ]
                   : <Widget>[
@@ -287,7 +287,7 @@ class PasskeysSection extends StatelessWidget {
                         TextButton(
                           onPressed: () =>
                               controller.confirmingId.value = key.deviceId,
-                          child: Text('Remove passkey', style: ts_button),
+                          child: Text('Remove passkey', style: ts_button, textAlign: TextAlign.center),
                         ),
                       // Already-signed-out rows are only still here because
                       // they hold a passkey, so they get no second sign-out.
@@ -296,7 +296,7 @@ class PasskeysSection extends StatelessWidget {
                           onPressed: () =>
                               controller.confirmingSignOutId.value =
                                   key.deviceId,
-                          child: Text('Sign out', style: ts_button),
+                          child: Text('Sign out', style: ts_button, textAlign: TextAlign.center),
                         ),
                     ],
             ),

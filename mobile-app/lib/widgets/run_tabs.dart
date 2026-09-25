@@ -118,7 +118,7 @@ class RunTabs extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.sports_bar),
-                label: const Text('Add Down Down'),
+                label: const Text('Add Down Down', textAlign: TextAlign.center),
                 onPressed: () {
                   if (Utilities.isConnected(showDialog: true)) {
                     Navigator.push<void>(
@@ -1937,7 +1937,7 @@ class RunTabs extends StatelessWidget {
                   ),
                 )
               : const Icon(Icons.directions_run),
-          label: Text(label, style: ts_button),
+          label: Text(label, style: ts_button, textAlign: TextAlign.center),
           style: ElevatedButton.styleFrom(
             backgroundColor: isActiveRun ? hc_blue : hc_red,
             foregroundColor: Colors.white,
@@ -2146,6 +2146,7 @@ class _DownDownsHistoryView extends StatelessWidget {
                       label: const Text(
                         'Manage',
                         style: TextStyle(color: Colors.white),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                 ],

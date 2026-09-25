@@ -72,7 +72,7 @@ class PackTrackTrimController extends GetxController {
                 backgroundColor: Colors.grey.shade600,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Cancel', style: ts_button),
+              child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
             ),
             ElevatedButton(
               onPressed: () => Get.back(result: true),
@@ -80,7 +80,7 @@ class PackTrackTrimController extends GetxController {
                 backgroundColor: hc_red,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Stop tracking', style: ts_button),
+              child: Text('Stop tracking', style: ts_button, textAlign: TextAlign.center),
             ),
           ],
         ),
@@ -358,7 +358,7 @@ class TrimEditorOverlay extends StatelessWidget {
                   child: ElevatedButton(
                     style: _trimButtonStyle(),
                     onPressed: busy ? null : () => trimController.setStart(),
-                    child: const Text('Start'),
+                    child: const Text('Start', textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -366,7 +366,7 @@ class TrimEditorOverlay extends StatelessWidget {
                   child: ElevatedButton(
                     style: _trimButtonStyle(),
                     onPressed: busy ? null : () => trimController.setEnd(),
-                    child: const Text('End'),
+                    child: const Text('End', textAlign: TextAlign.center),
                   ),
                 ),
               ],
@@ -377,7 +377,7 @@ class TrimEditorOverlay extends StatelessWidget {
               child: ElevatedButton(
                 style: _trimButtonStyle(),
                 onPressed: busy ? null : () => trimController.clear(),
-                child: const Text('Clear window'),
+                child: const Text('Clear window', textAlign: TextAlign.center),
               ),
             ),
             if (trimController.trackingEnded.value != null) ...[

@@ -57,7 +57,7 @@ class RunNumberPopupState extends State<RunNumberPopup> {
             shape: button_shape,
             backgroundColor: hc_red,
           ),
-          child: Text('Cancel', style: ts_button),
+          child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{'runNumber': 'cancel'});
           },
@@ -70,7 +70,7 @@ class RunNumberPopupState extends State<RunNumberPopup> {
             shape: button_shape,
             backgroundColor: hc_blue,
           ),
-          child: Text('Auto number', style: ts_button),
+          child: Text('Auto number', style: ts_button, textAlign: TextAlign.center),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{'runNumber': 'auto'});
           },
@@ -83,7 +83,7 @@ class RunNumberPopupState extends State<RunNumberPopup> {
             shape: button_shape,
             backgroundColor: hc_red,
           ),
-          child: Text('OK', style: ts_regular),
+          child: Text('OK', style: ts_regular, textAlign: TextAlign.center),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{
               'runNumber': _runNumberAmountTextController.text,

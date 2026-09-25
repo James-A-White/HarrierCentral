@@ -156,7 +156,7 @@ class MultipleChoicePopupStateHc extends State<MultipleChoicePopupHc> {
           backgroundColor: hc_red,
           textStyle: const TextStyle(color: Colors.white),
         ),
-        child: Text(widget.cancelButtonTitle, style: ts_button),
+        child: Text(widget.cancelButtonTitle, style: ts_button, textAlign: TextAlign.center),
         onPressed: () {
           Navigator.of(context).pop(widget.cancelButtonReturnValue);
         },

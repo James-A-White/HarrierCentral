@@ -135,6 +135,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   ? 'Stop Scanning'
                                   : 'Scan at start of run',
                               style: ts_title,
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
@@ -228,6 +229,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   ? 'Stop Scanning'
                                   : 'Scan at end of run',
                               style: ts_title,
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),

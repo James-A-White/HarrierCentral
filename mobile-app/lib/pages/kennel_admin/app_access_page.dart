@@ -120,7 +120,7 @@ class AppAccessPageState extends State<AppAccessPage> {
                             : (appAccess.appAccessFlags ?? 0) | authIsAdmin;
                         Navigator.of(context).pop(access);
                       },
-                      child: Text('Save changes', style: ts_button),
+                      child: Text('Save changes', style: ts_button, textAlign: TextAlign.center),
                     ),
                   ],
                 ),

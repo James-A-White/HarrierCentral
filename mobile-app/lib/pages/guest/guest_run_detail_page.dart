@@ -290,7 +290,7 @@ class _GuestRunDetailPageState extends State<GuestRunDetailPage> {
               ),
             ),
             icon: const Icon(Icons.directions, color: Colors.white),
-            label: Text('Get Directions', style: ts_button),
+            label: Text('Get Directions', style: ts_button, textAlign: TextAlign.center),
             onPressed: () => _openDirections(context, run, lat, lon),
           ),
         ),

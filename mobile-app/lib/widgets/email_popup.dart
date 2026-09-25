@@ -52,7 +52,7 @@ class EmailPopupState extends State<EmailPopup> {
             shape: button_shape,
             backgroundColor: hc_red,
           ),
-          child: Text('Cancel', style: ts_button),
+          child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
           onPressed: () {
             Navigator.of(
               context,
@@ -65,7 +65,7 @@ class EmailPopupState extends State<EmailPopup> {
             shape: button_shape,
             backgroundColor: hc_blue,
           ),
-          child: Text('OK', style: ts_button),
+          child: Text('OK', style: ts_button, textAlign: TextAlign.center),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{
               'type': paymentCashOtherAmount.value.toString(),

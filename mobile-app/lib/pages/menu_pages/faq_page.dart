@@ -289,7 +289,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                               ),
                             );
                           },
-                          child: Text('Contact us', style: ts_button),
+                          child: Text('Contact us', style: ts_button, textAlign: TextAlign.center),
                         ),
                       ),
                     ),

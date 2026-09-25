@@ -150,6 +150,7 @@ class _PaymentOutboxSheetBody extends StatelessWidget {
                   label: const Text(
                     'Send now',
                     style: TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
                   ),
                   onPressed: () async {
                     if (Utilities.isNotConnected()) {
@@ -186,11 +187,11 @@ class _PaymentOutboxSheetBody extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             onPressed: () => Get.back<bool>(result: false),
-            child: const Text('Keep'),
+            child: const Text('Keep', textAlign: TextAlign.center),
           ),
           TextButton(
             onPressed: () => Get.back<bool>(result: true),
-            child: const Text('Discard'),
+            child: const Text('Discard', textAlign: TextAlign.center),
           ),
         ],
       ),

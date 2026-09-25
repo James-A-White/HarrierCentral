@@ -294,7 +294,7 @@ class QrTabState extends State<QrTab>
           actions: <Widget>[
             TextButton(
               style: text_button_style,
-              child: Text('OK, Got it!', style: ts_button),
+              child: Text('OK, Got it!', style: ts_button, textAlign: TextAlign.center),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -375,7 +375,7 @@ class QrTabState extends State<QrTab>
           SizedBox(width: spacer / 3, height: spacer / 3),
           TextButton(
             style: text_button_style,
-            child: Text('Learn more about this feature', style: ts_button),
+            child: Text('Learn more about this feature', style: ts_button, textAlign: TextAlign.center),
             onPressed: () async {
               await _displayInstructions(context);
             },

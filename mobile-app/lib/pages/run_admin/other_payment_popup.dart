@@ -654,6 +654,7 @@ class OtherPaymentPopup extends StatelessWidget {
                   child: Text(
                     'Cancel',
                     style: ts_button.copyWith(fontSize: 18),
+                    textAlign: TextAlign.center,
                   ),
                   onPressed: () {
                     Navigator.of(context).pop(
@@ -684,6 +685,7 @@ class OtherPaymentPopup extends StatelessWidget {
                     child: Text(
                       'Cash',
                       style: ts_button.copyWith(fontSize: 18),
+                      textAlign: TextAlign.center,
                     ),
                     onPressed: () {
                       final OtherPaymentPopupResult
@@ -774,7 +776,7 @@ class OtherPaymentPopup extends StatelessWidget {
                       shape: button_shape,
                       backgroundColor: hc_blue,
                     ),
-                    child: Text('Hash Credit', style: ts_button),
+                    child: Text('Hash Credit', style: ts_button, textAlign: TextAlign.center),
                     onPressed: () {
                       final OtherPaymentPopupResult
                       result = OtherPaymentPopupResult(

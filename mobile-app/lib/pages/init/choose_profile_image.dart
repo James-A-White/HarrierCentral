@@ -273,7 +273,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                               ? Colors.grey
                               : hc_red,
                         ),
-                        child: Text('Next', style: ts_button),
+                        child: Text('Next', style: ts_button, textAlign: TextAlign.center),
                         onPressed: () async {
                           if (_imageTypeSelection !=
                               SelectedImageTypeEnum.none) {

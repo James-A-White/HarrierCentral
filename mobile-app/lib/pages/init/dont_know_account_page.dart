@@ -87,6 +87,7 @@ class DontKnowAccountPage extends StatelessWidget {
                           child: Text(
                             'I have an invite code',
                             style: ts_button,
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),
@@ -109,6 +110,7 @@ class DontKnowAccountPage extends StatelessWidget {
                           child: Text(
                             "I definitely don't have an account",
                             style: ts_button,
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),

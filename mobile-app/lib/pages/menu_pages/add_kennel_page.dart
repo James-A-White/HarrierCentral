@@ -115,7 +115,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                               mode: LaunchMode.externalApplication,
                             );
                           },
-                          child: Text('Add Your Kennel', style: ts_button),
+                          child: Text('Add Your Kennel', style: ts_button, textAlign: TextAlign.center),
                         ),
                       ),
                     ),

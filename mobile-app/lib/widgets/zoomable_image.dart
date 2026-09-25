@@ -177,7 +177,7 @@ class ZoomableImagePage2 extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: ElevatedButton(
-                  child: Text('View Kennel', style: ts_button),
+                  child: Text('View Kennel', style: ts_button, textAlign: TextAlign.center),
                   onPressed: () async {
                     final KennelListAggregate? kennel =
                         await QueryKennels.getSingleKennel(kennelId!);

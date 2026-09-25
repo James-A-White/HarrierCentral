@@ -191,6 +191,7 @@ class FutureRunsListPage extends StatelessWidget {
                           style: ts_headingBlack.copyWith(
                             color: Colors.grey.shade700,
                           ),
+                          textAlign: TextAlign.center,
                         ),
                         onPressed: () {
                           controller.searchController.text = '';
@@ -538,7 +539,14 @@ class FutureRunsListPage extends StatelessWidget {
                                           color: themeButtonColors,
                                           height: 40.0,
                                           alignment: Alignment.center,
+                                          // Scaled down only when the header
+                                          // (text + icon) is wider than the
+                                          // bar: at a large text size "Learn
+                                          // about RSVPs →" overflowed by 96 px.
+                                          child: FittedBox(
+                                          fit: BoxFit.scaleDown,
                                           child: Row(
+                                            mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: <Widget>[
@@ -713,6 +721,7 @@ class FutureRunsListPage extends StatelessWidget {
                                                 ),
                                               ],
                                             ],
+                                          ),
                                           ),
                                         ),
                                         // add some text if no runs are found within the distance filter
@@ -1430,12 +1439,12 @@ class FutureRunsListPage extends StatelessWidget {
                         result = [];
                         Navigator.pop(context);
                       },
-                      child: const Text('Cancel'),
+                      child: const Text('Cancel', textAlign: TextAlign.center),
                     ),
                     SizedBox(width: 20),
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
+                      child: const Text('OK', textAlign: TextAlign.center),
                     ),
                   ],
                 ),

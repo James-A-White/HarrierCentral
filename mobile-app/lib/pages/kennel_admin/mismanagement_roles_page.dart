@@ -332,7 +332,7 @@ class MismanagementRolesPageState extends State<MismanagementRolesPage> {
                           : (mmRoles.mismanagementFlags ?? 0) | mmRoleIsOnMm,
                     );
                   },
-                  child: Text('Save changes', style: ts_button),
+                  child: Text('Save changes', style: ts_button, textAlign: TextAlign.center),
                 ),
               ),
             ),

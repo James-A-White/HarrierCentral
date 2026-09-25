@@ -672,7 +672,7 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
                 ),
               ),
               icon: const Icon(Icons.place, size: 18),
-              label: const Text('Map', style: TextStyle(fontSize: 13)),
+              label: const Text('Map', style: TextStyle(fontSize: 13), textAlign: TextAlign.center),
             ),
           ],
         ],

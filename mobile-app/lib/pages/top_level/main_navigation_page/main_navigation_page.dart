@@ -615,7 +615,7 @@ class _SplashSequenceSlider extends StatelessWidget {
                     child: page > 0
                         ? TextButton(
                             onPressed: () => _goTo(page - 1),
-                            child: Text('Prev', style: _navStyle),
+                            child: Text('Prev', style: _navStyle, textAlign: TextAlign.center),
                           )
                         : const SizedBox(),
                   ),
@@ -646,7 +646,7 @@ class _SplashSequenceSlider extends StatelessWidget {
                     child: TextButton(
                       onPressed: () async =>
                           isLast ? _onDonePress() : _goTo(page + 1),
-                      child: Text(isLast ? 'Done' : 'Next', style: _navStyle),
+                      child: Text(isLast ? 'Done' : 'Next', style: _navStyle, textAlign: TextAlign.center),
                     ),
                   ),
                 ),
@@ -699,7 +699,7 @@ class _SplashLoadingView extends StatelessWidget {
                       // Abandon, not complete: a stalled download must not
                       // mark the promo viewed — it retries next launch.
                       onPressed: controller.abandonSplashSequence,
-                      child: Text('Continue', style: _navStyle),
+                      child: Text('Continue', style: _navStyle, textAlign: TextAlign.center),
                     ),
                   )
                 : Row(

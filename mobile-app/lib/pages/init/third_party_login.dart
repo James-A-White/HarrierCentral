@@ -337,6 +337,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
               child: Text(
                 widget.isNewUser ? 'Get started!' : 'Save Login Info',
                 style: ts_button,
+                textAlign: TextAlign.center,
               ),
               onPressed: () async {
                 if (!widget.isNewUser ||

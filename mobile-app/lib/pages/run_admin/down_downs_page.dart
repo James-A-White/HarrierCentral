@@ -35,7 +35,7 @@ class DownDownsPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: const Text('Cancel', textAlign: TextAlign.center),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -43,7 +43,7 @@ class DownDownsPage extends StatelessWidget {
               backgroundColor: themeBackgroundColor,
               foregroundColor: Colors.white,
             ),
-            child: Text(yes),
+            child: Text(yes, textAlign: TextAlign.center),
           ),
         ],
       ),

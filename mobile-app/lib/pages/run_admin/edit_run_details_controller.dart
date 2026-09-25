@@ -564,11 +564,11 @@ class EditRunDetailsController extends GetxController
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('Not now'),
+            child: const Text('Not now', textAlign: TextAlign.center),
           ),
           TextButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Share'),
+            child: const Text('Share', textAlign: TextAlign.center),
           ),
         ],
       ),
@@ -600,7 +600,7 @@ class EditRunDetailsController extends GetxController
                 foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Not now'),
+              child: const Text('Not now', textAlign: TextAlign.center),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -608,7 +608,7 @@ class EditRunDetailsController extends GetxController
                 foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Auto-locate'),
+              child: const Text('Auto-locate', textAlign: TextAlign.center),
             ),
           ],
         ),
@@ -633,7 +633,7 @@ class EditRunDetailsController extends GetxController
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Dismiss'),
+            child: const Text('Dismiss', textAlign: TextAlign.center),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -644,7 +644,7 @@ class EditRunDetailsController extends GetxController
               Navigator.of(ctx).pop();
               _goToTab(EditingTabEnum.map.value);
             },
-            child: const Text('Go to Map'),
+            child: const Text('Go to Map', textAlign: TextAlign.center),
           ),
         ],
       ),

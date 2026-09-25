@@ -181,6 +181,7 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
                       child: Text(
                         "None of these are me",
                         style: ts_button,
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),

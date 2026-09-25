@@ -573,6 +573,24 @@ Two traps, both of which shipped:
   size a switch plus a button is wider than a phone; a `Wrap` with
   `alignment: WrapAlignment.center` takes a second line, a `Row` overflows.
 
+**Wrapped button text is centred, every time (Flutter/Dart):**
+
+A `Text` defaults to `TextAlign.start`. Inside a button that is invisible
+while the label fits on one line, and shows the moment it wraps — a small
+phone, a large text size — as lines hugging the left edge (James,
+2026-09-25). Every `Text` that is a button's `child:` / `label:` carries
+`textAlign: TextAlign.center`; a single-line label looks identical with or
+without it, so this never changes a large screen. `ButtonStyle` cannot set
+it, so it goes on each Text.
+
+```bash
+python3 tools/button_text_scan.py          # MUST print nothing
+python3 tools/button_text_scan.py --fix    # adds the missing ones
+```
+
+The scan sees stock `ElevatedButton` / `TextButton` / `OutlinedButton` (and
+`.icon`); custom button widgets keep their labels centred by hand.
+
 **Every new screen gets the jungle background (Flutter/Dart):**
 
 New pages default to the Harrier Central jungle background, not the theme's

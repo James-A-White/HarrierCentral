@@ -226,7 +226,7 @@ class OnInnAutoStopMonitor {
                 backgroundColor: Colors.grey.shade600,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Keep Tracking', style: ts_button),
+              child: Text('Keep Tracking', style: ts_button, textAlign: TextAlign.center),
             ),
             ElevatedButton(
               onPressed: () => Get.back(result: EndRunChoice.stoppedEarly),
@@ -234,7 +234,7 @@ class OnInnAutoStopMonitor {
                 backgroundColor: Colors.orange.shade800,
                 foregroundColor: Colors.white,
               ),
-              child: Text('I stopped early', style: ts_button),
+              child: Text('I stopped early', style: ts_button, textAlign: TextAlign.center),
             ),
             ElevatedButton(
               onPressed: () => Get.back(result: EndRunChoice.onInn),
@@ -242,7 +242,7 @@ class OnInnAutoStopMonitor {
                 backgroundColor: hc_red,
                 foregroundColor: Colors.white,
               ),
-              child: Text("I'm On Inn", style: ts_button),
+              child: Text("I'm On Inn", style: ts_button, textAlign: TextAlign.center),
             ),
           ],
         ),

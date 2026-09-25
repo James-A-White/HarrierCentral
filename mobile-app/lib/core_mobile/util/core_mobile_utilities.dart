@@ -53,7 +53,7 @@ class IveCoreMobileUtilities {
           actions: <Widget>[
             if (showCancelButton)
               TextButton(
-                child: Text(cancelButtonText),
+                child: Text(cancelButtonText, textAlign: TextAlign.center),
                 onPressed: () {
                   Navigator.of(context).pop(false);
                 },
@@ -61,7 +61,7 @@ class IveCoreMobileUtilities {
             else
               Container(),
             TextButton(
-              child: Text(buttonText),
+              child: Text(buttonText, textAlign: TextAlign.center),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },

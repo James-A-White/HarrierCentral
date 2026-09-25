@@ -793,7 +793,7 @@ class PaymentReportPage extends StatelessWidget {
             actions: <Widget>[
               TextButton(
                 style: text_button_style,
-                child: Text('Close', style: ts_button),
+                child: Text('Close', style: ts_button, textAlign: TextAlign.center),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('close');
                 },
@@ -1377,7 +1377,7 @@ class PaymentReportPage extends StatelessWidget {
                                   remitAmount: item.payment!.creditAmount,
                                 );
                               },
-                              child: Text('Show Payment QR', style: ts_button),
+                              child: Text('Show Payment QR', style: ts_button, textAlign: TextAlign.center),
                             ),
                     ),
                   ),
@@ -1401,6 +1401,7 @@ class PaymentReportPage extends StatelessWidget {
                               child: Text(
                                 'Confirm Bank Transfer',
                                 style: ts_button,
+                                textAlign: TextAlign.center,
                               ),
                             ),
                     ),
@@ -1419,14 +1420,14 @@ class PaymentReportPage extends StatelessWidget {
               if (item.payment!.productType == productTypeEvent.value)
                 TextButton(
                   style: text_button_style,
-                  child: Text('Cancel transaction', style: ts_button),
+                  child: Text('Cancel transaction', style: ts_button, textAlign: TextAlign.center),
                   onPressed: () {
                     Navigator.of(context, rootNavigator: true).pop('cancel');
                   },
                 ),
               TextButton(
                 style: text_button_style,
-                child: Text('Close', style: ts_button),
+                child: Text('Close', style: ts_button, textAlign: TextAlign.center),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('close');
                 },

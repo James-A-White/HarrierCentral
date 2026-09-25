@@ -54,7 +54,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
             shape: button_shape,
             backgroundColor: hc_blue,
           ),
-          child: const Text('Reset'),
+          child: const Text('Reset', textAlign: TextAlign.center),
           onPressed: () async {
             await clearPrefs();
           },
@@ -65,7 +65,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
             shape: button_shape,
             backgroundColor: hc_blue,
           ),
-          child: Text('Done', style: ts_button),
+          child: Text('Done', style: ts_button, textAlign: TextAlign.center),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -78,7 +78,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
             shape: button_shape,
             backgroundColor: hc_blue,
           ),
-          child: Text('Get code', style: ts_button),
+          child: Text('Get code', style: ts_button, textAlign: TextAlign.center),
           onPressed: () async {
             final GetResetCodeService svc = GetResetCodeService();
             final SingleResultModel? result = await svc.getResetCode(
@@ -105,7 +105,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
                   shape: button_shape,
                   backgroundColor: hc_blue,
                 ),
-                child: Text('Reset device', style: ts_button),
+                child: Text('Reset device', style: ts_button, textAlign: TextAlign.center),
                 onPressed: () async {
                   if (getResetCodeTextController.text.toUpperCase() ==
                       '${QR_PREFIX_USER_RESET_CODE}CLEAR') {

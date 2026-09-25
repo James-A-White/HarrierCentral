@@ -227,6 +227,7 @@ class KennelsListPage extends StatelessWidget {
               child: Text(
                 'X',
                 style: ts_headingBlack.copyWith(color: Colors.grey.shade700),
+                textAlign: TextAlign.center,
               ),
               onPressed: () {
                 controller.searchController.text = '';

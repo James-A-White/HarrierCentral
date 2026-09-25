@@ -356,6 +356,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                               child: Text(
                                                 'Scan Receipt',
                                                 style: ts_button,
+                                                textAlign: TextAlign.center,
                                               ),
                                             ),
                                           ],
@@ -453,7 +454,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                         width: 200,
                         child: ElevatedButton(
                           onPressed: _uploadReceipt,
-                          child: Text('Save receipt', style: ts_button),
+                          child: Text('Save receipt', style: ts_button, textAlign: TextAlign.center),
                         ),
                       ),
                     ],

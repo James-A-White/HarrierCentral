@@ -136,7 +136,7 @@ class RunAdminPage extends StatelessWidget {
                         onPressed: () async {
                           await controller.getRunDetails();
                         },
-                        child: Text('Try again', style: ts_button),
+                        child: Text('Try again', style: ts_button, textAlign: TextAlign.center),
                       ),
                     ],
                   ),

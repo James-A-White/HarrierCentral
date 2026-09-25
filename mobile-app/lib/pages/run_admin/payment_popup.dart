@@ -156,7 +156,7 @@ class PaymentPopupState extends State<PaymentPopup> {
             height: 41.0,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: hc_red),
-              child: Text('Cancel', style: ts_button.copyWith(fontSize: 18)),
+              child: Text('Cancel', style: ts_button.copyWith(fontSize: 18), textAlign: TextAlign.center),
               onPressed: () {
                 final PaymentPopupResult popupResult = PaymentPopupResult(
                   transactionType: -1,
@@ -175,7 +175,7 @@ class PaymentPopupState extends State<PaymentPopup> {
               shape: button_shape,
               backgroundColor: hc_blue,
             ),
-            child: Text('Process', style: ts_button.copyWith(fontSize: 18)),
+            child: Text('Process', style: ts_button.copyWith(fontSize: 18), textAlign: TextAlign.center),
             onPressed: () {
               if (_selectedValue != PaymentPopup.otherAmountRowId) {
                 _otherPaymentResult = null;

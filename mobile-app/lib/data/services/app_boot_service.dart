@@ -999,7 +999,7 @@ class AppBootService {
           ElevatedButton.icon(
             onPressed: () => Get.back(),
             icon: const Icon(Icons.refresh, size: 18),
-            label: const Text('Reload'),
+            label: const Text('Reload', textAlign: TextAlign.center),
           ),
         ],
       ),

@@ -139,7 +139,7 @@ class ChatStripWidget extends StatelessWidget {
                     const Spacer(),
                     TextButton.icon(
                       icon: const Icon(Icons.open_in_new, size: 14),
-                      label: Text('Open Chat', style: ts_bodySmall),
+                      label: Text('Open Chat', style: ts_bodySmall, textAlign: TextAlign.center),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,

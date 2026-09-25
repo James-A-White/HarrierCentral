@@ -1510,6 +1510,7 @@ class _MyNotesSection extends StatelessWidget {
                     child: Text(
                       c.saving.value ? 'Saving…' : 'Save notes',
                       style: ts_button,
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),

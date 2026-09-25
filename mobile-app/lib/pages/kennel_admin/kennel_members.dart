@@ -485,6 +485,7 @@ class KennelMembersList extends StatelessWidget {
                     style: ts_headingBlack.copyWith(
                       color: Colors.grey.shade700,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),

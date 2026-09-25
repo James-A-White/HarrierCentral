@@ -84,7 +84,7 @@ class EmailNotReceivedPage extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.mail_outline, color: Colors.white),
-                    label: Text('Contact Us', style: ts_button),
+                    label: Text('Contact Us', style: ts_button, textAlign: TextAlign.center),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       backgroundColor: themeAppBarBackground,
@@ -107,7 +107,7 @@ class EmailNotReceivedPage extends StatelessWidget {
                       ),
                     ),
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Back to invite code entry', style: ts_button),
+                    child: Text('Back to invite code entry', style: ts_button, textAlign: TextAlign.center),
                   ),
                 ),
               ],

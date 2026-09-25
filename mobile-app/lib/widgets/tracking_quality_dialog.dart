@@ -60,7 +60,7 @@ class _TrackingQualityDialogState extends State<_TrackingQualityDialog> {
             backgroundColor: themeBackgroundColor,
             foregroundColor: Colors.white,
           ),
-          child: const Text('Save'),
+          child: const Text('Save', textAlign: TextAlign.center),
         ),
       ],
     );

@@ -111,7 +111,7 @@ class _BottomBar extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: TextButton(
                 onPressed: c.onSkipPressed,
-                child: Text('Skip', style: _navStyle),
+                child: Text('Skip', style: _navStyle, textAlign: TextAlign.center),
               ),
             ),
           ),
@@ -145,6 +145,7 @@ class _BottomBar extends StatelessWidget {
                       ? 'OK'
                       : (c.activeSlide.isPermissionPage ? 'Allow' : 'Next'),
                   style: _navStyle,
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),

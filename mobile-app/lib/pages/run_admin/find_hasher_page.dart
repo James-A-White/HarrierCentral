@@ -174,6 +174,7 @@ class FindHasherPageState extends State<FindHasherPage> {
               child: Text(
                 'X',
                 style: ts_headingBlack.copyWith(color: Colors.grey.shade700),
+                textAlign: TextAlign.center,
               ),
               onPressed: () {},
             ),
@@ -235,7 +236,7 @@ class HasherListView extends StatelessWidget {
                 shape: button_shape,
                 backgroundColor: hc_red,
               ),
-              child: Text('Cancel', style: ts_button),
+              child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
               onPressed: () {
                 Navigator.of(context).pop(-1);
               },
@@ -246,7 +247,7 @@ class HasherListView extends StatelessWidget {
                 shape: button_shape,
                 backgroundColor: hc_blue,
               ),
-              child: Text('Add', style: ts_button),
+              child: Text('Add', style: ts_button, textAlign: TextAlign.center),
               onPressed: () {
                 Navigator.of(context).pop(enumHasher.value);
               },

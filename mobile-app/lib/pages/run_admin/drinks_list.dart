@@ -103,7 +103,7 @@ class _EmptyState extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () => unawaited(controller.manualRefresh()),
                 icon: const Icon(Icons.refresh),
-                label: const Text('Try again'),
+                label: const Text('Try again', textAlign: TextAlign.center),
               ),
             ],
           ],

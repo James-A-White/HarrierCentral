@@ -580,7 +580,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
     return Column(
       children: <Widget>[
         ElevatedButton(
-          child: Text('Edit run', style: ts_button),
+          child: Text('Edit run', style: ts_button, textAlign: TextAlign.center),
           onPressed: () async {
             final LiteEventModel? rawEvent = _controller
                 .calendarEvents[_controller.toDateOnly(selected)]?[0];
@@ -644,7 +644,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
             await _controller.refreshEventFromTables(true);
             _controller.refreshList();
           },
-          child: Text('Add run', style: ts_button),
+          child: Text('Add run', style: ts_button, textAlign: TextAlign.center),
         ),
         ElevatedButton(
           style: ButtonStyle(
@@ -655,7 +655,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
           onPressed: () async {
             await _controller.showEventPopup(selected, context);
           },
-          child: Text('Add run placeholder', style: ts_button),
+          child: Text('Add run placeholder', style: ts_button, textAlign: TextAlign.center),
         ),
       ],
     );

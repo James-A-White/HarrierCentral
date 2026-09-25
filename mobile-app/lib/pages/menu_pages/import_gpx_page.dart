@@ -415,6 +415,7 @@ class ImportGpxPage extends StatelessWidget {
                             ? 'Choose a file'
                             : 'Choose a different file',
                         style: ts_button,
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
@@ -684,6 +685,7 @@ class _CandidateRow extends StatelessWidget {
                 child: Text(
                   c.existingTrackPoints > 0 ? 'Replace' : 'Import',
                   style: ts_button,
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],
@@ -764,12 +766,12 @@ class PreviousUploadCard extends StatelessWidget {
               children: <Widget>[
                 ElevatedButton(
                   onPressed: busy ? null : onReimport,
-                  child: Text('Re-import', style: ts_button),
+                  child: Text('Re-import', style: ts_button, textAlign: TextAlign.center),
                 ),
                 const SizedBox(height: 6),
                 ElevatedButton(
                   onPressed: busy ? null : onDelete,
-                  child: Text('Remove', style: ts_button),
+                  child: Text('Remove', style: ts_button, textAlign: TextAlign.center),
                 ),
               ],
             ),

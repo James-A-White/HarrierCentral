@@ -195,7 +195,7 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                         builder: (_) => const UseInviteCodePage(),
                       ),
                     ),
-                    child: Text('I have an invite code', style: ts_button),
+                    child: Text('I have an invite code', style: ts_button, textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(height: 12),

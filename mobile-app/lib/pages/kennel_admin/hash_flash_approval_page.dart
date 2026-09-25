@@ -434,7 +434,7 @@ class PhotoReviewController extends GetxController {
               backgroundColor: Colors.grey.shade600,
               foregroundColor: Colors.white,
             ),
-            child: Text('Switch', style: ts_button),
+            child: Text('Switch', style: ts_button, textAlign: TextAlign.center),
           ),
         ],
       ),
@@ -507,7 +507,7 @@ class PhotoReviewController extends GetxController {
                 backgroundColor: Colors.grey.shade600,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Cancel', style: ts_button),
+              child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(ctx).pop(true),
@@ -515,7 +515,7 @@ class PhotoReviewController extends GetxController {
                 backgroundColor: hc_red,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Delete', style: ts_button),
+              child: Text('Delete', style: ts_button, textAlign: TextAlign.center),
             ),
           ],
         ),
@@ -624,7 +624,7 @@ class PhotoReviewController extends GetxController {
                 backgroundColor: Colors.grey.shade600,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Cancel', style: ts_button),
+              child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -632,7 +632,7 @@ class PhotoReviewController extends GetxController {
                 backgroundColor: hc_red,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Delete', style: ts_button),
+              child: Text('Delete', style: ts_button, textAlign: TextAlign.center),
             ),
           ],
         ),
@@ -759,7 +759,7 @@ class PhotoReviewController extends GetxController {
               backgroundColor: hc_red,
               foregroundColor: Colors.white,
             ),
-            child: Text('OK', style: ts_button),
+            child: Text('OK', style: ts_button, textAlign: TextAlign.center),
           ),
         ],
       ),
@@ -786,7 +786,7 @@ class PhotoReviewController extends GetxController {
               backgroundColor: hc_red,
               foregroundColor: Colors.white,
             ),
-            child: Text('OK', style: ts_button),
+            child: Text('OK', style: ts_button, textAlign: TextAlign.center),
           ),
         ],
       ),
@@ -972,7 +972,7 @@ class PhotoReviewController extends GetxController {
               backgroundColor: hc_red,
               foregroundColor: Colors.white,
             ),
-            child: Text('OK', style: ts_button),
+            child: Text('OK', style: ts_button, textAlign: TextAlign.center),
           ),
         ],
       ),
@@ -1359,6 +1359,7 @@ class _PillButton extends StatelessWidget {
             color: Colors.white,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
@@ -1423,7 +1424,7 @@ class _PhotoBody extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: page.controller.clearStatusFilter,
                     icon: const Icon(Icons.clear, size: 18),
-                    label: Text('Show all photos', style: ts_button),
+                    label: Text('Show all photos', style: ts_button, textAlign: TextAlign.center),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: hc_red,
                       foregroundColor: Colors.white,
@@ -1608,7 +1609,7 @@ class _BulkActionBar extends StatelessWidget {
                 const Spacer(),
                 TextButton(
                   onPressed: controller.selectAllVisible,
-                  child: Text('Select all', style: ts_button),
+                  child: Text('Select all', style: ts_button, textAlign: TextAlign.center),
                 ),
                 // Both buttons carry the themed red background, so without a
                 // gap they read as one pill.
@@ -1618,6 +1619,7 @@ class _BulkActionBar extends StatelessWidget {
                   child: Text(
                     'Clear',
                     style: ts_button.copyWith(color: Colors.white70),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ],
@@ -2069,7 +2071,7 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
               if (widget.initialCaption.isNotEmpty)
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(''),
-                  child: Text('Clear', style: ts_button),
+                  child: Text('Clear', style: ts_button, textAlign: TextAlign.center),
                 ),
             ],
           ),
@@ -2118,7 +2120,7 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
                 ),
               ),
               onPressed: () => Navigator.of(context).pop(_finalCaption ?? ''),
-              child: Text('Save caption', style: ts_button),
+              child: Text('Save caption', style: ts_button, textAlign: TextAlign.center),
             ),
           ),
           const SizedBox(height: 4),

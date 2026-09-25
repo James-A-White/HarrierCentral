@@ -48,6 +48,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                         'Open Privacy Policy',
                         // White on the red button, never the heading yellow.
                         style: ts_headingLarge.copyWith(color: Colors.white),
+                        textAlign: TextAlign.center,
                       ),
                       onPressed: () => Navigator.push<dynamic>(
                         context,

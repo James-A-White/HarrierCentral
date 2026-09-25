@@ -358,7 +358,7 @@ class SettingsPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: ElevatedButton.icon(
               icon: const Icon(Icons.refresh, color: Colors.white),
-              label: Text('Try again', style: ts_button),
+              label: Text('Try again', style: ts_button, textAlign: TextAlign.center),
               onPressed: () => unawaited(controller.loadChatRooms()),
             ),
           ),
@@ -433,12 +433,13 @@ class SettingsPage extends StatelessWidget {
                 child: Text(
                   isSet ? 'Change' : 'Choose an app',
                   style: ts_button,
+                  textAlign: TextAlign.center,
                 ),
               ),
               if (isSet)
                 TextButton(
                   onPressed: () => unawaited(controller.clearMapProvider()),
-                  child: Text('Ask me every time', style: ts_button),
+                  child: Text('Ask me every time', style: ts_button, textAlign: TextAlign.center),
                 ),
             ],
           ),
@@ -498,7 +499,7 @@ class SettingsPage extends StatelessWidget {
             padding: const EdgeInsets.only(top: 22.0, bottom: 20.0),
             child: ElevatedButton(
               onPressed: () => unawaited(controller.enableLocationServices()),
-              child: Text('Use Location', style: ts_button),
+              child: Text('Use Location', style: ts_button, textAlign: TextAlign.center),
             ),
           ),
         ] else

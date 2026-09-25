@@ -47,7 +47,7 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
           style: text_button_style.copyWith(
             backgroundColor: WidgetStatePropertyAll(hc_blue),
           ),
-          child: Text('Add counted run', style: ts_button),
+          child: Text('Add counted run', style: ts_button, textAlign: TextAlign.center),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{
               'type': eventFilterType_countEvent.value.toString(),
@@ -60,7 +60,7 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
           style: text_button_style.copyWith(
             backgroundColor: WidgetStatePropertyAll(hc_blue),
           ),
-          child: Text('Add other event', style: ts_button),
+          child: Text('Add other event', style: ts_button, textAlign: TextAlign.center),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{
               'type': eventFilterType_doNotCountEvent.value.toString(),
@@ -71,7 +71,7 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
 
         TextButton(
           style: text_button_style,
-          child: Text('Cancel', style: ts_button),
+          child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
           onPressed: () {
             Navigator.of(
               context,

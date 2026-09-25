@@ -465,6 +465,7 @@ class HasherProfilePage extends StatelessWidget {
                                                 child: Text(
                                                   'Update Profile Image',
                                                   style: ts_button,
+                                                  textAlign: TextAlign.center,
                                                 ),
                                               ),
                                             ),
@@ -667,6 +668,7 @@ class HasherProfilePage extends StatelessWidget {
                                                         child: Text(
                                                           'Get invite code',
                                                           style: ts_button,
+                                                          textAlign: TextAlign.center,
                                                         ),
                                                       ),
                                                     ),
@@ -830,6 +832,7 @@ class HasherProfilePage extends StatelessWidget {
                                                     child: Text(
                                                       'Log out of Harrier Central',
                                                       style: ts_button,
+                                                      textAlign: TextAlign.center,
                                                     ),
                                                   ),
                                                 ),
@@ -920,6 +923,7 @@ class HasherProfilePage extends StatelessWidget {
                                                     child: Text(
                                                       'Login with 3rd Party',
                                                       style: ts_button,
+                                                      textAlign: TextAlign.center,
                                                     ),
                                                   ),
                                                 ),
@@ -985,6 +989,7 @@ class HasherProfilePage extends StatelessWidget {
                                                     child: Text(
                                                       'Delete Account',
                                                       style: ts_button,
+                                                      textAlign: TextAlign.center,
                                                     ),
                                                   ),
                                                 ),
@@ -1044,6 +1049,7 @@ class HasherProfilePage extends StatelessWidget {
                       ? 'Add Hasher'
                       : 'Save Changes',
                   style: ts_button,
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),

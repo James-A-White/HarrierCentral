@@ -1037,7 +1037,7 @@ class RunTrackerMapController extends GetxController
           actions: [
             TextButton(
               onPressed: () => Get.back<void>(),
-              child: const Text('Close'),
+              child: const Text('Close', textAlign: TextAlign.center),
             ),
           ],
         ),

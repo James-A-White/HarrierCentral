@@ -171,7 +171,7 @@ class CreateNewAccountPageContentState
                 if (!isLoading) ...<Widget>[
                   TextButton(
                     style: text_button_style,
-                    child: Text('Get Started!', style: ts_button),
+                    child: Text('Get Started!', style: ts_button, textAlign: TextAlign.center),
                     onPressed: () async {
                       if (_myDetailsUiStateKey.currentState!.validateForm()) {
                         // isLoading HIDES this button (see `if (!isLoading)`

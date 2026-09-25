@@ -575,6 +575,7 @@ class Leaderboard extends StatelessWidget {
                       child: const Text(
                         'X',
                         style: TextStyle(color: Colors.grey),
+                        textAlign: TextAlign.center,
                       ),
                       onPressed: () {
                         c.searchController.text = '';

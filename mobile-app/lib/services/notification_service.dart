@@ -943,6 +943,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         child: const Text(
           'Go to song',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
         ),
       ),
     );

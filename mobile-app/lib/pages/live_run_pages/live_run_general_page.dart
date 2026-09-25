@@ -886,6 +886,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                   ? 'Start Run Tracking'
                   : 'Tracking available at ${controller.trackingOpensAt}',
               style: ts_button.copyWith(fontSize: canStart ? 18 : 15),
+              textAlign: TextAlign.center,
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade700,
@@ -905,7 +906,7 @@ class LiveRunGeneralPage extends StatelessWidget {
       final leftButton = paused
           ? ElevatedButton.icon(
               icon: const Icon(Icons.play_arrow, size: 20, color: Colors.white),
-              label: Text('Resume', style: ts_button.copyWith(fontSize: 18)),
+              label: Text('Resume', style: ts_button.copyWith(fontSize: 18), textAlign: TextAlign.center),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade700,
                 foregroundColor: Colors.white,
@@ -919,6 +920,7 @@ class LiveRunGeneralPage extends StatelessWidget {
               label: Text(
                 'Auto Pause',
                 style: ts_button.copyWith(fontSize: 18),
+                textAlign: TextAlign.center,
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange.shade700,
@@ -967,7 +969,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                             backgroundColor: Colors.grey.shade600,
                             foregroundColor: Colors.white,
                           ),
-                          child: Text('Keep Tracking', style: ts_button),
+                          child: Text('Keep Tracking', style: ts_button, textAlign: TextAlign.center),
                         ),
                         ElevatedButton(
                           onPressed: () => Navigator.of(
@@ -977,7 +979,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                             backgroundColor: Colors.orange.shade800,
                             foregroundColor: Colors.white,
                           ),
-                          child: Text('I stopped early', style: ts_button),
+                          child: Text('I stopped early', style: ts_button, textAlign: TextAlign.center),
                         ),
                         ElevatedButton(
                           onPressed: () =>
@@ -986,7 +988,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                             backgroundColor: hc_red,
                             foregroundColor: Colors.white,
                           ),
-                          child: Text("I'm On Inn", style: ts_button),
+                          child: Text("I'm On Inn", style: ts_button, textAlign: TextAlign.center),
                         ),
                       ],
                     ),
@@ -1421,7 +1423,7 @@ class LiveRunGeneralPage extends StatelessWidget {
           Expanded(
             child: ElevatedButton.icon(
               icon: const Icon(Icons.explore_off, size: 22),
-              label: Text("I'm Lost", style: ts_button.copyWith(fontSize: 16)),
+              label: Text("I'm Lost", style: ts_button.copyWith(fontSize: 16), textAlign: TextAlign.center),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrange.shade700,
                 foregroundColor: Colors.white,
@@ -1435,7 +1437,7 @@ class LiveRunGeneralPage extends StatelessWidget {
           Expanded(
             child: ElevatedButton.icon(
               icon: const Icon(Icons.sos, size: 22),
-              label: Text('Send Help', style: ts_button.copyWith(fontSize: 16)),
+              label: Text('Send Help', style: ts_button.copyWith(fontSize: 16), textAlign: TextAlign.center),
               style: ElevatedButton.styleFrom(
                 backgroundColor: hc_red,
                 foregroundColor: Colors.white,
@@ -1472,6 +1474,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                 label: Text(
                   on ? 'Light On' : 'Flashlight',
                   style: ts_button.copyWith(fontSize: 16),
+                  textAlign: TextAlign.center,
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: on ? Colors.amber.shade600 : Colors.blueGrey,
@@ -1489,6 +1492,7 @@ class LiveRunGeneralPage extends StatelessWidget {
               label: Text(
                 'Share My Run',
                 style: ts_button.copyWith(fontSize: 15),
+                textAlign: TextAlign.center,
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: hc_blue,
@@ -1545,7 +1549,7 @@ class LiveRunGeneralPage extends StatelessWidget {
               backgroundColor: Colors.grey.shade600,
               foregroundColor: Colors.white,
             ),
-            child: Text('Cancel', style: ts_button),
+            child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -1553,7 +1557,7 @@ class LiveRunGeneralPage extends StatelessWidget {
               backgroundColor: urgent ? hc_red : Colors.deepOrange.shade700,
               foregroundColor: Colors.white,
             ),
-            child: Text(urgent ? 'Send Help' : "I'm Lost", style: ts_button),
+            child: Text(urgent ? 'Send Help' : "I'm Lost", style: ts_button, textAlign: TextAlign.center),
           ),
         ],
       ),
@@ -1749,6 +1753,7 @@ class _SlotFlashDialogState extends State<_SlotFlashDialog>
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.center,
                         ),
                         onPressed: _undo,
                       ),

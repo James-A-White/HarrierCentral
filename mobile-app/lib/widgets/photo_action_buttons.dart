@@ -206,6 +206,7 @@ class PhotoActionButton extends StatelessWidget {
           color: fg,
           fontWeight: isSelected ? FontWeight.bold : null,
         ),
+        textAlign: TextAlign.center,
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor:

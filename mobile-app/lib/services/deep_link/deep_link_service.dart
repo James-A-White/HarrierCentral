@@ -524,11 +524,11 @@ class DeepLinkService {
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('Not now'),
+            child: const Text('Not now', textAlign: TextAlign.center),
           ),
           TextButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Follow'),
+            child: const Text('Follow', textAlign: TextAlign.center),
           ),
         ],
       ),

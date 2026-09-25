@@ -76,7 +76,7 @@ class GetPointLabelPopup extends StatelessWidget {
                 shape: button_shape,
                 backgroundColor: hc_blue,
               ),
-              child: Text('Cancel', style: ts_button),
+              child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
               onPressed: () async {
                 Navigator.of(context).pop(<String, String>{'label': ''});
                 await Get.delete<GetPointLabelController>(tag: controllerTag);
@@ -87,7 +87,7 @@ class GetPointLabelPopup extends StatelessWidget {
                 shape: button_shape,
                 backgroundColor: hc_blue,
               ),
-              child: Text(confirmButtonText, style: ts_button),
+              child: Text(confirmButtonText, style: ts_button, textAlign: TextAlign.center),
               onPressed: () async {
                 Navigator.of(
                   context,

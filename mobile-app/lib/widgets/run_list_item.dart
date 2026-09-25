@@ -775,7 +775,7 @@ class RunListItem extends StatelessWidget {
                     ),
                   )
                 : const Icon(Icons.directions_run),
-            label: Text(label, style: ts_button),
+            label: Text(label, style: ts_button, textAlign: TextAlign.center),
             style: ElevatedButton.styleFrom(
               backgroundColor: isActiveRun ? hc_blue : hc_red,
               foregroundColor: Colors.white,

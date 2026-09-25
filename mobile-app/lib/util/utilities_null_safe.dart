@@ -647,7 +647,7 @@ class Utilities {
           if (showCancelButton)
             TextButton(
               style: text_button_style,
-              child: Text(cancelButtonText, style: ts_button),
+              child: Text(cancelButtonText, style: ts_button, textAlign: TextAlign.center),
               onPressed: () {
                 Get.back(result: false, canPop: true);
               },
@@ -656,7 +656,7 @@ class Utilities {
             Container(),
           TextButton(
             style: text_button_style,
-            child: Text(buttonText, style: ts_button),
+            child: Text(buttonText, style: ts_button, textAlign: TextAlign.center),
             onPressed: () {
               Get.back(result: true, canPop: true);
             },
@@ -692,7 +692,7 @@ class Utilities {
           showCancelButton == true
               ? TextButton(
                   style: text_button_style,
-                  child: Text(cancelButtonText, style: ts_button),
+                  child: Text(cancelButtonText, style: ts_button, textAlign: TextAlign.center),
                   onPressed: () {
                     Get.back<bool?>(result: false, canPop: true);
                   },
@@ -700,7 +700,7 @@ class Utilities {
               : Container(),
           TextButton(
             style: text_button_style,
-            child: Text(buttonText, style: ts_button),
+            child: Text(buttonText, style: ts_button, textAlign: TextAlign.center),
             onPressed: () {
               Get.back<bool?>(result: true, canPop: true);
             },

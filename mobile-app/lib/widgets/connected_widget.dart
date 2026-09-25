@@ -57,7 +57,7 @@ class ConnectedWidget extends StatelessWidget {
       onPressed: () async {
         await _attemptReconnect();
       },
-      child: Text('Attempt to Connect', style: ts_button),
+      child: Text('Attempt to Connect', style: ts_button, textAlign: TextAlign.center),
     );
   }
 

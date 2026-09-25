@@ -593,6 +593,7 @@ class MembershipChargeSheetBody extends StatelessWidget {
                         ? 'Membership + check in (run free)'
                         : 'Membership + run fee '
                               '(${c.formatMoney(c.memberRunPrice.value!)})',
+                              textAlign: TextAlign.center,
                   ),
                 ),
               ),

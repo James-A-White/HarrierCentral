@@ -63,7 +63,7 @@ class _PasskeySignInButtonState extends State<PasskeySignInButton> {
                 ),
               )
             : const Icon(Icons.key, color: Colors.white, size: 24),
-        label: Text('Sign in with my passkey', style: ts_button),
+        label: Text('Sign in with my passkey', style: ts_button, textAlign: TextAlign.center),
       ),
     );
   }

@@ -568,7 +568,7 @@ class _ErrorState extends StatelessWidget {
                 ),
               ),
               onPressed: onRetry,
-              child: Text('Retry', style: ts_button),
+              child: Text('Retry', style: ts_button, textAlign: TextAlign.center),
             ),
           ],
         ),

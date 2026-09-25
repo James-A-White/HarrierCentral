@@ -96,6 +96,7 @@ class SupportPage extends StatelessWidget {
                             child: Text(
                               'Learn more about this feature',
                               style: ts_button,
+                              textAlign: TextAlign.center,
                             ),
                             onPressed: () async {
                               await _displayInstructions(context);
@@ -183,6 +184,7 @@ class SupportPage extends StatelessWidget {
                                           child: Text(
                                             'Reload Data',
                                             style: ts_button,
+                                            textAlign: TextAlign.center,
                                           ),
                                         ),
                                       ),
@@ -259,6 +261,7 @@ class SupportPage extends StatelessWidget {
                                                 ? 'Copied!'
                                                 : 'Copy log to clipboard',
                                             style: ts_button,
+                                            textAlign: TextAlign.center,
                                           ),
                                         ),
                                       ],
@@ -348,7 +351,7 @@ class SupportPage extends StatelessWidget {
           actions: <Widget>[
             TextButton(
               style: text_button_style,
-              child: Text('OK, Got it!', style: ts_button),
+              child: Text('OK, Got it!', style: ts_button, textAlign: TextAlign.center),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },

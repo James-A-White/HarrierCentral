@@ -1472,6 +1472,7 @@ class LostCompassDialog extends StatelessWidget {
                     // Only the button that was actually pressed says so.
                     busy && sendingAllClear == allClear ? 'Sending…' : text,
                     style: ts_button,
+                    textAlign: TextAlign.center,
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colour,
@@ -1525,7 +1526,7 @@ class LostCompassDialog extends StatelessWidget {
             backgroundColor: hc_red,
             foregroundColor: Colors.white,
           ),
-          child: Text('Close', style: ts_button),
+          child: Text('Close', style: ts_button, textAlign: TextAlign.center),
         ),
       ],
     );

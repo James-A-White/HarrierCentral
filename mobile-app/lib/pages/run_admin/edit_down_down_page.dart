@@ -183,6 +183,7 @@ class EditDownDownPage extends StatelessWidget {
                             ? 'Photo added'
                             : 'Add photo (optional)',
                         style: const TextStyle(color: Colors.white70),
+                        textAlign: TextAlign.center,
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.white30),

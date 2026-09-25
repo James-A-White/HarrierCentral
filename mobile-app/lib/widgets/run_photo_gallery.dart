@@ -153,7 +153,7 @@ class RunPhotoGallery extends StatelessWidget {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => unawaited(controller.load()),
-            child: Text('Retry', style: ts_button),
+            child: Text('Retry', style: ts_button, textAlign: TextAlign.center),
           ),
         ],
       ),

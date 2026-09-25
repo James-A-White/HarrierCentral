@@ -120,7 +120,11 @@ class _AnswerButton extends StatelessWidget {
         onPressed: onPressed,
         child: Column(
           children: <Widget>[
-            Text(label, style: ts_button.copyWith(fontSize: 20)),
+            Text(
+              label,
+              style: ts_button.copyWith(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 4),
             Text(
               description,

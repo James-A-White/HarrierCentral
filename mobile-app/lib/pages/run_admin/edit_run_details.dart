@@ -66,7 +66,7 @@ class EditRunDetailsPage extends StatelessWidget {
                       disabledForegroundColor: Colors.white70,
                     ),
                     onPressed: enabled ? c.onSaveBarPressed : null,
-                    child: Text(label, style: ts_button),
+                    child: Text(label, style: ts_button, textAlign: TextAlign.center),
                   ),
                 ),
         ),
@@ -629,7 +629,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                     onPressed: enabled
                                         ? c.openLocationLookup
                                         : null,
-                                    child: const Text('Lookup'),
+                                    child: const Text('Lookup', textAlign: TextAlign.center),
                                   );
                                 },
                               ),
@@ -787,6 +787,7 @@ class EditRunDetailsPage extends StatelessWidget {
                         child: Text(
                           'Copy data from ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                           style: ts_button,
+                          textAlign: TextAlign.center,
                         ),
                         onPressed: () async {
                           await c.useExternalSourceDetails();
@@ -838,7 +839,7 @@ class EditRunDetailsPage extends StatelessWidget {
                       40,
                     ), // double.infinity is the width and 30 is the height
                   ),
-                  child: Text('Use this image', style: ts_button),
+                  child: Text('Use this image', style: ts_button, textAlign: TextAlign.center),
                   onPressed: () async {
                     if ((c.eventAggregate.event.eventId.isNotEmpty) &&
                         (c.eventAggregate.event.eventId != GUID_EMPTY)) {
@@ -916,7 +917,7 @@ class EditRunDetailsPage extends StatelessWidget {
                       40,
                     ), // double.infinity is the width and 30 is the height
                   ),
-                  child: Text('Select again from gallery', style: ts_button),
+                  child: Text('Select again from gallery', style: ts_button, textAlign: TextAlign.center),
                   onPressed: () async {
                     await c.getImageFromGallery(ImageSource.gallery);
                   },
@@ -936,6 +937,7 @@ class EditRunDetailsPage extends StatelessWidget {
                     child: Text(
                       'Use image from ${integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                       style: ts_button,
+                      textAlign: TextAlign.center,
                     ),
                     onPressed: () async {
                       c.mutate(() {
@@ -976,7 +978,7 @@ class EditRunDetailsPage extends StatelessWidget {
                       40,
                     ), // double.infinity is the width and 30 is the height
                   ),
-                  child: Text('Use original image', style: ts_button),
+                  child: Text('Use original image', style: ts_button, textAlign: TextAlign.center),
                   onPressed: () {
                     c.mutate(() {
                       c.imageFromGallery = Future<File?>.value(null);
@@ -1031,6 +1033,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                       child: Text(
                                         'Select from gallery',
                                         style: ts_button,
+                                        textAlign: TextAlign.center,
                                       ),
                                       onPressed: () async {
                                         await c.getImageFromGallery(
@@ -1055,6 +1058,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                       child: Text(
                                         'Delete image',
                                         style: ts_button,
+                                        textAlign: TextAlign.center,
                                       ),
                                       onPressed: () async {
                                         final bool?
@@ -1074,7 +1078,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                                 onPressed: () => Navigator.of(
                                                   ctx,
                                                 ).pop(false),
-                                                child: const Text('Cancel'),
+                                                child: const Text('Cancel', textAlign: TextAlign.center),
                                               ),
                                               ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
@@ -1084,7 +1088,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                                 ),
                                                 onPressed: () =>
                                                     Navigator.of(ctx).pop(true),
-                                                child: const Text('Delete'),
+                                                child: const Text('Delete', textAlign: TextAlign.center),
                                               ),
                                             ],
                                           ),
@@ -1142,6 +1146,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                         child: Text(
                                           'Use ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
                                           style: ts_button,
+                                          textAlign: TextAlign.center,
                                         ),
                                         onPressed: () async {
                                           c.mutate(() {
@@ -1208,7 +1213,7 @@ class EditRunDetailsPage extends StatelessWidget {
                               40,
                             ), // double.infinity is the width and 30 is the height
                           ),
-                          child: Text('Select from gallery', style: ts_button),
+                          child: Text('Select from gallery', style: ts_button, textAlign: TextAlign.center),
                           onPressed: () async {
                             await c.getImageFromGallery(ImageSource.gallery);
                           },
@@ -1217,7 +1222,7 @@ class EditRunDetailsPage extends StatelessWidget {
                     ],
                     if (c.isNewRun) ...<Widget>[
                       ElevatedButton(
-                        child: Text('Skip', style: ts_button),
+                        child: Text('Skip', style: ts_button, textAlign: TextAlign.center),
                         onPressed: () {
                           c.mutate(() {
                             c.tabController.animateTo(c.currentTab.value.next);
@@ -1435,7 +1440,7 @@ class EditRunDetailsPage extends StatelessWidget {
                         children: <Widget>[
                           if (c.isNewRun) ...<Widget>[
                             ElevatedButton(
-                              child: Text('Skip', style: ts_button),
+                              child: Text('Skip', style: ts_button, textAlign: TextAlign.center),
                               onPressed: () {
                                 c.mutate(() {
                                   c.tabController.animateTo(
@@ -1447,7 +1452,7 @@ class EditRunDetailsPage extends StatelessWidget {
                             const SizedBox(width: 10.0),
                             ElevatedButton(
                               onPressed: c.geocodeAndNavigateToMap,
-                              child: Text('Auto-locate', style: ts_button),
+                              child: Text('Auto-locate', style: ts_button, textAlign: TextAlign.center),
                             ),
                             const SizedBox(width: 10.0),
                           ],
@@ -1458,6 +1463,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                   ? 'Set no location'
                                   : 'Set Location',
                               style: ts_button,
+                              textAlign: TextAlign.center,
                             ),
                             onPressed: () async {
                               if ((c.eventAggregate.event.eventId.isEmpty) ||

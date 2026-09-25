@@ -230,6 +230,7 @@ class RunPhotoSweepPage extends StatelessWidget {
                   c.allChosen ? 'Select none' : 'Select all',
                   // White: the button themes paint red (see CLAUDE.md).
                   style: ts_button.copyWith(color: Colors.white),
+                  textAlign: TextAlign.center,
                 ),
               ),
           ],
@@ -317,6 +318,7 @@ class RunPhotoSweepPage extends StatelessWidget {
                     ? 'Choose photos to send'
                     : 'Send ${c.chosen.length} for review',
                 style: ts_button,
+                textAlign: TextAlign.center,
               ),
             ),
           ),

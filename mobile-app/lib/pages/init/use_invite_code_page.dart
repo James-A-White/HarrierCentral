@@ -219,6 +219,7 @@ class UseInviteCodePageContent extends StatelessWidget {
                                     child: Text(
                                       'Get Started!',
                                       style: ts_button,
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
@@ -287,6 +288,7 @@ class UseInviteCodePageContent extends StatelessWidget {
                       child: Text(
                         "I didn't receive an email",
                         style: ts_button,
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
