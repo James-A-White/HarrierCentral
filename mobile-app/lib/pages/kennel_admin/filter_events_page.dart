@@ -291,8 +291,10 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                         Icons.chevron_left,
                         color: Colors.black,
                       ),
+                      // The app's plum, as the date and time pickers use,
+                      // not the calendar package's stock blue.
                       formatButtonDecoration: BoxDecoration(
-                        color: Colors.blue.shade600,
+                        color: themeAppBarBackground,
                         borderRadius: BorderRadius.circular(6.0),
                       ),
                       formatButtonTextStyle: const TextStyle().copyWith(
