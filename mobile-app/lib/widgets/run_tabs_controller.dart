@@ -183,15 +183,20 @@ class RunTabsController extends GetxController
 
   Future<void> _onTabSettled() async {
     FocusManager.instance.primaryFocus?.unfocus();
-    final String label = tabs[tabController.index].text ?? '';
+    // By POSITION, never by label text. This read `tabs[i].text` until
+    // 28b89472 (2026-09-25) gave the tabs a `child:` so the labels could
+    // shrink on a small phone — `.text` became null for every tab, and the
+    // RSVP tab spun forever (its load never ran), its speed dial never showed
+    // and the chat tab's header never faded. No error, just a spinner.
+    final RunTab tab = RunTab.fromId(tabController.index);
 
     // The speed dial IS the RSVP actions ("I'm coming" / "I might come" /
     // "I'm not coming"), so it goes on a past run too — otherwise hiding
     // the three buttons would just move the same dead choice into a
     // floating button.
-    fabIsVisible.value = label == LABEL_RSVP && !isRunPast(futureRun);
+    fabIsVisible.value = tab == RunTab.rsvp && !isRunPast(futureRun);
 
-    if (label == LABEL_RSVP) {
+    if (tab == RunTab.rsvp) {
       await refreshHemTableFromBackend(false);
       if (isClosed) return;
       showTopWidget.value = true;
@@ -200,7 +205,7 @@ class RunTabsController extends GetxController
       if (isClosed) return;
       showTopWidget.value = false;
     }
-    if (label == LABEL_CHAT) {
+    if (tab == RunTab.chat) {
       showTopWidget.value = true;
       slideTopWidget.value = false;
       unawaited(

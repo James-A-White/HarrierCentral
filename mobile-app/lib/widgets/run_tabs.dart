@@ -151,6 +151,14 @@ class RunTabs extends StatelessWidget {
     );
   }
 
+  /// A count's heading ("Going", "Maybe", "Not go", "Hares"). Each sits in a
+  /// fifth of the width; at 1.5x text on a 360 dp phone that broke the words
+  /// mid-way ("Mayb/e", "Not/go"). One line, shrunk only when it cannot fit.
+  Widget _rsvpTitle(String label, TextStyle style) => FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Text(label, style: style, maxLines: 1, textAlign: TextAlign.center),
+  );
+
   Widget _buildRsvpView(BuildContext context, RunTabsController c) {
     final TextStyle rsvpTitlesView = ts_tileText.copyWith(
       fontSize: 20.0 * deviceInfo.deviceWidthScaleFactor,
@@ -223,7 +231,7 @@ class RunTabs extends StatelessWidget {
                         width: MediaQuery.sizeOf(context).width / 5.5,
                         child: Column(
                           children: <Widget>[
-                            Text('Going', style: rsvpTitlesView),
+                            _rsvpTitle('Going', rsvpTitlesView),
                             Stack(
                               alignment: AlignmentDirectional.center,
                               children: <Widget>[
@@ -284,11 +292,7 @@ class RunTabs extends StatelessWidget {
                         width: MediaQuery.sizeOf(context).width / 5.5,
                         child: Column(
                           children: <Widget>[
-                            Text(
-                              //'Maybe: ' + (futureRun.rsvpMaybeCount >= 0 ? futureRun.rsvpMaybeCount.toString() : ''),
-                              'Maybe',
-                              style: rsvpTitlesView,
-                            ),
+                            _rsvpTitle('Maybe', rsvpTitlesView),
                             Stack(
                               alignment: AlignmentDirectional.center,
                               children: <Widget>[
@@ -349,11 +353,7 @@ class RunTabs extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
-                            Text(
-                              //'Not go: ' + (futureRun.rsvpNoCount >= 0 ? futureRun.rsvpNoCount.toString() : ''),
-                              'Not go',
-                              style: rsvpTitlesView,
-                            ),
+                            _rsvpTitle('Not go', rsvpTitlesView),
                             Stack(
                               alignment: AlignmentDirectional.center,
                               children: <Widget>[
@@ -413,11 +413,7 @@ class RunTabs extends StatelessWidget {
                         width: MediaQuery.sizeOf(context).width / 5.5,
                         child: Column(
                           children: <Widget>[
-                            Text(
-                              // 'Hares: ' + (futureRun.haresCount >= 0 ? futureRun.haresCount.toString() : ''),
-                              'Hares',
-                              style: rsvpTitlesView,
-                            ),
+                            _rsvpTitle('Hares', rsvpTitlesView),
                             Stack(
                               alignment: AlignmentDirectional.center,
                               children: <Widget>[
