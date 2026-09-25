@@ -617,7 +617,7 @@ class RunDetails extends StatelessWidget {
                               appModel.hasLocationPermissions
                                   ? (distToEvent ?? -1) >= 0
                                         ? '${Utilities.getDistance(distToEvent!, isMetric: !Utilities.prefersImperial(kennelDistanceUnitsPref: distancePreference))} from here'
-                                        : '<unknown>'
+                                        : 'Not known'
                                   : '',
                               style: ts_listValueStyle,
                               textAlign: TextAlign.left,
@@ -1467,7 +1467,12 @@ class _MyNotesSection extends StatelessWidget {
                 activeTrackColor: customRed,
                 value: c.shareRequested.value,
                 onChanged: c.savingShare.value ? null : c.setShare,
-                title: Text('Share these notes', style: ts_alertDialogBody),
+                // White: this sits on the jungle, and ts_alertDialogBody is the
+                // black dialog style, which all but vanished there.
+                title: Text(
+                  'Share these notes',
+                  style: ts_body.copyWith(fontWeight: FontWeight.w600),
+                ),
                 subtitle: Text(
                   c.shareRequested.value
                       ? (c.shareEffective.value

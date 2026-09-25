@@ -54,13 +54,17 @@ class RunTabsController extends GetxController
   static const String LABEL_CHAT = 'Chat';
   static const String LABEL_PHOTOS = 'Photos';
 
+  /// Six tabs share the width. On a 360 dp phone the selected label (bold,
+  /// so wider) was clipped inside its pill: "Detai", "Photo" (2026-09-25).
+  /// Each label shrinks only when it cannot fit, so larger phones, where
+  /// every label fits, are unchanged.
   static const List<Tab> tabs = <Tab>[
-    Tab(text: LABEL_DETAILS),
-    Tab(text: LABEL_RSVP),
-    Tab(text: LABEL_MAP),
-    Tab(text: LABEL_STATS),
-    Tab(text: LABEL_CHAT),
-    Tab(text: LABEL_PHOTOS),
+    Tab(child: _FitLabel(LABEL_DETAILS)),
+    Tab(child: _FitLabel(LABEL_RSVP)),
+    Tab(child: _FitLabel(LABEL_MAP)),
+    Tab(child: _FitLabel(LABEL_STATS)),
+    Tab(child: _FitLabel(LABEL_CHAT)),
+    Tab(child: _FitLabel(LABEL_PHOTOS)),
   ];
 
   static int DISPLAY_LOGO_IN_RSVP_DURATION = 15;
@@ -602,4 +606,17 @@ class DownDownsHistoryController extends GetxController {
     }
     if (!isClosed) loaded.value = true;
   }
+}
+
+/// A tab label that scales down to fit its tab, and never up.
+class _FitLabel extends StatelessWidget {
+  const _FitLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Text(label, maxLines: 1, softWrap: false),
+  );
 }
