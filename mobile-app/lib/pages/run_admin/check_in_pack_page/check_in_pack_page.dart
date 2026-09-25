@@ -701,17 +701,24 @@ class CheckInPackPage extends StatelessWidget {
                                       ),
                                     ],
                                   ),
+                                  // One line, shrunk if needed: wrapping to a
+                                  // second line overflowed the header (1.5x).
                                   Obx(
-                                    () => Text(
-                                      AppScaffoldController
-                                          .searchTypeText
-                                          .value,
-                                      style:
-                                          AppScaffoldController
-                                              .highlightSearchType
-                                              .value
-                                          ? ts_footnoteSmallRed
-                                          : ts_footnoteSmall,
+                                    () => FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        AppScaffoldController
+                                            .searchTypeText
+                                            .value,
+                                        maxLines: 1,
+                                        style:
+                                            AppScaffoldController
+                                                .highlightSearchType
+                                                .value
+                                            ? ts_footnoteSmallRed
+                                            : ts_footnoteSmall,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -820,13 +827,17 @@ class CheckInPackPage extends StatelessWidget {
                 ? Colors.amber.shade100
                 : Colors.white,
             width: MediaQuery.sizeOf(context).width - multselectMargin,
+            // The row's labels sit at fixed offsets, so the row grows with the
+            // text size instead of the labels colliding (84 dp at 1x, as
+            // before; taller at 1.5x, 2026-09-25).
+            height: LIST_ITEM_HEIGHT * bodyTextScale(context),
 
             child: Stack(
               children: [
                 // Avatar photo
                 Container(
                   width: LIST_ITEM_HEIGHT,
-                  height: LIST_ITEM_HEIGHT,
+                  height: LIST_ITEM_HEIGHT * bodyTextScale(context),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade200,
                     image: DecorationImage(
@@ -836,8 +847,11 @@ class CheckInPackPage extends StatelessWidget {
                   ),
                 ),
                 // Name
+                // Bounded on the right so the name ellipsises instead of
+                // running off the row at a large text size.
                 Positioned(
                   left: LIST_ITEM_LEFT_MARGIN + 2.0,
+                  right: 8,
                   top: 3,
                   child: Row(
                     children: [
@@ -849,33 +863,43 @@ class CheckInPackPage extends StatelessWidget {
                             controller.membershipStatusOf(hasher),
                           ),
                         ),
-                      Text(
-                        hasher.nameForDisplay,
-                        style: TextStyle(
-                          color: hasher.isMember == 1
-                              ? Colors.green.shade800
-                              : Colors.black,
-                          fontFamily: hasher.isMember != 0
-                              ? 'AvenirNextCondensedDemiBold'
-                              : 'AvenirNextCondensedMedium',
-                          fontSize: 25.0,
-                          height: 1.0,
+                      // One line of text: the hash name first, the real
+                      // name after it, and only the tail cut with "…" — two
+                      // Flexibles split the width and clipped the hash name.
+                      Flexible(
+                        child: Text.rich(
+                          TextSpan(
+                            text: hasher.nameForDisplay,
+                            style: TextStyle(
+                              color: hasher.isMember == 1
+                                  ? Colors.green.shade800
+                                  : Colors.black,
+                              fontFamily: hasher.isMember != 0
+                                  ? 'AvenirNextCondensedDemiBold'
+                                  : 'AvenirNextCondensedMedium',
+                              fontSize: 25.0,
+                              height: 1.0,
+                            ),
+                            children: <InlineSpan>[
+                              if (hasher.virginVisitorType == 0)
+                                TextSpan(
+                                  text:
+                                      '  (${hasher.firstName.trim()} ${hasher.lastName.trim()})',
+                                  style: TextStyle(
+                                    fontFamily: 'AvenirNextCondensedMedium',
+                                    fontSize: 18.0,
+                                    height: 1.0,
+                                    color: hasher.isMember == 1
+                                        ? Colors.green.shade900
+                                        : Colors.black,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (hasher.virginVisitorType == 0)
-                        Text(
-                          '  (${hasher.firstName.trim()} ${hasher.lastName.trim()})',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontFamily: 'AvenirNextCondensedMedium',
-                            fontSize: 18.0,
-                            height: 1.0,
-                            color: hasher.isMember == 1
-                                ? Colors.green.shade900
-                                : Colors.black,
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -931,25 +955,6 @@ class CheckInPackPage extends StatelessWidget {
                     hasher,
                   ),
                 ),
-                // Credit label
-                if (hasher.credit != 0)
-                  Positioned(
-                    right: 4,
-                    bottom: hasher.totalRunsThisKennel > 0
-                        ? (hasher.totalHaringThisKennel > 0 ? 33.0 : 17.0)
-                        : 1.0,
-                    child: Text(
-                      '${IveCoreUtilities.getFormattedMoney(hasher.credit.abs(), controller.eventAggregate.extensions.digAfterDec, controller.eventAggregate.extensions.curSym)} ${hasher.credit > 0 ? 'Credit available' : 'Credit owed'}',
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextCondensedMedium',
-                        fontSize: 13.0,
-                        height: 1.0,
-                        color: hasher.credit > 0
-                            ? Colors.green.shade700
-                            : Colors.red.shade700,
-                      ),
-                    ),
-                  ),
                 // Special Run Icon
                 if (controller.shouldShowDrinkIcon(hasher))
                   Positioned(
@@ -959,24 +964,44 @@ class CheckInPackPage extends StatelessWidget {
                     height: 35,
                     child: Image.asset('images/icons/beer_mug.png'),
                   ),
-                // Haring count label
-                if (hasher.totalHaringThisKennel > 0)
-                  Positioned(
-                    right: 4,
-                    bottom: 17,
-                    child: Text(
-                      'Hared = ${hasher.totalHaringThisKennel + hasher.historicalHaringCount}',
-                      style: controller.getHaringLabelStyle(hasher),
-                    ),
-                  ),
-                // Run count label
-                if (hasher.totalRunsThisKennel > 0)
+                // Credit, hared and run counts, bottom right. One column, so
+                // they stack at any text size: they were three Positioned
+                // labels at fixed pixel offsets, and at 1.5x text the credit
+                // line ran over "Total Runs" (2026-09-25).
+                if (hasher.credit != 0 ||
+                    hasher.totalHaringThisKennel > 0 ||
+                    hasher.totalRunsThisKennel > 0)
                   Positioned(
                     right: 4,
                     bottom: 1,
-                    child: Text(
-                      'Total Runs = ${hasher.totalRunsThisKennel + hasher.historicalTotalRunCount}',
-                      style: controller.getRunLabelStyle(hasher),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      spacing: 3,
+                      children: <Widget>[
+                        if (hasher.credit != 0)
+                          Text(
+                            '${IveCoreUtilities.getFormattedMoney(hasher.credit.abs(), controller.eventAggregate.extensions.digAfterDec, controller.eventAggregate.extensions.curSym)} ${hasher.credit > 0 ? 'Credit available' : 'Credit owed'}',
+                            style: TextStyle(
+                              fontFamily: 'AvenirNextCondensedMedium',
+                              fontSize: 13.0,
+                              height: 1.0,
+                              color: hasher.credit > 0
+                                  ? Colors.green.shade700
+                                  : Colors.red.shade700,
+                            ),
+                          ),
+                        if (hasher.totalHaringThisKennel > 0)
+                          Text(
+                            'Hared = ${hasher.totalHaringThisKennel + hasher.historicalHaringCount}',
+                            style: controller.getHaringLabelStyle(hasher),
+                          ),
+                        if (hasher.totalRunsThisKennel > 0)
+                          Text(
+                            'Total Runs = ${hasher.totalRunsThisKennel + hasher.historicalTotalRunCount}',
+                            style: controller.getRunLabelStyle(hasher),
+                          ),
+                      ],
                     ),
                   ),
               ],

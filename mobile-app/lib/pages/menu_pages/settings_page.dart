@@ -532,11 +532,15 @@ class SettingsPage extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 12, top: 6),
+                      // Wraps at a large text size (a lone Text in a Row
+                      // overflowed by 163 px at 1.5x).
                       child: Row(
                         children: <Widget>[
-                          Text(
-                            'Or...   ...Automatically Show All Runs Within...',
-                            style: ts_footnoteBlack,
+                          Flexible(
+                            child: Text(
+                              'Or...   ...Automatically Show All Runs Within...',
+                              style: ts_footnoteBlack,
+                            ),
                           ),
                         ],
                       ),
@@ -949,12 +953,14 @@ class SettingsPage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
-                                'Save photos to phone',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'AvenirNextRegular',
-                                  fontSize: 20.0,
+                              const Flexible(
+                                child: Text(
+                                  'Save photos to phone',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'AvenirNextRegular',
+                                    fontSize: 20.0,
+                                  ),
                                 ),
                               ),
                             ],

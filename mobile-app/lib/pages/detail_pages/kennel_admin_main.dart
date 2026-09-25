@@ -379,7 +379,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
                     ),
-                    child: Column(
+                    // Scales down only if taller than the tile (1.5x text).
+ child: FitHeight(child: Column(
                       children: <Widget>[
                         Padding(
                           padding: const EdgeInsets.only(right: 2.0),
@@ -402,7 +403,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                           ),
                         ),
                       ],
-                    ),
+                    )),
                     onPressed: () async {
                       if (Utilities.isConnected(showDialog: true)) {
                         final EmailReportsService svc = EmailReportsService();
@@ -481,7 +482,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
                       ),
-                      child: Column(
+                      // Scales down only if taller than the tile (1.5x text).
+ child: FitHeight(child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           const Padding(
@@ -505,7 +507,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                             ),
                           ),
                         ],
-                      ),
+                      )),
                       onPressed: () async {
                         if (Utilities.isConnected(showDialog: true)) {
                           final KennelMembersList membersPage =
@@ -556,7 +558,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
             ),
             onPressed: onPressed,
-            child: Column(
+            // Scales down only if taller than the tile (1.5x text).
+ child: FitHeight(child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Padding(
@@ -576,7 +579,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   ),
                 ),
               ],
-            ),
+            )),
           ),
         ),
       ),
@@ -1091,10 +1094,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                             ],
                           ),
                         ),
-                        Padding(
+                        Flexible(
+ // Wraps (centred) instead of running off a small screen.
+ child: Padding(
                           padding: const EdgeInsets.only(left: 20, right: 0),
-                          child: Text('Open website', style: ts_button),
+                          child: Text('Open website', style: ts_button, textAlign: TextAlign.center),
                         ),
+)
                       ],
                     ),
                     onPressed: () async {
@@ -1135,10 +1141,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                           height: 35,
                         ),
                       ),
-                      Padding(
+                      Flexible(
+ // Wraps (centred) instead of running off a small screen.
+ child: Padding(
                         padding: const EdgeInsets.only(left: 20, right: 0),
-                        child: Text('Run art gallery', style: ts_button),
+                        child: Text('Run art gallery', style: ts_button, textAlign: TextAlign.center),
                       ),
+)
                     ],
                   ),
                   onPressed: () async {
@@ -1243,10 +1252,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                           height: 35,
                         ),
                       ),
-                      Padding(
+                      Flexible(
+ // Wraps (centred) instead of running off a small screen.
+ child: Padding(
                         padding: const EdgeInsets.only(left: 20, right: 0),
-                        child: Text('Share my photos', style: ts_button),
+                        child: Text('Share my photos', style: ts_button, textAlign: TextAlign.center),
                       ),
+)
                     ],
                   ),
                   onPressed: () async {

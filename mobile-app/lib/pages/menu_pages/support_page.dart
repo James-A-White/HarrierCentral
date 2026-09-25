@@ -232,9 +232,11 @@ class SupportPage extends StatelessWidget {
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 15.0,
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
+                                    // Wrap, not Row: the button is wider
+                                    // than a small phone at 1.5x text.
+                                    child: Wrap(
+                                      alignment: WrapAlignment.spaceAround,
+                                      runSpacing: 12,
                                       children: <Widget>[
                                         ElevatedButton.icon(
                                           style: ElevatedButton.styleFrom(

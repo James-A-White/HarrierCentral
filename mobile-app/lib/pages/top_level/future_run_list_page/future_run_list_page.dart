@@ -62,7 +62,11 @@ class FutureRunsListPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: SafeArea(
               bottom: false,
-              child: Row(
+              // One short message: shrinks only if wider than the bar.
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(
@@ -76,6 +80,7 @@ class FutureRunsListPage extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text('Updating run data...', style: ts_titleLarge),
                 ],
+              ),
               ),
             ),
           ),

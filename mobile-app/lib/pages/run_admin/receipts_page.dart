@@ -228,7 +228,8 @@ class ReceiptsList extends StatelessWidget {
                             //print(direction.toString() + ' NOTE: We should never reach this point');
                           },
                           child: Container(
-                            height: 50.0,
+                            // Grows with the text size (50 dp at 1x).
+                            height: 50.0 * bodyTextScale(context),
                             padding: const EdgeInsets.all(0.0),
                             child: ListView(
                               scrollDirection: Axis.horizontal,
@@ -266,8 +267,9 @@ class ReceiptsList extends StatelessWidget {
         Container(
           padding: EdgeInsets.only(left: 10, right: 70, bottom: 20),
           child: Text(
+            // No line cap: at 1.5x it needs more than 3 lines, and a cap cut
+            // the sentence off mid-way (2026-09-25).
             'Swipe the receipt items in the list above to the left to set their reimbursement status',
-            maxLines: 3,
             style: ts_titleBlack,
           ),
         ),

@@ -143,9 +143,12 @@ class UserEventListItem extends StatelessWidget {
                     ),
                     item.attendenceState < attendenceAtHash.value
                         ? Container()
+                        // Flexible so the ellipsis these Texts ask for actually
+                        // applies; in a bare Row they overflowed at 1.5x.
                         : Row(
                             children: <Widget>[
-                              Text(
+                              Flexible(
+                                child: Text(
                                 'My ${item.kennelShortName} run #${(item.totalRunsThisKennel ?? 0) + (historicalTotalRunCount)}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -154,9 +157,11 @@ class UserEventListItem extends StatelessWidget {
                                 ),
                                 textAlign: TextAlign.left,
                               ),
+                              ),
                               item.isHare == isHareNo.value
                                   ? Container()
-                                  : Text(
+                                  : Flexible(
+                                      child: Text(
                                       ' and #${(item.totalHaringThisKennel ?? 0) + (historicalHaringCount)} time haring',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -165,6 +170,7 @@ class UserEventListItem extends StatelessWidget {
                                             color: Colors.purple.shade800,
                                           ),
                                       textAlign: TextAlign.left,
+                                    ),
                                     ),
                             ],
                           ),
@@ -260,7 +266,12 @@ class UserEventListItem extends StatelessWidget {
                                           color: creditAvailableColor,
                                         ),
                                 ),
-                                Row(
+                                // A money figure: shrinks rather than hides
+                                // when wider than its column (1.5x text).
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
@@ -300,6 +311,7 @@ class UserEventListItem extends StatelessWidget {
                                       const SizedBox(width: 3.0),
                                     ],
                                   ],
+                                ),
                                 ),
                               ],
                             ),

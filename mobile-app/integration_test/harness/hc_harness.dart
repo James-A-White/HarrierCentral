@@ -35,6 +35,17 @@ class ErrorLedger {
   void record(FlutterErrorDetails d) {
     entries.add((screen: screen, error: d.exceptionAsString()));
     debugPrint('[HARNESS][$screen] ${d.exceptionAsString()}');
+    // Where it came from: the "relevant error-causing widget" node carries
+    // the source location in debug builds (e.g. Row ... lib/x.dart:123:9),
+    // which is what makes an overflow report actionable.
+    final String where = d
+        .toString()
+        .split('\n')
+        .where((String t) => t.contains('.dart:') && t.contains('lib/'))
+        .map((String t) => t.trim())
+        .toSet()
+        .join(' | ');
+    if (where.isNotEmpty) debugPrint('[HARNESS-AT][$screen] $where');
   }
 
   String report() {

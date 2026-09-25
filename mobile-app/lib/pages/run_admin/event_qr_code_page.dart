@@ -228,13 +228,29 @@ class EventQrCodePageState extends State<EventQrCodePage>
 
   void _initTabs() {
     if (_tabs.isEmpty) {
-      _tabs.add(const Tab(text: 'Run Start'));
-      _tabs.add(const Tab(text: 'Run End'));
+      _tabs.add(
+        const Tab(
+          child: FittedBox(fit: BoxFit.scaleDown, child: Text('Run Start')),
+        ),
+      );
+      _tabs.add(
+        const Tab(
+          child: FittedBox(fit: BoxFit.scaleDown, child: Text('Run End')),
+        ),
+      );
       if (widget.showRunLink) {
-        _tabs.add(const Tab(text: 'Run Link'));
+        _tabs.add(
+          const Tab(
+            child: FittedBox(fit: BoxFit.scaleDown, child: Text('Run Link')),
+          ),
+        );
       }
       if ((widget.kennelWebsiteUrl ?? '').isNotEmpty) {
-        _tabs.add(const Tab(text: 'Website'));
+        _tabs.add(
+          const Tab(
+            child: FittedBox(fit: BoxFit.scaleDown, child: Text('Website')),
+          ),
+        );
       }
     }
   }
@@ -294,7 +310,11 @@ class QrTabState extends State<QrTab>
           actions: <Widget>[
             TextButton(
               style: text_button_style,
-              child: Text('OK, Got it!', style: ts_button, textAlign: TextAlign.center),
+              child: Text(
+                'OK, Got it!',
+                style: ts_button,
+                textAlign: TextAlign.center,
+              ),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -311,77 +331,98 @@ class QrTabState extends State<QrTab>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return Container(
-      padding: const EdgeInsets.only(left: 20, right: 20),
-      child: Column(
-        //alignment: AlignmentDirectional.center,
-        children: <Widget>[
-          SizedBox(width: spacer / 3, height: spacer / 3),
-          Text(
-            widget.helpText,
-            textAlign: TextAlign.justify,
-            style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'AvenirNextDemiBold',
-              fontStyle: FontStyle.normal,
-              fontSize: 14.0 * deviceInfo.deviceWidthScaleFactor,
-              height: 1.0,
-            ),
-          ),
-          SizedBox(width: spacer, height: spacer),
-          AutoSizeText(
-            //widget.eventName,
-            widget.subtitle,
-            maxLines: 1,
-            minFontSize: 22.0,
-            textAlign: TextAlign.center,
-            style: ts_titleLarge.copyWith(height: 0.8),
-          ),
-          SizedBox(width: spacer / 3, height: spacer / 3),
-          AutoSizeText(
-            widget.title,
-            // 'This is a fake hash run name that needs to be very long so we can see how it fits on the page when it overflows three lines',
-            maxLines: 3,
-            minFontSize: 22.0,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: ts_large,
-          ),
-          SizedBox(width: spacer / 3, height: spacer / 3),
-          Expanded(
-            child: Stack(
-              alignment: Alignment.topCenter,
+    // The QR code gets its full width (capped on tablets) and the tab
+    // scrolls when the text above it is tall. It used to take whatever
+    // height was left, which at a large text size on a small phone shrank it
+    // to a thumbnail too small to print and scan (2026-09-25). On a tall
+    // phone, where there was room, the size is the same as before.
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double qrSide = (constraints.maxWidth - 40).clamp(
+          0.0,
+          FormFactor.maxQrSize,
+        );
+        return SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.only(left: 20, right: 20),
+            child: Column(
+              //alignment: AlignmentDirectional.center,
               children: <Widget>[
-                // Capped so a tablet doesn't render a ~1000pt QR (FormFactor).
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: FormFactor.maxQrSize,
-                    maxHeight: FormFactor.maxQrSize,
-                  ),
-                  child: QrImageView(
-                    backgroundColor: Colors.white,
-                    padding: const EdgeInsets.all(15.0),
-                    data: widget.qrPrefix + widget.qrContent,
-                    // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
-                    //data: 'testing123',
-                    version: 5,
-                    //size: 200.0,
-                    errorCorrectionLevel: QrErrorCorrectLevel.M,
+                SizedBox(width: spacer / 3, height: spacer / 3),
+                Text(
+                  widget.helpText,
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'AvenirNextDemiBold',
+                    fontStyle: FontStyle.normal,
+                    fontSize: 14.0 * deviceInfo.deviceWidthScaleFactor,
+                    height: 1.0,
                   ),
                 ),
+                SizedBox(width: spacer, height: spacer),
+                AutoSizeText(
+                  //widget.eventName,
+                  widget.subtitle,
+                  maxLines: 1,
+                  minFontSize: 22.0,
+                  textAlign: TextAlign.center,
+                  style: ts_titleLarge.copyWith(height: 0.8),
+                ),
+                SizedBox(width: spacer / 3, height: spacer / 3),
+                AutoSizeText(
+                  widget.title,
+                  // 'This is a fake hash run name that needs to be very long so we can see how it fits on the page when it overflows three lines',
+                  maxLines: 3,
+                  minFontSize: 22.0,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: ts_large,
+                ),
+                SizedBox(width: spacer / 3, height: spacer / 3),
+                SizedBox(
+                  height: qrSide,
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: <Widget>[
+                      // Capped so a tablet doesn't render a ~1000pt QR (FormFactor).
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: FormFactor.maxQrSize,
+                          maxHeight: FormFactor.maxQrSize,
+                        ),
+                        child: QrImageView(
+                          backgroundColor: Colors.white,
+                          padding: const EdgeInsets.all(15.0),
+                          data: widget.qrPrefix + widget.qrContent,
+                          // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
+                          //data: 'testing123',
+                          version: 5,
+                          //size: 200.0,
+                          errorCorrectionLevel: QrErrorCorrectLevel.M,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: spacer / 3, height: spacer / 3),
+                TextButton(
+                  style: text_button_style,
+                  child: Text(
+                    'Learn more about this feature',
+                    style: ts_button,
+                    textAlign: TextAlign.center,
+                  ),
+                  onPressed: () async {
+                    await _displayInstructions(context);
+                  },
+                ),
+                SizedBox(height: spacer / 3),
               ],
             ),
           ),
-          SizedBox(width: spacer / 3, height: spacer / 3),
-          TextButton(
-            style: text_button_style,
-            child: Text('Learn more about this feature', style: ts_button, textAlign: TextAlign.center),
-            onPressed: () async {
-              await _displayInstructions(context);
-            },
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

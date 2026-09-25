@@ -66,7 +66,8 @@ class Leaderboard extends StatelessWidget {
                             controller: c.leaderScrollController,
                             slivers: <Widget>[
                               SliverAppBar(
-                                toolbarHeight: kennelId == null ? 150.0 : 101.0,
+                                // Grows with the text size (the header rows are text); unchanged at 1x.
+                                toolbarHeight: (kennelId == null ? 150.0 : 101.0) * bodyTextScale(context),
                                 floating: true,
                                 backgroundColor: Colors.grey.shade400,
                                 shadowColor: Colors.transparent,
@@ -124,7 +125,10 @@ class Leaderboard extends StatelessWidget {
                                       height: 1.0,
                                     ),
                                     if (kennelId == null) ...<Widget>[
-                                      Row(
+                                      // Scrolls sideways if the two
+                                      // checkboxes are wider than the screen.
+                                      HorizontalOverflowScroll(
+                                        child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
@@ -196,6 +200,7 @@ class Leaderboard extends StatelessWidget {
                                           const SizedBox(width: 15),
                                         ],
                                       ),
+                                      ),
                                       const Divider(
                                         color: Colors.black45,
                                         thickness: 1.0,
@@ -207,7 +212,7 @@ class Leaderboard extends StatelessWidget {
                               ),
                               SliverAppBar(
                                 pinned: true,
-                                toolbarHeight: 60.0,
+                                toolbarHeight: 60.0 * bodyTextScale(context),
                                 backgroundColor: const Color.fromARGB(
                                   255,
                                   26,
@@ -215,7 +220,10 @@ class Leaderboard extends StatelessWidget {
                                   65,
                                 ),
                                 automaticallyImplyLeading: false,
-                                flexibleSpace: Column(
+                                // Scales down only if the column headings are
+                                // taller than the bar (1.5x text).
+                                flexibleSpace: FitHeight(
+                                  child: Column(
                                   children: [
                                     const SizedBox(height: 10.0),
                                     Row(
@@ -338,6 +346,7 @@ class Leaderboard extends StatelessWidget {
                                       ],
                                     ),
                                   ],
+                                ),
                                 ),
                               ),
                               SliverToBoxAdapter(

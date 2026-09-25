@@ -191,7 +191,14 @@ class HistoryListPage extends StatelessWidget {
                 const SizedBox(width: 20),
                 kennelCount == 0
                     ? Container()
-                    : Column(
+                    // Shrinks only when the counts are wider (or taller)
+                    // than the 120 dp header: 1.5x text on a small phone
+                    // overflowed it (2026-09-25).
+                    : Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
@@ -235,6 +242,8 @@ class HistoryListPage extends StatelessWidget {
                             textAlign: TextAlign.left,
                           ),
                         ],
+                      ),
+                        ),
                       ),
               ],
             ),

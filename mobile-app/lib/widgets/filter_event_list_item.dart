@@ -51,7 +51,9 @@ class FilterEventListItem extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),
         width: MediaQuery.sizeOf(context).width,
-        height: 70,
+        // At least 70 dp, and taller when a large text size needs it (a
+        // fixed 70 clipped the third line at 1.5x, 2026-09-25).
+        constraints: const BoxConstraints(minHeight: 70),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[

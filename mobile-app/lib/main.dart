@@ -174,9 +174,13 @@ class RootApp extends StatelessWidget {
       themeMode: ThemeMode.light, // ✅ force light mode
       builder: (BuildContext context, Widget? child) {
         final mediaQueryData = MediaQuery.of(context);
+        // Capped at 1.5x (James, 2026-09-25): the app is laid out and tested
+        // up to 1.5, and above it the fixed-height bars and tabs clip
+        // ("Kenne", "Histor" at 2.0). The phone's own setting still applies
+        // everywhere up to the cap.
         final scale = mediaQueryData.textScaler.clamp(
           minScaleFactor: .8,
-          maxScaleFactor: 1.75,
+          maxScaleFactor: 1.5,
         );
         return MediaQuery(
           data: mediaQueryData.copyWith(textScaler: scale),

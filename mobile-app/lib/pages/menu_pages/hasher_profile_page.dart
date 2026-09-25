@@ -794,9 +794,14 @@ class HasherProfilePage extends StatelessWidget {
                                               top: 15,
                                               bottom: 15,
                                             ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
+                                            // A Wrap: side by side where they
+                                            // fit, stacked (centred) where they
+                                            // do not — a Row overflowed at 1.5x.
+                                            child: Wrap(
+                                              alignment:
+                                                  WrapAlignment.spaceAround,
+                                              runSpacing: 12,
+                                              spacing: 12,
                                               children: <Widget>[
                                                 StyleForConnected(
                                                   child: ElevatedButton(

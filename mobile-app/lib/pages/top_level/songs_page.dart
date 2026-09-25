@@ -77,8 +77,12 @@ class _SongsPageState extends State<SongsPage> {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      // Scrolls sideways when the chips are wider than the screen (1.5x text
+      // on a small phone overflowed by 22 px); evenly spaced as before where
+      // they fit. The chips (and the Rx read) are built in the Obx body.
       child: Obx(
-        () => Row(
+        () => HorizontalOverflowScroll(
+          child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: SongsPageController.bawdyIcons.entries.map((
             MapEntry<int, String> entry,
@@ -106,6 +110,7 @@ class _SongsPageState extends State<SongsPage> {
               ),
             );
           }).toList(),
+          ),
         ),
       ),
     );

@@ -379,82 +379,92 @@ class MainNavigationPage extends StatelessWidget {
           ),
 
           bottomNavigationBar: AndroidSafeArea(
-            child: Obx(() {
-              return (controller.mainScreenContent.value ==
-                      MainPageContent.appContent)
-                  ? CurvedNavigationBar(
-                      key: controller.bottomNavigationKey,
-                      backgroundColor: Colors.transparent,
-                      color: const Color(0xFFF5E6EA),
-                      buttonBackgroundColor: themeButtonColors,
-                      animationDuration: const Duration(milliseconds: 300),
-                      items: [
-                        CurvedNavigationBarItem(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: Icon(
-                              MaterialCommunityIcons.run_fast,
-                              color: controller.currentPage.value == 0
-                                  ? Colors.white
-                                  : themeBackgroundColor,
+            // The bar's five tabs are a fixed width each and the package
+            // draws the labels itself, so its text is capped at 1.2x: at the
+            // app's 1.5x "Kennels" and "History" were clipped (2026-09-25).
+            child: MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: MediaQuery.textScalerOf(
+                  context,
+                ).clamp(maxScaleFactor: 1.2),
+              ),
+              child: Obx(() {
+                return (controller.mainScreenContent.value ==
+                        MainPageContent.appContent)
+                    ? CurvedNavigationBar(
+                        key: controller.bottomNavigationKey,
+                        backgroundColor: Colors.transparent,
+                        color: const Color(0xFFF5E6EA),
+                        buttonBackgroundColor: themeButtonColors,
+                        animationDuration: const Duration(milliseconds: 300),
+                        items: [
+                          CurvedNavigationBarItem(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Icon(
+                                MaterialCommunityIcons.run_fast,
+                                color: controller.currentPage.value == 0
+                                    ? Colors.white
+                                    : themeBackgroundColor,
+                              ),
                             ),
+                            label: 'Runs',
                           ),
-                          label: 'Runs',
-                        ),
-                        CurvedNavigationBarItem(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: Icon(
-                              FontAwesome.home,
-                              color: controller.currentPage.value == 1
-                                  ? Colors.white
-                                  : themeBackgroundColor,
+                          CurvedNavigationBarItem(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Icon(
+                                FontAwesome.home,
+                                color: controller.currentPage.value == 1
+                                    ? Colors.white
+                                    : themeBackgroundColor,
+                              ),
                             ),
+                            label: 'Kennels',
                           ),
-                          label: 'Kennels',
-                        ),
-                        CurvedNavigationBarItem(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: Icon(
-                              FontAwesome.map,
-                              color: controller.currentPage.value == 2
-                                  ? Colors.white
-                                  : themeBackgroundColor,
+                          CurvedNavigationBarItem(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Icon(
+                                FontAwesome.map,
+                                color: controller.currentPage.value == 2
+                                    ? Colors.white
+                                    : themeBackgroundColor,
+                              ),
                             ),
+                            label: 'Map',
                           ),
-                          label: 'Map',
-                        ),
-                        CurvedNavigationBarItem(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: Icon(
-                              FontAwesome.list_ul,
-                              color: controller.currentPage.value == 3
-                                  ? Colors.white
-                                  : themeBackgroundColor,
+                          CurvedNavigationBarItem(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Icon(
+                                FontAwesome.list_ul,
+                                color: controller.currentPage.value == 3
+                                    ? Colors.white
+                                    : themeBackgroundColor,
+                              ),
                             ),
+                            label: 'History',
                           ),
-                          label: 'History',
-                        ),
-                        CurvedNavigationBarItem(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: Icon(
-                              Icons.music_note,
-                              color: controller.currentPage.value == 4
-                                  ? Colors.white
-                                  : themeBackgroundColor,
+                          CurvedNavigationBarItem(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Icon(
+                                Icons.music_note,
+                                color: controller.currentPage.value == 4
+                                    ? Colors.white
+                                    : themeBackgroundColor,
+                              ),
                             ),
+                            label: 'Songs',
                           ),
-                          label: 'Songs',
-                        ),
-                      ],
-                      index: controller.currentPage.value,
-                      onTap: (index) => controller.onTabChanged(index),
-                    )
-                  : SizedBox();
-            }),
+                        ],
+                        index: controller.currentPage.value,
+                        onTap: (index) => controller.onTabChanged(index),
+                      )
+                    : SizedBox();
+              }),
+            ),
           ),
           //drawer: DrawerMenu(ScaffoldKey: controller.ScaffoldKey),
           drawer: DrawerMenu(key: Key('4312134')),
@@ -495,33 +505,40 @@ class MainNavigationPage extends StatelessWidget {
           decoration: Backgrounds.defaultHcBackground(),
           height: Get.height,
           width: Get.width,
+          // Scrolls only if the text size makes it taller than the screen
+          // (1.5x on a 360 x 640 phone overflowed, 2026-09-25).
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                AvifImage.asset('images/init/on_on_in_a_sec.avif', height: 140),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Text(
-                    'Filling Your Mug',
-                    style: ts_headingLarge,
-                    textAlign: TextAlign.center,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  AvifImage.asset(
+                    'images/init/on_on_in_a_sec.avif',
+                    height: 140,
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Image.asset('images/other/beer_pour.gif'),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Text(
-                    controller.initializationMessage.value,
-                    style: ts_headingLarge,
-                    textAlign: TextAlign.center,
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      'Filling Your Mug',
+                      style: ts_headingLarge,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Image.asset('images/other/beer_pour.gif'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      controller.initializationMessage.value,
+                      style: ts_headingLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -615,7 +632,11 @@ class _SplashSequenceSlider extends StatelessWidget {
                     child: page > 0
                         ? TextButton(
                             onPressed: () => _goTo(page - 1),
-                            child: Text('Prev', style: _navStyle, textAlign: TextAlign.center),
+                            child: Text(
+                              'Prev',
+                              style: _navStyle,
+                              textAlign: TextAlign.center,
+                            ),
                           )
                         : const SizedBox(),
                   ),
@@ -646,7 +667,11 @@ class _SplashSequenceSlider extends StatelessWidget {
                     child: TextButton(
                       onPressed: () async =>
                           isLast ? _onDonePress() : _goTo(page + 1),
-                      child: Text(isLast ? 'Done' : 'Next', style: _navStyle, textAlign: TextAlign.center),
+                      child: Text(
+                        isLast ? 'Done' : 'Next',
+                        style: _navStyle,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                 ),
@@ -699,7 +724,11 @@ class _SplashLoadingView extends StatelessWidget {
                       // Abandon, not complete: a stalled download must not
                       // mark the promo viewed — it retries next launch.
                       onPressed: controller.abandonSplashSequence,
-                      child: Text('Continue', style: _navStyle, textAlign: TextAlign.center),
+                      child: Text(
+                        'Continue',
+                        style: _navStyle,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   )
                 : Row(
