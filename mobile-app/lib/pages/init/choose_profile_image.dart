@@ -413,7 +413,13 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         );
       }
 
-      await safeReplaceRoute(() => MainNavigationPage(), routeName: '/main');
+      // The end of sign-up, by every route (new account, invite code, third
+      // party): /main becomes the WHOLE stack. safeReplaceRoute swaps only
+      // this page, which left the guest list, Find My Account and the rest
+      // underneath, so Android's back gesture on the main screen could walk
+      // the new hasher back into sign-up (seen in the code, 2026-09-25; not
+      // reproduced). A returning user's boot already ends with /main alone.
+      await Get.offAll(() => MainNavigationPage(), routeName: '/main');
     }
   }
 

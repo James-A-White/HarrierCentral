@@ -13,6 +13,9 @@ class KennelsListPage extends StatelessWidget {
       extendBody: true,
       floatingActionButton: _buildFab(controller),
       body: Obx(() {
+        // Read here, not in itemBuilder: the builder runs at layout, where an
+        // Rx read is not tracked by this Obx.
+        final String query = controller.searchText.value.trim();
         final bool showSpinner =
             controller.filteredList.isEmpty &&
             tableModel.globalKennelMainPageList == null;
@@ -50,6 +53,11 @@ class KennelsListPage extends StatelessWidget {
                       itemCount: controller.filteredList.length + 1,
                       itemBuilder: (BuildContext context, int index) {
                         if (index == controller.filteredList.length) {
+                          // A search that matches nothing said so with a
+                          // blank page, which reads as broken, not empty.
+                          if (index == 0 && query.isNotEmpty) {
+                            return _noMatches(query);
+                          }
                           return Container(height: 100.0);
                         }
                         return Padding(
@@ -83,6 +91,28 @@ class KennelsListPage extends StatelessWidget {
                 ),
         );
       }),
+    );
+  }
+
+  Widget _noMatches(String query) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 100),
+      child: Column(
+        children: <Widget>[
+          Text(
+            'No kennels match "$query"',
+            style: ts_titleMedium.copyWith(fontSize: 20),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Try fewer words, or the start of a word — "lon" finds London. '
+            'Search covers kennel names, cities, regions and countries.',
+            style: ts_body.copyWith(fontSize: 16, height: 1.3),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 

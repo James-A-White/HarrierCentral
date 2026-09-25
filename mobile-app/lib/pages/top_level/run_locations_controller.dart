@@ -921,41 +921,13 @@ class RunAndKennelMapController extends GetxController {
   // Filter kennels
   // ---------------------------------------------------------------------------
   List<Map<String, dynamic>> _doKennelFilter(String searchKennelsText) {
-    _filteredKennels = <Map<String, dynamic>>[];
-    if (_allKennels.isNotEmpty) {
-      if (searchKennelsText.isNotEmpty) {
-        final List<String> searchItems = searchKennelsText
-            .trim()
-            .toLowerCase()
-            .split(',');
-        _filteredKennels.addAll(_allKennels);
-        for (String st in searchItems) {
-          if (st.trim().isEmpty) continue;
-          bool negate = false;
-          String term = st;
-          if (term.trim().toLowerCase().startsWith('not ')) {
-            negate = true;
-            term = term.substring(4);
-          }
-          final List<String> orItems = term.split('+');
-
-          _filteredKennels = _filteredKennels.where((Map<String, dynamic> a) {
-            for (String orItem in orItems) {
-              if (orItem.trim().isEmpty) continue;
-              final String needle = ' ${orItem.trim().toLowerCase()}';
-              final String haystack = a['searchKennelsText'].toLowerCase();
-              if (haystack.contains(needle) ||
-                  removeDiacritics(haystack).contains(needle)) {
-                return !negate;
-              }
-            }
-            return negate;
-          }).toList();
-        }
-      } else {
-        _filteredKennels.addAll(_allKennels);
-      }
-    }
+    final SearchQuery q = SearchQuery(searchKennelsText);
+    _filteredKennels = _allKennels
+        .where(
+          (Map<String, dynamic> a) =>
+              q.matches(a['searchKennelsText'] as String?),
+        )
+        .toList();
     return _filteredKennels;
   }
 

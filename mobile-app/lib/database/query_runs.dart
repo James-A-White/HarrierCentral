@@ -60,12 +60,12 @@ class QueryRuns {
             || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationRegion},"")
             || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationStreet},"")
             || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationSubRegion},"")
-            || " " || case when evt.${tableModel.eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${tableModel.eventsTableHelper.colEventNumber} as TEXT) END
-            || " " || c.${tableModel.citiesTableHelper.colCityName} 
-            || " " || r.${tableModel.regionsTableHelper.colRegionName}
+            || " " || case when evt.${tableModel.eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${tableModel.eventsTableHelper.colEventNumber} as TEXT) ELSE "" END
+            || " " || coalesce(c.${tableModel.citiesTableHelper.colCityName},"") 
+            || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionName},"")
             || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionAbbreviation},"") 
-            || " " || n.${tableModel.countriesTableHelper.colCountryName} 
-            || " " || n.${tableModel.countriesTableHelper.colCountryCode} 
+            || " " || coalesce(n.${tableModel.countriesTableHelper.colCountryName},"") 
+            || " " || coalesce(n.${tableModel.countriesTableHelper.colCountryCode},"") 
             || " " || replace(coalesce(c.${tableModel.citiesTableHelper.colCitySearchTags},""),","," ") 
             || " " || replace(coalesce(r.${tableModel.regionsTableHelper.colRegionSearchTags},""),","," ") 
             || " " || replace(coalesce(n.${tableModel.countriesTableHelper.colCountrySearchTags},""),","," ") 
@@ -249,57 +249,22 @@ class QueryRuns {
     }
   }
 
+  /// The run list's and the map's search box (see [SearchQuery] for the
+  /// rules). A comma now narrows here too: this copy used to add each term's
+  /// matches again, so commas widened the list and duplicated runs.
   static List<dynamic> doRunsSearchTextFilter(
     String searchRunsText,
     List<RunDetailsAggregate> runList,
   ) {
-    List<dynamic> searchTextFilteredRuns = <dynamic>[];
-
-    // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
-    if (searchRunsText.isNotEmpty) {
-      // searchRunsText = '$searchRunsText , ${removeDiacritics(searchRunsText)}';
-      final List<String> searchItems = searchRunsText
-          .trim()
-          .toLowerCase()
-          .split(',');
-      for (String st in searchItems) {
-        if (st.trim().isEmpty) {
-          continue;
-        }
-        bool negate = false;
-        if (st.trim().toLowerCase().startsWith('not ')) {
-          negate = true;
-          st = st.substring(4);
-        }
-        final List<String> orItems = st.split('+');
-
-        ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
-
-        searchTextFilteredRuns.addAll(
-          runList.where((RunDetailsAggregate a) {
-            for (String orItem in orItems) {
-              if (orItem.trim().isEmpty) {
-                continue;
-              }
-              orItem = ' ${orItem.trim().toLowerCase()}';
-              if ((a.extensions.searchRunsText.toLowerCase().contains(
-                    orItem,
-                  )) ||
-                  (removeDiacritics(
-                    a.extensions.searchRunsText.toLowerCase(),
-                  ).contains(orItem))) {
-                return !negate;
-              }
-            }
-            return negate;
-          }).toList(),
-        );
-      }
-    } else {
-      searchTextFilteredRuns.addAll(runList);
-    }
-
-    return searchTextFilteredRuns;
+    final SearchQuery q = SearchQuery(searchRunsText);
+    if (q.isEmpty) return List<dynamic>.of(runList);
+    // List<dynamic>, not the List<RunDetailsAggregate> that .toList() would
+    // make: the run list inserts int section markers into the result.
+    return List<dynamic>.of(
+      runList.where(
+        (RunDetailsAggregate a) => q.matches(a.extensions.searchRunsText),
+      ),
+    );
   }
 
   static Future<List<RunDetailsAggregate>> getRunDetailsAggregates(
@@ -313,7 +278,9 @@ class QueryRuns {
 
     //final Geolocator locator = Geolocator();
 
-    debugPrint('[BOOT] getRunDetailsAggregates: start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] getRunDetailsAggregates: start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     IveCoreUtilities.logTiming('Run query start', appModel.appStartTime);
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
       queryType,
@@ -325,8 +292,12 @@ class QueryRuns {
     );
 
     IveCoreUtilities.logTiming('Run query end', appModel.appStartTime);
-    debugPrint('[BOOT] getRunDetailsAggregates: SQL query returned ${results.length} rows: ${DateTime.now().millisecondsSinceEpoch}ms');
-    debugPrint('[BOOT] getRunDetailsAggregates: Dart post-processing loop start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] getRunDetailsAggregates: SQL query returned ${results.length} rows: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
+    debugPrint(
+      '[BOOT] getRunDetailsAggregates: Dart post-processing loop start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
 
     for (int i = 0; i < results.length; i++) {
       final EventModel eventItem = tableModel.eventsTableHelper.fromMap(
@@ -457,7 +428,9 @@ class QueryRuns {
         runs.add(item);
       }
     }
-    debugPrint('[BOOT] getRunDetailsAggregates: Dart post-processing done: ${DateTime.now().millisecondsSinceEpoch}ms — ${runs.length} runs kept from ${results.length} rows');
+    debugPrint(
+      '[BOOT] getRunDetailsAggregates: Dart post-processing done: ${DateTime.now().millisecondsSinceEpoch}ms — ${runs.length} runs kept from ${results.length} rows',
+    );
     return runs;
   }
 
@@ -666,9 +639,13 @@ class QueryRuns {
       assert(false);
     }
 
-    debugPrint('[BOOT] queryRuns: rawQuery start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint(
+      '[BOOT] queryRuns: rawQuery start: ${DateTime.now().millisecondsSinceEpoch}ms',
+    );
     final result = await database.rawQuery(query);
-    debugPrint('[BOOT] queryRuns: rawQuery done: ${DateTime.now().millisecondsSinceEpoch}ms — ${result.length} rows');
+    debugPrint(
+      '[BOOT] queryRuns: rawQuery done: ${DateTime.now().millisecondsSinceEpoch}ms — ${result.length} rows',
+    );
     return result;
   }
 

@@ -108,7 +108,11 @@ class QueryKennels {
       final count = (results.first['c'] as int?) ?? 0;
       return count > 0;
     } catch (e, s) {
-      BootLogger.logError('[ERROR][DB]', 'isUserAdminOfAnyKennel failed: $e', s);
+      BootLogger.logError(
+        '[ERROR][DB]',
+        'isUserAdminOfAnyKennel failed: $e',
+        s,
+      );
       if (kDebugMode) debugPrint('isUserAdminOfAnyKennel error: $e');
       return false;
     }
@@ -124,13 +128,13 @@ class QueryKennels {
   static String searchKennelsField =
       '''
                lower(
-               "~ " || k.${tableModel.kennelsTableHelper.colKennelName} 
-            || " " || k.${tableModel.kennelsTableHelper.colKennelShortName} 
-            || " " || c.${tableModel.citiesTableHelper.colCityName} 
-            || " " || r.${tableModel.regionsTableHelper.colRegionName}
+               "~ " || coalesce(k.${tableModel.kennelsTableHelper.colKennelName},"") 
+            || " " || coalesce(k.${tableModel.kennelsTableHelper.colKennelShortName},"") 
+            || " " || coalesce(c.${tableModel.citiesTableHelper.colCityName},"") 
+            || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionName},"")
             || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionAbbreviation},"") 
-            || " " || n.${tableModel.countriesTableHelper.colCountryName} 
-            || " " || n.${tableModel.countriesTableHelper.colCountryCode} 
+            || " " || coalesce(n.${tableModel.countriesTableHelper.colCountryName},"") 
+            || " " || coalesce(n.${tableModel.countriesTableHelper.colCountryCode},"") 
             || " " || replace(coalesce(c.${tableModel.citiesTableHelper.colCitySearchTags},""),","," ") 
             || " " || replace(coalesce(r.${tableModel.regionsTableHelper.colRegionSearchTags},""),","," ") 
             || " " || replace(coalesce(n.${tableModel.countriesTableHelper.colCountrySearchTags},""),","," ") 
@@ -150,54 +154,18 @@ class QueryKennels {
           as searchKennelsText
           ''';
 
-  // TODO(James): Replace this with improved search from Leaderboards
+  /// The kennel list's search box (see [SearchQuery] for the rules).
   static List<KennelListAggregate> doFilter(
     String searchText,
     List<KennelListAggregate> allKennels,
   ) {
-    List<KennelListAggregate> filteredKennels = <KennelListAggregate>[];
-    //if (allKennels != null) {
-    filteredKennels.addAll(allKennels);
-
-    // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
-    if (searchText.isNotEmpty) {
-      // searchText = '$searchText , ${removeDiacritics(searchText)}';
-      final List<String> searchItems = searchText.trim().toLowerCase().split(
-        ',',
-      );
-      for (String st in searchItems) {
-        if (st.trim().isEmpty) {
-          continue;
-        }
-        bool negate = false;
-        if (st.trim().toLowerCase().startsWith('not ')) {
-          negate = true;
-          st = st.substring(4);
-        }
-        final List<String> orItems = st.split('+');
-
-        filteredKennels = filteredKennels.where((KennelListAggregate a) {
-          for (String orItem in orItems) {
-            if (orItem.trim().isEmpty) {
-              continue;
-            }
-            orItem = ' ${orItem.trim().toLowerCase()}';
-
-            if (((a.extensions.searchKennelsText ?? '').toLowerCase().contains(
-                  orItem,
-                )) ||
-                ((removeDiacritics(
-                  (a.extensions.searchKennelsText ?? '').toLowerCase(),
-                )).contains(orItem))) {
-              return !negate;
-            }
-          }
-          return negate;
-        }).toList();
-      }
-    }
-    //}
-    return filteredKennels;
+    final SearchQuery q = SearchQuery(searchText);
+    if (q.isEmpty) return List<KennelListAggregate>.of(allKennels);
+    return allKennels
+        .where(
+          (KennelListAggregate a) => q.matches(a.extensions.searchKennelsText),
+        )
+        .toList();
   }
 
   static Future<KennelListAggregate?> getSingleKennel(String kennelId) async {
@@ -386,11 +354,11 @@ class QueryKennels {
                "~ "  || coalesce(k.${tableModel.kennelsTableHelper.colKennelShortName},"") 
             || " " || coalesce(k.${tableModel.kennelsTableHelper.colKennelName},"")   
             
-            || " " || c.${tableModel.citiesTableHelper.colCityName} 
-            || " " || r.${tableModel.regionsTableHelper.colRegionName}
+            || " " || coalesce(c.${tableModel.citiesTableHelper.colCityName},"") 
+            || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionName},"")
             || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionAbbreviation},"") 
-            || " " || n.${tableModel.countriesTableHelper.colCountryName} 
-            || " " || n.${tableModel.countriesTableHelper.colCountryCode} 
+            || " " || coalesce(n.${tableModel.countriesTableHelper.colCountryName},"") 
+            || " " || coalesce(n.${tableModel.countriesTableHelper.colCountryCode},"") 
             || " " || replace(coalesce(c.${tableModel.citiesTableHelper.colCitySearchTags},""),","," ") 
             || " " || replace(coalesce(r.${tableModel.regionsTableHelper.colRegionSearchTags},""),","," ") 
             || " " || replace(coalesce(n.${tableModel.countriesTableHelper.colCountrySearchTags},""),","," ") 
