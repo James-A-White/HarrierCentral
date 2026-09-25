@@ -1,3 +1,19 @@
+## 3.1.8+1408 (2026-09-25)
+iOS only (TestFlight, Hash beta testers). Build number only; same version.
+### Fixes
+- **RSVP tab spun forever** (regression in 1407): the run page found its
+  tab by reading the label back, and the small-screen label change made that
+  empty. The RSVP list never loaded, the RSVP speed dial was missing and the
+  chat tab's header never faded. Tabs are now found by position.
+- **RSVP headings** (Going / Maybe / Not go / Hares) no longer break mid-word
+  on a small phone.
+### New Features
+- **Award list: who is due a milestone if they come.** "Drink chug-a-lug" has
+  an All | Coming | At Hash switch on today's and upcoming runs. All adds the
+  hashers not yet checked in who would earn an award if they came, greyed
+  out; Coming limits that to Yes/Maybe RSVPs and hares; At Hash is who is
+  checked in. Past runs show only who was there.
+
 ## 3.1.8+1407 (2026-09-25)
 Built from dev. First beta for the Hash beta testers since 1401: it also
 carries everything in 3.1.7+1406 (James-only TestFlight), listed below.
