@@ -251,6 +251,28 @@ void main() {
     );
   });
 
+  test('most runs on top, checked in and greyed-out together', () {
+    DrinksResults r(String id, int runs, {bool atRun = true}) => DrinksResults(
+      hasherId: id,
+      dispName: id,
+      nameForSort: id,
+      photo: '',
+      totalRunsThisKennel: runs,
+      totalHaringThisKennel: 0,
+      atRun: atRun,
+    );
+    final List<String> order = DrinksListController.visibleFor(
+      AwardFilter.all,
+      <DrinksResults>[r('here5', 5), r('here100', 100)],
+      <DrinksResults>[
+        r('due650', 650, atRun: false),
+        r('due25', 25, atRun: false),
+      ],
+      true,
+    ).map((DrinksResults a) => a.hasherId).toList();
+    expect(order, <String>['due650', 'here100', 'due25', 'here5']);
+  });
+
   group('predictionApplies', () {
     test('upcoming and today (within the grace hours) yes; past no', () {
       expect(

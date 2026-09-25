@@ -149,14 +149,34 @@ class DrinksListController extends GetxController {
     List<DrinksResults> due,
     bool predict,
   ) {
-    if (!predict || f == AwardFilter.atHash) return here;
-    if (f == AwardFilter.coming) {
-      return <DrinksResults>[
+    final List<DrinksResults> out;
+    if (!predict || f == AwardFilter.atHash) {
+      out = <DrinksResults>[...here];
+    } else if (f == AwardFilter.coming) {
+      out = <DrinksResults>[
         ...here,
         ...due.where((DrinksResults d) => d.isComing),
       ];
+    } else {
+      out = <DrinksResults>[...here, ...due];
     }
-    return <DrinksResults>[...here, ...due];
+    return byMostRuns(out);
+  }
+
+  /// Most runs on top (James, 2026-09-25) — the big milestones lead the
+  /// circle — checked in and greyed-out together; haring count breaks a tie.
+  /// Stable, so equal counts keep the queries' order.
+  static List<DrinksResults> byMostRuns(List<DrinksResults> list) {
+    final List<(int, DrinksResults)> indexed = <(int, DrinksResults)>[
+      for (int i = 0; i < list.length; i++) (i, list[i]),
+    ];
+    indexed.sort(((int, DrinksResults) a, (int, DrinksResults) b) {
+      int c = b.$2.totalRunsThisKennel.compareTo(a.$2.totalRunsThisKennel);
+      if (c != 0) return c;
+      c = b.$2.totalHaringThisKennel.compareTo(a.$2.totalHaringThisKennel);
+      return c != 0 ? c : a.$1.compareTo(b.$1);
+    });
+    return <DrinksResults>[for (final (_, DrinksResults d) in indexed) d];
   }
 
   @override
