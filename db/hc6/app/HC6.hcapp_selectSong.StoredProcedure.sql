@@ -26,6 +26,8 @@ AS
 --   On error (rowsets 0+1): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-06-02
+-- Changed: 2026-09-25 — recipients (and their count) skip deleted hashers
+--   (Hasher.Removed = 1) and retired device rows (Device.removed = 1).
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -126,6 +128,7 @@ DECLARE @recipientCount INT = 0;
 SELECT @recipientCount = COUNT(DISTINCT d.FcmToken)
 FROM HC.HasherEventMap hem
 INNER JOIN HC.Device d ON d.UserId = hem.UserId
+INNER JOIN HC.Hasher h ON h.id     = hem.UserId
 LEFT  JOIN HC.HasherKennelMap hkm ON hkm.UserId = hem.UserId AND hkm.KennelId = @kennelId
 WHERE hem.EventId  = @eventId
   -- >= 20, not >= 3. The 3 was borrowed from the RSVP enum (where 3 is
@@ -140,6 +143,10 @@ WHERE hem.EventId  = @eventId
   -- an RSVP made days before (James, 2026-09-20).
   AND ISNULL(hem.AttendenceState, 0) <> 10
   AND hem.Removed   = 0
+  -- Deleted hashers and retired device rows get nothing (2026-09-25):
+  -- gdprDelete used to leave their tokens live.
+  AND h.Removed     = 0
+  AND d.removed     = 0
   AND d.FcmToken IS NOT NULL
   AND d.FcmToken != ''
   AND d.IsMobile = 1
@@ -202,6 +209,7 @@ SELECT DISTINCT
     1                                             AS showNotification
 FROM HC.HasherEventMap hem
 INNER JOIN HC.Device d ON d.UserId = hem.UserId
+INNER JOIN HC.Hasher h ON h.id     = hem.UserId
 LEFT  JOIN HC.HasherKennelMap hkm
       ON hkm.UserId = hem.UserId AND hkm.KennelId = @kennelId
 WHERE hem.EventId  = @eventId
@@ -217,6 +225,10 @@ WHERE hem.EventId  = @eventId
   -- an RSVP made days before (James, 2026-09-20).
   AND ISNULL(hem.AttendenceState, 0) <> 10
   AND hem.Removed   = 0
+  -- Deleted hashers and retired device rows get nothing (2026-09-25):
+  -- gdprDelete used to leave their tokens live.
+  AND h.Removed     = 0
+  AND d.removed     = 0
   AND d.FcmToken IS NOT NULL
   AND d.FcmToken != ''
   AND d.IsMobile = 1

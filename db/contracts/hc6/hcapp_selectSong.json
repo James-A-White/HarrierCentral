@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_selectSong",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Records a song selection for an event in the interactive songbook. Any authenticated user who is RSVP'd (RsvpState >= 2, Removed = 0) to the event may call this. All selections are retained in HC.SongSession for history — this does not replace a previous selection. Returns three rowsets on success: a compact envelope, adHocData with song details for the Flutter caller plus metadata for the Azure Function fan-out, and a third rowset of FCM token recipients for the Azure Function to push a visible notification to. New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -149,5 +149,7 @@
       "detail": "The @recipientCount variable is computed by a separate SELECT COUNT before the INSERT, mirroring the rowset 2 WHERE clause. If the rowset 2 logic is ever modified without updating the COUNT query, the recipientCount value will diverge from the actual push count."
     }
   ],
-  "breakingChanges": []
+  "breakingChanges": [
+    "1.1.0 (2026-09-25): no rowset change. Recipients and recipientCount skip deleted hashers (Hasher.Removed = 1) and retired device rows (Device.removed = 1)."
+  ]
 }
