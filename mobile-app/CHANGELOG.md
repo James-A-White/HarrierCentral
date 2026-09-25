@@ -1,3 +1,31 @@
+## 3.1.8+1407 (2026-09-25)
+Built from dev. First beta for the Hash beta testers since 1401: it also
+carries everything in 3.1.7+1406 (James-only TestFlight), listed below.
+### Small screens and large text
+- **Text size capped at 1.5x.** Every screen was walked at that size on a
+  360 dp phone; labels that overflowed now shrink, wrap or scroll sideways.
+  Large phones and tablets look exactly as before.
+- **Wrapped button text is centred** everywhere.
+- **With the keyboard up**, the field being typed in and its buttons stay
+  on screen or can be scrolled to: My Account's Save Changes sits above the
+  keyboard, run chat hides the run header so the message box shows, the
+  "No runs" message scrolls.
+- **Run page**: tab labels fit; the run map's replay panel and controls fit
+  a small phone; the Events calendar's day list can be reached on a short
+  screen, and its format button is plum rather than stock blue.
+- **Side menu** scrolls; sign-in, kennel admin and run admin labels fit
+  without breaking mid-word.
+### Adding a run
+- A new run's description starts empty (it used to be '$^') and is optional.
+- The default start time is right when a day is tapped in the calendar.
+- Edit Run map buttons wrap, price labels fit, lookup rows don't repeat.
+### Fixes
+- **Run list sections**: a followed kennel's run no longer lands under
+  "All other upcoming runs" when a search leaves it last. Distance units
+  follow the Settings choice.
+- **Delete Account** restarts cleanly like Log Out (signing in again in the
+  same session used to red-screen).
+
 ## 3.1.7+1406 (2026-09-25)
 Built from dev. 3.1.6+1405 was the Android-only hotfix branch; this train
 carries its manifest line too (ab51ff00).

@@ -1,3 +1,9 @@
+## 2.0.87+722 (2026-09-25)
+### Fixes
+- **Kennel Admin Emails is read-only.** The database now builds the list
+  from the kennel's admins who follow it, so a typed value would last only
+  until the next membership change. The field points to Manage Hashers.
+
 ## 2.0.86+721 (2026-09-23)
 ### Fixes
 - **Member edits save to the right hasher and say what happened.** The

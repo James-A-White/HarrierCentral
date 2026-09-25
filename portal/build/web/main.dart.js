@@ -35818,8 +35818,8 @@ m=B.h.k(m.gj(0).d)
 k=B.h.k(k.d)
 n=new A.ba(B.ab,h)
 i.l(0,l,n)
-q.l(0,l,A.b8(!1,r,B.ao,r,m,!1,B.W,new A.aa(r,j),!0,r,"Int test",r,r,1,1e4,r,0,r,r,k,!1,"^[+-]?\\d+$","Please enter an integer value",B.bpS,l,o,p,n,new A.bnL(a),s))},
-c7E(){return new A.ano("sendAdHocEmail","Ad hoc Email",B.bpy,0,!1,!0)},
+q.l(0,l,A.b8(!1,r,B.ao,r,m,!1,B.W,new A.aa(r,j),!0,r,"Int test",r,r,1,1e4,r,0,r,r,k,!1,"^[+-]?\\d+$","Please enter an integer value",B.bpT,l,o,p,n,new A.bnL(a),s))},
+c7E(){return new A.ano("sendAdHocEmail","Ad hoc Email",B.bpz,0,!1,!0)},
 mS:function mS(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,c0,c1){var _=this
 _.RG=a
 _.rx=b
@@ -36060,7 +36060,7 @@ a1.l(0,m,A.b8(!1,r,B.ao,r,s,!1,B.W,new A.aa(r,a2),!1,r,"HashRuns.org City Link",
 a1.l(0,l,A.b8(!1,r,B.ao,r,s,!1,B.W,new A.aa(r,a2),!1,r,"HashRuns.org Region Link",r,r,1,q,r,0,r,r,s,!0,r,r,B.bou,l,a0,9,r,new A.aYZ(),a3))
 a1.l(0,k,A.b8(!1,r,B.ao,r,s,!1,B.W,new A.aa(r,a2),!1,r,"HashRuns.org Country Link",r,r,1,q,r,0,r,r,s,!0,r,r,B.bp5,k,a0,9,r,new A.aZ_(),a3))
 a1.l(0,j,A.b8(!1,r,B.ao,r,s,!1,B.W,new A.aa(r,a2),!1,r,"Leaderboard",r,r,1,q,r,0,r,r,s,!0,r,r,B.bpX,j,a0,9,r,new A.aZ0(),a3))
-a1.l(0,i,A.b8(!1,r,B.ao,r,s,!1,B.W,new A.aa(r,a2),!1,r,"Run List API",r,r,1,q,r,0,r,r,s,!0,r,r,B.bpM,i,a0,9,r,new A.aZ1(),a3))
+a1.l(0,i,A.b8(!1,r,B.ao,r,s,!1,B.W,new A.aa(r,a2),!1,r,"Run List API",r,r,1,q,r,0,r,r,s,!0,r,r,B.bpN,i,a0,9,r,new A.aZ1(),a3))
 a1.l(0,h,A.b8(!1,r,B.ao,r,s,!1,B.W,new A.aa(r,a2),!1,r,"Next Run API",r,r,1,q,r,0,r,r,s,!0,r,r,B.boS,h,a0,9,r,new A.aZ2(),a3))
 a1.l(0,g,A.b8(!1,r,B.ao,r,s,!1,B.W,new A.aa(r,a2),!1,r,"Leaderboard API",r,r,1,q,r,0,r,r,s,!0,r,r,B.bpn,g,a0,9,r,new A.aZ3(),a3))
 a1.l(0,f,A.b8(!1,r,B.ao,r,s,!1,B.W,new A.aa(r,a2),!1,r,"WordPress Plugin",r,r,1,q,r,0,r,r,s,!0,r,r,B.boM,f,a0,9,r,new A.aYR(),a3))
@@ -36122,7 +36122,7 @@ cnR(a,b,c){var s,r=null,q=b+"_kennelShortName",p=a.ry.gj(0),o=a.rx
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
 a.x1.l(0,q,s)
-a.db.l(0,q,A.b8(!1,r,B.ao,r,p.c,!1,B.W,new A.aa(r,t.n),!1,r,"Kennel abbreviation",r,r,1,10,r,3,r,r,o.c,!1,r,r,B.bpO,q,b+"_generic",c,s,new A.b_j(a,q),t.z))},
+a.db.l(0,q,A.b8(!1,r,B.ao,r,p.c,!1,B.W,new A.aa(r,t.n),!1,r,"Kennel abbreviation",r,r,1,10,r,3,r,r,o.c,!1,r,r,B.bpP,q,b+"_generic",c,s,new A.b_j(a,q),t.z))},
 cnS(a,b,c){var s,r=null,q=b+"_kennelUniqueShortName",p=a.ry.gj(0),o=a.rx
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
@@ -36137,7 +36137,7 @@ cnN(a,b,c){var s,r=null,q=b+"_kennelAdminEmailList",p=a.ry.gj(0),o=a.rx
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
 a.x1.l(0,q,s)
-a.db.l(0,q,A.b8(!1,r,B.ao,r,p.F,!1,B.W,new A.aa(r,t.n),!1,r,"Kennel admin email list",r,r,3,500,r,0,r,r,o.F,!1,r,r,B.bpT,q,b+"_generic",c,s,new A.b_f(a,q),t.z))},
+a.db.l(0,q,A.b8(!1,r,B.ao,r,p.F,!1,B.W,new A.aa(r,t.n),!1,r,"Kennel admin email list (automatic)",r,r,3,2000,r,0,r,r,o.F,!0,r,r,B.bpy,q,b+"_generic",c,s,new A.b_f(a,q),t.z))},
 cnT(a,b,c){var s,r=null,q=b+"_kennelWebsiteUrl",p=a.ry.gj(0),o=a.rx
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
@@ -36232,10 +36232,10 @@ s=s==null?r:B.h.k(s)
 a.db.l(0,q,A.b8(!1,r,B.jT,r,p,!1,B.W,new A.aa(r,t.n),!1,r,"Distance preference",r,r,1,1e4,r,0,r,new A.b_q(a),s,!1,r,r,B.bov,q,b+"_generic",c,r,new A.b_r(a),t.z))},
 cnZ(a,b,c){var s=null,r=b+"_kennelPinColor",q=B.h.k(a.ry.gj(0).CW),p=a.rx
 p===$&&A.a()
-a.db.l(0,r,A.b8(!1,s,B.fL,B.bf2,q,!1,B.W,new A.aa(s,t.n),!1,s,"Kennel Pin Color",s,s,1,1e4,s,0,s,new A.b_s(a),B.h.k(p.CW),!1,s,s,B.bpF,r,b+"_generic",c,s,new A.b_t(a),t.z))},
+a.db.l(0,r,A.b8(!1,s,B.fL,B.bf2,q,!1,B.W,new A.aa(s,t.n),!1,s,"Kennel Pin Color",s,s,1,1e4,s,0,s,new A.b_s(a),B.h.k(p.CW),!1,s,s,B.bpG,r,b+"_generic",c,s,new A.b_t(a),t.z))},
 co2(a,b,c){var s=null,r=b+"_logo",q=a.ry.gj(0),p=a.rx
 p===$&&A.a()
-a.db.l(0,r,A.b8(!1,s,B.hW,s,q.e,!1,B.aaF,new A.aa(s,t.n),!1,s,"Kennel logo",s,s,1,1e4,s,0,s,s,p.e,!1,s,s,B.bpG,r,b+"_generic",c,s,new A.b_z(a,r),t.z))},
+a.db.l(0,r,A.b8(!1,s,B.hW,s,q.e,!1,B.aaF,new A.aa(s,t.n),!1,s,"Kennel logo",s,s,1,1e4,s,0,s,s,p.e,!1,s,s,B.bpH,r,b+"_generic",c,s,new A.b_z(a,r),t.z))},
 co4(a,b,c){var s,r=null,q=b+"_defaultDayOfWeek",p=a.rx
 p===$&&A.a()
 s=B.h.a3(p.dx,1,7)
@@ -36277,7 +36277,7 @@ co7(a,b,c){var s=null,r=b+"_excludeFromLeaderboard",q=a.rx
 q===$&&A.a()
 a.db.l(0,r,A.b8(!1,s,B.cD,s,String(q.r>0),!1,B.W,new A.aa(s,t.n),!1,s,"Exclude from Leaderboard",s,s,1,1e4,s,0,s,new A.b_P(a),String(a.rx.r>0),!1,s,s,B.boy,r,b+"_generic",c,s,new A.b_Q(a,r),t.z))},
 coe(a,b,c){var s=null,r=b+"_songList"
-a.db.l(0,r,A.b8(!1,s,B.cD,s,"0",!1,B.W,new A.aa(s,t.n),!1,s,"Kennel Songs",s,s,1,1e4,s,0,s,new A.b0W(a),"0",!1,s,s,B.bpC,r,b+"_generic",c,s,new A.b0X(a,r),t.z))},
+a.db.l(0,r,A.b8(!1,s,B.cD,s,"0",!1,B.W,new A.aa(s,t.n),!1,s,"Kennel Songs",s,s,1,1e4,s,0,s,new A.b0W(a),"0",!1,s,s,B.bpD,r,b+"_generic",c,s,new A.b0X(a,r),t.z))},
 cod(a,b,c){var s=null,r=b+"_runTags",q=a.a5.gj(0),p=q>0?B.h.k(q):s
 a.db.l(0,r,A.b8(!1,s,B.cD,s,p,!1,B.W,new A.aa(s,t.n),!1,s,"Run Tags",s,s,1,1e4,s,0,s,a.ga9V(),B.h.k(A.coc(a)),!1,s,s,B.boW,r,b+"_generic",c,s,new A.b0P(),t.z))},
 coc(a){var s,r,q,p,o,n,m=a.rx
@@ -37184,7 +37184,7 @@ ciK(a,b,c){var s,r=null,q=b+"_titleTextColor",p=a.x2.gj(0),o=a.x1
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
 a.xr.l(0,q,s)
-a.db.l(0,q,A.b8(!0,r,B.ao,r,p.Q,!1,B.W,new A.aa(r,t.n),!1,r,"Heading text colour (optional)",r,r,1,25,r,0,r,r,o.Q,!1,r,r,B.bpP,q,b+"_generic",c,s,new A.aHu(a,q),t.z))},
+a.db.l(0,q,A.b8(!0,r,B.ao,r,p.Q,!1,B.W,new A.aa(r,t.n),!1,r,"Heading text colour (optional)",r,r,1,25,r,0,r,r,o.Q,!1,r,r,B.bpQ,q,b+"_generic",c,s,new A.aHu(a,q),t.z))},
 ciy(a,b,c){var s,r=null,q=b+"_bodyTextColor",p=a.x2.gj(0),o=a.x1
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
@@ -37209,7 +37209,7 @@ ciC(a,b,c){var s,r=null,q=b+"_cardBackgroundColor",p=a.x2.gj(0),o=a.x1
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
 a.xr.l(0,q,s)
-a.db.l(0,q,A.b8(!0,r,B.ao,r,p.ax,!1,B.W,new A.aa(r,t.n),!1,r,"Card background colour (optional)",r,r,1,25,r,0,r,r,o.ax,!1,r,r,B.bpQ,q,b+"_generic",c,s,new A.aHl(a,q),t.z))},
+a.db.l(0,q,A.b8(!0,r,B.ao,r,p.ax,!1,B.W,new A.aa(r,t.n),!1,r,"Card background colour (optional)",r,r,1,25,r,0,r,r,o.ax,!1,r,r,B.bpR,q,b+"_generic",c,s,new A.aHl(a,q),t.z))},
 ciA(a,b,c){var s,r=null,q=b+"_buttonPrimaryColor",p=a.x2.gj(0),o=a.x1
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
@@ -37292,13 +37292,13 @@ a.xr.l(0,q,s)
 a.db.l(0,q,A.b8(!0,r,B.ao,r,p.c,!1,B.W,new A.aa(r,t.n),!1,r,"Custom domain (optional)",r,r,1,250,r,0,r,r,o.c,!1,r,r,B.bq3,q,b+"_generic",c,s,new A.aXa(a,q),t.z))},
 cnl(a,b,c){var s=null,r=b+"_bannerImage",q=a.x2.gj(0),p=a.x1
 p===$&&A.a()
-a.db.l(0,r,A.b8(!0,s,B.hW,s,q.x,!1,B.aaG,new A.aa(s,t.n),!1,s,"Hero image",s,s,1,1e4,s,0,s,s,p.x,!1,s,s,B.bpK,r,b+"_generic",c,s,new A.aXO(a,r),t.z))},
+a.db.l(0,r,A.b8(!0,s,B.hW,s,q.x,!1,B.aaG,new A.aa(s,t.n),!1,s,"Hero image",s,s,1,1e4,s,0,s,s,p.x,!1,s,s,B.bpL,r,b+"_generic",c,s,new A.aXO(a,r),t.z))},
 cnk(a,b,c){var s=null,r=b+"_backgroundImage",q=a.x2.gj(0),p=a.x1
 p===$&&A.a()
 a.db.l(0,r,A.b8(!0,s,B.hW,s,q.z,!1,B.aaI,new A.aa(s,t.n),!1,s,"Background image",s,s,1,1e4,s,0,s,s,p.z,!1,s,s,B.bp7,r,b+"_generic",c,s,new A.aXN(a,r),t.z))},
 cnm(a,b,c){var s=null,r=b+"_ogImageUrl",q=a.x2.gj(0),p=a.x1
 p===$&&A.a()
-a.db.l(0,r,A.b8(!0,s,B.hW,s,q.y,!1,B.aaH,new A.aa(s,t.n),!1,s,"Kennel welcome image",s,s,1,1e4,s,0,s,s,p.y,!1,s,s,B.bpN,r,b+"_generic",c,s,new A.aXP(a,r),t.z))},
+a.db.l(0,r,A.b8(!0,s,B.hW,s,q.y,!1,B.aaH,new A.aa(s,t.n),!1,s,"Kennel welcome image",s,s,1,1e4,s,0,s,s,p.y,!1,s,s,B.bpO,r,b+"_generic",c,s,new A.aXP(a,r),t.z))},
 csO(a,b,c){var s,r=null,q=b+"_seoTitle",p=a.x2.gj(0),o=a.x1
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
@@ -37849,7 +37849,7 @@ s=new A.ba(B.ab,$.a1())
 a.xr.l(0,q,s)
 a.db.l(0,q,A.b8(!1,r,B.ao,r,p.ab,!1,B.W,new A.aa(r,t.n),!1,r,"Place description",r,r,1,500,r,0,r,r,o.ab,!1,r,r,B.boU,q,b+"_generic",c,s,new A.aJ4(a,q),t.z))},
 ciS(a,b,c){var s="basicInfo_lookupButton",r=null
-a.db.l(0,s,A.b8(!1,B.pv,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Lookup",r,r,1,1e4,r,0,r,r,r,!1,r,r,B.bpD,s,b+"_generic",c,r,new A.aJ3(),t.z))},
+a.db.l(0,s,A.b8(!1,B.pv,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Lookup",r,r,1,1e4,r,0,r,r,r,!1,r,r,B.bpE,s,b+"_generic",c,r,new A.aJ3(),t.z))},
 ciU(a,b,c){var s,r=null,q=b+"_runDescription",p=a.x2.gj(0),o=a.x1
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
@@ -37882,7 +37882,7 @@ coQ(a,b,c){var s,r=null,q=b+"_country",p=a.x2.gj(0),o=a.x1
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
 a.xr.l(0,q,s)
-a.db.l(0,q,A.b8(!1,r,B.ao,r,p.by,!1,B.W,new A.aa(r,t.n),!1,r,"Country",r,r,1,100,r,0,r,r,o.by,!1,r,r,B.bpz,q,b+"_generic",c,s,new A.b2k(a,q),t.z))},
+a.db.l(0,q,A.b8(!1,r,B.ao,r,p.by,!1,B.W,new A.aa(r,t.n),!1,r,"Country",r,r,1,100,r,0,r,r,o.by,!1,r,r,B.bpA,q,b+"_generic",c,s,new A.b2k(a,q),t.z))},
 coT(a,b,c){var s,r=null,q=b+"_phone",p=a.x2.gj(0),o=a.x1
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
@@ -37893,7 +37893,7 @@ o===$&&A.a()
 o=a.jY(o.M)
 s=new A.ba(B.ab,$.a1())
 a.xr.l(0,q,s)
-a.db.l(0,q,A.b8(!0,r,B.ao,r,p,!1,B.W,new A.aa(r,t.n),!1,r,"Latitude",r,r,1,20,r,4,r,r,o,!1,"^-?([0-8]?\\d(\\.\\d+)?|90(\\.0+)?)$","Latitude must be between -90 and 90",B.bpJ,q,b+"_generic",c,s,new A.b2l(a,q),t.z))},
+a.db.l(0,q,A.b8(!0,r,B.ao,r,p,!1,B.W,new A.aa(r,t.n),!1,r,"Latitude",r,r,1,20,r,4,r,r,o,!1,"^-?([0-8]?\\d(\\.\\d+)?|90(\\.0+)?)$","Latitude must be between -90 and 90",B.bpK,q,b+"_generic",c,s,new A.b2l(a,q),t.z))},
 coS(a,b,c){var s,r=null,q=b+"_longitude",p=a.jY(a.x2.gj(0).V),o=a.x1
 o===$&&A.a()
 o=a.jY(o.V)
@@ -37903,13 +37903,13 @@ a.db.l(0,q,A.b8(!0,r,B.ao,r,p,!1,B.W,new A.aa(r,t.n),!1,r,"Longitude",r,r,1,20,r
 coW(a,b,c){var s="location_setAddressFromLatLonButton",r=null
 a.db.l(0,s,A.b8(!1,B.GN,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Set address from lat/lon",r,r,1,1e4,r,0,a.gazQ(),r,r,!1,r,r,B.bqo,s,b+"_generic",c,r,new A.b2q(),t.z))},
 coX(a,b,c){var s="location_setLatLonFromMapButton",r=null
-a.db.l(0,s,A.b8(!1,B.yf,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Set lat/lon from map",r,r,1,1e4,r,0,a.gaEb(),r,r,!1,r,r,B.bpE,s,b+"_generic",c,r,new A.b2r(),t.z))},
+a.db.l(0,s,A.b8(!1,B.yf,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Set lat/lon from map",r,r,1,1e4,r,0,a.gaEb(),r,r,!1,r,r,B.bpF,s,b+"_generic",c,r,new A.b2r(),t.z))},
 coM(a,b,c){var s="location_centerMapOnLatLonButton",r=null
-a.db.l(0,s,A.b8(!1,B.ye,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Center map on lat/lon",r,r,1,1e4,r,0,a.gbjF(),r,r,!1,r,r,B.bpI,s,b+"_generic",c,r,new A.b2g(),t.z))},
+a.db.l(0,s,A.b8(!1,B.ye,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Center map on lat/lon",r,r,1,1e4,r,0,a.gbjF(),r,r,!1,r,r,B.bpJ,s,b+"_generic",c,r,new A.b2g(),t.z))},
 coO(a,b,c){var s="location_copyAddressFromExternalButton",r=null
-a.db.l(0,s,A.b8(!1,B.ie,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Copy address from source",r,r,1,1e4,r,0,a.gasV(),r,r,!1,r,r,B.bpL,s,b+"_generic",c,r,new A.b2i(),t.z))},
+a.db.l(0,s,A.b8(!1,B.ie,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Copy address from source",r,r,1,1e4,r,0,a.gasV(),r,r,!1,r,r,B.bpM,s,b+"_generic",c,r,new A.b2i(),t.z))},
 coP(a,b,c){var s="location_copyLatLonFromExternalButton",r=null
-a.db.l(0,s,A.b8(!1,B.ie,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Copy lat/lon from source",r,r,1,1e4,r,0,a.gasW(),r,r,!1,r,r,B.bpB,s,b+"_generic",c,r,new A.b2j(),t.z))},
+a.db.l(0,s,A.b8(!1,B.ie,B.lS,r,r,!1,B.W,new A.aa(r,t.B),!1,r,"Copy lat/lon from source",r,r,1,1e4,r,0,a.gasW(),r,r,!1,r,r,B.bpC,s,b+"_generic",c,r,new A.b2j(),t.z))},
 cpv(a,b,c){var s=null,r=b+"_isVisible",q=String(a.x2.gj(0).c!==0),p=a.x1
 p===$&&A.a()
 a.db.l(0,r,A.b8(!1,s,B.cD,s,q,!1,B.W,new A.aa(s,t.n),!1,s,"Is visible",s,s,1,1e4,s,0,s,s,String(p.c!==0),!1,s,s,B.boB,r,b+"_generic",c,s,new A.b65(a,r),t.z))},
@@ -37952,7 +37952,7 @@ r=B.h.k(n)
 q=a.x1
 q===$&&A.a()
 q=q.p2
-a.db.l(0,o,A.b8(!1,p,B.fL,s,r,!1,B.W,new A.aa(p,t.n),!1,p,"Web publishing settings",p,p,1,1e4,p,0,p,new A.b66(a),B.h.k(q==null?-2:q),!1,p,p,B.bpH,o,b+"_generic",c,p,new A.b67(a,o),t.z))},
+a.db.l(0,o,A.b8(!1,p,B.fL,s,r,!1,B.W,new A.aa(p,t.n),!1,p,"Web publishing settings",p,p,1,1e4,p,0,p,new A.b66(a),B.h.k(q==null?-2:q),!1,p,p,B.bpI,o,b+"_generic",c,p,new A.b67(a,o),t.z))},
 cpy(a,b,c){var s,r,q,p=null,o=b+"_runAudience",n=a.x2.gj(0).ok
 if(n==null)n=-2
 a.b8.sj(0,n)
@@ -37961,7 +37961,7 @@ r=B.h.k(n)
 q=a.x1
 q===$&&A.a()
 q=q.ok
-a.db.l(0,o,A.b8(!1,p,B.fL,s,r,!1,B.W,new A.aa(p,t.n),!1,p,"Who can see this run / event",p,p,1,1e4,p,0,p,new A.b6a(a),B.h.k(q==null?-2:q),!1,p,p,B.bpR,o,b+"_generic",c,p,new A.b6b(a,o),t.z))},
+a.db.l(0,o,A.b8(!1,p,B.fL,s,r,!1,B.W,new A.aa(p,t.n),!1,p,"Who can see this run / event",p,p,1,1e4,p,0,p,new A.b6a(a),B.h.k(q==null?-2:q),!1,p,p,B.bpS,o,b+"_generic",c,p,new A.b6b(a,o),t.z))},
 cpp(a,b,c){var s,r,q,p=null,o=b+"_allowWebLink",n=a.x2.gj(0).p1
 if(n==null)n=2
 a.am.sj(0,n)
@@ -37984,7 +37984,7 @@ cps(a,b,c){var s,r=null,q=b+"_hares",p=a.x2.gj(0),o=a.x1
 o===$&&A.a()
 s=new A.ba(B.ab,$.a1())
 a.xr.l(0,q,s)
-a.db.l(0,q,A.b8(!1,r,B.ao,r,p.dv,!1,B.W,new A.aa(r,t.n),!1,r,"Hares",r,r,1,500,r,0,r,r,o.dv,!1,r,r,B.bpA,q,b+"_generic",c,s,new A.b62(a,q),t.z))},
+a.db.l(0,q,A.b8(!1,r,B.ao,r,p.dv,!1,B.W,new A.aa(r,t.n),!1,r,"Hares",r,r,1,500,r,0,r,r,o.dv,!1,r,r,B.bpB,q,b+"_generic",c,s,new A.b62(a,q),t.z))},
 cqg(a,b,c){var s,r=null,q=b+"_runEndDate",p=a.x2.gj(0).aK
 p=p==null?r:p.dH()
 s=a.x1
@@ -205486,33 +205486,33 @@ B.bpv=new A.aX("Mis-management Description",B.mL,"Introductory text shown on the
 B.afW=new A.Z(62656,"FontAwesome5_Solid","flutter_vector_icons",!1)
 B.bpw=new A.aX("Self Payment",B.afW,"When enabled, hashers can mark themselves as paid for a run.\n\nThis is useful for kennels that collect cash at the run and want hashers to confirm their payment status.")
 B.bpx=new A.aX("Limit Participation",B.mL,"Enable this to set minimum and maximum participant limits.\n\nUseful for runs with limited capacity or minimum attendance requirements.")
-B.bpy=new A.aX("Ad hoc Email",B.yj,"You can use this tab to send ad hoc emails to everyone in the Kennel or only those who are RSVPed to this run.")
-B.bpz=new A.aX("Country",B.yl,"Enter the country where the run takes place.")
-B.bpA=new A.aX("Hares",B.yd,"Enter the names of the hares for this run.\n\nSeparate multiple names with commas.")
-B.bpB=new A.aX("Copy Coordinates from Integration",B.ie,"Copy the latitude and longitude from the external integration source to the Harrier Central fields.")
-B.bpC=new A.aX("Kennel Songs",B.ym,"Select songs from the global catalogue to add to your kennel.\n\nChecked songs will be associated with your kennel. Select a song to view its details on the right panel.")
-B.bpD=new A.aX("Lookup Location",B.pv,"Search previous run locations and re-use one for this run.\n\nOpens a dialog showing all unique locations from past and future runs, with a map and type-ahead search. Selecting a location will populate the place description, address fields, and lat/lon.")
-B.bpE=new A.aX("Set Coordinates from Map",B.yf,"Set the latitude and longitude to the current map crosshair position.")
-B.agj=new A.Z(983267,"MaterialCommunityIcons","flutter_vector_icons",!1)
-B.bpF=new A.aX("Kennel Pin Color",B.agj,"Here's where you can select the color of the map pins for your Kennel.\n\nThis is especially important in cities where there is more than one Kennel using Harrier Central. Having different colored pins for different Hash groups makes it easy to identify which runs are yours.")
-B.bpG=new A.aX("Kennel Logo",B.jo,"Upload a logo image for your kennel.\n\nThe image must be square and between 400\xd7400 and 800\xd7800 pixels, and should ideally have a transparent background.\n\nAccepted formats: PNG, AVIF.")
-B.afh=new A.Z(62845,"FontAwesome5_Solid","flutter_vector_icons",!1)
-B.bpH=new A.aX("Web Publishing",B.afh,'Controls whether this run is published on hashruns.org.\n\nSelect "Use Kennel Setting" to inherit the default from your kennel configuration.')
-B.bpI=new A.aX("Center Map on Coordinates",B.ye,"Center the map on the current latitude and longitude values.")
-B.ag9=new A.Z(986967,"MaterialCommunityIcons","flutter_vector_icons",!1)
-B.bpJ=new A.aX("Latitude",B.ag9,"Enter the latitude coordinate for the run location.\n\nLeave empty for runs with no fixed location.\n\nValue must be between -90 and 90 degrees. Use decimal format (e.g., 51.5074 for London).")
-B.bpK=new A.aX("Hero Image",B.jo,"The image displayed at the top of the landing page in the hero section. When set, it replaces the kennel logo in the hero.\n\nUse a PNG or AVIF with a transparent background to let the hero backdrop show through, or a JPG for a solid image.\n\nThis image is also used as the social share preview \u2014 if not set, the Kennel Welcome Image is used instead.\n\nRecommended size: 800\xd7800 px (square with transparency). Accepted formats: JPG, PNG, AVIF.")
-B.bpL=new A.aX("Copy Address from Integration",B.ie,"Copy the address from the external integration source to the Harrier Central fields.")
-B.bpM=new A.aX("Run List API",B.GV,"Using this Harrier Central API call, developers can request and receive a Kennel's upcoming run list programmatically.")
-B.bpN=new A.aX("Kennel Welcome Image",B.jo,"The image displayed alongside your welcome text on the kennel home page.\n\nThis image is also used when your page is shared on social media or messaging apps (Open Graph). Recommended size: 1200\xd7630 px. Accepted formats: JPG, PNG.")
-B.bpO=new A.aX("Kennel Abbreviation",B.hx,"Your Kennel's abbreviation should be between 3 and 6 characters long (although we support up to 9 characters). It should be unique in your local area, even if there are other Kennels with similar abbreviations in other parts of the world.")
-B.bpP=new A.aX("Heading Colour",B.pB,"Colour for event names, section headings, and other title text (8-digit hex #RRGGBBAA recommended).\n\nLeave empty to use the theme default (#FFFFFFFF).")
-B.agr=new A.Z(985971,"MaterialCommunityIcons","flutter_vector_icons",!1)
-B.bpQ=new A.aX("Card Background Colour",B.agr,"Background colour for cards and panel surfaces (8-digit hex #RRGGBBAA recommended).\n\nLeave empty to use the theme default (#FFFFFF0A \u2014 4% white).")
-B.bpR=new A.aX("Run Audience",B.mL,'Controls who can see this run or event.\n\nSelect "Use Kennel Setting" to inherit the default from your kennel configuration.')
-B.bpS=new A.aX("Int test",B.hx,u.K)
 B.agt=new A.Z(57552,"MaterialIcons","flutter_vector_icons",!1)
-B.bpT=new A.aX("Admin Emails",B.agt,"Please provide a comma separated list of emails of administrators of your Kennel.\n\nWe will use this only to contact you to let you know about changes to the system or if we are experiencing any issues with Harrier Central.")
+B.bpy=new A.aX("Admin Emails",B.agt,"The email addresses of your Kennel's admins who follow the Kennel. Harrier Central keeps this list up to date for you: to change it, change who is an admin under Manage Hashers.\n\nWe use it only to tell you about changes to the system or if Harrier Central is having problems.")
+B.bpz=new A.aX("Ad hoc Email",B.yj,"You can use this tab to send ad hoc emails to everyone in the Kennel or only those who are RSVPed to this run.")
+B.bpA=new A.aX("Country",B.yl,"Enter the country where the run takes place.")
+B.bpB=new A.aX("Hares",B.yd,"Enter the names of the hares for this run.\n\nSeparate multiple names with commas.")
+B.bpC=new A.aX("Copy Coordinates from Integration",B.ie,"Copy the latitude and longitude from the external integration source to the Harrier Central fields.")
+B.bpD=new A.aX("Kennel Songs",B.ym,"Select songs from the global catalogue to add to your kennel.\n\nChecked songs will be associated with your kennel. Select a song to view its details on the right panel.")
+B.bpE=new A.aX("Lookup Location",B.pv,"Search previous run locations and re-use one for this run.\n\nOpens a dialog showing all unique locations from past and future runs, with a map and type-ahead search. Selecting a location will populate the place description, address fields, and lat/lon.")
+B.bpF=new A.aX("Set Coordinates from Map",B.yf,"Set the latitude and longitude to the current map crosshair position.")
+B.agj=new A.Z(983267,"MaterialCommunityIcons","flutter_vector_icons",!1)
+B.bpG=new A.aX("Kennel Pin Color",B.agj,"Here's where you can select the color of the map pins for your Kennel.\n\nThis is especially important in cities where there is more than one Kennel using Harrier Central. Having different colored pins for different Hash groups makes it easy to identify which runs are yours.")
+B.bpH=new A.aX("Kennel Logo",B.jo,"Upload a logo image for your kennel.\n\nThe image must be square and between 400\xd7400 and 800\xd7800 pixels, and should ideally have a transparent background.\n\nAccepted formats: PNG, AVIF.")
+B.afh=new A.Z(62845,"FontAwesome5_Solid","flutter_vector_icons",!1)
+B.bpI=new A.aX("Web Publishing",B.afh,'Controls whether this run is published on hashruns.org.\n\nSelect "Use Kennel Setting" to inherit the default from your kennel configuration.')
+B.bpJ=new A.aX("Center Map on Coordinates",B.ye,"Center the map on the current latitude and longitude values.")
+B.ag9=new A.Z(986967,"MaterialCommunityIcons","flutter_vector_icons",!1)
+B.bpK=new A.aX("Latitude",B.ag9,"Enter the latitude coordinate for the run location.\n\nLeave empty for runs with no fixed location.\n\nValue must be between -90 and 90 degrees. Use decimal format (e.g., 51.5074 for London).")
+B.bpL=new A.aX("Hero Image",B.jo,"The image displayed at the top of the landing page in the hero section. When set, it replaces the kennel logo in the hero.\n\nUse a PNG or AVIF with a transparent background to let the hero backdrop show through, or a JPG for a solid image.\n\nThis image is also used as the social share preview \u2014 if not set, the Kennel Welcome Image is used instead.\n\nRecommended size: 800\xd7800 px (square with transparency). Accepted formats: JPG, PNG, AVIF.")
+B.bpM=new A.aX("Copy Address from Integration",B.ie,"Copy the address from the external integration source to the Harrier Central fields.")
+B.bpN=new A.aX("Run List API",B.GV,"Using this Harrier Central API call, developers can request and receive a Kennel's upcoming run list programmatically.")
+B.bpO=new A.aX("Kennel Welcome Image",B.jo,"The image displayed alongside your welcome text on the kennel home page.\n\nThis image is also used when your page is shared on social media or messaging apps (Open Graph). Recommended size: 1200\xd7630 px. Accepted formats: JPG, PNG.")
+B.bpP=new A.aX("Kennel Abbreviation",B.hx,"Your Kennel's abbreviation should be between 3 and 6 characters long (although we support up to 9 characters). It should be unique in your local area, even if there are other Kennels with similar abbreviations in other parts of the world.")
+B.bpQ=new A.aX("Heading Colour",B.pB,"Colour for event names, section headings, and other title text (8-digit hex #RRGGBBAA recommended).\n\nLeave empty to use the theme default (#FFFFFFFF).")
+B.agr=new A.Z(985971,"MaterialCommunityIcons","flutter_vector_icons",!1)
+B.bpR=new A.aX("Card Background Colour",B.agr,"Background colour for cards and panel surfaces (8-digit hex #RRGGBBAA recommended).\n\nLeave empty to use the theme default (#FFFFFF0A \u2014 4% white).")
+B.bpS=new A.aX("Run Audience",B.mL,'Controls who can see this run or event.\n\nSelect "Use Kennel Setting" to inherit the default from your kennel configuration.')
+B.bpT=new A.aX("Int test",B.hx,u.K)
 B.afv=new A.Z(62146,"FontAwesome5_Solid","flutter_vector_icons",!1)
 B.bpU=new A.aX("Membership Renewal",B.afv,"How membership payments extend a member's expiration date.\n\nRolling: each payment adds the membership duration, stacking on whatever time remains.\n\nFixed year: everyone's membership runs to the same renewal date each year \u2014 set the month and day below. A payment runs to the next time that date comes around.\n\nLifetime: one payment, membership never expires.")
 B.bpV=new A.aX("Kennel Description",B.hx,"Please provide a short Kennel description. This should include what day and time your group normally runs, how much it costs, and any other relevant information.\n\nMake it fun so visitors will want to join you!")
