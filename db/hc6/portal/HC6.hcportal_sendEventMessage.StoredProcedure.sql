@@ -54,6 +54,12 @@ AS
 --     a visible banner for their own message. Sender now falls into Rowset 2
 --     (silent data-only FCM) so the portal can use the echo to confirm
 --     double-tick delivery.
+--   2026-09-25: push audience brought in line with hcapp_sendEventMessage
+--     (the 2026-09-17 fan-out fix never reached this SP). Preference 0 no
+--     longer counts as "on"; one push per device token; retired and
+--     180-day-idle devices skipped; deleted hashers (Hasher.Removed = 1)
+--     and removed kennel links skipped. Rowsets 1 and 2 keep their columns
+--     (UserId, DisplayName, FcmToken). The CATCH now logs to HC.ErrorLog.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -218,69 +224,93 @@ END
     INNER JOIN HC.Hasher h ON msg.UserId = h.id
     WHERE msg.id = @messageId AND msg.removed = 0 AND h.Removed = 0;
 
-    -- Rowset 1: FullPushNotificationRecipients
-    -- Notification preference flags:
-    --   0 = Auto (event level: falls back to kennel preference; kennel level: treated as always on)
-    --   1 = Always On
-    --   2 = Off
-    --   3 = On but muted (in-app only)
-    --   4 = On 6 hours before run
-    -- NULLIF converts event-level 0 (auto) to NULL so COALESCE correctly falls back to
-    -- the kennel preference rather than treating it as an explicit "always on" value.
-    SELECT
-        hkm.UserId as UserId,
-        h.DisplayName as DisplayName,
-        device.FcmToken as FcmToken
-        INTO #tempMessageOn
-    FROM HC.HasherKennelMap hkm
-    INNER JOIN HC.Hasher h ON hkm.UserId = h.id
-    INNER JOIN HC.Event evt ON evt.id = @eventId
-    INNER JOIN HC.Device device ON device.UserId = h.id
-    LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = evt.id AND hem.UserId = h.id
-    WHERE
-    (
-        (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) IN (0, 1)) -- auto/default and always-on
-        OR
-        (
-            -- only send full notifications when within the time window
-            (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) = 4) AND (@isEventWithinTimeLimitForNotifications = 1)
-        )
-    )
-    AND hkm.KennelId = @kennelId
-    AND hkm.UserId != @hasherId -- sender receives silent echo via Rowset 2, not a visible push for their own message
-    AND device.FcmToken IS NOT NULL
-        AND
-          (@sendToEveryone != 0
-              OR (@sendToMismanagement != 0 AND hkm.MismanagementRoles != 0)
-              OR (@sendToMembers != 0 AND hkm.MembershipExpirationDate > GETDATE())
-              OR (@sendToFollowers != 0 AND hkm.Following = 1)
-              OR (@sendToRsvps != 0 AND hem.RsvpState >= 2 AND COALESCE(hem.EventNotificationPreference, 1) != 0)
-              OR (@sendToHares != 0 AND hem.IsHare != 0 AND COALESCE(hem.EventNotificationPreference, 1) != 0)
-          )
+    -- ---------------------------------------------------------------
+    -- Push audience — the same rules as HC6.hcapp_sendEventMessage, which
+    -- this SP had drifted from (brought back in line 2026-09-25):
+    --
+    -- Preference. Effective = event-level override when non-zero, else
+    -- the kennel preference (NULLIF: event 0 means "no override").
+    --     1 on               -> visible push
+    --     4 on before run    -> visible inside the 6-hour window, silent outside
+    --     3 on but muted     -> silent push, so the badge still moves
+    --     0 never set, 2 off -> nothing
+    -- This SP used to treat 0 as "on", and 0 is what every follower who
+    -- never touched the bell has, so each portal message pushed the whole
+    -- roster. The app SPs stopped doing that on 2026-09-17.
+    --
+    -- WHERE. One push per DEVICE (DISTINCT on the token) rather than per
+    -- device row — a hasher accumulates rows and each kept a live token,
+    -- one hasher got 43 copies of one message — skipping retired rows and
+    -- devices idle 180 days. Deleted hashers (Hasher.Removed = 1) and
+    -- removed kennel links are left out: gdprDelete left their tokens live.
+    --
+    -- The sender never gets a visible banner for their own message. Their
+    -- devices get the silent echo that confirms delivery whenever they follow
+    -- or belong to the kennel and have not switched it off — as before.
+    -- ---------------------------------------------------------------
+    DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
 
-    SELECT * FROM #tempMessageOn;
-
-    -- Rowset 2: InAppOnlyNotificationRecipients
-    -- Everyone associated with a Kennel who did not qualify for a full push notification.
-    -- They will receive an in-app notification so they can see the chat updating in realtime.
-    SELECT
+    SELECT DISTINCT
         hkm.UserId,
         h.DisplayName,
-        device.FcmToken
+        device.FcmToken,
+        COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) AS Pref
+    INTO #pushAudience
     FROM HC.HasherKennelMap hkm
-    INNER JOIN HC.Hasher h ON hkm.UserId = h.id
-    INNER JOIN HC.Device device ON hkm.UserId = device.UserId
-    LEFT OUTER JOIN #tempMessageOn t ON hkm.UserId = t.UserId
+    INNER JOIN HC.Hasher h      ON h.id          = hkm.UserId
+    INNER JOIN HC.Device device ON device.UserId = hkm.UserId
     LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
-    WHERE hkm.KennelId = @kennelId AND (hkm.Following != 0 OR hkm.MembershipExpirationDate > GETDATE())
-    AND device.FcmToken IS NOT NULL
-    AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) != 2
-    AND t.UserId IS NULL;
+    WHERE hkm.KennelId = @kennelId
+      AND hkm.removed  = 0
+      AND h.Removed    = 0
+      AND device.FcmToken IS NOT NULL
+      AND device.removed   = 0
+      AND device.LastLogin >= @idleCutoff
+      AND (
+          (    COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) IN (1, 3, 4)
+           AND (
+               @sendToEveryone      != 0
+            OR (@sendToMismanagement != 0 AND hkm.MismanagementRoles  != 0)
+            OR (@sendToMembers       != 0 AND hkm.MembershipExpirationDate > GETDATE())
+            OR (@sendToFollowers     != 0 AND hkm.Following = 1)
+            OR (@sendToRsvps         != 0 AND hem.RsvpState >= 2)
+            OR (@sendToHares         != 0 AND hem.IsHare    != 0)
+           ))
+          -- The sender's own devices, for the silent delivery echo, unless
+          -- they switched this kennel off (the old rule, kept).
+       OR (    hkm.UserId = @hasherId
+           AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) != 2
+           AND (hkm.Following != 0 OR hkm.MembershipExpirationDate > GETDATE()))
+      );
 
-    DROP TABLE #tempMessageOn;
+    -- Rowset 1: FullPushNotificationRecipients — visible banner.
+    SELECT DISTINCT UserId, DisplayName, FcmToken
+    FROM #pushAudience
+    WHERE UserId != @hasherId
+      AND (Pref = 1 OR (Pref = 4 AND @isEventWithinTimeLimitForNotifications = 1));
+
+    -- Rowset 2: InAppOnlyNotificationRecipients — silent, the badge moves.
+    -- A token already in rowset 1 is not sent a second, silent copy.
+    SELECT DISTINCT a.UserId, a.DisplayName, a.FcmToken
+    FROM #pushAudience a
+    WHERE (a.UserId = @hasherId
+           OR a.Pref = 3
+           OR (a.Pref = 4 AND @isEventWithinTimeLimitForNotifications = 0))
+      AND NOT EXISTS (
+          SELECT 1 FROM #pushAudience v
+          WHERE v.FcmToken = a.FcmToken
+            AND v.UserId  != @hasherId
+            AND (v.Pref = 1 OR (v.Pref = 4 AND @isEventWithinTimeLimitForNotifications = 1)));
+
+    DROP TABLE #pushAudience;
 
 END TRY
 BEGIN CATCH
+    -- Roll back FIRST, then log: a log row written inside the transaction
+    -- would be erased by the rollback.
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcportal_sendEventMessage',
+            ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), @hasherId);
     SELECT 0 AS Success, ERROR_MESSAGE() AS ErrorMessage;
 END CATCH

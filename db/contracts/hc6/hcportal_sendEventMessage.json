@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_sendEventMessage",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Sends a message to event participants based on releasability bit flags (admins, members, followers, RSVPs, hares, everyone). Inserts a record into HC.EventMessage, then returns three rowsets: the created message details, FCM tokens for users who qualify for full push notifications, and FCM tokens for users who qualify for in-app-only notifications. Notification preferences and a 6-hour event proximity window gate full push delivery. Service accounts are rejected unconditionally.",
   "parameters": [
     {
@@ -103,7 +103,9 @@
   "sideEffects": [
     "INSERT into HC.EventMessage with the new message record (inside transaction)"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {"severity": "medium", "issue": "Resolved 2026-09-25: push fan-out drift from hcapp_sendEventMessage", "detail": "Preference 0 counted as 'on' (whole-roster pushes), no DISTINCT on token, retired/idle devices and deleted hashers included, CATCH did not log. Now mirrors the app SP; CATCH rolls back then logs to HC.ErrorLog."}
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
@@ -113,5 +115,8 @@
     "Never change the releasability bit flag values (0x0001-0x0020) without updating all callers",
     "Never change the notification preference codes (1=Always, 2=Off, 3=Muted, 4=On 6h before) without updating callers",
     "Never change the 6-hour proximity threshold without coordinating with the API shim and portal"
+  ],
+  "changes": [
+    "1.2.0 (2026-09-25): rowsets 1 and 2 keep their columns (UserId, DisplayName, FcmToken); the audience rules now match hcapp_sendEventMessage (pref IN (1,3,4), one push per token, retired/180-day-idle devices, deleted hashers and removed links skipped). The sender still gets the silent echo when following/member and not switched off."
   ]
 }
