@@ -179,21 +179,26 @@ extension KennelInfoControlsExtension on KennelPageFormController {
       controlType: UiControlType.string,
       sidebarEntryKey: fieldKey,
       sidebarExitKey: '${tabKey}_generic',
+      // Read-only since 2026-09-25: the list is built by the database from
+      // the kennel's admins who follow it (HC.trgUpdateKennelAdminList), so
+      // a typed value would only last until the next membership change. The
+      // save sends changed fields only, so this field is never sent.
       sidebarData: const SideBarData(
         'Admin Emails',
         MaterialIcons.contact_mail,
-        'Please provide a comma separated list of emails of administrators '
-            'of your Kennel.\n\nWe will use this only to contact you to let '
-            'you know about changes to the system or if we are experiencing '
-            'any issues with Harrier Central.',
+        'The email addresses of your Kennel\'s admins who follow the Kennel. '
+            'Harrier Central keeps this list up to date for you: to change '
+            'it, change who is an admin under Manage Hashers.\n\nWe use it '
+            'only to tell you about changes to the system or if Harrier '
+            'Central is having problems.',
       ),
       editedFieldValue: editedData.value.kennelAdminEmailList,
       originalFieldValue: originalData.kennelAdminEmailList,
       globalKey: GlobalKey<FormFieldState>(),
-      label: 'Kennel admin email list',
-      maxStringLength: 500,
+      label: 'Kennel admin email list (automatic)',
+      maxStringLength: 2000,
       minStringLength: 0,
-      readonly: false,
+      readonly: true,
       maxLines: 3,
       includeOverrideButton: false,
       textController: textControllers[fieldKey] = TextEditingController(),
