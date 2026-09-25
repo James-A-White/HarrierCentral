@@ -92,8 +92,7 @@ class GazetteerBottomSheetState extends State<GazetteerBottomSheet> {
         ),
         // Android 15/16 edge-to-edge: keep the last result rows tappable
         // above the system navigation area.
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             _buildHandle(),
@@ -213,11 +212,19 @@ class GazetteerBottomSheetState extends State<GazetteerBottomSheet> {
     final addr = result.address;
     final name =
         result.poi?.name ?? addr?.freeformAddress ?? 'Unknown location';
+    // What the place IS and where exactly: two results can share a name and
+    // a city (the London Eye and the London Eye pier both read "London, ENG,
+    // United Kingdom", 2026-09-25), so show the category and street address.
+    final String? category = result.poi?.categories?.firstOrNull;
     final subtitle = [
-      addr?.municipality,
-      addr?.countrySubdivision,
-      addr?.country,
-    ].where((s) => s != null && s.isNotEmpty).join(', ');
+      if (category != null && category.isNotEmpty)
+        category[0].toUpperCase() + category.substring(1),
+      addr?.freeformAddress ??
+          [
+            addr?.municipality,
+            addr?.countrySubdivisionName ?? addr?.countrySubdivision,
+          ].where((s) => s != null && s.isNotEmpty).join(', '),
+    ].where((s) => s.isNotEmpty).join(' · ');
 
     return ListTile(
       leading: CircleAvatar(
@@ -231,7 +238,7 @@ class GazetteerBottomSheetState extends State<GazetteerBottomSheet> {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: subtitle.isNotEmpty
-          ? Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis)
+          ? Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis)
           : null,
       trailing: const Icon(Icons.chevron_right),
       onTap: () {

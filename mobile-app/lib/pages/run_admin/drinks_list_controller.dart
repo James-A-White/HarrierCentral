@@ -97,14 +97,15 @@ class DrinksListController extends GetxController {
 
     isLoading.value = true;
 
-    final bool synced = await tableModel.syncEventAdminService.updateFromBackend(
-      EnumDataTables.hashers.flag |
-          EnumDataTables.payments.flag |
-          EnumDataTables.hasherEventMap.flag |
-          EnumDataTables.hasherKennelMap.flag,
-      true,
-      _eventId,
-    );
+    final bool synced = await tableModel.syncEventAdminService
+        .updateFromBackend(
+          EnumDataTables.hashers.flag |
+              EnumDataTables.payments.flag |
+              EnumDataTables.hasherEventMap.flag |
+              EnumDataTables.hasherKennelMap.flag,
+          true,
+          _eventId,
+        );
     if (isClosed) return;
 
     final List<DrinksResults> found = await _queryAwards();
@@ -140,7 +141,9 @@ class DrinksListController extends GetxController {
     final List<DrinksResults> found = <DrinksResults>[];
     for (final Map<String, dynamic> row in rows) {
       final DrinksResults item = DrinksResults.fromMap(row);
-      item.specialRunCount = Utilities.checkSpecialRun(item.totalRunsThisKennel);
+      item.specialRunCount = Utilities.checkSpecialRun(
+        item.totalRunsThisKennel,
+      );
       if (item.isHare == 1) {
         item.specialHaringCount = Utilities.checkSpecialHaring(
           item.totalHaringThisKennel,
@@ -198,11 +201,7 @@ class DrinksListController extends GetxController {
       final List<Map<String, dynamic>> rows = await database.rawQuery(query);
       return awardsFromRows(rows);
     } catch (e, s) {
-      BootLogger.logError(
-        '[DrinksList.awards] eventId=$_eventId',
-        e,
-        s,
-      );
+      BootLogger.logError('[DrinksList.awards] eventId=$_eventId', e, s);
       return const <DrinksResults>[];
     }
   }

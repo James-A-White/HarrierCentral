@@ -12,7 +12,9 @@ class AzurePlace {
         : null;
     if (json['results'] != null) {
       results = (json['results'] as List<dynamic>)
-          .map((item) => AzurePlaceResult.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => AzurePlaceResult.fromJson(item as Map<String, dynamic>),
+          )
           .toList();
     }
   }
@@ -36,7 +38,14 @@ class AzurePlaceSummary {
 }
 
 class AzurePlaceResult {
-  AzurePlaceResult({this.type, this.id, this.score, this.poi, this.address, this.position});
+  AzurePlaceResult({
+    this.type,
+    this.id,
+    this.score,
+    this.poi,
+    this.address,
+    this.position,
+  });
 
   AzurePlaceResult.fromJson(Map<String, dynamic> json) {
     type = json['type'] as String?;
@@ -46,10 +55,14 @@ class AzurePlaceResult {
       poi = AzurePlacePoi.fromJson(json['poi'] as Map<String, dynamic>);
     }
     if (json['address'] != null) {
-      address = AzurePlaceAddress.fromJson(json['address'] as Map<String, dynamic>);
+      address = AzurePlaceAddress.fromJson(
+        json['address'] as Map<String, dynamic>,
+      );
     }
     if (json['position'] != null) {
-      position = AzurePlaceLatLon.fromJson(json['position'] as Map<String, dynamic>);
+      position = AzurePlaceLatLon.fromJson(
+        json['position'] as Map<String, dynamic>,
+      );
     }
   }
 
@@ -62,13 +75,18 @@ class AzurePlaceResult {
 }
 
 class AzurePlacePoi {
-  AzurePlacePoi({this.name});
+  AzurePlacePoi({this.name, this.categories});
 
   AzurePlacePoi.fromJson(Map<String, dynamic> json) {
     name = json['name'] as String?;
+    categories = (json['categories'] as List<dynamic>?)?.cast<String>();
   }
 
   String? name;
+
+  /// e.g. ['important tourist attraction'] or ['ferry terminal'] — what tells
+  /// two places of the same name apart (the London Eye and its pier).
+  List<String>? categories;
 }
 
 class AzurePlaceAddress {
@@ -77,6 +95,7 @@ class AzurePlaceAddress {
     this.streetName,
     this.municipality,
     this.countrySubdivision,
+    this.countrySubdivisionName,
     this.postalCode,
     this.country,
     this.countryCode,
@@ -89,6 +108,7 @@ class AzurePlaceAddress {
     streetName = json['streetName'] as String?;
     municipality = json['municipality'] as String?;
     countrySubdivision = json['countrySubdivision'] as String?;
+    countrySubdivisionName = json['countrySubdivisionName'] as String?;
     postalCode = json['postalCode'] as String?;
     country = json['country'] as String?;
     countryCode = json['countryCode'] as String?;
@@ -99,7 +119,10 @@ class AzurePlaceAddress {
   String? streetNameAndNumber;
   String? streetName;
   String? municipality;
+
+  /// Often a code ('ENG'); prefer [countrySubdivisionName] ('England').
   String? countrySubdivision;
+  String? countrySubdivisionName;
   String? postalCode;
   String? country;
   String? countryCode;

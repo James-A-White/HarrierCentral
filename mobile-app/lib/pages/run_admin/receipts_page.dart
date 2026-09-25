@@ -66,7 +66,10 @@ class ReceiptsList extends StatelessWidget {
     );
   }
 
-  Widget _buildListView(BuildContext context, ReceiptsListController controller) {
+  Widget _buildListView(
+    BuildContext context,
+    ReceiptsListController controller,
+  ) {
     // Snapshot inside the Obx so itemCount and itemBuilder agree.
     final List<Map<String, dynamic>> receiptsList = controller.receipts;
     return Column(
@@ -233,9 +236,8 @@ class ReceiptsList extends StatelessWidget {
                                 ReceiptListItem(
                                   currencySymbol:
                                       eventAggregate.extensions.curSym,
-                                  digitsAfterDecimal: eventAggregate
-                                      .extensions
-                                      .digAfterDec,
+                                  digitsAfterDecimal:
+                                      eventAggregate.extensions.digAfterDec,
                                   receipt: receiptsList[index],
                                   itemPressed: () async {
                                     await Navigator.push<void>(
@@ -243,9 +245,8 @@ class ReceiptsList extends StatelessWidget {
                                       MaterialPageRoute<void>(
                                         builder: (BuildContext context) =>
                                             ReceiptDetailPage(
-                                              eventId: eventAggregate
-                                                  .event
-                                                  .eventId,
+                                              eventId:
+                                                  eventAggregate.event.eventId,
                                               receiptItem: receiptsList[index],
                                             ),
                                       ),

@@ -152,8 +152,11 @@ class EditRunDetailsPage extends StatelessWidget {
         bottomNavigationBar: showSaveBar
             ? SafeArea(top: false, child: _buildSaveBar(c))
             : null,
+        // The jungle, like every other page, with the form on a light panel:
+        // the form is dark text on light fields throughout, so it keeps a
+        // light surface rather than having every label recoloured.
         body: Container(
-          decoration: Backgrounds.defaultHcBackgroundLight(),
+          decoration: Backgrounds.defaultHcBackground(),
           child: Stack(
             alignment: AlignmentDirectional.center,
             children: <Widget>[
@@ -204,9 +207,7 @@ class EditRunDetailsPage extends StatelessWidget {
                     height: 75.0,
                     // reviewed for 2.0+
                     child: TabBar(
-                      onTap: (void _) {
-                        c.mutate(() {});
-                      },
+                      onTap: c.onTabTapped,
                       labelStyle: ts_tabSelected,
                       unselectedLabelStyle: ts_tabUnselected,
                       isScrollable: false,
@@ -241,9 +242,13 @@ class EditRunDetailsPage extends StatelessWidget {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: SizedBox(
-                  //key: _tabKey,
-                  //color: Colors.teal,
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: TabBarView(
                     physics: const NeverScrollableScrollPhysics(),
                     controller: c.tabController,
@@ -667,6 +672,7 @@ class EditRunDetailsPage extends StatelessWidget {
                             initialDate: eventStartDate,
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2100),
+                            builder: _hcPickerTheme,
                           );
 
                           if (pickedDate == null) return;
@@ -683,7 +689,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                   data: MediaQuery.of(
                                     context,
                                   ).copyWith(alwaysUse24HourFormat: false),
-                                  child: child!,
+                                  child: _hcPickerTheme(context, child),
                                 );
                               },
                             );
@@ -2134,4 +2140,42 @@ class CheckboxFormField extends FormField<bool> {
            );
          },
        );
+}
+
+/// The date and time pickers in the app's colours (the app-bar plum for the
+/// header and selection, red for the buttons) rather than Material's stock
+/// blue. Scoped to the pickers: changing the app's colour scheme would also
+/// restyle every text field's focus colour.
+Widget _hcPickerTheme(BuildContext context, Widget? child) {
+  final ThemeData base = Theme.of(context);
+  return Theme(
+    data: base.copyWith(
+      colorScheme: base.colorScheme.copyWith(
+        primary: themeAppBarBackground,
+        onPrimary: Colors.white,
+        secondary: hc_red,
+        onSecondary: Colors.white,
+      ),
+      timePickerTheme: TimePickerThemeData(
+        hourMinuteColor: WidgetStateColor.resolveWith(
+          (Set<WidgetState> states) => states.contains(WidgetState.selected)
+              ? themeAppBarBackground.withValues(alpha: 0.12)
+              : Colors.grey.shade200,
+        ),
+        hourMinuteTextColor: WidgetStateColor.resolveWith(
+          (Set<WidgetState> states) => states.contains(WidgetState.selected)
+              ? themeAppBarBackground
+              : Colors.black87,
+        ),
+        dayPeriodColor: themeAppBarBackground.withValues(alpha: 0.12),
+        dayPeriodTextColor: WidgetStateColor.resolveWith(
+          (Set<WidgetState> states) => states.contains(WidgetState.selected)
+              ? themeAppBarBackground
+              : Colors.black54,
+        ),
+        dialHandColor: themeAppBarBackground,
+      ),
+    ),
+    child: child!,
+  );
 }

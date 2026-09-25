@@ -367,9 +367,10 @@ class EditRunDetailsController extends GetxController
     if (eventNameController.text.isEmpty) {
       return 'Please provide an event name';
     }
-    if (eventDescriptionController.text.isEmpty) {
-      return 'Please provide an event description';
-    }
+    // No description check: a new run used to arrive pre-filled with '\$^'
+    // (the currency placeholder), which satisfied a required-description
+    // rule and was saved as the description of 30 live runs. Admins have in
+    // practice always been able to skip it, so it is optional.
     if (locationOneLineDescController.text.isEmpty) {
       return 'Please provide a location description';
     }
@@ -471,6 +472,25 @@ class EditRunDetailsController extends GetxController
     tabController.animateTo(index);
   }
 
+  /// A new run has no event id until the Details tab is saved, and the
+  /// Map, Image and Other tabs each save against that id. They used to open
+  /// anyway and refuse only at their save button; now the tab bar sends the
+  /// hasher back at once. Address is saved with Details, so it stays open.
+  bool get isUnsaved =>
+      eventAggregate.event.eventId.isEmpty ||
+      eventAggregate.event.eventId == GUID_EMPTY;
+
+  void onTabTapped(int index) {
+    if (isUnsaved && index > EditingTabEnum.address.index) {
+      _goToTab(EditingTabEnum.details.index);
+      hcSnack(
+        'Fill in the details and tap Next first — then the '
+        '${EditingTabEnum.values[index].label} tab opens.',
+      );
+    }
+    mutate(() {});
+  }
+
   Future<void> onSaveBarPressed() async {
     final bool didAddressChange = addressChanged;
     final bool saved = await saveAll();
@@ -536,10 +556,10 @@ class EditRunDetailsController extends GetxController
         content: Text(
           platform.opensWithNotice
               ? 'Send the run notice — date, hares, venue, price and the '
-                  'link — to the kennel group. ${platform.label} opens with '
-                  'it ready; you pick the group and tap send.'
+                    'link — to the kennel group. ${platform.label} opens with '
+                    'it ready; you pick the group and tap send.'
               : 'Send the run notice — date, hares, venue, price and the '
-                  'link — to the kennel group via the share sheet.',
+                    'link — to the kennel group via the share sheet.',
         ),
         actions: <Widget>[
           TextButton(
@@ -718,7 +738,8 @@ class EditRunDetailsController extends GetxController
       locationStreetController.text =
           addr?.streetNameAndNumber ?? addr?.streetName ?? '';
       locationCityController.text = addr?.municipality ?? addr?.localName ?? '';
-      locationRegionController.text = addr?.countrySubdivision ?? '';
+      locationRegionController.text =
+          addr?.countrySubdivisionName ?? addr?.countrySubdivision ?? '';
       locationSubRegionController.text = '';
       locationPostCodeController.text = addr?.postalCode ?? '';
       locationCountryController.text = addr?.country ?? '';
@@ -796,7 +817,7 @@ class EditRunDetailsController extends GetxController
       }
     } catch (e, s) {
       BootLogger.logError('[ERROR][RUN]', 'external lookup failed: $e', s);
-      }
+    }
 
     mutate(() {
       isUpdating.value = false;

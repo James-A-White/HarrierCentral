@@ -11,7 +11,6 @@ class ReceiptDetailPage extends StatefulWidget {
 }
 
 class ReceiptDetailPageState extends State<ReceiptDetailPage> {
-
   final GlobalKey<FormState> _receiptFormKey = GlobalKey<FormState>();
   bool _autoValidate = false;
 
@@ -95,7 +94,9 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     );
 
     if (compressed == null) {
-      BootLogger.logBreadcrumb('Receipt image compression failed for $fileName');
+      BootLogger.logBreadcrumb(
+        'Receipt image compression failed for $fileName',
+      );
       return null;
     }
 

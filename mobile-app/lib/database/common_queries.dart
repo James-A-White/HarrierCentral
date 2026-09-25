@@ -373,17 +373,24 @@ class CommonQueries {
           results[0],
         );
 
-        eventStart = eventStart.add(
-          Duration(hours: kennel.defaultRunStartTime.hour - 12),
-        );
-        eventStart = eventStart.add(
-          Duration(minutes: kennel.defaultRunStartTime.minute),
+        // The kennel's default start time on the chosen day. This used to
+        // ADD (hour - 12) to whatever time the calendar passed, assuming
+        // noon: a tapped day arrives at midnight (so a 16:00 kennel got
+        // 4:00 AM) and today arrives as "now" (so it got now + 4 hours).
+        eventStart = DateTime(
+          eventStart.year,
+          eventStart.month,
+          eventStart.day,
+          kennel.defaultRunStartTime.hour,
+          kennel.defaultRunStartTime.minute,
         );
 
         final EventModel eventItem = EventModel(
           eventStartDatetime: eventStart,
           eventStartDatetimeGmt: eventStart.toUtc(),
-          eventDescription: dollarSign,
+          // Empty, not dollarSign: '\$^' is the currency-symbol placeholder
+          // and showed up as the new run's description.
+          eventDescription: '',
           kennelId: kennel.kennelId,
           hcLatitude: deviceInfo.deviceLat,
           hcLongitude: deviceInfo.deviceLon,

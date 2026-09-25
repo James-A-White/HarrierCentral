@@ -85,7 +85,9 @@ class _EmptyState extends StatelessWidget {
               // Two different facts, which used to share one message. "No
               // awards" is a statement about the run; "couldn't load" is a
               // statement about the phone.
-              failed ? 'Could not load the awards' : 'No awards yet for this Trail',
+              failed
+                  ? 'Could not load the awards'
+                  : 'No awards yet for this Trail',
               textAlign: TextAlign.center,
               style: ts_headingVeryLarge.copyWith(color: themeBackgroundColor),
             ),

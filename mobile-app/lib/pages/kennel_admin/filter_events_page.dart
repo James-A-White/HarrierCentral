@@ -108,7 +108,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
       }
 
       return Container(
-        decoration: Backgrounds.defaultHcBackgroundLight(),
+        decoration: Backgrounds.defaultHcBackground(),
         padding: const EdgeInsets.only(top: 0.0),
         child: RefreshIndicator(
           onRefresh: _controller.handleRefresh,
@@ -220,13 +220,23 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
               ),
 
               // Tab body
+              // The jungle behind, the calendar and the run rows on a light
+              // panel: the rows are dark text and keep a light surface.
               Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: <Widget>[
-                    _calendarView(),
-                    Obx(() => _listView(_controller.allEvents.toList())),
-                  ],
+                child: Container(
+                  margin: const EdgeInsets.all(8),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: <Widget>[
+                      _calendarView(),
+                      Obx(() => _listView(_controller.allEvents.toList())),
+                    ],
+                  ),
                 ),
               ),
             ],

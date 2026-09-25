@@ -681,7 +681,9 @@ class CheckInPackController extends GetxController
               attendenceState = -1,
               isHare = -1,
             }) async {
-              messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+              messenger.removeCurrentSnackBar(
+                reason: SnackBarClosedReason.hide,
+              );
               if (rsvpState != -1 && attendenceState == -1) {
                 rsvpIndexUpdating.value = index;
                 await updateRsvpState(updated, rsvpState, isHare);
@@ -755,7 +757,6 @@ class CheckInPackController extends GetxController
           }
 
           paymentIndexUpdating.value = null;
-
         },
       );
 
@@ -1485,8 +1486,10 @@ class CheckInPackController extends GetxController
       // then whatever actually landed.
       final Map<String, dynamic>? copyRow = firstRow(adHocData);
       if (copyRow == null) {
-        showHcSnackbar("Couldn't copy the RSVPs — please try again.",
-            isError: true);
+        showHcSnackbar(
+          "Couldn't copy the RSVPs — please try again.",
+          isError: true,
+        );
       }
 
       final String serverMessage = copyRow?['serverMessage'] ?? '';
@@ -1613,7 +1616,6 @@ class CheckInPackController extends GetxController
             ),
           ),
           Icon(FontAwesome.times_circle, color: hc_red),
-
         ],
         'returnValue': FilterOptions.clearAllFilters,
       },

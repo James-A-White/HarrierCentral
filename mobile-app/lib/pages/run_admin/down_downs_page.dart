@@ -57,7 +57,11 @@ class DownDownsPage extends StatelessWidget {
     DownDownModel dd,
   ) async {
     if (dd.isCancelled) {
-      if (await _confirm(context, title: 'Restore Down Down?', yes: 'Yes, restore')) {
+      if (await _confirm(
+        context,
+        title: 'Restore Down Down?',
+        yes: 'Yes, restore',
+      )) {
         await c.uncancel(dd);
       }
     } else {

@@ -175,8 +175,7 @@ class FindHasherPageState extends State<FindHasherPage> {
                 'X',
                 style: ts_headingBlack.copyWith(color: Colors.grey.shade700),
               ),
-              onPressed: () {
-              },
+              onPressed: () {},
             ),
           ),
         ],
