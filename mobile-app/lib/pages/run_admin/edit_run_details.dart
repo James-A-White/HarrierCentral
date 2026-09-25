@@ -243,7 +243,9 @@ class EditRunDetailsPage extends StatelessWidget {
                 left: 0,
                 right: 0,
                 child: Container(
-                  margin: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                  // Narrow side margins: the tabs were laid out for the full
+                  // width, and 8 each side clipped "Non-member price".
+                  margin: const EdgeInsets.fromLTRB(4, 8, 4, 8),
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.9),
@@ -1423,8 +1425,13 @@ class EditRunDetailsPage extends StatelessWidget {
                           key: Key('655931031'),
                         ),
                       )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    // A Wrap, not a Row: three buttons are wider than a
+                    // narrow phone (or a large text size) and a Row
+                    // overflowed; a Wrap takes a second line.
+                    : Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        runSpacing: 8,
                         children: <Widget>[
                           if (c.isNewRun) ...<Widget>[
                             ElevatedButton(
@@ -1770,7 +1777,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                     TextCapitalization.sentences,
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
-                                  labelText: 'Member price',
+                                  labelText: 'Members',
                                   fillColor: hc_red,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10.0),
@@ -1804,7 +1811,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                     TextCapitalization.sentences,
                                 style: ts_titleMediumBlack,
                                 decoration: InputDecoration(
-                                  labelText: 'Non-member price',
+                                  labelText: 'Non-members',
                                   fillColor: hc_red,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10.0),

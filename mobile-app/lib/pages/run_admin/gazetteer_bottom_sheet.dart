@@ -216,15 +216,20 @@ class GazetteerBottomSheetState extends State<GazetteerBottomSheet> {
     // a city (the London Eye and the London Eye pier both read "London, ENG,
     // United Kingdom", 2026-09-25), so show the category and street address.
     final String? category = result.poi?.categories?.firstOrNull;
-    final subtitle = [
-      if (category != null && category.isNotEmpty)
-        category[0].toUpperCase() + category.substring(1),
-      addr?.freeformAddress ??
-          [
-            addr?.municipality,
-            addr?.countrySubdivisionName ?? addr?.countrySubdivision,
-          ].where((s) => s != null && s.isNotEmpty).join(', '),
-    ].where((s) => s.isNotEmpty).join(' · ');
+    final subtitle =
+        [
+              if (category != null && category.isNotEmpty)
+                category[0].toUpperCase() + category.substring(1),
+              addr?.freeformAddress ??
+                  [
+                    addr?.municipality,
+                    addr?.countrySubdivisionName ?? addr?.countrySubdivision,
+                  ].where((s) => s != null && s.isNotEmpty).join(', '),
+            ]
+            // A plain address result is titled with its address; do not
+            // repeat it word for word underneath.
+            .where((s) => s.isNotEmpty && s != name)
+            .join(' · ');
 
     return ListTile(
       leading: CircleAvatar(
