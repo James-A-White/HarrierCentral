@@ -14,6 +14,7 @@ class DrinksResults {
     this.specialRunCount = 0,
     this.specialHaringCount = 0,
     this.isHare = 0,
+    this.atRun = true,
   });
 
   final String hasherId;
@@ -26,19 +27,26 @@ class DrinksResults {
   int specialHaringCount;
   int isHare;
 
-  static DrinksResults fromMap(Map<String, dynamic> map) => DrinksResults(
-    hasherId: map['hasherId'] as String,
-    dispName: map['dispName'] as String,
-    nameForSort: map['nameForSort'] as String,
-    photo: (map['photo'] as String?) ?? '',
-    totalRunsThisKennel: (map['totalRunsThisKennel'] as int?) ?? 0,
-    totalHaringThisKennel: (map['totalHaringThisKennel'] as int?) ?? 0,
-    isHare: (map['isHare'] as int?) ?? 0,
-  );
+  /// Checked in at this run. False for someone who is not here (yet) but
+  /// would earn this award if they came — drawn greyed out under "All".
+  final bool atRun;
+
+  static DrinksResults fromMap(Map<String, dynamic> map, {bool atRun = true}) =>
+      DrinksResults(
+        hasherId: map['hasherId'] as String,
+        dispName: map['dispName'] as String,
+        nameForSort: map['nameForSort'] as String,
+        photo: (map['photo'] as String?) ?? '',
+        totalRunsThisKennel: (map['totalRunsThisKennel'] as int?) ?? 0,
+        totalHaringThisKennel: (map['totalHaringThisKennel'] as int?) ?? 0,
+        isHare: (map['isHare'] as int?) ?? 0,
+        atRun: atRun,
+      );
 }
 
 /// The "Drink chug-a-lug" list: who at this run has earned a down-down for a
-/// milestone, and why.
+/// milestone, and why — and, for today's and upcoming runs, who would earn one
+/// if they came ([expected], shown greyed out under "All").
 ///
 /// Migrated from a StatefulWidget on 2026-09-23, after the page painted "No
 /// awards yet for this Trail" for a run whose awards were on the phone the
@@ -63,7 +71,22 @@ class DrinksListController extends GetxController {
 
   static String tagFor(String eventId) => 'drinks-$eventId';
 
+  /// Awards earned by the hashers checked in at this run.
   final RxList<DrinksResults> awards = <DrinksResults>[].obs;
+
+  /// Awards that would be earned by hashers who are NOT checked in, if they
+  /// came: active in the kennel in the last [activeWithinDays] days, RSVP'd
+  /// Yes or Maybe, or named as a hare. Only for runs where [canPredict].
+  final RxList<DrinksResults> expected = <DrinksResults>[].obs;
+
+  /// The All | At Run switch. All shows [expected] too, greyed out.
+  final RxBool showAll = true.obs;
+
+  static const int activeWithinDays = 365;
+
+  /// Hours after its start that a run still counts as "today" for
+  /// predictions — the down-downs happen after the trail.
+  static const int predictGraceHours = 12;
   final RxBool isLoading = false.obs;
 
   /// Whether the last attempt to load actually reached the server.
@@ -76,6 +99,29 @@ class DrinksListController extends GetxController {
   final RxBool loadFailed = false.obs;
 
   String get _eventId => eventAggregate.event.eventId;
+
+  /// Whether "if they came" means anything for this run. The prediction adds
+  /// one run to each hasher's CURRENT kennel total, which is right for today's
+  /// run and upcoming ones, and wrong for a past run (it would count every run
+  /// they have done since). Past runs therefore show only who was there.
+  bool get canPredict => predictionApplies(
+    eventAggregate.event.eventStartDatetimeGmt,
+    DateTime.now().toUtc(),
+  );
+
+  static bool predictionApplies(DateTime startGmt, DateTime nowUtc) => startGmt
+      .toUtc()
+      .isAfter(nowUtc.subtract(const Duration(hours: predictGraceHours)));
+
+  /// What the list shows now: the attendees, then (under All) the hashers who
+  /// would earn an award if they came. Reads [showAll], [awards] and
+  /// [expected], so an Obx calling it tracks all three.
+  List<DrinksResults> get visible {
+    final bool all = showAll.value;
+    final List<DrinksResults> here = awards.toList();
+    final List<DrinksResults> due = expected.toList();
+    return (all && canPredict) ? <DrinksResults>[...here, ...due] : here;
+  }
 
   @override
   void onInit() {
@@ -110,12 +156,17 @@ class DrinksListController extends GetxController {
 
     final List<DrinksResults> found = await _queryAwards();
     if (isClosed) return;
+    final List<DrinksResults> due = canPredict
+        ? await _queryExpected()
+        : const <DrinksResults>[];
+    if (isClosed) return;
 
     awards.assignAll(found);
+    expected.assignAll(due);
     isLoading.value = false;
     // updateFromBackend returns false when it could not reach the server. An
     // empty list after a FAILED sync is not evidence of no awards.
-    loadFailed.value = !synced && found.isEmpty;
+    loadFailed.value = !synced && found.isEmpty && due.isEmpty;
   }
 
   /// The refresh button. Checks the connection first and says so plainly when
@@ -137,10 +188,15 @@ class DrinksListController extends GetxController {
 
   /// Which of these attendees earn an award, and for what. Pure: rows in,
   /// awards out, input order kept (the query orders by haring then runs).
-  static List<DrinksResults> awardsFromRows(List<Map<String, dynamic>> rows) {
+  ///
+  /// [atRun] false marks the rows as hashers not checked in ([expected]).
+  static List<DrinksResults> awardsFromRows(
+    List<Map<String, dynamic>> rows, {
+    bool atRun = true,
+  }) {
     final List<DrinksResults> found = <DrinksResults>[];
     for (final Map<String, dynamic> row in rows) {
-      final DrinksResults item = DrinksResults.fromMap(row);
+      final DrinksResults item = DrinksResults.fromMap(row, atRun: atRun);
       item.specialRunCount = Utilities.checkSpecialRun(
         item.totalRunsThisKennel,
       );
@@ -202,6 +258,103 @@ class DrinksListController extends GetxController {
       return awardsFromRows(rows);
     } catch (e, s) {
       BootLogger.logError('[DrinksList.awards] eventId=$_eventId', e, s);
+      return const <DrinksResults>[];
+    }
+  }
+
+  /// Hashers NOT checked in at this run whose next run here would earn an
+  /// award (James, 2026-09-25). Who counts, from the kennel's members list and
+  /// this run's RSVPs (both in the event domain, synced by [load]):
+  /// - ran with this kennel in the last [activeWithinDays] days, or
+  /// - RSVP'd Yes (3) or Maybe (2), or
+  /// - is named as a hare on this run;
+  /// - never someone who RSVP'd No (1).
+  /// A first run (no runs yet) therefore needs an RSVP: every follower who has
+  /// never come would otherwise be listed.
+  ///
+  /// Counts are the standing totals + 1 for this run (+1 haring only for a
+  /// hare) — the same fallback [_queryAwards] uses when the nightly stamp is
+  /// absent, which it always is for someone not checked in.
+  Future<List<DrinksResults>> _queryExpected() => expectedAwards(
+    database,
+    eventId: _eventId,
+    kennelId: eventAggregate.event.kennelId,
+    nowUtc: DateTime.now().toUtc(),
+  );
+
+  /// [_queryExpected]'s query, static so a test can run it on an in-memory
+  /// database (test/unit/drinks_expected_awards_test.dart).
+  static Future<List<DrinksResults>> expectedAwards(
+    Database db, {
+    required String eventId,
+    required String kennelId,
+    required DateTime nowUtc,
+  }) async {
+    final hs = tableModel.hashersTableHelper;
+    final hk = tableModel.hasherKennelMapTableHelper;
+    final he = tableModel.hasherEventMapTableHelper;
+    final String cutoff = nowUtc
+        .subtract(const Duration(days: activeWithinDays))
+        .toIso8601String();
+    final String query =
+        '''
+        WITH ids AS (
+          SELECT ${hk.colUserId} AS id FROM ${EnumDataTables.hasherKennelMap.eventTableName}
+            WHERE ${hk.colKennelId} = ?
+          UNION
+          SELECT ${he.colUserId} AS id FROM ${EnumDataTables.hasherEventMap.eventTableName}
+            WHERE ${he.colEventId} = ?
+        )
+        SELECT
+          h.${hs.colHasherId},
+          coalesce(
+            hem.${he.colDisplayName},
+            h.${hs.colDispName},
+            h.${hs.colHashName},
+            h.${hs.colFirstName} || ' ' || h.${hs.colLastName},'<no name>') as dispName,
+          lower(' ' || coalesce(h.${hs.colHashName},'') || ' ' || coalesce(h.${hs.colDispName},'') || ' ' || coalesce(h.${hs.colFirstName},'') || ' ' || coalesce(h.${hs.colLastName},'') || ' ') as nameForSort,
+          h.${hs.colPhoto},
+          coalesce(hkm.${hk.colHcHaringCount},0)
+            + coalesce(hkm.${hk.colHistoricalHaringCount},0)
+            + case when hem.${he.colIsHare} = 1 then 1 else 0 end
+            as totalHaringThisKennel,
+          coalesce(hkm.${hk.colHcTotalRunCount},0)
+            + coalesce(hkm.${hk.colHistoricalTotalRunCount},0) + 1
+            as totalRunsThisKennel,
+          hem.${he.colIsHare}
+        FROM ids
+        INNER JOIN ${EnumDataTables.hashers.commonTableName} h ON h.${hs.colHasherId} = ids.id
+        LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm
+          ON hkm.${hk.colUserId} = ids.id AND hkm.${hk.colKennelId} = ?
+        LEFT OUTER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem
+          ON hem.${he.colUserId} = ids.id AND hem.${he.colEventId} = ?
+        WHERE coalesce(hem.${he.colAttendenceState}, 0) < 20
+          AND coalesce(hem.${he.colRsvpState}, 0) <> 1
+          AND (
+            -- Active: a recent last run AND at least one run on record. A
+            -- last-run date with 0 runs exists (a check-in that was undone);
+            -- without the count it passed as "active" and read as a first run.
+            (julianday(hkm.${hk.colDateOfLastRun}) >= julianday(?)
+              AND coalesce(hkm.${hk.colHcTotalRunCount},0)
+                + coalesce(hkm.${hk.colHistoricalTotalRunCount},0) > 0)
+            OR hem.${he.colRsvpState} IN (2, 3)
+            OR hem.${he.colIsHare} = 1
+          )
+          AND h.${hs.colRemoved} = 0
+          AND h.${hs.colHashName} not like '👣 Anonymous%'
+        ORDER BY totalHaringThisKennel, totalRunsThisKennel
+        ''';
+    try {
+      final List<Map<String, dynamic>> rows = await db.rawQuery(query, <Object>[
+        kennelId,
+        eventId,
+        kennelId,
+        eventId,
+        cutoff,
+      ]);
+      return awardsFromRows(rows, atRun: false);
+    } catch (e, s) {
+      BootLogger.logError('[DrinksList.expected] eventId=$eventId', e, s);
       return const <DrinksResults>[];
     }
   }

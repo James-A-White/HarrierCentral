@@ -43,10 +43,33 @@ class DrinksList extends StatelessWidget {
                   key: Key('52039320'),
                 );
               }
-              if (controller.awards.isEmpty) {
-                return _EmptyState(controller: controller);
-              }
-              return _AwardsList(controller: controller);
+              // Every Rx the page depends on is read here, in this builder:
+              // the children below get plain values.
+              final List<DrinksResults> shown = controller.visible;
+              final bool all = controller.showAll.value;
+              final bool anyExpected = controller.expected.isNotEmpty;
+              final bool failed = controller.loadFailed.value;
+              final bool predict = controller.canPredict;
+              return Column(
+                children: <Widget>[
+                  if (predict)
+                    _AllAtRunHeader(
+                      all: all,
+                      onSelect: (bool v) => controller.showAll.value = v,
+                    ),
+                  Expanded(
+                    child: shown.isEmpty
+                        ? _EmptyState(
+                            controller: controller,
+                            failed: failed,
+                            predict: predict,
+                            all: all,
+                            anyExpected: anyExpected,
+                          )
+                        : _AwardsList(awards: shown),
+                  ),
+                ],
+              );
             }),
           ),
         ),
@@ -56,20 +79,44 @@ class DrinksList extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.controller});
+  const _EmptyState({
+    required this.controller,
+    required this.failed,
+    required this.predict,
+    required this.all,
+    required this.anyExpected,
+  });
 
   final DrinksListController controller;
+  final bool failed;
+  final bool predict;
+  final bool all;
+  final bool anyExpected;
 
   @override
   Widget build(BuildContext context) {
-    // Its own Obx: a child widget's build runs after the parent Obx's builder
-    // has returned, so reads here are not tracked by the parent.
-    return Obx(() => _body(controller.loadFailed.value));
-  }
-
-  Widget _body(bool failed) {
+    // Two different facts, which used to share one message. "No awards" is a
+    // statement about the run; "couldn't load" is a statement about the phone.
+    final String title;
+    String? detail;
+    if (failed) {
+      title = 'Could not load the awards';
+      detail =
+          'A connection is required to get the current run counts. This '
+          'run may well have awards — they just could not be fetched.';
+    } else if (predict && !all && anyExpected) {
+      title = 'Nobody here has an award yet';
+      detail = 'Switch to All to see who is due one if they come.';
+    } else if (predict) {
+      title = 'No awards due for this Trail';
+      detail =
+          'Nobody checked in, recently active or on the RSVP list has a '
+          'milestone coming up.';
+    } else {
+      title = 'No awards for this Trail';
+    }
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(30.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -82,23 +129,19 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              // Two different facts, which used to share one message. "No
-              // awards" is a statement about the run; "couldn't load" is a
-              // statement about the phone.
-              failed
-                  ? 'Could not load the awards'
-                  : 'No awards yet for this Trail',
+              title,
               textAlign: TextAlign.center,
               style: ts_headingVeryLarge.copyWith(color: themeBackgroundColor),
             ),
-            if (failed) ...<Widget>[
+            if (detail != null) ...<Widget>[
               const SizedBox(height: 10),
               Text(
-                'A connection is required to get the current run counts. This '
-                'run may well have awards — they just could not be fetched.',
+                detail,
                 textAlign: TextAlign.center,
                 style: ts_body.copyWith(color: themeBackgroundColor),
               ),
+            ],
+            if (failed) ...<Widget>[
               const SizedBox(height: 18),
               ElevatedButton.icon(
                 onPressed: () => unawaited(controller.manualRefresh()),
@@ -113,18 +156,106 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _AwardsList extends StatelessWidget {
-  const _AwardsList({required this.controller});
+/// The All | At Run switch and what grey means. Only for today's and upcoming
+/// runs ([DrinksListController.canPredict]).
+class _AllAtRunHeader extends StatelessWidget {
+  const _AllAtRunHeader({required this.all, required this.onSelect});
 
-  final DrinksListController controller;
+  final bool all;
+  final void Function(bool all) onSelect;
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => _list(context, controller.awards));
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Center(
+            child: Material(
+              color: themeAppBarBackground,
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.all(3),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    _segment('All', selected: all, onTap: () => onSelect(true)),
+                    _segment(
+                      'At Run',
+                      selected: !all,
+                      onTap: () => onSelect(false),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (all) ...<Widget>[
+            const SizedBox(height: 6),
+            Text(
+              'Greyed out: not checked in — the award they get if they come. '
+              'Counts as of today.',
+              textAlign: TextAlign.center,
+              style: ts_body.copyWith(
+                color: themeBackgroundColor,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
-  Widget _list(BuildContext context, List<DrinksResults> awards) {
-    // Snapshot inside the Obx so itemCount and itemBuilder agree.
+  Widget _segment(
+    String label, {
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(17),
+        onTap: selected ? null : onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
+          decoration: BoxDecoration(
+            color: selected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(17),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: selected ? themeAppBarBackground : Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AwardsList extends StatelessWidget {
+  const _AwardsList({required this.awards});
+
+  /// A snapshot taken in the page's Obx, so itemCount and itemBuilder agree.
+  final List<DrinksResults> awards;
+
+  /// Luminance-weighted greyscale, for a hasher who is not checked in.
+  static const List<double> _greyscale = <double>[
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0, 0, 0, 1, 0,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: awards.length,
@@ -132,7 +263,7 @@ class _AwardsList extends StatelessWidget {
           const Divider(height: 1.0, color: Colors.black45),
       itemBuilder: (BuildContext context, int index) {
         final DrinksResults a = awards[index];
-        return Row(
+        final Widget row = Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             const SizedBox(height: DrinksList.LIST_ITEM_HEIGHT, width: 10.0),
@@ -191,6 +322,19 @@ class _AwardsList extends StatelessWidget {
               ),
             const Divider(),
           ],
+        );
+        if (a.atRun) return row;
+        // Not checked in: the photo, text and badge fade together, so the row
+        // reads as "not here yet" rather than as a style glitch.
+        return Semantics(
+          label: '${a.dispName}, not checked in',
+          child: Opacity(
+            opacity: 0.45,
+            child: ColorFiltered(
+              colorFilter: const ColorFilter.matrix(_greyscale),
+              child: row,
+            ),
+          ),
         );
       },
     );
