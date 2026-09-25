@@ -228,50 +228,64 @@ class UseInviteCodePageContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20, width: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: text_button_style,
-                    onPressed: () async {
-                      final EmailPopup emailPopup = EmailPopup(
-                        initialEmailAddress: c.emailAddress,
-                      );
-                      final Map<String, String?>? x =
-                          await showDialog<Map<String, String>>(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (BuildContext context) => emailPopup,
-                          );
-                      if (x == null) return;
-                      final String email = x['email'] ?? '';
-                      final String type = x['type'] ?? '';
-                      if (type == 'cancel') return;
-                      final String userMessage = await c.emailNewCode(email);
-                      await Utilities.showAlert(
-                        'Instructions',
-                        userMessage,
-                        'OK',
-                      );
-                    },
-                    child: Text('Email me a new invite code', style: ts_button),
+                // Inset to line up with Get Started inside the card above
+                // (its margin 15 + padding 15), not the full page width.
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: text_button_style,
+                      onPressed: () async {
+                        final EmailPopup emailPopup = EmailPopup(
+                          initialEmailAddress: c.emailAddress,
+                        );
+                        final Map<String, String?>? x =
+                            await showDialog<Map<String, String>>(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) => emailPopup,
+                            );
+                        if (x == null) return;
+                        final String email = x['email'] ?? '';
+                        final String type = x['type'] ?? '';
+                        if (type == 'cancel') return;
+                        final String userMessage = await c.emailNewCode(email);
+                        await Utilities.showAlert(
+                          'Instructions',
+                          userMessage,
+                          'OK',
+                        );
+                      },
+                      child: Text(
+                        'Email me a new invite code',
+                        style: ts_button,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: text_button_style.copyWith(
-                      backgroundColor: const WidgetStatePropertyAll(
-                        Colors.grey,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: text_button_style.copyWith(
+                        backgroundColor: const WidgetStatePropertyAll(
+                          Colors.grey,
+                        ),
+                      ),
+                      onPressed: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => const EmailNotReceivedPage(),
+                        ),
+                      ),
+                      child: Text(
+                        "I didn't receive an email",
+                        style: ts_button,
                       ),
                     ),
-                    onPressed: () => Navigator.push<void>(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => const EmailNotReceivedPage(),
-                      ),
-                    ),
-                    child: Text("I didn't receive an email", style: ts_button),
                   ),
                 ),
                 const SizedBox(height: 50),

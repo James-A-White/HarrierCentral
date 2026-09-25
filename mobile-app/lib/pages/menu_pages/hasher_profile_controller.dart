@@ -464,9 +464,10 @@ class HasherProfileController extends GetxController {
       );
     }
 
-    await clearPrefs();
-    await deleteAllSecure();
-    await DBProvider.deleteDb(DB_NAME);
-    await Get.offAll(() => AppEntryPage());
+    // The logout path: wipe, then restart the widget tree. Get.offAll left
+    // the old session's controllers alive on a closed database, so signing
+    // in again in the same run hit database_closed and a red screen
+    // ('_dependents.isEmpty'), 2026-09-25. See project-logout-restart-pattern.
+    await AppBootService.resetAndReboot(keepResetCode: false);
   }
 }

@@ -208,15 +208,20 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                                       SelectedImageTypeEnum.fromGallery,
                                 ),
                               ),
+                              // Centred under the two above it, not
+                              // hanging off the left edge on its own row.
                               Positioned(
                                 bottom: 0,
                                 left: 0,
-                                child: getImageSourceButton(
-                                  label: 'Avatar',
-                                  iosIcon: 'images/icons/avatar.png',
-                                  androidIcon: 'images/icons/avatar.png',
-                                  selectedImageType:
-                                      SelectedImageTypeEnum.avatar,
+                                right: 0,
+                                child: Center(
+                                  child: getImageSourceButton(
+                                    label: 'Avatar',
+                                    iosIcon: 'images/icons/avatar.png',
+                                    androidIcon: 'images/icons/avatar.png',
+                                    selectedImageType:
+                                        SelectedImageTypeEnum.avatar,
+                                  ),
                                 ),
                               ),
                             ],

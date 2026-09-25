@@ -90,8 +90,10 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
               horizontal: 28.0,
               vertical: 32.0,
             ),
+            // Stretch, so the centred heading and text centre on the screen,
+            // not on the widest child (a Column does not fill its width).
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Text(
                   'Let\'s find your account',
@@ -102,6 +104,7 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                 Text(
                   'Enter your hash name or last name and we\'ll check whether a Harrier Central account already exists for you.',
                   style: ts_body,
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 TextField(
