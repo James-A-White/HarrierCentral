@@ -257,9 +257,12 @@ class UseInviteCodePageContent extends StatelessWidget {
                           'OK',
                         );
                       },
-                      child: Text(
-                        'Email me a new invite code',
-                        style: ts_button,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Email me a new invite code',
+                          style: ts_button,
+                        ),
                       ),
                     ),
                   ),

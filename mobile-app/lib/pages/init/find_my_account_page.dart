@@ -204,7 +204,10 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: themeAppBarBackground,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -215,9 +218,14 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                         builder: (_) => const CreateNewAccountPage(),
                       ),
                     ),
-                    child: Text(
-                      "I definitely don't have an account",
-                      style: ts_button,
+                    // Shrinks only when it cannot fit on one line (a 360 dp
+                    // phone wrapped it left-aligned); larger phones unchanged.
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        "I definitely don't have an account",
+                        style: ts_button,
+                      ),
                     ),
                   ),
                 ),
