@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_gdprDelete",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Irreversibly anonymises the calling user's HC.Hasher record in response to a GDPR deletion request. Overwrites all PII fields with anonymous placeholders, obfuscates SupportCode/ResetCode/QR_code by prepending '*', sets Removed=1. Does not delete the row — referential integrity in HC.HasherEventMap and HC.Payment is preserved. Returns an error if the user is already removed.",
   "parameters": [
     {
@@ -92,7 +92,9 @@
   "sideEffects": [
     "UPDATE HC.Hasher SET HomeKennelId=NULL, MotherKennelId=NULL, SupportCode='*'+SupportCode, ResetCode='*'+ResetCode, QR_code='*'+QR_code, QR_secret_code=NEWID(), HashName='Deleted User', FirstName='Deleted', LastName='User', Email=<original ResetCode>+'@harriercentral.com', Photo='bundle://avatar-0', FacebookId=NULL, FacebookAccessToken=NULL, FacebookAccessTokenLastUpdated=NULL, ThirdPartyUserId=NULL, ThirdPartyAccessToken=NULL, ThirdPartyAuthorizationCode=NULL, ThirdPartyEmail=NULL, ThirdPartyLoginType='none', ThirdPartyTokenLastUpdated=NULL, ThirdPartyAccessTokenExpires=NULL, Description=NULL, HomeLatitude=NULL, HomeLongitude=NULL, SingleSignOnId=NULL, SingleSignOnType=NULL, IsBetaTester=0, Removed=1, updatedAt=GETDATE() WHERE id=@userId AND Removed=0",
     "INSERT HC.ErrorLog on already-removed (errorCode 1511) or unhandled error (errorCode 1911)",
-    "HC.Hasher trigger trgCalculateHasherGeolocation fires after UPDATE of HomeLatitude/HomeLongitude — automatically nulls HomeGeolocation (geography column) when both are set to NULL"
+    "HC.Hasher trigger trgCalculateHasherGeolocation fires after UPDATE of HomeLatitude/HomeLongitude — automatically nulls HomeGeolocation (geography column) when both are set to NULL",
+    "Signs out every HC.Device row of the user as hcapp_signOutDevice does: new DeviceSecret, SignedOutAt stamped (other devices get errorType 7 and wipe), FcmToken and ApnsToken cleared, removed = 1 (2026-09-25).",
+    "Sets HC.HasherKennelMap.KennelNotificationPreference = 2 for all the user's kennels. Following is deliberately not touched: HC.trgUpdateKennelAdminList would blank each kennel's KennelAdminEmailList (2026-09-25)."
   ],
   "codeSmells": [
     {
@@ -112,6 +114,7 @@
     "Error rowsets now use lowercase camelCase column names (errorId, errorType, errorTitle, errorUserMessage, errorProc) with an errorId — HC5 used Pascal-case (ErrorType, ErrorTitle, ErrorDescription) with no errorId.",
     "QR_secret_code, ThirdPartyAuthorizationCode, ThirdPartyTokenLastUpdated, and ThirdPartyAccessTokenExpires are now also cleared — HC5 missed these fields.",
     "HomeGeolocation column is no longer explicitly cleared in the UPDATE — the trgCalculateHasherGeolocation trigger handles it automatically when HomeLatitude and HomeLongitude are nulled.",
-    "If user is already removed or not found, errorCode 1511 is returned — HC5 silently returned the string 'failed' with no error log entry."
+    "If user is already removed or not found, errorCode 1511 is returned — HC5 silently returned the string 'failed' with no error log entry.",
+    "1.1.0 (2026-09-25): no rowset or parameter change. Adds the device sign-out and notification-off side effects above; before this, deleted hashers kept live push tokens and signed-in devices."
   ]
 }
