@@ -21,6 +21,11 @@ class AddEditEventsPage extends StatefulWidget {
 
 class AddEditEventsPageState extends State<AddEditEventsPage>
     with TickerProviderStateMixin {
+  /// Measured height of the calendar block on the Calendar tab. With it the
+  /// tab knows whether the day's runs still get a usable share of the screen
+  /// (see _calendarView).
+  final ValueNotifier<double> _calendarBlockHeight = ValueNotifier<double>(0);
+
   AddEditEventsPageState();
 
   late FilterEventsController _controller;
@@ -62,6 +67,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
 
   @override
   void dispose() {
+    _calendarBlockHeight.dispose();
     _tabController.dispose();
     _animationController.dispose();
     Get.delete<FilterEventsController>();
@@ -255,286 +261,313 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
       final DateTime focused = _controller.focusedDay.value;
       final DateTime selected = _controller.selectedDay.value;
 
-      return Column(
-        children: <Widget>[
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              boxShadow: const <BoxShadow>[
-                BoxShadow(
-                  color: Color.fromARGB(70, 0, 0, 0),
-                  offset: Offset(0.0, 6.0),
-                  blurRadius: 10.0,
-                ),
-              ],
-            ),
-            child: Column(
-              children: <Widget>[
-                const Divider(color: Colors.black, height: 1.0),
-                Container(
-                  padding: const EdgeInsets.only(bottom: 10.0),
-                  child: TableCalendar<dynamic>(
-                    onCalendarCreated: (PageController controller) =>
-                        controller,
-                    firstDay: DateTime(2010, 1, 1),
-                    lastDay: DateTime(2030, 1, 1),
-                    focusedDay: focused,
-                    calendarFormat: _calendarFormat,
-                    rowHeight: 35.0,
-                    rangeSelectionMode: RangeSelectionMode.toggledOff,
-                    headerStyle: HeaderStyle(
-                      rightChevronIcon: const Icon(
-                        Icons.chevron_right,
-                        color: Colors.black,
-                      ),
-                      leftChevronIcon: const Icon(
-                        Icons.chevron_left,
-                        color: Colors.black,
-                      ),
-                      // The app's plum, as the date and time pickers use,
-                      // not the calendar package's stock blue.
-                      formatButtonDecoration: BoxDecoration(
-                        color: themeAppBarBackground,
-                        borderRadius: BorderRadius.circular(6.0),
-                      ),
-                      formatButtonTextStyle: const TextStyle().copyWith(
-                        color: Colors.white,
-                      ),
+      final Widget calendarBlock = MeasuredSize(
+        onChange: (Size size) => _calendarBlockHeight.value = size.height,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            boxShadow: const <BoxShadow>[
+              BoxShadow(
+                color: Color.fromARGB(70, 0, 0, 0),
+                offset: Offset(0.0, 6.0),
+                blurRadius: 10.0,
+              ),
+            ],
+          ),
+          child: Column(
+            children: <Widget>[
+              const Divider(color: Colors.black, height: 1.0),
+              Container(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: TableCalendar<dynamic>(
+                  onCalendarCreated: (PageController controller) => controller,
+                  firstDay: DateTime(2010, 1, 1),
+                  lastDay: DateTime(2030, 1, 1),
+                  focusedDay: focused,
+                  calendarFormat: _calendarFormat,
+                  rowHeight: 35.0,
+                  rangeSelectionMode: RangeSelectionMode.toggledOff,
+                  headerStyle: HeaderStyle(
+                    rightChevronIcon: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.black,
                     ),
-                    onFormatChanged: (CalendarFormat format) {
-                      setStateIfMounted(() {
-                        _calendarFormat = format;
-                      });
-                    },
-                    onPageChanged: (DateTime newFocusedDay) {
-                      _controller.focusedDay.value = newFocusedDay;
-                    },
-                    eventLoader: (DateTime dt) {
-                      return _controller.calendarEvents[_controller.toDateOnly(
-                                dt,
-                              )]
-                              as List<dynamic>? ??
-                          [];
-                    },
-                    onDaySelected: _controller.onDaySelected,
-                    availableCalendarFormats: const <CalendarFormat, String>{
-                      CalendarFormat.month: 'Week',
-                      CalendarFormat.twoWeeks: 'Month',
-                      CalendarFormat.week: '2 weeks',
-                    },
-                    calendarStyle: CalendarStyle(
-                      selectedDecoration: BoxDecoration(
-                        color: Colors.deepOrange[400],
-                      ),
-                      todayDecoration: BoxDecoration(
-                        color: Colors.deepOrange[200],
-                      ),
-                      markerDecoration: BoxDecoration(color: Colors.brown[700]),
-                      outsideDaysVisible: false,
+                    leftChevronIcon: const Icon(
+                      Icons.chevron_left,
+                      color: Colors.black,
                     ),
-                    calendarBuilders: CalendarBuilders<dynamic>(
-                      todayBuilder:
-                          (
-                            BuildContext context,
-                            DateTime date,
-                            DateTime focusedDay,
-                          ) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade100,
-                                border: Border.all(
-                                  color: Colors.black26,
-                                  width: 1.0,
-                                ),
-                              ),
-                              width: 100,
-                              height: 50,
-                              child: Text(
-                                '${date.day}',
-                                style: const TextStyle().copyWith(
-                                  fontSize: 16.0,
-                                ),
-                              ),
-                            );
-                          },
-                      outsideBuilder:
-                          (
-                            BuildContext context,
-                            DateTime date,
-                            DateTime focusedDay,
-                          ) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                border: Border.all(
-                                  color: Colors.black12,
-                                  width: 1.0,
-                                ),
-                              ),
-                              width: 100,
-                              height: 50,
-                              child: Text(
-                                '${date.day}',
-                                style: const TextStyle().copyWith(
-                                  fontSize: 16.0,
-                                  color: Colors.grey.shade400,
-                                ),
-                              ),
-                            );
-                          },
-                      defaultBuilder:
-                          (
-                            BuildContext context,
-                            DateTime date,
-                            DateTime focusedDay,
-                          ) {
-                            final DateTime dateOnly = _controller.toDateOnly(
-                              date,
-                            );
-                            final bool isUpdating = _controller
-                                .isDateCurrentlyUpdating(date);
-                            final List<LiteEventModel>? events =
-                                _controller.calendarEvents[dateOnly];
-                            final int eventCount = events?.length ?? 0;
-
-                            Color bgColor;
-                            if (eventCount == 0) {
-                              bgColor =
-                                  dateOnly
-                                          .difference(
-                                            _controller.toDateOnly(
-                                              DateTime.now(),
-                                            ),
-                                          )
-                                          .inDays >=
-                                      0
-                                  ? Colors.white
-                                  : Colors.grey.shade200;
-                            } else if (eventCount > 1) {
-                              bgColor = Colors.red.shade100;
-                            } else {
-                              final LiteEventModel evt = events![0];
-                              if (evt.isVisible == 0) {
-                                bgColor = Colors.grey.shade300;
-                              } else if (evt.isCountedRun == 1) {
-                                bgColor = Colors.green.shade100;
-                              } else {
-                                bgColor = Colors.yellow.shade200;
-                              }
-                            }
-
-                            final bool isFocused =
-                                dateOnly == _controller.toDateOnly(focused);
-
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: bgColor,
-                                border: isFocused
-                                    ? Border.all(color: hc_red, width: 3.0)
-                                    : Border.all(
-                                        color: Colors.black26,
-                                        width: 1.0,
-                                      ),
-                              ),
-                              width: 100,
-                              height: 50,
-                              child: Stack(
-                                alignment: AlignmentDirectional.center,
-                                children: <Widget>[
-                                  Positioned(
-                                    top: 1.0,
-                                    left: 1.0,
-                                    child: Text(
-                                      '${date.day}',
-                                      style: const TextStyle().copyWith(
-                                        fontSize: 16.0,
-                                        color:
-                                            dateOnly
-                                                    .difference(
-                                                      _controller.toDateOnly(
-                                                        DateTime.now(),
-                                                      ),
-                                                    )
-                                                    .inDays >=
-                                                0
-                                            ? Colors.black
-                                            : Colors.grey.shade500,
-                                      ),
-                                    ),
-                                  ),
-                                  if (isUpdating) ...<Widget>[
-                                    Positioned(
-                                      right: 1.0,
-                                      child: Icon(delayIcon, color: hc_blue),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            );
-                          },
-                      markerBuilder:
-                          (
-                            BuildContext context,
-                            DateTime date,
-                            List<dynamic> events,
-                          ) {
-                            final List<Widget> children = <Widget>[];
-
-                            if (events.isNotEmpty) {
-                              if (events.length <= 5) {
-                                for (int i = 0; i < events.length; i++) {
-                                  children.add(
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 5.0,
-                                      ),
-                                      child: Icon(
-                                        FontAwesome.circle,
-                                        size: 8.0,
-                                        color: events[i].isVisible == 0
-                                            ? Colors.grey
-                                            : events[i].isCountedRun == 0
-                                            ? hc_red
-                                            : hc_blue,
-                                      ),
-                                    ),
-                                  );
-                                }
-                              } else {
-                                children.add(Text(events.length.toString()));
-                              }
-                            }
-
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: children,
-                            );
-                          },
+                    // The app's plum, as the date and time pickers use,
+                    // not the calendar package's stock blue.
+                    formatButtonDecoration: BoxDecoration(
+                      color: themeAppBarBackground,
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                    formatButtonTextStyle: const TextStyle().copyWith(
+                      color: Colors.white,
                     ),
                   ),
-                ),
-                const SizedBox(height: 5.0),
+                  onFormatChanged: (CalendarFormat format) {
+                    setStateIfMounted(() {
+                      _calendarFormat = format;
+                    });
+                  },
+                  onPageChanged: (DateTime newFocusedDay) {
+                    _controller.focusedDay.value = newFocusedDay;
+                  },
+                  eventLoader: (DateTime dt) {
+                    return _controller.calendarEvents[_controller.toDateOnly(
+                              dt,
+                            )]
+                            as List<dynamic>? ??
+                        [];
+                  },
+                  onDaySelected: _controller.onDaySelected,
+                  availableCalendarFormats: const <CalendarFormat, String>{
+                    CalendarFormat.month: 'Week',
+                    CalendarFormat.twoWeeks: 'Month',
+                    CalendarFormat.week: '2 weeks',
+                  },
+                  calendarStyle: CalendarStyle(
+                    selectedDecoration: BoxDecoration(
+                      color: Colors.deepOrange[400],
+                    ),
+                    todayDecoration: BoxDecoration(
+                      color: Colors.deepOrange[200],
+                    ),
+                    markerDecoration: BoxDecoration(color: Colors.brown[700]),
+                    outsideDaysVisible: false,
+                  ),
+                  calendarBuilders: CalendarBuilders<dynamic>(
+                    todayBuilder:
+                        (
+                          BuildContext context,
+                          DateTime date,
+                          DateTime focusedDay,
+                        ) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade100,
+                              border: Border.all(
+                                color: Colors.black26,
+                                width: 1.0,
+                              ),
+                            ),
+                            width: 100,
+                            height: 50,
+                            child: Text(
+                              '${date.day}',
+                              style: const TextStyle().copyWith(fontSize: 16.0),
+                            ),
+                          );
+                        },
+                    outsideBuilder:
+                        (
+                          BuildContext context,
+                          DateTime date,
+                          DateTime focusedDay,
+                        ) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              border: Border.all(
+                                color: Colors.black12,
+                                width: 1.0,
+                              ),
+                            ),
+                            width: 100,
+                            height: 50,
+                            child: Text(
+                              '${date.day}',
+                              style: const TextStyle().copyWith(
+                                fontSize: 16.0,
+                                color: Colors.grey.shade400,
+                              ),
+                            ),
+                          );
+                        },
+                    defaultBuilder:
+                        (
+                          BuildContext context,
+                          DateTime date,
+                          DateTime focusedDay,
+                        ) {
+                          final DateTime dateOnly = _controller.toDateOnly(
+                            date,
+                          );
+                          final bool isUpdating = _controller
+                              .isDateCurrentlyUpdating(date);
+                          final List<LiteEventModel>? events =
+                              _controller.calendarEvents[dateOnly];
+                          final int eventCount = events?.length ?? 0;
 
-                // Show edit button when there is exactly one event on the
-                // selected day and it is not in the past.
-                if (_controller
-                            .toDateOnly(selected)
-                            .difference(_controller.toDateOnly(DateTime.now()))
-                            .inDays >=
-                        0 &&
-                    (_controller
-                                .calendarEvents[_controller.toDateOnly(
-                                  selected,
-                                )]
-                                ?.length ??
-                            0) ==
-                        1) ...<Widget>[_buildEditButton(selected)],
-                _buildAddButtons(selected),
-              ],
-            ),
+                          Color bgColor;
+                          if (eventCount == 0) {
+                            bgColor =
+                                dateOnly
+                                        .difference(
+                                          _controller.toDateOnly(
+                                            DateTime.now(),
+                                          ),
+                                        )
+                                        .inDays >=
+                                    0
+                                ? Colors.white
+                                : Colors.grey.shade200;
+                          } else if (eventCount > 1) {
+                            bgColor = Colors.red.shade100;
+                          } else {
+                            final LiteEventModel evt = events![0];
+                            if (evt.isVisible == 0) {
+                              bgColor = Colors.grey.shade300;
+                            } else if (evt.isCountedRun == 1) {
+                              bgColor = Colors.green.shade100;
+                            } else {
+                              bgColor = Colors.yellow.shade200;
+                            }
+                          }
+
+                          final bool isFocused =
+                              dateOnly == _controller.toDateOnly(focused);
+
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: bgColor,
+                              border: isFocused
+                                  ? Border.all(color: hc_red, width: 3.0)
+                                  : Border.all(
+                                      color: Colors.black26,
+                                      width: 1.0,
+                                    ),
+                            ),
+                            width: 100,
+                            height: 50,
+                            child: Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: <Widget>[
+                                Positioned(
+                                  top: 1.0,
+                                  left: 1.0,
+                                  child: Text(
+                                    '${date.day}',
+                                    style: const TextStyle().copyWith(
+                                      fontSize: 16.0,
+                                      color:
+                                          dateOnly
+                                                  .difference(
+                                                    _controller.toDateOnly(
+                                                      DateTime.now(),
+                                                    ),
+                                                  )
+                                                  .inDays >=
+                                              0
+                                          ? Colors.black
+                                          : Colors.grey.shade500,
+                                    ),
+                                  ),
+                                ),
+                                if (isUpdating) ...<Widget>[
+                                  Positioned(
+                                    right: 1.0,
+                                    child: Icon(delayIcon, color: hc_blue),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+                        },
+                    markerBuilder:
+                        (
+                          BuildContext context,
+                          DateTime date,
+                          List<dynamic> events,
+                        ) {
+                          final List<Widget> children = <Widget>[];
+
+                          if (events.isNotEmpty) {
+                            if (events.length <= 5) {
+                              for (int i = 0; i < events.length; i++) {
+                                children.add(
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 5.0),
+                                    child: Icon(
+                                      FontAwesome.circle,
+                                      size: 8.0,
+                                      color: events[i].isVisible == 0
+                                          ? Colors.grey
+                                          : events[i].isCountedRun == 0
+                                          ? hc_red
+                                          : hc_blue,
+                                    ),
+                                  ),
+                                );
+                              }
+                            } else {
+                              children.add(Text(events.length.toString()));
+                            }
+                          }
+
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: children,
+                          );
+                        },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5.0),
+
+              // Show edit button when there is exactly one event on the
+              // selected day and it is not in the past.
+              if (_controller
+                          .toDateOnly(selected)
+                          .difference(_controller.toDateOnly(DateTime.now()))
+                          .inDays >=
+                      0 &&
+                  (_controller
+                              .calendarEvents[_controller.toDateOnly(selected)]
+                              ?.length ??
+                          0) ==
+                      1) ...<Widget>[_buildEditButton(selected)],
+              _buildAddButtons(selected),
+            ],
           ),
-          Expanded(child: _listView(_controller.selectedEvents.toList())),
-        ],
+        ),
+      );
+      final List<LiteEventModel> dayEvents = _controller.selectedEvents
+          .toList();
+
+      // The calendar block has a fixed height and the day's runs used to get
+      // only what was left. On a 360 x 640 dp phone that was ~14 px: the runs
+      // were drawn but could be neither seen nor scrolled to (2026-09-25).
+      // When fewer than 160 dp would remain, the tab scrolls as one piece
+      // instead. On a taller screen, where they fit, nothing changes: the
+      // calendar stays put and the list scrolls beneath it.
+      return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) =>
+            ValueListenableBuilder<double>(
+              valueListenable: _calendarBlockHeight,
+              builder: (BuildContext context, double blockHeight, _) {
+                final bool cramped =
+                    blockHeight > 0 &&
+                    constraints.maxHeight - blockHeight < 160.0;
+                if (cramped) {
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: <Widget>[
+                        calendarBlock,
+                        _listView(dayEvents, shrinkWrap: true),
+                      ],
+                    ),
+                  );
+                }
+                return Column(
+                  children: <Widget>[
+                    calendarBlock,
+                    Expanded(child: _listView(dayEvents)),
+                  ],
+                );
+              },
+            ),
       );
     });
   }
@@ -632,12 +665,17 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
   // List view
   // ---------------------------------------------------------------------------
 
-  Widget _listView(List<LiteEventModel> listEvents) {
+  /// [shrinkWrap]: laid out at full height inside an outer scroll view (the
+  /// Calendar tab on a short screen) rather than scrolling on its own.
+  Widget _listView(List<LiteEventModel> listEvents, {bool shrinkWrap = false}) {
     return Obx(() {
       final String updatingId = _controller.itemBeingUpdatedId.value;
 
       return ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap
+            ? const NeverScrollableScrollPhysics()
+            : const AlwaysScrollableScrollPhysics(),
         itemCount: listEvents.length,
         padding: const EdgeInsets.only(top: 5),
         separatorBuilder: (BuildContext context, int index) =>
