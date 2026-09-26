@@ -213,6 +213,11 @@ class KennelPageFormController extends TabUiController
   /// Mirrors editedData so the layout can show mode-specific fields.
   final RxInt membershipRenewalMode = 1.obs;
 
+  /// Card payment app (E8.F7.S2): 0 = none, 1 = SumUp. Mirrors
+  /// editedData.cardPaymentProvider for the dropdown, and shows or hides the
+  /// merchant code field.
+  final RxInt cardPaymentApp = 0.obs;
+
   // ---------------------------------------------------------------------------
   // State - Songs Tab
   // ---------------------------------------------------------------------------

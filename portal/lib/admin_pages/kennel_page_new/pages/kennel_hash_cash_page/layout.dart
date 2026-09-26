@@ -40,6 +40,10 @@ class KennelHashCashTabContent extends StatelessWidget {
               HelperWidgets().categoryLabelWidget('Payment Settings'),
               _buildPaymentSettingsSection(isMobileScreen),
 
+              // Card Payments Section (E8.F7.S2)
+              HelperWidgets().categoryLabelWidget('Card Payments'),
+              _buildCardPaymentsSection(isMobileScreen),
+
               // Membership Section
               HelperWidgets().categoryLabelWidget('Membership'),
               _buildMembershipSection(isMobileScreen),
@@ -90,6 +94,58 @@ class KennelHashCashTabContent extends StatelessWidget {
           controlKey: '${KennelTabType.hashCash.key}_allowSelfPayment',
           value: controller.allowSelfPayment,
           label: 'Hasher can mark themselves as paid',
+        ),
+      ],
+    );
+  }
+
+  /// Builds the Card Payments section: the card payment app, and — only when
+  /// SumUp is chosen — the club's merchant code and what it is for.
+  Widget _buildCardPaymentsSection(bool isMobileScreen) {
+    final tabKey = KennelTabType.hashCash.key;
+    final appControl = controller.uiControls['${tabKey}_cardPaymentApp'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RowColumn(
+          isRow: !isMobileScreen,
+          rowFlexValues: const [1, 1],
+          rowLeftPaddingValues: const [0.0, 10.0],
+          children: [
+            if (appControl != null)
+              MouseRegion(
+                onEnter: (_) =>
+                    controller.setSidebarData('${tabKey}_cardPaymentApp'),
+                onExit: (_) => controller.setSidebarData('${tabKey}_generic'),
+                child: EditableDropdownField(
+                  controller: controller,
+                  uiControl: appControl,
+                  value: controller.cardPaymentApp,
+                  items: appControl.dropdownItems ?? {},
+                ),
+              )
+            else
+              const SizedBox.shrink(),
+            Obx(
+              () => controller.cardPaymentApp.value == 1
+                  ? _buildPriceField('${tabKey}_cardPaymentMerchantCode')
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+        Obx(
+          () => controller.cardPaymentApp.value == 1
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    "Hash Cash's phone must be signed in to this SumUp "
+                    'account. Payments are handed to the SumUp app, which '
+                    'uses its Tap to Pay or its paired card reader.',
+                    style: bodyStyleBlack,
+                  ),
+                )
+              : const SizedBox.shrink(),
         ),
       ],
     );

@@ -32,6 +32,10 @@ AS
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 --   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
+-- Changes:
+--   - 2026-09-26: returns cardPaymentProvider, cardPaymentMerchantCode
+--     (E8.F7.S2). Deploy AFTER db/hc6/app/2026-09-22_kennel_payment_provider.sql
+--     has run: the columns do not exist before it.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -98,6 +102,8 @@ BEGIN TRY
 		, k.KennelWebsiteUrl as kennelWebsiteUrl
 		, COALESCE(k.DefaultMessagingPlatform, 1) as defaultMessagingPlatform
 		, k.MessagingGroupInviteUrl as messagingGroupInviteUrl
+		, k.CardPaymentProvider as cardPaymentProvider
+		, k.CardPaymentMerchantCode as cardPaymentMerchantCode
 		, k.KennelCoverPhoto as kennelCoverPhoto
 		, c.CityName as cityName
 		, r.RegionName as regionName

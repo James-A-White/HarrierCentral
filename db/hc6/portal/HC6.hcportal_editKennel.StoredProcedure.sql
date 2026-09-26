@@ -88,7 +88,12 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_editKennel]
 	@notificationMinutesBeforeRunForChatPushNotifications SMALLINT = NULL,
 	@notificationMinutesBeforeRunForCheckinReminder SMALLINT = NULL,
 	@trailSymbolsConfigJson NVARCHAR(4000) = NULL,
-	@trailTypesConfigJson NVARCHAR(4000) = NULL
+	@trailTypesConfigJson NVARCHAR(4000) = NULL,
+	-- Card payments on the trail (E8.F7.S2, 2026-09-26). NULL = unchanged,
+	-- '' = clear. Provider is a lowercase token ('sumup'); the merchant code
+	-- is the club's SumUp account (e.g. MC8ABC12).
+	@cardPaymentProvider NVARCHAR(30) = NULL,
+	@cardPaymentMerchantCode NVARCHAR(100) = NULL
 
 AS
 -- =====================================================================
@@ -128,6 +133,12 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+-- Changes:
+--   - 2026-09-26: @cardPaymentProvider, @cardPaymentMerchantCode (E8.F7.S2).
+--     Deploy AFTER db/hc6/app/2026-09-22_kennel_payment_provider.sql has
+--     run: the columns do not exist before it. Only 'sumup' is accepted
+--     here although the column's CHECK also allows 'zettle' — Zettle is not
+--     built, and a kennel set to it would show a button that does nothing.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -226,6 +237,28 @@ BEGIN TRY
 		RETURN;
 	END
 
+	-- Card payment settings: normalise, then validate. Refused before the
+	-- transaction opens, so there is nothing to roll back; the API shim logs
+	-- every Success = 0 to HC.ErrorLog (nonApi_logPortalError).
+	IF @cardPaymentProvider IS NOT NULL
+		SET @cardPaymentProvider = LOWER(LTRIM(RTRIM(@cardPaymentProvider)));
+	IF @cardPaymentMerchantCode IS NOT NULL
+		SET @cardPaymentMerchantCode = UPPER(LTRIM(RTRIM(@cardPaymentMerchantCode)));
+
+	IF @cardPaymentProvider IS NOT NULL AND @cardPaymentProvider NOT IN (N'', N'sumup')
+	BEGIN
+		SELECT 0 AS Success,
+			'Card payment app must be SumUp or none.' AS ErrorMessage;
+		RETURN;
+	END
+
+	IF LEN(COALESCE(@cardPaymentMerchantCode, N'')) > 100
+	BEGIN
+		SELECT 0 AS Success,
+			'The SumUp merchant code can be at most 100 characters.' AS ErrorMessage;
+		RETURN;
+	END
+
 	-- Main update (wrapped in transaction)
 	BEGIN TRANSACTION;
 
@@ -312,6 +345,11 @@ BEGIN TRY
 		NotificationMinutesBeforeRunForCheckinReminder = COALESCE(@notificationMinutesBeforeRunForCheckinReminder, NotificationMinutesBeforeRunForCheckinReminder),
 		TrailSymbolsConfigJson = COALESCE(@trailSymbolsConfigJson, TrailSymbolsConfigJson),
 		TrailTypesConfigJson = COALESCE(@trailTypesConfigJson, TrailTypesConfigJson),
+		-- NULL = unchanged; '' clears (same rule as MessagingGroupInviteUrl).
+		CardPaymentProvider = CASE WHEN @cardPaymentProvider IS NULL THEN CardPaymentProvider
+		                           ELSE NULLIF(@cardPaymentProvider, N'') END,
+		CardPaymentMerchantCode = CASE WHEN @cardPaymentMerchantCode IS NULL THEN CardPaymentMerchantCode
+		                               ELSE NULLIF(@cardPaymentMerchantCode, N'') END,
 		updatedAt = SYSUTCDATETIME()
 	WHERE id = @kennelId;
 

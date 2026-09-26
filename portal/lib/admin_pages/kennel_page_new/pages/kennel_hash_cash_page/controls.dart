@@ -29,6 +29,10 @@ extension KennelHashCashControlsExtension on KennelPageFormController {
     _registerAllowNegativeCreditControl(tabKey, tabIndex);
     _registerAllowSelfPaymentControl(tabKey, tabIndex);
 
+    // Card payments on the trail (E8.F7.S2)
+    _registerCardPaymentAppControl(tabKey, tabIndex);
+    _registerCardPaymentMerchantCodeControl(tabKey, tabIndex);
+
     // Membership (see docs/membership_payments_plan.md)
     _registerMembershipRenewalModeControl(tabKey, tabIndex);
     _registerMembershipPriceControl(tabKey, tabIndex);
@@ -36,6 +40,102 @@ extension KennelHashCashControlsExtension on KennelPageFormController {
     // The fixed-year membership start/end dates are rendered as calendar
     // date pickers in the layout (bound directly to editedData), not as
     // text controls — see _buildMembershipDateField.
+  }
+
+  // ---------------------------------------------------------------------------
+  // Card Payment Controls (E8.F7.S2)
+  // ---------------------------------------------------------------------------
+
+  /// Registers the card payment app dropdown: None or SumUp. Zettle is
+  /// allowed by the column's CHECK but not built, so it is not offered — and
+  /// hcportal_editKennel refuses it.
+  void _registerCardPaymentAppControl(String tabKey, int tabIndex) {
+    final fieldKey = '${tabKey}_cardPaymentApp';
+    final int current = originalData.cardPaymentProvider == 'sumup' ? 1 : 0;
+    cardPaymentApp.value = current;
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.dropdown,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Card Payment App',
+        FontAwesome5Solid.credit_card,
+        'Lets the Hash Cash take a card at the trail. Harrier Central hands '
+            'the amount to the SumUp app on their phone, which takes the card '
+            'with Tap to Pay or its paired card reader, and hands the result '
+            'back.\n\n'
+            'The money goes straight to the club\'s SumUp account. Harrier '
+            'Central never touches it, and SumUp\'s fee is the club\'s.',
+      ),
+      editedFieldValue: current.toString(),
+      originalFieldValue: current.toString(),
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Card payment app',
+      includeOverrideButton: false,
+      tabIndex: tabIndex,
+      dropdownItems: const {0: 'None', 1: 'SumUp'},
+      updateEditedValue: (String? value) {
+        final int intValue = (int.tryParse(value ?? '0') ?? 0).clamp(0, 1);
+        cardPaymentApp.value = intValue;
+        // Unchanged-from-null stays null, so choosing None on a kennel that
+        // never had a provider does not mark the form dirty; '' clears.
+        final String? provider = intValue == 1
+            ? 'sumup'
+            : (originalData.cardPaymentProvider == null ? null : '');
+        editedData.value = editedData.value.copyWith(
+          cardPaymentProvider: provider,
+        );
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+      onUndo: () {
+        cardPaymentApp.value =
+            originalData.cardPaymentProvider == 'sumup' ? 1 : 0;
+      },
+    );
+  }
+
+  /// Registers the club's SumUp merchant code. Shown only when SumUp is the
+  /// card payment app.
+  void _registerCardPaymentMerchantCodeControl(String tabKey, int tabIndex) {
+    final fieldKey = '${tabKey}_cardPaymentMerchantCode';
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.string,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'SumUp Merchant Code',
+        FontAwesome5Solid.building,
+        'The club\'s SumUp account, e.g. MC8ABC12 — shown in the SumUp app '
+            'under Profile.\n\n'
+            'Hash Cash\'s phone must be signed in to this SumUp account. '
+            'Payments are handed to the SumUp app, which uses its Tap to Pay '
+            'or its paired card reader. SumUp does not tell Harrier Central '
+            'which account took a payment, so the app shows this code before '
+            'every card payment as a reminder.',
+      ),
+      editedFieldValue: editedData.value.cardPaymentMerchantCode,
+      originalFieldValue: originalData.cardPaymentMerchantCode,
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'SumUp merchant code (the club\'s account)',
+      maxStringLength: 100,
+      minStringLength: 0,
+      maxLines: 1,
+      includeOverrideButton: false,
+      textController: textControllers[fieldKey] = TextEditingController(),
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        final String trimmed = (value ?? '').trim().toUpperCase();
+        editedData.value = editedData.value.copyWith(
+          cardPaymentMerchantCode: trimmed.isEmpty &&
+                  originalData.cardPaymentMerchantCode == null
+              ? null
+              : trimmed,
+        );
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+    );
   }
 
   // ---------------------------------------------------------------------------

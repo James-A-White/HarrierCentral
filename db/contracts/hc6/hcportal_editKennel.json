@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_editKennel",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Updates an existing kennel's settings. Update-only (no insert path). Uses a COALESCE pattern: only parameters supplied as non-NULL are written; NULL means 'leave unchanged'. Two exceptions: @latitude and @longitude use -999.0 as a sentinel to explicitly set both columns to NULL (geographic nulling). There is no sentinel for clearing string fields to NULL. Covers kennel identity, dissemination, Google Calendar, payment config (3 slots), pricing, currency, location, tags, membership, notifications, and feature tier. Includes duplicate-name detection with auto-suggested alternatives for KennelUniqueShortName. UPDATE wrapped in a transaction.",
   "parameters": [
     {
@@ -549,6 +549,20 @@
       "nullable": true,
       "mapsToColumn": "Kennel.NotificationMinutesBeforeRunForCheckinReminder",
       "description": "Minutes before run to send check-in reminders. NULL = no change."
+    },
+    {
+      "name": "cardPaymentProvider",
+      "type": "NVARCHAR(30)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.CardPaymentProvider",
+      "description": "Card payment app (E8.F7.S2): 'sumup', or '' to clear. NULL = no change. Lowercased and trimmed; any other value is refused (Success = 0)."
+    },
+    {
+      "name": "cardPaymentMerchantCode",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.CardPaymentMerchantCode",
+      "description": "The club's SumUp merchant code (E8.F7.S2), or '' to clear. NULL = no change. Trimmed and uppercased; longer than 100 is refused."
     }
   ],
   "rowsets": [
@@ -592,7 +606,7 @@
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Kennel \u2014 all provided non-NULL fields via COALESCE pattern. Latitude and Longitude are set to NULL if either @latitude or @longitude equals -999.0."
+    "UPDATE HC.Kennel — all provided non-NULL fields via COALESCE pattern. Latitude and Longitude are set to NULL if either @latitude or @longitude equals -999.0."
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",

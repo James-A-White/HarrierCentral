@@ -97,6 +97,12 @@ abstract class KennelModel with _$KennelModel {
     @Default(1) int defaultMessagingPlatform,
     /// The group's invite link, for joining — never a post target.
     String? messagingGroupInviteUrl,
+    /// Card payments on the trail (E8.F7.S2): 'sumup', or null when the
+    /// kennel takes no card through Harrier Central.
+    String? cardPaymentProvider,
+    /// The club's SumUp merchant code — the account the Hash Cash's SumUp
+    /// app must be signed in to.
+    String? cardPaymentMerchantCode,
     String? kennelEventsUrl,
     String? kennelHcEventsUrl,
     String? bankScheme,
