@@ -1,3 +1,9 @@
+## 2.0.87+724 (2026-09-26)
+### New Features
+- **Card payments settings.** Kennel › Hash Cash has a Card Payments group:
+  the card payment app (None or SumUp) and the club's SumUp merchant code.
+  Saving it needs the server update that goes out with this release.
+
 ## 2.0.87+723 (2026-09-26)
 ### Fixes
 - **Closing a page no longer crashes its tabs.** Run edit's Close deleted

@@ -1,3 +1,21 @@
+## 3.1.8+1412 (2026-09-26)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Card payments through SumUp (built, switched off).** A Hash Cash at
+  check-in will be able to take a run fee by card: Harrier Central hands the
+  amount to the club's SumUp app, which takes the card with Tap to Pay or its
+  paired reader, and the result comes back to the ledger. Nothing shows yet —
+  it appears once the club is set to SumUp in the portal and the app's SumUp
+  key is in place.
+### Improvements
+- **Kennel settings re-sync once** after this update, so kennels changed
+  before you upgraded arrive in full.
+### Fixes
+- **iOS dropped some app links.** Any harriercentral:// link other than a
+  file import was swallowed; only imports are now handled natively and the
+  rest reach the app.
+
 ## 3.1.8+1411 (2026-09-26)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version. First Android build since 1407, so Android also gets
