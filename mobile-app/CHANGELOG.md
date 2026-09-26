@@ -1,3 +1,15 @@
+## 3.1.8+1414 (2026-09-26)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Edit who a Down Down is against.** Edit Charge now lists the people
+  charged: names typed for people not in the app (fix a typo, remove, add) and
+  the run's hashers, ticked when charged. A charge keeps at least one person.
+- **Add a charge from the Down Downs list.** New "Add charge" button.
+### Improvements
+- **A run's cover photo shows on its card once the run has started**, in
+  place of the image used to advertise the run.
+
 ## 3.1.8+1413 (2026-09-26)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version.
