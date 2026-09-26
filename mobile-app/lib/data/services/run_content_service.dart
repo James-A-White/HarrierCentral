@@ -207,6 +207,10 @@ class RunContentService {
     String? songChoice,
     String? songId,
     String? chargePhotoUrl,
+    // Who is charged (hcapp_updateDownDown 1.1.0). Null = leave as it is;
+    // an empty list clears that half. Both are sent by the edit page.
+    List<String>? hasherIds,
+    List<String>? externalNames,
   }) async {
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -227,6 +231,8 @@ class RunContentService {
         'songChoice': songChoice,
         'songId': songId,
         if (chargePhotoUrl?.isNotEmpty == true) 'chargePhotoUrl': chargePhotoUrl,
+        if (hasherIds != null) 'hasherIds': hasherIds.join('|'),
+        if (externalNames != null) 'externalNames': jsonEncode(externalNames),
       }),
     );
 

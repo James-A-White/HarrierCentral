@@ -1,5 +1,6 @@
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/run_admin/edit_down_down_page.dart';
+import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 
 /// Run admin's Down Downs list. Stateless over [DownDownsController]; the
 /// yes/no dialogs live here because they need a context, the actions there.
@@ -97,6 +98,21 @@ class DownDownsPage extends StatelessWidget {
     if (saved == true) unawaited(c.load());
   }
 
+  /// Add a charge from the list (James, 2026-09-26) — the same page the run
+  /// screen's "Add Down Down" opens; the list reloads on the way back.
+  Future<void> _openAddPage(DownDownsController c) async {
+    await Get.to<void>(
+      () => AddDownDownPage(
+        kennelId: kennelId,
+        eventId: eventId,
+        eventName: eventName,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+      ),
+    );
+    if (!c.isClosed) unawaited(c.load());
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<DownDownsController>(
@@ -114,6 +130,17 @@ class DownDownsPage extends StatelessWidget {
               onPressed: () => unawaited(c.load()),
             ),
           ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          heroTag: 'add-down-down-$eventId',
+          onPressed: () => unawaited(_openAddPage(c)),
+          backgroundColor: hc_red,
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: const Text(
+            'Add charge',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ),
         body: Container(
           decoration: Backgrounds.defaultHcBackground(),
@@ -137,7 +164,9 @@ class DownDownsPage extends StatelessWidget {
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              // Room at the end so the last charge's buttons are not under
+              // the Add charge button.
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 96),
               itemCount: downDowns.length,
               separatorBuilder: (context, i) => Divider(
                 height: 2,

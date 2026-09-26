@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/run_admin/down_down_people.dart';
 
 /// Add Down Down. Stateless over [AddDownDownController].
 class AddDownDownPage extends StatelessWidget {
@@ -256,70 +257,9 @@ class AddDownDownPage extends StatelessWidget {
                         // People not in the app — free-text names added as chips.
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'People not in the app',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              TextField(
-                                controller: c.externalNameController,
-                                textInputAction: TextInputAction.done,
-                                textCapitalization: TextCapitalization.words,
-                                onSubmitted: c.addExternalName,
-                                decoration: InputDecoration(
-                                  hintText: 'Add a name, then tap +',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  isDense: true,
-                                  prefixIcon: const Icon(
-                                    Icons.person_add_alt_1,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: const Icon(Icons.add),
-                                    tooltip: 'Add name',
-                                    onPressed: () => c.addExternalName(),
-                                  ),
-                                ),
-                              ),
-                              if (externalNames.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 6,
-                                  children: externalNames
-                                      .map(
-                                        (name) => Chip(
-                                          label: Text(name),
-                                          backgroundColor:
-                                              Colors.yellow.shade700,
-                                          labelStyle: const TextStyle(
-                                            color: Colors.black87,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          deleteIconColor: Colors.black54,
-                                          onDeleted: () =>
-                                              c.removeExternalName(name),
-                                          materialTapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                          visualDensity: const VisualDensity(
-                                            horizontal: -2,
-                                            vertical: -2,
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                ),
-                              ],
-                            ],
+                          child: DownDownExternalNamesField(
+                            c: c,
+                            names: externalNames,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -362,33 +302,7 @@ class AddDownDownPage extends StatelessWidget {
                       itemCount: attendees.length,
                       itemBuilder: (context, index) {
                         final attendee = attendees[index];
-                        return CheckboxListTile(
-                          value: attendee.selected,
-                          title: Text(
-                            attendee.displayName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.yellow,
-                            ),
-                          ),
-                          onChanged: (v) =>
-                              c.toggleAttendee(attendee, v ?? false),
-                          activeColor: Colors.yellow,
-                          checkColor: Colors.black87,
-                          side: const BorderSide(
-                            color: Colors.yellow,
-                            width: 1.5,
-                          ),
-                          controlAffinity: ListTileControlAffinity.leading,
-                          dense: true,
-                          visualDensity: const VisualDensity(
-                            horizontal: -4,
-                            vertical: -4,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                          ),
-                        );
+                        return DownDownAttendeeTile(c: c, attendee: attendee);
                       },
                     ),
                 ],

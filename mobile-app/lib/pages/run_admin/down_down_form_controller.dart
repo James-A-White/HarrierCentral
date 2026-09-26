@@ -48,10 +48,137 @@ abstract class DownDownFormController extends GetxController {
   /// How many matches the song list shows.
   int get songLimit;
 
+  // ── Who is charged: app hashers (attendees) and typed names ─────────────
+  // Shared by Add and Edit since 2026-09-26 (James: edit who was charged,
+  // including a name typed for someone not in the app).
+
+  final TextEditingController externalNameController = TextEditingController();
+
+  /// Names of people being charged who are NOT registered HC users.
+  final RxList<String> externalNames = <String>[].obs;
+  final RxBool isLoading = true.obs;
+  final RxList<AttendeeItem> attendees = <AttendeeItem>[].obs;
+
+  /// Hashers already charged when the form opens (Edit); ticked in the list,
+  /// and added to it when they are not on the run's attendee list.
+  List<DownDownHasherModel> get initiallyCharged => const [];
+
+  /// The attendee list with [charged] ticked, and any charged hasher who is
+  /// not an attendee added at the top — otherwise editing a charge would
+  /// silently drop them. Pure, unit-tested.
+  static List<AttendeeItem> applyChargedSelection(
+    List<AttendeeItem> attendees,
+    List<DownDownHasherModel> charged,
+  ) {
+    final Set<String> ids = {
+      for (final DownDownHasherModel h in charged) normalizeUuid(h.hasherId),
+    };
+    final Set<String> listed = {};
+    for (final AttendeeItem a in attendees) {
+      final String id = normalizeUuid(a.hasherId);
+      listed.add(id);
+      if (ids.contains(id)) a.selected = true;
+    }
+    final List<AttendeeItem> missing = [
+      for (final DownDownHasherModel h in charged)
+        if (!listed.contains(normalizeUuid(h.hasherId)))
+          AttendeeItem(hasherId: h.hasherId, displayName: h.displayName)
+            ..selected = true,
+    ];
+    return [...missing, ...attendees];
+  }
+
+  List<AttendeeItem> get selected =>
+      attendees.where((a) => a.selected).toList();
+
+  void toggleAttendee(AttendeeItem attendee, bool value) {
+    attendee.selected = value;
+    attendees.refresh();
+  }
+
+  /// Adds a name unless it is blank or already there (case-insensitive).
+  /// Pure, unit-tested; returns whether it was added.
+  static bool addName(List<String> names, String raw) {
+    final String name = raw.trim();
+    if (name.isEmpty) return false;
+    final bool exists = names.any((n) => n.toLowerCase() == name.toLowerCase());
+    if (!exists) names.add(name);
+    return !exists;
+  }
+
+  /// Adds the typed (or supplied) name to the external-people list, ignoring
+  /// blanks and case-insensitive duplicates, then clears the input.
+  void addExternalName([String? value]) {
+    final String raw = value ?? externalNameController.text;
+    externalNameController.clear();
+    final List<String> next = List<String>.of(externalNames);
+    if (addName(next, raw)) externalNames.assignAll(next);
+  }
+
+  void removeExternalName(String name) => externalNames.remove(name);
+
+  Future<void> loadAttendees() async {
+    isLoading.value = true;
+    try {
+      // Sync the event HEM table first so attendees are available locally.
+      // Without this the event_ tables are empty unless run admin was opened
+      // first.
+      if (Utilities.isConnected()) {
+        await tableModel.syncEventAdminService.updateRsvpsFromBackend(eventId);
+        if (isClosed) return;
+      }
+
+      final query =
+          '''
+        SELECT
+          h.${tableModel.hashersTableHelper.colHasherId} as hasherId,
+          coalesce(
+            hem.${tableModel.hasherEventMapTableHelper.colDisplayName},
+            h.${tableModel.hashersTableHelper.colDispName},
+            h.${tableModel.hashersTableHelper.colHashName},
+            h.${tableModel.hashersTableHelper.colFirstName} || " " || h.${tableModel.hashersTableHelper.colLastName},
+            "<no name>"
+          ) as displayName
+        FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
+        INNER JOIN ${EnumDataTables.hashers.commonTableName} h
+          ON hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}
+        WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = '$eventId'
+          AND (
+            hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= 20
+            OR hem.${tableModel.hasherEventMapTableHelper.colRsvpState} = 3
+          )
+          AND h.${tableModel.hashersTableHelper.colRemoved} = 0
+        ORDER BY displayName COLLATE NOCASE
+      ''';
+
+      final results = await database.rawQuery(query);
+      if (isClosed) return;
+      attendees.assignAll(
+        applyChargedSelection(
+          results
+              .map(
+                (r) => AttendeeItem(
+                  hasherId: r['hasherId'] as String,
+                  displayName: r['displayName'] as String? ?? '<no name>',
+                ),
+              )
+              .toList(),
+          initiallyCharged,
+        ),
+      );
+    } catch (e, s) {
+      BootLogger.logError('[DownDownForm.loadAttendees]', e, s);
+    }
+    if (isClosed) return;
+    isLoading.value = false;
+  }
+
+
   @override
   void onClose() {
     chargeController.dispose();
     songController.dispose();
+    externalNameController.dispose();
     super.onClose();
   }
 
@@ -170,105 +297,12 @@ class AddDownDownController extends DownDownFormController {
   @override
   int get songLimit => 10;
 
-  final TextEditingController externalNameController = TextEditingController();
-
-  /// Names of people being charged who are NOT registered HC users.
-  final RxList<String> externalNames = <String>[].obs;
-  final RxBool isLoading = true.obs;
-  final RxList<AttendeeItem> attendees = <AttendeeItem>[].obs;
-
   @override
   void onInit() {
     super.onInit();
     chargeController = TextEditingController();
     songController = TextEditingController();
     unawaited(loadAttendees());
-  }
-
-  @override
-  void onClose() {
-    externalNameController.dispose();
-    super.onClose();
-  }
-
-  List<AttendeeItem> get selected =>
-      attendees.where((a) => a.selected).toList();
-
-  void toggleAttendee(AttendeeItem attendee, bool value) {
-    attendee.selected = value;
-    attendees.refresh();
-  }
-
-  /// Adds a name unless it is blank or already there (case-insensitive).
-  /// Pure, unit-tested; returns whether it was added.
-  static bool addName(List<String> names, String raw) {
-    final String name = raw.trim();
-    if (name.isEmpty) return false;
-    final bool exists = names.any((n) => n.toLowerCase() == name.toLowerCase());
-    if (!exists) names.add(name);
-    return !exists;
-  }
-
-  /// Adds the typed (or supplied) name to the external-people list, ignoring
-  /// blanks and case-insensitive duplicates, then clears the input.
-  void addExternalName([String? value]) {
-    final String raw = value ?? externalNameController.text;
-    externalNameController.clear();
-    final List<String> next = List<String>.of(externalNames);
-    if (addName(next, raw)) externalNames.assignAll(next);
-  }
-
-  void removeExternalName(String name) => externalNames.remove(name);
-
-  Future<void> loadAttendees() async {
-    isLoading.value = true;
-    try {
-      // Sync the event HEM table first so attendees are available locally.
-      // Without this the event_ tables are empty unless run admin was opened
-      // first.
-      if (Utilities.isConnected()) {
-        await tableModel.syncEventAdminService.updateRsvpsFromBackend(eventId);
-        if (isClosed) return;
-      }
-
-      final query =
-          '''
-        SELECT
-          h.${tableModel.hashersTableHelper.colHasherId} as hasherId,
-          coalesce(
-            hem.${tableModel.hasherEventMapTableHelper.colDisplayName},
-            h.${tableModel.hashersTableHelper.colDispName},
-            h.${tableModel.hashersTableHelper.colHashName},
-            h.${tableModel.hashersTableHelper.colFirstName} || " " || h.${tableModel.hashersTableHelper.colLastName},
-            "<no name>"
-          ) as displayName
-        FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
-        INNER JOIN ${EnumDataTables.hashers.commonTableName} h
-          ON hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}
-        WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = '$eventId'
-          AND (
-            hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= 20
-            OR hem.${tableModel.hasherEventMapTableHelper.colRsvpState} = 3
-          )
-          AND h.${tableModel.hashersTableHelper.colRemoved} = 0
-        ORDER BY displayName COLLATE NOCASE
-      ''';
-
-      final results = await database.rawQuery(query);
-      if (isClosed) return;
-      attendees.assignAll(
-        results.map(
-          (r) => AttendeeItem(
-            hasherId: r['hasherId'] as String,
-            displayName: r['displayName'] as String? ?? '<no name>',
-          ),
-        ),
-      );
-    } catch (e, s) {
-      BootLogger.logError('[AddDownDownPage._loadAttendees]', e, s);
-    }
-    if (isClosed) return;
-    isLoading.value = false;
   }
 
   /// Why the form cannot be sent yet, or null when it can. Pure.
@@ -330,7 +364,8 @@ class AddDownDownController extends DownDownFormController {
   }
 }
 
-/// Edit Down Down: the charge, song and photo of an existing charge.
+/// Edit Down Down: the charge, song, photo — and, since 2026-09-26, who is
+/// charged: app hashers and names typed for people not in the app.
 class EditDownDownController extends DownDownFormController {
   EditDownDownController({
     required super.kennelId,
@@ -348,18 +383,30 @@ class EditDownDownController extends DownDownFormController {
   int get songLimit => 30;
 
   @override
+  List<DownDownHasherModel> get initiallyCharged => downDown.hashers;
+
+  @override
   void onInit() {
     super.onInit();
     chargeController = TextEditingController(text: downDown.chargeText);
     songController = TextEditingController(text: downDown.songChoice ?? '');
     linkedSongId.value = downDown.songId;
     chargePhotoUrl.value = downDown.chargePhotoUrl;
+    externalNames.assignAll(downDown.externalNames);
+    unawaited(loadAttendees());
   }
 
   Future<void> save() async {
+    // Fold in a name typed but not yet added with the + button.
+    if (externalNameController.text.trim().isNotEmpty) addExternalName();
+
     final chargeText = chargeController.text.trim();
     if (chargeText.isEmpty) {
       hcSnack('Charge text is required', error: true);
+      return;
+    }
+    if (selected.isEmpty && externalNames.isEmpty) {
+      hcSnack('Add at least one person — a hasher or a name', error: true);
       return;
     }
 
@@ -378,6 +425,10 @@ class EditDownDownController extends DownDownFormController {
       songChoice: songText.isEmpty ? null : songText,
       songId: linkedSongId.value,
       chargePhotoUrl: newPhoto,
+      // Who is charged: always sent from this page, so a removed name or
+      // hasher is removed on the server too.
+      hasherIds: selected.map((a) => a.hasherId).toList(),
+      externalNames: List<String>.of(externalNames),
     );
     if (isClosed) return;
     if (ok) {

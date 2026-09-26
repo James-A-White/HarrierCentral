@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/run_admin/down_down_people.dart';
 
 /// Edit Down Down. Stateless over [EditDownDownController].
 class EditDownDownPage extends StatelessWidget {
@@ -60,6 +61,12 @@ class EditDownDownPage extends StatelessWidget {
     final String? linkedSongId = c.linkedSongId.value;
     final String? chargePhotoUrl = c.chargePhotoUrl.value;
     final List<SongResult> songResults = c.songResults;
+    // Who is charged. Read HERE, inside the Obx: the Obx tracks only what its
+    // own builder reads (see DownDownExternalNamesField).
+    final List<String> externalNames = c.externalNames.toList();
+    final List<AttendeeItem> attendees = c.attendees.toList();
+    final bool loadingPeople = c.isLoading.value;
+    final int selectedCount = attendees.where((a) => a.selected).length;
     return AppScaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -113,6 +120,63 @@ class EditDownDownPage extends StatelessWidget {
                         hintText: 'Enter the charge…',
                       ),
                     ),
+                  ],
+                ),
+              ),
+
+              // Who is charged (2026-09-26): the same people picker as Add,
+              // opened with this charge's hashers ticked and names listed.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    DownDownExternalNamesField(c: c, names: externalNames),
+                    const SizedBox(height: 12),
+                    Text(
+                      'People in the app ($selectedCount selected)',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (loadingPeople)
+                      const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                      )
+                    else if (attendees.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          'No attendees found for this run.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      )
+                    else
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.28),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          children: [
+                            for (final AttendeeItem a in attendees)
+                              DownDownAttendeeTile(c: c, attendee: a),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
