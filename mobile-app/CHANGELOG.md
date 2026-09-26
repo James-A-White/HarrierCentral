@@ -1,3 +1,19 @@
+## 3.1.8+1411 (2026-09-26)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version. First Android build since 1407, so Android also gets
+1408's RSVP fix and 1410's award list order.
+### New Features
+- **Get me there / Get Directions on the run map.** A button over the
+  bottom of the Map tab opens the run in your map app, as tapping its pin
+  does: "Get me there" on the day of the run, "Get Directions" before it.
+  No button the day after or later, and none once the run has PackTrack
+  data.
+### Fixes
+- **A map pin that did nothing.** Choosing "Ask me every time" in Settings
+  (since 3.1.0) stored an empty map app, and every map pin then did nothing
+  until an app was chosen again; so did a saved app that had been
+  uninstalled. Both now open the map-app chooser.
+
 ## 3.1.8+1410 (2026-09-25)
 iOS only (TestFlight, Hash beta testers). Build number only; same version.
 Same code as 1409, whose upload reported success but never registered at

@@ -1,3 +1,12 @@
+## 2.0.87+723 (2026-09-26)
+### Fixes
+- **Closing a page no longer crashes its tabs.** Run edit's Close deleted
+  the page's controller before leaving, and kennel edit, Products, Website
+  and three dialogs deleted theirs while they were still fading out, so a
+  tab bar could paint with a disposed controller ("Null check operator used
+  on a null value", seen 2026-09-23). Controllers are now removed after the
+  page has gone.
+
 ## 2.0.87+722 (2026-09-25)
 ### Fixes
 - **Kennel Admin Emails is read-only.** The database now builds the list
