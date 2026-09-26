@@ -255,6 +255,57 @@ class Utilities {
     );
   }
 
+  /// Open [coords] in the hasher's saved map app, or ask which one.
+  ///
+  /// The one entry point for "tap a pin, see it in a map app". It used to be
+  /// copied at each pin, and both copies returned in silence when the saved
+  /// name matched no installed app, so the tap did nothing:
+  /// - the saved app was uninstalled, or renamed by the plugin;
+  /// - Settings' "Ask me every time" stored '' rather than removing the
+  ///   setting (b045a350, 3.1.0+1390), and '' is never an app name.
+  /// Anything that is not an installed app now falls back to the chooser.
+  static Future<void> showOnMap(
+    BuildContext context,
+    String title,
+    maps.Coords coords,
+    String address,
+    ValueNotifier<bool> saveUserMapPreference,
+  ) async {
+    final String mapName = getStringPref(StringPrefsEnum.mapPreference) ?? '';
+    maps.AvailableMap? saved;
+    if (mapName.isNotEmpty) {
+      final List<maps.AvailableMap> availableMaps =
+          await maps.MapLauncher.installedMaps;
+      saved = availableMaps
+          .where((maps.AvailableMap map) => map.mapName == mapName)
+          .firstOrNull;
+      // A name that opens nothing is not a preference: forget it, so
+      // Settings says "ask each time", which is what now happens.
+      if (saved == null) {
+        await setStringPref(StringPrefsEnum.mapPreference, null);
+      }
+    }
+
+    if (saved == null) {
+      if (!context.mounted) return;
+      await openMapsSheet(
+        context,
+        title,
+        coords,
+        address,
+        saveUserMapPreference,
+      );
+      return;
+    }
+
+    // BUG in plugin - doesn't work when sending a title with Google maps
+    await saved.showMarker(
+      coords: coords,
+      title: saved.mapName.contains('Google') ? '' : title,
+      description: address,
+    );
+  }
+
   static bool isValidUrl(String? url) {
     if ((url ?? '').isEmpty) {
       return false;

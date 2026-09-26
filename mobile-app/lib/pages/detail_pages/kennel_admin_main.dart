@@ -693,46 +693,18 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                 onTap: () async {
                                   if (agg.extensions.cityLat != null &&
                                       agg.extensions.cityLon != null) {
-                                    final String? mapName = getStringPref(
-                                      StringPrefsEnum.mapPreference,
+                                    await Utilities.showOnMap(
+                                      context,
+                                      agg.kennel.kennelName,
+                                      maps.Coords(
+                                        agg.extensions.cityLat!.toDouble(),
+                                        agg.extensions.cityLon!.toDouble(),
+                                      ),
+                                      agg.kennel.kennelName,
+                                      // Pass a ValueNotifier wrapping the
+                                      // observable for the sheet callback.
+                                      _saveUserMapPreferenceNotifier,
                                     );
-                                    if (mapName == null) {
-                                      await Utilities.openMapsSheet(
-                                        context,
-                                        agg.kennel.kennelName,
-                                        maps.Coords(
-                                          agg.extensions.cityLat!.toDouble(),
-                                          agg.extensions.cityLon!.toDouble(),
-                                        ),
-                                        '',
-                                        // Pass a ValueNotifier wrapping the
-                                        // observable for the sheet callback.
-                                        _saveUserMapPreferenceNotifier,
-                                      );
-                                    } else {
-                                      final List<maps.AvailableMap>
-                                      availableMaps =
-                                          await maps.MapLauncher.installedMaps;
-                                      final maps.AvailableMap? activeMap =
-                                          availableMaps
-                                              .where(
-                                                (maps.AvailableMap map) =>
-                                                    map.mapName == mapName,
-                                              )
-                                              .firstOrNull;
-                                      if (activeMap == null) return;
-                                      await activeMap.showMarker(
-                                        coords: maps.Coords(
-                                          agg.extensions.cityLat!.toDouble(),
-                                          agg.extensions.cityLon!.toDouble(),
-                                        ),
-                                        title:
-                                            activeMap.mapName.contains('Google')
-                                            ? ''
-                                            : agg.kennel.kennelName,
-                                        description: agg.kennel.kennelName,
-                                      );
-                                    }
                                   }
                                 },
                                 child: Container(

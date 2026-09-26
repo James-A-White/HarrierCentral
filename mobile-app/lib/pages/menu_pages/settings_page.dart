@@ -172,9 +172,10 @@ class SettingsPageController extends GetxController {
     mapProvider.value = picked.mapName;
   }
 
-  /// Back to being asked every time.
+  /// Back to being asked every time. Removes the setting: storing '' made
+  /// every map pin read it as an app name, match nothing, and do nothing.
   Future<void> clearMapProvider() async {
-    await setStringPref(StringPrefsEnum.mapPreference, '');
+    await setStringPref(StringPrefsEnum.mapPreference, null);
     mapProvider.value = '';
   }
 

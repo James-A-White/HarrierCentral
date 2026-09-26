@@ -1895,30 +1895,13 @@ class RunTabs extends StatelessWidget {
 
     // use the native map provider for the selected platform
     if ((lat != null) && (lon != null)) {
-      final String? mapName = getStringPref(StringPrefsEnum.mapPreference);
-      if (mapName == null) {
-        await Utilities.openMapsSheet(
-          context,
-          address,
-          maps.Coords(lat, lon),
-          rda.event.eventName,
-          c.saveUserMapPreference,
-        );
-      } else {
-        final List<maps.AvailableMap> availableMaps =
-            await maps.MapLauncher.installedMaps;
-        final maps.AvailableMap? activeMap = availableMaps
-            .where((maps.AvailableMap map) => map.mapName == mapName)
-            .firstOrNull;
-        if (activeMap == null) return;
-
-        // BUG in plugin - doesn't work when sending a title with Google maps
-        await activeMap.showMarker(
-          coords: maps.Coords(lat, lon),
-          title: activeMap.mapName.contains('Google') ? '' : address,
-          description: address,
-        );
-      }
+      await Utilities.showOnMap(
+        context,
+        address,
+        maps.Coords(lat, lon),
+        rda.event.eventName,
+        c.saveUserMapPreference,
+      );
     } else {
       await Utilities.showAlert(
         'No location information available',
