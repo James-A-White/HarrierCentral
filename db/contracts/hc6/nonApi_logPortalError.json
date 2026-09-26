@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_logPortalError",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Inserts an HC6 portal error entry into HC.ErrorLog. Called by PortalApiHC6.LogErrorAsync when an HC6 portal SP returns Success = 0 in its error envelope. Fire-and-forget — errors from this SP are swallowed by the caller.",
   "parameters": [
     {
@@ -30,7 +30,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "ErrorLog.userId",
-      "description": "Device UUID stored as userId for audit trail. Nullable — portal auth may not always have a userId. Table column is UNIQUEIDENTIFIER NULL."
+      "description": "Despite the name, PortalApiHC6 passes the portal DEVICE id; the public-web shims pass NULL. Since 1.1.0 (2026-09-26) a value matching HC.Device.id is written to ErrorLog.deviceId and the device's HC.Device.UserId to ErrorLog.userId, so the row names the hasher. Any other value is kept as userId, as before. Name unchanged: the shim binds it by name."
     }
   ],
   "rowsets": [],
@@ -42,6 +42,11 @@
       "severity": "medium",
       "issue": "Parameter types wider than target columns — silent truncation risk",
       "detail": "@errorName is NVARCHAR(500) but HC.ErrorLog.ErrorName is NVARCHAR(250). @errorDescription is NVARCHAR(MAX) but HC.ErrorLog.ErrorDescription is NVARCHAR(2500). @procName is NVARCHAR(500) but HC.ErrorLog.ProcName is NVARCHAR(250). Values exceeding column lengths are silently truncated on insert. No runtime error is raised."
+    },
+    {
+      "severity": "low",
+      "issue": "Parameter name does not match its content",
+      "detail": "@userId carries a device id from PortalApiHC6.LogErrorAsync. Resolved inside the SP since 1.1.0 rather than renamed, because renaming breaks the shim's by-name binding."
     }
   ],
   "breakingChanges": [
