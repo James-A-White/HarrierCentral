@@ -1880,14 +1880,13 @@ class RunTabs extends StatelessWidget {
     );
   }
 
-  /// Open the run in a map app: a pin (the map's run marker) or, with
-  /// [directions], a route there (the Get me there / Get Directions button).
+  /// Open the run in a map app — what the map's run marker and the Get me
+  /// there / Get Directions button both do.
   Future<void> _launchMaps(
     BuildContext context,
     RunTabsController c,
-    RunDetailsAggregate rda, {
-    bool directions = false,
-  }) async {
+    RunDetailsAggregate rda,
+  ) async {
     final destination = _runDestination(rda);
     if (destination == null) {
       await Utilities.showAlert(
@@ -1904,12 +1903,12 @@ class RunTabs extends StatelessWidget {
       maps.Coords(destination.lat, destination.lon),
       rda.event.eventName,
       c.saveUserMapPreference,
-      directions: directions,
     );
   }
 
-  /// The button over the bottom of the run map (James, 2026-09-26): "Get me
-  /// there" on the day of the run, "Get Directions" before it, nothing on
+  /// The button over the bottom of the run map (James, 2026-09-26), which
+  /// does what tapping the run's pin does: "Get me there" on the day of the
+  /// run, "Get Directions" before it, nothing on
   /// the day after or later, and nothing once the run has PackTrack data —
   /// the synced runner count, or tracks the map has already loaded (the
   /// count can lag a live run by a sync). Nothing either when the run has
@@ -1929,7 +1928,8 @@ class RunTabs extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return ElevatedButton.icon(
-      onPressed: () => _launchMaps(context, c, futureRun, directions: true),
+      // The same as tapping the run's pin (James, 2026-09-26).
+      onPressed: () => _launchMaps(context, c, futureRun),
       icon: const Icon(Icons.directions, color: Colors.white),
       label: Text(
         kind.label,
