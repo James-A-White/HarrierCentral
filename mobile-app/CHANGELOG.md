@@ -1,3 +1,24 @@
+## 3.1.8+1413 (2026-09-26)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### Fixes
+- **Syncs no longer skip silently.** A 3-second internet probe that missed
+  (easy while the radio wakes) made every sync step return without asking the
+  server, and the app still counted the sync as done — so a kennel's new run
+  price could stay unseen across several launches (LH3, £0.00 instead of £2).
+  Syncs now try the server, retry a failed step when the connection is back,
+  and only count as done when every step worked.
+- **Kennel changes arrive on refresh.** Pulling to refresh or reopening the app
+  now picks up changed kennel settings (prices, card payments), not only runs.
+### Improvements
+- **One full data reload after updating**, to replace anything a skipped sync
+  left stale. Expect "Filling Your Mug" once.
+- **No payment buttons when there is nothing to pay.** At check-in, the cash /
+  free / transfer / credit buttons appear only when the hasher owes a fee or
+  already has a payment to correct.
+- **Sync steps are recorded in the diagnostic log**, so a sync problem can be
+  seen from the server.
+
 ## 3.1.8+1412 (2026-09-26)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version.

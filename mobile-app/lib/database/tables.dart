@@ -414,6 +414,36 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 543 — a +10 jump that forces a WIPE AND RELOAD (James,
+
+    // 2026-09-26). Syncs could skip silently on a failed 3-second reachability
+
+    // probe (c861b9c6), so any phone may hold stale rows; +10 trips the boot
+
+    // check (installedDbVersion + 9) < DB_VERSION, and the phone rebuilds its
+
+    // database from the server. A device within 9 of this would migrate in
+
+    // place instead — none exists (the highest shipped is 533) — so this step
+
+    // only has to be harmless; it keeps the list's top version = DB_VERSION.
+
+    // 3.2 went 552 → 562 in the same change to keep the trains 20 apart.
+
+    MigrationsModel(
+
+      dbVersion: 543,
+
+      migrationText: '''
+
+        DROP TABLE IF EXISTS hc_migration_543_noop;
+
+      ''',
+
+      appliedAtInt: 0,
+
+    ),
+
     // MIGRATION 533 — a kennel's card payment app and merchant code
 
     // (E8.F7.S1/S2). The UPDATE zeroes the kennels' sync watermark: the
@@ -424,7 +454,7 @@ class Tables {
 
     // would stay empty for good. ~400 rows, once. The 3.2 train needs the same
 
-    // ALTERs under 553 when dev is merged into it.
+    // ALTERs when dev is merged into it (3.2 is at 562 since 2026-09-26).
 
     MigrationsModel(
 
