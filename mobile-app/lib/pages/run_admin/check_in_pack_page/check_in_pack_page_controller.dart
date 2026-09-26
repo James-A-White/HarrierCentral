@@ -913,7 +913,6 @@ class CheckInPackController extends GetxController
         if (runNumber.isNotEmpty) 'run $runNumber',
         member.nameForDisplay,
       ].where((String p) => p.trim().isNotEmpty).join(' · '),
-      merchantCode: kennel.cardPaymentMerchantCode,
     );
     // The marker changed this hasher's row to "not paid · card".
     await refreshPackListFromTables(false);

@@ -22,10 +22,11 @@ import 'package:harrier_central/imports.dart';
 /// Both answers have ids derived from the marker's, so SumUp returning twice
 /// is a server-side replay that writes nothing.
 ///
-/// What this CANNOT know: which SumUp account took the money. SumUp's
-/// callback carries no merchant code, so the club's code is shown before the
-/// hand-off and the provider export (E8.F7.S3) is where a payment taken on a
-/// personal account is caught.
+/// What this cannot know: which SumUp account took the money — SumUp's
+/// callback carries no merchant code. The app assumes the SumUp app on the
+/// Hash Cash's phone is signed in to the club's account (James, 2026-09-26:
+/// "a very small risk at this point"); the provider export (E8.F7.S3) is
+/// where a payment on another account would show up.
 class CardPaymentHandoff {
   CardPaymentHandoff._();
 
@@ -134,7 +135,6 @@ class CardPaymentHandoff {
     required String amountLabel,
     required String payerName,
     required String title,
-    String? merchantCode,
   }) async {
     if (SUMUP_AFFILIATE_KEY.isEmpty) return false;
 
@@ -149,16 +149,6 @@ class CardPaymentHandoff {
       return false;
     }
 
-    final String code = (merchantCode ?? '').trim();
-    final bool? go = await Utilities.showAlert(
-      'Take $amountLabel by card?',
-      '$payerName pays $amountLabel with SumUp.\n\n'
-          '${code.isEmpty ? 'Check the SumUp app is signed in to the CLUB\'s account.' : 'Check the SumUp app is signed in to the club\'s account, $code.'} '
-          'A payment taken on a personal account goes to that account.',
-      'Open SumUp',
-      showCancelButton: true,
-    );
-    if (go != true) return false;
 
     final String markerId = paid.clientPaymentId.toLowerCase();
     final Map<String, dynamic> paidJson = paid.toJson()

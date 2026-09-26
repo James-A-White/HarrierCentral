@@ -111,9 +111,8 @@ extension KennelHashCashControlsExtension on KennelPageFormController {
             'under Profile.\n\n'
             'Hash Cash\'s phone must be signed in to this SumUp account. '
             'Payments are handed to the SumUp app, which uses its Tap to Pay '
-            'or its paired card reader. SumUp does not tell Harrier Central '
-            'which account took a payment, so the app shows this code before '
-            'every card payment as a reminder.',
+            'or its paired card reader. The code is kept to match the club\'s '
+            'SumUp exports against Harrier Central\'s books.',
       ),
       editedFieldValue: editedData.value.cardPaymentMerchantCode,
       originalFieldValue: originalData.cardPaymentMerchantCode,
