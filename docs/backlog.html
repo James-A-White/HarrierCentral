@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>17</b> epics</div>
     <div><b>84</b> features</div>
-    <div><b>319</b> stories</div>
+    <div><b>320</b> stories</div>
     <div><b>49</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -324,7 +324,7 @@
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
   <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 37 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 20 stories</span></a>
-  <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 16 stories</span></a>
+  <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">8 features · 35 stories</span></a>
   <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 52 stories</span></a>
   <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 17 stories</span></a>
@@ -776,6 +776,7 @@
       <li class="story"><span class="s-id">E7.F1.S4</span><span class="s-text">As a <em>Religious Advisor</em>, I want a live count of drinks poured so that the beer meister knows where they stand.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E7.F1.S5</span><span class="s-text">As a <em>Hasher</em>, I want a past run's down downs — marked done or not — on its detail page, and as a manager a way into the charges page from there, so that a circle nobody marked done on the night is not lost. Before this, six of the eight runs with charges showed none.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E7.F1.S6</span><span class="s-text">As a <em>Hasher</em>, I want to enter a charge whether or not I am checked in so that a nomination from the circle is never refused. <code>hcapp_addDownDown</code> 1.1.0 drops the attendance check; where the kennel (or the run) lets hashers set their own attendance, entering a charge checks the caller in At Hash, otherwise their attendance is left as it was (James, 2026-09-12). Eight refusals at one German Nash Hash run on 2026-09-05 were RSVP'd members who had not checked in. SP deployed 2026-09-12.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E7.F1.S7</span><span class="s-text">As a <em>Hash Cash</em> (or whoever runs the circle), I want to change who a charge is against — including a name typed for someone not in the app — and to add a charge straight from the Down Downs list, so that a mistyped name or a wrong hasher is fixed without cancelling and re-entering the charge (James, 2026-09-26, LH3 #2852). Edit Down Down gains the Add page's people picker (typed names as chips; the run's hashers ticked when charged, and a charged hasher not on the attendee list added so a save cannot drop them); <code>hcapp_updateDownDown</code> 1.1.0 takes optional <code>@hasherIds</code> / <code>@externalNames</code> (NULL = unchanged, so older apps are unaffected) and refuses an edit that leaves nobody charged. The Down Downs list has an <em>Add charge</em> button. <em>Built 2026-09-26 on dev</em> — ⚠ Known gap: SP not yet deployed (must precede the app build that sends the new keys); not yet seen on a device; a hasher newly added by an edit gets no push.</span><span class="chip c-build">Building</span></li>
     </ul>
   </div>
   <div class="feature">
