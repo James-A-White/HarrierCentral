@@ -60,6 +60,18 @@ class PaymentSnackBar extends SnackBar {
     return text != null && DateTime.tryParse(text) != null;
   }
 
+  /// The run-fee buttons (cash, free, other, transfer, not paid, credit)
+  /// only when there is a fee to take (James, 2026-09-26: "if there is no fee
+  /// we don't really need payment buttons") — or a payment already on the
+  /// row, which must stay correctable, e.g. one recorded before the price
+  /// changed. Multi-select always shows them: the fee differs per hasher.
+  /// Membership, haberdashery and card have their own rules below.
+  bool get _showRunPayments =>
+      multiSelectEnabled ||
+      amountOwed > 0 ||
+      (eventAggregate.event.eventPriceForExtras ?? 0) > 0 ||
+      (packMember.isPaid ?? 0) != 0;
+
   @override
   Duration get duration => const Duration(seconds: 30);
 
@@ -100,8 +112,7 @@ class PaymentSnackBar extends SnackBar {
             minFontSize: 12.0,
             style: ts_titleCondensedVeryLarge,
           ),
-          (!canAttend ||
-                  multiSelectEnabled)
+          (!canAttend || multiSelectEnabled)
               ? Container()
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,8 +275,7 @@ class PaymentSnackBar extends SnackBar {
                     ),
                   ],
                 ),
-          (!canAttend ||
-                  multiSelectEnabled)
+          (!canAttend || multiSelectEnabled)
               ? Container()
               : Padding(
                   padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
@@ -408,89 +418,11 @@ class PaymentSnackBar extends SnackBar {
               ? Container()
               : Column(
                   children: <Widget>[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              IconButton(
-                                icon: Image.asset(
-                                  'images/icons/payment_type_3.png',
-                                  height: 30.0,
-                                  width: 30.0,
-                                  color:
-                                      packMember.paymentType ==
-                                          paymentCash.value
-                                      ? Colors.yellow
-                                      : Colors.white,
-                                ),
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 30.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () async {
-                                  await onPaidCallback(
-                                    packMember,
-                                    paymentCash.value,
-                                  );
-                                },
-                              ),
-                              Text(
-                                (eventAggregate.event.eventPriceForExtras ??
-                                            0) !=
-                                        0
-                                    ? 'Paid cash'
-                                    : 'Paid\r\n${formatMoney(amountOwed)} cash',
-                                textAlign: TextAlign.center,
-                                style: ts_titleSmallCondensedBold.copyWith(
-                                  height: 0.9,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              IconButton(
-                                icon: Image.asset(
-                                  'images/icons/payment_type_2.png',
-                                  height: 30.0,
-                                  width: 30.0,
-                                  color:
-                                      packMember.paymentType ==
-                                          paymentFreeRun.value
-                                      ? Colors.yellow
-                                      : Colors.white,
-                                ),
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 30.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () async {
-                                  await onPaidCallback(
-                                    packMember,
-                                    paymentFreeRun.value,
-                                  );
-                                },
-                              ),
-                              Text(
-                                'Free run',
-                                textAlign: TextAlign.center,
-                                style: ts_titleSmallCondensedBold.copyWith(
-                                  height: 0.7,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (!multiSelectEnabled)
+                    if (_showRunPayments) ...<Widget>[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
                           Expanded(
                             flex: 1,
                             child: Column(
@@ -498,102 +430,15 @@ class PaymentSnackBar extends SnackBar {
                               children: <Widget>[
                                 IconButton(
                                   icon: Image.asset(
-                                    'images/icons/payment_type_5.png',
+                                    'images/icons/payment_type_3.png',
                                     height: 30.0,
                                     width: 30.0,
                                     color:
-                                        ((packMember.paymentType ==
-                                                paymentCashOtherAmount.value) ||
-                                            (packMember.paymentType ==
-                                                paymentBankTransferOtherAmount
-                                                    .value))
+                                        packMember.paymentType ==
+                                            paymentCash.value
                                         ? Colors.yellow
                                         : Colors.white,
                                   ),
-                                  //tooltip: 'Select to follow a Kennel',
-                                  iconSize: 30.0,
-                                  alignment: Alignment.topCenter,
-                                  splashColor: Colors.greenAccent,
-                                  onPressed: () async {
-                                    await _payOther(packMember, context);
-                                  },
-                                ),
-                                Text(
-                                  'Paid other${((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value)) ? '\r\n(${formatMoney(packMember.creditAmount)}${packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)'}' : ''}',
-                                  textAlign: TextAlign.center,
-                                  style: ts_titleSmallCondensedBold.copyWith(
-                                    height: 0.9,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(width: 100, height: 10),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              IconButton(
-                                icon: Image.asset(
-                                  'images/icons/payment_type_4.png',
-                                  height: 30.0,
-                                  width: 30.0,
-                                  color:
-                                      packMember.paymentType ==
-                                          paymentBankTransfer.value
-                                      ? Colors.yellow
-                                      : Colors.white,
-                                ),
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 30.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () async {
-                                  await onPaidCallback(
-                                    packMember,
-                                    paymentBankTransfer.value,
-                                  );
-                                },
-                              ),
-                              Text(
-                                (eventAggregate.event.eventPriceForExtras ??
-                                            0) !=
-                                        0
-                                    ? 'Paid\r\nbank transfer'
-                                    : 'Paid ${formatMoney(amountOwed)}\r\nbank transfer',
-                                textAlign: TextAlign.center,
-                                style: ts_titleSmallCondensedBold.copyWith(
-                                  height: 0.9,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (!multiSelectEnabled)
-                          Expanded(
-                            flex: 1,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                IconButton(
-                                  icon: Image.asset(
-                                    'images/icons/payment_type_1.png',
-                                    height: 30.0,
-                                    width: 30.0,
-                                    color:
-                                        ((packMember.isPaid == 0) ||
-                                            (packMember.paymentType ==
-                                                paymentNotPaid.value))
-                                        ? Colors.yellow
-                                        : Colors.white,
-                                  ),
-
                                   //tooltip: 'Select to follow a Kennel',
                                   iconSize: 30.0,
                                   alignment: Alignment.topCenter,
@@ -601,12 +446,16 @@ class PaymentSnackBar extends SnackBar {
                                   onPressed: () async {
                                     await onPaidCallback(
                                       packMember,
-                                      paymentNotPaid.value,
+                                      paymentCash.value,
                                     );
                                   },
                                 ),
                                 Text(
-                                  'Not paid',
+                                  (eventAggregate.event.eventPriceForExtras ??
+                                              0) !=
+                                          0
+                                      ? 'Paid cash'
+                                      : 'Paid\r\n${formatMoney(amountOwed)} cash',
                                   textAlign: TextAlign.center,
                                   style: ts_titleSmallCondensedBold.copyWith(
                                     height: 0.9,
@@ -615,60 +464,224 @@ class PaymentSnackBar extends SnackBar {
                               ],
                             ),
                           ),
-                        (packMember.isMember == 0)
-                            ? Container()
-                            : Expanded(
-                                flex: 1,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: <Widget>[
-                                    IconButton(
-                                      icon: Image.asset(
-                                        'images/icons/payment_type_6.png',
-                                        height: 30.0,
-                                        width: 30.0,
-                                        color:
-                                            packMember.paymentType ==
-                                                paymentHashCredit.value
-                                            ? Colors.yellow
-                                            : Colors.white,
-                                      ),
-                                      //tooltip: 'Select to follow a Kennel',
-                                      iconSize: 30.0,
-                                      alignment: Alignment.topCenter,
-                                      splashColor: Colors.greenAccent,
-                                      onPressed: () async {
-                                        await onPaidCallback(
-                                          packMember,
-                                          paymentHashCredit.value,
-                                        );
-                                      },
-                                    ),
-                                    if (multiSelectEnabled)
-                                      Text(
-                                        'Paid credit',
-                                        textAlign: TextAlign.center,
-                                        style: ts_titleSmallCondensedBold
-                                            .copyWith(height: 0.9),
-                                      ),
-                                    if (!multiSelectEnabled)
-                                      Text(
-                                        (eventAggregate
-                                                        .event
-                                                        .eventPriceForExtras ??
-                                                    0) !=
-                                                0
-                                            ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})'
-                                            : 'Credit ${formatMoney(amountOwed)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})',
-                                        textAlign: TextAlign.center,
-                                        style: ts_titleSmallCondensedBold
-                                            .copyWith(height: 0.9),
-                                      ),
-                                  ],
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                IconButton(
+                                  icon: Image.asset(
+                                    'images/icons/payment_type_2.png',
+                                    height: 30.0,
+                                    width: 30.0,
+                                    color:
+                                        packMember.paymentType ==
+                                            paymentFreeRun.value
+                                        ? Colors.yellow
+                                        : Colors.white,
+                                  ),
+                                  //tooltip: 'Select to follow a Kennel',
+                                  iconSize: 30.0,
+                                  alignment: Alignment.topCenter,
+                                  splashColor: Colors.greenAccent,
+                                  onPressed: () async {
+                                    await onPaidCallback(
+                                      packMember,
+                                      paymentFreeRun.value,
+                                    );
+                                  },
                                 ),
+                                Text(
+                                  'Free run',
+                                  textAlign: TextAlign.center,
+                                  style: ts_titleSmallCondensedBold.copyWith(
+                                    height: 0.7,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (!multiSelectEnabled)
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  IconButton(
+                                    icon: Image.asset(
+                                      'images/icons/payment_type_5.png',
+                                      height: 30.0,
+                                      width: 30.0,
+                                      color:
+                                          ((packMember.paymentType ==
+                                                  paymentCashOtherAmount
+                                                      .value) ||
+                                              (packMember.paymentType ==
+                                                  paymentBankTransferOtherAmount
+                                                      .value))
+                                          ? Colors.yellow
+                                          : Colors.white,
+                                    ),
+                                    //tooltip: 'Select to follow a Kennel',
+                                    iconSize: 30.0,
+                                    alignment: Alignment.topCenter,
+                                    splashColor: Colors.greenAccent,
+                                    onPressed: () async {
+                                      await _payOther(packMember, context);
+                                    },
+                                  ),
+                                  Text(
+                                    'Paid other${((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value)) ? '\r\n(${formatMoney(packMember.creditAmount)}${packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)'}' : ''}',
+                                    textAlign: TextAlign.center,
+                                    style: ts_titleSmallCondensedBold.copyWith(
+                                      height: 0.9,
+                                    ),
+                                  ),
+                                ],
                               ),
-                      ],
-                    ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(width: 100, height: 10),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                IconButton(
+                                  icon: Image.asset(
+                                    'images/icons/payment_type_4.png',
+                                    height: 30.0,
+                                    width: 30.0,
+                                    color:
+                                        packMember.paymentType ==
+                                            paymentBankTransfer.value
+                                        ? Colors.yellow
+                                        : Colors.white,
+                                  ),
+                                  //tooltip: 'Select to follow a Kennel',
+                                  iconSize: 30.0,
+                                  alignment: Alignment.topCenter,
+                                  splashColor: Colors.greenAccent,
+                                  onPressed: () async {
+                                    await onPaidCallback(
+                                      packMember,
+                                      paymentBankTransfer.value,
+                                    );
+                                  },
+                                ),
+                                Text(
+                                  (eventAggregate.event.eventPriceForExtras ??
+                                              0) !=
+                                          0
+                                      ? 'Paid\r\nbank transfer'
+                                      : 'Paid ${formatMoney(amountOwed)}\r\nbank transfer',
+                                  textAlign: TextAlign.center,
+                                  style: ts_titleSmallCondensedBold.copyWith(
+                                    height: 0.9,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (!multiSelectEnabled)
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  IconButton(
+                                    icon: Image.asset(
+                                      'images/icons/payment_type_1.png',
+                                      height: 30.0,
+                                      width: 30.0,
+                                      color:
+                                          ((packMember.isPaid == 0) ||
+                                              (packMember.paymentType ==
+                                                  paymentNotPaid.value))
+                                          ? Colors.yellow
+                                          : Colors.white,
+                                    ),
+
+                                    //tooltip: 'Select to follow a Kennel',
+                                    iconSize: 30.0,
+                                    alignment: Alignment.topCenter,
+                                    splashColor: Colors.greenAccent,
+                                    onPressed: () async {
+                                      await onPaidCallback(
+                                        packMember,
+                                        paymentNotPaid.value,
+                                      );
+                                    },
+                                  ),
+                                  Text(
+                                    'Not paid',
+                                    textAlign: TextAlign.center,
+                                    style: ts_titleSmallCondensedBold.copyWith(
+                                      height: 0.9,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          (packMember.isMember == 0)
+                              ? Container()
+                              : Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      IconButton(
+                                        icon: Image.asset(
+                                          'images/icons/payment_type_6.png',
+                                          height: 30.0,
+                                          width: 30.0,
+                                          color:
+                                              packMember.paymentType ==
+                                                  paymentHashCredit.value
+                                              ? Colors.yellow
+                                              : Colors.white,
+                                        ),
+                                        //tooltip: 'Select to follow a Kennel',
+                                        iconSize: 30.0,
+                                        alignment: Alignment.topCenter,
+                                        splashColor: Colors.greenAccent,
+                                        onPressed: () async {
+                                          await onPaidCallback(
+                                            packMember,
+                                            paymentHashCredit.value,
+                                          );
+                                        },
+                                      ),
+                                      if (multiSelectEnabled)
+                                        Text(
+                                          'Paid credit',
+                                          textAlign: TextAlign.center,
+                                          style: ts_titleSmallCondensedBold
+                                              .copyWith(height: 0.9),
+                                        ),
+                                      if (!multiSelectEnabled)
+                                        Text(
+                                          (eventAggregate
+                                                          .event
+                                                          .eventPriceForExtras ??
+                                                      0) !=
+                                                  0
+                                              ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})'
+                                              : 'Credit ${formatMoney(amountOwed)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})',
+                                          textAlign: TextAlign.center,
+                                          style: ts_titleSmallCondensedBold
+                                              .copyWith(height: 0.9),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                        ],
+                      ),
+                    ],
                     if (onCardPayment != null && !multiSelectEnabled)
                       Padding(
                         padding: const EdgeInsets.only(top: 10.0),
