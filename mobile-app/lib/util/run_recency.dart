@@ -67,3 +67,26 @@ RunDirections? runDirectionsFor({
   if (today == runDay) return RunDirections.getMeThere;
   return null;
 }
+
+/// The image a run's card shows (James, 2026-09-26: option B).
+///
+/// Once the run has STARTED, a cover photo — a photo chosen from the run's
+/// own pictures — replaces the run image: the run image advertised the run,
+/// the cover shows what happened. Before the start, the run image. A run with
+/// neither has no card image. Until 2026-09-26 the cover only stood in for a
+/// MISSING run image on a past run, so LH3 #2852 kept its sheep after a cover
+/// was chosen.
+///
+/// Wall clock against wall clock, as [isRunPast]: [runStart] is
+/// `eventStartDatetime`, synced without an offset.
+String? runCardImage({
+  required String? eventImage,
+  required String? coverPhotoUrl,
+  required DateTime runStart,
+  required DateTime now,
+}) {
+  final bool hasCover = (coverPhotoUrl ?? '').isNotEmpty;
+  if (hasCover && !now.isBefore(runStart)) return coverPhotoUrl;
+  if ((eventImage ?? '').isNotEmpty) return eventImage;
+  return null;
+}

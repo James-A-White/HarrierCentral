@@ -233,15 +233,15 @@ class RunListItem extends StatelessWidget {
   final bool isPastRun;
   final RunListItemController rliController;
 
-  /// Thumbnail for the list row: the run's own image, or — for a PAST run with no
-  /// image — its cover photo (a photo from the run itself). Null → no thumbnail.
-  String? get _listImageUrl {
-    final img = futureRun.event.eventImage;
-    if (img != null && img.isNotEmpty) return img;
-    final cover = futureRun.event.eventCoverPhotoUrl;
-    if (isPastRun && cover != null && cover.isNotEmpty) return cover;
-    return null;
-  }
+  /// Thumbnail for the list row: once the run has started, its cover photo
+  /// (a photo from the run itself) when one is chosen; otherwise the run's own
+  /// image. Null → no thumbnail. See [runCardImage].
+  String? get _listImageUrl => runCardImage(
+    eventImage: futureRun.event.eventImage,
+    coverPhotoUrl: futureRun.event.eventCoverPhotoUrl,
+    runStart: futureRun.event.eventStartDatetime,
+    now: DateTime.now(),
+  );
 
   @override
   Widget build(BuildContext context) {
