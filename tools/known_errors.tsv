@@ -10,7 +10,7 @@ api hcportal_confirmAuthentication HC6 Portal Error: confirmAuthentication — A
 api hcportal_getLandingPageData HC6 Portal Error: getLandingPageData — Authentication failed	noise	portal session expired / clock
 api hcportal_logClientError HC6 Portal Error: logClientError — Unknown device	fixed:2026-09-24	pre-sign-in reports refused; portal 2.0.85
 api publicWeb_getSong HC6 Public Web Error: getSong — Error converting data type nvarchar to uniqueidentifier.	fixed:web 0.21.74	non-GUID song id from a URL returns null → 404 (d37e8868)
-app ASYNC "Database" not found. You need to call "Get.put(Database())" or "Get.lazyPut(()=>Database())" @ globals.dart database	open	Get.find<Database> before boot registered it; last 08-31
+app ASYNC "Database" not found. You need to call "Get.put(Database())" or "Get.lazyPut(()=>Database())" @ globals.dart database	fixed:1328	not seen since 08-31, never on a version-stamped build (1328+); no fix commit traced — presumed fixed, REGRESSED if it recurs. Was: Get.find<Database> before boot registered it; last 08-31
 app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController._fetchDelta	fixed:1386	write to a disposed chat stream (14 Sep)
 app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController.handleSendPressed	fixed:1386	write to a disposed chat stream (14 Sep)
 app ASYNC Bad state: No element @ app_boot_service.dart AppBootService._handleExistingUser	open	'No element' at boot, once on 1327 (09-21)
@@ -25,13 +25,13 @@ app ASYNC PlatformException(multiple_request, Cancelled by a second request, nul
 app ASYNC RangeError (length): Invalid value: Only valid value is N: N @ check_in_pack_page_controller.dart CheckInPackController._processPayment	fixed:1397	stale filteredList[index] after snackbar tap; tapped row passed through (f18479c3)
 app ASYNC RangeError (length): Invalid value: Valid value range is empty: N @ check_in_pack_page_controller.dart CheckInPackController.updateRsvpState	fixed:1386	empty SP reply read at [0] → firstRow (17 Sep)
 app ASYNC RangeError (length): Invalid value: Valid value range is empty: N @ run_tabs.dart RunTabsState._setRsvpState	fixed:1386	empty SP reply read at [0]; firstRow in run_tabs (f7cf51cb, 18 Sep)
-app ASYNC setState() or markNeedsBuild() called during build. @ package:get ObxState._updateTree	open	Obx rebuilding during build; 08-28, pre-3.1
+app ASYNC setState() or markNeedsBuild() called during build. @ package:get ObxState._updateTree	fixed:1328	not seen since 08-28, never on a version-stamped build (1328+); no fix commit traced — presumed fixed, REGRESSED if it recurs. Was: Obx rebuilding during build; 08-28, pre-3.1
 app ASYNC type 'EnumFollowType' is not a subtype of type 'EnumEmailAlertState' @ run_list_item.dart RunListItem._showEmailAlertPopup	fixed:1325	04cd0c7a
 app ASYNC type 'EnumFollowType' is not a subtype of type 'EnumEventFilterType' in type cast @ filter_events_page.dart AddEditEventsPageState._listView	fixed:1346	filter_events_page cast (d19f2f3e)
 app ASYNC type 'EnumFollowType' is not a subtype of type 'int' @ user_event_list_item.dart UserEventListItem._showRunAttendencePopup	fixed:1325	04cd0c7a
-app ASYNC type 'Null' is not a subtype of type 'String' @ notification_service.dart NotificationService._dispatchMessageToControllers	open	push payload missing a field; last 08-31
+app ASYNC type 'Null' is not a subtype of type 'String' @ notification_service.dart NotificationService._dispatchMessageToControllers	fixed:1328	not seen since 08-31, never on a version-stamped build (1328+); no fix commit traced — presumed fixed, REGRESSED if it recurs. Was: push payload missing a field; last 08-31
 app FLUTTER "LocationService" not found. You need to call "Get.put(LocationService())" or "Get.lazyPut(()=>LocationService())" @ run_tabs.dart RunTabsState._buildMapView	fixed:1325	04cd0c7a
-app FLUTTER Bad state: Cannot add new events after calling close @ package:flutter_map MapControllerImpl._emitMapEvent	open	ROOT CAUSE 2026-09-25: a notification tap does Get.until('/main') then Get.to(RunTabs) — two pages for the same run share controllers tagged by eventId (RunTrackerMapController, runtabs-<id>); the popped page's dispose deletes them under the new page. Same bug as the _DragAnimation.parent row
+app FLUTTER Bad state: Cannot add new events after calling close @ package:flutter_map MapControllerImpl._emitMapEvent	fixed:1406	fb4247d1 (each run page owns its controllers), first in 3.1.7+1406. Was: ROOT CAUSE 2026-09-25: a notification tap does Get.until('/main') then Get.to(RunTabs) — two pages for the same run share controllers tagged by eventId (RunTrackerMapController, runtabs-<id>); the popped page's dispose deletes them under the new page. Same bug as the _DragAnimation.parent row
 app FLUTTER FileSystemException: Cannot open file, path = '/var/mobile/Containers/Data/Application/<id>/Library/Caches/libCachedImageData/<id>.png' (OS  @ package:cached_network_image ImageLoader._load	noise	cached image file evicted under us
 app FLUTTER Invalid argument(s): Unsupported scheme 'bundle' in URI bundle://c-N @ package:http IOClient.send	open	a bundle:// avatar URL survived the 2026-07-18 blob migration in a local row
 app FLUTTER Null check operator used on a null value @ flutter RenderSliverMultiBoxAdaptor.childMainAxisPosition	open	framework null-check in a sliver list, 61× one device on 1327 (09-12); suspect stale itemCount (memory getbuilder-stale-itemcount)
@@ -40,7 +40,7 @@ app FLUTTER PathNotFoundException: Cannot open file, path = '/data/user/N/com.ha
 app FLUTTER PlatformException(error, No active stream to cancel, null, null) @ flutter StandardMethodCodec.decodeEnvelope	noise	geolocator cancel after the stream already ended
 app FLUTTER PlatformException(error, Service.startForeground() not allowed due to mAllowStartForeground false: service com.harriercentral.app/com.basefl @ flutter StandardMethodCodec.decodeEnvelope	open	Android 12+ refuses geolocator foreground service started from background
 app FLUTTER PlatformException(error, Service.startForeground() not allowed: service com.harriercentral.app/com.baseflow.geolocator.GeolocatorLocationSer @ flutter StandardMethodCodec.decodeEnvelope	open	Android 12+ refuses geolocator foreground service started from background
-app FLUTTER There are multiple heroes that share the same tag within a subtree. @ flutter Hero._allHeroesFor.inviteHero	open	duplicate Hero tag; once, 08-29
+app FLUTTER There are multiple heroes that share the same tag within a subtree. @ flutter Hero._allHeroesFor.inviteHero	fixed:1328	not seen since 08-29, never on a version-stamped build (1328+); no fix commit traced — presumed fixed, REGRESSED if it recurs. Was: duplicate Hero tag; once, 08-29
 app FLUTTER [Get] the improper use of a GetX has been detected. @ package:get RxInterface.notifyChildren	fixed:1399	map tab Obx at boot (fixed 1396); REGRESSED 1397: run-history title Obx read c.kennel only behind ?? — fixed next build
 app HTTP 400 approveLogin	noise	an SP said no on purpose; its reason is in the sp … row
 app HTTP 400 authorizeDevice	noise	an SP said no on purpose; its reason is in the sp … row
@@ -106,7 +106,7 @@ web global-error Cannot use 'in' operator to search for '_leaflet_id' in null	fi
 web global-error Failed to load chunk /_next/static/chunks/08phz.1yujzg7.js from module N	noise	visitor kept a page open across a deploy
 web leaflet-guard Leaflet teardown guard: addLayer called with no layer (map has no renderer)	fixed:web 0.21.72	Leaflet teardown guard
 web packtrack-client/run-photos Failed to fetch	noise	visitor's network
-app FLUTTER Null check operator used on a null value @ flutter _DragAnimation.parent	open	TabController disposed under a live TabBar — the shared-controller bug in the flutter_map row (Kilty, 1401, 2026-09-25 06:22, after a replayed notification tap)
+app FLUTTER Null check operator used on a null value @ flutter _DragAnimation.parent	fixed:1406	fb4247d1, first in 3.1.7+1406. Was: TabController disposed under a live TabBar — the shared-controller bug in the flutter_map row (Kilty, 1401, 2026-09-25 06:22, after a replayed notification tap)
 sp hcapp_getEventBadgeCount Device signed out	noise	a device signed out from another session (E9.F7.S19) keeps polling once
 web app-error Failed to load chunk /_next/static/chunks/0xb8tpmid6q.x.js from module N	noise	visitor kept a page open across a deploy
 app FLUTTER A RenderFlex overflowed by N pixels on the right.	open	small-screen sweep 2026-09-25 (Opee emulators, 360 dp, 1.5x text) on 1406/1407; several fixed same day (07d9cedd, 8030d8b4) — check the screen from the breadcrumbs when it fires on 1408+
