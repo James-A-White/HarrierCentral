@@ -175,6 +175,11 @@ BEGIN
         -- invite link for joining. 1 = WhatsApp, the default for every kennel.
         COALESCE(k.DefaultMessagingPlatform, 1)                             AS defaultMessagingPlatform,
         k.MessagingGroupInviteUrl                                           AS messagingGroupInviteUrl,
+        -- Card payments (E8.F7.S1/S2): which card app the Hash Cash hands
+        -- off to ('sumup'), and the club's merchant code to show before it.
+        -- Needs 2026-09-22_kennel_payment_provider.sql to have run.
+        k.CardPaymentProvider                                               AS cardPaymentProvider,
+        k.CardPaymentMerchantCode                                           AS cardPaymentMerchantCode,
         COALESCE(k.KennelMismanagementTeam, '')                             AS kennelMismanagementTeam,
         k.DefaultEventCurrencyType                                          AS defaultEventCurrencyType,
         k.IntegrationType                                                   AS integrationType,

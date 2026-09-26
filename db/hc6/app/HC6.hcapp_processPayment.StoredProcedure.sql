@@ -122,6 +122,14 @@ AS
 --       amount variants map to base types), no extras, and checks the payer
 --       in (attendance floor @minimumAttendenceValue, default 20). adHocData
 --       gains runFeeAmount + runFeePaymentType (additive).
+--   (3) Card hand-off marker (2026-09-26, E8.F7.S1): paymentType 1 with a
+--       @paymentProvider and a @clientPaymentId, on a run fee, cancels as
+--       "not paid" always did and then INSERTS a marker row (type 1,
+--       credit 0, debit 0, provider lowercased, id = clientPaymentId) so a
+--       card payment handed to the kennel's SumUp app is visible before the
+--       phone leaves. The outcome arrives as an ordinary type 3 (paid) or
+--       type 1 (not paid, no provider), which replace it by the existing
+--       paths. Type 1 WITHOUT a provider is unchanged.
 -- HC5 Source: HC5.hcapp_processPayment
 -- Breaking Changes:
 --   TRY/CATCH and transaction added (HC5 had neither).
@@ -629,6 +637,64 @@ BEGIN TRY
                 updatedAt          = GETDATE()
             WHERE CancelledDate IS NULL AND HasherEventMapId = @hasherEventMapId
               AND ProductType = @productType;
+        END
+
+        -- ---------------------------------------------------------------
+        -- paymentType = 1 WITH a provider: card hand-off marker
+        -- (E8.F7.S1, 2026-09-26). Written BEFORE the phone hands the
+        -- amount to the kennel's card app (SumUp), because once the app
+        -- leaves it may never hear back. The row is honest on every
+        -- client: PaymentType 1 reads "not paid", and Credit = Debit = 0
+        -- so no balance moves. Its id is the clientPaymentId, sent to the
+        -- provider as its foreign transaction id.
+        --   success → the phone sends an ordinary paymentType 3 with the
+        --             same provider; the insert path below cancels this
+        --             marker and records the money.
+        --   failure → the phone sends an ordinary paymentType 1 with no
+        --             provider; the branch above cancels this marker.
+        --   no word → the marker stays: "not paid, card via <provider>",
+        --             settled by the Hash Cash with the usual buttons.
+        -- Run fees only for now; any existing active run payment was
+        -- cancelled just above, as "not paid" always does.
+        -- ---------------------------------------------------------------
+        IF (@paymentType = 1 AND @productType = 1
+            AND LEN(COALESCE(@paymentProvider, N'')) > 0
+            AND @clientPaymentId IS NOT NULL)
+        BEGIN
+            -- PaymentReference has an UNFILTERED unique index, so the marker
+            -- needs a reference of its own, generated as the paid path does.
+            DECLARE @markerRefCount INT = 1;
+            IF (@paymentReference IS NULL)
+                SET @paymentReference = 'HC:' + HC.NUMBER_TO_STR_BASE(36, (RAND() * (2147483647 - 60466177)) + 60466176);
+            WHILE (@markerRefCount > 0)
+            BEGIN
+                SELECT @markerRefCount = COUNT(*) FROM HC.Payment WHERE PaymentReference = @paymentReference;
+                IF (@markerRefCount > 0)
+                    SET @paymentReference = LEFT(@paymentReference, 3) + HC.NUMBER_TO_STR_BASE(36, (RAND() * (2147483647 - 60466177)) + 60466176);
+            END
+
+            INSERT HC.Payment
+                ([id], [KennelId], [UserId], [EventId], [HasherEventMapId],
+                 [CreditAmount], [DebitAmount], [CreditAvailable],
+                 [PaymentProcessedBy_userId], [PaidDate],
+                 [PaymentType], [ProductType], [PaymentReference],
+                 [DoPayForExtras], [PaymentProvider],
+                 [DiscountAmount], [DiscountPercent], [DiscountDescription],
+                 [SpecialRunPriceReason], [Surcharge],
+                 [PreviousMembershipExpiry], [Notes], [updatedAt])
+            VALUES
+                (@clientPaymentId,
+                 @kennelId, @payer_userIdGuid, @eventId, @hasherEventMapId,
+                 0, 0, 0,
+                 @userId,
+                 GETDATE(),
+                 1, 1, @paymentReference,
+                 @doPayForExtras, LOWER(LTRIM(RTRIM(@paymentProvider))),
+                 0, 0, '',
+                 '', 0,
+                 NULL,
+                 CASE WHEN LEN(COALESCE(@notes, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@notes)) END,
+                 GETDATE());
         END
 
         -- ---------------------------------------------------------------

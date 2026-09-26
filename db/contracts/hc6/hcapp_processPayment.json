@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_processPayment",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Uses a standard device-secret access token (@param = NULL \u2014 ValidateAppAuth uses the stored DeviceSecret as the token context). paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType. Authorization: the 'takePayment' kennel feature is required for every money path, with two exemptions \u2014 a hare of the event being paid for, and SELF-SERVICE (1.6.0): a hasher settling their OWN run fee (payer = caller, productType 1, paymentType 4 or 6, no @specialRunPrice). Self-service covers the run-start check-in prompt and the run detail payment icons; cash (3/5), other-amount (7/8), mark-not-paid (1) and confirm-transfer (100) remain admin-only.",
   "parameters": [
     {
@@ -116,7 +116,7 @@
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": "Payment.PaymentProvider",
-      "description": "External payment provider name (e.g. 'Stripe')."
+      "description": "External payment provider name (e.g. 'Stripe'). Since 1.7.0 (2026-09-26, E8.F7.S1): with paymentType 1 and a clientPaymentId on a run fee (productType 1), a non-empty provider makes the SP insert a card hand-off MARKER row (PaymentType 1, credit 0, debit 0, provider lowercased, id = clientPaymentId) after cancelling the active run payment. The outcome is recorded by a later ordinary type 3 (paid) or type 1 without provider (not paid)."
     },
     {
       "name": "appDomainType",
@@ -384,7 +384,8 @@
     "UPDATE HC.HasherKennelMap SET DiscountAmount, DiscountPercent=0, DiscountDescription \u2014 when @useSpecialPriceAsDefault is non-zero and @specialRunPrice is set",
     "EXEC HC.nonApi_updateKennelCreditByUser \u2014 recalculates kennel credit balance for the payer",
     "EXEC HC.nonApi_updateRunCountsByUser \u2014 recalculates run totals for @userIdWhoPaid (skipped if NULL)",
-    "INSERT HC.ErrorLog \u2014 on param validation failures and CATCH"
+    "INSERT HC.ErrorLog \u2014 on param validation failures and CATCH",
+    "Card hand-off marker (E8.F7.S1): paymentType 1 + paymentProvider + clientPaymentId on productType 1 inserts a zero-value PaymentType 1 row carrying the provider; replaced by the next payment for that HEM and product."
   ],
   "codeSmells": [
     {
