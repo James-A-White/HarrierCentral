@@ -414,6 +414,20 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 562 — +10 to match dev's 533 → 543 (2026-09-26), which forces
+    // every dev phone to wipe and reload after the silent-sync fix. The trains
+    // must stay 20 apart, so 3.2 moves by the same amount; the jump also makes
+    // every 3.2 phone reload once. Harmless step: it only keeps the list's top
+    // version = DB_VERSION. dev's kennel card-payment columns (its 533) arrive
+    // with the next merge of dev and ride that reload.
+    MigrationsModel(
+      dbVersion: 562,
+      migrationText: '''
+        DROP TABLE IF EXISTS hc_migration_562_noop;
+      ''',
+      appliedAtInt: 0,
+    ),
+
     // MIGRATION 552 — a kennel's messaging platform and group invite link
     // (E9.F6). Common domain only; the kennel row syncs globally.
     MigrationsModel(
