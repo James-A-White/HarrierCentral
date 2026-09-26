@@ -45,6 +45,16 @@ Adyen, Global Payments or SoéPay (HK).
 | Stripe | Terminal SDK in our app | Each club needs a connected Stripe account; community Flutter plugins only |
 | Square | Point of Sale API app switch | Mobile Payments SDK is US, CA and AU only |
 
+**Card readers (SumUp).** With the hand-off, the reader is paired with the
+SumUp app and our app never talks to it. If the hand-off goes, SumUp's native
+SDK drives Solo, Solo Lite and Air over Bluetooth from inside our app (only the
+phone needs a signal). SumUp's Cloud API also drives a Solo, but over the
+reader's own Wi-Fi or mobile data, with results by webhook and the club's API
+credentials held by us — ruled out for the trail.
+([Cloud API](https://developer.sumup.com/terminal-payments/cloud-api),
+[iOS SDK](https://developer.sumup.com/terminal-payments/sdks/ios-sdk),
+[Android SDK](https://developer.sumup.com/terminal-payments/sdks/android-sdk))
+
 No card option is free. The cheapest are about 1–1.7% in the UK and EU, and
 about 2.6–2.7% plus 15¢ in the US.
 
