@@ -1048,7 +1048,7 @@ Before doing anything irreversible, present:
 2. **Commit to dev**
 3. **Push dev**
 4. **Merge dev → master and push master** — portal auto-deploys via CI on master push
-5. **Deploy SPs** — `./tools/deploy_hc6.sh` (only if `db/hc6/` changed)
+5. **Deploy SPs** — `./tools/deploy_hc6.sh` (only if `db/hc6/` changed), then `python3 tools/sp_versions.py` — every object on the new build
 6. **Deploy API** — `func azure functionapp publish harriercentralpublicapi` from `api/` dir (only if `api/` changed; the short `func publish` form prints help and deploys nothing)
 7. **Deploy public web** — standalone build → zip → `az webapp deploy` to harriercentralpublicweb (only if `public-web/` changed)
 8. **Deploy mobile app** — TestFlight via xcodebuild + xcrun altool (only if `mobile-app/` changed)
@@ -1112,6 +1112,28 @@ in `.env`. The deploy script `tools/deploy_hc6.sh` handles the full HC6 deploy:
 
 It runs four steps in order: HC6 schema → ValidatePortalAuth helper →
 all `hcportal_*.sql` portal SPs → all `publicWeb_*.sql` public-web SPs.
+
+**Every deploy stamps every object** (since 2026-09-26). The script adds one
+comment line above each `CREATE OR ALTER` in the text it sends — never in the
+repo files:
+
+```
+-- HC-DEPLOY build=N at=<utc> commit=<head>[+dirty] changed=<sha|uncommitted> sha256=<12> file=<path>
+```
+
+`build` is the highest build already stamped in the database + 1, so the
+database is the counter. `changed` is the last commit to touch that file.
+After every deploy, and whenever "is this fix live?" comes up, run:
+
+```bash
+python3 tools/sp_versions.py                  # report; exit 1 = something is off
+python3 tools/sp_versions.py hcapp_addDownDown   # one object's stamp
+```
+
+It flags objects edited by hand after a deploy, objects the last deploy did
+not reach, code deployed uncommitted, and unstamped HC6 objects (orphans the
+repo no longer creates). PENDING — changed in the repo since deployed — is
+normal between releases: it is what the next deploy ships.
 
 ### Archiving run-once database scripts
 

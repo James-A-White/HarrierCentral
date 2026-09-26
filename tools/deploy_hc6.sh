@@ -25,6 +25,19 @@
 #     not CREATE OR ALTER — re-running would fail). HC6 functions live in
 #     db/hc6/app as HC6.*.Function.sql and ARE deployed, at step 7b.
 #   - The API shim (deploy that via VS Code → Azure Functions extension)
+#
+# Deploy stamps (2026-09-26):
+#   Every object is sent with one comment line above its CREATE OR ALTER:
+#     -- HC-DEPLOY build=N at=<utc> commit=<head>[+dirty] changed=<sha|uncommitted> sha256=<12> file=<path>
+#   build   = this deploy's number: the highest build already stamped in the
+#             database + 1. The database is the counter, so no repo file
+#             changes after the release commit.
+#   changed = the last commit to touch that file, or 'uncommitted' when the
+#             file differs from HEAD (production is then running code that
+#             exists in no commit).
+#   sha256  = of the repo file as it stands, so a later edit shows as pending.
+#   The stamp goes on the text sent to SQL Server, never into the files.
+#   Read it back with tools/sp_versions.py.
 # =============================================================================
 
 set -uo pipefail
@@ -78,7 +91,9 @@ run_file() {
     local file="$2"
     printf "  %-52s" "$label"
     local output
-    if output=$(_sqlcmd -i "$file" 2>&1); then
+    local stamped
+    stamped="$(stamp_file "$file")"
+    if output=$(_sqlcmd -i "$stamped" 2>&1); then
         echo "✓"
         PASS=$((PASS + 1))
     else
@@ -105,10 +120,53 @@ run_query() {
     fi
 }
 
+# ── Deploy stamp ──────────────────────────────────────────────────────────────
+STAMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$STAMP_DIR"' EXIT
+
+last_build=$(_sqlcmd -h -1 -W -Q "SET NOCOUNT ON;
+    SELECT SUBSTRING(m.definition, CHARINDEX('-- HC-DEPLOY build=', m.definition) + 19, 12)
+    FROM sys.sql_modules m
+    WHERE m.definition LIKE '%-- HC-DEPLOY build=%';" 2>/dev/null \
+    | grep -oE '^[0-9]+' | sort -n | tail -1)
+DEPLOY_BUILD=$(( ${last_build:-0} + 1 ))
+DEPLOY_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+DEPLOY_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short=8 HEAD)"
+if [[ -n "$(git -C "$REPO_ROOT" status --porcelain -- db/)" ]]; then
+    DEPLOY_COMMIT="${DEPLOY_COMMIT}+dirty"
+fi
+
+# Copy $1 into $STAMP_DIR with the stamp line above every CREATE OR ALTER,
+# and print the copy's path. The repo file is never modified.
+stamp_file() {
+    local file="$1"
+    local rel="${file#"$REPO_ROOT"/}"
+    local changed
+    if [[ -n "$(git -C "$REPO_ROOT" status --porcelain -- "$rel")" ]]; then
+        changed="uncommitted"
+    else
+        changed="$(git -C "$REPO_ROOT" log -1 --format=%h --abbrev=8 -- "$rel")"
+        [[ -z "$changed" ]] && changed="uncommitted"
+    fi
+    local sha
+    sha="$(shasum -a 256 "$file" | cut -c1-12)"
+    local stamp="-- HC-DEPLOY build=$DEPLOY_BUILD at=$DEPLOY_AT commit=$DEPLOY_COMMIT changed=$changed sha256=$sha file=$rel"
+    local out="$STAMP_DIR/$(basename "$file")"
+    awk -v stamp="$stamp" '
+        { line = $0; sub(/\r$/, "", line) }
+        tolower(line) ~ /^[ \t]*create[ \t]+or[ \t]+alter[ \t]+(procedure|proc|function|view|trigger)[ \t]/ {
+            print stamp
+        }
+        { print }
+    ' "$file" > "$out"
+    echo "$out"
+}
+
 # ── Deploy ────────────────────────────────────────────────────────────────────
 echo ""
 echo "══════════════════════════════════════════════════════════════"
 printf   "  HC6 Deploy → %s on %s\n" "$HC_SQL_DATABASE" "$HC_SQL_SERVER"
+printf   "  Build %s  ·  commit %s  ·  %s\n" "$DEPLOY_BUILD" "$DEPLOY_COMMIT" "$DEPLOY_AT"
 echo "══════════════════════════════════════════════════════════════"
 echo ""
 
@@ -185,5 +243,6 @@ done
 echo ""
 echo "══════════════════════════════════════════════════════════════"
 echo "  Done.  $PASS deployed,  $FAIL failed.  (helpers + portal + public-web + internal + nonApi + util + app)"
+echo "  Build $DEPLOY_BUILD.  Check it: python3 tools/sp_versions.py"
 echo "══════════════════════════════════════════════════════════════"
 echo ""
