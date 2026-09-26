@@ -414,6 +414,36 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 533 — a kennel's card payment app and merchant code
+
+    // (E8.F7.S1/S2). The UPDATE zeroes the kennels' sync watermark: the
+
+    // watermark is MAX(updatedAtValue), so a kennel configured BEFORE this
+
+    // phone upgraded would otherwise never be sent again and its new columns
+
+    // would stay empty for good. ~400 rows, once. The 3.2 train needs the same
+
+    // ALTERs under 553 when dev is merged into it.
+
+    MigrationsModel(
+
+      dbVersion: 533,
+
+      migrationText: '''
+
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colCardPaymentProvider} TEXT;
+
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colCardPaymentMerchantCode} TEXT;
+
+        UPDATE ${EnumDataTables.kennels.commonTableName} SET ${tableModel.kennelsTableHelper.colUpdatedAtValue} = 0;
+
+      ''',
+
+      appliedAtInt: 0,
+
+    ),
+
     // MIGRATION 532 — a kennel's messaging platform and group invite link
 
     // (E9.F6). Same ALTERs as 3.1's 552, under this train's own number; the

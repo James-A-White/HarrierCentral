@@ -28,6 +28,8 @@
 	<array>
 		<!-- Run announcements: lets canLaunchUrl see WhatsApp. -->
 		<string>whatsapp</string>
+		<!-- Card payments (E8.F7.S1): lets canLaunchUrl see the SumUp app. -->
+		<string>sumupmerchant</string>
 		<string>comgooglemaps</string>
 		<string>baidumap</string>
 		<string>iosamap</string>

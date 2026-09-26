@@ -719,6 +719,19 @@ class CheckInPackController extends GetxController
             ),
           );
         },
+        // Card via the kennel's SumUp app (E8.F7.S1): only when the kennel
+        // takes card that way, this build has an affiliate key, and there is
+        // a run fee to charge.
+        onCardPayment:
+            (CardPaymentHandoff.isOfferedFor(eventAggregate.kennel) &&
+                amountOwed > 0)
+            ? () {
+                messenger.removeCurrentSnackBar(
+                  reason: SnackBarClosedReason.hide,
+                );
+                unawaited(payByCard(hasher, amountOwed));
+              }
+            : null,
         onSellHaberdashery: () {
           messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
           unawaited(
@@ -803,6 +816,120 @@ class CheckInPackController extends GetxController
     bool? useSpecialPriceAsDefault,
   }) async {
     messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+    final dynamic payForExtras = await _askPayForExtras(
+      member,
+      paymentType,
+      specialRunPrice: specialRunPrice,
+    );
+    final List<dynamic>? results = await _processPayment(
+      index,
+      member,
+      paymentType,
+      otherAmount: otherAmount,
+      doPayForExtras: payForExtras,
+      specialRunPrice: specialRunPrice,
+      specialRunPriceReason: specialRunPriceReason,
+      useSpecialPriceAsDefault: useSpecialPriceAsDefault,
+    );
+    // Empty is what an error envelope or a dropped reply looks like — the
+    // refresh below must still run, so no [0] on it.
+    final Map<String, dynamic>? paid = firstRow(results);
+    if (results != null && paid != null) {
+      if ((paid['terminalWasUsedForPayment'] == null) ||
+          (!paid['terminalWasUsedForPayment'])) {
+        BankTransferQr.showBankTransferSnackbar(
+          eventAggregate,
+          results,
+          paymentType,
+          navigatorKey.currentContext!,
+          member.nameForDisplay,
+          member.isMember,
+          otherAmount,
+        );
+      }
+    }
+
+    paymentIndexUpdating.value = null;
+    rsvpIndexUpdating.value = null;
+    attendanceIndexUpdating.value = null;
+    await refreshPackListFromTables(false);
+    await _refreshCounters(forceRefresh: true);
+  }
+
+  /// Hands [member]'s run fee to the kennel's SumUp app (E8.F7.S1). The
+  /// amount is [amountOwed] — the run price less the hasher's discount, the
+  /// same sum hcapp_processPayment computes — plus extras when chosen. The
+  /// capture is built exactly as a cash payment's, so on success the server
+  /// records it the same way, with provider `sumup` and SumUp's transaction
+  /// code. See [CardPaymentHandoff] for the marker and the answer.
+  Future<void> payByCard(CheckInPackModel member, double amountOwed) async {
+    final dynamic payForExtras = await _askPayForExtras(
+      member,
+      paymentCash.value,
+    );
+    if (payForExtras is! EnumPayForExtras) return; // cancelled
+    final double amount =
+        amountOwed +
+        (payForExtras == payForRunAndExtras
+            ? (eventAggregate.event.eventPriceForExtras ?? 0)
+            : 0);
+    if (amount <= 0) return;
+
+    final String? hemId = member.hemId;
+    final String? hasherId = member.hasherId;
+    final String amountLabel = IveCoreUtilities.getFormattedMoney(
+      amount,
+      eventAggregate.extensions.digAfterDec,
+      eventAggregate.extensions.curSym,
+    );
+    final KennelsModel kennel = eventAggregate.kennel;
+    final String runNumber = eventAggregate.event.eventNumber.toString().trim();
+    final PendingPayment paid = PaymentsService.buildPending(
+      eventId: eventAggregate.event.eventId,
+      hasherId: ((hasherId?.length != GUID_EMPTY.length))
+          ? GUID_EMPTY
+          : hasherId,
+      hasherEventMapId: (((hemId?.length ?? 0) != GUID_EMPTY.length))
+          ? GUID_EMPTY
+          : hemId,
+      paymentType: paymentCash.value,
+      paymentAmount: amount,
+      minimumAttendenceValue: attendenceAtHash.value,
+      doPayForExtras: payForExtras,
+      appDomainType: AppDomainType.event,
+      paymentProvider: CardPaymentHandoff.provider,
+      displayLabel: 'Card via SumUp — ${member.nameForDisplay}',
+    );
+
+    await CardPaymentHandoff.start(
+      paid: paid,
+      amount: amount,
+      digitsAfterDecimal: eventAggregate.extensions.digAfterDec,
+      currency: eventAggregate.extensions.curCode,
+      amountLabel: amountLabel,
+      payerName: member.nameForDisplay,
+      title: [
+        kennel.kennelShortName,
+        if (runNumber.isNotEmpty) 'run $runNumber',
+        member.nameForDisplay,
+      ].where((String p) => p.trim().isNotEmpty).join(' · '),
+      merchantCode: kennel.cardPaymentMerchantCode,
+    );
+    // The marker changed this hasher's row to "not paid · card".
+    await refreshPackListFromTables(false);
+    await _refreshCounters(forceRefresh: true);
+  }
+
+  /// "Run only" or "Run + extras", asked only when the run has an extras
+  /// price and the payment type can include them. Shared by every way of
+  /// paying at check-in, card included, so the amount a card is charged is
+  /// the amount the server records. The answer is payForRunOnly whenever the
+  /// question is not asked or cannot be — never charge extras nobody chose.
+  Future<dynamic> _askPayForExtras(
+    CheckInPackModel member,
+    int paymentType, {
+    double? specialRunPrice,
+  }) async {
     dynamic payForExtras = payForRunOnly;
 
     if (((paymentType == paymentFreeRun.value) ||
@@ -870,39 +997,7 @@ class CheckInPackController extends GetxController
         );
       }
     }
-    final List<dynamic>? results = await _processPayment(
-      index,
-      member,
-      paymentType,
-      otherAmount: otherAmount,
-      doPayForExtras: payForExtras,
-      specialRunPrice: specialRunPrice,
-      specialRunPriceReason: specialRunPriceReason,
-      useSpecialPriceAsDefault: useSpecialPriceAsDefault,
-    );
-    // Empty is what an error envelope or a dropped reply looks like — the
-    // refresh below must still run, so no [0] on it.
-    final Map<String, dynamic>? paid = firstRow(results);
-    if (results != null && paid != null) {
-      if ((paid['terminalWasUsedForPayment'] == null) ||
-          (!paid['terminalWasUsedForPayment'])) {
-        BankTransferQr.showBankTransferSnackbar(
-          eventAggregate,
-          results,
-          paymentType,
-          navigatorKey.currentContext!,
-          member.nameForDisplay,
-          member.isMember,
-          otherAmount,
-        );
-      }
-    }
-
-    paymentIndexUpdating.value = null;
-    rsvpIndexUpdating.value = null;
-    attendanceIndexUpdating.value = null;
-    await refreshPackListFromTables(false);
-    await _refreshCounters(forceRefresh: true);
+    return payForExtras;
   }
 
   Future<List<dynamic>?> _processBulkPayment(int paymentType) async {

@@ -43,6 +43,9 @@ enum StringPrefsEnum {
   mapPreference,
   packTrackOutboxJson,
   paymentOutboxJson,
+  // Card hand-offs awaiting the provider's answer (E8.F7.S1), keyed by the
+  // marker's clientPaymentId: what to send when SumUp returns.
+  cardHandoffJson,
   paymentTerminalAccountKey,
   permissionMatrixJson,
   permissionMatrixWatermark,

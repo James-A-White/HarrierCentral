@@ -29,6 +29,13 @@ abstract class KennelsModel with _$KennelsModel implements BaseModel {
     int? defaultMessagingPlatform,
     /// The group's invite link, for joining — never a post target.
     String? messagingGroupInviteUrl,
+    /// Which card app the Hash Cash hands a payment to (E8.F7.S1): 'sumup',
+    /// or null when the kennel does not take card through Harrier Central.
+    String? cardPaymentProvider,
+    /// The club's SumUp merchant code, shown before the hand-off so the Hash
+    /// Cash can check the SumUp app is signed in to the CLUB's account —
+    /// SumUp's callback never says which account took the money.
+    String? cardPaymentMerchantCode,
     String? defaultEventCurrencyType,
     String? integrationType,
     int? kennelInboundIntegrationId,

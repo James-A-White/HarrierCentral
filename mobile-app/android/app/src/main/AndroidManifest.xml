@@ -37,6 +37,11 @@
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="geo"/>
         </intent>
+        <!-- Card payments (E8.F7.S1): lets canLaunchUrl see the SumUp app. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="sumupmerchant"/>
+        </intent>
         <!-- WhatsApp run announcements: lets canLaunchUrl see the scheme. -->
         <intent>
             <action android:name="android.intent.action.VIEW"/>
@@ -142,6 +147,16 @@
                 <data android:host="www.hashruns.org"/>
                 <data android:host="hashruns.org"/>
                 <data android:pathPattern="/.*/.*"/>
+            </intent-filter>
+            <!-- Card payments (E8.F7.S1): the SumUp app returns the result to
+                 harriercentral://sumup-result?smp-status=…; DeepLinkService
+                 hands it to CardPaymentHandoff. Host-scoped so no other
+                 harriercentral:// link is claimed by accident. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="harriercentral" android:host="sumup-result"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

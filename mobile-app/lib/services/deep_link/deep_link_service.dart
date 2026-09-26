@@ -277,6 +277,20 @@ class DeepLinkService {
   }
 
   Future<void> _handle(Uri uri) async {
+    // The SumUp app returning a card payment's result (E8.F7.S1). Not a run
+    // link, and never one to bounce to the browser. It can arrive on a cold
+    // start if the OS killed us while SumUp was up, so it waits for the app
+    // like any link; the hand-off itself is kept in prefs across restarts.
+    if (CardPaymentHandoff.isCallback(uri)) {
+      _crumb('SumUp result');
+      if (!await _waitUntilReady(const Duration(seconds: 120))) {
+        _crumb('app never became ready; SumUp result dropped: $uri');
+        return;
+      }
+      await CardPaymentHandoff.handleCallback(uri);
+      return;
+    }
+
     final DeepLinkTarget? target = parse(uri);
     if (target == null) {
       _crumb('not a run link, bouncing to the site: $uri');

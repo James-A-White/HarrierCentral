@@ -28,6 +28,8 @@ _KennelsModel _$KennelsModelFromJson(
   kennelWebsiteUrl: json['kennelWebsiteUrl'] as String?,
   defaultMessagingPlatform: (json['defaultMessagingPlatform'] as num?)?.toInt(),
   messagingGroupInviteUrl: json['messagingGroupInviteUrl'] as String?,
+  cardPaymentProvider: json['cardPaymentProvider'] as String?,
+  cardPaymentMerchantCode: json['cardPaymentMerchantCode'] as String?,
   defaultEventCurrencyType: json['defaultEventCurrencyType'] as String?,
   integrationType: json['integrationType'] as String?,
   kennelInboundIntegrationId: (json['kennelInboundIntegrationId'] as num?)
@@ -123,6 +125,8 @@ Map<String, dynamic> _$KennelsModelToJson(
   'kennelWebsiteUrl': instance.kennelWebsiteUrl,
   'defaultMessagingPlatform': instance.defaultMessagingPlatform,
   'messagingGroupInviteUrl': instance.messagingGroupInviteUrl,
+  'cardPaymentProvider': instance.cardPaymentProvider,
+  'cardPaymentMerchantCode': instance.cardPaymentMerchantCode,
   'defaultEventCurrencyType': instance.defaultEventCurrencyType,
   'integrationType': instance.integrationType,
   'kennelInboundIntegrationId': instance.kennelInboundIntegrationId,

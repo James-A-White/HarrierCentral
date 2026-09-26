@@ -46,12 +46,16 @@ final class IncomingFileBridge {
     if url.isFileURL {
       return deliver(copyIntoInbox(fileURL: url))
     }
-    if url.scheme?.lowercased() == Self.urlScheme {
+    // Only harriercentral://import is ours. Any other harriercentral:// link
+    // — SumUp's payment result (harriercentral://sumup-result, E8.F7.S1) —
+    // must return false so AppDelegate hands it to Flutter's link plugin.
+    // This used to claim every harriercentral:// URL and drop it.
+    if url.scheme?.lowercased() == Self.urlScheme,
+       url.host?.lowercased() == "import" {
       // harriercentral://import?file=<name> — left by the share extension in
       // the app-group container. Moved (not copied) so the group does not
       // accumulate files.
-      guard url.host?.lowercased() == "import",
-            let name = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+      guard let name = URLComponents(url: url, resolvingAgainstBaseURL: false)?
               .queryItems?.first(where: { $0.name == "file" })?.value,
             let groupURL = FileManager.default.containerURL(
               forSecurityApplicationGroupIdentifier: Self.appGroup)

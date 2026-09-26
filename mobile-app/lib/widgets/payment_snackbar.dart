@@ -13,6 +13,7 @@ class PaymentSnackBar extends SnackBar {
     required this.multiSelectEnabled,
     this.onChargeMembership,
     this.onSellHaberdashery,
+    this.onCardPayment,
     this.membershipStatus,
   }) : super(content: const Text('test'));
 
@@ -37,6 +38,11 @@ class PaymentSnackBar extends SnackBar {
 
   /// Opens the haberdashery sale sheet. Same visibility rules as membership.
   final VoidCallback? onSellHaberdashery;
+
+  /// Hands this hasher's run fee to the kennel's SumUp app (E8.F7.S1). The
+  /// caller passes null unless the kennel takes card through SumUp and there
+  /// is something to charge; hidden in multi-select (one card, one hasher).
+  final VoidCallback? onCardPayment;
 
   /// The hasher's reconciled membership tier (from
   /// `CheckInPackPageController.membershipStatusOf`). While it is
@@ -663,6 +669,29 @@ class PaymentSnackBar extends SnackBar {
                               ),
                       ],
                     ),
+                    if (onCardPayment != null && !multiSelectEnabled)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: onCardPayment,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: hc_red,
+                            ),
+                            icon: const Icon(Icons.contactless, size: 22),
+                            label: Text(
+                              'Card ${formatMoney(amountOwed)} with SumUp',
+                              style: ts_titleSmallCondensedBold.copyWith(
+                                color: hc_red,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
                     // Membership is only offered when a renewal is actually
                     // due: inside the last 10% of the kennel's period, lapsed,
                     // or never held. A comfortable member sees no button.

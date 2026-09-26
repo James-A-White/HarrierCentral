@@ -137,6 +137,16 @@ const String PORTAL_URL = 'https://portal.harriercentral.com';
 const String GET_POSITIONS_API_KEY =
     'npsXZr6xtEPv9iaA7LAEfjRZhCuGbpbwC8BSlLpwbwkGzZdRdNndXWNfvKr8p4l9hdBWE5acK8q';
 
+// SumUp Payment Switch affiliate key (E8.F7.S1). Created in a SumUp account's
+// developer settings for app id com.harriercentral.app (iOS bundle id AND
+// Android application id). One key for the whole app; each kennel's money
+// goes to whichever SumUp account is signed in on the Hash Cash's phone.
+// EMPTY = the "Card (SumUp)" button is not offered anywhere.
+const String SUMUP_AFFILIATE_KEY = '';
+
+// The app id SumUp's Android Payment Switch checks against the key.
+const String SUMUP_APP_ID = 'com.harriercentral.app';
+
 // old APIs below
 
 // TODO: Re-implement email run details
@@ -203,7 +213,7 @@ const String DB_NAME = 'HcDb.db';
 // silently becomes an in-place migration onto a schema that does not exist,
 // which is the "Database Version Mismatch" that blocked 3.1.0+1350 and +1352
 // (James, 2026-09-15).
-const int DB_VERSION = 532;
+const int DB_VERSION = 533;
 
 const double CLEAR_LATLONG = -2.0;
 

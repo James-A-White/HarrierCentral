@@ -34,6 +34,9 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
   final String colKennelWebsiteUrl = 'kennelWebsiteUrl';
   final String colDefaultMessagingPlatform = 'defaultMessagingPlatform';
   final String colMessagingGroupInviteUrl = 'messagingGroupInviteUrl';
+  // Card payments (E8.F7.S1/S2): 'sumup' or null, and the club's merchant code.
+  final String colCardPaymentProvider = 'cardPaymentProvider';
+  final String colCardPaymentMerchantCode = 'cardPaymentMerchantCode';
   final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
   final String colIntegrationType = 'integrationType';
   final String colKennelInboundIntegrationId = 'kennelInboundIntegrationId';
@@ -115,6 +118,8 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
             $colKennelWebsiteUrl TEXT,
             $colDefaultMessagingPlatform INT,
             $colMessagingGroupInviteUrl TEXT,
+            $colCardPaymentProvider TEXT,
+            $colCardPaymentMerchantCode TEXT,
             $colDefaultEventCurrencyType TEXT,
             $colIntegrationType TEXT,
             $colKennelInboundIntegrationId INT,
