@@ -386,7 +386,8 @@ class RunEditPageController extends TabUiController
       );
       if (result != null) applyLocationSelection(result);
     } finally {
-      await Get.delete<SetLocationController>(tag: tag, force: true);
+      // The dialog is still fading out when Get.dialog returns.
+      await deleteAfterExit<SetLocationController>(dlg, tag: tag);
     }
   }
 
@@ -1095,9 +1096,11 @@ class RunEditPageController extends TabUiController
       );
       if (result != true) return;
     }
-    // Delete the controller to ensure fresh data is loaded next time
-    await Get.delete<RunEditPageController>(force: true);
+    // Pop FIRST, then delete (so the next open loads fresh data). Deleting
+    // before the pop disposed the TabController under a page still on screen
+    // (portal 2.0.86, 2026-09-23).
     Get.back<void>();
+    await deleteAfterExit<RunEditPageController>(this);
   }
 
   /// Builds the map of changed fields for API submission.
@@ -1638,9 +1641,11 @@ class RunEditPageController extends TabUiController
       }
     } finally {
       if (lookupController != null) {
-        await Get.delete<RunLocationLookupController>(
+        // The dialog is still fading out when Get.dialog returns, and this
+        // controller owns the TabController its TabBarView is drawing with.
+        await deleteAfterExit<RunLocationLookupController>(
+          lookupController,
           tag: lookupTag,
-          force: true,
         );
       }
       isLookupLoading.value = false;

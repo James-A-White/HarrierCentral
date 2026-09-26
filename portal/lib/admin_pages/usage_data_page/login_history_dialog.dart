@@ -59,8 +59,15 @@ class LoginHistoryDialog extends StatelessWidget {
                 child: HcButton.secondary(
                   label: 'Close',
                   onPressed: () {
-                    unawaited(Get.delete<DeviceHealthController>(tag: userId));
+                    // Pop first; delete once the dialog has faded out.
+                    final DeviceHealthController? health =
+                        Get.isRegistered<DeviceHealthController>(tag: userId)
+                            ? Get.find<DeviceHealthController>(tag: userId)
+                            : null;
                     Navigator.of(context).pop();
+                    if (health != null) {
+                      unawaited(deleteAfterExit(health, tag: userId));
+                    }
                   },
                 ),
               ),

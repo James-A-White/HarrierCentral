@@ -121,6 +121,7 @@ export 'package:hcportal/util/tz_abbrev.dart';
 export 'package:hcportal/util/hex_color.dart';
 export 'package:hcportal/util/image_dialog.dart';
 export 'package:hcportal/util/keep_alive_wrapper.dart';
+export 'package:hcportal/util/delete_after_exit.dart';
 export 'package:hcportal/util/hc_network_image.dart';
 export 'package:hcportal/util/kennel_logo.dart';
 export 'package:hcportal/util/styles.dart';

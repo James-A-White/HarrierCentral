@@ -625,7 +625,13 @@ class RunListPage extends StatelessWidget {
                     canEditKennelStatus: formController.canEditKennel,
                   ),
                 );
-                await Get.delete<KennelPageFormController>(force: true);
+                // Get.to returns as the page STARTS to fade out; its TabBar is
+                // still drawing with this controller's TabController.
+                if (Get.isRegistered<KennelPageFormController>()) {
+                  await deleteAfterExit<KennelPageFormController>(
+                    Get.find<KennelPageFormController>(),
+                  );
+                }
               }
             },
           ),
@@ -649,7 +655,10 @@ class RunListPage extends StatelessWidget {
                   kennelName: k.kennelShortName,
                 ),
               );
-              await Get.delete<KennelProductsController>(force: true);
+              // Pop has started, not finished: delete once the page is gone.
+              if (Get.isRegistered<KennelProductsController>()) {
+                await deleteAfterExit<KennelProductsController>(Get.find<KennelProductsController>());
+              }
             },
           ),
         if (k.canEditWebsite == 1)
@@ -669,7 +678,10 @@ class RunListPage extends StatelessWidget {
                     kennelUniqueShortName: k.kennelUniqueShortName,
                   ),
                 );
-                await Get.delete<KennelWebsiteController>(force: true);
+                // Pop has started, not finished: delete once the page is gone.
+                if (Get.isRegistered<KennelWebsiteController>()) {
+                  await deleteAfterExit<KennelWebsiteController>(Get.find<KennelWebsiteController>());
+                }
               }
             },
           ),
@@ -933,7 +945,13 @@ class RunListPage extends StatelessWidget {
                       canEditKennelStatus: formController.canEditKennel,
                     ),
                   );
-                  await Get.delete<KennelPageFormController>(force: true);
+                  // Get.to returns as the page STARTS to fade out; its TabBar is
+                  // still drawing with this controller's TabController.
+                  if (Get.isRegistered<KennelPageFormController>()) {
+                    await deleteAfterExit<KennelPageFormController>(
+                      Get.find<KennelPageFormController>(),
+                    );
+                  }
                 }
               },
             ),
@@ -953,7 +971,10 @@ class RunListPage extends StatelessWidget {
                     kennelName: formController.kennel.kennelShortName,
                   ),
                 );
-                await Get.delete<KennelProductsController>(force: true);
+                // Pop has started, not finished: delete once the page is gone.
+                if (Get.isRegistered<KennelProductsController>()) {
+                  await deleteAfterExit<KennelProductsController>(Get.find<KennelProductsController>());
+                }
               },
             ),
             const SizedBox(height: 16),
@@ -976,7 +997,10 @@ class RunListPage extends StatelessWidget {
                           formController.kennel.kennelUniqueShortName,
                     ),
                   );
-                  await Get.delete<KennelWebsiteController>(force: true);
+                  // Pop has started, not finished: delete once the page is gone.
+                  if (Get.isRegistered<KennelWebsiteController>()) {
+                    await deleteAfterExit<KennelWebsiteController>(Get.find<KennelWebsiteController>());
+                  }
                 }
               },
             ),
