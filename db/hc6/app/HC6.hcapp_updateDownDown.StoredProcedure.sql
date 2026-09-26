@@ -8,7 +8,12 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_updateDownDown]
     @chargeText      NVARCHAR(MAX),
     @songChoice      NVARCHAR(500)    = NULL,
     @songId          UNIQUEIDENTIFIER = NULL,
-    @chargePhotoUrl  NVARCHAR(MAX)    = NULL
+    @chargePhotoUrl  NVARCHAR(MAX)    = NULL,
+    -- Who is charged (2026-09-26, James). NULL = leave as it is, so older
+    -- apps that do not send these keep working. Sent together by the app's
+    -- edit page; either one alone replaces only its own half.
+    @hasherIds       NVARCHAR(MAX)    = NULL,  -- pipe-delimited UUIDs; '' = none
+    @externalNames   NVARCHAR(MAX)    = NULL   -- JSON array of names; '[]' = none
 
 AS
 -- =====================================================================
@@ -23,6 +28,9 @@ AS
 --   @eventId     - Event the DownDown belongs to (validation scope)
 --   @downDownId  - DownDown to update
 --   @chargeText  - New charge text
+--   @hasherIds / @externalNames - optional; the people charged, same formats
+--                  as hcapp_addDownDown. NULL = unchanged. A change that would
+--                  leave nobody charged is refused (1236).
 -- Returns:
 --   On success (rowset 0): { success=1, errorCode=NULL, errorType=NULL }
 --   On error  (rowset 0): { success=0, errorCode, errorType }
@@ -30,6 +38,12 @@ AS
 -- Author: Harrier Central
 -- Created: 2026-06-08
 -- HC5 Source: None — new feature
+-- Changes:
+--   2026-09-26: edit who is charged — app hashers (HC.DownDownHashers) and
+--     typed names for people not in the app (DownDowns.ExternalNames).
+--     James: "I need to be able to edit a charge including the name of the
+--     person charged if they were added as a text record."
+--     Update and people change in one transaction.
 -- =====================================================================
 -- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
 -- in which a surrogate pair has NO sort weight, so N'<emoji>' = '' is TRUE
@@ -134,22 +148,96 @@ BEGIN
     END
 END
 
+-- ── Who is charged, when the caller sent it ─────────────────────────
+DECLARE @changePeople BIT = CASE WHEN @hasherIds IS NOT NULL OR @externalNames IS NOT NULL THEN 1 ELSE 0 END;
+DECLARE @newHashers TABLE (HasherId UNIQUEIDENTIFIER PRIMARY KEY);
+DECLARE @newExternalNames NVARCHAR(MAX);
+
+IF (@changePeople = 1)
+BEGIN
+    -- Hashers: the list sent, or the current ones when only names were sent.
+    -- Only real hashers (the FK would refuse anything else mid-transaction).
+    IF (@hasherIds IS NOT NULL)
+        INSERT @newHashers (HasherId)
+        SELECT DISTINCT TRY_CAST(LTRIM(RTRIM(v.value)) AS UNIQUEIDENTIFIER)
+        FROM STRING_SPLIT(@hasherIds, '|') v
+        WHERE TRY_CAST(LTRIM(RTRIM(v.value)) AS UNIQUEIDENTIFIER) IS NOT NULL
+          AND EXISTS (SELECT 1 FROM HC.Hasher h
+                      WHERE h.id = TRY_CAST(LTRIM(RTRIM(v.value)) AS UNIQUEIDENTIFIER));
+    ELSE
+        INSERT @newHashers (HasherId)
+        SELECT DISTINCT HasherId FROM HC.DownDownHashers WHERE DownDownId = @downDownId;
+
+    -- Names: the array sent (blanks dropped), or the current value.
+    IF (@externalNames IS NOT NULL)
+    BEGIN
+        IF (ISJSON(@externalNames) = 1)
+            SET @newExternalNames = (
+                SELECT LTRIM(RTRIM(j.[value])) AS [value]
+                FROM OPENJSON(@externalNames) j
+                WHERE LEN(LTRIM(RTRIM(j.[value]))) > 0
+                FOR JSON PATH);
+        -- FOR JSON PATH gives [{"value":"x"}]; store the plain array the app reads.
+        IF (@newExternalNames IS NOT NULL)
+            SET @newExternalNames = (
+                SELECT '[' + STRING_AGG('"' + STRING_ESCAPE(v.value, 'json') + '"', ',') + ']'
+                FROM OPENJSON(@newExternalNames) WITH (value NVARCHAR(4000) '$.value') v);
+    END
+    ELSE
+        SELECT @newExternalNames = ExternalNames FROM HC.DownDowns WHERE id = @downDownId;
+
+    IF (NOT EXISTS (SELECT 1 FROM @newHashers)
+        AND (@newExternalNames IS NULL OR ISJSON(@newExternalNames) = 0
+             OR NOT EXISTS (SELECT 1 FROM OPENJSON(@newExternalNames))))
+    BEGIN
+        SET @errorCode = 1236; SET @errorType = 2; SET @errorId = NEWID();
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+        VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Nobody charged',
+                'An edit would leave the charge with no hasher and no name', @procName, @userId);
+        SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+               'Nobody charged' AS errorTitle,
+               'A charge needs at least one person — a hasher or a name.' AS errorUserMessage,
+               @procName AS errorProc;
+        RETURN;
+    END
+END
+
 BEGIN TRY
+    BEGIN TRANSACTION;
 
     UPDATE HC.DownDowns
     SET ChargeText     = @chargeText,
         SongChoice     = CASE WHEN LEN(COALESCE(@songChoice, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@songChoice)) END,
         SongId         = @songId,
         ChargePhotoUrl = COALESCE(@chargePhotoUrl, ChargePhotoUrl),
+        ExternalNames  = CASE WHEN @changePeople = 1 THEN @newExternalNames ELSE ExternalNames END,
         UpdatedAt      = GETUTCDATE()
     WHERE id       = @downDownId
       AND EventId  = @eventId
       AND KennelId = @kennelId;
 
+    IF (@changePeople = 1)
+    BEGIN
+        DELETE ddh FROM HC.DownDownHashers ddh
+        WHERE ddh.DownDownId = @downDownId
+          AND NOT EXISTS (SELECT 1 FROM @newHashers n WHERE n.HasherId = ddh.HasherId);
+
+        INSERT HC.DownDownHashers (DownDownId, HasherId)
+        SELECT @downDownId, n.HasherId
+        FROM @newHashers n
+        WHERE NOT EXISTS (SELECT 1 FROM HC.DownDownHashers ddh
+                          WHERE ddh.DownDownId = @downDownId AND ddh.HasherId = n.HasherId);
+    END
+
+    COMMIT TRANSACTION;
+
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 
 END TRY
 BEGIN CATCH
+    -- Roll back BEFORE logging, or the rollback erases the log row.
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
