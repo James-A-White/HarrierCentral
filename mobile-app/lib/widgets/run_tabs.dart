@@ -1212,6 +1212,8 @@ class RunTabs extends StatelessWidget {
                         markerClicked: () async {
                           await _launchMaps(context, c, futureRun);
                         },
+                        bottomOverlay: (BuildContext ctx, bool hasTrack) =>
+                            _directionsButton(context, c, hasTrack),
                       ),
                       // Admin trim bar, as on the full-screen route: hidden
                       // until the scissors button starts editing, then sits
@@ -1840,22 +1842,14 @@ class RunTabs extends StatelessWidget {
     );
   }
 
-  Future<void> _launchMaps(
-    BuildContext context,
-    RunTabsController c,
+  /// Where the run is: its coordinates (the run's own, else any found in its
+  /// description) and a one-line address. Null when there are no
+  /// coordinates — there is then nothing to pin or route to.
+  static ({double lat, double lon, String address})? _runDestination(
     RunDetailsAggregate rda,
-  ) async {
-    double? lat;
-    double? lon;
-    String address = '';
-
-    if (rda.extensions.evtLat != null) {
-      lat = rda.extensions.evtLat;
-    }
-
-    if (rda.extensions.evtLon != null) {
-      lon = rda.extensions.evtLon;
-    }
+  ) {
+    double? lat = rda.extensions.evtLat;
+    double? lon = rda.extensions.evtLon;
 
     if ((lat == null) || (lon == null)) {
       // try to get lat/lons from other sources
@@ -1870,45 +1864,79 @@ class RunTabs extends StatelessWidget {
         lon = coords[1]!;
       }
     }
+    if ((lat == null) || (lon == null)) return null;
 
-    if (rda.event.locationStreet != null) {
-      address = '$address${rda.event.locationStreet} ';
-    }
+    final String address = <String?>[
+      rda.event.locationStreet,
+      rda.event.locationCity,
+      rda.event.locationPostCode,
+      rda.event.locationCountry,
+    ].whereType<String>().join(' ').trim();
 
-    if (rda.event.locationCity != null) {
-      address = '$address${rda.event.locationCity} ';
-    }
+    return (
+      lat: lat,
+      lon: lon,
+      address: address.isEmpty ? (rda.event.locationOneLineDesc ?? '') : address,
+    );
+  }
 
-    if (rda.event.locationPostCode != null) {
-      address = '$address${rda.event.locationPostCode} ';
-    }
-
-    if (rda.event.locationCountry != null) {
-      address = '$address${rda.event.locationCountry} ';
-    }
-
-    address = address.trim();
-
-    if ((address.isEmpty) && (lat == null || lon == null)) {
-      address = rda.event.locationOneLineDesc ?? '';
-    }
-
-    // use the native map provider for the selected platform
-    if ((lat != null) && (lon != null)) {
-      await Utilities.showOnMap(
-        context,
-        address,
-        maps.Coords(lat, lon),
-        rda.event.eventName,
-        c.saveUserMapPreference,
-      );
-    } else {
+  /// Open the run in a map app: a pin (the map's run marker) or, with
+  /// [directions], a route there (the Get me there / Get Directions button).
+  Future<void> _launchMaps(
+    BuildContext context,
+    RunTabsController c,
+    RunDetailsAggregate rda, {
+    bool directions = false,
+  }) async {
+    final destination = _runDestination(rda);
+    if (destination == null) {
       await Utilities.showAlert(
         'No location information available',
         'There is no location information available for this run and so we cannot display a map',
         'OK',
       );
+      return;
     }
+    // use the native map provider for the selected platform
+    await Utilities.showOnMap(
+      context,
+      destination.address,
+      maps.Coords(destination.lat, destination.lon),
+      rda.event.eventName,
+      c.saveUserMapPreference,
+      directions: directions,
+    );
+  }
+
+  /// The button over the bottom of the run map (James, 2026-09-26): "Get me
+  /// there" on the day of the run, "Get Directions" before it, nothing on
+  /// the day after or later, and nothing once the run has PackTrack data —
+  /// the synced runner count, or tracks the map has already loaded (the
+  /// count can lag a live run by a sync). Nothing either when the run has
+  /// no coordinates to route to.
+  Widget _directionsButton(
+    BuildContext context,
+    RunTabsController c,
+    bool mapHasTrackData,
+  ) {
+    final RunDirections? kind = runDirectionsFor(
+      runStart: futureRun.event.eventStartDatetime,
+      now: DateTime.now(),
+      hasPackTrack:
+          mapHasTrackData || (futureRun.event.trackRunnerCount ?? 0) > 0,
+    );
+    if (kind == null || _runDestination(futureRun) == null) {
+      return const SizedBox.shrink();
+    }
+    return ElevatedButton.icon(
+      onPressed: () => _launchMaps(context, c, futureRun, directions: true),
+      icon: const Icon(Icons.directions, color: Colors.white),
+      label: Text(
+        kind.label,
+        style: ts_button,
+        textAlign: TextAlign.center,
+      ),
+    );
   }
 
   Widget _buildLiveRunButton(BuildContext context, RunTabsController c) {

@@ -22,6 +22,7 @@ class RunTrackerMap extends StatelessWidget {
     this.showLocateButton = true,
     this.initialCanvas = PackTrackCanvas.map,
     this.overlayControls,
+    this.bottomOverlay,
   });
 
   final EventModel event;
@@ -59,6 +60,16 @@ class RunTrackerMap extends StatelessWidget {
   /// Stack because only this widget knows which canvas is up.
   final Widget Function(BuildContext context, PackTrackCanvas canvas)?
   overlayControls;
+
+  /// The host's bottom-centre overlay on the MAP canvas, handed whether the
+  /// run has any PackTrack data. Built inside this widget's Obx, where the
+  /// controller certainly exists, so it follows the tracks as they load — a
+  /// host building it beside the map could run before the controller is
+  /// registered and never hear about them. The host decides what, if
+  /// anything, to draw (the run page's Get me there / Get Directions button).
+  /// Never drawn over a playback panel: with a timeline there is no room.
+  final Widget Function(BuildContext context, bool hasTrackData)?
+  bottomOverlay;
 
   /// Optional override for the GetX controller tag. Defaults to the event id so
   /// every map of a run shares one controller. The fullscreen map passes a
@@ -426,6 +437,7 @@ class RunTrackerMap extends StatelessWidget {
                       Obx(() => _buildPhotoShowcase(controller, cons)),
                 ),
               ),
+              _hostBottom(context, controller),
               // Last, so the showcase's full-bleed overlay can never sit on
               // top of the buttons.
               _hostControls(context, topInset, PackTrackCanvas.map),
@@ -666,6 +678,21 @@ class RunTrackerMap extends StatelessWidget {
       left: 12,
       bottom: bottom,
       child: builder(context, canvas),
+    );
+  }
+
+  Widget _hostBottom(BuildContext context, RunTrackerMapController controller) {
+    final Widget Function(BuildContext, bool)? builder = bottomOverlay;
+    // Read the Rx first: an Obx must observe something on every path.
+    final bool hasTrackData = controller.hasAnyTrackData;
+    if (builder == null || controller.timelineAvailable) {
+      return const SizedBox.shrink();
+    }
+    return Positioned(
+      left: 16,
+      right: 16,
+      bottom: 16,
+      child: Center(child: builder(context, hasTrackData)),
     );
   }
 

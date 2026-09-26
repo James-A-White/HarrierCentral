@@ -30,3 +30,40 @@ bool isRunPast(RunDetailsAggregate run) {
     run.event.eventStartDatetime.add(kRunBecomesPastAfter),
   );
 }
+
+/// The directions button under the run map (James, 2026-09-26).
+enum RunDirections {
+  /// The day of the run: the hasher is on their way.
+  getMeThere('Get me there'),
+
+  /// Any day before it: they are planning.
+  getDirections('Get Directions');
+
+  const RunDirections(this.label);
+  final String label;
+}
+
+/// Which directions button the run map shows, or null for none.
+///
+/// - PackTrack data on the run → none: the map is a trail now, not a
+///   destination, and the playback panel owns the bottom of it.
+/// - The run's day → [RunDirections.getMeThere].
+/// - Before it → [RunDirections.getDirections].
+/// - The day after or later → none.
+///
+/// Days are compared on the wall clock: [runStart] is `eventStartDatetime`,
+/// synced as `CONVERT(DATETIME2, EventStartDatetime)` — the run's local time
+/// with no offset — and [now] is the phone's local time. Like with like, as
+/// in [isRunPast].
+RunDirections? runDirectionsFor({
+  required DateTime runStart,
+  required DateTime now,
+  required bool hasPackTrack,
+}) {
+  if (hasPackTrack) return null;
+  final DateTime runDay = DateTime(runStart.year, runStart.month, runStart.day);
+  final DateTime today = DateTime(now.year, now.month, now.day);
+  if (today.isBefore(runDay)) return RunDirections.getDirections;
+  if (today == runDay) return RunDirections.getMeThere;
+  return null;
+}

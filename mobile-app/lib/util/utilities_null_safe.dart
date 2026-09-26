@@ -232,8 +232,9 @@ class Utilities {
     String title,
     maps.Coords coords,
     String address,
-    ValueNotifier<bool> saveUserMapPreference,
-  ) async {
+    ValueNotifier<bool> saveUserMapPreference, {
+    bool directions = false,
+  }) async {
     final maps.AvailableMap? map = await pickMapProvider(
       context,
       remember: saveUserMapPreference,
@@ -247,15 +248,37 @@ class Utilities {
     // Let the sheet finish closing before the map app takes the screen.
     await Future<void>.delayed(const Duration(milliseconds: 200));
 
+    await _openIn(map, title, coords, address, directions: directions);
+  }
+
+  /// Show [coords] in [map]: a pin, or a route to it from where the hasher
+  /// is when [directions].
+  static Future<void> _openIn(
+    maps.AvailableMap map,
+    String title,
+    maps.Coords coords,
+    String address, {
+    required bool directions,
+  }) async {
     // BUG in plugin - doesn't work when sending a title with Google maps
+    final String safeTitle = map.mapName.contains('Google') ? '' : title;
+    if (directions) {
+      await map.showDirections(
+        destination: coords,
+        destinationTitle: safeTitle.isEmpty ? null : safeTitle,
+      );
+      return;
+    }
     await map.showMarker(
       coords: coords,
-      title: map.mapName.contains('Google') ? '' : title,
+      title: safeTitle,
       description: address,
     );
   }
 
-  /// Open [coords] in the hasher's saved map app, or ask which one.
+  /// Open [coords] in the hasher's saved map app, or ask which one. With
+  /// [directions], the map app routes the hasher there instead of dropping a
+  /// pin (the run map's Get me there / Get Directions button).
   ///
   /// The one entry point for "tap a pin, see it in a map app". It used to be
   /// copied at each pin, and both copies returned in silence when the saved
@@ -269,8 +292,9 @@ class Utilities {
     String title,
     maps.Coords coords,
     String address,
-    ValueNotifier<bool> saveUserMapPreference,
-  ) async {
+    ValueNotifier<bool> saveUserMapPreference, {
+    bool directions = false,
+  }) async {
     final String mapName = getStringPref(StringPrefsEnum.mapPreference) ?? '';
     maps.AvailableMap? saved;
     if (mapName.isNotEmpty) {
@@ -294,16 +318,12 @@ class Utilities {
         coords,
         address,
         saveUserMapPreference,
+        directions: directions,
       );
       return;
     }
 
-    // BUG in plugin - doesn't work when sending a title with Google maps
-    await saved.showMarker(
-      coords: coords,
-      title: saved.mapName.contains('Google') ? '' : title,
-      description: address,
-    );
+    await _openIn(saved, title, coords, address, directions: directions);
   }
 
   static bool isValidUrl(String? url) {
