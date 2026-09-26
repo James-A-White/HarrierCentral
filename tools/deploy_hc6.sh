@@ -180,6 +180,10 @@ run_file "HC6.DeviceHcVersion (function)" \
     "$REPO_ROOT/db/schema/functions/HC6.DeviceHcVersion.Function.sql"
 run_file "HC6.ClientLogAppError (function)" \
     "$REPO_ROOT/db/schema/functions/HC6.ClientLogAppError.Function.sql"
+# ValidatePortalAuth calls this; missed by every glob until the first
+# stamped deploy (2026-09-26) reported it unstamped.
+run_file "HC6.CHECK_PORTAL_ACCESS_TOKEN (function)" \
+    "$REPO_ROOT/db/schema/functions/HC6.CHECK_PORTAL_ACCESS_TOKEN.Function.sql"
 run_file "HC6.ValidatePortalAuth" \
     "$SP_DIR/HC6.ValidatePortalAuth.StoredProcedure.sql"
 run_file "HC6.nonApi_updateRunNumbers" \
@@ -205,6 +209,9 @@ run_file "HC6.ValidateAppAuth" \
     "$APP_DIR/HC6.ValidateAppAuth.StoredProcedure.sql"
 run_file "HC6.CheckKennelPermission" \
     "$APP_DIR/HC6.CheckKennelPermission.StoredProcedure.sql"
+# Called by the admin sync SPs; missed by every glob until 2026-09-26.
+run_file "HC6.CheckAreaEntry" \
+    "$APP_DIR/HC6.CheckAreaEntry.StoredProcedure.sql"
 
 echo ""
 echo "── Step 6: Internal helper SPs ──────────────────────────────"
