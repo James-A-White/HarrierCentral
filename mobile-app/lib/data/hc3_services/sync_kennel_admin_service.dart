@@ -1,7 +1,6 @@
 import 'package:harrier_central/imports.dart';
 
 class SyncKennelAdminService {
-
   // exclude HasherEventMap and Payment from allData flags
   //static const int flagsAllData = 0x00000007;
 
@@ -104,9 +103,10 @@ class SyncKennelAdminService {
     bool usePaging = false,
     String? targetHasherId,
   }) async {
-    if (Utilities.isNotConnected()) {
-      return false;
-    }
+    // No "am I online?" gate (2026-09-26): that flag is also set by a 3-second
+    // Google/MSFT probe a waking radio can miss, and this returned false on it
+    // with no request and no log. The request is the test; see
+    // SyncUserDataService._updateFromBackend.
 
     if (getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
       // NOTE: kennels and hashers are not cleared here because all kennels and all hashers are loaded all the time for all users
@@ -195,7 +195,7 @@ class SyncKennelAdminService {
         paramString: deviceSecret,
       );
       return jsonEncode(params);
-    });
+    }, bypassConnectionCheck: true);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       await updateSqlTablesWithResultsFromBackendApiCall(

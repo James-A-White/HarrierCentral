@@ -934,10 +934,16 @@ class FutureRunListPageController extends GetxController {
     };
 
     try {
+      // Kennels too (2026-09-26): without them a kennel change — a new run
+      // price, the card payment app — reached a phone only on a cold start's
+      // full sync or in kennel admin, so resuming or pulling to refresh left
+      // check-in charging the old price (LH3 set to £2, the sheet still
+      // showed £0.00). A delta: usually no rows, one row when a kennel moved.
       await tableModel.syncUserDataService.updateFromBackend(
         EnumDataTables.hasherEventMap.flag |
             EnumDataTables.payments.flag |
-            EnumDataTables.events.flag,
+            EnumDataTables.events.flag |
+            EnumDataTables.kennels.flag,
         true,
         debugText: 'background sync',
       );
@@ -1091,10 +1097,14 @@ class FutureRunListPageController extends GetxController {
       EnumDataTables.hasherEventMap,
       EnumDataTables.payments,
     ];
+    // Kennels ride along as a delta so a changed price or card setting
+    // arrives on a pull (see triggerBackgroundSync). Deliberately NOT in
+    // runTables: a full reload clears and refetches the run tables only.
     final int syncFlags =
         EnumDataTables.hasherEventMap.flag |
         EnumDataTables.payments.flag |
-        EnumDataTables.events.flag;
+        EnumDataTables.events.flag |
+        EnumDataTables.kennels.flag;
 
     if (clearLocalTables) {
       // Full reload. Clearing resets each table's high-water mark (it is derived

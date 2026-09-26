@@ -151,11 +151,17 @@ class SyncUserDataService {
     Client? client,
     bool usePaging = false,
   }) async {
-    if (Utilities.isNotConnected()) {
-      return false;
-    }
-
+    // No "am I online?" gate here (2026-09-26). The flag behind
+    // Utilities.isNotConnected() is also set by a 3-second Google/MSFT probe,
+    // which a waking 5G radio can miss while our own API is reachable; this
+    // used to return false on it WITHOUT a request or a log line, so a cold
+    // start could sync nothing. The request itself is the honest test: a
+    // phone that really is offline fails fast in the transport and the HTTP
+    // layer reports it.
     debugPrint('[BOOT] SyncUserData.updateFromBackend: start, flags=0x${tablesToSync.toRadixString(16)}, debugText=$debugText: ${DateTime.now().millisecondsSinceEpoch}ms');
+    final String stepLabel = debugText.replaceFirst('Globals: ', '');
+    bool ok = true;
+    int bytesTotal = 0;
     int batchNumber = 1;
     // Guard against an infinite paging loop. If the base-service bitmask
     // logic fails to clear a table's bit when the SP returns 0 rows, the
@@ -268,14 +274,19 @@ class SyncUserDataService {
       //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
       debugPrint('[BOOT] SyncUserData.updateFromBackend: HTTP POST start (batch $batchNumber): ${DateTime.now().millisecondsSinceEpoch}ms');
-      final String responseBody = await ServiceCommon.sendHttpPost(() {
-        params['accessToken'] = Utilities.generateToken(
-          userId,
-          'hcapp_syncUserData',
-          paramString: deviceSecret,
-        );
-        return jsonEncode(params);
-      }, client: client);
+      final String responseBody = await ServiceCommon.sendHttpPost(
+        () {
+          params['accessToken'] = Utilities.generateToken(
+            userId,
+            'hcapp_syncUserData',
+            paramString: deviceSecret,
+          );
+          return jsonEncode(params);
+        },
+        client: client,
+        // See the note at the top: try the request, do not trust the probe.
+        bypassConnectionCheck: true,
+      );
       debugPrint('[BOOT] SyncUserData.updateFromBackend: HTTP POST done (batch $batchNumber): ${DateTime.now().millisecondsSinceEpoch}ms — responseLen=${responseBody.length}, isError=${responseBody.startsWith(ERROR_PREFIX)}');
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
@@ -291,6 +302,7 @@ class SyncUserDataService {
         );
         //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
         debugPrint('[BOOT] SyncUserData.updateFromBackend: updateSqlTables done (batch $batchNumber): ${DateTime.now().millisecondsSinceEpoch}ms — remaining=0x${tablesToSync.toRadixString(16)}');
+        bytesTotal += responseBody.length;
         await setDatePref(
           DatePrefsEnum.lastSuccessfulUserDataSync,
           DateTime.now(),
@@ -306,6 +318,14 @@ class SyncUserDataService {
             'XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX',
           );
         }
+        // Reported, not swallowed (2026-09-26): this returned true, so no
+        // caller could tell a failed sync from a good one — the full sync
+        // stamped success, and a full reload dropped its backup.
+        ok = false;
+        BootLogger.logBreadcrumb(
+          '[SYNC] $stepLabel: batch $batchNumber failed — '
+          '${responseBody.length > 80 ? responseBody.substring(0, 80) : responseBody}',
+        );
         // A server error means there are no results to page through.
         // Without this break, tablesToSync stays non-zero and the while loop
         // retries the same failing request forever — causing the app to hang.
@@ -316,7 +336,13 @@ class SyncUserDataService {
 
     }
     debugPrint('[BOOT] SyncUserData.updateFromBackend: COMPLETE after $batchNumber batches: ${DateTime.now().millisecondsSinceEpoch}ms');
-    return true;
+    // One line per sync in the UPLOADED session log, so "did the phone
+    // actually sync, and what came back?" can be answered from the server.
+    BootLogger.logBreadcrumb(
+      '[SYNC] $stepLabel: ${ok ? 'ok' : 'FAILED'}, $batchNumber '
+      'batch${batchNumber == 1 ? '' : 'es'}, ${(bytesTotal / 1024).toStringAsFixed(1)} KB',
+    );
+    return ok;
   }
 
   final List<BaseTableHelper> _userTables = <BaseTableHelper>[

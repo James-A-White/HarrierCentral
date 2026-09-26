@@ -113,83 +113,94 @@ Future<void> syncAllUserDataFromBackend({
   void Function(String)? informUser,
   String clientAppIdentifier = 'PRO_APP',
 }) async {
-  final Client client = Client();
-
-  tableModel.syncUserDataService.isFullSyncInProgress = true;
-  try {
-    await tableModel.syncUserDataService.updateFromBackend(
+  // One step per table group. Every step is attempted; a step that fails is
+  // retried once, after the connection is back; and "last successful full
+  // sync" is stamped only when EVERY step has actually worked.
+  //
+  // Until 2026-09-26 this ignored each step's result and stamped success
+  // regardless. A step that met the app's "offline" flag (set by a 3-second
+  // Google/MSFT probe that a waking 5G radio can miss) returned at once
+  // without a request, so a cold start could sync NOTHING — LH3's new £2 run
+  // price never reached James's phone across several launches, and nothing
+  // said so. No shared http Client either: a persistent client goes bad when
+  // iOS suspends the app (memory http-one-shot-clients); one-shot posts do not.
+  final List<_FullSyncStep> steps = <_FullSyncStep>[
+    _FullSyncStep(
+      'Cities, Regions, Countries, Songs',
       EnumDataTables.cities.flag |
           EnumDataTables.regions.flag |
           EnumDataTables.countries.flag |
           EnumDataTables.songs.flag,
-      false,
-      informUser: informUser,
-      debugText: 'Globals: Cities, Regions, Countries, Songs on launch',
-      batchText: 'Batch #',
-      client: client,
       usePaging: false,
-    );
-
-    await tableModel.syncUserDataService.updateFromBackend(
+    ),
+    _FullSyncStep(
+      'HEM',
       EnumDataTables.hasherEventMap.flag | EnumDataTables.payments.flag,
-      false,
-      informUser: informUser,
-      debugText: 'Globals: HEM on launch',
-      batchText: 'Batch #',
-      client: client,
       usePaging: false,
-    );
+    ),
+    _FullSyncStep('HKM', EnumDataTables.hasherKennelMap.flag, usePaging: false),
+    _FullSyncStep('Kennels', EnumDataTables.kennels.flag, usePaging: true),
+    _FullSyncStep('Events', EnumDataTables.events.flag, usePaging: true),
+    _FullSyncStep('Hashers', EnumDataTables.hashers.flag, usePaging: true),
+  ];
 
-    await tableModel.syncUserDataService.updateFromBackend(
-      EnumDataTables.hasherKennelMap.flag,
-      false,
-      informUser: informUser,
-      debugText: 'Globals: HKM on launch',
-      batchText: 'Batch #',
-      client: client,
-      usePaging: false,
-    );
+  Future<bool> runStep(_FullSyncStep step) async {
+    try {
+      return await tableModel.syncUserDataService.updateFromBackend(
+        step.flags,
+        false,
+        informUser: informUser,
+        debugText: 'Globals: ${step.label} on launch',
+        batchText: 'Batch #',
+        usePaging: step.usePaging,
+      );
+    } catch (e, s) {
+      BootLogger.logError(
+        '[ERROR][SYNC]',
+        'full sync step ${step.label} threw: $e',
+        s,
+      );
+      return false;
+    }
+  }
 
-    await tableModel.syncUserDataService.updateFromBackend(
-      EnumDataTables.kennels.flag,
-      false,
-      informUser: informUser,
-      debugText: 'Globals: Kennels on launch',
-      batchText: 'Batch #',
-      client: client,
-      usePaging: true,
-    );
+  tableModel.syncUserDataService.isFullSyncInProgress = true;
+  try {
+    List<_FullSyncStep> failed = <_FullSyncStep>[];
+    for (final _FullSyncStep step in steps) {
+      if (!await runStep(step)) failed.add(step);
+    }
 
-    await tableModel.syncUserDataService.updateFromBackend(
-      EnumDataTables.events.flag,
-      false,
-      informUser: informUser,
-      debugText: 'Globals: Events on launch',
-      batchText: 'Batch #',
-      client: client,
-      usePaging: true,
-    );
+    if (failed.isNotEmpty) {
+      BootLogger.logBreadcrumb(
+        '[SYNC] full sync: ${failed.map((f) => f.label).join(', ')} failed; '
+        'retrying once the connection is back',
+      );
+      await _waitForConnection(const Duration(seconds: 60));
+      final List<_FullSyncStep> retry = failed;
+      failed = <_FullSyncStep>[];
+      for (final _FullSyncStep step in retry) {
+        if (!await runStep(step)) failed.add(step);
+      }
+    }
 
-    await tableModel.syncUserDataService.updateFromBackend(
-      EnumDataTables.hashers.flag,
-      false,
-      informUser: informUser,
-      debugText: 'Globals: Hashers on launch',
-      batchText: 'Batch #',
-      client: client,
-      usePaging: true,
-    );
-
-    await setDatePref(
-      DatePrefsEnum.lastSuccessfulUserDataFullSync,
-      DateTime.now(),
-    );
+    if (failed.isEmpty) {
+      await setDatePref(
+        DatePrefsEnum.lastSuccessfulUserDataFullSync,
+        DateTime.now(),
+      );
+      BootLogger.logBreadcrumb('[SYNC] full sync: all steps succeeded');
+    } else {
+      BootLogger.logError(
+        '[ERROR][SYNC]',
+        'full sync incomplete after retry: '
+            '${failed.map((f) => f.label).join(', ')} failed — not stamped',
+        null,
+      );
+    }
 
     await CommonQueries.deleteRemovedRecords(
       EnumDataTables.hashers.commonTableName,
-    );
-    await CommonQueries.deleteRemovedRecords(
-      EnumDataTables.events.commonTableName,
     );
     await CommonQueries.deleteRemovedRecords(
       EnumDataTables.events.commonTableName,
@@ -206,16 +217,16 @@ Future<void> syncAllUserDataFromBackend({
     }
   } catch (e, stack) {
     // An unhandled exception inside the sync chain (e.g. malformed server data,
-    // SQLite error, network failure) must not permanently hang the boot screen.
-    // Log it and fall through — the app will open in offline mode with whatever
-    // data was already cached locally.
-    if (kDebugMode) {
-      debugPrint('syncAllUserDataFromBackend error (continuing in offline mode): $e');
-      debugPrint(stack.toString());
-    }
+    // SQLite error) must not permanently hang the boot screen. Log it — to the
+    // uploaded session log, not just the debug console — and fall through:
+    // the app opens with whatever data was already cached locally.
+    BootLogger.logError(
+      '[ERROR][SYNC]',
+      'syncAllUserDataFromBackend failed: $e',
+      stack,
+    );
   } finally {
     tableModel.syncUserDataService.isFullSyncInProgress = false;
-    client.close();
   }
 
   String message = (await CommonQueries.countRecords(
@@ -435,5 +446,28 @@ class DeviceInfo extends GetxService {
     }
 
     return this;
+  }
+}
+
+
+/// One table group in [syncAllUserDataFromBackend].
+class _FullSyncStep {
+  const _FullSyncStep(this.label, this.flags, {required this.usePaging});
+  final String label;
+  final int flags;
+  final bool usePaging;
+}
+
+/// Waits until the app believes it is online, up to [limit]. Returns at once
+/// when it already does; never throws.
+Future<void> _waitForConnection(Duration limit) async {
+  final DateTime until = DateTime.now().add(limit);
+  while (DateTime.now().isBefore(until)) {
+    try {
+      if (!Utilities.isNotConnected()) return;
+    } catch (_) {
+      return;
+    }
+    await Future<void>.delayed(const Duration(seconds: 2));
   }
 }

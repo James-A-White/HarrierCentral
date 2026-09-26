@@ -1,7 +1,6 @@
 import 'package:harrier_central/imports.dart';
 
 class SyncEventAdminService {
-
   //static const int EnumDataTables.hashers.flag = 0x00000020;
 
   // static const int flagsAllData = 0x0000007f;
@@ -96,9 +95,10 @@ class SyncEventAdminService {
     Function? informUser,
     bool usePaging = false,
   }) async {
-    if (Utilities.isNotConnected()) {
-      return false;
-    }
+    // No "am I online?" gate (2026-09-26): that flag is also set by a 3-second
+    // Google/MSFT probe a waking radio can miss, and this returned false on it
+    // with no request and no log. The request is the test; see
+    // SyncUserDataService._updateFromBackend.
 
     // ⚠ THE WIPE USED TO HAPPEN HERE, BEFORE THE FETCH.
     //
@@ -196,7 +196,7 @@ class SyncEventAdminService {
         paramString: deviceSecret,
       );
       return jsonEncode(syncBody);
-    });
+    }, bypassConnectionCheck: true);
 
     // A failed fetch returns FALSE and changes nothing. It used to return true
     // regardless, so callers could not tell an empty result from an unanswered
@@ -243,7 +243,8 @@ class SyncEventAdminService {
   /// Ask the server for EVERYTHING the flags cover, ignoring whatever the
   /// local tables happen to hold. Used when the event changed.
   void _forceAllUpdatedTimes(int flags) {
-    int f(int flag) => (flags & flag) == 0 ? IGNORE_REPLICATION_TIMESTAMP : FORCE;
+    int f(int flag) =>
+        (flags & flag) == 0 ? IGNORE_REPLICATION_TIMESTAMP : FORCE;
     _hasherEventMapLastUpdated = f(EnumDataTables.hasherEventMap.flag);
     _hasherKennelMapLastUpdated = f(EnumDataTables.hasherKennelMap.flag);
     _narrowEventsLastUpdated = f(EnumDataTables.events.flag);
@@ -263,9 +264,10 @@ class SyncEventAdminService {
     String eventId, {
     bool usePaging = false,
   }) async {
-    if (Utilities.isNotConnected()) {
-      return false;
-    }
+    // No "am I online?" gate (2026-09-26): that flag is also set by a 3-second
+    // Google/MSFT probe a waking radio can miss, and this returned false on it
+    // with no request and no log. The request is the test; see
+    // SyncUserDataService._updateFromBackend.
 
     // Same ordering fix as _updateFromBackend: decide here, wipe only after the
     // response lands. This path is the RSVP refresh, so an early wipe on a bad
@@ -283,8 +285,9 @@ class SyncEventAdminService {
 
     final DateTime hasherEventMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
-    final DateTime hashersUpdatedAfter =
-        DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+    final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      _hashersLastUpdated + 1,
+    );
 
     String userId = getStringPref(StringPrefsEnum.userId) ?? '';
     if (userId.isEmpty) {
@@ -299,10 +302,9 @@ class SyncEventAdminService {
       'queryType': 'getEventRsvps',
       'deviceId': deviceId,
       'eventId': eventId,
-      'hashersUpdatedAfter':
-          ('${hashersUpdatedAfter}000000').substring(0, 26),
-      'hasherEventMapUpdatedAfter':
-          ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+      'hashersUpdatedAfter': ('${hashersUpdatedAfter}000000').substring(0, 26),
+      'hasherEventMapUpdatedAfter': ('${hasherEventMapUpdatedAfter}000000')
+          .substring(0, 26),
       'usePaging': usePaging ? '1' : '0',
     };
 
@@ -313,7 +315,7 @@ class SyncEventAdminService {
         paramString: deviceSecret,
       );
       return jsonEncode(syncBody);
-    });
+    }, bypassConnectionCheck: true);
 
     if (responseBody.startsWith(ERROR_PREFIX)) {
       return false;
