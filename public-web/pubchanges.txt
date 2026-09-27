@@ -1,3 +1,6 @@
+0.21.74 (2026-09-27 redeploy)
+    • Distances follow the viewer's units: m/km or yd/mi, on runs, My Kennels, PackTrack and Trail TV.
+
 0.21.74
     • Chat messages can be up to 4,000 characters; over-long messages are refused with a reason instead of trimmed to 500.
     • A non-GUID song id 404s instead of throwing in the shim.

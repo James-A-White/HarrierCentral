@@ -1,3 +1,24 @@
+## 3.1.8+1416 (2026-09-27)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **End-of-run summary.** Ending a run shows your distance and time, the
+  checks you went through ("3 of 4"), the drink stops you reached and the time
+  you spent at them.
+### Improvements
+- **Distances follow your units everywhere** — metres below 1 km then decimal
+  km, or yards below a mile then decimal miles — on the Live Run readout,
+  PackTrack, the rose, run locations, GPX import, the radius labels and the
+  Apple Watch.
+- **Run detail:** the hares wrap onto as many lines as they need.
+- **Runs-within radius** applies at once (it re-read every past run first,
+  ~45 s on Android).
+### Fixes
+- **Chat notifications open the chat again** for runs not already on screen.
+- **PackTrack shows you**, not another hasher, when you stop tracking.
+- Ids are lowercase everywhere (a one-time tidy of the phone's database runs
+  on first launch).
+
 ## 3.1.8+1415 (2026-09-27)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version.

@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-27 redeploy)
+
+- **Distances follow the viewer's units.** Metres below 1 km then decimal km,
+  or yards below a mile then decimal miles — on the runs list, My Kennels,
+  PackTrack and Trail TV. Signed-in hashers get their own setting, everyone
+  else the kennel's. The radius reads "50 mi" where miles apply.
+
 ## 0.21.74 (2026-09-23)
 
 - **Chat messages can be 4,000 characters.** The route rejected nothing and
