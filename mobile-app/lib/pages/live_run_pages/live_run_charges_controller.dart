@@ -25,7 +25,7 @@ class LiveRunChargesController extends GetxController {
 
   Future<void> load() async {
     isLoading.value = true;
-    final kennelAgg = await QueryKennels.getSingleKennel(kennelId);
+    final kennelAgg = await QueryKennels.getSingleKennel(HcId(kennelId));
     if (isClosed) return;
     canManageCharges.value = canAccessFeature(
       KennelFeature.manageDownDowns,

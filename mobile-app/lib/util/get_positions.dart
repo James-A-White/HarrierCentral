@@ -102,7 +102,9 @@ class GetPositionsApi {
 
     var resultStr = utf8.decode(response.bodyBytes);
 
-    var result = json.decode(resultStr);
+    // Runner ids from the archive and from server-side imports come from SQL;
+    // lowercase them here so every consumer compares like with like (HcId).
+    var result = lowerGuidsInPlace(json.decode(resultStr));
 
     final payload = UserPositionsPayload.fromJson(
       result as Map<String, dynamic>,

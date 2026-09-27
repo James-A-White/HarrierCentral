@@ -165,7 +165,7 @@ class ChatPageController extends GetxController {
     _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       // Only act on (and log) pushes for THIS chat — every other foreground push
       // used to hit an error-level log with a full data interpolation.
-      if (!_pushIsForThisThread(message.data)) return;
+      if (!_pushIsForThisThread(message.payload)) return;
       BootLogger.logBreadcrumb('[ChatPage FCM] delta for ${_kind.name}');
       // The sender's OWN echo is what turns their single tick into a double,
       // so this must fire for every thread kind, not just runs.

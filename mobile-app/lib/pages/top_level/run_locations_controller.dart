@@ -640,8 +640,8 @@ class RunAndKennelMapController extends GetxController {
     final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
       EnumKennelQueryType.singleKennel,
       EnumKennelQueryContext.user,
-      hasherId: hasherId,
-      kennelId: kennelId,
+      hasherId: HcId(hasherId),
+      kennelId: HcId(kennelId),
     );
 
     if (results.isEmpty) return;

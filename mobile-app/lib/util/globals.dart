@@ -1,3 +1,4 @@
+import 'package:harrier_central/database/guid_case_repair.dart';
 import 'package:harrier_central/imports.dart';
 
 // Ambient variable to access the service locator
@@ -205,6 +206,7 @@ Future<void> syncAllUserDataFromBackend({
     await CommonQueries.deleteRemovedRecords(
       EnumDataTables.events.commonTableName,
     );
+    await lowercaseStoredGuidsOnce(database);
 
     if (_createIndexes) {
       await Tables.createIndexes(
@@ -425,6 +427,7 @@ class DeviceInfo extends GetxService {
     final plugin = DeviceInfoPlugin();
     if (Platform.isAndroid) {
       androidInfo = await plugin.androidInfo;
+      // id-case-ok: the platform's hardware id, registered upper case; not an HcId.
       deviceId = androidInfo.id.toUpperCase();
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';

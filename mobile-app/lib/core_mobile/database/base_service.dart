@@ -20,6 +20,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:harrier_central/util/boot_logger.dart';
+import 'package:harrier_central/util/hc_id.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -244,6 +245,9 @@ class BaseService<TDomain> {
     List<dynamic> allResultSets;
     try {
       allResultSets = jsonDecode(fullJson) as List<dynamic>;
+      // Ids enter the app here: lowercase them once, for every table and
+      // every adHoc reply (see HcId).
+      lowerGuidsInPlace(allResultSets);
     } catch (e, s) {
       BootLogger.logError('[ERROR][SYNC]', 'sync reply is not JSON: $e', s);
       allResultSets = [];
@@ -362,6 +366,9 @@ class BaseService<TDomain> {
     List<dynamic> allResultSets2;
     try {
       allResultSets2 = jsonDecode(fullJson2) as List<dynamic>;
+      // Ids enter the app here: lowercase them once, for every table and
+      // every adHoc reply (see HcId).
+      lowerGuidsInPlace(allResultSets2);
     } catch (e, s) {
       BootLogger.logError('[ERROR][SYNC]', 'sync reply is not JSON: $e', s);
       allResultSets2 = [];

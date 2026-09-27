@@ -1,6 +1,16 @@
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/firebase_options.dart';
 
+/// A push's data with every GUID lowercased. Payloads are built in SQL, which
+/// writes ids in UPPERCASE, while the phone's database holds them in
+/// lowercase — reading `message.payload` directly is how a chat tap came to
+/// open nothing (2026-09-27). Read payloads through this, never `.data`.
+extension HcPushPayload on RemoteMessage {
+  Map<String, dynamic> get payload =>
+      lowerGuidsInPlace(Map<String, dynamic>.of(data)) as Map<String, dynamic>;
+}
+
+
 class NotificationService extends GetxService with WidgetsBindingObserver {
   // --- Reactive State for Badges ---
 
@@ -376,19 +386,19 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     ) async {
       await _handleNotificationClick(message);
       if (kDebugMode) {
-        debugPrint('Message opened app received: ${message.data}');
+        debugPrint('Message opened app received: ${message.payload}');
       }
     });
   }
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     if (kDebugMode) {
-      debugPrint("Foreground message received: ${message.data}");
+      debugPrint("Foreground message received: ${message.payload}");
     }
 
     // Song notifications bypass badge logic — dispatch immediately so the
     // songbook updates without the badge HTTP round-trip adding latency.
-    final String? silentType = message.data['Type'] as String?;
+    final String? silentType = message.payload['Type'] as String?;
     if (silentType == 'song_selected') {
       _dispatchMessageToControllers(message);
       return;
@@ -396,7 +406,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
     // 1. Badge Update Logic: refresh every thread kind's unread counts.
     //
-    // This used to key on message.data['PublicEventId'], which ONLY a run
+    // This used to key on message.payload['PublicEventId'], which ONLY a run
     // chat carries: AppApiHC6.SendChatNotifications sends RoomType for a room
     // and KennelId for a kennel thread, by design. With the id null,
     // _updateChatCountBadges returns at its first guard and nothing else in
@@ -461,17 +471,17 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     // Song notification tap — update session state then navigate to the songbook.
     // onSongSelected() must be called first so pendingSongId is set before the
     // SongsPageController's ever() worker fires on navigation.
-    final String? silentType = message.data['Type'] as String?;
+    final String? silentType = message.payload['Type'] as String?;
     if (silentType == 'song_selected') {
-      final String? eventId = message.data['EventId'] as String?;
-      final String? songId = message.data['SongId'] as String?;
+      final String? eventId = message.payload['EventId'] as String?;
+      final String? songId = message.payload['SongId'] as String?;
       if (eventId != null && songId != null) {
         SongSessionNotifier.ensure().onSongSelected(
           eventId: eventId.toLowerCase(),
           songId: songId.toLowerCase(),
-          songTitle: message.data['SongTitle'] as String? ?? '',
+          songTitle: message.payload['SongTitle'] as String? ?? '',
           selectedByName:
-              message.data['SelectedByName'] as String? ?? 'Someone',
+              message.payload['SelectedByName'] as String? ?? 'Someone',
         );
         Get.until((route) => route.isFirst || route.settings.name == '/main');
         _navigateToSongbook(eventId.toLowerCase());
@@ -480,7 +490,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
 
     // 2. Badge Clear Logic: Reset badge counts when user interacts with notification
-    final publicEventId = message.data['PublicEventId'] as String?;
+    final publicEventId = message.payload['PublicEventId'] as String?;
 
     // Attempt to clear the badges for the specific event if possible.
     if (publicEventId != null) {
@@ -519,7 +529,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
   void _dispatchMessageToControllers(RemoteMessage message) {
     // Data-only silent messages use a string Type field rather than MessageType.
-    final String? silentType = message.data['Type'] as String?;
+    final String? silentType = message.payload['Type'] as String?;
     if (silentType == 'song_selected') {
       _handleSongSelected(message);
       return;
@@ -532,7 +542,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     // are not song_selected reach here without the field. Stringify first so
     // an absent key, a null, or a numeric value all fall back to 0.
     final MessageType messageType = MessageType.fromId(
-      int.tryParse('${message.data['MessageType'] ?? ''}') ?? 0,
+      int.tryParse('${message.payload['MessageType'] ?? ''}') ?? 0,
     );
 
     switch (messageType) {
@@ -545,7 +555,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           }
 
           if (kDebugMode) {
-            debugPrint('Handling chat message: ${message.data}');
+            debugPrint('Handling chat message: ${message.payload}');
           }
         } catch (e, s) {
           if (kDebugMode) {
@@ -892,11 +902,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   void _handleSongSelected(RemoteMessage message) {
-    final String? eventId = message.data['EventId'] as String?;
-    final String? songId = message.data['SongId'] as String?;
-    final String songTitle = message.data['SongTitle'] as String? ?? '';
+    final String? eventId = message.payload['EventId'] as String?;
+    final String? songId = message.payload['SongId'] as String?;
+    final String songTitle = message.payload['SongTitle'] as String? ?? '';
     final String selectedByName =
-        message.data['SelectedByName'] as String? ?? 'Someone';
+        message.payload['SelectedByName'] as String? ?? 'Someone';
 
     if (eventId == null || songId == null) return;
 

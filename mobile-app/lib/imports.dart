@@ -353,6 +353,7 @@ export 'package:harrier_central/util/text_styles.dart';
 export 'package:harrier_central/util/update_ids.dart';
 export 'package:harrier_central/util/utilities_null_safe.dart';
 export 'package:harrier_central/util/uuid_utils.dart';
+export 'package:harrier_central/util/hc_id.dart';
 
 // widgets
 export 'package:harrier_central/widgets/add_virgin_visitor_popup.dart';

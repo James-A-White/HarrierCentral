@@ -65,8 +65,12 @@ Future<void> clearPrefs() async {
 
 // STRING
 
+// A GUID-shaped string pref (userId, deviceId, adminEventId, …) is always
+// lowercase, on write and on read — a value an older build stored in another
+// case still comes back lowercase (see HcId).
 String? getStringPref(StringPrefsEnum key) {
-  return _prefs.get(key.toString()) as String?;
+  final String? v = _prefs.get(key.toString()) as String?;
+  return v != null && looksLikeGuid(v) ? v.toLowerCase() : v;
 }
 
 Future<void> setStringPref(StringPrefsEnum key, String? value) async {
@@ -74,7 +78,10 @@ Future<void> setStringPref(StringPrefsEnum key, String? value) async {
     await _prefs.remove(key.toString());
     return;
   }
-  await _prefs.setString(key.toString(), value);
+  await _prefs.setString(
+    key.toString(),
+    looksLikeGuid(value) ? value.toLowerCase() : value,
+  );
 }
 
 // NUM

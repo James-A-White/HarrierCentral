@@ -180,7 +180,7 @@ class ZoomableImagePage2 extends StatelessWidget {
                   child: Text('View Kennel', style: ts_button, textAlign: TextAlign.center),
                   onPressed: () async {
                     final KennelListAggregate? kennel =
-                        await QueryKennels.getSingleKennel(kennelId!);
+                        await QueryKennels.getSingleKennel(HcId(kennelId));
 
                     if (kennel == null) return;
 

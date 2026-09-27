@@ -574,7 +574,7 @@ class DeepLinkService {
   Future<void> _openRun(String eventId, RunTab tab, Uri uri) async {
     final List<RunDetailsAggregate> runs = await QueryRuns.getRunDetailsAggregates(
       true,
-      eventId: eventId,
+      eventId: HcId(eventId),
       queryType: EnumRunQueryType.singleRun,
       runsTimeScope: RunsTimeScope.future,
       runsToDisplay: RunsToDisplay.allRuns,

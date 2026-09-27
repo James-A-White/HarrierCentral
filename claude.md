@@ -694,24 +694,40 @@ buttons dark-on-red is unreadable. When creating any new button or button
 text style, check what background the theme actually paints and default to
 white text on red buttons, every time.
 
-**UUID normalisation (Flutter/Dart):**
+**Ids are lowercase, everywhere — `HcId` (Flutter/Dart):**
 
-All UUID strings in this project must be lowercase. SQL Server returns
-`UNIQUEIDENTIFIER` columns as uppercase; the `uuid` package normalises to
-lowercase via `UuidValue.fromString()`. Comparing the two without
-normalisation silently returns `false`.
+SQL Server writes a `UNIQUEIDENTIFIER` in UPPERCASE whenever SQL itself makes
+it text (push payloads, `CAST(id AS NVARCHAR)` columns); the API's JSON and
+the phone's database use lowercase. Dart `==` and SQLite `=` are both
+case-sensitive, so a mixed-case id matches nothing and says nothing. On
+2026-09-27 that lost "you" on the PackTrack map and made every chat push open
+nothing. The fix is structural — keep ids lowercase where they ENTER, so a
+plain `==` / `=` is always right:
+
+| Door | What lowercases it |
+|---|---|
+| Sync + adHoc replies | `lowerGuidsInPlace` in `base_service.dart` |
+| Push payloads | `message.payload` (never `message.data`) |
+| PackTrack positions | `lowerGuidsInPlace` in `get_positions.dart` |
+| GUID-shaped string prefs | `getStringPref` / `setStringPref` |
+| Rows written before 1416 | `lowercaseStoredGuidsOnce` (one-time, at boot sync) |
 
 Rules:
-- Use `normalizeUuid(string)` or the `.asUuid` extension (from
-  `lib/util/uuid_utils.dart`, globally exported via `imports.dart`)
-  whenever comparing a UUID string from one source against another.
-- Normalise UUID string parameters at the **entry point** of every query
-  or service function before using them in API calls or map lookups.
-- For new UUID fields in Freezed models, use `@UuidConverter()` + `UuidValue`
-  instead of `String` so normalisation is automatic at JSON parse time.
-  Plain `String` UUID fields are **not** automatically normalised.
-- Never compare two UUID strings with raw `==` unless both are guaranteed
-  to already be lowercase (e.g. both came through `UuidValue`).
+- **`HcId`** (`lib/util/hc_id.dart`, exported via `imports.dart`) is the id
+  type: an extension type over `String` whose only constructor lowercases. It
+  costs nothing at runtime and `implements String`, so it drops in anywhere.
+  Query functions take ids as `HcId` (`QueryRuns`, `QueryKennels`,
+  `CommonQueries.isAtRunStart`), so a raw payload string cannot reach SQL.
+  New id parameters and fields use `HcId`; migrate old ones as you touch them.
+- An id from outside the app — payload, URL, scan, another service — becomes
+  an `HcId` on the line it arrives.
+- Never `toUpperCase()` an id. The rare deliberate case carries
+  `// id-case-ok: <why>`.
+- `normalizeUuid` / `.asUuid` / `equalsUuid` still work for existing code.
+
+```bash
+python3 tools/id_case_scan.py     # MUST print nothing
+```
 
 **BIT columns in Flutter/Dart `fromJson` (API serialisation gotcha):**
 

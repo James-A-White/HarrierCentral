@@ -383,8 +383,8 @@ class HasherListView extends StatelessWidget {
     final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
       EnumKennelQueryType.singleKennel,
       EnumKennelQueryContext.user,
-      hasherId: userId,
-      kennelId: kennelId,
+      hasherId: HcId(userId),
+      kennelId: HcId(kennelId),
     );
 
     return results[0]['kennelName'];

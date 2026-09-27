@@ -168,7 +168,7 @@ class QueryKennels {
         .toList();
   }
 
-  static Future<KennelListAggregate?> getSingleKennel(String kennelId) async {
+  static Future<KennelListAggregate?> getSingleKennel(HcId kennelId) async {
     bool isHomeKennel = false;
     if (normalizeUuid(kennelId) ==
         normalizeUuid(getStringPref(StringPrefsEnum.homeKennelId))) {
@@ -180,7 +180,7 @@ class QueryKennels {
     final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
       EnumKennelQueryType.singleKennel,
       EnumKennelQueryContext.user,
-      hasherId: hasherId,
+      hasherId: HcId(hasherId),
       kennelId: kennelId,
     );
 
@@ -228,8 +228,8 @@ class QueryKennels {
   static Future<List<Map<String, dynamic>>> queryKennels(
     EnumKennelQueryType queryType,
     EnumKennelQueryContext queryContext, {
-    required String hasherId,
-    String? kennelId,
+    required HcId hasherId,
+    HcId? kennelId,
   }) async {
     String hkmTable;
 

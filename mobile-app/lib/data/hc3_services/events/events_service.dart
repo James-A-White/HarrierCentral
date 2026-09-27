@@ -505,7 +505,7 @@ class EventsService extends BaseService {
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
       EnumRunQueryType.singleRun,
       EnumRunQueryContext.kennelAdmin,
-      eventId: eventId,
+      eventId: HcId(eventId),
       runsTimeScope: RunsTimeScope.all,
       runsToDisplay: RunsToDisplay.allRuns,
     );

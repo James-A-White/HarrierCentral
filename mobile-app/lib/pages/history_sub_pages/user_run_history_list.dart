@@ -21,7 +21,7 @@ class UserRunHistoryList extends StatelessWidget {
   Future<void> _openRun(UserRunHistoryModel item) async {
     final List<dynamic> run = await QueryRuns.getRunDetailsAggregates(
       true,
-      eventId: item.eventId,
+      eventId: HcId(item.eventId),
       queryType: EnumRunQueryType.singleRun,
       runsTimeScope: RunsTimeScope.future,
       runsToDisplay: RunsToDisplay.allRuns,

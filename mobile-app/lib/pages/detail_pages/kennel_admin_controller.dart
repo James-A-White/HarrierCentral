@@ -163,7 +163,7 @@ class KennelAdminController extends GetxController {
       final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
         EnumRunQueryType.kennelDetailPage,
         EnumRunQueryContext.user,
-        kennelId: kennelAggregateItem.kennel.kennelId,
+        kennelId: HcId(kennelAggregateItem.kennel.kennelId),
         runsTimeScope: RunsTimeScope.future,
         runsToDisplay: RunsToDisplay.allRuns,
       );
@@ -225,7 +225,7 @@ class KennelAdminController extends GetxController {
   /// Re-parse mismanagement after returning from the manage-members page.
   Future<void> refreshMismanagement() async {
     final KennelListAggregate? kennelAggregate =
-        await QueryKennels.getSingleKennel(kennelAggregateItem.kennel.kennelId);
+        await QueryKennels.getSingleKennel(HcId(kennelAggregateItem.kennel.kennelId));
     _parseMismanagement(kennelAggregate?.kennel.kennelMismanagementTeam);
   }
 }

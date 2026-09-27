@@ -94,7 +94,7 @@ class CommonQueries {
   /// Tools button uses it to answer "is this person actually AT the start?"
   /// rather than merely "is this run on today?".
   static Future<List<AreWeAtRunModel>> isAtRunStart({
-    String? eventId,
+    HcId? eventId,
     bool requireProximity = false,
   }) async {
     debugPrint('[BOOT] CommonQueries.isAtRunStart: start, eventId=${eventId ?? "null"}, requireProximity=$requireProximity: ${DateTime.now().millisecondsSinceEpoch}ms');

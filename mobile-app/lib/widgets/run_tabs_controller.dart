@@ -502,7 +502,7 @@ class RunTabsController extends GetxController
       // RunListItemController.refreshLiveRunButton. An RSVP'd hasher keeps the
       // old, laxer test; anyone else has to actually be here.
       final results = await CommonQueries.isAtRunStart(
-        eventId: _eventId,
+        eventId: HcId(_eventId),
         requireProximity: !hasRsvpYes,
       );
       if (isClosed) return;
@@ -582,7 +582,7 @@ class DownDownsHistoryController extends GetxController {
   Future<void> load() async {
     if (!Utilities.isConnected()) return;
     try {
-      final kennelAgg = await QueryKennels.getSingleKennel(kennelId);
+      final kennelAgg = await QueryKennels.getSingleKennel(HcId(kennelId));
       if (isClosed) return;
       canManage.value = canAccessFeature(
         KennelFeature.manageDownDowns,

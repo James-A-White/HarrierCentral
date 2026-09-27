@@ -195,7 +195,7 @@ class RunListItemController extends GetxController {
       // an RSVP'd hasher keeps the old, laxer test (the run being live is
       // enough, wherever they are).
       final results = await CommonQueries.isAtRunStart(
-        eventId: eventId,
+        eventId: HcId(eventId),
         requireProximity: !hasRsvpYes,
       );
       final bool atStart = results.any((item) => item.eventId == eventId);

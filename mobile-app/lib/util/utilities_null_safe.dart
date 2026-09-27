@@ -1014,7 +1014,8 @@ class Utilities {
 
     try {
       final List<AreWeAtRunModel> resultList = await CommonQueries.isAtRunStart(
-        eventId: eventId,
+        // Null stays null: it means the passive "am I at any run?" check.
+        eventId: eventId == null ? null : HcId(eventId),
       );
 
       // Stamp the throttle only AFTER the (GPS-bound, up to ~20s) query has

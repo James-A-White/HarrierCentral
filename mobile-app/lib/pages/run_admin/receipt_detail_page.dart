@@ -131,6 +131,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         if (_imageFromCamera != null) {
           final String? uploaded = await _upload(
             _imageFromCamera!,
+            // id-case-ok: a blob file name, never compared.
             '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg',
           );
           // Don't file a receipt that points at an image which is not there —

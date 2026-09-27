@@ -87,6 +87,7 @@ enum BoolPrefsEnum {
   fcmTokenSavedToServer,
   notificationPreferencesRequested,
   debugHarvestEnabled,
+  storedGuidsLowercased, // one-time GUID case repair done (2026-09-27)
 }
 
 enum IntPrefsEnum {

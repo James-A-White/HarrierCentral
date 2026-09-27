@@ -2831,7 +2831,7 @@ class RunTrackerMapController extends GetxController
 
   Future<void> _resolveImperialUnits() async {
     try {
-      final agg = await QueryKennels.getSingleKennel(event.kennelId);
+      final agg = await QueryKennels.getSingleKennel(HcId(event.kennelId));
       imperialUnits.value = Utilities.prefersImperial(
         kennelDistanceUnitsPref: agg?.extensions.distanceUnitsPref,
       );

@@ -76,7 +76,7 @@ class KennelsListPageController extends GetxController {
             await QueryKennels.queryKennels(
               EnumKennelQueryType.topKennelPage,
               EnumKennelQueryContext.user,
-              hasherId: hasherId,
+              hasherId: HcId(hasherId),
             );
 
         double? dist;

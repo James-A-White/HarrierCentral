@@ -498,7 +498,7 @@ class FutureRunListPageController extends GetxController {
     // data from a message tap when the app was already opened but
     // in the background
 
-    await _processMessage(message.data);
+    await _processMessage(message.payload);
   }
 
   Future<void> _processMessage(Map<String, dynamic> data) async {
@@ -559,7 +559,7 @@ class FutureRunListPageController extends GetxController {
       if (runs.isEmpty) {
         runs = await QueryRuns.getRunDetailsAggregates(
           true,
-          eventId: eventId,
+          eventId: HcId(eventId),
           queryType: EnumRunQueryType.singleRun,
           runsTimeScope: RunsTimeScope.future,
           runsToDisplay: RunsToDisplay.allRuns,

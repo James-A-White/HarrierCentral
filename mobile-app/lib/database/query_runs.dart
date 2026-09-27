@@ -269,7 +269,7 @@ class QueryRuns {
 
   static Future<List<RunDetailsAggregate>> getRunDetailsAggregates(
     bool searchAllRuns, {
-    String? eventId,
+    HcId? eventId,
     EnumRunQueryType queryType = EnumRunQueryType.topRunsPage,
     required RunsToDisplay runsToDisplay,
     required RunsTimeScope runsTimeScope,
@@ -437,9 +437,9 @@ class QueryRuns {
   static Future<List<Map<String, dynamic>>> queryRuns(
     EnumRunQueryType queryType,
     EnumRunQueryContext queryContext, {
-    String? kennelId,
+    HcId? kennelId,
     bool searchAllRuns = true,
-    String? eventId,
+    HcId? eventId,
     required RunsToDisplay runsToDisplay,
     required RunsTimeScope runsTimeScope,
   }) async {
@@ -629,7 +629,7 @@ class QueryRuns {
     final String whereClauseForSingleRun = eventId == null
         ? ''
         : '''
-            WHERE lower(evt.${tableModel.eventsTableHelper.colEventId}) = "${normalizeUuid(eventId)}"
+            WHERE lower(evt.${tableModel.eventsTableHelper.colEventId}) = "$eventId"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
           ''';
 
