@@ -5,6 +5,8 @@ import 'package:latlong2/latlong.dart' as latlng;
 import 'on_inn_auto_stop.dart';
 import 'run_point_buffer.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/location_service/auto_start_detector.dart';
+import 'package:harrier_central/services/location_service/auto_start_monitor.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
 
 // Constants (replace with your actual constants)
@@ -166,6 +168,10 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   // live distance HUD continues from where it left off instead of restarting
   // at zero. See [seedSessionTrack].
   bool _isResumingExistingTrack = false;
+  // Set by an auto-start trigger: tracking keeps the armed stream (already
+  // precise, background, and on Android already a foreground service)
+  // instead of re-subscribing — which, in a pocket, Android 12+ may refuse.
+  bool _keepStreamForAutoStart = false;
   Worker? _trackingWorker;
 
   // Last-known GPS coordinates held in memory only — not persisted to disk.
@@ -196,6 +202,10 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   // Prompts "Are you On Inn?" when the runner sits stationary at the pack's
   // On-Inn cluster with tracking still on (docs/packtrack_auto_stop_plan.md).
   late final OnInnAutoStopMonitor _onInnAutoStop = OnInnAutoStopMonitor(this);
+
+  /// PackTrack auto-start: arm before the run, tracking starts when you set
+  /// off (2026-09-27). See [AutoStartMonitor].
+  late final AutoStartMonitor autoStart = AutoStartMonitor(this);
 
   // Epoch-ms of the most recent deliberate tracking start/resume — the
   // staleness guard for the remote "tracking ended" flag.
@@ -236,6 +246,11 @@ class LocationService extends GetxService with WidgetsBindingObserver {
     // Call the subscription logic on initialization
     unawaited(onInitAsync());
     _onInnAutoStop.init();
+    // Re-arm an auto-start saved before the app was closed — after the boot
+    // stream is up, so the armed stream replaces it rather than racing it.
+    unawaited(
+      Future<void>.delayed(const Duration(seconds: 5), autoStart.restore),
+    );
 
     _trackingWorker = ever<bool>(joinRunTracking, (value) async {
       if (value) {
@@ -254,6 +269,16 @@ class LocationService extends GetxService with WidgetsBindingObserver {
         _isResumingFromPause = false;
         _isResumingExistingTrack = false;
 
+        if (_keepStreamForAutoStart && _geoLocationStreamSubscription != null) {
+          _keepStreamForAutoStart = false;
+          LocationTimeLedger.setTier('track');
+          BootLogger.logBreadcrumb(
+            'PackTrack: run tracking STARTED by auto-start (armed stream kept) '
+            '${BootLogger.memInfo()}',
+          );
+          return;
+        }
+        _keepStreamForAutoStart = false;
         final locationSettings = getLocSettings(
           _trackingDistanceFilter(),
           _trackingAccuracy(),
@@ -421,6 +446,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
     bool allowBackgroundLocationUpdates,
     bool pauseLocationUpdatesAutomatically, {
     Duration androidInterval = const Duration(minutes: 15),
+    String notificationText = 'Tracking run in progress',
   }) {
     final LocationSettings locationSettings;
     if (defaultTargetPlatform == TargetPlatform.android) {
@@ -448,9 +474,9 @@ class LocationService extends GetxService with WidgetsBindingObserver {
         intervalDuration: androidInterval,
         forceLocationManager: false,
         foregroundNotificationConfig: allowBackgroundLocationUpdates
-            ? const ForegroundNotificationConfig(
+            ? ForegroundNotificationConfig(
                 notificationTitle: 'Harrier Central',
-                notificationText: 'Tracking run in progress',
+                notificationText: notificationText,
                 enableWakeLock: true,
               )
             : null,
@@ -645,6 +671,48 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   /// (Re)subscribes the shared stream for the not-tracking state: precise
   /// viewer settings while any boost is held, low-power idle otherwise.
   Future<void> _subscribeIdleStream() async {
+    // Auto-start armed: a background stream that keeps the app alive in a
+    // pocket — low power until T−5, then precise to fill the start ring.
+    if (autoStart.armed.value) {
+      final bool armedPrecise = autoStart.wantsPrecise;
+      final LocationSettings armedSettings = armedPrecise
+          ? getLocSettings(
+              5,
+              LocationAccuracy.best,
+              true,
+              false,
+              androidInterval: const Duration(seconds: 5),
+              notificationText: 'Auto start armed — tracking starts when you set off',
+            )
+          : getLocSettings(
+              100,
+              LocationAccuracy.medium,
+              true,
+              false,
+              androidInterval: const Duration(minutes: 1),
+              notificationText: 'Auto start armed — waiting for the run',
+            );
+      LocationTimeLedger.setTier(armedPrecise ? 'precise' : 'idle');
+      BootLogger.logBreadcrumb(
+        'Location: stream -> AUTO-START ${armedPrecise ? 'precise' : 'low-power'}',
+      );
+      await _geoLocationStreamSubscription?.cancel();
+      try {
+        _geoLocationStreamSubscription =
+            Geolocator.getPositionStream(locationSettings: armedSettings).listen(
+              updateDeviceLocation,
+              onError: (error) {
+                BootLogger.logBreadcrumb(
+                  'PackTrack: location stream error while AUTO-START armed: $error',
+                );
+              },
+            );
+      } catch (e, s) {
+        _geoLocationStreamSubscription = null;
+        BootLogger.logError('[LocationService.autoStartStream]', e, s);
+      }
+      return;
+    }
     final bool precise = _preciseBoostActive;
     final LocationSettings settings = precise
         ? getLocSettings(
@@ -680,6 +748,51 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       _geoLocationStreamSubscription = null;
       BootLogger.logError('[LocationService._subscribeIdleStream]', e, s);
     }
+  }
+
+  /// Re-subscribes the not-tracking stream (auto-start armed, precise boost or
+  /// idle) — used when auto-start arms, disarms or reaches T−5.
+  Future<void> refreshIdleStream() async {
+    if (joinRunTracking.value || isPaused.value) return;
+    await _subscribeIdleStream();
+  }
+
+  /// Starts tracking because auto-start saw the runner set off: the same run
+  /// and user a manual Start sets, the buffered fixes from just before the
+  /// start replayed into the upload queue with their own timestamps, then
+  /// tracking on. The live-run page does the rest when it is opened.
+  Future<void> startTrackingFromAutoStart({
+    required String eventId,
+    required String userId,
+    required List<AutoStartFix> backfill,
+  }) async {
+    this.eventId = eventId;
+    this.userId = userId;
+    if (_runBuffer != null && _runBuffer!.eventId != eventId) {
+      await _runBuffer?.flush();
+      _runBuffer?.dispose();
+      _runBuffer = null;
+    }
+    _runBuffer ??= RunPointBuffer(
+      apiUrl: STORE_POSITIONS_URL,
+      eventId: eventId,
+      userId: userId,
+      onRemoteTrackingEnded: _onRemoteTrackingEnded,
+    );
+    for (final AutoStartFix f in backfill) {
+      _runBuffer!.enqueue(
+        UserEventLocation(
+          ts: pad19(f.tsMs),
+          lat: double.parse(f.lat.toStringAsFixed(5)),
+          lng: double.parse(f.lng.toStringAsFixed(5)),
+          acc: double.parse(f.acc.toStringAsFixed(2)),
+          alt: double.parse(f.alt.toStringAsFixed(2)),
+        ),
+      );
+    }
+    _keepStreamForAutoStart = true;
+    joinRunTracking.value = true;
+    unawaited(_runBuffer!.flush());
   }
 
   // Pauses tracking: records the pause point, switches to low-power monitoring,
@@ -1080,6 +1193,12 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       di.deviceLon = lon;
       di.deviceAccuracy = accuracy;
       di.deviceAltitude = altitude;
+    }
+
+    // Auto-start armed: every fix feeds the start detector (it ignores them
+    // until T−5, a hare's at once).
+    if (!joinRunTracking.value && !isPaused.value && autoStart.armed.value) {
+      autoStart.onFix(position);
     }
 
     // Auto-resume: if paused and device has moved far enough, resume tracking.

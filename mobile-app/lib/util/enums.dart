@@ -46,6 +46,9 @@ enum StringPrefsEnum {
   // Card hand-offs awaiting the provider's answer (E8.F7.S1), keyed by the
   // marker's clientPaymentId: what to send when SumUp returns.
   cardHandoffJson,
+  // PackTrack auto-start armed for a run (2026-09-27): what to track and
+  // when, kept so a relaunch inside the window re-arms.
+  autoStartJson,
   paymentTerminalAccountKey,
   permissionMatrixJson,
   permissionMatrixWatermark,

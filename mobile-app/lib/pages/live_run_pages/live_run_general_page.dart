@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/location_service/auto_start_monitor.dart';
 import 'package:harrier_central/pages/live_run_pages/lost_compass_dialog.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
@@ -101,6 +102,10 @@ class LiveRunGeneralController extends GetxController {
   // True once the event is within 5 minutes of starting (or already started).
   late final RxBool canStartTracking;
 
+  // True while auto start may be armed (T−2h onwards); refreshed by the
+  // pre-run timer so the button enables itself when the window opens.
+  late final RxBool canArmNow = canArmAutoStart.obs;
+
   DateTime? _trackingStartedAt;
   DateTime? _trackingEndedAt;
   Timer? _elapsedTicker;
@@ -117,6 +122,7 @@ class LiveRunGeneralController extends GetxController {
     canStartTracking = _checkCanStart().obs;
     if (!canStartTracking.value) {
       _preRunTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+        canArmNow.value = canArmAutoStart;
         if (_checkCanStart()) {
           canStartTracking.value = true;
           _preRunTimer?.cancel();
@@ -199,6 +205,45 @@ class LiveRunGeneralController extends GetxController {
 
   bool _checkCanStart() =>
       trackingHasOpened(run.event.eventStartDatetimeGmt);
+
+  // ── Auto start (2026-09-27) ─────────────────────────────────────────────
+
+  AutoStartMonitor get autoStart => _locationService.autoStart;
+
+  /// Armed for THIS run (auto-start is one run at a time).
+  bool get autoStartArmedHere =>
+      autoStart.armed.value &&
+      normalizeUuid(autoStart.eventId ?? '') ==
+          normalizeUuid(run.event.eventId);
+
+  /// Auto start can be armed now (T−2h until 2 h after the start).
+  bool get canArmAutoStart =>
+      AutoStartMonitor.canArm(run.event.eventStartDatetimeGmt);
+
+  /// Local time auto start becomes available, e.g. `10:00 AM`.
+  String get autoStartOpensAt => DateFormat('h:mm a').format(
+    run.event.eventStartDatetimeGmt.toLocal().subtract(kAutoStartArmBefore),
+  );
+
+  Future<void> armAutoStart() async {
+    final bool hare = run.extensions.isHare == 1;
+    await autoStart.arm(
+      eventId: run.event.eventId,
+      eventName: '${run.kennel.kennelShortName} #${run.event.eventNumber}',
+      startGmt: run.event.eventStartDatetimeGmt,
+      isHare: hare,
+      startLat: run.extensions.evtLat,
+      startLng: run.extensions.evtLon,
+    );
+    showHcSnackbar(
+      hare
+          ? 'Auto start armed. Tracking starts when you leave the start.'
+          : 'Auto start armed. Tracking starts by itself when you set off — '
+                'you can put the phone away.',
+    );
+  }
+
+  Future<void> cancelAutoStart() => autoStart.disarm();
 
   // Local-time label shown on the disabled start button.
   String get trackingOpensAt =>
@@ -873,10 +918,17 @@ class LiveRunGeneralPage extends StatelessWidget {
 
       final paused = controller.isPaused.value;
 
+      // Auto start (2026-09-27). Read the Rx here, before any branch, so this
+      // Obx always observes them (an Obx that can skip its reads throws).
+      final bool armedAnywhere = controller.autoStart.armed.value;
+      final String armedStatus = controller.autoStart.status.value;
+      final bool armedHere = armedAnywhere && controller.autoStartArmedHere;
+
       if (!tracking && !paused) {
-        // Not running — full-width start button. Disabled until 5 min before start.
         final canStart = controller.canStartTracking.value;
-        return SizedBox(
+        final bool canArm = controller.canArmNow.value;
+
+        final Widget startButton = SizedBox(
           height: 45,
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -898,6 +950,121 @@ class LiveRunGeneralPage extends StatelessWidget {
             ),
             onPressed: canStart ? controller.toggleTracking : null,
           ),
+        );
+
+        // Armed for this run: say so, and offer Start now / Cancel.
+        if (armedHere) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.28),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.lightBlueAccent),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.bolt, color: Colors.lightBlueAccent),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Auto start is on',
+                            style: ts_button.copyWith(fontSize: 17),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      armedStatus,
+                      style: ts_body,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 8,
+                children: [
+                  if (canStart)
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.play_arrow, size: 20),
+                      label: Text(
+                        'Start now',
+                        style: ts_button,
+                        textAlign: TextAlign.center,
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade700,
+                        foregroundColor: Colors.white,
+                        shape: buttonShape,
+                      ),
+                      onPressed: () async {
+                        await controller.cancelAutoStart();
+                        await controller.toggleTracking();
+                      },
+                    ),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.close, size: 20, color: Colors.white),
+                    label: Text(
+                      'Cancel auto start',
+                      style: ts_button,
+                      textAlign: TextAlign.center,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.white70),
+                      shape: buttonShape,
+                    ),
+                    onPressed: () => unawaited(controller.cancelAutoStart()),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }
+
+        final Widget autoStartButton = SizedBox(
+          height: 45,
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.bolt, size: 20),
+            label: Text(
+              canArm
+                  ? 'Auto start when I set off'
+                  : 'Auto start available at ${controller.autoStartOpensAt}',
+              style: ts_button.copyWith(fontSize: canArm ? 17 : 15),
+              textAlign: TextAlign.center,
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: hc_blue,
+              disabledBackgroundColor: Colors.grey.shade700,
+              foregroundColor: Colors.white,
+              disabledForegroundColor: Colors.white60,
+              padding: buttonPadding,
+              shape: buttonShape,
+            ),
+            onPressed: canArm && !armedAnywhere
+                ? () => unawaited(controller.armAutoStart())
+                : null,
+          ),
+        );
+
+        // Before T−5 the main control IS auto start; from T−5 Start leads and
+        // auto start is still on offer for anyone not yet setting off.
+        return Column(
+          children: canStart
+              ? [startButton, const SizedBox(height: 8), autoStartButton]
+              : [autoStartButton],
         );
       }
 
