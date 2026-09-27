@@ -199,8 +199,15 @@ class QueryKennels {
       final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
         results[0],
       );
-      final HasherKennelMapModel hkmItem = tableModel.hasherKennelMapTableHelper
-          .fromMap(results[0]);
+      // No membership row for this kennel (never followed or joined) comes
+      // back from the LEFT JOIN as NULL columns, and the model's required
+      // hkmId then throws — the run page's completed Down Downs quietly
+      // failed to load (1401, 2026-09-25). Same guard as the kennel list
+      // and run-locations map already had.
+      HasherKennelMapModel? hkmItem;
+      if (results[0][tableModel.hasherKennelMapTableHelper.colHkmId] != null) {
+        hkmItem = tableModel.hasherKennelMapTableHelper.fromMap(results[0]);
+      }
       final KennelListQueryExtenstions extensionsItem =
           KennelListQueryExtenstions.fromMap(results[0]);
       extensionsItem.distToKennel = dist;
