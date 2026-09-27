@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/photos/photo_download.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:intl/intl.dart';
 
@@ -357,6 +358,20 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
           maxLines: 1,
         ),
         actions: <Widget>[
+          // Any photo, anyone: save the one on screen to the camera roll
+          // (James, 2026-09-27).
+          IconButton(
+            tooltip: 'Save to my photos',
+            icon: const Icon(Icons.download, color: Colors.white),
+            onPressed: () => unawaited(
+              PhotoDownload.saveToCameraRoll(
+                _currentPhoto.imageUrl,
+                latitude: _currentPhoto.latitude,
+                longitude: _currentPhoto.longitude,
+                takenAt: _currentPhoto.capturedAt,
+              ),
+            ),
+          ),
           // Your photo, your call — at any point in its life, whether it is
           // still waiting on the Hash Flash or was approved months ago
           // (James, 2026-09-13).

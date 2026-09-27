@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/photos/photo_download.dart';
 
 // ---------------------------------------------------------------------------
 // Model
@@ -1047,6 +1048,24 @@ class PhotoReviewPage extends StatelessWidget {
           iconTheme: const IconThemeData(color: Colors.white),
           title: Text('Review Photos', style: ts_appBarTitle),
           actions: [
+            // Save the photo on screen (James, 2026-09-27: every carousel).
+            // Not in grid mode — there, no single photo is on screen.
+            Obx(() {
+              final bool grid = controller.gridMode.value;
+              final int index = controller.currentIndex.value;
+              final List<KennelPendingPhoto> photos = controller.visiblePhotos;
+              if (grid || index < 0 || index >= photos.length) {
+                return const SizedBox.shrink();
+              }
+              final String url = photos[index].effectiveUrl;
+              if (url.isEmpty) return const SizedBox.shrink();
+              return IconButton(
+                tooltip: 'Save to my photos',
+                icon: const Icon(Icons.download, color: Colors.white),
+                onPressed: () =>
+                    unawaited(PhotoDownload.saveToCameraRoll(url)),
+              );
+            }),
             IconButton(
               icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: controller.loadPhotos,

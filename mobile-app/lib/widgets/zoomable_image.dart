@@ -1,6 +1,7 @@
 import 'dart:io' as platform;
 import 'dart:ui' as ui;
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/photos/photo_download.dart';
 
 
 class ZoomableImagePage2 extends StatelessWidget {
@@ -37,7 +38,24 @@ class ZoomableImagePage2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A photo on the web can be saved to the camera roll; a QR code, a
+    // bundled asset or a local file cannot, or need not (James, 2026-09-27).
+    final String? downloadUrl =
+        (qrCode == null &&
+            file == null &&
+            (imageUrl ?? '').startsWith('http'))
+        ? imageUrl
+        : null;
     final AppBar appBar = AppBar(
+      actions: <Widget>[
+        if (downloadUrl != null)
+          IconButton(
+            tooltip: 'Save to my photos',
+            icon: const Icon(Icons.download, color: Colors.white),
+            onPressed: () =>
+                unawaited(PhotoDownload.saveToCameraRoll(downloadUrl)),
+          ),
+      ],
       centerTitle: true,
       backgroundColor: appBarBackgroundColor,
       iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
