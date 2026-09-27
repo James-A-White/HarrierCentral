@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/location_service/run_summary.dart';
+import 'package:harrier_central/widgets/run_summary_dialog.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -2326,6 +2328,37 @@ class RunTrackerMapController extends GetxController
   /// when their track arrives the map moves to them, unless they had picked
   /// someone themselves (James, 2026-09-27: stopping showed another hasher).
   bool _selectionIsAuto = true;
+
+  /// The run summary card for the signed-in runner, from their recorded
+  /// track (James, 2026-09-27: pull the end-of-run screen back up from a past
+  /// run). Distance is the map's own measure of the whole track, so it agrees
+  /// with the readout; time runs from the first point to the last (or to On
+  /// Inn); checks and drink stops come from every runner's marks, read from
+  /// the unfiltered tracks so a mark never depends on the GPS filter.
+  RunSummarySource? ownRunSummary() {
+    final UserTrack? mine = ownTrack;
+    if (mine == null || _currentUserId == null) return null;
+    final List<_InterpolatedPoint> path = _interpolatedTrackPoints(mine, null);
+    final Duration elapsed = path.length < 2
+        ? Duration.zero
+        : Duration(
+            milliseconds: (path.last.timestampMs - path.first.timestampMs)
+                .round(),
+          );
+    final List<TrackPoint> raw =
+        _serverTracks[_currentUserId] ?? mine.positions;
+    return FixedRunSummary(
+      distanceMeters: _sumInterpolatedDistance(path),
+      elapsed: elapsed,
+      marks: RunSummary.compute(
+        ownTrack: raw,
+        allPoints: _serverTracks.isEmpty
+            ? userPositions.expand((UserTrack u) => u.positions)
+            : _serverTracks.values.expand((List<TrackPoint> p) => p),
+      ),
+      summaryImperial: imperialUnits.value,
+    );
+  }
 
   /// The signed-in runner's own track, if they have one on this run.
   UserTrack? get ownTrack {

@@ -9,6 +9,7 @@ import 'package:harrier_central/widgets/run_photo_gallery.dart';
 import 'package:harrier_central/widgets/hc_badges.dart' as badges;
 import 'package:eventide/eventide.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/widgets/run_summary_dialog.dart';
 import 'package:harrier_central/services/export/gpx_export_service.dart';
 import 'package:harrier_central/widgets/beta_ribbon.dart';
 import 'package:intl/intl.dart';
@@ -1452,6 +1453,19 @@ class RunTabs extends StatelessWidget {
 
     final PackTrackTrimController trimController = c.trimController();
     return <Widget>[
+      // Brings back the end-of-run card, worked out from your own track
+      // (James, 2026-09-27). Only when you ran this one.
+      if (controller.ownTrack != null)
+        MapOverlayButton(
+          icon: Icons.insights,
+          tooltip: 'My run summary',
+          onTap: () {
+            final RunSummarySource? summary = controller.ownRunSummary();
+            if (summary != null) {
+              unawaited(showRunSummaryDialog(context, summary));
+            }
+          },
+        ),
       MapOverlayButton(
         label: 'GPX',
         tooltip: 'Export GPX',

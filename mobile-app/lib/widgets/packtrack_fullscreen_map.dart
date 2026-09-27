@@ -1,5 +1,6 @@
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/export/gpx_export_service.dart';
+import 'package:harrier_central/widgets/run_summary_dialog.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 /// Full-screen PackTrack map for a run, opened from the run's map view. Fills
@@ -145,6 +146,20 @@ class PackTrackFullScreenMap extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          // Same card, same gate as the run-detail map.
+          if (controller.ownTrack != null) ...<Widget>[
+            const SizedBox(height: _gap),
+            MapOverlayButton(
+              icon: Icons.insights,
+              tooltip: 'My run summary',
+              onTap: () {
+                final RunSummarySource? summary = controller.ownRunSummary();
+                if (summary != null) {
+                  unawaited(showRunSummaryDialog(context, summary));
+                }
+              },
+            ),
+          ],
           const SizedBox(height: _gap),
           MapOverlayButton(
             tooltip: 'Export GPX',

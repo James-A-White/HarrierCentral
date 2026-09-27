@@ -2,6 +2,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/location_service/auto_start_monitor.dart';
 import 'package:harrier_central/services/location_service/run_summary.dart';
+import 'package:harrier_central/widgets/run_summary_dialog.dart';
 import 'package:harrier_central/pages/live_run_pages/lost_compass_dialog.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
@@ -74,7 +75,8 @@ Widget _slotTileContent(TrailSlot slot, Color ink) {
   return TrailGlyphImage(glyphId: slot.glyphId, ink: ink);
 }
 
-class LiveRunGeneralController extends GetxController {
+class LiveRunGeneralController extends GetxController
+    implements RunSummarySource {
   LiveRunGeneralController({required this.run}) {
     LiveRunService.ensure();
   }
@@ -471,16 +473,22 @@ class LiveRunGeneralController extends GetxController {
 
   /// Distance and time as the runner last saw them on this page, frozen at
   /// the stop so the summary agrees with the screen they were watching.
+  @override
   final RxDouble summaryDistanceMeters = 0.0.obs;
+  @override
   final Rx<Duration> summaryElapsed = Duration.zero.obs;
 
   /// Checks and drink stops — null until the pack's marks have been fetched.
+  @override
   final Rxn<RunSummary> summary = Rxn<RunSummary>();
+  @override
   final RxBool summaryLoading = false.obs;
 
   /// The marks could not be fetched (offline): distance and time still show.
+  @override
   final RxBool summaryUnavailable = false.obs;
 
+  @override
   bool get summaryImperial => Utilities.prefersImperial(
     kennelDistanceUnitsPref: run.extensions.distanceUnitsPref,
   );
@@ -1244,7 +1252,9 @@ class LiveRunGeneralPage extends StatelessWidget {
                     await showRunSummaryDialog(
                       context,
                       controller,
-                      onInn: choice == EndRunChoice.onInn,
+                      title: choice == EndRunChoice.onInn
+                          ? 'On Inn!'
+                          : 'Your run',
                     );
                   }
                 },
@@ -2036,127 +2046,3 @@ class _SlotFlashDialogState extends State<_SlotFlashDialog>
   }
 }
 
-/// The end-of-run card (James, 2026-09-27): the runner's own distance and
-/// time, the checks they went through and the drink stops, with the time
-/// spent at them when there was any. Distance and time show at once; the
-/// counts arrive when the pack's marks have been read.
-Future<void> showRunSummaryDialog(
-  BuildContext context,
-  LiveRunGeneralController controller, {
-  required bool onInn,
-}) {
-  String hms(Duration d) {
-    final int t = d.inSeconds;
-    final String m = ((t % 3600) ~/ 60).toString().padLeft(2, '0');
-    final String s = (t % 60).toString().padLeft(2, '0');
-    return t >= 3600 ? '${t ~/ 3600}:$m:$s' : '${t ~/ 60}:$s';
-  }
-
-  String minutes(Duration d) {
-    final int m = (d.inSeconds / 60).round();
-    if (m < 60) return '$m min';
-    return '${m ~/ 60} h ${(m % 60).toString().padLeft(2, '0')} min';
-  }
-
-  Widget row(IconData icon, String label, Widget value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      children: [
-        Icon(icon, color: hc_red, size: 26),
-        const SizedBox(width: 12),
-        Expanded(child: Text(label, style: ts_alertDialogBody)),
-        const SizedBox(width: 8),
-        value,
-      ],
-    ),
-  );
-
-  Widget big(String text) => Text(
-    text,
-    style: ts_alertDialogTitle,
-    textAlign: TextAlign.end,
-  );
-
-  return showDialog<void>(
-    context: context,
-    builder: (BuildContext ctx) => AlertDialog(
-      title: Text(
-        onInn ? 'On Inn!' : 'Your run',
-        style: ts_alertDialogTitle,
-        textAlign: TextAlign.center,
-      ),
-      content: Obx(() {
-        // Read every Rx first (an Obx whose reads can be skipped throws).
-        final double meters = controller.summaryDistanceMeters.value;
-        final Duration elapsed = controller.summaryElapsed.value;
-        final RunSummary? s = controller.summary.value;
-        final bool loading = controller.summaryLoading.value;
-        final bool unavailable = controller.summaryUnavailable.value;
-
-        final Widget pending = loading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : big('–');
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            row(
-              Icons.directions_run,
-              'Distance',
-              big(formatDistance(meters, imperial: controller.summaryImperial)),
-            ),
-            row(Icons.timer_outlined, 'Time', big(hms(elapsed))),
-            row(
-              Icons.help_outline,
-              'Checks',
-              s == null
-                  ? pending
-                  : big(
-                      s.checksOnTrail > s.checksReached
-                          ? '${s.checksReached} of ${s.checksOnTrail}'
-                          : '${s.checksReached}',
-                    ),
-            ),
-            if (s == null || s.drinkStopsReached > 0)
-              row(
-                Icons.sports_bar,
-                'Drink stops',
-                s == null ? pending : big('${s.drinkStopsReached}'),
-              ),
-            if (s != null && s.drinkStopTime.inSeconds >= 60)
-              row(
-                Icons.hourglass_bottom,
-                'Time at drink stops',
-                big(minutes(s.drinkStopTime)),
-              ),
-            if (unavailable)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'Checks and drink stops need a connection — they will be '
-                  'on the map when you are back online.',
-                  style: ts_alertDialogBody,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-          ],
-        );
-      }),
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        ElevatedButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: hc_red,
-            foregroundColor: Colors.white,
-          ),
-          child: Text('On On!', style: ts_button, textAlign: TextAlign.center),
-        ),
-      ],
-    ),
-  );
-}
