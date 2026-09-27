@@ -20,6 +20,7 @@
  */
 
 import { Fragment, useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { prefersImperial } from "@/lib/distance";
 import {
   MapContainer, TileLayer, Polyline, CircleMarker, Marker, Pane, Tooltip, useMap,
 } from "react-leaflet";
@@ -140,6 +141,8 @@ interface TrailTvProps {
   /** Run start instant (EventStartDatetimeGmt), epoch ms; null if unknown. */
   eventStartMs: number | null;
   initialMode: "live" | "replay" | null;
+  /** Kennel DistancePreference (bit 0: 1 = miles); null → browser region. */
+  distancePreference?: number | null;
 }
 
 interface PreparedTrack {
@@ -514,8 +517,10 @@ function TvMapPanel({
 
 export default function TrailTv({
   slug, runNumber, lat, lon, eventId, publicEventId,
-  eventName, kennelName, eventStartMs, initialMode,
+  eventName, kennelName, eventStartMs, initialMode, distancePreference = null,
 }: TrailTvProps) {
+  // A public wall: no hasher, so the kennel's unit, else the browser's.
+  const metric = !prefersImperial(null, distancePreference);
   const autoMode: "live" | "replay" =
     eventStartMs != null && Date.now() - eventStartMs > 24 * 3600_000 ? "replay" : "live";
   const [mode, setMode] = useState<"live" | "replay">(initialMode ?? autoMode);
@@ -1111,9 +1116,12 @@ export default function TrailTv({
     FOLLOW_SPRING_OMEGA * (FOLLOW_SPRING_REF_PACE_S / paceSecPerKm),
   );
 
-  const replayPaceLabel = paceSecPerKm < 60
-    ? `${paceSecPerKm} s`
-    : `${(paceSecPerKm / 60).toFixed(1).replace(/\.0$/, "")} min`;
+  // The slider stays in s/km (the stored setting); an imperial viewer reads
+  // the same pace per mile.
+  const paceSecPerUnit = metric ? paceSecPerKm : Math.round(paceSecPerKm * 1.609344);
+  const replayPaceLabel = paceSecPerUnit < 60
+    ? `${paceSecPerUnit} s`
+    : `${(paceSecPerUnit / 60).toFixed(1).replace(/\.0$/, "")} min`;
 
   const currentPhotoId = carouselPhotos.length > 0 ? carouselPhotos[0].photoId : null;
 
@@ -1218,7 +1226,7 @@ export default function TrailTv({
               FRONT RUNNER CAM
               {frontRunner && (
                 <span className="tv-panel-sublabel">
-                  {names[frontRunner.track.id] ?? "leading"} · {formatDistanceLabel(frontRunner.distance)}
+                  {names[frontRunner.track.id] ?? "leading"} · {formatDistanceLabel(frontRunner.distance, metric)}
                 </span>
               )}
             </div>
@@ -1259,7 +1267,7 @@ export default function TrailTv({
             cutoff={replayClock}
             center={center}
             label="RUN REPLAY"
-            sublabel={`${replayPaceLabel} / km · ${formatDistanceLabel(tracks.reduce((m, t) => Math.max(m, t.distanceMeters), 0))} trail`}
+            sublabel={`${replayPaceLabel} / ${metric ? "km" : "mi"} · ${formatDistanceLabel(tracks.reduce((m, t) => Math.max(m, t.distanceMeters), 0), metric)} trail`}
             markPx={overviewMarkPx}
             photos={timedPhotos}
             pinPx={pinPx}
@@ -1375,7 +1383,7 @@ export default function TrailTv({
         </span>
         <span className="tv-stat"><b>{tracks.length}</b>hashers tracked</span>
         {mode === "live" && <span className="tv-stat"><b>{stats.active}</b>on trail now</span>}
-        <span className="tv-stat"><b>{formatDistanceLabel(stats.total)}</b>pack distance</span>
+        <span className="tv-stat"><b>{formatDistanceLabel(stats.total, metric)}</b>pack distance</span>
         <span className="tv-stat"><b>{markCount}</b>trail marks</span>
         {stats.finished > 0 && <span className="tv-stat"><b>{stats.finished}</b>on-inn</span>}
         {mode === "live" && stats.elapsed != null && stats.elapsed < 24 * 60 && (
@@ -1408,7 +1416,7 @@ export default function TrailTv({
             value={paceSecPerKm}
             onChange={(e) => changePace(Number(e.target.value))}
           />
-          <span className="tv-pace-value">{replayPaceLabel} / km</span>
+          <span className="tv-pace-value">{replayPaceLabel} / {metric ? "km" : "mi"}</span>
         </div>
       )}
 

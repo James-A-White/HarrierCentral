@@ -15,7 +15,8 @@ import Link from "next/link";
 import { Search, X, Menu, Heart, ArrowDownWideNarrow, ArrowDownAZ, Building2, Globe } from "lucide-react";
 import type { ChatThreadRow, MyKennel } from "@/lib/member-api";
 import { ChatBubble, indexThreads, type ThreadIndex } from "@/components/member/ChatBubble";
-import { HC_BLUE, HC_GREEN, HC_RED, bellIcon, envelopeIcon, formatDistance, haversine, isMetric, money } from "@/components/member/app-look";
+import { HC_BLUE, HC_GREEN, HC_RED, bellIcon, envelopeIcon, formatDistance, haversine, money, prefersImperial } from "@/components/member/app-look";
+import { currentRadius, radiusLabel } from "@/lib/distance";
 import { ChoicePopup, followChoices, kennelBellChoices, kennelEnvelopeChoices } from "@/components/member/ChoicePopup";
 
 type SortBy = "following" | "distance" | "name" | "city" | "country";
@@ -132,10 +133,13 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
     } finally { setBusy(null); }
   }
 
+  // "Show runs within N": the radius the Runs page uses — the choice this
+  // browser made there, else the hasher's own rung — in the hasher's unit.
+  // (Was: a localStorage key nothing wrote, so always 50 km, converted into
+  // the first kennel's unit — "31 miles".)
   const radiusText = (() => {
-    const km = Number(typeof window !== "undefined" ? localStorage.getItem("hc_radius_km") : null) || 50;
-    const metric = isMetric(visible[0]?.DistanceUnitsPref ?? 0);
-    return formatDistance(km * 1000, metric);
+    const prefs = visible[0]?.HasherPreferences ?? 0;
+    return radiusLabel(currentRadius(prefs), !prefersImperial(prefs));
   })();
 
   return (
@@ -255,7 +259,7 @@ function KennelCard({ k, distance, busy, threads, onFollow, onBell, onEnvelope }
         </Link>
         <div className="min-w-0 flex-1 text-[16px] leading-snug">
           <div className="truncate">{k.Location}</div>
-          {distance != null && <div className="truncate">{formatDistance(distance, isMetric(k.DistanceUnitsPref))} from here</div>}
+          {distance != null && <div className="truncate">{formatDistance(distance, !prefersImperial(k.HasherPreferences, k.DistanceUnitsPref))} from here</div>}
           {k.HasHkm === 1 && (
             <div className="font-semibold" style={{ color: HC_BLUE }}>Runs: {k.IsEstimate ? "~" : ""}{k.Runs}, Times hared: {k.Haring}</div>
           )}

@@ -16,6 +16,7 @@ interface PackTrackFullPageProps {
   publicEventId: string;
   /** Kennel website background image for the photo lightbox backdrop. */
   kennelBackgroundUrl?: string | null;
+  distancePreference?: number | null;
 }
 
 /**
@@ -23,7 +24,7 @@ interface PackTrackFullPageProps {
  * the PackTrack map full-screen; closing returns to the run detail page.
  */
 export function PackTrackFullPage({
-  slug, runNumber, lat, lon, eventId, publicEventId, kennelBackgroundUrl = null,
+  slug, runNumber, lat, lon, eventId, publicEventId, kennelBackgroundUrl = null, distancePreference = null,
 }: PackTrackFullPageProps) {
   const router = useRouter();
   return (
@@ -34,6 +35,7 @@ export function PackTrackFullPage({
       eventId={eventId}
       publicEventId={publicEventId}
       kennelBackgroundUrl={kennelBackgroundUrl}
+      distancePreference={distancePreference}
       onClose={() => router.push(`/${slug}/${runNumber}`)}
     />
   );

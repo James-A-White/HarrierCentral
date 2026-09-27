@@ -41,6 +41,8 @@ export interface RunDetailKennel {
   logoUrl?: string;
   /** Kennel website background image; used as the photo lightbox backdrop. */
   backgroundImageUrl?: string | null;
+  /** 0 = km, 1 = miles (bit 0); absent ⇒ the browser's region decides. */
+  distancePreference?: number | null;
 }
 
 interface RunDetailProps {
@@ -301,6 +303,7 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
                   open={packTrackOpen}
                   onClose={() => setPackTrackOpen(false)}
                   kennelBackgroundUrl={kennel.backgroundImageUrl ?? null}
+                  distancePreference={kennel.distancePreference ?? null}
                 />
               </div>
             )}

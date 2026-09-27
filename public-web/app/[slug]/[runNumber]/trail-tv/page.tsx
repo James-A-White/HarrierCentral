@@ -57,6 +57,7 @@ export default async function TrailTvPage({ params, searchParams }: PageProps) {
           kennelName={kennelData.KennelName}
           eventStartMs={Number.isFinite(eventStartMs) ? eventStartMs : null}
           initialMode={initialMode}
+          distancePreference={kennelData.DistancePreference ?? null}
         />
       </body>
     </html>

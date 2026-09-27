@@ -44,6 +44,7 @@ export default async function PackTrackPage({ params }: PageProps) {
           eventId={event.EventId ?? event.PublicEventId}
           publicEventId={event.PublicEventId}
           kennelBackgroundUrl={toKennelContext(kennelData).backgroundImageUrl ?? null}
+          distancePreference={kennelData.DistancePreference ?? null}
         />
       </body>
     </html>

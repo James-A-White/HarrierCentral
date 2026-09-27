@@ -1,4 +1,5 @@
 import { reportClientError } from "@/lib/client-error";
+import { formatDistance } from "@/lib/distance";
 export interface TrackPoint {
   lat: number;
   lng: number;
@@ -624,13 +625,12 @@ export function formatTrackTimestamp(epochMs: number | null): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 
-/** "X mi / Y km" — 1 dp at/above 10, else 2 dp, matching the app. */
-export function formatDistanceLabel(meters: number): string {
-  const miles = meters * METERS_TO_MILES;
-  const km = meters / 1000;
-  const m = miles >= 10 ? miles.toFixed(1) : miles.toFixed(2);
-  const k = km >= 10 ? km.toFixed(1) : km.toFixed(2);
-  return `${m} mi / ${k} km`;
+/**
+ * A trail distance in the viewer's unit — m / km or yd / mi (2026-09-27; was
+ * always "X mi / Y km"). See lib/distance.ts for the rule.
+ */
+export function formatDistanceLabel(meters: number, metric: boolean): string {
+  return formatDistance(meters, metric);
 }
 
 /**

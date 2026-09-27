@@ -16,6 +16,7 @@ interface TrailTvFullPageProps {
   kennelName: string;
   eventStartMs: number | null;
   initialMode: "live" | "replay" | null;
+  distancePreference?: number | null;
 }
 
 /** Client wrapper for the `/[slug]/[runNumber]/trail-tv` event wall. */

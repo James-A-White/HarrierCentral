@@ -34,19 +34,8 @@ export function appDate(local: string, gmt?: string | null, tz?: string | null):
   return `${day} at ${time}`;
 }
 
-// ── Distance, as the app (Utilities.getDistance) ─────────────────────────────
-
-/** Kennel / country DistancePreference: bit 0 clear = metric. */
-export function isMetric(pref: number): boolean { return (pref & 0x01) === 0; }
-
-export function formatDistance(meters: number, metric: boolean): string {
-  if (metric) {
-    const km = meters / 1000;
-    return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km)} km`;
-  }
-  const miles = meters * 0.000621371;
-  return miles < 10 ? `${miles.toFixed(1)} miles` : `${Math.round(miles)} miles`;
-}
+// ── Distance: one rule for the whole web, see lib/distance.ts ───────────────
+export { formatDistance, prefersImperial } from "@/lib/distance";
 
 /** Great-circle distance in metres. */
 export function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {

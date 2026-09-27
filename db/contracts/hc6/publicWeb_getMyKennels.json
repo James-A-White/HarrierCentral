@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getMyKennels",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The app's Kennels tab: kennels followed / home / member / run with, counts (Hc + Historical), next run. ValidateAppAuth sp 112. 2026-09-16: plus the kennel page's fields (description, website, mismanagement, group invite, my credit).",
   "parameters": [
     {
@@ -247,6 +247,12 @@
           "type": "INT",
           "nullable": true,
           "description": ""
+        },
+        {
+          "name": "HasherPreferences",
+          "type": "INT",
+          "nullable": false,
+          "description": "Since 1.1.0 (2026-09-27): the caller's HC.Hasher.Preferences (COALESCE 0). 0x03 distance unit (3 = miles, 1/2 = km, 0 = Auto), 0x3C >> 2 radius ladder. Same on every row."
         }
       ]
     }

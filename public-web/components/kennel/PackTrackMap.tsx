@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import { prefersImperial } from "@/lib/distance";
 import { createPortal } from "react-dom";
 import {
   MapContainer, TileLayer, Polyline, Marker, Circle, Pane, useMap, useMapEvents,
@@ -391,9 +392,11 @@ interface PackTrackViewProps {
   showTitle?: boolean;
   /** Kennel website background image; null/undefined → platform jungle tile. */
   kennelBackgroundUrl?: string | null;
+  /** Kennel DistancePreference (bit 0: 1 = miles); null → browser region. */
+  distancePreference?: number | null;
 }
 
-function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson, runPhotos, showTitle = false, kennelBackgroundUrl = null }: PackTrackViewProps) {
+function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson, runPhotos, showTitle = false, kennelBackgroundUrl = null, distancePreference = null }: PackTrackViewProps) {
   // Opens at 1.0 — the most recent position info (live view); playing from the
   // end restarts from 0 via togglePlay's reset.
   const [progress, setProgress] = useState(1);    // 0.0 → 1.0
@@ -1035,7 +1038,9 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     selected?.last ? [selected.last.lat, selected.last.lng] : null;
 
   const distanceMeters = selected ? sumDistanceMeters(selected.pts) : 0;
-  const distanceLabel = selected ? formatDistanceLabel(distanceMeters) : "";
+  // A public page: no hasher, so the kennel's unit, else the browser's.
+  const metric = !prefersImperial(null, distancePreference);
+  const distanceLabel = selected ? formatDistanceLabel(distanceMeters, metric) : "";
 
   const selectedIdx = selected ? users.findIndex(u => u.id === selected.id) : -1;
 
@@ -1594,6 +1599,8 @@ interface PackTrackMapProps {
   onClose?: () => void;
   /** Kennel website background image for the photo lightbox backdrop. */
   kennelBackgroundUrl?: string | null;
+  /** Kennel DistancePreference (bit 0: 1 = miles); null → browser region. */
+  distancePreference?: number | null;
   /**
    * When `true`, render as a standalone full-viewport page (no embedded card,
    * no portal overlay) — used by the dedicated `/[slug]/[runNumber]/packtrack`
@@ -1603,7 +1610,7 @@ interface PackTrackMapProps {
 }
 
 export default function PackTrackMap({
-  lat, lon, eventId, publicEventId, height = 240, onTrackLoaded, open = false, onClose, fullPage = false, kennelBackgroundUrl = null,
+  lat, lon, eventId, publicEventId, height = 240, onTrackLoaded, open = false, onClose, fullPage = false, kennelBackgroundUrl = null, distancePreference = null,
 }: PackTrackMapProps) {
   const [users, setUsers] = useState<UserTrack[]>([]);
   const [minTs, setMinTs] = useState(0);
@@ -1696,7 +1703,7 @@ export default function PackTrackMap({
     };
   }, [eventId, publicEventId]);
 
-  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson: trailCfg, runPhotos, kennelBackgroundUrl };
+  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson: trailCfg, runPhotos, kennelBackgroundUrl, distancePreference };
 
   // Standalone full-viewport page (dedicated PackTrack route). Fills the screen
   // with the playback view; the close button hands control back to the caller.

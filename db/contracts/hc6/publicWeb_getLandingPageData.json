@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getLandingPageData",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Returns kennel identity and website configuration needed to render a public-web landing page. Looked up by KennelUniqueShortName (URL slug). No authentication required. Style columns return NULL when the kennel has no KennelWebsite row — the frontend applies its own platform defaults. The FILTH-kennel fallback that existed in v1.0.0 has been removed; style defaults are now hardcoded in the SP so FILTH kennel changes cannot affect other kennels.",
   "parameters": [
     {
@@ -215,6 +215,12 @@
           "type": "NVARCHAR(25)",
           "nullable": true,
           "description": "Sticky nav text colour. NULL = frontend uses theme default (white on dark, near-black on light)."
+        },
+        {
+          "name": "DistancePreference",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Since 1.3.0 (2026-09-27): COALESCE(Kennel.DistancePreference, Country.DistancePreference, 0). Bit 0: 0 = km, 1 = miles. Used by public PackTrack pages to show m/km or yd/mi."
         }
       ]
     }

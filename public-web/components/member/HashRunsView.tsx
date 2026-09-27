@@ -14,7 +14,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MyRun } from "@/lib/member-api";
-import { HC_BLUE, HC_RED, appDate, bellIcon, envelopeIcon, formatDistance, haversine, isMetric } from "@/components/member/app-look";
+import { HC_BLUE, HC_RED, appDate, bellIcon, envelopeIcon, formatDistance, haversine, prefersImperial } from "@/components/member/app-look";
+import { DEFAULT_RADIUS, MILE_IN_METRES, RADII, currentRadius, radiusLabel } from "@/lib/distance";
 import { ChoicePopup, runBellChoices, runEnvelopeChoices, type Choice } from "@/components/member/ChoicePopup";
 
 /**
@@ -37,26 +38,7 @@ const RSVP_YES = 3, RSVP_MAYBE = 2, RSVP_NO = 1, AT_HASH = 20, ON_IN = 30;
 const BANNER = "#6C0243";
 /** A past card: themeButtonColors at 20% over white. */
 const PAST_TINT = "#E2CCD9";
-/**
- * The app's ladder (kennel_list_item.getDistanceString), in the hasher's OWN
- * unit: 50 means 50 km to someone on kilometres and 50 miles to someone on
- * miles. 0 is kept so the section can be switched off, but is never the
- * default — the hasher preference bitfield is 0 until somebody touches it,
- * and reading that as "within 0 km" is what left this showing nothing
- * (James, 2026-09-17).
- */
-const RADII = [0, 10, 25, 50, 75, 100, 150, 200];
-const DEFAULT_RADIUS = 50;
-const MILE_IN_METRES = 1609.344;
-
-/** Preferences & 0x03 — 2 means kilometres, anything else miles. */
-function prefIsMetric(prefs: number): boolean { return (prefs & 0x03) === 2; }
-
-/** Preferences & 0x3C >> 2 indexes the ladder; rung 0 means "never set". */
-function prefRadius(prefs: number): number {
-  const rung = (prefs & 0x3c) >> 2;
-  return RADII[rung] && rung > 0 ? RADII[rung] : DEFAULT_RADIUS;
-}
+// The radius ladder and unit rules live in lib/distance.ts.
 
 export type Answer = "yes" | "maybe" | "no";
 export type PrefKind = "bell" | "envelope";
@@ -121,7 +103,8 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const prefs = runs[0]?.HasherPreferences ?? 0;
-  const metric = prefIsMetric(prefs);
+  // The hasher's choice, else the browser's region (no one kennel here).
+  const metric = !prefersImperial(prefs);
   const prefsRef = useRef(prefs);
   prefsRef.current = prefs;
   const radiusMetres = radius * (metric ? 1000 : MILE_IN_METRES);
@@ -152,12 +135,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   // getItem returns null when unset and Number(null) is 0, which used to be
   // accepted straight into the radius and silenced the section.
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("hc_radius");
-      const v = raw === null ? NaN : Number(raw);
-      if (Number.isFinite(v) && RADII.includes(v)) { setRadius(v); return; }
-    } catch { /* private window */ }
-    setRadius(prefRadius(prefsRef.current));
+    setRadius(currentRadius(prefsRef.current));
   }, []);
   const chooseRadius = (v: number) => { setRadius(v); setShowRadius(false); try { localStorage.setItem("hc_radius", String(v)); } catch {} };
 
@@ -263,7 +241,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
     } finally { setBusy(null); }
   }
 
-  const radiusLabel = `${radius} ${metric ? "km" : "miles"}`;
+  const radiusText = radiusLabel(radius, metric);
 
   return (
     <div className="-mx-3 -mt-[12px] sm:-mt-[16px] md:-mx-6">
@@ -331,7 +309,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
                 }
               >
                 {n === 1 ? (rows.length === 0 ? "Learn about RSVPs →" : "My upcoming runs")
-                  : n === 2 ? `Runs within ${radiusLabel}`
+                  : n === 2 ? `Runs within ${radiusText}`
                   : n === 3 ? "Runs from Kennels I follow"
                   : "All other upcoming runs"}
               </Banner>
@@ -341,14 +319,14 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
                     <button key={km} type="button" onClick={() => chooseRadius(km)}
                       className="rounded-full px-3 py-1 text-sm font-semibold"
                       style={km === radius ? { backgroundColor: HC_RED, color: "#fff" } : { backgroundColor: "#fff", color: "#18181b" }}>
-                      {km === 0 ? "Off" : `${km} ${metric ? "km" : "miles"}`}
+                      {km === 0 ? "Off" : radiusLabel(km, metric)}
                     </button>
                   ))}
                 </div>
               )}
               {n === 2 && rows.length === 0 && (
                 <p className="py-2 text-center text-[20px] text-yellow-300" suppressHydrationWarning>
-                  {me === "denied" ? "[Enable location to see runs near you]" : me === null ? "[Finding where you are…]" : `[No runs found within ${radiusLabel}]`}
+                  {me === "denied" ? "[Enable location to see runs near you]" : me === null ? "[Finding where you are…]" : `[No runs found within ${radiusText}]`}
                 </p>
               )}
               <ul className="space-y-2">
@@ -401,7 +379,8 @@ export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref,
   const href = `/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent(back)}`;
   const when = run.EventStartDatetimeGmt ?? run.EventStartDatetime;
   const scope = scopeText(run.EventGeographicScope);
-  const metric = isMetric(run.DistanceUnitsPref ?? 0);
+  // The hasher's own choice wins; Auto follows this run's kennel.
+  const metric = !prefersImperial(run.HasherPreferences, run.DistanceUnitsPref);
   const runners = run.TrackRunnerCount ?? 0, photos = run.PhotoCount ?? 0, messages = run.MessageCount ?? 0, downDowns = run.DownDownCount ?? 0;
   const hasCounts = runners > 0 || photos > 0 || messages > 0 || downDowns > 0;
 

@@ -15,6 +15,9 @@
 -- Returns: rowset 0 envelope; rowset 1 one row per kennel
 -- Author: Harrier Central
 -- Created: 2026-09-16   v2 2026-09-17 (all eligible kennels, card fields)
+--          v3 2026-09-27: HasherPreferences (the caller's own bitfield, as
+--          publicWeb_getMyRuns) so "N km/mi from here" and the follow radius
+--          honour the hasher's explicit km/miles choice before the kennel's.
 -- HC5 Source: none — reads what hcapp_syncUserData syncs
 -- =====================================================================
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getMyKennels]
@@ -89,6 +92,9 @@ BEGIN TRY
         COALESCE(k.CurrencySymbol, ctr.CurrencySymbol, '$^')     AS CurrencySymbol,
         COALESCE(k.DigitsAfterDecimal, ctr.DigitsAfterDecimal, 2) AS DigitsAfterDecimal,
         COALESCE(k.DistancePreference, ctr.DistancePreference, 0) AS DistanceUnitsPref,
+        -- The HASHER's own bitfield: 0x03 unit (3 = miles, 1/2 = km, 0 =
+        -- Auto), 0x3C >> 2 the radius ladder. Same on every row.
+        COALESCE(me.Preferences, 0)                             AS HasherPreferences,
         COALESCE(k.DefaultEventPriceForMembers, 0)              AS DefaultPriceMembers,
         COALESCE(k.DefaultEventPriceForNonMembers, 0)           AS DefaultPriceNonMembers,
         COALESCE(k.ExcludeFromLeaderboard, 0)                   AS ExcludeFromLeaderboard,
@@ -113,6 +119,7 @@ BEGIN TRY
     FROM HC.Kennel k
     LEFT JOIN HC.HasherKennelMap hkm ON hkm.KennelId = k.id AND hkm.UserId = @userId AND hkm.removed = 0
     LEFT JOIN HC.KennelWebsite kw ON kw.KennelId = k.id
+    LEFT JOIN HC.Hasher  me  ON me.id  = @userId
     LEFT JOIN HC.City    c   ON c.id   = k.CityId
     LEFT JOIN HC.Region  rgn ON rgn.id = k.ProvinceStateId
     LEFT JOIN HC.Country ctr ON ctr.id = k.CountryId

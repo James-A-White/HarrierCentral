@@ -313,6 +313,8 @@ export interface MyKennel {
   CurrencySymbol: string | null;
   DigitsAfterDecimal: number;
   DistanceUnitsPref: number;
+  /** The caller's own HC.Hasher.Preferences (publicWeb_getMyKennels v3). */
+  HasherPreferences?: number;
   DefaultPriceMembers: number;
   DefaultPriceNonMembers: number;
   ExcludeFromLeaderboard: number;

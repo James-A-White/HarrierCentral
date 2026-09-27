@@ -77,6 +77,7 @@ export function toKennelContext(data: KennelLandingData): KennelContext {
 
   return {
     slug: data.KennelUniqueShortName,
+    distancePreference: data.DistancePreference ?? null,
     name: data.KennelName,
     shortName: data.KennelShortName,
     tagline: data.Tagline ?? "",

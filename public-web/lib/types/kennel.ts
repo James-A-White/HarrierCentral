@@ -48,6 +48,8 @@ export interface KennelContext {
   logoUrl?: string;              // https:// URL only — bundle:// refs are excluded
   heroImageUrl?: string;         // BannerImage — replaces logoUrl in hero when set; primary OG image
   backgroundImageUrl?: string;   // https:// URL only — WebsiteBackgroundImage field
+  /** Kennel, else country, DistancePreference — bit 0: 0 = km, 1 = miles. */
+  distancePreference?: number | null;
   backgroundOverlayColor: string;      // CSS #RRGGBB hex color for scroll overlay
   backgroundOverlayMaxOpacity: number; // 0–1, max opacity reached at full scroll
   scrollBlur: number;                  // KennelWebsite.ScrollBlur — 0 = no blur, 100 = full blur (120px)

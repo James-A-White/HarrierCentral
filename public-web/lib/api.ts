@@ -53,6 +53,8 @@ export interface KennelLandingData {
   // DomainValues.KennelStatusEnum: -1=Defunct, 0=Mismanagement Only, 1=Inactive-Visible, 2=Active, 4=Inactive-Hidden.
   // -1 and 4 show the logo-only holding page, same as WebsiteEnabled=false; browse lists hide the same two (the app's rule).
   KennelStatus: number | null;
+  /** Kennel, else country, DistancePreference — bit 0: 0 = km, 1 = miles (2026-09-27). */
+  DistancePreference?: number | null;
 
   // Style tokens — text + surface (#RRGGBBAA; null = use frontend default)
   TitleTextColor: string | null;

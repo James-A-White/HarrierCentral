@@ -37,6 +37,9 @@ AS
 --             2026-05-27 — Added k.KennelStatus to support showing the
 --                           logo-only holding page for status 3 (Defunct)
 --                           and status 4 (Inactive - Hidden) on hashruns.org.
+--             2026-09-27 — Added DistancePreference (kennel, else its
+--                           country; 0 = km, 1 = miles) so public PackTrack
+--                           pages show m/km or yd/mi like the app.
 -- HC5 Source:  None — new for HC6 public web
 -- Breaking Changes: None
 -- =====================================================================
@@ -114,10 +117,14 @@ BEGIN TRY
         kw.MenuTextColor,
 
         -- ── Page features ─────────────────────────────────────────────────────
-        kw.PageFeaturesJson
+        kw.PageFeaturesJson,
+
+        -- ── Units: 0 = km, 1 = miles (bit 0) — as the app's distanceUnitsPref
+        COALESCE(k.DistancePreference, cn.DistancePreference, 0)    AS DistancePreference
 
     FROM HC.Kennel k
     LEFT JOIN HC.KennelWebsite kw ON kw.KennelId = k.id
+    LEFT JOIN HC.Country cn ON cn.id = k.CountryId
     WHERE k.KennelUniqueShortName = @kennelUniqueShortName
       AND k.deleted = 0
       AND k.removed = 0;
