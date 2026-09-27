@@ -60,6 +60,9 @@ class RunDetailQueryExtensions {
       digAfterDec: map['digAfterDec'],
       curSym: map['curSym'],
       curCode: map['curCode'],
+      // The kennel's km/mi setting (country as fallback), so an Auto hasher
+      // at a miles kennel sees miles here too (2026-09-27; never filled before).
+      distancePreference: map['distancePreference'] as int?,
       memberPrice: map['memberPrice'].toDouble(),
       nonMemberPrice: map['nonMemberPrice'].toDouble(),
       kenlLat: map['kenlLat'].toDouble(),

@@ -537,10 +537,13 @@ class RunAndKennelMapController extends GetxController {
 
     final List<(String, String)> rows = <(String, String)>[];
     if (metres > 0) {
-      final double avg = total / trailCount.value;
+      // The app-wide rule (2026-09-27): an average under 1 km reads "350 m",
+      // not "0.3 km"; yards / miles for imperial.
+      final double avgMetres = metres / trailCount.value;
       rows.add((
         'Distance',
-        '${_dist(total)} $unit    avg ${_dist(avg)} $unit',
+        '${formatDistance(metres, imperial: imperial)}    '
+            'avg ${formatDistance(avgMetres, imperial: imperial)}',
       ));
     }
 
@@ -561,9 +564,6 @@ class RunAndKennelMapController extends GetxController {
     }
     return rows;
   }
-
-  static String _dist(double v) =>
-      v >= 100 ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
 
   static String _span(Duration d) {
     final int h = d.inHours;

@@ -350,9 +350,7 @@ class ImportGpxController extends GetxController {
     // falls back to the device locale inside prefersImperial.
     final bool imperial = Utilities.prefersImperial();
     final String dist = a.distanceM > 0
-        ? imperial
-              ? '${(a.distanceM * METERS_TO_MILES).toStringAsFixed(1)} mi'
-              : '${(a.distanceM / 1000).toStringAsFixed(1)} km'
+        ? formatDistance(a.distanceM.toDouble(), imperial: imperial)
         : '';
     return <String>[
       when,
@@ -638,9 +636,10 @@ class _CandidateRow extends StatelessWidget {
     final int? away = c.distanceMeters;
     final String gap = away == null
         ? ''
-        : Utilities.prefersImperial()
-        ? '${(away * METERS_TO_YARDS).round()} yd'
-        : '$away m';
+        : formatDistance(
+            away.toDouble(),
+            imperial: Utilities.prefersImperial(),
+          );
     final String where = c.hasLocation
         ? '$gap from where the track starts'
         : 'no recorded start location';

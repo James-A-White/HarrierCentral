@@ -154,6 +154,7 @@ class RunTrackerMap extends StatelessWidget {
                         sortByProximity: controller.listSortByProximity.value,
                         originAvailable: controller.listOriginAvailable,
                         originLabel: controller.roseFocusRunnerLabel,
+                        imperial: controller.imperialUnits.value,
                         onSortChanged: (prox) =>
                             controller.listSortByProximity.value = prox,
                         // Selection only — no recenter: the map isn't showing,
@@ -213,6 +214,7 @@ class RunTrackerMap extends StatelessWidget {
                           ringMetres: range,
                           heading: controller.roseHeading,
                           facingDeg: controller.roseFacingDeg,
+                          imperial: controller.imperialUnits.value,
                         ),
                       ),
                     ),
@@ -254,7 +256,7 @@ class RunTrackerMap extends StatelessWidget {
                               vertical: 6.0,
                             ),
                             child: Text(
-                              'Ring = ${range < 1000 ? '${range.round()} m' : '${(range / 1000).toStringAsFixed(2)} km'}'
+                              'Ring = ${controller.distanceLabel(range)}'
                               '  ·  centred on ${controller.roseFocusRunnerLabel}',
                               textAlign: TextAlign.center,
                               style: const TextStyle(

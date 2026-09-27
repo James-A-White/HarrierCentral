@@ -990,7 +990,7 @@ class RunTrackerMapController extends GetxController
             child: reached.isEmpty
                 ? Text(
                     'No runner passed within '
-                    '${_reachedMarkMeters.toStringAsFixed(0)} m of this mark.',
+                    '${distanceLabel(_reachedMarkMeters)} of this mark.',
                   )
                 : ListView.builder(
                     shrinkWrap: true,
@@ -1022,8 +1022,8 @@ class RunTrackerMapController extends GetxController
                         ),
                         subtitle: Text(
                           checked
-                              ? '🔍 checked${r.returns > 1 ? ' ${r.returns}×' : ''} · nearest ${r.distance.toStringAsFixed(0)} m'
-                              : 'nearest ${r.distance.toStringAsFixed(0)} m',
+                              ? '🔍 checked${r.returns > 1 ? ' ${r.returns}×' : ''} · nearest ${distanceLabel(r.distance)}'
+                              : 'nearest ${distanceLabel(r.distance)}',
                         ),
                         trailing: Text(
                           _formatTimestamp(
@@ -1089,6 +1089,7 @@ class RunTrackerMapController extends GetxController
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
+    unawaited(_resolveImperialUnits());
     final initialPlaybackDuration = _durationForZoom(initialZoom);
     _lastPlaybackDuration = initialPlaybackDuration;
     _playbackController =
@@ -2792,16 +2793,29 @@ class RunTrackerMapController extends GetxController
   String _formatDistanceLabel() {
     final meters = _selectedRunnerDistanceMeters();
     if (meters == null) return '';
-    final miles = meters * METERS_TO_MILES;
-    final kilometers = meters / 1000.0;
-    final milesLabel = miles >= 10
-        ? miles.toStringAsFixed(1)
-        : miles.toStringAsFixed(2);
-    final kmLabel = kilometers >= 10
-        ? kilometers.toStringAsFixed(1)
-        : kilometers.toStringAsFixed(2);
-    return '$milesLabel mi / $kmLabel km';
+    // One unit, the viewer's (2026-09-27) — this read "3.19 mi / 5.13 km".
+    return formatDistance(meters, imperial: imperialUnits.value);
   }
+
+  /// Whether this viewer wants yards / miles: their own choice, else this
+  /// run's kennel (country as fallback), else the phone's locale. Starts from
+  /// the hasher's choice and locale, then learns the kennel's setting once.
+  late final RxBool imperialUnits = Utilities.prefersImperial().obs;
+
+  Future<void> _resolveImperialUnits() async {
+    try {
+      final agg = await QueryKennels.getSingleKennel(event.kennelId);
+      imperialUnits.value = Utilities.prefersImperial(
+        kennelDistanceUnitsPref: agg?.extensions.distanceUnitsPref,
+      );
+    } catch (e, s) {
+      BootLogger.logError('[RunTrackerMap.imperialUnits]', e, s);
+    }
+  }
+
+  /// A distance in the viewer's units — for the runner list, rose and rings.
+  String distanceLabel(double meters) =>
+      formatDistance(meters, imperial: imperialUnits.value);
 
   double? _selectedRunnerDistanceMeters() {
     final runner = _runnerById(selectedRunnerId.value);

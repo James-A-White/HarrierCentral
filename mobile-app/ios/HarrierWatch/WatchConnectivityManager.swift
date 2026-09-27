@@ -29,6 +29,8 @@ final class WatchConnectivityManager: NSObject, ObservableObject {
     @Published var isTracking = false
     @Published var isPaused = false
     @Published var distanceKm: Double?
+    /// The hasher's units, sent by the phone (2026-09-27): yards / miles.
+    @Published var imperial: Bool = false
     @Published var elapsedSec = 0
     @Published var eventName = ""
     @Published var powerSaver = false
@@ -155,6 +157,7 @@ final class WatchConnectivityManager: NSObject, ObservableObject {
                 ?? (tracking ? "tracking" : "idle")
             self.isPaused = context["paused"] as? Bool ?? false
             self.distanceKm = context["distanceKm"] as? Double
+            self.imperial = context["imperial"] as? Bool ?? false
             self.elapsedSec = context["elapsedSec"] as? Int ?? 0
             self.eventName = context["eventName"] as? String ?? ""
             self.powerSaver = context["powerSaver"] as? Bool ?? false

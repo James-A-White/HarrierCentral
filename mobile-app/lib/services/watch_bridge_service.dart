@@ -33,6 +33,9 @@ class WatchBridgeService extends GetxService {
   // working after the live-run page (and its controller) are gone.
   Timer? _pushTimer;
   String _eventName = '';
+  // The hasher's units for the wrist (2026-09-27): the watch formats metres /
+  // km or yards / miles by the same rule as the phone.
+  bool _imperial = false;
   List<TrailSlot> _sessionSlots = const [];
   DateTime? _startedAt;
 
@@ -75,8 +78,12 @@ class WatchBridgeService extends GetxService {
     required String eventName,
     required List<TrailSlot> slots,
     required DateTime startedAt,
+    int? kennelDistanceUnitsPref,
   }) {
     if (!_supported) return;
+    _imperial = Utilities.prefersImperial(
+      kennelDistanceUnitsPref: kennelDistanceUnitsPref,
+    );
     // A live timer means this call is a mid-session refresh (page reopened,
     // elapsed re-based) — keep the accumulated totals in that case.
     if (_pushTimer == null) {
@@ -160,6 +167,7 @@ class WatchBridgeService extends GetxService {
       'distanceKm': _lastDistanceKm,
       'elapsedSec': _lastElapsedSec,
       'eventName': _eventName,
+      'imperial': _imperial,
       'powerSaver': (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0,
     }));
   }
@@ -191,6 +199,7 @@ class WatchBridgeService extends GetxService {
         'tracking': false,
         'eventName': _eventName,
         'distanceKm': _lastDistanceKm,
+        'imperial': _imperial,
         'elapsedSec': _lastElapsedSec,
         'checks': _cntChecks,
         'falses': _cntFalses,

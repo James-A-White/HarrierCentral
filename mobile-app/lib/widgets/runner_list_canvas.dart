@@ -45,7 +45,11 @@ class RunnerListCanvas extends StatelessWidget {
     required this.originLabel,
     required this.onSortChanged,
     required this.onTapRunner,
+    this.imperial = false,
   });
+
+  /// Distances in yards / miles rather than metres / km (2026-09-27).
+  final bool imperial;
 
   final List<RunnerListEntry> entries;
   final String? selectedRunnerId;
@@ -295,19 +299,10 @@ class RunnerListCanvas extends StatelessWidget {
     );
   }
 
-  /// Trail distance in both units, matching the playback panel's readout
-  /// (e.g. "3.19 mi / 5.13 km").
-  String _trailDistanceLabel(double meters) {
-    final miles = meters * METERS_TO_MILES;
-    final km = meters / 1000.0;
-    final mi = miles >= 10
-        ? miles.toStringAsFixed(1)
-        : miles.toStringAsFixed(2);
-    final k = km >= 10 ? km.toStringAsFixed(1) : km.toStringAsFixed(2);
-    return '$mi mi / $k km';
-  }
+  /// Trail distance in the viewer's units, matching the playback readout.
+  String _trailDistanceLabel(double meters) =>
+      formatDistance(meters, imperial: imperial);
 
-  /// Short separation label, matching the rose's ("140m", "1.2km").
-  String _separationLabel(double m) =>
-      m < 1000 ? '${m.round()}m' : '${(m / 1000).toStringAsFixed(1)}km';
+  /// Separation, in the same units as the rose.
+  String _separationLabel(double m) => formatDistance(m, imperial: imperial);
 }

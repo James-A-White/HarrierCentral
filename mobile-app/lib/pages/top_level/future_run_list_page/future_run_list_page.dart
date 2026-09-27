@@ -1102,19 +1102,11 @@ class FutureRunsListPage extends StatelessWidget {
 
   Future<void> _showConfigureDistancePopup(BuildContext context) async {
     if (Utilities.isConnected(showDialog: true)) {
-      final String units =
-          (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
-                  hasherPref_distanceMeasuredIn ==
-              2
-          ? ' km'
-          : ' miles';
-
-      final String switchUnits =
-          (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
-                  hasherPref_distanceMeasuredIn ==
-              2
-          ? ' miles'
-          : ' kilometers';
+      // The units the list uses — the hasher's choice, else the locale. Auto
+      // used to read as miles for everyone (2026-09-27).
+      final bool imperial = Utilities.prefersImperial();
+      final String units = imperial ? ' miles' : ' km';
+      final String switchUnits = imperial ? ' kilometers' : ' miles';
 
       final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
         <String, dynamic>{
@@ -1297,10 +1289,10 @@ class FutureRunsListPage extends StatelessWidget {
 
             final int hasherPreferences =
                 getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
-            final int distanceMeasuredIn =
-                ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3)
-                ? 2
-                : 3;
+            // Switch AWAY from the units the list is actually using (the
+            // label's own rule): Auto on a miles phone used to "switch" to
+            // miles and nothing changed (2026-09-27).
+            final int distanceMeasuredIn = Utilities.prefersImperial() ? 2 : 3;
 
             final int distance =
                 hasherPreferences & hasherPref_distanceForAutoDisplay;

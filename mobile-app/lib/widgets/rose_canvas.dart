@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/distance_format.dart';
 import 'package:harrier_central/util/text_styles.dart';
 
 /// One hasher's position relative to the viewer, resolved for drawing.
@@ -44,10 +45,15 @@ class RoseCanvas extends StatelessWidget {
     required this.ringMetres,
     this.heading,
     this.facingDeg,
+    this.imperial = false,
   });
 
   final List<RoseBlip> blips;
   final double ringMetres;
+
+  /// Label distances in yards / miles rather than metres / km (the viewer's
+  /// units, 2026-09-27).
+  final bool imperial;
 
   /// Degrees clockwise from north that the rose is rotated to put "ahead" at
   /// the top. Null renders north-up.
@@ -69,6 +75,7 @@ class RoseCanvas extends StatelessWidget {
         ringMetres: ringMetres,
         heading: heading,
         facingDeg: facingDeg,
+        imperial: imperial,
       ),
     );
   }
@@ -80,12 +87,14 @@ class RosePainter extends CustomPainter {
     required this.ringMetres,
     required this.heading,
     this.facingDeg,
+    this.imperial = false,
   });
 
   final List<RoseBlip> blips;
   final double ringMetres;
   final double? heading;
   final double? facingDeg;
+  final bool imperial;
 
   /// Labels are placed nearest-first and skipped when they'd collide, so a
   /// crowded rose degrades into fewer labels rather than unreadable mush.
@@ -248,8 +257,7 @@ class RosePainter extends CustomPainter {
     }
   }
 
-  String _dist(double m) =>
-      m < 1000 ? '${m.round()}m' : '${(m / 1000).toStringAsFixed(1)}km';
+  String _dist(double m) => formatDistance(m, imperial: imperial);
 
   TextPainter _painter(String s, double size, FontWeight w, Color c) {
     final tp = TextPainter(
@@ -283,6 +291,7 @@ class RosePainter extends CustomPainter {
       old.ringMetres != ringMetres ||
       old.heading != heading ||
       old.facingDeg != facingDeg ||
+      old.imperial != imperial ||
       old.blips != blips;
 }
 

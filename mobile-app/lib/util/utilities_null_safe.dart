@@ -5,7 +5,6 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
-import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart' as maps;
 
 class Utilities {
@@ -499,34 +498,14 @@ class Utilities {
     return s;
   }
 
+  /// "X from here" distances. Empty without location permission — there is
+  /// no "here". The formatting itself is [formatDistance] (2026-09-27: metres
+  /// under 1 km, decimal km above; yards under 1 mile, decimal miles above).
   static String getDistance(double meters, {bool isMetric = true}) {
     if (!appModel.hasLocationPermissions) {
       return '';
     }
-
-    String result = '';
-
-    if (isMetric) {
-      if (meters < 1000) {
-        result = '${NumberFormat('####').format(meters)} meters';
-      } else if (meters < 10000) {
-        result = '${NumberFormat('#####.0').format(meters / 1000.0)} km';
-      } else {
-        result = '${NumberFormat('#####').format(meters / 1000.0)} km';
-      }
-    } else {
-      final num miles = meters * METERS_TO_MILES;
-
-      if (miles < 3) {
-        result = '${NumberFormat('#####.00').format(miles)} miles';
-      } else if (miles < 10) {
-        result = '${NumberFormat('#####.0').format(miles)} miles';
-      } else {
-        result = '${NumberFormat('#####').format(miles)} miles';
-      }
-    }
-
-    return result;
+    return formatDistance(meters, imperial: !isMetric);
   }
 
   /// Whether distances should be shown in miles for this hasher.

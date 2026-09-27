@@ -461,8 +461,12 @@ class SettingsPage extends StatelessWidget {
   /// miles or kilometres, from the hasher's own units bit. Lifted from
   /// HasherProfilePage with the radius it labels (2026-09-20) so this page
   /// does not reach into that one.
-  String _distanceUnits(int distancePreference) =>
-      distancePreference == 2 ? 'kilometers' : 'miles';
+  String _distanceUnits(int distancePreference) => distancePreference == 2
+      ? 'kilometers'
+      : distancePreference == 3
+      ? 'miles'
+      // Auto: what the app will actually use — the locale — not miles for all.
+      : (Utilities.prefersImperial() ? 'miles' : 'kilometers');
 
   Widget _autoShowRunsSection(SettingsPageController controller) {
     return Column(

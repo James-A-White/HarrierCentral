@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+// Prefixed: this class has its own formatDistance(meters) that shadows it.
+import 'package:harrier_central/util/distance_format.dart' as units;
 import 'package:latlong2/latlong.dart' as latlong;
 
 /// "Which way is the trail?" — a compass, not a route.
@@ -437,31 +439,17 @@ class LostCompassController extends GetxController {
   /// The units preference is 2 = km, 3 = miles, 0 = auto. Auto defers to the
   /// kennel's own preference — the same rule the runs list uses — which is why
   /// [kennelDistanceUnitsPref] is passed in from the run.
-  String formatDistance(double meters) {
-    final bool imperial = _useImperial;
-    // Utilities.getDistance switches to miles below 3 miles, which at the
-    // ranges this dialog deals in reads ".01 miles" — true, and no use to
-    // anyone standing on a trail looking for flour. Close in, use paces.
-    if (meters < _shortRangeMeters) {
-      return imperial
-          ? '${(meters * 1.09361).round()} yards'
-          : '${meters.round()} meters';
-    }
-    return Utilities.getDistance(meters, isMetric: !imperial);
-  }
+  String formatDistance(double meters) =>
+      // The app-wide rule (2026-09-27): metres / yards close in, decimal
+      // km / miles from 1 km / 1 mile. Not Utilities.getDistance — that is
+      // "from here" and goes blank without location permission.
+      units.formatDistance(meters, imperial: _useImperial);
 
-  /// Below this, distances are given in metres or yards rather than km/miles.
-  static const double _shortRangeMeters = 150.0;
-
-  bool get _useImperial {
-    final prefs = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
-    final userPref = prefs & hasherPref_distanceMeasuredIn;
-    return userPref == 3
-        ? true
-        : userPref == 0
-        ? kennelDistanceUnitsPref == 3
-        : false;
-  }
+  // The hasher's own choice, else the kennel's (0 km / 1 mi), else locale —
+  // Utilities.prefersImperial. This compared the kennel value with 3, which it
+  // never is, so an Auto hasher at a miles kennel got metres (2026-09-27).
+  bool get _useImperial =>
+      Utilities.prefersImperial(kennelDistanceUnitsPref: kennelDistanceUnitsPref);
 
   /// Records where [userId] has got to: their newest fix good enough to trust.
   void _captureRunnerLatest(String userId) {

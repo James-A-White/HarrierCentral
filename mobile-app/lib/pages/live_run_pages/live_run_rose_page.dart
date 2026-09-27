@@ -275,10 +275,13 @@ class LiveRunRoseController extends GetxController {
     }
   }
 
-  String get rangeLabel {
-    final m = ringMetres.value;
-    return m < 1000 ? '${m.round()} m' : '${(m / 1000).toStringAsFixed(2)} km';
-  }
+  /// The viewer's units: their own choice, else this run's kennel.
+  bool get imperialUnits => Utilities.prefersImperial(
+    kennelDistanceUnitsPref: run.extensions.distanceUnitsPref,
+  );
+
+  String get rangeLabel =>
+      formatDistance(ringMetres.value, imperial: imperialUnits);
 
   int get beyondRangeCount =>
       blips.where((b) => b.distanceMeters > ringMetres.value).length;
@@ -360,6 +363,7 @@ class LiveRunRosePage extends StatelessWidget {
                         blips: controller.blips.toList(growable: false),
                         ringMetres: controller.ringMetres.value,
                         heading: controller.deviceHeading.value,
+                        imperial: controller.imperialUnits,
                       ),
                     ),
                   ),

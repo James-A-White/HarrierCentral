@@ -168,7 +168,7 @@ struct ContentView: View {
                 Text(distanceText)
                     .font(.system(size: 30, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                Text("km")
+                Text(distanceUnit)
                     .font(.headline)
                     .foregroundStyle(.secondary)
             }
@@ -190,7 +190,14 @@ struct ContentView: View {
     private var distanceText: String {
         guard let km = connectivity.distanceKm else { return "—" }
         let prefix = connectivity.powerSaver ? "~" : ""
-        return prefix + String(format: "%.2f", km)
+        return prefix + wristDistance(km * 1000, imperial: connectivity.imperial).value
+    }
+
+    private var distanceUnit: String {
+        guard let km = connectivity.distanceKm else {
+            return connectivity.imperial ? "mi" : "km"
+        }
+        return wristDistance(km * 1000, imperial: connectivity.imperial).unit
     }
 
     private var elapsedText: String {
@@ -217,7 +224,7 @@ struct ContentView: View {
                 Text(distanceText)
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                Text("km")
+                Text(distanceUnit)
                     .font(.headline)
                     .foregroundStyle(.secondary)
             }
@@ -306,8 +313,25 @@ struct LostView: View {
     }
 
     private func distanceLabel(_ meters: Double) -> String {
-        meters >= 1000
-            ? String(format: "%.1f km", meters / 1000)
-            : String(format: "%.0f m", meters)
+        let d = wristDistance(meters, imperial: connectivity.imperial)
+        return "\(d.value) \(d.unit)"
     }
+}
+
+
+/// The phone's distance rule (lib/util/distance_format.dart, 2026-09-27), for
+/// the wrist: metres under 1 km, one-decimal km above; yards under a mile,
+/// one-decimal miles above; whole numbers from 100.
+func wristDistance(_ meters: Double, imperial: Bool) -> (value: String, unit: String) {
+    let m = meters.isFinite ? max(0, meters) : 0
+    func large(_ v: Double, _ unit: String) -> (value: String, unit: String) {
+        let r = (v * 10).rounded() / 10
+        return r >= 100 ? (String(format: "%.0f", r), unit) : (String(format: "%.1f", r), unit)
+    }
+    if imperial {
+        if m < 1609.344 { return (String(format: "%.0f", m * 1.0936133), "yd") }
+        return large(m / 1609.344, "mi")
+    }
+    if m < 1000 { return (String(format: "%.0f", m), "m") }
+    return large(m / 1000, "km")
 }

@@ -809,6 +809,7 @@ class LiveRunGeneralController extends GetxController {
       eventName: run.event.eventName,
       slots: run.kennel.trailSlots,
       startedAt: _trackingStartedAt ?? DateTime.now(),
+      kennelDistanceUnitsPref: run.extensions.distanceUnitsPref,
     );
   }
 
@@ -1331,7 +1332,7 @@ class LiveRunGeneralPage extends StatelessWidget {
       children: [
         Expanded(
           child: _statCard(
-            label: 'Dist (in km)',
+            label: 'Distance',
             valueBuilder: () {
               final dist = controller.distanceKm.value;
               if (dist <= 0) return '--';
@@ -1340,7 +1341,16 @@ class LiveRunGeneralPage extends StatelessWidget {
               // the number as approximate rather than let it read as exact.
               final powerSaver =
                   (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0;
-              return '${powerSaver ? '~' : ''}${dist.toStringAsFixed(2)}';
+              // The hasher's units (their choice, else the kennel's): metres /
+              // yards to start with, decimal km / miles after (2026-09-27).
+              // This read "Dist (in km)" with two decimals for everyone.
+              final String text = formatDistance(
+                dist * 1000,
+                imperial: Utilities.prefersImperial(
+                  kennelDistanceUnitsPref: controller.run.extensions.distanceUnitsPref,
+                ),
+              );
+              return '${powerSaver ? '~' : ''}$text';
             },
           ),
         ),

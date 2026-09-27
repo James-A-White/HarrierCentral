@@ -89,7 +89,9 @@ class ImportActivity {
       case 'noLocation':
         return 'A run matched on time but has no recorded start — skipped';
       case 'tooFar':
-        return 'A run started around then, but more than a mile away';
+        // The server's cut-off is a mile; say it in the hasher's units.
+        return 'A run started around then, but more than '
+            '${formatDistance(1609.344, imperial: Utilities.prefersImperial())} away';
       case 'held':
         return candidates.length > 1
             ? 'Which run? ${candidates.length} match'

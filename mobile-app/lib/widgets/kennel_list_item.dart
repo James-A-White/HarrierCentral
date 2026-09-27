@@ -599,15 +599,11 @@ class KennelListItemState extends State<KennelListItem> {
 
   String getDistanceString() {
     final int preferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
-    final int distMeasuredIn = preferences & hasherPref_distanceMeasuredIn;
     final int distPref = (preferences & hasherPref_distanceForAutoDisplay) ~/ 4;
 
-    String unitsOfMeasure = 'mi';
-    if (distMeasuredIn == 2) {
-      unitsOfMeasure = 'km';
-    } else if (distPref == 3) {
-      unitsOfMeasure = 'mi';
-    }
+    // The hasher's units — their choice, else the phone's locale. Auto used
+    // to mean miles for everyone (2026-09-27).
+    final String unitsOfMeasure = Utilities.prefersImperial() ? 'mi' : 'km';
 
     String distance = '50';
     switch (distPref) {
