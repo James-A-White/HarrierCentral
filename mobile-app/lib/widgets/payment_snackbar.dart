@@ -61,7 +61,8 @@ class PaymentSnackBar extends SnackBar {
   }
 
   /// The run-fee buttons (cash, free, other, transfer, not paid, credit)
-  /// only when there is a fee to take (James, 2026-09-26: "if there is no fee
+  /// only when there is a fee to take — with nothing owed, one "payment
+  /// options" button stands in for them (2026-09-27) (James, 2026-09-26: "if there is no fee
   /// we don't really need payment buttons") — or a payment already on the
   /// row, which must stay correctable, e.g. one recorded before the price
   /// changed. Multi-select always shows them: the fee differs per hasher.
@@ -682,6 +683,40 @@ class PaymentSnackBar extends SnackBar {
                         ],
                       ),
                     ],
+                    // Nothing owed hides the run-fee buttons, but never the
+                    // way INTO payment options: a hasher on a €0 special
+                    // price still needs that price changed, credit topped up
+                    // or extras paid (James, 2026-09-27, Side Shitter).
+                    if (!_showRunPayments && !multiSelectEnabled)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              await _payOther(packMember, context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: hc_red,
+                            ),
+                            icon: Image.asset(
+                              'images/icons/payment_type_5.png',
+                              height: 22.0,
+                              width: 22.0,
+                              color: hc_red,
+                            ),
+                            label: Text(
+                              'Nothing to pay — payment options',
+                              style: ts_titleSmallCondensedBold.copyWith(
+                                color: hc_red,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
                     if (onCardPayment != null && !multiSelectEnabled)
                       Padding(
                         padding: const EdgeInsets.only(top: 10.0),
