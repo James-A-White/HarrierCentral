@@ -666,7 +666,15 @@ class FutureRunListPageController extends GetxController {
     return DateTime(dt.year, dt.month, dt.day);
   }
 
-  Future<void> refreshFromTable(bool forceRefresh) async {
+  /// [reloadPastRuns] false skips the past-run reload for a change that
+  /// cannot affect it — the auto-display radius and its units. That reload
+  /// is every past run in the local database (2,797 on a test phone) and
+  /// took ~45 s on Android, during which the list still showed the OLD
+  /// radius: "Save isn't working" (James, 2026-09-27).
+  Future<void> refreshFromTable(
+    bool forceRefresh, {
+    bool reloadPastRuns = true,
+  }) async {
     debugPrint(
       '[BOOT] refreshFromTable: forceRefresh=$forceRefresh, allRuns=${allRuns?.length ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
@@ -689,7 +697,7 @@ class FutureRunListPageController extends GetxController {
       debugPrint(
         '[BOOT] refreshFromTable: getRunDetailsAggregates done: ${DateTime.now().millisecondsSinceEpoch}ms — ${allRuns?.length ?? 0} runs',
       );
-      await _loadPastRuns();
+      if (reloadPastRuns || allPastRuns == null) await _loadPastRuns();
       debugPrint(
         '[BOOT] refreshFromTable: calling filterRuns: ${DateTime.now().millisecondsSinceEpoch}ms',
       );

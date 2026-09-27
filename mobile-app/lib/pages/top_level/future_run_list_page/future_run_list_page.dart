@@ -1306,7 +1306,7 @@ class FutureRunsListPage extends StatelessWidget {
               IntPrefsEnum.hasherPreferences,
               distanceMeasuredIn + distance,
             );
-            await controller.refreshFromTable(true);
+            await controller.refreshFromTable(true, reloadPastRuns: false);
           }
         } else if ((retVal is! EnumFollowType) &&
             (retVal >= hasherPref_0) &&
@@ -1330,7 +1330,7 @@ class FutureRunsListPage extends StatelessWidget {
               distanceMeasuredIn + retVal,
             );
 
-            await controller.refreshFromTable(true);
+            await controller.refreshFromTable(true, reloadPastRuns: false);
           }
         }
       }
