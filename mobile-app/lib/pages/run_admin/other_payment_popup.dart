@@ -67,17 +67,6 @@ class OtherPaymentPopupController extends GetxController {
     super.onClose();
   }
 
-  void resetUi(double price) {
-    normalPrice = price;
-    specialPriceTextController.text = price.toStringAsFixed(decimalDigits);
-    topUpTextController.text = '';
-    topUpCreditEnabled.value = false;
-    specialPriceEnabled.value = false;
-    paySpecialPriceWithCredit.value = false;
-    specialPriceIsDefaultForUser.value = false;
-    _recalculateTotal();
-  }
-
   void _recalculateTotal() {
     double total = specialPriceEnabled.value
         ? double.tryParse(
@@ -113,10 +102,25 @@ class OtherPaymentPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(
-      OtherPaymentPopupController(normalPrice, decimalDigits),
+    // One controller per dialog, created ONCE (GetBuilder init, not global).
+    // This used to Get.put a shared controller and call resetUi() on every
+    // build — and since 77977a05 (2026-09-25) the dialog rebuilds whenever
+    // the keyboard opens (it reads viewInsets below). So tapping into the
+    // top-up or special-price field reset the form: the box unticked and
+    // closed the moment the keyboard came up (reported 2026-09-27). onInit
+    // sets the starting values; the dialog's close disposes the controller.
+    return GetBuilder<OtherPaymentPopupController>(
+      init: OtherPaymentPopupController(normalPrice, decimalDigits),
+      global: false,
+      builder: (OtherPaymentPopupController controller) =>
+          _dialog(context, controller),
     );
-    controller.resetUi(normalPrice);
+  }
+
+  Widget _dialog(
+    BuildContext context,
+    OtherPaymentPopupController controller,
+  ) {
     // With the keyboard up (typing a special price or a top-up) the stacked
     // Cancel / Cash / Bank / credit buttons took nearly all of a short
     // phone's remaining height and squeezed the field being typed into to
