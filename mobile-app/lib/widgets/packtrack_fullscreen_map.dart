@@ -170,13 +170,7 @@ class PackTrackFullScreenMap extends StatelessWidget {
   Future<void> _exportGpx(BuildContext context, String mapTag) async {
     if (!Get.isRegistered<RunTrackerMapController>(tag: mapTag)) return;
     final controller = Get.find<RunTrackerMapController>(tag: mapTag);
-    final String? userId = getStringPref(StringPrefsEnum.userId);
-    UserTrack? mine;
-    if (userId != null && userId.isNotEmpty) {
-      for (final UserTrack t in controller.userPositions) {
-        if (t.id == userId && RunTrackerMapController.hasTrack(t)) mine = t;
-      }
-    }
+    final UserTrack? mine = controller.ownTrack;
     if (mine == null) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

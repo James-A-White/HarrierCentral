@@ -545,7 +545,14 @@ class RunTrackerMapController extends GetxController
   // A runner is "checking" if they reached a mark, ran at least this far away,
   // then came back to it (an out-and-back excursion = solving the check).
   static const double _checkExcursionMeters = 50.0;
-  final String? _currentUserId = getStringPref(StringPrefsEnum.userId);
+  // Lowercase, as every runner id is on ingest (see _replaceServerTracks): the
+  // archive reader and server-side imports answer with SQL's uppercase ids, and
+  // a raw `==` against the pref then never found "you" — the map, the rose and
+  // the readout fell back to whichever runner came first (James, 2026-09-27).
+  final String? _currentUserId = (() {
+    final String? id = getStringPref(StringPrefsEnum.userId);
+    return id == null || id.isEmpty ? null : normalizeUuid(id);
+  })();
 
   // Reused across loadPositions() calls to avoid creating a new http.Client each time.
   final GetPositionsApi _positionsApi = GetPositionsApi();
@@ -1455,7 +1462,7 @@ class RunTrackerMapController extends GetxController
       );
       if (archived.isEmpty) return;
       final UserTrack own = UserTrack(
-        id: userId,
+        id: normalizeUuid(userId),
         positions: archived
             .map(
               (ArchivedTrackPoint a) => TrackPoint(
@@ -1506,7 +1513,7 @@ class RunTrackerMapController extends GetxController
     _serverTracks.clear();
     _filteredTracks.clear();
     for (final user in incoming) {
-      _serverTracks[user.id] = List<TrackPoint>.of(user.positions)
+      _serverTracks[normalizeUuid(user.id)] = List<TrackPoint>.of(user.positions)
         ..sort((a, b) => a.timestampMs.compareTo(b.timestampMs));
     }
     return _serverTracks.keys.toSet();
@@ -1520,8 +1527,9 @@ class RunTrackerMapController extends GetxController
     final Set<String> changed = {};
     for (final user in incoming) {
       if (user.positions.isEmpty) continue;
+      final String id = normalizeUuid(user.id);
       final List<TrackPoint> held = _serverTracks.putIfAbsent(
-        user.id,
+        id,
         () => <TrackPoint>[],
       );
       final Set<String> seen = {for (final p in held) _pointKey(p)};
@@ -1535,7 +1543,7 @@ class RunTrackerMapController extends GetxController
       if (!added) continue;
       held.sort((a, b) => a.timestampMs.compareTo(b.timestampMs));
       _dropStaleTerminators(held);
-      changed.add(user.id);
+      changed.add(id);
     }
     return changed;
   }
@@ -1629,7 +1637,7 @@ class RunTrackerMapController extends GetxController
     if (idx >= 0) {
       userPositions[idx] = userPositions[idx].copyWith(positions: positions);
     } else {
-      userPositions.add(UserTrack(id: selfId, positions: positions));
+      userPositions.add(UserTrack(id: normSelf, positions: positions));
     }
     userPositions.refresh();
   }
@@ -1714,7 +1722,12 @@ class RunTrackerMapController extends GetxController
       if (runner != null && isRunnerVisible(runner)) return;
     }
     final firstVisible = runners.firstWhereOrNull(isRunnerVisible);
-    selectRunner(firstVisible?.id, recenter: false, syncPicker: true);
+    selectRunner(
+      firstVisible?.id,
+      recenter: false,
+      syncPicker: true,
+      auto: true,
+    );
   }
 
   void setVisible(bool visible) {
@@ -2308,10 +2321,23 @@ class RunTrackerMapController extends GetxController
     }
   }
 
+  /// True while the selection is one the map chose, not the viewer. A map
+  /// opened before the viewer's own first point lands on the first runner;
+  /// when their track arrives the map moves to them, unless they had picked
+  /// someone themselves (James, 2026-09-27: stopping showed another hasher).
+  bool _selectionIsAuto = true;
+
+  /// The signed-in runner's own track, if they have one on this run.
+  UserTrack? get ownTrack {
+    final UserTrack? mine = _runnerById(_currentUserId);
+    return mine != null && hasTrack(mine) ? mine : null;
+  }
+
   void selectRunner(
     String? userId, {
     bool recenter = true,
     bool syncPicker = false,
+    bool auto = false,
   }) {
     if (selectedRunnerId.value == userId) {
       if (recenter && userId != null) {
@@ -2319,6 +2345,7 @@ class RunTrackerMapController extends GetxController
       }
       return;
     }
+    _selectionIsAuto = auto;
     selectedRunnerId.value = userId;
     if (userId == null) return;
     if (recenter) {
@@ -2892,7 +2919,10 @@ class RunTrackerMapController extends GetxController
     final selectedId = selectedRunnerId.value;
     final exists =
         selectedId != null && tracked.any((runner) => runner.id == selectedId);
-    if (exists) return;
+    final bool selfTracked =
+        _currentUserId != null &&
+        tracked.any((runner) => runner.id == _currentUserId);
+    if (exists && !(_selectionIsAuto && selfTracked)) return;
 
     // Prefer the viewer — but only if they actually ran. An admin trimming a
     // run they were not on must not be selected on the strength of two
@@ -2902,13 +2932,18 @@ class RunTrackerMapController extends GetxController
         (runner) => runner.id == _currentUserId,
       );
       if (self != null) {
-        selectRunner(self.id, recenter: false, syncPicker: true);
+        selectRunner(self.id, recenter: false, syncPicker: true, auto: true);
         return;
       }
     }
 
     // Fallback to first runner
-    selectRunner(tracked.first.id, recenter: false, syncPicker: true);
+    selectRunner(
+      tracked.first.id,
+      recenter: false,
+      syncPicker: true,
+      auto: true,
+    );
   }
 
   void _handlePlaybackTick() {

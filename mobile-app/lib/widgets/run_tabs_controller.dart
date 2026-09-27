@@ -461,16 +461,8 @@ class RunTabsController extends GetxController
       ? Get.find<RunTrackerMapController>(tag: mapTag)
       : null;
 
-  UserTrack? currentUserTrack(RunTrackerMapController controller) {
-    final String? id = getStringPref(StringPrefsEnum.userId);
-    if (id == null || id.isEmpty) return null;
-    for (final track in controller.userPositions) {
-      if (track.id == id && RunTrackerMapController.hasTrack(track)) {
-        return track;
-      }
-    }
-    return null;
-  }
+  UserTrack? currentUserTrack(RunTrackerMapController controller) =>
+      controller.ownTrack;
 
   void startLiveRun() {
     liveRunService.startRun(
