@@ -1005,7 +1005,9 @@ class RunTabs extends StatelessWidget {
             'Hares: ${futureRun.event.hares!}',
             style: ts_listValueStyle.copyWith(color: textColor),
             textAlign: TextAlign.left,
-            maxLines: 1,
+            // Two lines before the ellipsis: a pack of hares was being cut
+            // off mid-name (James, 2026-09-27).
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
       ],

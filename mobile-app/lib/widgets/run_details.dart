@@ -565,6 +565,9 @@ class RunDetails extends StatelessWidget {
                 (event.hares ?? '') == ''
                     ? const SizedBox(height: 0.0, width: 0.0)
                     : Row(
+                        // The label stays level with the FIRST line when the
+                        // hares wrap onto a second.
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Expanded(
                             flex: _flexLeft,
@@ -586,7 +589,7 @@ class RunDetails extends StatelessWidget {
                               event.hares ?? '',
                               style: ts_listValueStyle,
                               textAlign: TextAlign.left,
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
