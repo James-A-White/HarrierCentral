@@ -302,60 +302,69 @@ class _DownDownTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Action icons — X + check side by side, edit below
-          Column(
+          // Action icons — edit, cancel, done on ONE line, all the same
+          // 30 px outlined circle in the same colours (James, 2026-09-27: the
+          // edit pencil sat faint, alone, under the other two). Done stays at
+          // the right edge, where the thumb already goes.
+          Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 38,
-                    height: 38,
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: onCancelTap,
-                        child: Icon(
-                          dd.isCancelled ? Icons.cancel : Icons.cancel_outlined,
-                          color: dd.isCancelled
-                              ? Colors.redAccent
-                              : Colors.lightBlueAccent,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 38,
-                    height: 38,
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: onCheckTap,
-                        child: Icon(
-                          dd.isDone
-                              ? Icons.check_circle
-                              : Icons.check_circle_outline,
-                          color: dd.isDone
-                              ? Colors.yellow
-                              : Colors.lightBlueAccent,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               SizedBox(
-                width: 44,
-                height: 30,
+                width: 38,
+                height: 38,
                 child: Center(
                   child: GestureDetector(
                     onTap: onEditTap,
-                    child: const Icon(
-                      Icons.edit_outlined,
-                      color: Colors.white38,
-                      size: 20,
+                    // Material has no outlined "edit in a circle", so the
+                    // circle is drawn to match cancel_outlined /
+                    // check_circle_outline at size 30.
+                    child: Container(
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.lightBlueAccent,
+                          width: 2.4,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        color: Colors.lightBlueAccent,
+                        size: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 38,
+                height: 38,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: onCancelTap,
+                    child: Icon(
+                      dd.isCancelled ? Icons.cancel : Icons.cancel_outlined,
+                      color: dd.isCancelled
+                          ? Colors.redAccent
+                          : Colors.lightBlueAccent,
+                      size: 30,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 38,
+                height: 38,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: onCheckTap,
+                    child: Icon(
+                      dd.isDone
+                          ? Icons.check_circle
+                          : Icons.check_circle_outline,
+                      color: dd.isDone ? Colors.yellow : Colors.lightBlueAccent,
+                      size: 30,
                     ),
                   ),
                 ),
