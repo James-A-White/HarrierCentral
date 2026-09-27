@@ -589,8 +589,7 @@ class RunDetails extends StatelessWidget {
                               event.hares ?? '',
                               style: ts_listValueStyle,
                               textAlign: TextAlign.left,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              // No line limit: wraps to fit every hare.
                             ),
                           ),
                         ],
