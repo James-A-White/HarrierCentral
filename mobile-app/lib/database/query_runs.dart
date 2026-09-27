@@ -621,10 +621,15 @@ class QueryRuns {
             ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} $sortDirection, evt.${tableModel.eventsTableHelper.colEventNumber}
           ''';
 
+    // Case-blind: this is the lookup for ids that arrive from OUTSIDE the
+    // local database — notification payloads, deep links — and SQLite's `=`
+    // is case-sensitive. The notification tap upper-cased the id, so every
+    // chat push for a run not already on the list opened nothing
+    // ("lookup found 0", 1414, 2026-09-27).
     final String whereClauseForSingleRun = eventId == null
         ? ''
         : '''
-            WHERE evt.${tableModel.eventsTableHelper.colEventId} = "$eventId"
+            WHERE lower(evt.${tableModel.eventsTableHelper.colEventId}) = "${normalizeUuid(eventId)}"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
           ''';
 

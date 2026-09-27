@@ -536,7 +536,8 @@ class FutureRunListPageController extends GetxController {
       return;
     }
 
-    String? eventId = data['EventId']?.toString().toUpperCase();
+    final String rawEventId = '${data['EventId'] ?? ''}'.trim();
+    final String? eventId = rawEventId.isEmpty ? null : normalizeUuid(rawEventId);
     // Stringify before parsing: int.tryParse takes a String, so an absent key
     // throws rather than falling back to 0. The same bug was fixed in
     // NotificationService on 2026-08-30; this copy was missed.
