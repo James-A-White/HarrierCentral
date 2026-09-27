@@ -13,6 +13,30 @@ predating the 3.0 App Store release should be re-read before it is trusted: a
 check written against build 1235 may no longer describe the screen.
 
 ---
+## Device test — PackTrack auto start, 3.1.8+1415 (E5.F1.S8/S9, 2026-09-27)
+
+First field test: Black Death #200, 2026-09-27 12:00. Check each on iPhone
+and Android, phone LOCKED in a pocket from arming until well after the start.
+
+- [ ] From T−2h Live Run shows "Auto start when I set off"; before that, a
+      disabled "Auto start available at …".
+- [ ] Arming shows the "Auto start is on" card; RSVP becomes Yes; Android shows
+      the "Auto start armed" notification.
+- [ ] Armed at home (run has a start point): nothing happens on the drive in.
+- [ ] Standing about at the start for 10+ minutes does NOT start tracking.
+- [ ] Setting off starts tracking within ~1–2 minutes, phone locked; the track
+      on the map begins about a minute BEFORE leaving the start area.
+- [ ] Attendance becomes At Hash when tracking starts.
+- [ ] Session log (next launch) has "[AutoStart] armed", "stream -> AUTO-START
+      precise" (iOS at T−5) and "[AutoStart] set off … N buffered fixes".
+- [ ] Kill the app after arming, relaunch: it re-arms.
+- [ ] Cancel auto start: card goes, GPS drops to idle.
+- [ ] Never go to the start: disarms at T+30 with a message.
+- [ ] Hare: arm, then leave the start — tracking starts when leaving.
+- [ ] Battery over a 2-hour arm (Android precise from the tap).
+
+---
+
 ## Device test — 3.0.1+1312 (chat bubbles, share sheet, tap targets, spinner)
 
 Shipped 2026-08-28 to TestFlight + Play internal (staged; James sends
