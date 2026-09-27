@@ -1,3 +1,19 @@
+## 3.1.8+1415 (2026-09-27)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **PackTrack auto start.** From two hours before a run, Live Run offers
+  "Auto start when I set off". Arm it and put the phone away: once you have
+  reached the start and set off, tracking starts by itself, including the
+  minute before you left. A hare's tracking starts when they leave the start.
+  Auto start switches itself off if you never reach the start.
+### Improvements
+- **Down Downs:** edit sits on the same line as cancel and done, in the same
+  style.
+### Fixes
+- **Completed Down Downs** now load on a run from a kennel you have never
+  followed.
+
 ## 3.1.8+1414 (2026-09-26)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version.
