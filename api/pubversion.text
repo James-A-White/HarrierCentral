@@ -1,3 +1,14 @@
+1.0.61+61
+    • Kennel requests (E12.F1.S6-S8): PublicWebAdminApi accepts
+      submitKennelRequest / confirmKennelRequest and emails the confirmation
+      code and the reviewer notice; PortalApiHC6 emails the welcome with the
+      new admin's sign-in code on approveKennelRequest. Each strips what it
+      emailed from the reply.
+    • ProcessWpForm removed: the anonymous GET that fed spam into the kennel
+      queue. harriercentral.com's form now redirects to hashruns.org/add-kennel.
+    • Every email reads the Logic App URL from HC_EMAIL_LOGIC_APP_URL (literal
+      fallback until the trigger key is rotated).
+
 1.0.61+60
     • SECURITY: the anonymous PublicWebApi route refuses every SP on
       PublicWebAdminApi's allowlist (case-insensitive). savePageLayout,
