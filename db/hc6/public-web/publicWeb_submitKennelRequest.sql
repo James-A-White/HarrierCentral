@@ -14,7 +14,8 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_submitKennelRequest]
     @cityText          NVARCHAR(MAX)    = NULL,
     @runsPerMonth      NVARCHAR(MAX)    = NULL,
     @hashersPerRun     NVARCHAR(MAX)    = NULL,
-    @hashCash          NVARCHAR(MAX)    = NULL,
+    @hashCash          NVARCHAR(MAX)    = NULL,   -- run fee for members
+    @nonMemberPrice    NVARCHAR(MAX)    = NULL,   -- run fee for visitors
     @nextRunNumber     NVARCHAR(MAX)    = NULL,
     @howDidYouLearn    NVARCHAR(MAX)    = NULL,
     @comments          NVARCHAR(MAX)    = NULL,
@@ -78,6 +79,7 @@ SET @cityText          = NULLIF(TRIM(@cityText), N'');
 SET @runsPerMonth      = NULLIF(TRIM(@runsPerMonth), N'');
 SET @hashersPerRun     = NULLIF(TRIM(@hashersPerRun), N'');
 SET @hashCash          = NULLIF(TRIM(@hashCash), N'');
+SET @nonMemberPrice    = NULLIF(TRIM(@nonMemberPrice), N'');
 SET @nextRunNumber     = NULLIF(TRIM(@nextRunNumber), N'');
 SET @howDidYouLearn    = NULLIF(TRIM(@howDidYouLearn), N'');
 SET @comments          = NULLIF(TRIM(@comments), N'');
@@ -116,8 +118,16 @@ FROM (SELECT TOP 1 code, msg FROM (VALUES
                    THEN N'That city is not in the chosen region.' END),
     (11, 1720, CASE WHEN @cityId IS NULL AND (LEN(COALESCE(@cityText, N'')) = 0 OR LEN(@cityText) > 50)
                    THEN N'Please choose the city, or type it if it is not listed (at most 50 characters).' END),
+    -- Run fees are numbers (James, 2026-09-28: "two pounds" is not a price):
+    -- required, 0 or more, the form only lets digits and one point through.
+    (11.1, 1726, CASE WHEN @hashCash IS NULL OR TRY_CAST(@hashCash AS DECIMAL(10,4)) IS NULL
+                        OR TRY_CAST(@hashCash AS DECIMAL(10,4)) < 0
+                   THEN N'Please enter the run fee for members as a number — 0 if runs are free.' END),
+    (11.2, 1727, CASE WHEN @nonMemberPrice IS NULL OR TRY_CAST(@nonMemberPrice AS DECIMAL(10,4)) IS NULL
+                        OR TRY_CAST(@nonMemberPrice AS DECIMAL(10,4)) < 0
+                   THEN N'Please enter the run fee for visitors as a number — 0 if runs are free.' END),
     (12, 1721, CASE WHEN LEN(@runsPerMonth) > 50 OR LEN(@hashersPerRun) > 50 OR LEN(@hashCash) > 50
-                        OR LEN(@nextRunNumber) > 250
+                        OR LEN(@nonMemberPrice) > 50 OR LEN(@nextRunNumber) > 250
                    THEN N'One of the answers is too long.' END),
     (13, 1722, CASE WHEN LEN(@howDidYouLearn) > 4000 OR LEN(@comments) > 4000
                    THEN N'Comments may be at most 4000 characters.' END),
@@ -183,7 +193,7 @@ BEGIN TRY
          KennelName, KennelShortName, KennelUrl, KennelDescription, KennelPinColor,
          NumberOfRunsPerMonth, NumberOfHashersPerRun,
          Country, CountryId, Region, RegionId, City, CityId,
-         HashCash, KennelFacebookUrl, SubmitterEmail, SubmittedOn,
+         HashCash, NonMemberPrice, KennelFacebookUrl, SubmitterEmail, SubmittedOn,
          nextRunNumber, comments, HashRunsDotOrg, HowDidYouLearnAboutHc,
          RequestStatus, ConfirmCode, ConfirmAttempts, SubmitIp, TermsAnswers, updatedAt)
     SELECT
@@ -192,7 +202,7 @@ BEGIN TRY
         COALESCE(@runsPerMonth, N'Unknown'), COALESCE(@hashersPerRun, N'Unknown'),
         LEFT(co.CountryName, 50), @countryId, LEFT(re.RegionName, 50), @regionId,
         COALESCE(LEFT(ci.CityName, 50), @cityText), @cityId,
-        COALESCE(@hashCash, N''), @kennelFacebookUrl, @email, GETDATE(),
+        @hashCash, @nonMemberPrice, @kennelFacebookUrl, @email, GETDATE(),
         @nextRunNumber, @comments, N'Yes', @howDidYouLearn,
         0, @code, 0, @submitIp,
         LEFT(N'1: ' + @terms1 + N' | 2: ' + @terms2 + N' | 3: ' + @terms3, 1000),

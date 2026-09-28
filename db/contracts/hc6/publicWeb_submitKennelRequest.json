@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_submitKennelRequest",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "hashruns.org/add-kennel (E12.F1.S7): stores a request as status 0 with a six-digit ConfirmCode. Same email + short name within 30 days reuses the open row (new code). 5 per SubmitIp per day. PublicWebAdminApi only, behind HC_INTERNAL_SECRET; the API emails the code and strips it.",
   "parameters": [
     {
@@ -114,7 +114,7 @@
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.HashCash",
-      "description": "≤50"
+      "description": "Run fee for members: required, a number ≥ 0 (the form allows digits and one point only)."
     },
     {
       "name": "nextRunNumber",
@@ -164,6 +164,13 @@
       "nullable": false,
       "mapsToColumn": "OfficeForms_KennelImport.TermsAnswers",
       "description": "Answer text to opt-in question #3 of the old harriercentral.com form (required, ≤300). Stored as '1: … | 2: … | 3: …'."
+    },
+    {
+      "name": "nonMemberPrice",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.NonMemberPrice",
+      "description": "Run fee for visitors: required, a number ≥ 0."
     }
   ],
   "rowsets": [
@@ -294,7 +301,9 @@
     "1723": "IP rate limit",
     "1729": "unhandled",
     "1724": "terms not answered",
-    "1725": "terms answer too long"
+    "1725": "terms answer too long",
+    "1726": "members' fee missing or not a number",
+    "1727": "visitors' fee missing or not a number"
   },
   "sideEffects": [
     "INSERT or UPDATE EXT.OfficeForms_KennelImport",
