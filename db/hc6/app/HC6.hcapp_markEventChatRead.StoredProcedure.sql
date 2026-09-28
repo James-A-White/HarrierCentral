@@ -131,7 +131,9 @@ BEGIN TRY
     -- ----------------------------------------------------------------
     -- BadgeTotal: what is still unread after this read, so the silent
     -- read_sync push can set the other devices' app ICON too (2026-09-28).
-    SELECT device.FcmToken, bt.BadgeTotal
+    SELECT device.FcmToken,
+           CASE WHEN TRY_CAST(device.BuildNumber AS INT) >= HC6.MinBuildForIconBadge()
+                THEN bt.BadgeTotal END AS BadgeTotal
     FROM HC.Device device
     CROSS APPLY HC6.UserUnreadChatTotal(@userId) bt
     WHERE device.UserId    = @userId
