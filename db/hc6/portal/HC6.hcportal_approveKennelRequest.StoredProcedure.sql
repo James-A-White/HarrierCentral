@@ -86,7 +86,8 @@ BEGIN TRY
     DECLARE @status SMALLINT, @kennelName NVARCHAR(250), @shortName NVARCHAR(250),
             @description NVARCHAR(4000), @kennelUrl NVARCHAR(250),
             @countryId UNIQUEIDENTIFIER, @regionId UNIQUEIDENTIFIER, @cityId UNIQUEIDENTIFIER,
-            @hashCash NVARCHAR(50), @nonMemberPrice NVARCHAR(50), @email NVARCHAR(250), @firstName NVARCHAR(250),
+            @hashCash NVARCHAR(50), @nonMemberPrice NVARCHAR(50), @membershipFee NVARCHAR(50),
+            @membershipMode SMALLINT, @email NVARCHAR(250), @firstName NVARCHAR(250),
             @lastName NVARCHAR(250), @hashName NVARCHAR(250);
 
     SELECT @status      = ki.RequestStatus,
@@ -99,6 +100,8 @@ BEGIN TRY
            @cityId      = ki.CityId,
            @hashCash    = ki.HashCash,
            @nonMemberPrice = ki.NonMemberPrice,
+           @membershipFee = ki.MembershipFee,
+           @membershipMode = ki.MembershipRenewalMode,
            @email       = LOWER(TRIM(ki.EmailAddress)),
            @firstName   = TRIM(ki.FirstName),
            @lastName    = TRIM(ki.LastName),
@@ -177,18 +180,27 @@ BEGIN TRY
         NULLIF(TRANSLATE(COALESCE(@nonMemberPrice, N''), N'$£€¥', N'    '), N'') AS DECIMAL(10,4)), @price);
     IF (@nonMemberPriceNum < 0 OR @nonMemberPriceNum > 100000) SET @nonMemberPriceNum = @price;
 
+    -- Membership as the request gave it (hashruns.org, 2026-09-28); none ⇒
+    -- the kennel defaults (rolling, price 0). A fixed year still needs its
+    -- renewal date set by the kennel admin in the portal.
+    DECLARE @membershipPrice DECIMAL(10,4) = COALESCE(TRY_CAST(@membershipFee AS DECIMAL(10,4)), 0);
+    IF (@membershipPrice < 0 OR @membershipPrice > 100000) SET @membershipPrice = 0;
+    IF (@membershipMode NOT IN (1, 2, 3)) SET @membershipMode = NULL;
+
     DECLARE @kennelId UNIQUEIDENTIFIER = NEWID();
 
     INSERT HC.Kennel
         (id, KennelName, KennelShortName, KennelUniqueShortName, KennelDescription,
          KennelLogo, KennelWebsiteUrl, DefaultEventPriceForMembers, DefaultEventPriceForNonMembers,
          CityId, ProvinceStateId, CountryId, RunCountStartDate, KennelStatus,
-         IntegrationType, InboundIntegrationId, DisseminateHashRunsDotOrg, removed, deleted)
+         IntegrationType, InboundIntegrationId, DisseminateHashRunsDotOrg, removed, deleted,
+         MembershipPrice, MembershipRenewalMode)
     VALUES
         (@kennelId, @kennelName, @shortName, @uniqueShortName, COALESCE(@description, N''),
          @logo, @kennelUrl, @price, @nonMemberPriceNum,
          @cityId, @regionId, @countryId, SYSDATETIMEOFFSET(), 2,
-         N'None', 0, 5, 0, 0);
+         N'None', 0, 5, 0, 0,
+         @membershipPrice, COALESCE(@membershipMode, 1));
 
     -- ── 2. The requester as HC admin ──────────────────────────────────
     DECLARE @adminId UNIQUEIDENTIFIER;
