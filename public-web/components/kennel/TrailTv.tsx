@@ -63,6 +63,16 @@ const REPLAY_HOLD_MS = 6_000;
 const MIN_PHOTO_MS = 5_000;
 /** Most out-of-run photos the end-of-cycle hold will wait for. */
 const TRAILING_PHOTOS_MAX = 6;
+/** Replay clock step. 10 Hz: at 200 ms each step covered ~17 s of a two-hour
+ *  run and the dots visibly hopped (James, 2026-09-28). */
+const REPLAY_TICK_MS = 100;
+/** Slowest the map runs while photos are queued, as a fraction of full pace. */
+const REPLAY_MIN_RATE = 0.15;
+/** Share of the gap to the target speed closed per tick — about a second of
+ *  easing either way at 10 Hz. */
+const REPLAY_RATE_EASE = 0.1;
+/** Points averaged either side when smoothing a track for display. */
+const TRACK_SMOOTH_RADIUS = 2;
 const TAKEOVER_LIVE_MS = 10_000;  // fresh-from-trail photo, live mode
 const PRELOAD_AHEAD = 4;          // photos warmed into cache ahead of the takeover
 const TAKEOVER_OUT_MS = 450;       // zoom-back-out exit animation (matches .closing CSS)
@@ -188,11 +198,34 @@ interface Callout {
 
 // ── Track prep ─────────────────────────────────────────────────────────────────
 
+/**
+ * Centred moving average over each point's neighbours (±[radius]), for display
+ * only. Takes the GPS zig-zag out of the replayed line so it reads as a path
+ * rather than a scribble (James, 2026-09-28: "the map replay looks a bit
+ * jumpy"). Times are untouched and the first and last points stay put, so the
+ * start, the finish and the replay clock are exactly as before.
+ */
+function smoothTrack(points: TrackPoint[], radius: number): TrackPoint[] {
+  if (radius < 1 || points.length < 2 * radius + 1) return points;
+  return points.map((p, i) => {
+    if (i === 0 || i === points.length - 1) return p;
+    const r = Math.min(radius, i, points.length - 1 - i);
+    let lat = 0;
+    let lng = 0;
+    for (let k = i - r; k <= i + r; k++) {
+      lat += points[k].lat;
+      lng += points[k].lng;
+    }
+    const n = 2 * r + 1;
+    return { ...p, lat: lat / n, lng: lng / n };
+  });
+}
+
 function prepareTracks(users: UserTrack[]): PreparedTrack[] {
   const out: PreparedTrack[] = [];
   users.forEach((u, i) => {
     const gps = u.positions.filter((p) => !p.type);
-    const filtered = filterAndInterpolate(gps);
+    const filtered = smoothTrack(filterAndInterpolate(gps), TRACK_SMOOTH_RADIUS);
     if (filtered.length < 2) return;
     const oin = u.positions.find(
       (p) => p.type && parseMark(p.type)?.isOnInn && isTerminalOnInn(u.positions, p),
@@ -808,6 +841,8 @@ export default function TrailTv({
   }, [timedPhotos]);
 
   const replayElapsedRef = useRef(0);
+  /** Current replay speed, 0..1 of full pace — eased toward the photo backlog. */
+  const replayRateRef = useRef(1);
 
   // Start over when the run or the mode changes — but NOT when the pace slider
   // moves. That is handled by rescaling, so dragging the slider speeds the wall
@@ -832,11 +867,31 @@ export default function TrailTv({
 
     const t = setInterval(() => {
       if (takeoverActiveRef.current) return;
-      let el = replayElapsedRef.current + 200;
-      if (el >= cycle) el -= cycle;
+      // The map waits for the photos (James, 2026-09-28: "the map is getting
+      // ahead of the photos"). The clock's rate follows the photo backlog —
+      // full speed with nothing queued, slower the more are waiting, never
+      // below REPLAY_MIN_RATE — and eases toward it rather than snapping, so
+      // the replay glides down and back up instead of lurching.
+      const backlog = queueRef.current.length;
+      const target = Math.max(REPLAY_MIN_RATE, 1 / (1 + 0.75 * backlog));
+      replayRateRef.current += (target - replayRateRef.current) * REPLAY_RATE_EASE;
+      let el = replayElapsedRef.current + REPLAY_TICK_MS * replayRateRef.current;
+      // Never wrap while photos are still queued: the wrap clears the queue,
+      // and the queue is always longest at the end — at 5 s a photo, 44 trail
+      // photos need ~220 s against an ~85 s replay. The latest photos were the
+      // ones dropped, every cycle: Black Death #200's six On Inn photos never
+      // appeared (2026-09-28). Hold on the finished trail until they have.
+      if (el >= cycle) {
+        if (backlog > 0) {
+          el = cycle - 1;
+        } else {
+          el -= cycle;
+          replayRateRef.current = 1;
+        }
+      }
       replayElapsedRef.current = el;
       setReplayClock(timeline.min + Math.min(1, el / replayDurationMs) * span);
-    }, 200);
+    }, REPLAY_TICK_MS);
     return () => clearInterval(t);
   }, [mode, timeline, replayDurationMs, trailingHoldMs]);
 
