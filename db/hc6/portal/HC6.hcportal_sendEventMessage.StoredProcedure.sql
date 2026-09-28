@@ -286,7 +286,10 @@ END
     -- Rowset 1: FullPushNotificationRecipients — visible banner.
     -- BadgeTotal: the recipient's unread total for the app ICON
     -- (HC6.UserUnreadChatTotal); the API puts it in aps.badge (2026-09-28).
-    SELECT DISTINCT p.UserId, p.DisplayName, p.FcmToken, bt.BadgeTotal
+    SELECT DISTINCT p.UserId, p.DisplayName, p.FcmToken,
+        CASE WHEN EXISTS (SELECT 1 FROM HC.Device dv WHERE dv.FcmToken = p.FcmToken
+                    AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
+     THEN bt.BadgeTotal END AS BadgeTotal
     FROM #pushAudience p
     CROSS APPLY HC6.UserUnreadChatTotal(p.UserId) bt
     WHERE p.UserId != @hasherId
@@ -294,7 +297,10 @@ END
 
     -- Rowset 2: InAppOnlyNotificationRecipients — silent, the badge moves.
     -- A token already in rowset 1 is not sent a second, silent copy.
-    SELECT DISTINCT a.UserId, a.DisplayName, a.FcmToken, bt.BadgeTotal
+    SELECT DISTINCT a.UserId, a.DisplayName, a.FcmToken,
+        CASE WHEN EXISTS (SELECT 1 FROM HC.Device dv WHERE dv.FcmToken = a.FcmToken
+                    AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
+     THEN bt.BadgeTotal END AS BadgeTotal
     FROM #pushAudience a
     CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
     WHERE (a.UserId = @hasherId
