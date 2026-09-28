@@ -1296,16 +1296,18 @@ class FutureRunsListPage extends StatelessWidget {
 
             final int distance =
                 hasherPreferences & hasherPref_distanceForAutoDisplay;
+            final int newPrefs = _withDistanceBits(
+              hasherPreferences,
+              distanceMeasuredIn,
+              distance,
+            );
 
             await srv.addEditUser(
               targetUserId: currentUserId,
-              preferences: distanceMeasuredIn + distance,
+              preferences: newPrefs,
             );
 
-            await setIntPref(
-              IntPrefsEnum.hasherPreferences,
-              distanceMeasuredIn + distance,
-            );
+            await setIntPref(IntPrefsEnum.hasherPreferences, newPrefs);
             await controller.refreshFromTable(true, reloadPastRuns: false);
           }
         } else if ((retVal is! EnumFollowType) &&
@@ -1320,15 +1322,18 @@ class FutureRunsListPage extends StatelessWidget {
                 hasherPreferences & hasherPref_distanceMeasuredIn;
             //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
 
-            await srv.addEditUser(
-              targetUserId: currentUserId,
-              preferences: distanceMeasuredIn + (retVal as int),
+            final int newPrefs = _withDistanceBits(
+              hasherPreferences,
+              distanceMeasuredIn,
+              retVal as int,
             );
 
-            await setIntPref(
-              IntPrefsEnum.hasherPreferences,
-              distanceMeasuredIn + retVal,
+            await srv.addEditUser(
+              targetUserId: currentUserId,
+              preferences: newPrefs,
             );
+
+            await setIntPref(IntPrefsEnum.hasherPreferences, newPrefs);
 
             await controller.refreshFromTable(true, reloadPastRuns: false);
           }
@@ -1336,6 +1341,20 @@ class FutureRunsListPage extends StatelessWidget {
       }
     }
   }
+
+  /// [stored] with only the units and auto-display radius replaced.
+  ///
+  /// hcapp_addEditUser overwrites the whole Preferences bitfield, and these
+  /// two writes used to send just `units + radius` — wiping every other bit:
+  /// log harvesting (0x100), camera-roll saving and the rest. Changing the
+  /// radius on 2026-09-27 turned James's session logs off, which is why his
+  /// Black Death auto-start log never existed. Same read-modify-write as
+  /// SettingsPageController._ownedMask.
+  static int _withDistanceBits(int stored, int measuredIn, int radius) =>
+      (stored &
+          ~(hasherPref_distanceMeasuredIn | hasherPref_distanceForAutoDisplay)) |
+      (measuredIn & hasherPref_distanceMeasuredIn) |
+      (radius & hasherPref_distanceForAutoDisplay);
 
   String _getDistancePreferenceString(String precursorText) {
     int distancePref =
