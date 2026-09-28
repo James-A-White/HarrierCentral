@@ -1,3 +1,6 @@
+0.21.74 (2026-09-28 redeploy — Trail TV clock and darker maps)
+    • Trail TV replay: elapsed time + furthest distance pill on both maps; map tiles 25% darker.
+
 0.21.74 (2026-09-28 redeploy — fees, membership, Trail TV)
     • add-kennel: numeric members'/visitors' run fees; Membership box (fee, type, members' fee).
     • Trail TV: every photo loaded before a replay starts ("Loading image x of y").

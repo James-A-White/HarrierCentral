@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-28 redeploy — Trail TV clock and darker maps)
+
+- **Trail TV replay clock.** Both replay maps show the elapsed time and the
+  furthest distance run at that moment, bottom-left, in the same pill as the
+  map titles.
+- **Darker map tiles** (25%) so the runner tracks stand out; the switch and
+  speed controls move to the bottom-right of the map column.
+
 ## 0.21.74 (2026-09-28 redeploy — fees, membership, Trail TV)
 
 - **Run fees are numbers.** add-kennel asks for the members' and visitors' run
