@@ -1,0 +1,141 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_searchHashersForMerge",
+  "version": "1.0.0",
+  "description": "Merge accounts search (E12.F6.S3): live accounts whose hash name matches a term (whole, case- and space-insensitive), or whose email / hasher id / PublicHasherId is a term. Up to 20 terms, 200 rows. Requires HC.PlatformAdmin.CanEditKennel.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token."
+    },
+    {
+      "name": "searchTerms",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.HashName",
+      "description": "'|'-delimited hash names / emails / ids (the portal converts the admin's commas)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Accounts",
+      "description": "One row per matching account, or { Success = 0, ErrorMessage }. RecentRuns = last three attended: 'KENNEL yyyy-mm-dd (City)' joined by ' · '. LastAppUse = newest HC.Device.LastLogin, else Hasher.LastLoginDateTime.",
+      "columns": [
+        {
+          "name": "HasherId",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HashName",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "FirstName",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LastName",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Email",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MatchedOn",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HomeKennel",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "CreatedAt",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LastAppUse",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "SignedInDevices",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelsFollowed",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelsFollowedList",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RunsAttended",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Payments",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RecentRuns",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsPlatformAdmin",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}
