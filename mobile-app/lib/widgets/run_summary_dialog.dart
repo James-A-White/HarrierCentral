@@ -72,9 +72,18 @@ Future<void> showRunSummaryDialog(
       children: [
         Icon(icon, color: hc_red, size: 26),
         const SizedBox(width: 12),
-        Expanded(child: Text(label, style: ts_alertDialogBody)),
+        Expanded(flex: 3, child: Text(label, style: ts_alertDialogBody)),
         const SizedBox(width: 8),
-        value,
+        // A value shrinks rather than overflow: "12:56 /km" at a large text
+        // size on a small phone is wider than the column.
+        Flexible(
+          flex: 2,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: value,
+          ),
+        ),
       ],
     ),
   );
@@ -93,6 +102,19 @@ Future<void> showRunSummaryDialog(
         final RunSummary? s = source.summary.value;
         final bool loading = source.summaryLoading.value;
         final bool unavailable = source.summaryUnavailable.value;
+
+        // Time on trail: the whole run less the time at drink stops. Known
+        // only once the marks are read; before then the pace row waits.
+        final Duration running = s == null
+            ? elapsed
+            : (elapsed - s.drinkStopTime).isNegative
+            ? Duration.zero
+            : elapsed - s.drinkStopTime;
+        final String? pace = formatPace(
+          running,
+          meters,
+          imperial: source.summaryImperial,
+        );
 
         final Widget pending = loading
             ? const SizedBox(
@@ -133,6 +155,20 @@ Future<void> showRunSummaryDialog(
                 Icons.hourglass_bottom,
                 'Time at drink stops',
                 big(minutes(s.drinkStopTime)),
+              ),
+            // Running time and pace leave the drink stops out (James,
+            // 2026-09-28): the time on trail, not the time at the pub.
+            if (s != null && s.drinkStopTime.inSeconds >= 60)
+              row(
+                Icons.directions_run,
+                'Running time',
+                big(hms(running)),
+              ),
+            if (s == null || pace != null)
+              row(
+                Icons.speed,
+                'Running pace',
+                s == null ? pending : big(pace!),
               ),
             if (unavailable)
               Padding(

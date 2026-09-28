@@ -33,3 +33,17 @@ String _large(double value, String unit) {
 const double _metersPerMile = 1609.344;
 const double _yardsPerMeter = 1.0936133;
 final NumberFormat _whole = NumberFormat('#,##0');
+
+/// The one way the app writes a running pace (James, 2026-09-28): minutes
+/// and seconds per kilometre ("6:12 /km") or per mile ("9:59 /mi"), on the
+/// same unit rule as [formatDistance]. Null when there is too little to go
+/// on (under 100 m, or no time) — a pace from a few metres is noise. Pure;
+/// tested.
+String? formatPace(Duration moving, double meters, {required bool imperial}) {
+  if (!meters.isFinite || meters < 100 || moving.inSeconds <= 0) return null;
+  final double perUnit = imperial ? _metersPerMile : 1000;
+  int seconds = (moving.inMilliseconds / 1000 / (meters / perUnit)).round();
+  final int minutes = seconds ~/ 60;
+  seconds %= 60;
+  return '$minutes:${seconds.toString().padLeft(2, '0')} /${imperial ? 'mi' : 'km'}';
+}
