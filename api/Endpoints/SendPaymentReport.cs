@@ -93,7 +93,7 @@ namespace HcWebApi.Endpoints
 
 
                     await Utilities.SendEmailAsync(
-                            "https://prod-46.northeurope.logic.azure.com:443/workflows/ea2b7fd09a8d407fa58ab04b64638217/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=aqjP-q4tvhj-S9aemqQKFGP5ZQYBWOBFTL_KSUvcVl8",
+                            Utilities.EmailLogicAppUrl,
                             "james@defenceinnovation.eu",
                             emailAddress,
                             $"Here's your Harrier Central Payment Report for {eventName}",

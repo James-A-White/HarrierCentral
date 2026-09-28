@@ -150,6 +150,20 @@ namespace HcWebApi.Endpoints
                     case "markEventChatRead":
                         await SendReadSyncAsync(multipleResults, (string)data.publicEventId, log);
                         break;
+                    case "approveKennelRequest":
+                        // The welcome carries the new admin's sign-in code: send
+                        // it, then remove the code so it never reaches the
+                        // reviewer's browser (E12.F1.S6).
+                        if (KennelRequestEmails.FirstRow(multipleResults, 1) is { } approved)
+                        {
+                            bool sent = await KennelRequestEmails.SendWelcomeAsync(approved, log);
+                            approved.Remove("InviteCode");
+                            approved["WelcomeEmailSent"] = sent ? 1 : 0;
+                            if (!sent)
+                                await LogErrorAsync(connectionString, queryType, deviceId,
+                                    $"Kennel welcome email not sent for kennel {approved.GetValueOrDefault("KennelId")}");
+                        }
+                        break;
                 }
 
                 return CompressedJson(req, multipleResults);

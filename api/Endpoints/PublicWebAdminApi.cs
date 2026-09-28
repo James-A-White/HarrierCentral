@@ -68,6 +68,11 @@ namespace HcWebApi.Endpoints
             "getAllSongs",
             "getReportContext",
             "logWebError",
+            // Adding a kennel from hashruns.org/add-kennel (E12.F1.S7, 2026-09-28).
+            // Both send email as a side effect below, and both strip what they
+            // email (the code, the reviewers' addresses) from the reply.
+            "submitKennelRequest",
+            "confirmKennelRequest",
         };
 
         private readonly ILogger<PublicWebAdminApi> _log;
@@ -109,6 +114,8 @@ namespace HcWebApi.Endpoints
             "getAllSongs",
             "getReportContext",
             "logWebError",
+            "submitKennelRequest",
+            "confirmKennelRequest",
         };
 
         [Function("PublicWebAdminApi")]
@@ -222,6 +229,33 @@ namespace HcWebApi.Endpoints
                     _log.LogWarning("PublicWebAdminApi SP error [{QueryType}]: {ErrorMessage}", queryType, errMsg);
                     await LogErrorAsync(connectionString, queryType, $"HC6 Public Web Admin Error: {queryType}", errMsg?.ToString());
                     return new BadRequestObjectResult(new { success = false, errorMessage = "Operation failed." });
+                }
+
+                // Post-SP side effects: the kennel request emails. The SP hands
+                // over what to send; it is removed here, after sending, so the
+                // web server never sees the code or the reviewers' addresses.
+                if (string.Equals(queryType, "submitKennelRequest", StringComparison.OrdinalIgnoreCase)
+                    && KennelRequestEmails.Succeeded(multipleResults)
+                    && KennelRequestEmails.FirstRow(multipleResults, 1) is { } submitted)
+                {
+                    bool sent = submitted.ContainsKey("confirmCode")
+                        && await KennelRequestEmails.SendConfirmCodeAsync(submitted, _log);
+                    submitted.Remove("confirmCode");
+                    submitted["codeSent"] = sent ? 1 : 0;
+                    if (!sent && Convert.ToInt32(submitted.GetValueOrDefault("alreadySubmitted") ?? 0) != 1)
+                        await LogErrorAsync(connectionString, queryType, "Kennel request code email not sent",
+                            submitted.GetValueOrDefault("requestId")?.ToString());
+                }
+                else if (string.Equals(queryType, "confirmKennelRequest", StringComparison.OrdinalIgnoreCase)
+                    && KennelRequestEmails.Succeeded(multipleResults)
+                    && multipleResults.Count > 2
+                    && KennelRequestEmails.FirstRow(multipleResults, 1) is { } confirmed)
+                {
+                    var reviewers = multipleResults[2]
+                        .Select(r => r.GetValueOrDefault("reviewerEmail")?.ToString() ?? "")
+                        .ToList();
+                    multipleResults.RemoveAt(2);
+                    _ = KennelRequestEmails.SendReviewerNoticeAsync(confirmed, reviewers, _log);
                 }
 
                 return new OkObjectResult(multipleResults);

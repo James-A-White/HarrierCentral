@@ -12,6 +12,19 @@ namespace HcWebApi.Endpoints
     {
         private static readonly HttpClient httpClient = new();
 
+        /// The email Logic App's HTTP trigger. Every email the API sends goes
+        /// through it. Read from the HC_EMAIL_LOGIC_APP_URL app setting; the
+        /// literal fallback is the URL that used to be pasted into four
+        /// endpoints and is public in the repo — rotate the trigger's key, set
+        /// the app setting, then delete the fallback (2026-09-28).
+        public static string EmailLogicAppUrl =>
+            Environment.GetEnvironmentVariable("HC_EMAIL_LOGIC_APP_URL") is { Length: > 0 } configured
+                ? configured
+                : "https://prod-46.northeurope.logic.azure.com:443/workflows/ea2b7fd09a8d407fa58ab04b64638217/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=aqjP-q4tvhj-S9aemqQKFGP5ZQYBWOBFTL_KSUvcVl8";
+
+        /// The sender every Harrier Central email has used.
+        public const string EmailFrom = "james@defenceinnovation.eu";
+
         public static async Task SendEmailAsync(
             string logicAppUrl,
             string from,
