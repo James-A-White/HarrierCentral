@@ -5,6 +5,10 @@ import 'package:geolocator/geolocator.dart';
 const String RANDOM_STRING_LIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 // ── Connection-test fallback URLs ──────────────────────────────────────────
+/// How long an internet probe (Google / Microsoft 204) may take before the
+/// phone is judged offline. Was 3 s, which slow links and just-woken phones
+/// routinely exceed (2026-09-28).
+const Duration kInternetProbeTimeout = Duration(seconds: 8);
 const String CONNECTION_TEST_GOOGLE_URL = 'https://www.google.com/generate_204';
 const String CONNECTION_TEST_MSFT_URL =
     'https://www.msftconnecttest.com/connecttest.txt';

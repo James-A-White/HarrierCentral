@@ -206,8 +206,14 @@ class NetworkService extends GetxService with WidgetsBindingObserver {
     if (_recoveryWatcherSub != null) return;
     _recoveryWatcherSub = InternetConnection.createInstance(
       customCheckOptions: [
-        InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL)),
-        InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_MSFT_URL)),
+        InternetCheckOption(
+          uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL),
+          timeout: kInternetProbeTimeout,
+        ),
+        InternetCheckOption(
+          uri: Uri.parse(CONNECTION_TEST_MSFT_URL),
+          timeout: kInternetProbeTimeout,
+        ),
       ],
     ).onStatusChange.listen((status) {
       if (status == InternetStatus.connected) {
@@ -224,6 +230,20 @@ class NetworkService extends GetxService with WidgetsBindingObserver {
 
   // Returns true when the device has internet — used by service-layer guards.
   bool isOnline() => hasInternet.value;
+
+  /// Our API just answered (any HTTP status it chose to send, 2xx-4xx), so
+  /// the phone is online and the backend is up — whatever the last probe
+  /// said. Until 2026-09-28 only FAILED requests fed this service: one slow
+  /// probe left the app saying "Offline Mode" and refusing online-only
+  /// buttons while its own syncs were succeeding, until a later probe
+  /// happened to finish inside 3 s.
+  void markServerReached() {
+    if (hasInternet.value && backendReachable.value) return;
+    hasInternet.value = true;
+    backendReachable.value = true;
+    _lastCheckResult = true;
+    _stopRecoveryWatcher();
+  }
 
   @override
   void onClose() {

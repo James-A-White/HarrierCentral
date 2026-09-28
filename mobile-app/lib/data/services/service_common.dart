@@ -183,6 +183,14 @@ class ServiceCommon {
         client: client,
       );
 
+      // A real answer from our API — even an application refusal — proves
+      // the phone is online; synthesized timeouts / transport failures
+      // (599, 408, 500 with an empty body) do not.
+      if (response.statusCode >= 200 &&
+          response.statusCode < 500 &&
+          Get.isRegistered<NetworkService>()) {
+        networkService.markServerReached();
+      }
       final bool hasErrorId = response.body.contains('"errorId"');
       final bool isSuccess =
           (response.statusCode >= 200) &&

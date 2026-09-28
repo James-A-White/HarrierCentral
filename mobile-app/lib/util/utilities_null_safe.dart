@@ -786,7 +786,11 @@ class Utilities {
 
   // Fast internet check: interface present + general reachability probe.
   static Future<bool> checkForInternetConnection() async {
-    const Duration internetCheckTimeout = Duration(milliseconds: 3000);
+    // 8 s, not 3: a phone on a slow link, or just woken, can take longer
+    // than 3 s for DNS alone (the Android emulator logged 5.9 s lookups), and
+    // a false "offline" here blocked every online-only button until the next
+    // probe happened to be quick (2026-09-28).
+    const Duration internetCheckTimeout = kInternetProbeTimeout;
 
     final connectivity = Connectivity();
     List<ConnectivityResult> interfaces = [];
@@ -801,8 +805,14 @@ class Utilities {
     try {
       final checker = InternetConnection.createInstance(
         customCheckOptions: [
-          InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL)),
-          InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_MSFT_URL)),
+          InternetCheckOption(
+            uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL),
+            timeout: kInternetProbeTimeout,
+          ),
+          InternetCheckOption(
+            uri: Uri.parse(CONNECTION_TEST_MSFT_URL),
+            timeout: kInternetProbeTimeout,
+          ),
         ],
       );
       return await checker.hasInternetAccess.timeout(
