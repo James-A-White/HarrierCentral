@@ -10,6 +10,9 @@ type Body = Partial<KennelRequestForm> & {
   stamp?: string;
   website?: string;
   terms1?: string;
+  hasMembership?: string;
+  membershipFee?: string;
+  membershipType?: string;
   terms2?: string;
   terms3?: string;
 };
@@ -65,6 +68,9 @@ export async function POST(req: NextRequest) {
       hashersPerRun: text(body.hashersPerRun),
       hashCash: text(body.hashCash),
       nonMemberPrice: text(body.nonMemberPrice),
+      hasMembership: body.hasMembership === "1" ? "1" : "0",
+      membershipFee: text(body.membershipFee),
+      membershipType: /^[123]$/.test(body.membershipType ?? "") ? body.membershipType! : null,
       nextRunNumber: text(body.nextRunNumber),
       howDidYouLearn: text(body.howDidYouLearn),
       comments: text(body.comments),

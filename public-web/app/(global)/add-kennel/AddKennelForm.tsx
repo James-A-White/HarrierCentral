@@ -16,7 +16,8 @@ const EMPTY = {
   firstName: "", lastName: "", hashName: "", email: "",
   kennelName: "", kennelShortName: "", kennelDescription: "", kennelUrl: "", kennelFacebookUrl: "",
   countryId: "", regionId: "", cityId: "", cityText: "",
-  runsPerMonth: "", hashersPerRun: "", hashCash: "", nonMemberPrice: "", nextRunNumber: "", howDidYouLearn: "", comments: "",
+  runsPerMonth: "", hashersPerRun: "", hashCash: "", nonMemberPrice: "", membershipFee: "", membershipType: "",
+  nextRunNumber: "", howDidYouLearn: "", comments: "",
 };
 type Fields = typeof EMPTY;
 
@@ -35,6 +36,13 @@ export function moneyOnly(raw: string): string {
   // ".5" means 0.50.
   return out.startsWith(".") ? "0" + out : out;
 }
+
+/** HC.Kennel.MembershipRenewalMode, in words a kennel will recognise. */
+const MEMBERSHIP_TYPES: { value: string; label: string }[] = [
+  { value: "1", label: "Annual — each membership runs 12 months from payment" },
+  { value: "2", label: "Fixed year — everyone renews on the same date" },
+  { value: "3", label: "Lifetime — pay once" },
+];
 
 /**
  * The three opt-in questions of the old harriercentral.com form, word for
@@ -85,6 +93,7 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
   const [cityNotListed, setCityNotListed] = useState(false);
   const [honeypot, setHoneypot] = useState("");
   const [terms, setTerms] = useState<string[]>(["", "", ""]);
+  const [hasMembership, setHasMembership] = useState(false);
   const [step, setStep] = useState<Step>({ kind: "form" });
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -93,7 +102,7 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
   const regions = usePlaces("countryId", f.countryId);
   const cities = usePlaces("regionId", f.regionId);
 
-  const setMoney = (k: "hashCash" | "nonMemberPrice") => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const setMoney = (k: "hashCash" | "nonMemberPrice" | "membershipFee") => (e: React.ChangeEvent<HTMLInputElement>) =>
     setF((prev) => ({ ...prev, [k]: moneyOnly(e.target.value) }));
 
   const set = (k: keyof Fields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
@@ -114,11 +123,19 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
     f.kennelShortName && f.kennelDescription.trim() && placeOk && terms.every((t) => t.length > 0);
   // "5." is still being typed; only a whole number or a number with decimals is a fee.
   const isFee = (v: string) => /^\d+(\.\d{1,2})?$/.test(v);
-  const feeMessage = !isFee(f.hashCash)
-    ? "Please enter the run fee for members — just the number, 0 if runs are free."
-    : !isFee(f.nonMemberPrice)
-      ? "Please enter the run fee for visitors — just the number, 0 if runs are free."
-      : null;
+  // Membership ticked ⇒ everything in its box is required; unticked ⇒ none
+  // of it is, and the one run fee outside is the price for everyone.
+  const feeMessage = hasMembership && !isFee(f.membershipFee)
+    ? "Please enter the membership fee — just the number."
+    : hasMembership && !f.membershipType
+      ? "Please choose the type of membership."
+      : hasMembership && !isFee(f.hashCash)
+        ? "Please enter the run fee for members — just the number, 0 if runs are free."
+        : !isFee(f.nonMemberPrice)
+          ? hasMembership
+            ? "Please enter the run fee for visitors — just the number, 0 if runs are free."
+            : "Please enter the run fee — just the number, 0 if runs are free."
+          : null;
 
   async function submit() {
     if (feeMessage) {
@@ -134,6 +151,10 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
         cityText: cityNotListed ? f.cityText : "",
         stamp,
         website: honeypot,
+        hasMembership: hasMembership ? "1" : "0",
+        hashCash: hasMembership ? f.hashCash : "",
+        membershipFee: hasMembership ? f.membershipFee : "",
+        membershipType: hasMembership ? f.membershipType : "",
         terms1: terms[0],
         terms2: terms[1],
         terms3: terms[2],
@@ -300,19 +321,46 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
       </fieldset>
 
       <fieldset className="space-y-3">
-        <legend className="mb-2 text-lg font-bold">Run fees *</legend>
-        <p className="text-sm text-zinc-600">What a run costs, in your local currency — numbers only. Enter 0 if runs are free.</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className={label} htmlFor="feeMember">Members *</label>
-            <input id="feeMember" className={input} inputMode="decimal" autoComplete="off" placeholder="5" maxLength={10}
-              value={f.hashCash} onChange={setMoney("hashCash")} />
-          </div>
-          <div>
-            <label className={label} htmlFor="feeVisitor">Visitors *</label>
-            <input id="feeVisitor" className={input} inputMode="decimal" autoComplete="off" placeholder="7" maxLength={10}
-              value={f.nonMemberPrice} onChange={setMoney("nonMemberPrice")} />
-          </div>
+        <legend className="mb-2 text-lg font-bold">Money</legend>
+        <p className="text-sm text-zinc-600">In your local currency — numbers only. Enter 0 if something is free.</p>
+
+        {/* The membership box: a checkbox in its border. Unticked, everything
+            inside is off; ticked, everything inside is required. */}
+        <div className={`relative rounded-xl border-2 px-4 pb-4 pt-6 ${hasMembership ? "border-orange-400" : "border-zinc-300"}`}>
+          <label className="absolute -top-3 left-3 flex cursor-pointer items-center gap-2 bg-white px-2 text-base font-semibold text-zinc-900">
+            <input
+              type="checkbox"
+              className="h-5 w-5 accent-orange-500"
+              checked={hasMembership}
+              onChange={(e) => setHasMembership(e.target.checked)}
+            />
+            Membership
+          </label>
+          <fieldset disabled={!hasMembership} className={`grid gap-3 sm:grid-cols-2 ${hasMembership ? "" : "opacity-50"}`}>
+            <div>
+              <label className={label} htmlFor="memberFee">Membership fee{hasMembership ? " *" : ""}</label>
+              <input id="memberFee" className={input} inputMode="decimal" autoComplete="off" placeholder="20" maxLength={10}
+                value={f.membershipFee} onChange={setMoney("membershipFee")} />
+            </div>
+            <div>
+              <label className={label} htmlFor="memberType">Type of membership{hasMembership ? " *" : ""}</label>
+              <select id="memberType" className={input} value={f.membershipType} onChange={set("membershipType")}>
+                <option value="">Choose…</option>
+                {MEMBERSHIP_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className={label} htmlFor="feeMember">Run fee for members{hasMembership ? " *" : ""}</label>
+              <input id="feeMember" className={input} inputMode="decimal" autoComplete="off" placeholder="5" maxLength={10}
+                value={f.hashCash} onChange={setMoney("hashCash")} />
+            </div>
+          </fieldset>
+        </div>
+
+        <div>
+          <label className={label} htmlFor="feeVisitor">{hasMembership ? "Run fee for visitors *" : "Run fee *"}</label>
+          <input id="feeVisitor" className={input} inputMode="decimal" autoComplete="off" placeholder="7" maxLength={10}
+            value={f.nonMemberPrice} onChange={setMoney("nonMemberPrice")} />
         </div>
       </fieldset>
 
