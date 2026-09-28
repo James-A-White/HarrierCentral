@@ -18,7 +18,12 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_submitKennelRequest]
     @nextRunNumber     NVARCHAR(MAX)    = NULL,
     @howDidYouLearn    NVARCHAR(MAX)    = NULL,
     @comments          NVARCHAR(MAX)    = NULL,
-    @submitIp          NVARCHAR(MAX)    = NULL
+    @submitIp          NVARCHAR(MAX)    = NULL,
+    -- The three required opt-in questions of the old harriercentral.com form
+    -- (tc_1..tc_3), asked again and now kept (2026-09-28): the answer text.
+    @terms1            NVARCHAR(MAX)    = NULL,
+    @terms2            NVARCHAR(MAX)    = NULL,
+    @terms3            NVARCHAR(MAX)    = NULL
 AS
 -- =====================================================================
 -- Procedure:   HC6.publicWeb_submitKennelRequest
@@ -42,7 +47,8 @@ AS
 --              Reachable only through PublicWebAdminApi behind
 --              HC_INTERNAL_SECRET (the Next.js server route adds the
 --              honeypot, time-to-submit and per-IP limits in front).
--- Parameters:  the form's fields; the location is picked from the
+-- Parameters:  the form's fields, including the three required opt-in
+--              answers (@terms1..3, kept in TermsAnswers); the location is picked from the
 --              database (@countryId, @regionId, @cityId) or, when the city
 --              is not listed, @cityText for the reviewer to resolve.
 -- Returns:     rowset 0 — { success, errorCode, errorType };
@@ -76,6 +82,9 @@ SET @nextRunNumber     = NULLIF(TRIM(@nextRunNumber), N'');
 SET @howDidYouLearn    = NULLIF(TRIM(@howDidYouLearn), N'');
 SET @comments          = NULLIF(TRIM(@comments), N'');
 SET @submitIp          = LEFT(NULLIF(TRIM(@submitIp), N''), 64);
+SET @terms1            = NULLIF(TRIM(@terms1), N'');
+SET @terms2            = NULLIF(TRIM(@terms2), N'');
+SET @terms3            = NULLIF(TRIM(@terms3), N'');
 
 -- ── Validation (before any transaction: nothing to roll back) ──────────
 DECLARE @errorCode INT, @message NVARCHAR(500);
@@ -111,7 +120,11 @@ FROM (SELECT TOP 1 code, msg FROM (VALUES
                         OR LEN(@nextRunNumber) > 250
                    THEN N'One of the answers is too long.' END),
     (13, 1722, CASE WHEN LEN(@howDidYouLearn) > 4000 OR LEN(@comments) > 4000
-                   THEN N'Comments may be at most 4000 characters.' END)
+                   THEN N'Comments may be at most 4000 characters.' END),
+    (14, 1724, CASE WHEN @terms1 IS NULL OR @terms2 IS NULL OR @terms3 IS NULL
+                   THEN N'Please answer the three questions at the end of the form.' END),
+    (15, 1725, CASE WHEN LEN(@terms1) > 300 OR LEN(@terms2) > 300 OR LEN(@terms3) > 300
+                   THEN N'One of the answers is too long.' END)
 ) AS c(ord, code, msg) WHERE msg IS NOT NULL ORDER BY ord) v;
 
 IF (@errorCode IS NULL
@@ -172,7 +185,7 @@ BEGIN TRY
          Country, CountryId, Region, RegionId, City, CityId,
          HashCash, KennelFacebookUrl, SubmitterEmail, SubmittedOn,
          nextRunNumber, comments, HashRunsDotOrg, HowDidYouLearnAboutHc,
-         RequestStatus, ConfirmCode, ConfirmAttempts, SubmitIp, updatedAt)
+         RequestStatus, ConfirmCode, ConfirmAttempts, SubmitIp, TermsAnswers, updatedAt)
     SELECT
         @requestId, @firstName, @lastName, COALESCE(@hashName, N''), N'My Hash Name', @email, N'Yes',
         @kennelName, @kennelShortName, @kennelUrl, @kennelDescription, N'Blue',
@@ -181,7 +194,9 @@ BEGIN TRY
         COALESCE(LEFT(ci.CityName, 50), @cityText), @cityId,
         COALESCE(@hashCash, N''), @kennelFacebookUrl, @email, GETDATE(),
         @nextRunNumber, @comments, N'Yes', @howDidYouLearn,
-        0, @code, 0, @submitIp, GETDATE()
+        0, @code, 0, @submitIp,
+        LEFT(N'1: ' + @terms1 + N' | 2: ' + @terms2 + N' | 3: ' + @terms3, 1000),
+        GETDATE()
     FROM HC.Country co
     LEFT JOIN HC.Region re ON re.id = @regionId
     LEFT JOIN HC.City   ci ON ci.id = @cityId

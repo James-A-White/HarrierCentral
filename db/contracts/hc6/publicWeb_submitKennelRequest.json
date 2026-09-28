@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_submitKennelRequest",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "hashruns.org/add-kennel (E12.F1.S7): stores a request as status 0 with a six-digit ConfirmCode. Same email + short name within 30 days reuses the open row (new code). 5 per SubmitIp per day. PublicWebAdminApi only, behind HC_INTERNAL_SECRET; the API emails the code and strips it.",
   "parameters": [
     {
@@ -143,6 +143,27 @@
       "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.SubmitIp",
       "description": "set by the Next.js route, cut to 64"
+    },
+    {
+      "name": "terms1",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.TermsAnswers",
+      "description": "Answer text to opt-in question #1 of the old harriercentral.com form (required, ≤300). Stored as '1: … | 2: … | 3: …'."
+    },
+    {
+      "name": "terms2",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.TermsAnswers",
+      "description": "Answer text to opt-in question #2 of the old harriercentral.com form (required, ≤300). Stored as '1: … | 2: … | 3: …'."
+    },
+    {
+      "name": "terms3",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.TermsAnswers",
+      "description": "Answer text to opt-in question #3 of the old harriercentral.com form (required, ≤300). Stored as '1: … | 2: … | 3: …'."
     }
   ],
   "rowsets": [
@@ -271,7 +292,9 @@
     "1721": "answer length",
     "1722": "comments length",
     "1723": "IP rate limit",
-    "1729": "unhandled"
+    "1729": "unhandled",
+    "1724": "terms not answered",
+    "1725": "terms answer too long"
   },
   "sideEffects": [
     "INSERT or UPDATE EXT.OfficeForms_KennelImport",
