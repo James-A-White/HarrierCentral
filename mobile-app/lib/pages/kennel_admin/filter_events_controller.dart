@@ -115,6 +115,7 @@ class FilterEventsController extends GetxController {
           SELECT COUNT(*) as publishedRunCount
           FROM ${EnumDataTables.events.commonTableName} evt
           WHERE kennelId = "${kennel.kennel.kennelId}" AND isVisible = 1
+          AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
           AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now','$offsetFromGmtToLocal'))
           ''';
       publishedRunCountSqlResult.value = await database.rawQuery(sql);
@@ -140,6 +141,9 @@ class FilterEventsController extends GetxController {
           FROM ${EnumDataTables.events.commonTableName} evt
           INNER JOIN ${EnumDataTables.hasherKennelMap.commonTableName} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = "${kennel.kennel.kennelId}" and hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"
           WHERE evt.${tableModel.eventsTableHelper.colKennelId} = "${kennel.kennel.kennelId}"
+          -- Deleted in the portal ⇒ removed = 1 on the phone until the next
+          -- launch purges it; the admin's run list showed it meanwhile.
+          AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
           AND date(datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime})) $dateComparer date(datetime('now','$offsetFromGmtToLocal'))
           ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${tableModel.eventsTableHelper.colEventNumber} $sortOrder
           ''';

@@ -716,6 +716,9 @@ class RunAndKennelMapController extends GetxController {
         INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
         LEFT OUTER JOIN ${EnumDataTables.hasherEventMap.commonTableName} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = evt.${tableModel.eventsTableHelper.colEventId} AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
         WHERE evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+        -- A run deleted in the portal arrives with removed = 1 and is only
+        -- purged at the next launch; until then it stayed on the map.
+        AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
     ''';
 
     if (kennel != null && kennel!.kennelId.isNotEmpty) {
