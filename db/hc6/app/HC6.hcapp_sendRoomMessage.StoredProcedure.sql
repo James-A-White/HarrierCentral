@@ -31,8 +31,9 @@ AS
 --     kennel and event threads. UNCHANGED — clients parse this one.
 --   Rowset 1: push detail for the API shim { MessageId, RoomType, RoomName,
 --     UserId, UserDisplayName, UserPhoto, MessageTitle, MessageContent }
---   Rowset 2: visible push recipients { UserId, FcmToken }
---   Rowset 3: silent (data-only) recipients { UserId, FcmToken }
+--   Rowset 2: visible push recipients { UserId, FcmToken, BadgeTotal }
+--   Rowset 3: silent (data-only) recipients { UserId, FcmToken, BadgeTotal }
+--   BadgeTotal (2026-09-28): the recipient's unread total for the app icon.
 --
 --   Rowsets 1-3 were added 2026-09-18 (E9.F1.S10). A room computed no
 --   audience at all before that, so the shim had nothing to deliver and a
@@ -282,10 +283,14 @@ WHERE h.Removed = 0
   AND HC6.UserMayEnterChatRoom(h.id, @roomType) = 1;
 
 -- Rowset 2: visible push recipients
-SELECT DISTINCT UserId, FcmToken FROM #roomAudience WHERE Pref = 0;
+-- BadgeTotal: the recipient's unread total for the app ICON (HC6.UserUnreadChatTotal,
+-- the same rule as the in-app badges); the API puts it in aps.badge (2026-09-28).
+SELECT DISTINCT a.UserId, a.FcmToken, bt.BadgeTotal FROM #roomAudience a
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt WHERE a.Pref = 0;
 
 -- Rowset 3: silent (data-only) recipients — the badge moves, nothing buzzes
-SELECT DISTINCT UserId, FcmToken FROM #roomAudience WHERE Pref = 1;
+SELECT DISTINCT a.UserId, a.FcmToken, bt.BadgeTotal FROM #roomAudience a
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt WHERE a.Pref = 1;
 
 DROP TABLE #roomAudience;
 
