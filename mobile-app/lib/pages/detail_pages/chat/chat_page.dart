@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:harrier_central/imports.dart';
 
 class ChatPage extends StatelessWidget {
-  ChatPage({
+  const ChatPage({
     required this.eventId,
     required this.publicEventId,
     this.isKennelThread = false,
@@ -15,27 +15,14 @@ class ChatPage extends StatelessWidget {
   /// A platform-wide room from HC6.ChatRoomCatalog(). Belongs to no kennel
   /// and no run, so [eventId] and [publicEventId] are both empty for it, and
   /// [roomType] is the server's id for the room.
-  factory ChatPage.room({required int roomType, Key? key}) => ChatPage(
-    eventId: '',
-    publicEventId: '',
-    roomType: roomType,
-    key: key,
-  );
+  factory ChatPage.room({required int roomType, Key? key}) =>
+      ChatPage(eventId: '', publicEventId: '', roomType: roomType, key: key);
 
   /// Kennel thread: [eventId]=kennelId, [publicEventId]=publicKennelId.
   final String eventId;
   final String publicEventId;
   final bool isKennelThread;
   final int? roomType;
-
-  late final ChatPageController controller = Get.put(
-    ChatPageController(
-      eventId: eventId,
-      publicEventId: publicEventId,
-      isKennelThread: isKennelThread,
-      roomType: roomType,
-    ),
-  );
 
   static final _chatTheme = () {
     final base = core.ChatTheme.light();
@@ -73,6 +60,33 @@ class ChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Each chat page OWNS its controller (2026-09-28). It used to be one
+    // untagged Get.put shared by every chat page in the app — run, kennel,
+    // room and the live-run tab — so closing any of them (or a run page,
+    // whose controller deleted "the" chat controller) disposed the chat
+    // still on screen, and every send from it threw "Cannot add new events
+    // after calling close" (James, 1419). global: false keeps it out of the
+    // registry; the dispose hook closes it with this page and no other —
+    // GetBuilder does not close a non-global controller by itself. The key
+    // is the thread: a ChatPage rebuilt in the same slot for a DIFFERENT
+    // thread gets a new controller rather than inheriting the old one.
+    return GetBuilder<ChatPageController>(
+      key: ValueKey<String>(
+        '$eventId|$publicEventId|$isKennelThread|$roomType',
+      ),
+      init: ChatPageController(
+        eventId: eventId,
+        publicEventId: publicEventId,
+        isKennelThread: isKennelThread,
+        roomType: roomType,
+      ),
+      global: false,
+      dispose: (state) => state.controller?.onDelete(),
+      builder: (controller) => _chat(controller),
+    );
+  }
+
+  Widget _chat(ChatPageController controller) {
     return Chat(
       currentUserId: controller.currentUser.id,
       resolveUser: controller.resolveUser,
@@ -94,40 +108,37 @@ class ChatPage extends StatelessWidget {
         // owns the domain: it opens Safari. So in-app links go through
         // DeepLinkService directly (James, 2026-09-15: "links in the chat
         // are still opening HashRuns.org in Safari").
-        textMessageBuilder: (
-          context,
-          message,
-          index, {
-          required isSentByMe,
-          groupStatus,
-        }) => _LinkAwareTextMessage(
-          message: message,
-          isSentByMe: isSentByMe,
-          theme: _chatTheme,
-          timeFormat: _timeFormat,
-        ),
-        chatMessageBuilder: (
-          context,
-          message,
-          index,
-          animation,
-          child, {
-          isRemoved,
-          required isSentByMe,
-          groupStatus,
-        }) {
-          final isGroupStart = groupStatus == null || groupStatus.isFirst;
-          final isGroupEnd = groupStatus == null || groupStatus.isLast;
+        textMessageBuilder:
+            (context, message, index, {required isSentByMe, groupStatus}) =>
+                _LinkAwareTextMessage(
+                  message: message,
+                  isSentByMe: isSentByMe,
+                  theme: _chatTheme,
+                  timeFormat: _timeFormat,
+                ),
+        chatMessageBuilder:
+            (
+              context,
+              message,
+              index,
+              animation,
+              child, {
+              isRemoved,
+              required isSentByMe,
+              groupStatus,
+            }) {
+              final isGroupStart = groupStatus == null || groupStatus.isFirst;
+              final isGroupEnd = groupStatus == null || groupStatus.isLast;
 
-          return ChatMessage(
-            message: message,
-            index: index,
-            animation: animation,
-            isRemoved: isRemoved,
-            groupStatus: groupStatus,
-            leadingWidget: isSentByMe
-                ? null
-                : isGroupEnd
+              return ChatMessage(
+                message: message,
+                index: index,
+                animation: animation,
+                isRemoved: isRemoved,
+                groupStatus: groupStatus,
+                leadingWidget: isSentByMe
+                    ? null
+                    : isGroupEnd
                     ? Padding(
                         padding: const EdgeInsets.only(right: _avatarMargin),
                         child: Avatar(
@@ -136,23 +147,22 @@ class ChatPage extends StatelessWidget {
                         ),
                       )
                     : const SizedBox(width: _leadingSlot),
-            headerWidget: !isSentByMe && isGroupStart
-                ? Padding(
-                    padding: const EdgeInsets.only(
-                      left: _nameLeftPad,
-                      bottom: 2,
-                    ),
-                    child: Username(userId: message.authorId),
-                  )
-                : null,
-            child: child,
-          );
-        },
+                headerWidget: !isSentByMe && isGroupStart
+                    ? Padding(
+                        padding: const EdgeInsets.only(
+                          left: _nameLeftPad,
+                          bottom: 2,
+                        ),
+                        child: Username(userId: message.authorId),
+                      )
+                    : null,
+                child: child,
+              );
+            },
       ),
     );
   }
 }
-
 
 /// The text bubble, with links. Mirrors SimpleTextMessage's shape and
 /// colours from the same ChatTheme so nothing else on the page changes.

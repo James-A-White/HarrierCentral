@@ -11,8 +11,8 @@ api hcportal_getLandingPageData HC6 Portal Error: getLandingPageData — Authent
 api hcportal_logClientError HC6 Portal Error: logClientError — Unknown device	fixed:2026-09-24	pre-sign-in reports refused; portal 2.0.85
 api publicWeb_getSong HC6 Public Web Error: getSong — Error converting data type nvarchar to uniqueidentifier.	fixed:web 0.21.74	non-GUID song id from a URL returns null → 404 (d37e8868)
 app ASYNC "Database" not found. You need to call "Get.put(Database())" or "Get.lazyPut(()=>Database())" @ globals.dart database	fixed:1328	not seen since 08-31, never on a version-stamped build (1328+); no fix commit traced — presumed fixed, REGRESSED if it recurs. Was: Get.find<Database> before boot registered it; last 08-31
-app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController._fetchDelta	fixed:1386	write to a disposed chat stream (14 Sep)
-app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController.handleSendPressed	fixed:1386	write to a disposed chat stream (14 Sep)
+app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController._fetchDelta	fixed:1420	write to a disposed chat stream (14 Sep); back on 1419 (2026-09-28) by a second route: one shared untagged ChatPageController, deleted by RunTabsController.onClose under a chat still on screen — each ChatPage now owns its own
+app ASYNC Bad state: Cannot add new events after calling close @ chat_page_controller.dart ChatPageController.handleSendPressed	fixed:1420	write to a disposed chat stream (14 Sep); back on 1419 (2026-09-28) by a second route: one shared untagged ChatPageController, deleted by RunTabsController.onClose under a chat still on screen — each ChatPage now owns its own
 app ASYNC Bad state: No element @ app_boot_service.dart AppBootService._handleExistingUser	open	'No element' at boot, once on 1327 (09-21)
 app ASYNC Bad state: Stream has been disposed. @ flutter ImageStreamCompleter._checkDisposed	noise	Flutter image cache: stream disposed before a chunk event
 app ASYNC DatabaseException(Error Domain=SqfliteDarwinDatabase Code=N "unable to open database file" UserInfo={NSLocalizedDescription=unable to open d @ package:sqflite_platform_interface wrapDatabaseException	open	sqflite could not open the DB on iOS; once, 09-01
@@ -124,3 +124,4 @@ app ASYNC Null check operator used on a null value @ bank_transfer_qr.dart BankT
 web /api/run-photos fetch failed	noise	web server → API fetch blip; one at 16:15 2026-09-27 alongside /api/packtrack — transient
 web /api/packtrack fetch failed	noise	web server → API fetch blip; one at 16:15 2026-09-27 alongside /api/run-photos — transient
 app NET closed www.berlin-h3.eu	noise	a kennel's own externally hosted image (berlin-h3.eu) dropped the connection
+web packtrack-client/packtrack Maximum call stack size exceeded	noise	puppeteer MCP console.log recursion while Claude tested /bdh3-uk/200 (2026-09-28 09:50) — the test tool, not the page

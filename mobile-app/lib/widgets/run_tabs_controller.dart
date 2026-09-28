@@ -160,7 +160,9 @@ class RunTabsController extends GetxController
     saveUserMapPreference.dispose();
     scrollController.dispose();
     unawaited(_clearEventTables());
-    unawaited(Get.delete<ChatPageController>());
+    // No Get.delete<ChatPageController>() here any more: each chat page owns
+    // and closes its own, and deleting "the" one killed a chat still on
+    // screen elsewhere (2026-09-28).
     super.onClose();
   }
 

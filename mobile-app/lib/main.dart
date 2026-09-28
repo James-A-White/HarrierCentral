@@ -59,9 +59,9 @@ class AppLifecycleController extends SuperController<void> {
     if (!Get.isRegistered<LocationService>()) {
       Get.put(LocationService());
     }
-    if (Get.isRegistered<ChatPageController>()) {
-      final chatPageController = Get.find<ChatPageController>();
-      unawaited(chatPageController.onAppResumed()); // Call your method safely
+    // Every open chat page catches up (each owns its own controller).
+    for (final ChatPageController chat in List.of(ChatPageController.open)) {
+      unawaited(chat.onAppResumed());
     }
   }
 

@@ -93,8 +93,14 @@ class ChatPageController extends GetxController {
   bool _isFetching = false;
   bool _pendingFetch = false;
 
+  /// Every chat page on screen. Each page owns its controller (see
+  /// ChatPage.build), so the app's resume handler cannot look one up in the
+  /// GetX registry; it refreshes all of these instead.
+  static final Set<ChatPageController> open = <ChatPageController>{};
+
   @override
   void onClose() {
+    open.remove(this);
     unawaited(_fcmSubscription?.cancel());
     chatController.dispose();
     super.onClose();
@@ -103,6 +109,7 @@ class ChatPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    open.add(this);
 
     final String? publicHasherId = getStringPref(StringPrefsEnum.publicHasherId);
     if (publicHasherId == null || publicHasherId.isEmpty) {
