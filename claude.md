@@ -636,10 +636,18 @@ screen — three things hold:
    the viewer a bare image with no way back to the run, no way on to the next
    photo, and none of the kennel's styling. That was the state of the web's
    run photo page and its photo strip until 2026-09-22.
-2. **Shown whole.** `BoxFit.contain` / `object-contain`, never `cover`. A hash
-   photo cropped to a square loses whoever was standing at the edge, and the
-   joke with them. Square crops belong in the thumbnails, where they are only
-   a target to tap.
+2. **Shown whole, at its own aspect ratio — thumbnails too.** `BoxFit.contain`
+   / `object-contain`, never `cover`, and never a fixed box that forces a
+   shape. A hash photo cropped to fit loses whoever was standing at the edge,
+   and the joke with them — Trail TV's strip cut heads off (James,
+   2026-09-28: "I always want photos to display in their normal aspect
+   ratio"). A ROW of photos (a strip, a grid line) gives them all the SAME
+   HEIGHT and lets each WIDTH follow its aspect ratio (`height: 100%;
+   width: auto`, or `SizedBox(height: h, child: Image(fit: BoxFit.fitHeight))`).
+   A photo that does not fit the row drops out whole — wrap onto a hidden
+   line — rather than being cut at the edge. This supersedes the old
+   allowance for square-cropped thumbnails. (Profile photos are portraits
+   and still circles; a kennel logo follows its own rule below.)
 3. **On the right backdrop**, which differs per client:
 
 | Client | Backdrop | How |
