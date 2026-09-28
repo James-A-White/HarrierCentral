@@ -28,12 +28,23 @@ class CommonQueries {
     return results.isNotEmpty ? results[0]['Total'] : 0;
   }
 
+  /// Purges rows the server has marked removed — all but the newest.
+  ///
+  /// The sync watermark is MAX(updatedAtValue) of this table. A run deleted
+  /// in the portal is usually the newest row the phone holds, so purging it
+  /// dropped the watermark and the next sync downloaded it (and everything
+  /// else newer than the fallback) again — on every launch. Measured
+  /// 2026-09-28 on a test run: purge at launch took the watermark from
+  /// 07:53:39 back to 05:26:52; the next resume re-sent the removed row.
+  /// Keeping the one newest row holds the watermark; every screen already
+  /// filters removed = 0, so it is never shown.
   static Future<void> deleteRemovedRecords(String tableName) async {
     final String query =
         '''
           DELETE
           FROM $tableName
           WHERE removed != 0
+            AND updatedAtValue < (SELECT MAX(updatedAtValue) FROM $tableName)
           ''';
 
     await database.rawQuery(query);
