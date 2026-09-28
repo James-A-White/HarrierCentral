@@ -1,0 +1,240 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_previewHasherMerge",
+  "version": "1.0.0",
+  "description": "Merge accounts, step 1 (E12.F6.S1): finds two live accounts by email (or hasher id / PublicHasherId) and returns what each holds and where they overlap. Read only. Requires HC.PlatformAdmin with CanEditKennel = 1.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string."
+    },
+    {
+      "name": "keepEmail",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.Email",
+      "description": "The account that stays."
+    },
+    {
+      "name": "mergeEmail",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.Email",
+      "description": "The account merged into it and then disabled."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Accounts",
+      "description": "Two rows, Role 'keep' then 'merge' — or { Success = 0, ErrorMessage } when refused (not found, ambiguous, same account).",
+      "columns": [
+        {
+          "name": "Role",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HasherId",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "PublicHasherId",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HashName",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "FirstName",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LastName",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Email",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HomeKennelName",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "CreatedAt",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LastLoginDateTime",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "SignedInDevices",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelsFollowed",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelsMember",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelsAdmin",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RunsAttended",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RunsHared",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RunRows",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LastRunLocal",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Tracks",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Payments",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "PaymentsTotal",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "CreditTotal",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "ChatMessages",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Photos",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "IsPlatformAdmin",
+          "type": "see SP",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Overlap",
+      "columns": [
+        {
+          "name": "SharedRuns",
+          "type": "INT",
+          "nullable": false,
+          "description": "Runs both have a row for (combined on merge)"
+        },
+        {
+          "name": "SharedRunsBothAttended",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "SharedKennels",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennels both belong to (combined on merge)"
+        },
+        {
+          "name": "RunsBothPaid",
+          "type": "INT",
+          "nullable": false,
+          "description": "Runs both paid a non-zero amount for — both payments are kept"
+        },
+        {
+          "name": "RunsBothPaidList",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Up to 10, 'LH3 2026-09-27 · …'"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
