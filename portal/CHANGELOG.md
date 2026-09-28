@@ -1,3 +1,9 @@
+## 2.0.87+726 (2026-09-28)
+### Fixes
+- **Kennel requests icons.** Approve's tick, Reject's arrow and the list's
+  refresh button drew as crossed boxes; they now use the portal's standard
+  icon set (Material Community Icons), like the rest of HC Admin Tools.
+
 ## 2.0.87+725 (2026-09-28)
 ### New Features
 - **Kennel requests.** HC Admin Tools › Kennel requests (platform admins

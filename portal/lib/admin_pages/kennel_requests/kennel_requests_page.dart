@@ -28,7 +28,7 @@ class KennelRequestsPage extends StatelessWidget {
           actions: [
             IconButton(
               tooltip: 'Refresh',
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(MaterialCommunityIcons.refresh),
               onPressed: c.load,
             ),
           ],

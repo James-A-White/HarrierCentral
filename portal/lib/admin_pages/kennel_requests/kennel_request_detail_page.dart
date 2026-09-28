@@ -261,7 +261,7 @@ class KennelRequestDetailPage extends StatelessWidget {
         children: [
           HcButton.primary(
             label: 'Approve',
-            icon: Icons.check,
+            icon: MaterialCommunityIcons.check,
             loading: busy,
             onPressed: hasCity ? () => _approve(context, c) : null,
           ),
@@ -284,7 +284,7 @@ class KennelRequestDetailPage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Reject', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFFDC2626))),
-                  Icon(Icons.arrow_drop_down, color: Color(0xFFDC2626)),
+                  Icon(MaterialCommunityIcons.menu_down, color: Color(0xFFDC2626)),
                 ],
               ),
             ),
