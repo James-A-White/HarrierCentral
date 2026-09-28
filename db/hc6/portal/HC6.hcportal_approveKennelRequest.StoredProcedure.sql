@@ -8,9 +8,9 @@ AS
 -- Description: Approves a kennel request (E12.F1.S6) and gives the club
 --   everything it needs to start the same day:
 --     1. HC.Kennel — names, description, links, price, location, a unique
---        short name (the web address), and a default logo: one of the
---        twelve Harrier Central coins as bundle://C-NNN, which the apps and
---        the portal draw with the kennel's short name on it.
+--        short name (the web address), and a real default logo: one of the
+--        twelve Harrier Central coins in blob storage, never a bundle://
+--        value (those broke the auto check-in prompt, 2026-09-27).
 --     2. The requester as the kennel's HC admin (AppAccessFlags, the same
 --        grant the portal's kennel admins hold). Their account is created
 --        if the email has none, exactly as hcapp_addEditUser creates one;
@@ -38,7 +38,7 @@ AS
 -- Breaking Changes vs HC3W.importKennel:
 --   - No dbo.Users login (and no hard-coded password hash): HC6 sign-in is
 --     the emailed invite code.
---   - KennelLogo is chosen at random from the twelve coins (bundle://C-NNN).
+--   - KennelLogo is a stored image URL, not bundle://C-NNN.
 --   - Helper admins come from HC.PlatformAdmin, not a hard-coded id.
 --   - The requester gets HC admin access only, not every mismanagement role.
 --   - Facebook fields are no longer copied (the integration is retired).
@@ -159,12 +159,11 @@ BEGIN TRY
     END
 
     -- ── 1. The kennel ─────────────────────────────────────────────────
-    -- One of the twelve coins C-000 … C-330, as bundle://C-NNN: the value
-    -- every app build and the portal draw as the coin WITH THE KENNEL'S
-    -- SHORT NAME written on it (KennelLogo), and the one the portal's own
-    -- coin picker saves. A plain image URL shows a blank coin (2026-09-28).
+    -- One of the twelve coins C-000 … C-330, uploaded to blob storage on
+    -- 2026-09-28 and already used by the 63 kennels repaired that day.
     DECLARE @logo NVARCHAR(1000) =
-        N'bundle://C-' + RIGHT(N'00' + CAST((ABS(CHECKSUM(NEWID())) % 12) * 30 AS NVARCHAR(3)), 3);
+        N'https://harriercentral.blob.core.windows.net/harrier/generic-logos/C-'
+        + RIGHT(N'00' + CAST((ABS(CHECKSUM(NEWID())) % 12) * 30 AS NVARCHAR(3)), 3) + N'.png';
 
     -- The form's price is free text ("5", "£5", "5 euros"): keep the
     -- number when there is one, else 0 for the admin to set.
