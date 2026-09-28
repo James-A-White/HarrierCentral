@@ -27,7 +27,8 @@ AS
 --                errorTitle, errorUserMessage, errorProc };
 --                on success: { requestId, kennelName, alreadyConfirmed };
 --              rowset 2 (first confirmation only) — { reviewerEmail } for
---                every platform admin with CanEditKennel. The API uses and
+--                every platform admin with CanEditKennel, plus
+--                harriercentral@gmail.com. The API uses and
 --                removes it.
 -- Author:      Harrier Central
 -- Created:     2026-09-28
@@ -105,11 +106,15 @@ BEGIN TRY
 
     SELECT 1 AS success, 0 AS errorCode, 0 AS errorType;
     SELECT @requestId AS requestId, @kennelName AS kennelName, 0 AS alreadyConfirmed;
+    -- The platform admins' own addresses, plus the shared Harrier Central
+    -- mailbox (James, 2026-09-28). The API de-duplicates.
     SELECT h.Email AS reviewerEmail
     FROM HC.PlatformAdmin pa
     JOIN HC.Hasher h ON h.id = pa.UserId AND h.Removed = 0
     WHERE pa.removed = 0 AND pa.CanEditKennel = 1
-      AND LEN(COALESCE(h.Email, N'')) > 0;
+      AND LEN(COALESCE(h.Email, N'')) > 0
+    UNION
+    SELECT N'harriercentral@gmail.com';
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

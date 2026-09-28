@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_confirmKennelRequest",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Second half of the add-kennel form: the emailed code moves the request 0 → 1 (review queue). 5 wrong codes → spam (4). Codes last 48 h. Idempotent. PublicWebAdminApi only, behind HC_INTERNAL_SECRET; the API emails the reviewers and strips their addresses.",
   "parameters": [
     {
@@ -114,7 +114,7 @@
     {
       "index": 2,
       "name": "Reviewers (first confirmation only)",
-      "description": "Removed by the API after the notice is sent.",
+      "description": "Platform admins with CanEditKennel plus harriercentral@gmail.com. Removed by the API after the notice is sent.",
       "columns": [
         {
           "name": "reviewerEmail",
