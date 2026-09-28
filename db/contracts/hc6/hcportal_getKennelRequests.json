@@ -1,0 +1,287 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getKennelRequests",
+  "version": "1.0.0",
+  "description": "Kennel request review queue (E12.F1.S5): requests of one RequestStatus, newest first, with location names, SimilarKennels and ExistingHashName warnings. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth (HC.Device.id)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string (device secret)."
+    },
+    {
+      "name": "status",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RequestStatus",
+      "description": "0 awaiting email, 1 new (default), 2 approved, 3 rejected, 4 spam, 5 duplicate. Closed statuses return the newest 200."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Requests",
+      "description": "One row per request (or the Success=0 refusal).",
+      "columns": [
+        {
+          "name": "KennelImportId",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RequestStatus",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "SubmittedOn",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "ConfirmedAt",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "FirstName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LastName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HashName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "EmailAddress",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelShortName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelDescription",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelUrl",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelFacebookUrl",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Country",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Region",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "City",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "CountryId",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RegionId",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "CityId",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "CountryName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RegionName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "CityName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HashCash",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "NumberOfRunsPerMonth",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "NumberOfHashersPerRun",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "NextRunNumber",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HowDidYouLearnAboutHc",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Comments",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "SubmitIp",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "ReviewNote",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "ReviewedAt",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "ReviewedByHashName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelId",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "ApprovedKennelSlug",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "ExistingHasherId",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "ExistingHashName",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "SimilarKennels",
+          "type": "see table",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "StatusCounts",
+      "columns": [
+        {
+          "name": "RequestStatus",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "RequestCount",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
