@@ -293,8 +293,8 @@
   <p class="standfirst">Every epic, feature and user story across the five components — the Flutter mobile app, the Flutter admin portal, the Next.js public web, the Azure Functions shim and the SQL Server domain layer — plus the non-functional requirements that hold them together. <strong>Epics are organised by what a hasher is trying to do, not by which codebase serves it</strong>, because almost every feature here spans three surfaces at once.</p>
   <div class="meta-strip">
     <div><b>17</b> epics</div>
-    <div><b>85</b> features</div>
-    <div><b>334</b> stories</div>
+    <div><b>86</b> features</div>
+    <div><b>338</b> stories</div>
     <div><b>49</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -333,7 +333,7 @@
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 15 requirements</span></a>
   <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 20 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
-  <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">5 features · 19 stories</span></a>
+  <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">6 features · 23 stories</span></a>
   <a class="idx" href="#e17"><span class="idx-id">E17</span><span class="idx-name">Speaking the hasher's language</span><span class="idx-count">1 features · 1 stories</span></a>
 </div></section>
 <section class="epic" id="e1">
@@ -1441,6 +1441,17 @@
       <li class="story"><span class="s-id">E16.F4.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want the battery draw re-measured after each release so that a regression is caught by data rather than by a complaint.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E16.F4.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want a working test harness in the portal so that a regression there can be pinned by a test rather than found by a kennel.</span><span class="chip c-next">Next</span>
         <span class="gap"><code>flutter_test</code> is commented out of the portal's dev_dependencies and <code>widget_test.dart</code> has no <code>main</code> — the portal has no test coverage at all, and enabling it hits a <code>web</code> package incompatibility</span></li>
+    </ul>
+  </div>
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E16.F6</span><h3 class="feature-name">Photos at their own shape  </h3>
+      <span class="surfaces"><span class="surf">Web</span><span class="surf">App</span><span class="surf">Portal</span></span>
+    </div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E16.F6.S1</span><span class="s-text">As a <em>Hasher</em> on the website, I want every run and kennel photo shown whole, so that nobody at the edge of a shot is cut off. Run photo strip (square crops), photo-viewer thumbnails, run-card images, My Runs / Hash Runs run images (fixed-height crop), kennel cover and welcome images, the PackTrack photo pop-up, song and content-block images. Trail TV's strip done 2026-09-28 (web 0.21.74).</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E16.F6.S2</span><span class="s-text">As a <em>Hasher</em> in the app, I want the same: 19 <code>BoxFit.cover</code> uses in 16 files — run photo gallery and tabs, map photo page and markers, photo sweep, Hash Flash approval, down-down and check-in pages, songs.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E16.F6.S3</span><span class="s-text">As a <em>Kennel HC Admin</em> in the portal, I want the same: 16 <code>BoxFit.cover</code> uses in 13 files — photo review, run detail panel, image dialog, song and application-form images.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E16.F6.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want a scan that lists every crop of a photo (and skips the allowed backgrounds, avatars and tiles by a marked comment), so that a new one is caught before it ships — like <code>tools/button_text_scan.py</code>: it must print nothing.</span><span class="chip c-next">Next</span></li>
     </ul>
   </div>
 </section>

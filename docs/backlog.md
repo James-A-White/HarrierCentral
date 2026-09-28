@@ -1066,6 +1066,19 @@ RSVP enum, where 3 is Yes — ended up in four app SPs (2026-09-20).
 | `E16.F4.S3` | As a **Platform Admin**, I want the battery draw re-measured after each release so that a regression is caught by data rather than by a complaint. | `Next` |
 | `E16.F4.S4` | As a **Platform Admin**, I want a working test harness in the portal so that a regression there can be pinned by a test rather than found by a kennel. **⚠ Known gap:** `flutter_test` is commented out of the portal's dev_dependencies and `widget_test.dart` has no `main` — the portal has no test coverage at all, and enabling it hits a `web` package incompatibility | `Next` |
 
+
+### E16.F6 · Photos at their own shape  
+`Web` `App` `Portal`
+
+James, 2026-09-28: "I don't want any cropping... images should always display in their native aspect ratio. We need the UI to be able to handle different image sizes and orientations." The rule is in CLAUDE.md (trail photos, point 2): never `object-cover` / `BoxFit.cover` for a photo; a row of photos shares one height and each width follows its aspect ratio; a photo that does not fit drops out whole. NOT photos, and left alone: background textures (the jungle tile), profile photos (portrait circles), map tiles, kennel logos (their own contain rule). Count at capture: web 20 uses in 17 files, app 19 in 16, portal 16 in 13 — each to be judged, not blanket-replaced.
+
+| ID | Story | Status |
+|---|---|---|
+| `E16.F6.S1` | As a **Hasher** on the website, I want every run and kennel photo shown whole, so that nobody at the edge of a shot is cut off. Run photo strip (square crops), photo-viewer thumbnails, run-card images, My Runs / Hash Runs run images (fixed-height crop), kennel cover and welcome images, the PackTrack photo pop-up, song and content-block images. Trail TV's strip done 2026-09-28 (web 0.21.74). | `Next` |
+| `E16.F6.S2` | As a **Hasher** in the app, I want the same: 19 `BoxFit.cover` uses in 16 files — run photo gallery and tabs, map photo page and markers, photo sweep, Hash Flash approval, down-down and check-in pages, songs. | `Next` |
+| `E16.F6.S3` | As a **Kennel HC Admin** in the portal, I want the same: 16 `BoxFit.cover` uses in 13 files — photo review, run detail panel, image dialog, song and application-form images. | `Next` |
+| `E16.F6.S4` | As a **Platform Admin**, I want a scan that lists every crop of a photo (and skips the allowed backgrounds, avatars and tiles by a marked comment), so that a new one is caught before it ships — like `tools/button_text_scan.py`: it must print nothing. | `Next` |
+
 ---
 
 ## E17 — Speaking the hasher's language
