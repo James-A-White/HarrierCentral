@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>17</b> epics</div>
     <div><b>85</b> features</div>
-    <div><b>333</b> stories</div>
+    <div><b>334</b> stories</div>
     <div><b>49</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -329,7 +329,7 @@
   <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 53 stories</span></a>
   <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 22 stories</span></a>
-  <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">6 features · 23 stories</span></a>
+  <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">6 features · 24 stories</span></a>
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 15 requirements</span></a>
   <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 20 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
@@ -1231,6 +1231,8 @@
       <li class="story"><span class="s-id">E12.F6.S1</span><span class="s-text">As a <em>Platform Admin</em> with <code>CanEditKennel</code>, I want to enter the email (or hasher id) of the account to keep and of the duplicate, and see both side by side — runs, payments, credit, kennels, devices, chat, photos — with where they overlap (runs on both, kennels on both, runs both paid for), so that I know what a merge will do before it happens. <code>hcportal_previewHasherMerge</code>; HC Admin Tools › Merge accounts. Shipped 2026-09-28 (portal 2.0.87+727, SP build 9).</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E12.F6.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want the merge to move every run and payment row to the kept account — combining the rows where both had one, never deleting money — along with memberships, chat, photos and the rest, recalculate run counts and credit, and disable the duplicate (signed out everywhere, as a GDPR delete does), so that one person has one history. <code>hcportal_mergeHashers</code> replaces <code>HC3.utilApi_mergeUsers</code>, which deleted the duplicate's payment where both had paid and every past run either had not attended. Shipped 2026-09-28 (SP build 9), tested in a rolled-back transaction.</span><span class="chip c-ship">Shipped</span>
         <span class="gap">PackTrack points not yet archived (the nightly job) stay under the old id in Table Storage.</span></li>
+      <li class="story"><span class="s-id">E12.F6.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want to find the accounts to merge by hash name — several names at once, comma-separated — see them in a table (email, kennels followed, last app use, runs, where the last three runs were), mark one Keep and one or more Merge, and merge them all into the Keep, so that I don't need anyone's email and can merge more than two accounts. <code>hcportal_searchHashersForMerge</code>; the merge itself reuses <code>hcportal_previewHasherMerge</code> / <code>hcportal_mergeHashers</code> by id, one account at a time. Built 2026-09-28.</span><span class="chip c-build">Building</span>
+        <span class="gap">not deployed; the portal page not yet seen on screen.</span></li>
     </ul>
   </div>
 </section>
