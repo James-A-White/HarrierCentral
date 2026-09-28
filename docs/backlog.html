@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>17</b> epics</div>
     <div><b>85</b> features</div>
-    <div><b>332</b> stories</div>
+    <div><b>333</b> stories</div>
     <div><b>49</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -322,7 +322,7 @@
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 18 stories</span></a>
   <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 27 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
-  <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 41 stories</span></a>
+  <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 42 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 20 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">8 features · 35 stories</span></a>
@@ -627,6 +627,8 @@
       <li class="story"><span class="s-id">E5.F1.S10</span><span class="s-text">As a <em>Hasher</em> who RSVP'd Yes or is checked in, I want a push ten minutes before the run that opens Live Run ready to arm auto start, so that I do not have to remember to open the app. Server: <code>nonApi_checkReminders</code> sends it at T−10 in place of the check-in reminder for RSVP-Yes / At Hash hashers, with the same preference gate (<code>IN (1,3,4)</code>: muted gets the silent push, never-set gets nothing) and once-per-event stamp; only to devices on the build that understands it, others keep the check-in reminder. App: a new message type whose tap opens Live Run.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E5.F1.S11</span><span class="s-text">As a <em>Hasher</em> who has just ended their run, I want a card with my own distance and time, the checks I went through (of how many were marked), the drink stops I reached and the time I spent at them, so that I see my run, not someone else's. Checks and drink stops are read from every runner's marks, merged within 25 m, reached within 20 m (the map's rule), or placed by me; drink-stop time is the time my track stayed within 40 m. The map and rose now select me by default once my own track arrives (runner ids were compared case-sensitively, and a first-runner fallback stuck). Shipped to TestFlight/Play internal in 1416. A <em>My run summary</em> button on the run's Map tab and the full-screen map brings the card back for any run you tracked, worked out from your recorded track (in 1417).</span><span class="chip c-build">Building</span>
         <span class="gap">an auto-stop or admin stop shows no card at the moment it happens — the map button is the way back to it.</span></li>
+      <li class="story"><span class="s-id">E5.F1.S12</span><span class="s-text">As a <em>Hasher</em> looking at my run card, I want my running time and running pace with the drink stops taken out, so that I see how fast I actually ran rather than how long the pub took. "Running time" (shown when there were drink stops) and "Running pace" (per km or per mile, <code>formatPace</code>, same unit rule as distances) under the drink stops; values shrink rather than overflow. Built 2026-09-28.</span><span class="chip c-build">Building</span>
+        <span class="gap">not released (next app build).</span></li>
     </ul>
   </div>
   <div class="feature">
