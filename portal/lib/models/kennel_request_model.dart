@@ -30,6 +30,7 @@ class KennelRequestModel {
     this.nextRunNumber,
     this.howDidYouLearn,
     this.comments,
+    this.termsAnswers,
     this.submitIp,
     this.reviewNote,
     this.reviewedAt,
@@ -79,6 +80,7 @@ class KennelRequestModel {
       nextRunNumber: n('NextRunNumber'),
       howDidYouLearn: n('HowDidYouLearnAboutHc'),
       comments: n('Comments'),
+      termsAnswers: n('TermsAnswers'),
       submitIp: n('SubmitIp'),
       reviewNote: n('ReviewNote'),
       reviewedAt: d('ReviewedAt'),
@@ -125,6 +127,10 @@ class KennelRequestModel {
   final String? nextRunNumber;
   final String? howDidYouLearn;
   final String? comments;
+
+  /// The three opt-in answers from the hashruns.org form, '1: … | 2: … | 3: …'
+  /// (null for requests from the old forms, which never kept them).
+  final String? termsAnswers;
   final String? submitIp;
   final String? reviewNote;
   final DateTime? reviewedAt;

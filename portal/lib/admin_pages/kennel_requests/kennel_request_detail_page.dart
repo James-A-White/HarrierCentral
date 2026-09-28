@@ -218,6 +218,7 @@ class KennelRequestDetailPage extends StatelessWidget {
       ('Next run number', r.nextRunNumber),
       ('How they heard of us', r.howDidYouLearn),
       ('Comments', r.comments),
+      ('Terms answers', r.termsAnswers?.replaceAll(' | ', '\n')),
     ].where((e) => e.$2 != null && e.$2 != 'Unknown').toList();
     if (rows.isEmpty) return const SizedBox.shrink();
     return Column(
