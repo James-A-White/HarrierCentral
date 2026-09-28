@@ -1,3 +1,11 @@
+## 2.0.87+729 (2026-09-28)
+### Improvements
+- **Merge accounts by hash name.** Type one or more hash names
+  (comma-separated) and see every matching account in a table — email,
+  kennels followed, when the app was last used, runs and where the last
+  three were. Mark one Keep and any number Merge; the preview shows each
+  beside the Keep, and Merge folds them all into it. No email needed.
+
 ## 2.0.87+728 (2026-09-28)
 ### Fixes
 - **Coin logos show the kennel's short name again.** A kennel whose logo is
