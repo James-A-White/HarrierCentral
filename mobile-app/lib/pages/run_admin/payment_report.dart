@@ -585,12 +585,14 @@ class PaymentReportPage extends StatelessWidget {
         otherPaymentPopupResult: otherPaymentPopupResult,
       );
       await c.reload();
-      if (!context.mounted) return;
+      // The app's root context, not this row's: the reload above rebuilds
+      // the row, and a dead context made ScaffoldMessenger.of throw (1405,
+      // 2026-09-26) — or, once guarded, silently dropped the QR code.
       BankTransferQr.showBankTransferSnackbar(
         eventAggregate,
         results,
         paymentType,
-        context,
+        navigatorKey.currentContext ?? context,
         packMember.extensions.paidByName,
         packMember.extensions.isMember,
         paymentAmount,
@@ -605,12 +607,14 @@ class PaymentReportPage extends StatelessWidget {
         otherPaymentPopupResult: otherPaymentPopupResult,
       );
       await c.reload();
-      if (!context.mounted) return;
+      // The app's root context, not this row's: the reload above rebuilds
+      // the row, and a dead context made ScaffoldMessenger.of throw (1405,
+      // 2026-09-26) — or, once guarded, silently dropped the QR code.
       BankTransferQr.showBankTransferSnackbar(
         eventAggregate,
         results,
         paymentType,
-        context,
+        navigatorKey.currentContext ?? context,
         packMember.extensions.paidByName,
         packMember.extensions.isMember,
         paymentAmount,

@@ -67,13 +67,24 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          CachedNetworkImage(
-            height: 120.0,
-            imageUrl:
-                widget.areWeAtRunData.eventImage ??
-                widget.areWeAtRunData.kennelLogo,
-            // errorWidget:
-          ),
+          // The run's own image when it has a real one; otherwise the kennel
+          // logo through KennelLogo, which knows the old bundled `bundle://`
+          // placeholders (63 kennels still carry bundle://C-000). Handing
+          // those straight to CachedNetworkImage threw "Unsupported scheme
+          // 'bundle'" and left this check-in prompt without a picture — at
+          // Black Death #200, 2026-09-27, for everyone near the start.
+          if ((widget.areWeAtRunData.eventImage ?? '').startsWith('http'))
+            CachedNetworkImage(
+              height: 120.0,
+              imageUrl: widget.areWeAtRunData.eventImage!,
+            )
+          else
+            KennelLogo(
+              kennelId: widget.areWeAtRunData.kennelId,
+              kennelLogoUrl: widget.areWeAtRunData.kennelLogo,
+              kennelShortName: widget.areWeAtRunData.kennelShortName,
+              logoHeight: 120.0,
+            ),
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 5.0),
             child: (widget.areWeAtRunData.eventNumber != 0)
