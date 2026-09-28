@@ -21,7 +21,8 @@ const Duration kAutoStartPreciseBefore = Duration(minutes: 5);
 ///   runner crossed out. Nothing earlier leaves the phone.
 /// * A run with a start point anchors on it, so arming at home is fine; a run
 ///   without one anchors on the first fix, so a hare arms where they start.
-/// * Disarms itself: the pack if not at the start by T+30, anyone by T+2h.
+/// * Disarms itself: the pack if not at (or within 1 km of) the start by
+///   T+90, anyone by T+2h.
 ///
 /// Owned by [LocationService], like the On-Inn auto-stop monitor.
 class AutoStartMonitor {
@@ -195,10 +196,16 @@ class AutoStartMonitor {
       unawaited(disarm(reason: 'Auto start switched off — the run started over two hours ago.'));
       return;
     }
+    // Not at the start by T+90 — and not near it either — so not coming.
+    // This was T+30, which a late pack beats: Black Death #200 (2026-09-27)
+    // left at 12:31 for a 12:00 start, one minute after auto start had
+    // switched itself off. Someone still within 1 km of the start is kept
+    // armed until the T+2h stop above.
     if (!_isHare &&
         _anchor != null &&
         !(_detector?.hasArrived ?? false) &&
-        now.isAfter(start.add(const Duration(minutes: 30)))) {
+        now.isAfter(start.add(const Duration(minutes: 90))) &&
+        !_nearStart()) {
       unawaited(disarm(reason: 'Auto start switched off — you did not reach the start.'));
       return;
     }
@@ -208,6 +215,20 @@ class AutoStartMonitor {
       unawaited(_ls.refreshIdleStream());
     }
     _updateStatus();
+  }
+
+  /// The last fix is within 1 km of the start (any accuracy).
+  bool _nearStart() {
+    final latlng.LatLng? anchor = _anchor;
+    final List<AutoStartFix> ring = _detector?.ring ?? const <AutoStartFix>[];
+    if (anchor == null || ring.isEmpty) return false;
+    final AutoStartFix last = ring.last;
+    return const latlng.Distance().as(
+          latlng.LengthUnit.Meter,
+          anchor,
+          latlng.LatLng(last.lat, last.lng),
+        ) <=
+        1000;
   }
 
   void _updateStatus() {

@@ -39,6 +39,7 @@ class AutoStartDetector {
     this.backfill = const Duration(seconds: 60),
     this.ringDuration = const Duration(minutes: 15),
     this.maxAccuracyMeters = 60,
+    this.maxArrivalAccuracyMeters = 300,
   }) : _anchor = anchor;
 
   final double arriveMeters;
@@ -47,8 +48,12 @@ class AutoStartDetector {
   final Duration backfill;
   final Duration ringDuration;
 
-  /// Fixes worse than this are kept in the ring but never decide anything.
+  /// Fixes worse than this are kept in the ring and never decide a DEPARTURE.
   final double maxAccuracyMeters;
+
+  /// Fixes worse than this cannot even count as arriving (a cell-tower fix
+  /// kilometres wide would "arrive" from anywhere).
+  final double maxArrivalAccuracyMeters;
 
   latlng.LatLng? _anchor;
   bool _arrived = false;
@@ -72,9 +77,22 @@ class AutoStartDetector {
     _ring.removeWhere((AutoStartFix f) => f.tsMs < cutoff);
 
     if (_startTsMs != null) return null;
-    if (fix.acc > maxAccuracyMeters) return null;
 
     final latlng.LatLng here = latlng.LatLng(fix.lat, fix.lng);
+
+    // Arrival is LENIENT: a fix counts when its accuracy circle could include
+    // the start. A pack waits indoors — Black Death #200 (2026-09-27) met in
+    // a pub, where fixes are commonly 60-150 m — and a strict test ignored
+    // every one, so the runner never "arrived" and auto start switched itself
+    // off. Arriving decides nothing by itself; setting off below still needs
+    // good fixes.
+    if (!_arrived && _anchor != null && fix.acc <= maxArrivalAccuracyMeters) {
+      final double d = _distance(_anchor!, here);
+      if (d - fix.acc <= arriveMeters) _arrived = true;
+      return null;
+    }
+
+    if (fix.acc > maxAccuracyMeters) return null;
     _anchor ??= here;
     final double d = _distance(_anchor!, here);
 

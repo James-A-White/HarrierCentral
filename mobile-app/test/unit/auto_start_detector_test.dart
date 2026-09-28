@@ -85,4 +85,27 @@ void main() {
     expect(d.ring.first.tsMs, 900000);
     expect(d.pointsFrom(1740000).length, 2);
   });
+
+  test('indoors: a poor fix at the start still counts as arriving', () {
+    // Black Death #200: the pack waited in a pub, fixes around 120 m.
+    final d = AutoStartDetector(anchor: start);
+    expect(d.add(at(90, 0, acc: 120)), isNull);
+    expect(d.hasArrived, isTrue);
+  });
+
+  test('a kilometre-wide fix never counts as arriving', () {
+    final d = AutoStartDetector(anchor: start);
+    d.add(at(1500, 0, acc: 1000));
+    expect(d.hasArrived, isFalse);
+  });
+
+  test('arriving on a poor fix, setting off still needs good fixes', () {
+    final d = AutoStartDetector(anchor: start);
+    d.add(at(20, 0, acc: 150)); // arrived, indoors
+    for (int s = 10; s <= 200; s += 10) {
+      expect(d.add(at(400, s, acc: 120)), isNull, reason: 'poor fixes');
+    }
+    expect(d.add(at(200, 210)), isNull);
+    expect(d.add(at(260, 270)), 150000); // crossed at 210 s, minus 60 s
+  });
 }
