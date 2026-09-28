@@ -284,15 +284,19 @@ END
       );
 
     -- Rowset 1: FullPushNotificationRecipients — visible banner.
-    SELECT DISTINCT UserId, DisplayName, FcmToken
-    FROM #pushAudience
-    WHERE UserId != @hasherId
-      AND (Pref = 1 OR (Pref = 4 AND @isEventWithinTimeLimitForNotifications = 1));
+    -- BadgeTotal: the recipient's unread total for the app ICON
+    -- (HC6.UserUnreadChatTotal); the API puts it in aps.badge (2026-09-28).
+    SELECT DISTINCT p.UserId, p.DisplayName, p.FcmToken, bt.BadgeTotal
+    FROM #pushAudience p
+    CROSS APPLY HC6.UserUnreadChatTotal(p.UserId) bt
+    WHERE p.UserId != @hasherId
+      AND (p.Pref = 1 OR (p.Pref = 4 AND @isEventWithinTimeLimitForNotifications = 1));
 
     -- Rowset 2: InAppOnlyNotificationRecipients — silent, the badge moves.
     -- A token already in rowset 1 is not sent a second, silent copy.
-    SELECT DISTINCT a.UserId, a.DisplayName, a.FcmToken
+    SELECT DISTINCT a.UserId, a.DisplayName, a.FcmToken, bt.BadgeTotal
     FROM #pushAudience a
+    CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
     WHERE (a.UserId = @hasherId
            OR a.Pref = 3
            OR (a.Pref = 4 AND @isEventWithinTimeLimitForNotifications = 0))

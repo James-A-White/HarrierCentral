@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_sendEventMessage",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Sends a message to event participants based on releasability bit flags (admins, members, followers, RSVPs, hares, everyone). Inserts a record into HC.EventMessage, then returns three rowsets: the created message details, FCM tokens for users who qualify for full push notifications, and FCM tokens for users who qualify for in-app-only notifications. Notification preferences and a 6-hour event proximity window gate full push delivery. Service accounts are rejected unconditionally.",
   "parameters": [
     {
@@ -60,8 +60,18 @@
       "name": "ErrorEnvelope",
       "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -69,16 +79,66 @@
       "name": "MessageDetails",
       "description": "Returned on success. Always a single row. Contains the created message with sender info. The MessageRelesabilityFlags column name has a typo (missing 'a' in 'Releasability') — do not correct it, callers depend on it.",
       "columns": [
-        { "name": "MessageId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id" },
-        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.EventId — internal event ID" },
-        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.PublicEventId" },
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.PublicHasherId of the message sender" },
-        { "name": "UserDisplayName", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Hasher.DisplayName of the message sender (computed column)" },
-        { "name": "UserPhoto", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo of the message sender" },
-        { "name": "MessageTitle", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Hasher.DisplayName + ' - ' + EventMessage.MessageTitle — sender name prepended to the title" },
-        { "name": "MessageContent", "type": "NVARCHAR(500)", "nullable": false, "description": "EventMessage.MessageContent" },
-        { "name": "MessageRelesabilityFlags", "type": "INT", "nullable": false, "description": "EventMessage.MessageReleasabilityFlags — note: column alias has a typo ('Releasability' misspelled)" },
-        { "name": "MessageType", "type": "INT", "nullable": true, "description": "EventMessage.MessageType" }
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.id"
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.EventId — internal event ID"
+        },
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.PublicEventId"
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId of the message sender"
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Hasher.DisplayName of the message sender (computed column)"
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo of the message sender"
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Hasher.DisplayName + ' - ' + EventMessage.MessageTitle — sender name prepended to the title"
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent"
+        },
+        {
+          "name": "MessageRelesabilityFlags",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageReleasabilityFlags — note: column alias has a typo ('Releasability' misspelled)"
+        },
+        {
+          "name": "MessageType",
+          "type": "INT",
+          "nullable": true,
+          "description": "EventMessage.MessageType"
+        }
       ]
     },
     {
@@ -86,8 +146,24 @@
       "name": "FullPushNotificationRecipients",
       "description": "Users who should receive a full push notification (sound + popup). Filtered by notification preference = 1 (Always On) or = 4 (On 6 hours before run, only when event is within 6 hours), kennel membership, device FcmToken present, and releasability flags. Zero or more rows.",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId — internal hasher ID" },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken — Firebase Cloud Messaging token (WHERE FcmToken IS NOT NULL ensures non-null, but declared nullable in Device table)" }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap.UserId — internal hasher ID"
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken — Firebase Cloud Messaging token (WHERE FcmToken IS NOT NULL ensures non-null, but declared nullable in Device table)"
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": false,
+          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28."
+        }
       ]
     },
     {
@@ -95,8 +171,24 @@
       "name": "InAppOnlyNotificationRecipients",
       "description": "Kennel followers and members who did NOT qualify for a full push notification. They receive a silent in-app notification for real-time chat updates. Zero or more rows.",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId — internal hasher ID" },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": true, "description": "Device.FcmToken — Firebase Cloud Messaging token" }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap.UserId — internal hasher ID"
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Device.FcmToken — Firebase Cloud Messaging token"
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": false,
+          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28."
+        }
       ]
     }
   ],
@@ -104,7 +196,11 @@
     "INSERT into HC.EventMessage with the new message record (inside transaction)"
   ],
   "codeSmells": [
-    {"severity": "medium", "issue": "Resolved 2026-09-25: push fan-out drift from hcapp_sendEventMessage", "detail": "Preference 0 counted as 'on' (whole-roster pushes), no DISTINCT on token, retired/idle devices and deleted hashers included, CATCH did not log. Now mirrors the app SP; CATCH rolls back then logs to HC.ErrorLog."}
+    {
+      "severity": "medium",
+      "issue": "Resolved 2026-09-25: push fan-out drift from hcapp_sendEventMessage",
+      "detail": "Preference 0 counted as 'on' (whole-roster pushes), no DISTINCT on token, retired/idle devices and deleted hashers included, CATCH did not log. Now mirrors the app SP; CATCH rolls back then logs to HC.ErrorLog."
+    }
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
