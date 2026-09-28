@@ -46,6 +46,18 @@ namespace HcWebApi.Endpoints
 
             string queryType = req.Query["queryType"]!;
 
+            // SECURITY (2026-09-28): this route is anonymous and forwards to ANY
+            // [HC6].[publicWeb_{queryType}] — including the SPs PublicWebAdminApi
+            // guards with HC_INTERNAL_SECRET. savePageLayout (overwrite a kennel's
+            // site), issuePasskeyInviteCode, confirmAuthentication and createMember
+            // were all reachable here with no secret. Refuse every admin-route name;
+            // the set is case-insensitive because SQL Server proc names are.
+            if (PublicWebAdminApi.AllowedQueryTypes.Contains(queryType.Trim()))
+            {
+                _log.LogWarning("PublicWebApi: refused admin-only queryType '{QueryType}'", queryType);
+                return new NotFoundResult();
+            }
+
             _log.LogInformation("PublicWebApi called: queryType = {QueryType}", queryType);
 
             try

@@ -23,7 +23,9 @@ namespace HcWebApi.Endpoints
     /// </summary>
     public class PublicWebAdminApi
     {
-        private static readonly HashSet<string> AllowedQueryTypes = new(StringComparer.OrdinalIgnoreCase)
+        // internal (not private): PublicWebApi refuses every name on this list,
+        // so an admin-only SP can never be reached through the anonymous route.
+        internal static readonly HashSet<string> AllowedQueryTypes = new(StringComparer.OrdinalIgnoreCase)
         {
             "savePageLayout",
             "getPageLayout",
