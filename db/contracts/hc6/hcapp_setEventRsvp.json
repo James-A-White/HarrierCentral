@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEventRsvp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Updates a hasher's RSVP state and/or hare designation for an event. Upserts a HasherEventMap row if none exists. Blocks RSVP state changes when the hasher is already checked in (AttendenceState >= 20), but still allows hare-flag-only changes post-attendance. Optionally auto-sets notification preferences when @autoSetNotifications=1. Updates Event.Hares aggregate string when hare state changes. Returns a success envelope (rowset 0), an adHoc result row (rowset 1), and delegates to HC6.hcapp_syncEventAdminData for subsequent sync rowsets.",
   "parameters": [
     {
@@ -219,7 +219,8 @@
     "UPDATE HC.Event SET Hares — when IsHare state changed (STRING_AGG of hare display names where RsvpState=3)",
     "INSERT HC.ErrorLog — on hemId/eventId mismatch and on unhandled CATCH",
     "EXEC HC.nonApi_updateRunCountsByUser — called after transaction commit with @hasherId and event date",
-    "EXEC HC6.hcapp_syncEventAdminData — delegated call outside transaction"
+    "EXEC HC6.hcapp_syncEventAdminData — delegated call outside transaction",
+    "HC.Event.Hares is rebuilt from flagged hares (IsHare=1 AND RsvpState=3) ONLY when the current text is empty or equals that aggregate as it stood before the change; admin-typed text is never replaced, and a newly flagged hare's DisplayName is appended to it if absent (1.1.0, 2026-09-28 — before, a flagged hare RSVPing No replaced typed co-hares wholesale)."
   ],
   "codeSmells": [
     {

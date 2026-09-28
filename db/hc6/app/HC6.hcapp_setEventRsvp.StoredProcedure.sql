@@ -189,9 +189,20 @@ END
 -- ---------------------------------------------------------------
 DECLARE @serverMessage NVARCHAR(500) = '';
 DECLARE @haresStr      NVARCHAR(2500);
+-- The Hares text before this change, and what this SP would have written for
+-- it. If they match (or the text is empty) the text is ours to rebuild; if
+-- not, an admin typed it and it is theirs (see the rebuild below).
+DECLARE @haresBefore   NVARCHAR(2500);
+DECLARE @haresOurs     NVARCHAR(2500);
 
 BEGIN TRY
     BEGIN TRANSACTION;
+
+        SELECT @haresBefore = e.Hares FROM HC.Event e WHERE e.id = @eventId;
+        SELECT @haresOurs = STRING_AGG(h.DisplayName, ', ') WITHIN GROUP (ORDER BY h.DisplayName ASC)
+        FROM HC.HasherEventMap hem
+        INNER JOIN HC.Hasher h ON hem.UserId = h.id
+        WHERE hem.EventId = @eventId AND hem.IsHare = 1 AND hem.RsvpState = 3;
 
         IF (@hemId IS NOT NULL
             AND (
@@ -253,13 +264,30 @@ BEGIN TRY
 
         IF (@currentIsHareState != COALESCE(@newHareState, @currentIsHareState))
         BEGIN
-            SELECT @haresStr = STRING_AGG(h.DisplayName, ', ') WITHIN GROUP (ORDER BY h.DisplayName ASC)
-            FROM HC.HasherEventMap hem
-            INNER JOIN HC.Hasher h ON hem.UserId = h.id
-            WHERE hem.EventId = @eventId AND hem.IsHare = 1 AND hem.RsvpState = 3;
+            -- Rebuild only text this SP wrote. The text is often TYPED by an
+            -- admin ("Railroad & Dolittle") for hares who were never flagged;
+            -- rebuilding from the flags alone replaced it wholesale, so one
+            -- flagged hare RSVPing No erased every co-hare (reported
+            -- 2026-09-28; reproduced on a test run: 'Typed Hare' → NULL).
+            IF (LEN(COALESCE(@haresBefore, N'')) = 0
+                OR @haresBefore = COALESCE(@haresOurs, N''))
+            BEGIN
+                SELECT @haresStr = STRING_AGG(h.DisplayName, ', ') WITHIN GROUP (ORDER BY h.DisplayName ASC)
+                FROM HC.HasherEventMap hem
+                INNER JOIN HC.Hasher h ON hem.UserId = h.id
+                WHERE hem.EventId = @eventId AND hem.IsHare = 1 AND hem.RsvpState = 3;
 
-            UPDATE HC.Event SET Hares = @haresStr, updatedAt = GETDATE()
-            WHERE id = @eventId AND COALESCE(Hares, 'x') != COALESCE(@haresStr, 'x');
+                UPDATE HC.Event SET Hares = @haresStr, updatedAt = GETDATE()
+                WHERE id = @eventId AND COALESCE(Hares, 'x') != COALESCE(@haresStr, 'x');
+            END
+            -- Admin-typed text: never remove a name; add a new hare's.
+            ELSE IF (@newHareState = 1
+                     AND CHARINDEX(COALESCE(@hasherName, N''), @haresBefore) = 0
+                     AND LEN(@haresBefore) + LEN(COALESCE(@hasherName, N'')) + 2 <= 2500)
+            BEGIN
+                UPDATE HC.Event SET Hares = @haresBefore + N', ' + @hasherName, updatedAt = GETDATE()
+                WHERE id = @eventId;
+            END
         END
 
     COMMIT TRANSACTION;
