@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEventAttendence",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Records or updates a hasher's attendance at an event. Supports two hasher-resolution modes: direct by @hasherId, or QR code scan via @qrScanText (resolved from HC.Hasher.QR_code). If @hemId is supplied the hasher is resolved from the HEM row, supporting visitor/virgin rows that share the KennelId as UserId. Guards against removing attendance when a non-cancelled payment exists. Updates Event.Hares string aggregate when @isHare changes. Returns a richer ad-hoc rowset in scan mode (payment and member status). Delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @returnUserRecords.",
   "parameters": [
     {
@@ -89,9 +89,24 @@
       "name": "Envelope",
       "description": "Write SP success/failure envelope. Always present as the first rowset. success=1 means the write succeeded; success=0 means it failed (see rowset 1 for error detail). errorCode and errorType are NULL on success.",
       "columns": [
-        { "name": "success", "type": "BIT", "nullable": false, "description": "1 = operation succeeded, 0 = operation failed." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Specific numeric error code. NULL on success. Auth failures from ValidateAppAuth do not emit the envelope; they emit error detail directly." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error category code. NULL on success. Codes used: 12=validation (attendenceState out of range, mismatched hemId/eventId), 13=not found (QR code unrecognised), 5=business rule (payment blocks removal), 19=unhandled database error." }
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 = operation succeeded, 0 = operation failed."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Specific numeric error code. NULL on success. Auth failures from ValidateAppAuth do not emit the envelope; they emit error detail directly."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Error category code. NULL on success. Codes used: 12=validation (attendenceState out of range, mismatched hemId/eventId), 13=not found (QR code unrecognised), 5=business rule (payment blocks removal), 19=unhandled database error."
+        }
       ]
     },
     {
@@ -99,12 +114,42 @@
       "name": "ErrorDetail",
       "description": "Present only when success=0. Carries the structured error detail. One of three cases: auth failure from ValidateAppAuth (emitted WITHOUT the preceding Envelope row); validation/business error (emitted AFTER the Envelope row with success=0); or unhandled CATCH error (also AFTER the Envelope row with success=0). Note: auth failure from ValidateAppAuth skips the envelope entirely and emits this as rowset 0.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry, or a NEWID() generated inline for business-rule errors (payment guard)." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error category code (matches errorType in the Envelope)." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code (matches errorCode in the Envelope)." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short human-readable error title." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message. Payment-guard message includes the hasher's display name." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry, or a NEWID() generated inline for business-rule errors (payment guard)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error category code (matches errorType in the Envelope)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code (matches errorCode in the Envelope)."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short human-readable error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message. Payment-guard message includes the hasher's display name."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name from OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -112,13 +157,48 @@
       "name": "AdHocNonScanResult",
       "description": "Returned as rowset 1 on success when @qrScanText IS NULL. Contains the updated attendance state and HEM id.",
       "columns": [
-        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1. Identifies this as an ad-hoc data rowset." },
-        { "name": "serverMessage", "type": "NVARCHAR(500)", "nullable": false, "description": "Human-readable attendance confirmation. Varies by attendenceState (on trail, On Inn, not at run) and whether the hasher is the caller." },
-        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The HEM record id (HC.HasherEventMap.id) after the write." },
-        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The resolved hasher's id (HC.Hasher.id)." },
-        { "name": "attendenceState", "type": "SMALLINT", "nullable": true, "description": "Re-read attendance state after the update (HC.HasherEventMap.AttendenceState)." },
-        { "name": "totalRunsThisKennel", "type": "INT", "nullable": true, "description": "The hasher's per-event run count for this kennel INCLUDING this run once the recompute has counted it (runs starting within 6h count in real time). NULL until then, or when not a counted attendance." },
-        { "name": "totalHaringThisKennel", "type": "INT", "nullable": true, "description": "The hasher's per-event haring count for this kennel including this run when they hared it. Same real-time (6h window) mechanism as totalRunsThisKennel." }
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1. Identifies this as an ad-hoc data rowset."
+        },
+        {
+          "name": "serverMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Human-readable attendance confirmation. Varies by attendenceState (on trail, On Inn, not at run) and whether the hasher is the caller."
+        },
+        {
+          "name": "hasherEventMapId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The HEM record id (HC.HasherEventMap.id) after the write."
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The resolved hasher's id (HC.Hasher.id)."
+        },
+        {
+          "name": "attendenceState",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Re-read attendance state after the update (HC.HasherEventMap.AttendenceState)."
+        },
+        {
+          "name": "totalRunsThisKennel",
+          "type": "INT",
+          "nullable": true,
+          "description": "The hasher's per-event run count for this kennel INCLUDING this run once the recompute has counted it (runs starting within 6h count in real time). NULL until then, or when not a counted attendance."
+        },
+        {
+          "name": "totalHaringThisKennel",
+          "type": "INT",
+          "nullable": true,
+          "description": "The hasher's per-event haring count for this kennel including this run when they hared it. Same real-time (6h window) mechanism as totalRunsThisKennel."
+        }
       ]
     },
     {
@@ -126,24 +206,114 @@
       "name": "AdHocScanResult",
       "description": "Returned as rowset 1 on success when @qrScanText IS NOT NULL. Richer than the non-scan shape — includes payment status, membership, notification prefs, and discount info. Note: column name for the message is 'userMessage' here, not 'serverMessage' (see code smells).",
       "columns": [
-        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
-        { "name": "userMessage", "type": "NVARCHAR(500)", "nullable": false, "description": "Human-readable attendance confirmation. Same logic as serverMessage in the non-scan rowset." },
-        { "name": "isPaid", "type": "INT", "nullable": false, "description": "Count of non-cancelled Payment rows for this HEM (HC.Payment where CancelledBy_UserId IS NULL). 0 = not paid, >0 = paid." },
-        { "name": "isMember", "type": "SMALLINT", "nullable": true, "description": "1 if HasherKennelMap.MembershipExpirationDate > GETDATE(), else 0. NULL if no HasherKennelMap row." },
-        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The HEM record id (HC.HasherEventMap.id)." },
-        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The resolved hasher's id (HC.Hasher.id)." },
-        { "name": "notificationPreference", "type": "SMALLINT", "nullable": true, "description": "COALESCE(HasherEventMap.EventNotificationPreference, HasherKennelMap.KennelNotificationPreference). NULL if both are NULL." },
-        { "name": "emailAlertPreference", "type": "SMALLINT", "nullable": true, "description": "COALESCE(HasherEventMap.EventEmailAlertPreference, HasherKennelMap.KennelEmailAlertPreference). NULL if both are NULL." },
-        { "name": "currentHaringCount", "type": "INT", "nullable": false, "description": "HasherKennelMap.CurrentHaringCount. COALESCE to -1 if no HasherKennelMap row." },
-        { "name": "currentPackRunCount", "type": "INT", "nullable": false, "description": "HasherKennelMap.CurrentPackRunCount. COALESCE to -1 if no HasherKennelMap row. NOTE: always zeroed by the recompute — not the display total; use totalRunsThisKennel instead." },
-        { "name": "totalRunsThisKennel", "type": "INT", "nullable": true, "description": "The scanned hasher's per-event run count for this kennel INCLUDING this run once counted (runs starting within 6h count in real time). Use this to show 'run #N' on scan." },
-        { "name": "totalHaringThisKennel", "type": "INT", "nullable": true, "description": "The scanned hasher's per-event haring count for this kennel including this run when they hared it." },
-        { "name": "rsvpState", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.RsvpState. COALESCE to -1 if no HEM row exists for the hasher at this event." },
-        { "name": "willHareState", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.IsHare. COALESCE to 0 if no HEM row." },
-        { "name": "hares", "type": "NVARCHAR(2500)", "nullable": false, "description": "HC.Event.Hares — comma-separated string of hare display names as of the current write. COALESCE to '' if NULL." },
-        { "name": "discountAmount", "type": "SMALLMONEY", "nullable": false, "description": "HasherKennelMap.DiscountAmount. COALESCE to 0 if no HasherKennelMap row." },
-        { "name": "discountPercent", "type": "SMALLINT", "nullable": false, "description": "HasherKennelMap.DiscountPercent. COALESCE to 0 if no HasherKennelMap row." },
-        { "name": "discountDescription", "type": "NVARCHAR(50)", "nullable": false, "description": "HasherKennelMap.DiscountDescription. COALESCE to '' if no HasherKennelMap row." }
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "userMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Human-readable attendance confirmation. Same logic as serverMessage in the non-scan rowset."
+        },
+        {
+          "name": "isPaid",
+          "type": "INT",
+          "nullable": false,
+          "description": "Count of non-cancelled Payment rows for this HEM (HC.Payment where CancelledBy_UserId IS NULL). 0 = not paid, >0 = paid."
+        },
+        {
+          "name": "isMember",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "1 if HasherKennelMap.MembershipExpirationDate > GETDATE(), else 0. NULL if no HasherKennelMap row."
+        },
+        {
+          "name": "hasherEventMapId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The HEM record id (HC.HasherEventMap.id)."
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The resolved hasher's id (HC.Hasher.id)."
+        },
+        {
+          "name": "notificationPreference",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "COALESCE(HasherEventMap.EventNotificationPreference, HasherKennelMap.KennelNotificationPreference). NULL if both are NULL."
+        },
+        {
+          "name": "emailAlertPreference",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "COALESCE(HasherEventMap.EventEmailAlertPreference, HasherKennelMap.KennelEmailAlertPreference). NULL if both are NULL."
+        },
+        {
+          "name": "currentHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.CurrentHaringCount. COALESCE to -1 if no HasherKennelMap row."
+        },
+        {
+          "name": "currentPackRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.CurrentPackRunCount. COALESCE to -1 if no HasherKennelMap row. NOTE: always zeroed by the recompute — not the display total; use totalRunsThisKennel instead."
+        },
+        {
+          "name": "totalRunsThisKennel",
+          "type": "INT",
+          "nullable": true,
+          "description": "The scanned hasher's per-event run count for this kennel INCLUDING this run once counted (runs starting within 6h count in real time). Use this to show 'run #N' on scan."
+        },
+        {
+          "name": "totalHaringThisKennel",
+          "type": "INT",
+          "nullable": true,
+          "description": "The scanned hasher's per-event haring count for this kennel including this run when they hared it."
+        },
+        {
+          "name": "rsvpState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.RsvpState. COALESCE to -1 if no HEM row exists for the hasher at this event."
+        },
+        {
+          "name": "willHareState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.IsHare. COALESCE to 0 if no HEM row."
+        },
+        {
+          "name": "hares",
+          "type": "NVARCHAR(2500)",
+          "nullable": false,
+          "description": "HC.Event.Hares — comma-separated string of hare display names as of the current write. COALESCE to '' if NULL."
+        },
+        {
+          "name": "discountAmount",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "HasherKennelMap.DiscountAmount. COALESCE to 0 if no HasherKennelMap row."
+        },
+        {
+          "name": "discountPercent",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherKennelMap.DiscountPercent. COALESCE to 0 if no HasherKennelMap row."
+        },
+        {
+          "name": "discountDescription",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "HasherKennelMap.DiscountDescription. COALESCE to '' if no HasherKennelMap row."
+        }
       ]
     },
     {
@@ -159,7 +329,8 @@
     "EXEC HC.nonApi_updateRunCountsByUser @userId=@hasherId — when attendance crosses the 20 threshold (added or removed from run). The recompute now counts a run once it starts within 6 hours (or has started), so a pre-start check-in updates the run/haring counts in real time instead of waiting for the overnight batch. Runs AFTER the transaction commit.",
     "INSERT HC.ErrorLog — on validation error, auth error, or unhandled exception",
     "EXEC HC6.hcapp_syncEventAdminData — when @returnUserRecords=0 (default)",
-    "EXEC HC6.hcapp_syncUserData — when @returnUserRecords=1"
+    "EXEC HC6.hcapp_syncUserData — when @returnUserRecords=1",
+    "HC.Event.Hares is rebuilt from flagged hares (IsHare=1 AND RsvpState=3) ONLY when the current text is empty or equals that aggregate as it stood before the change; admin-typed text is never replaced, and a newly flagged hare's DisplayName is appended to it if absent (1.1.0, 2026-09-28 — before, check-in with a hare value replaced typed co-hares wholesale)."
   ],
   "codeSmells": [
     {

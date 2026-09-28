@@ -268,6 +268,18 @@ DECLARE @recalculateRunNumbers SMALLINT = 0;
 BEGIN TRY
     BEGIN TRANSACTION;
 
+        -- The Hares text before this change and what this SP would have
+        -- written for it: equal (or empty) ⇒ ours to rebuild; otherwise an
+        -- admin typed it (see the rebuild below). Same rule as
+        -- hcapp_setEventRsvp (2026-09-28).
+        DECLARE @haresBefore NVARCHAR(2500);
+        DECLARE @haresOurs   NVARCHAR(2500);
+        SELECT @haresBefore = e.Hares FROM HC.Event e WHERE e.id = @eventId;
+        SELECT @haresOurs = STRING_AGG(h.DisplayName, ', ') WITHIN GROUP (ORDER BY h.DisplayName ASC)
+        FROM HC.HasherEventMap hem
+        INNER JOIN HC.Hasher h ON hem.UserId = h.id
+        WHERE hem.EventId = @eventId AND hem.IsHare = 1 AND hem.RsvpState = 3;
+
         IF (@hemId IS NOT NULL AND @attendenceState < 20)
         BEGIN
             UPDATE HC.HasherEventMap SET
@@ -303,16 +315,31 @@ BEGIN TRY
         END
 
         -- Update Event.Hares aggregate if isHare flag changed
+        -- Rebuilding from the flags alone replaced admin-typed text wholesale
+        -- (co-hares who were never flagged vanished), so only text this SP
+        -- wrote is rebuilt; typed text keeps every name and gains a new
+        -- hare's.
         IF (@isHare IS NOT NULL)
         BEGIN
             DECLARE @haresStr NVARCHAR(2500);
-            SELECT @haresStr = STRING_AGG(h.DisplayName, ', ') WITHIN GROUP (ORDER BY h.DisplayName ASC)
-            FROM HC.HasherEventMap hem
-            INNER JOIN HC.Hasher h ON hem.UserId = h.id
-            WHERE hem.EventId = @eventId AND hem.IsHare = 1 AND hem.RsvpState = 3;
+            IF (LEN(COALESCE(@haresBefore, N'')) = 0
+                OR @haresBefore = COALESCE(@haresOurs, N''))
+            BEGIN
+                SELECT @haresStr = STRING_AGG(h.DisplayName, ', ') WITHIN GROUP (ORDER BY h.DisplayName ASC)
+                FROM HC.HasherEventMap hem
+                INNER JOIN HC.Hasher h ON hem.UserId = h.id
+                WHERE hem.EventId = @eventId AND hem.IsHare = 1 AND hem.RsvpState = 3;
 
-            UPDATE HC.Event SET Hares = @haresStr, updatedAt = GETDATE()
-            WHERE id = @eventId AND COALESCE(Hares, 'x') != COALESCE(@haresStr, 'x');
+                UPDATE HC.Event SET Hares = @haresStr, updatedAt = GETDATE()
+                WHERE id = @eventId AND COALESCE(Hares, 'x') != COALESCE(@haresStr, 'x');
+            END
+            ELSE IF (@isHare = 1
+                     AND CHARINDEX(COALESCE(@hasherName, N''), @haresBefore) = 0
+                     AND LEN(@haresBefore) + LEN(COALESCE(@hasherName, N'')) + 2 <= 2500)
+            BEGIN
+                UPDATE HC.Event SET Hares = @haresBefore + N', ' + @hasherName, updatedAt = GETDATE()
+                WHERE id = @eventId;
+            END
         END
 
     COMMIT TRANSACTION;
