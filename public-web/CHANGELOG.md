@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-28 redeploy — add kennel)
+
+- **hashruns.org/add-kennel.** A kennel asks to join here: country, region
+  and city picked from Harrier Central's own lists, and a six-digit code
+  emailed to confirm it is really them before the request reaches review.
+  Replaces the harriercentral.com form, which now redirects here. The
+  footer's "Add your kennel today" links to it.
+
 ## 0.21.74 (2026-09-28 redeploy)
 
 - **Trail TV shows every photo.** The replay no longer loops while photos are
