@@ -90,3 +90,40 @@ Future<Map<String, int>?> mergeHashers(String keepHasherId, String mergeHasherId
   if (rows.isEmpty) return <String, int>{};
   return {for (final e in rows[0].entries) e.key: (e.value as num?)?.toInt() ?? 0};
 }
+
+/// One account in the merge search table (hcportal_searchHashersForMerge).
+class MergeCandidate {
+  const MergeCandidate(this.row);
+  final Map<String, dynamic> row;
+
+  String get id => ((row['HasherId'] as String?) ?? '').toLowerCase();
+  String get hashName => ((row['HashName'] as String?) ?? '').trim();
+  String get name => '${row['FirstName'] ?? ''} ${row['LastName'] ?? ''}'.trim();
+  String get email => (row['Email'] as String?) ?? '';
+  String get display => hashName.isNotEmpty ? hashName : (name.isNotEmpty ? name : email);
+  int n(String key) => (row[key] as num?)?.toInt() ?? 0;
+  String? s(String key) {
+    final String? v = row[key]?.toString().trim();
+    return (v == null || v.isEmpty) ? null : v;
+  }
+}
+
+/// Every live account matching [terms] — hash names, or an email / hasher id
+/// for an account whose name is blank. Null on failure (the alert shows why).
+Future<List<MergeCandidate>?> searchHashersForMerge(List<String> terms) async {
+  final rowsets = _rowsets(
+    await ServiceCommon.sendHttpPostToHC6Api(<String, String?>{
+      'queryType': 'searchHashersForMerge',
+      'deviceId': _deviceId(),
+      'accessToken': _token('hcportal_searchHashersForMerge'),
+      // The admin types commas; the SP splits on '|', the project's list
+      // delimiter, which never appears in a hash name (CLAUDE.md).
+      'searchTerms': terms.join('|'),
+    }),
+    'searchHashersForMerge',
+  );
+  if (rowsets == null || rowsets.isEmpty) return null;
+  final rows = (rowsets[0] as List<dynamic>).cast<Map<String, dynamic>>();
+  if (rows.length == 1 && rows[0].containsKey('Success')) return null;
+  return rows.map(MergeCandidate.new).toList();
+}
