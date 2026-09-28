@@ -129,8 +129,11 @@ BEGIN TRY
     -- their badge counts are zeroed without showing a notification.
     -- The current device is excluded — it already knows it has read.
     -- ----------------------------------------------------------------
-    SELECT device.FcmToken
+    -- BadgeTotal: what is still unread after this read, so the silent
+    -- read_sync push can set the other devices' app ICON too (2026-09-28).
+    SELECT device.FcmToken, bt.BadgeTotal
     FROM HC.Device device
+    CROSS APPLY HC6.UserUnreadChatTotal(@userId) bt
     WHERE device.UserId    = @userId
       AND device.id       != @deviceId
       AND device.FcmToken IS NOT NULL;

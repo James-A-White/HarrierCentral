@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_markEventChatRead",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Records that the calling user has read all current messages in an event chat. Snapshots the current message count and latest message ID from HC.EventMessage, then upserts HC.EventMessageBadgeCounts for the (eventId, userId) pair. Returns the count written (rowset 0) and FCM tokens for the user's other registered devices (rowset 1) so the API shim can fan-out a silent 'read_sync' push to zero their badge counts without showing a notification. The calling device is excluded from the fan-out.",
   "parameters": [
     {
@@ -32,12 +32,42 @@
       "name": "AuthOrValidationError",
       "description": "Returned when HC6.ValidateAppAuth fails or @eventId is NULL. errorType from ValidateAppAuth on auth failure. errorType=12, errorCode=1270 for null eventId. Mutually exclusive with the success rowsets.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification (1=auth, 3=device not found, 12=validation)." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification (1=auth, 3=device not found, 12=validation)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -45,12 +75,42 @@
       "name": "UnhandledError",
       "description": "Returned from the CATCH block when an unexpected DB error occurs. errorCode=9999, errorType=5. Mutually exclusive with success rowsets and other error rowsets.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 5 (unhandled DB error)." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Always 9999." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Always 'Database error'." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Always 'An unexpected error occurred.'." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 5 (unhandled DB error)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 9999."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Always 'Database error'."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Always 'An unexpected error occurred.'."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -76,6 +136,12 @@
           "type": "NVARCHAR(500)",
           "nullable": false,
           "description": "Device.FcmToken — Firebase Cloud Messaging token for a device owned by the same user, excluding the calling device. Table column is NVARCHAR(500) NULL, but the WHERE clause filters to IS NOT NULL."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": false,
+          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28."
         }
       ]
     }
