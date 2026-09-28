@@ -7,12 +7,14 @@ class HcAdminToolsPage extends StatelessWidget {
     this.canViewMonitor = false,
     this.canManageNewsflash = false,
     this.canManagePermissions = false,
+    this.canEditKennel = false,
   });
 
   final List<HasherKennelsModel> allKennels;
   final bool canViewMonitor;
   final bool canManageNewsflash;
   final bool canManagePermissions;
+  final bool canEditKennel;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +52,15 @@ class HcAdminToolsPage extends StatelessWidget {
                   onTap: () => Get.to<NewsflashManagementPage>(
                     () => NewsflashManagementPage(allKennels: allKennels),
                   ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (canEditKennel) ...[
+                _ToolCard(
+                  title: 'Kennel requests',
+                  subtitle: 'Review and approve kennels asking to join',
+                  icon: MaterialCommunityIcons.home_plus,
+                  onTap: () => Get.to<KennelRequestsPage>(KennelRequestsPage.new),
                 ),
                 const SizedBox(height: 16),
               ],

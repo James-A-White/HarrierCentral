@@ -728,6 +728,7 @@ class RunListPage extends StatelessWidget {
                 canViewMonitor: formController.canViewMonitor,
                 canManageNewsflash: formController.canManageNewsflash,
                 canManagePermissions: formController.canManagePermissions,
+                canEditKennel: formController.canEditKennel,
               ),
             );
           },
