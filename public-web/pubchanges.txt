@@ -1,3 +1,6 @@
+0.21.74 (2026-09-28 redeploy — Trail TV thumbnails)
+    • Trail TV: thumbnail strip at natural aspect ratio (one height, own width) — no more cropped heads.
+
 0.21.74 (2026-09-28 redeploy — Trail TV clock and darker maps)
     • Trail TV replay: elapsed time + furthest distance pill on both maps; map tiles 25% darker.
 

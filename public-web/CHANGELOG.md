@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-28 redeploy — Trail TV thumbnails)
+
+- **Trail TV thumbnails keep their shape.** The strip of earlier photos no
+  longer crops them into boxes (heads were cut off): one height, each photo
+  at its own width.
+
 ## 0.21.74 (2026-09-28 redeploy — Trail TV clock and darker maps)
 
 - **Trail TV replay clock.** Both replay maps show the elapsed time and the
