@@ -1,3 +1,12 @@
+## 2.0.87+728 (2026-09-28)
+### Fixes
+- **Coin logos show the kennel's short name again.** A kennel whose logo is
+  one of the Harrier Central coins shows its short name on the coin, as it
+  did before the coins moved to stored images.
+### Improvements
+- **Kennel requests show the terms answers** — the three opt-in questions
+  the hashruns.org form now asks.
+
 ## 2.0.87+727 (2026-09-28)
 ### New Features
 - **Merge accounts.** HC Admin Tools › Merge accounts (platform admins with

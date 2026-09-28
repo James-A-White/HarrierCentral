@@ -1,3 +1,16 @@
+## 3.1.8+1419 (2026-09-28)
+iOS (TestFlight, James internal test only) and Android (internal app
+sharing link). Held from the beta testers. Build number only; same version.
+### New Features
+- **Running time and pace.** The run card shows your running time and pace
+  with the drink stops taken out.
+### Fixes
+- **Free run in one tap.** A hasher who owes nothing (a 100% discount) can be
+  marked paid as a free run, without inventing a special price.
+- **The keyboard goes away.** Tapping empty space puts the keyboard away on
+  every screen — number pads have no Done key.
+- **Coin logos show the kennel's short name again.**
+
 ## 3.1.8+1418 (2026-09-28)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version.

@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-28 redeploy — add-kennel terms)
+
+- **The three opt-in questions are back.** hashruns.org/add-kennel asks the
+  old harriercentral.com form's three required terms questions, and the
+  answers are kept with the request for the reviewer.
+
 ## 0.21.74 (2026-09-28 redeploy — add kennel)
 
 - **hashruns.org/add-kennel.** A kennel asks to join here: country, region
