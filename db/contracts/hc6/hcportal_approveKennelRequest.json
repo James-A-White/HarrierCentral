@@ -1,0 +1,133 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_approveKennelRequest",
+  "version": "1.0.0",
+  "description": "Approves a kennel request (E12.F1.S6): creates HC.Kennel (unique short name LH3 / LH3-GB / LH3-GBn, coin logo URL, parsed price), makes the requester HC admin (account created if the email has none), adds CanEditKennel platform admins as helpers, ensures an invite code, marks the request approved. UPDLOCK on the request row. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth (HC.Device.id)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string (device secret)."
+    },
+    {
+      "name": "kennelImportId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
+      "description": ""
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Success",
+      "description": "{ Success, ErrorMessage } — also the auth / CanEditKennel refusal.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok, 0 refused"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Why, for the reviewer"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ApprovedKennel (success only)",
+      "description": "PortalApiHC6 emails the welcome with InviteCode, then REMOVES InviteCode and adds WelcomeEmailSent before replying.",
+      "columns": [
+        {
+          "name": "KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "KennelUniqueShortName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "AdminHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "AdminEmail",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "AdminFirstName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "AdminHashName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "AdminIsNew",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "InviteCode",
+          "type": "NVARCHAR(6)",
+          "nullable": true,
+          "description": "Stripped by the API"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.Kennel (fires TR_Kennel_AfterInsert_CreateKennelWebsite, GenerateExtApiKey, geolocation)",
+    "INSERT HC.Hasher + HC.LaunchAndLogin when the email is new (trgInsertHkmRecordForHomeHash adds the home HKM row)",
+    "INSERT/UPDATE HC.HasherKennelMap: requester AppAccessFlags 1073741887, HcWebPermissionFlags 127, no mismanagement roles; helpers the same, IsMember 0",
+    "HC6.nonApi_ensureUserInviteCode (no rotation)",
+    "UPDATE EXT.OfficeForms_KennelImport RequestStatus 2, KennelId, ReviewedBy/At",
+    "API: welcome email via the Logic App"
+  ],
+  "breakingChangesVsHc3w": [
+    "No dbo.Users login / hard-coded password hash",
+    "Logo is a blob URL, not bundle://",
+    "Helpers from HC.PlatformAdmin, not a hard-coded id",
+    "Requester gets HC admin only, not all mismanagement roles"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
