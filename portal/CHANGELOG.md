@@ -1,3 +1,12 @@
+## 2.0.87+727 (2026-09-28)
+### New Features
+- **Merge accounts.** HC Admin Tools › Merge accounts (platform admins with
+  Edit Kennel): enter the email of the account to keep and of the duplicate,
+  preview both side by side with where they overlap (runs, kennels, runs both
+  paid for), then merge. Every run and payment moves to the kept account —
+  rows both had are combined, money is never deleted — and the duplicate is
+  disabled and signed out everywhere.
+
 ## 2.0.87+726 (2026-09-28)
 ### Fixes
 - **Kennel requests icons.** Approve's tick, Reject's arrow and the list's
