@@ -1,3 +1,6 @@
+0.21.74 (2026-09-28 redeploy — add-kennel form errors)
+    • Add-kennel: missing fields red after Send; message above the button; placeholders read "e.g.".
+
 0.21.74 (2026-09-28 redeploy — Trail TV thumbnails)
     • Trail TV: thumbnail strip at natural aspect ratio (one height, own width) — no more cropped heads.
 

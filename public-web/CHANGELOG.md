@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-28 redeploy — add-kennel form errors)
+
+- **The kennel sign-up form shows what is missing.** Pressing Send with a
+  field missing turns its title and box red and lists what to fill in just
+  above the button, rather than at the top of the page.
+- **Examples look like examples.** The fee boxes' hints read "e.g. 5" in
+  italics; "5", "7" and "20" looked like values already filled in.
+
 ## 0.21.74 (2026-09-28 redeploy — Trail TV thumbnails)
 
 - **Trail TV thumbnails keep their shape.** The strip of earlier photos no

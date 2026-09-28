@@ -1,3 +1,12 @@
+## 3.1.8+1420 (2026-09-28)
+iOS (TestFlight, James internal test only) and Android (internal app
+sharing link). Held from the beta testers. Build number only; same version.
+### Fixes
+- **Chat messages send again after leaving a run.** Every chat screen shared
+  one controller, and leaving a run page closed it under a chat still open —
+  sends then failed with "Cannot add new events after calling close". Each
+  chat screen now has its own.
+
 ## 3.1.8+1419 (2026-09-28)
 iOS (TestFlight, James internal test only) and Android (internal app
 sharing link). Held from the beta testers. Build number only; same version.

@@ -1,3 +1,9 @@
+## 2.0.87+731 (2026-09-28)
+### Improvements
+- **Kennel requests say what is missing.** An empty Country, Region or City
+  picker is marked "not chosen" in red, and Approve lists what still needs
+  filling in beside the button instead of sitting greyed out.
+
 ## 2.0.87+730 (2026-09-28)
 ### Improvements
 - **Kennel requests show the money.** The visitors' run fee (editable) and
