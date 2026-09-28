@@ -1,3 +1,25 @@
+## 3.1.8+1417 (2026-09-28)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Save photos.** Every photo viewer — the run carousel, single images, the
+  Hash Flash review — has a download button that saves the photo to your
+  camera roll.
+- **My run summary** on the run map brings back your end-of-run card for any
+  run you tracked.
+### Fixes
+- **Payment options:** the form no longer resets (and closes the top-up box)
+  when the keyboard opens; with nothing owed, a "payment options" button
+  still leads to special price and top-up credit.
+- **Auto start** survives an indoor start and a late pack (lenient arrival,
+  switch-off moved to 90 minutes).
+- **Offline Mode** no longer sticks while the app is online.
+- **Deleted runs** disappear from the map and kennel admin at once.
+- **Runs-within radius** no longer resets your other settings (log
+  collection among them).
+- The check-in prompt shows the kennel logo; the bank-transfer QR shows after
+  a payment-report reload.
+
 ## 3.1.8+1416 (2026-09-27)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version.
