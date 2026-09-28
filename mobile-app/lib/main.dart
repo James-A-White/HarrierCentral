@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/widgets/dismiss_keyboard_on_tap.dart';
 import 'package:harrier_central/firebase_options.dart';
 import 'package:image_picker_android/image_picker_android.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
@@ -184,7 +185,8 @@ class RootApp extends StatelessWidget {
         );
         return MediaQuery(
           data: mediaQueryData.copyWith(textScaler: scale),
-          child: child ?? const SizedBox.shrink(),
+          // Tap on empty space → keyboard away (number pads have no Done key).
+          child: DismissKeyboardOnTap(child: child ?? const SizedBox.shrink()),
         );
       },
       debugShowCheckedModeBanner: false,
