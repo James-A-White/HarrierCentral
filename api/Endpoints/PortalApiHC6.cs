@@ -271,11 +271,11 @@ namespace HcWebApi.Endpoints
                 var tasks = eventDetailsList.SelectMany(eventMessage =>
                     notificationList
                         .Where(r => !string.IsNullOrEmpty(r.FcmToken))
-                        .Select(r => SendNotificationAsync(r.FcmToken!, eventMessage, accessToken, true, logger))
+                        .Select(r => SendNotificationAsync(r.FcmToken!, eventMessage, accessToken, true, logger, r.BadgeTotal))
                         .Concat(
                             inAppMessageList
                                 .Where(r => !string.IsNullOrEmpty(r.FcmToken))
-                                .Select(r => SendNotificationAsync(r.FcmToken!, eventMessage, accessToken, false, logger))
+                                .Select(r => SendNotificationAsync(r.FcmToken!, eventMessage, accessToken, false, logger, r.BadgeTotal))
                         )
                 );
 
@@ -292,7 +292,7 @@ namespace HcWebApi.Endpoints
         private static readonly HttpClient _httpClient = new();
         private const string FcmUrl = "https://fcm.googleapis.com/v1/projects/harrier-central-mobile/messages:send";
 
-        public static async Task SendNotificationAsync(string fcmToken, EventMessage eventMessage, string? accessToken, bool isNotification, ILogger log)
+        public static async Task SendNotificationAsync(string fcmToken, EventMessage eventMessage, string? accessToken, bool isNotification, ILogger log, int? badgeTotal = null)
         {
             try
             {
@@ -314,19 +314,15 @@ namespace HcWebApi.Endpoints
                             eventMessage.MessageId,
                             MessageRelesabilityFlags = eventMessage.MessageRelesabilityFlags.ToString(),
                             MessageType = eventMessage.MessageType.ToString(),
+                            // The app sets its icon from this on a silent push.
+                            BadgeTotal = badgeTotal?.ToString() ?? "",
                         },
-                        android = isNotification ? new { priority = "high", notification = new { sound = "default" } } : null,
-                        apns = isNotification
-                            ? new
-                            {
-                                headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
-                                payload = new { aps = new Dictionary<string, object> { ["sound"] = "default" } }
-                            }
-                            : new
-                            {
-                                headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
-                                payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
-                            }
+                        android = isNotification ? Utilities.ChatAndroidVisible(badgeTotal) : null,
+                        apns = new
+                        {
+                            headers = new Dictionary<string, string> { ["apns-priority"] = isNotification ? "10" : "5" },
+                            payload = new { aps = Utilities.ChatAps(isNotification, badgeTotal) }
+                        }
                     },
                 };
 

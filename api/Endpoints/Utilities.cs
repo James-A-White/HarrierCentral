@@ -25,6 +25,30 @@ namespace HcWebApi.Endpoints
         /// The sender every Harrier Central email has used.
         public const string EmailFrom = "james@defenceinnovation.eu";
 
+        /// The APNs "aps" block for a chat push. A visible push plays the sound;
+        /// a silent one wakes the app (content-available). Either way, when the
+        /// recipient's unread total is known it goes in "badge", which is the ONLY
+        /// way to set the number on the app icon while the app is closed — iOS
+        /// does not run the app to do it (2026-09-28). The total comes from
+        /// HC6.UserUnreadChatTotal, the same rule as the in-app badges.
+        public static Dictionary<string, object> ChatAps(bool visible, int? badgeTotal)
+        {
+            var aps = visible
+                ? new Dictionary<string, object> { ["sound"] = "default" }
+                : new Dictionary<string, object> { ["content-available"] = 1 };
+            if (badgeTotal.HasValue) aps["badge"] = Math.Max(0, badgeTotal.Value);
+            return aps;
+        }
+
+        /// The Android block for a VISIBLE chat push. notification_count is the
+        /// number launchers that show one (Samsung and others) put on the icon;
+        /// stock Pixel launchers show a dot whatever it says. Silent pushes carry
+        /// the total in data.BadgeTotal instead, and the app sets it.
+        public static object ChatAndroidVisible(int? badgeTotal) =>
+            badgeTotal.HasValue
+                ? new { priority = "high", notification = (object)new { sound = "default", notification_count = Math.Max(0, badgeTotal.Value) } }
+                : new { priority = "high", notification = (object)new { sound = "default" } };
+
         public static async Task SendEmailAsync(
             string logicAppUrl,
             string from,

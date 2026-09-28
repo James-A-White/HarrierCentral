@@ -355,18 +355,18 @@ namespace HcWebApi.Endpoints
                     .SelectMany(em =>
                         notificationList
                             .Where(r => !string.IsNullOrEmpty(r.FcmToken))
-                            .Select(r => new { em, token = r.FcmToken!, userId = r.UserId, visible = true })
+                            .Select(r => new { em, token = r.FcmToken!, userId = r.UserId, visible = true, badge = r.BadgeTotal })
                         .Concat(
                             inAppMessageList
                                 .Where(r => !string.IsNullOrEmpty(r.FcmToken))
-                                .Select(r => new { em, token = r.FcmToken!, userId = r.UserId, visible = false })
+                                .Select(r => new { em, token = r.FcmToken!, userId = r.UserId, visible = false, badge = r.BadgeTotal })
                         )
                     )
                     .ToList();
 
                 var fcmResults = await Task.WhenAll(
                     dispatchList.Select(item =>
-                        SendNotificationAsync(item.token, item.em, accessToken, item.visible, logger))
+                        SendNotificationAsync(item.token, item.em, accessToken, item.visible, logger, item.badge))
                 );
 
                 logger.LogInformation("All notifications sent successfully.");
@@ -407,7 +407,8 @@ namespace HcWebApi.Endpoints
             EventMessageHc6 eventMessage,
             string? accessToken,
             bool isNotification,
-            ILogger log)
+            ILogger log,
+            int? badgeTotal = null)
         {
             try
             {
@@ -431,19 +432,15 @@ namespace HcWebApi.Endpoints
                             // Rename to MessageReleasabilityFlags in Track 2 alongside the 2.x migration.
                             MessageRelesabilityFlags = eventMessage.MessageReleasabilityFlags.ToString(),
                             MessageType = eventMessage.MessageType.ToString(),
+                            // The app sets its icon from this on a silent push.
+                            BadgeTotal = badgeTotal?.ToString() ?? "",
                         },
-                        android = isNotification ? new { priority = "high", notification = new { sound = "default" } } : null,
-                        apns = isNotification
-                            ? new
-                            {
-                                headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
-                                payload = new { aps = new Dictionary<string, object> { ["sound"] = "default" } }
-                            }
-                            : new
-                            {
-                                headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
-                                payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
-                            }
+                        android = isNotification ? Utilities.ChatAndroidVisible(badgeTotal) : null,
+                        apns = new
+                        {
+                            headers = new Dictionary<string, string> { ["apns-priority"] = isNotification ? "10" : "5" },
+                            payload = new { aps = Utilities.ChatAps(isNotification, badgeTotal) }
+                        }
                     },
                 };
 
@@ -658,7 +655,7 @@ namespace HcWebApi.Endpoints
                 var body  = Str("MessageContent") ?? "";
 
                 var results = await Task.WhenAll(recipients.Select(r =>
-                    SendDataPushAsync(r.Token, data, title, body, r.Visible, accessToken, logger)));
+                    SendDataPushAsync(r.Token, WithBadge(data, r.Badge), title, body, r.Visible, accessToken, logger, r.Badge)));
 
                 var queryType = kind == ChatPushKind.Room ? "sendRoomMessage" : "sendKennelMessage";
                 _ = LogPushBatchAsync(
@@ -688,7 +685,7 @@ namespace HcWebApi.Endpoints
             return text.Length == 0 ? $"chat: {who}" : $"{who}: {text}";
         }
 
-        private static IEnumerable<(string Token, string? UserId, bool Visible)> Tokens(
+        private static IEnumerable<(string Token, string? UserId, bool Visible, int? Badge)> Tokens(
             List<Dictionary<string, object?>> rows, bool visible)
         {
             foreach (var row in rows)
@@ -696,8 +693,22 @@ namespace HcWebApi.Endpoints
                 var token = row.TryGetValue("FcmToken", out var t) ? t?.ToString() : null;
                 if (string.IsNullOrEmpty(token)) continue;
                 var userId = row.TryGetValue("UserId", out var u) ? u?.ToString() : null;
-                yield return (token!, userId, visible);
+                yield return (token!, userId, visible, BadgeOf(row));
             }
+        }
+
+        /// The recipient's unread total (HC6.UserUnreadChatTotal) from a
+        /// recipient row, or null when the SP did not return one.
+        private static int? BadgeOf(Dictionary<string, object?> row) =>
+            row.TryGetValue("BadgeTotal", out var b) && b != null && int.TryParse(b.ToString(), out var n) ? n : null;
+
+        /// The shared data map plus this recipient's BadgeTotal — a copy, since
+        /// every recipient has their own number.
+        private static Dictionary<string, string> WithBadge(Dictionary<string, string> data, int? badge)
+        {
+            var copy = new Dictionary<string, string>(data);
+            if (badge.HasValue) copy["BadgeTotal"] = badge.Value.ToString();
+            return copy;
         }
 
         /// <summary>
@@ -707,7 +718,7 @@ namespace HcWebApi.Endpoints
         /// </summary>
         private static async Task<string> SendDataPushAsync(
             string fcmToken, Dictionary<string, string> data, string title, string body,
-            bool isNotification, string? accessToken, ILogger log)
+            bool isNotification, string? accessToken, ILogger log, int? badgeTotal = null)
         {
             try
             {
@@ -718,18 +729,12 @@ namespace HcWebApi.Endpoints
                         token = fcmToken,
                         notification = isNotification ? new { title, body } : null,
                         data,
-                        android = isNotification ? new { priority = "high", notification = new { sound = "default" } } : null,
-                        apns = isNotification
-                            ? new
-                            {
-                                headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
-                                payload = new { aps = new Dictionary<string, object> { ["sound"] = "default" } }
-                            }
-                            : new
-                            {
-                                headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
-                                payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
-                            }
+                        android = isNotification ? Utilities.ChatAndroidVisible(badgeTotal) : null,
+                        apns = new
+                        {
+                            headers = new Dictionary<string, string> { ["apns-priority"] = isNotification ? "10" : "5" },
+                            payload = new { aps = Utilities.ChatAps(isNotification, badgeTotal) }
+                        }
                     },
                 };
 
@@ -983,7 +988,7 @@ namespace HcWebApi.Endpoints
                     if (!row.TryGetValue("FcmToken", out var tokenObj)) continue;
                     var token = tokenObj?.ToString();
                     if (string.IsNullOrEmpty(token)) continue;
-                    var result = await SendReadSyncMessageAsync(token, accessToken, logger);
+                    var result = await SendReadSyncMessageAsync(token, accessToken, logger, BadgeOf(row));
                     readSyncResults.Add((token, result));
                 }
 
@@ -1000,7 +1005,7 @@ namespace HcWebApi.Endpoints
         }
 
         private static async Task<string> SendReadSyncMessageAsync(
-            string fcmToken, string? accessToken, ILogger log)
+            string fcmToken, string? accessToken, ILogger log, int? badgeTotal = null)
         {
             try
             {
@@ -1009,15 +1014,14 @@ namespace HcWebApi.Endpoints
                     message = new
                     {
                         token = fcmToken,
-                        data = new { Type = "read_sync" },
+                        // BadgeTotal: what is still unread after the read, so this
+                        // device's icon drops too (2026-09-28).
+                        data = new { Type = "read_sync", BadgeTotal = badgeTotal?.ToString() ?? "" },
                         android = new { priority = "normal" },
                         apns = new
                         {
                             headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
-                            payload = new
-                            {
-                                aps = new Dictionary<string, object> { ["content-available"] = (object)1 }
-                            }
+                            payload = new { aps = Utilities.ChatAps(false, badgeTotal) }
                         }
                     }
                 };

@@ -534,5 +534,8 @@ public class Recipient
     public required string UserId { get; set; }
     public required string FcmToken { get; set; }
     public string? EventId { get; set; }
+    /// The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal).
+    /// Absent from HC5 rowsets, so null there and no badge is sent.
+    public int? BadgeTotal { get; set; }
 }
 
