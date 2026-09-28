@@ -26,6 +26,8 @@ class KennelRequestModel {
     this.cityName,
     this.hashCash,
     this.nonMemberPrice,
+    this.membershipFee,
+    this.membershipRenewalMode,
     this.runsPerMonth,
     this.hashersPerRun,
     this.nextRunNumber,
@@ -77,6 +79,8 @@ class KennelRequestModel {
       cityName: n('CityName'),
       hashCash: n('HashCash'),
       nonMemberPrice: n('NonMemberPrice'),
+      membershipFee: n('MembershipFee'),
+      membershipRenewalMode: (j['MembershipRenewalMode'] as num?)?.toInt(),
       runsPerMonth: n('NumberOfRunsPerMonth'),
       hashersPerRun: n('NumberOfHashersPerRun'),
       nextRunNumber: n('NextRunNumber'),
@@ -127,6 +131,19 @@ class KennelRequestModel {
 
   /// The visitors' run fee (hashruns.org asks both since 2026-09-28).
   final String? nonMemberPrice;
+
+  /// Membership as the hashruns.org form gave it (2026-09-28): the fee, and
+  /// HC.Kennel.MembershipRenewalMode (1 annual/rolling, 2 fixed year, 3
+  /// lifetime). Null mode = no membership (or an older request).
+  final String? membershipFee;
+  final int? membershipRenewalMode;
+
+  String? get membershipSummary {
+    final int? m = membershipRenewalMode;
+    if (m == null) return null;
+    const names = {1: 'Annual (12 months from payment)', 2: 'Fixed membership year', 3: 'Lifetime'};
+    return '${membershipFee ?? '?'} · ${names[m] ?? 'type $m'}';
+  }
   final String? runsPerMonth;
   final String? hashersPerRun;
   final String? nextRunNumber;

@@ -214,6 +214,7 @@ class KennelRequestDetailPage extends StatelessWidget {
   Widget _answers() {
     final r = request;
     final rows = <(String, String?)>[
+      ('Membership', r.membershipSummary),
       ('Runs per month', r.runsPerMonth),
       ('Hashers per run', r.hashersPerRun),
       ('Next run number', r.nextRunNumber),
