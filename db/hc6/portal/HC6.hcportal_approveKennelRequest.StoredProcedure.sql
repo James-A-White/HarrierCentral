@@ -86,7 +86,7 @@ BEGIN TRY
     DECLARE @status SMALLINT, @kennelName NVARCHAR(250), @shortName NVARCHAR(250),
             @description NVARCHAR(4000), @kennelUrl NVARCHAR(250),
             @countryId UNIQUEIDENTIFIER, @regionId UNIQUEIDENTIFIER, @cityId UNIQUEIDENTIFIER,
-            @hashCash NVARCHAR(50), @email NVARCHAR(250), @firstName NVARCHAR(250),
+            @hashCash NVARCHAR(50), @nonMemberPrice NVARCHAR(50), @email NVARCHAR(250), @firstName NVARCHAR(250),
             @lastName NVARCHAR(250), @hashName NVARCHAR(250);
 
     SELECT @status      = ki.RequestStatus,
@@ -98,6 +98,7 @@ BEGIN TRY
            @regionId    = ki.RegionId,
            @cityId      = ki.CityId,
            @hashCash    = ki.HashCash,
+           @nonMemberPrice = ki.NonMemberPrice,
            @email       = LOWER(TRIM(ki.EmailAddress)),
            @firstName   = TRIM(ki.FirstName),
            @lastName    = TRIM(ki.LastName),
@@ -170,6 +171,11 @@ BEGIN TRY
     DECLARE @price DECIMAL(10,4) = COALESCE(TRY_CAST(
         NULLIF(TRANSLATE(COALESCE(@hashCash, N''), N'$£€¥', N'    '), N'') AS DECIMAL(10,4)), 0);
     IF (@price < 0 OR @price > 100000) SET @price = 0;
+    -- Visitors pay the visitor fee when the request gave one (hashruns.org
+    -- asks both since 2026-09-28); older requests had one price for all.
+    DECLARE @nonMemberPriceNum DECIMAL(10,4) = COALESCE(TRY_CAST(
+        NULLIF(TRANSLATE(COALESCE(@nonMemberPrice, N''), N'$£€¥', N'    '), N'') AS DECIMAL(10,4)), @price);
+    IF (@nonMemberPriceNum < 0 OR @nonMemberPriceNum > 100000) SET @nonMemberPriceNum = @price;
 
     DECLARE @kennelId UNIQUEIDENTIFIER = NEWID();
 
@@ -180,7 +186,7 @@ BEGIN TRY
          IntegrationType, InboundIntegrationId, DisseminateHashRunsDotOrg, removed, deleted)
     VALUES
         (@kennelId, @kennelName, @shortName, @uniqueShortName, COALESCE(@description, N''),
-         @logo, @kennelUrl, @price, @price,
+         @logo, @kennelUrl, @price, @nonMemberPriceNum,
          @cityId, @regionId, @countryId, SYSDATETIMEOFFSET(), 2,
          N'None', 0, 5, 0, 0);
 
