@@ -1,0 +1,146 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_confirmKennelRequest",
+  "version": "1.0.0",
+  "description": "Second half of the add-kennel form: the emailed code moves the request 0 → 1 (review queue). 5 wrong codes → spam (4). Codes last 48 h. Idempotent. PublicWebAdminApi only, behind HC_INTERNAL_SECRET; the API emails the reviewers and strips their addresses.",
+  "parameters": [
+    {
+      "name": "requestId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
+      "description": ""
+    },
+    {
+      "name": "code",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.ConfirmCode",
+      "description": "six digits; spaces ignored"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "{ success, errorCode, errorType } — lower-case, as publicWeb_createMember, so the shim passes a refusal through for the page to show.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "0 on success; 17xx on refusal"
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 validation, 5 unhandled"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail (on failure)",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Shown on the form"
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Confirmed (on success)",
+      "columns": [
+        {
+          "name": "requestId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "alreadyConfirmed",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Reviewers (first confirmation only)",
+      "description": "Removed by the API after the notice is sent.",
+      "columns": [
+        {
+          "name": "reviewerEmail",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "errorCodes": {
+    "1730": "not confirmable",
+    "1731": "expired",
+    "1732": "wrong code",
+    "1739": "unhandled"
+  },
+  "sideEffects": [
+    "UPDATE EXT.OfficeForms_KennelImport RequestStatus, ConfirmedAt, ConfirmAttempts, ConfirmCode",
+    "API: 'kennel request waiting' email to reviewers"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
