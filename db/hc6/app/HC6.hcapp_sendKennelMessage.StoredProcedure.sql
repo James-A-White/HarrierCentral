@@ -19,8 +19,9 @@ AS
 --   @eventId.
 -- Returns:
 --   Rowset 0: message detail (sender optimistic-UI confirmation)
---   Rowset 1: full push recipients { UserId, FcmToken }
---   Rowset 2: silent in-app recipients { UserId, FcmToken }
+--   Rowset 1: full push recipients { UserId, FcmToken, BadgeTotal }
+--   Rowset 2: silent in-app recipients { UserId, FcmToken, BadgeTotal }
+--   BadgeTotal (2026-09-28): the recipient's unread total for the app icon.
 -- Author: Harrier Central
 -- Created: 2026-07-06
 -- HC5 Source: none (new — kennel chat, design of record)
@@ -212,9 +213,13 @@ WHERE hkm.KennelId = @kennelId
   );
 
 -- Rowset 1: visible push notification recipients
-SELECT DISTINCT UserId, FcmToken FROM #pushAudience WHERE Pref IN (1, 4);
+-- BadgeTotal: the recipient's unread total for the app ICON (HC6.UserUnreadChatTotal,
+-- the same rule as the in-app badges); the API puts it in aps.badge (2026-09-28).
+SELECT DISTINCT a.UserId, a.FcmToken, bt.BadgeTotal FROM #pushAudience a
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt WHERE a.Pref IN (1, 4);
 
 -- Rowset 2: silent (data-only) recipients — "on but muted"
-SELECT DISTINCT UserId, FcmToken FROM #pushAudience WHERE Pref = 3;
+SELECT DISTINCT a.UserId, a.FcmToken, bt.BadgeTotal FROM #pushAudience a
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt WHERE a.Pref = 3;
 
 DROP TABLE #pushAudience;
