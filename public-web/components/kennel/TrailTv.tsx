@@ -504,7 +504,7 @@ function RunnerLegend({ tracks, names }: { tracks: PreparedTrack[]; names: Recor
 
 function TvMapPanel({
   tracks, users, cutoff, center, label, sublabel, style, names, markPx,
-  photos, pinPx, currentPhotoId, showLegend = false,
+  photos, pinPx, currentPhotoId, showLegend = false, bottomLabel = null,
 }: {
   tracks: PreparedTrack[];
   /** Raw payload users — the source of trail marks (PreparedTrack holds GPS only). */
@@ -523,6 +523,8 @@ function TvMapPanel({
   pinPx: number;
   currentPhotoId: string | null;
   showLegend?: boolean;
+  /** Bottom-left pill: the replay's elapsed time and leading distance. */
+  bottomLabel?: React.ReactNode;
 }) {
   return (
     <div className="tv-panel" style={style}>
@@ -530,6 +532,7 @@ function TvMapPanel({
         {label}
         {sublabel ? <span className="tv-panel-sublabel">{sublabel}</span> : null}
       </div>
+      {bottomLabel ? <div className="tv-panel-label tv-bottom">{bottomLabel}</div> : null}
       {showLegend && names && <RunnerLegend tracks={tracks} names={names} />}
       <MapContainer
         center={center}
@@ -1214,6 +1217,23 @@ export default function TrailTv({
     return chosen;
   }, [mode, replayClock, tracks]);
 
+  // Where the replay is: time since the pack set off, and the furthest anyone
+  // has run by now — the longest track at this moment, not the front-runner
+  // cam's leader (which holds on to its runner for a while). James, 2026-09-28.
+  const replayMoment = useMemo(() => {
+    if (mode !== "replay" || replayClock == null || timeline == null) return null;
+    const heads = headsAt(tracks, replayClock);
+    const furthest = heads.reduce((m, h) => Math.max(m, h.distance), 0);
+    const secs = Math.max(0, Math.round((replayClock - timeline.min) / 1000));
+    const hh = Math.floor(secs / 3600);
+    const mm = Math.floor((secs % 3600) / 60);
+    const ss = secs % 60;
+    const clock = hh > 0
+      ? `${hh}:${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`
+      : `${mm}:${String(ss).padStart(2, "0")}`;
+    return { clock, furthest };
+  }, [mode, replayClock, timeline, tracks]);
+
   // How much ground this run's leader typically covered in FOLLOW_WINDOW_MS —
   // one number for the whole replay, so the cam zoom never moves during
   // playback. Sliding window over the longest track, straight-line start-to-end
@@ -1261,6 +1281,12 @@ export default function TrailTv({
         .tv-panel { grid-column: 1; position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.18); box-shadow: 0 8px 30px rgba(0,0,0,.5); }
         .tv-panel-label { position: absolute; z-index: 1000; top: 10px; left: 10px; background: rgba(12,42,14,.85); border: 1px solid rgba(255,255,255,.25); padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 15px; letter-spacing: .06em; }
         .tv-panel-sublabel { margin-left: 10px; font-weight: 400; opacity: .8; font-size: 13px; }
+        /* The replay's running clock, bottom-left, same pill as the title. */
+        .tv-panel-label.tv-bottom { top: auto; bottom: 10px; font-variant-numeric: tabular-nums; }
+        /* Map tiles 25% darker so the runner tracks stand out (James,
+           2026-09-28). Only the TILES: a black layer over the whole map would
+           dim the tracks, dots, marks and photo pins along with it. */
+        .tv-panel .leaflet-tile-pane { filter: brightness(.75); }
         .tv-live-dot { display:inline-block; width:9px; height:9px; border-radius:50%; background:#ef4444; margin-right:8px; animation: tvpulse 1.4s infinite; }
         @keyframes tvpulse { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
         .tv-carousel { grid-column: 2; grid-row: 1 / span 2; position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.18); background: rgba(0,0,0,.45); }
@@ -1304,11 +1330,11 @@ export default function TrailTv({
         .tv-legend { position: absolute; z-index: 1000; top: 10px; right: 10px; background: rgba(12,42,14,.85); border: 1px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 14px; display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; }
         .tv-legend-row { display: flex; align-items: center; gap: 8px; }
         .tv-legend-dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; }
-        .tv-mode { position: fixed; bottom: 66px; left: 16px; z-index: 3000; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: 999px; padding: 5px 16px; font-size: 13px; cursor: pointer; opacity: .35; }
+        .tv-mode { position: fixed; bottom: 66px; right: calc(45% + 16px); z-index: 3000; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: 999px; padding: 5px 16px; font-size: 13px; cursor: pointer; opacity: .35; }
         .tv-mode:hover { opacity: 1; }
         /* Sits beside the mode toggle, equally recessive — a wall runs
            unattended, but whoever set it up can dial the pace. */
-        .tv-pace { position: fixed; bottom: 66px; left: 152px; z-index: 3000; display: flex; align-items: center; gap: 9px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: 999px; padding: 5px 16px; font-size: 13px; opacity: .35; transition: opacity .2s; }
+        .tv-pace { position: fixed; bottom: 66px; right: calc(45% + 150px); z-index: 3000; display: flex; align-items: center; gap: 9px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: 999px; padding: 5px 16px; font-size: 13px; opacity: .35; transition: opacity .2s; }
         .tv-pace:hover { opacity: 1; }
         .tv-pace input { width: 120px; accent-color: #e0a51e; cursor: pointer; }
         .tv-pace-value { min-width: 66px; font-variant-numeric: tabular-nums; }
@@ -1356,6 +1382,12 @@ export default function TrailTv({
               )}
             </div>
             <RunnerLegend tracks={tracks} names={names} />
+            {replayMoment && (
+              <div className="tv-panel-label tv-bottom">
+                ⏱ {replayMoment.clock}
+                <span className="tv-panel-sublabel">{formatDistanceLabel(replayMoment.furthest, metric)}</span>
+              </div>
+            )}
             <MapContainer
               center={center}
               zoom={FOLLOW_ZOOM}
@@ -1392,6 +1424,12 @@ export default function TrailTv({
             cutoff={replayClock}
             center={center}
             label="RUN REPLAY"
+            bottomLabel={replayMoment ? (
+              <>
+                ⏱ {replayMoment.clock}
+                <span className="tv-panel-sublabel">{formatDistanceLabel(replayMoment.furthest, metric)}</span>
+              </>
+            ) : null}
             sublabel={`${replayPaceLabel} / ${metric ? "km" : "mi"} · ${formatDistanceLabel(tracks.reduce((m, t) => Math.max(m, t.distanceMeters), 0), metric)} trail`}
             markPx={overviewMarkPx}
             photos={timedPhotos}
