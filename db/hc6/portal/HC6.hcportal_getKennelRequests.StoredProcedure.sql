@@ -80,6 +80,7 @@ BEGIN TRY
         re.RegionName,
         ci.CityName,
         ki.HashCash,
+        ki.NonMemberPrice,
         ki.NumberOfRunsPerMonth,
         ki.NumberOfHashersPerRun,
         ki.nextRunNumber            AS NextRunNumber,
