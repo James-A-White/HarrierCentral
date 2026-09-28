@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSession } from "@/lib/admin-session";
+import { ipOf } from "@/lib/member-routes";
 
 const API_BASE = process.env.HC_API_URL ?? "http://localhost:7071";
 
@@ -23,7 +24,9 @@ function checkRateLimit(ip: string): boolean {
 }
 
 export async function GET(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for") ?? "0.0.0.0";
+  // ipOf strips the port Azure appends, which changed per connection and
+  // so reset this limit on every request.
+  const ip = ipOf(req);
   if (!checkRateLimit(ip)) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }

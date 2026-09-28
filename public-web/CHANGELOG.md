@@ -7,6 +7,10 @@
   emailed to confirm it is really them before the request reaches review.
   Replaces the harriercentral.com form, which now redirects here. The
   footer's "Add your kennel today" links to it.
+- **Per-IP limits work again.** Azure adds the client's port to the forwarded
+  address, so every connection looked like a new visitor and the limits on
+  sign-in codes, admin sign-in and kennel requests never tripped. The port is
+  now stripped.
 
 ## 0.21.74 (2026-09-28 redeploy)
 

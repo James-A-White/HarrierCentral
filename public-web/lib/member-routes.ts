@@ -19,7 +19,14 @@ export function limited(key: string, max: number, windowMs: number): boolean {
 }
 
 export function ipOf(req: NextRequest): string {
-  return (req.headers.get("x-forwarded-for") ?? "0.0.0.0").split(",")[0].trim();
+  const first = (req.headers.get("x-forwarded-for") ?? "0.0.0.0").split(",")[0].trim();
+  // Azure App Service appends the client's port ("83.104.64.69:65387",
+  // "[2a00::1]:443"). The port changes with every connection, so a limit
+  // keyed on it never trips — strip it (seen 2026-09-28).
+  const v6 = /^\[([^\]]+)\](?::\d+)?$/.exec(first);
+  if (v6) return v6[1];
+  const v4 = /^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/.exec(first);
+  return v4 ? v4[1] : first;
 }
 
 export function deviceDataOf(req: NextRequest): object {
