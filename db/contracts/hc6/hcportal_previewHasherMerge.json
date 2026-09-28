@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_previewHasherMerge",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Merge accounts, step 1 (E12.F6.S1): finds two live accounts by email (or hasher id / PublicHasherId) and returns what each holds and where they overlap. Read only. Requires HC.PlatformAdmin with CanEditKennel = 1.",
   "parameters": [
     {
@@ -224,6 +224,36 @@
           "type": "NVARCHAR(MAX)",
           "nullable": true,
           "description": "Up to 10, 'LH3 2026-09-27 · …'"
+        },
+        {
+          "name": "AfterRunsAttended",
+          "type": "INT",
+          "nullable": false,
+          "description": "Runs the kept account will have attended after the merge (a run on both, same name, counts once, stronger attendance wins)"
+        },
+        {
+          "name": "AfterRunsHared",
+          "type": "INT",
+          "nullable": false,
+          "description": "Of those, runs hared (either account's hare flag)"
+        },
+        {
+          "name": "AfterKennelsFollowed",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennels followed after the merge (a kennel on both counts once, flags OR-ed)"
+        },
+        {
+          "name": "AfterKennelsMember",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennels the kept account is a member of after the merge"
+        },
+        {
+          "name": "AfterKennelsAdmin",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennels the kept account is an app admin of (AppAccessFlags & 1) after the merge"
         }
       ]
     }

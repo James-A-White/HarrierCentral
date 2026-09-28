@@ -170,7 +170,39 @@ BEGIN TRY
                    JOIN HC.Kennel kn ON kn.id = ev.KennelId
                   WHERE pk.UserId = @keepId AND pm.UserId = @mergeId
                     AND pk.CancelledBy_UserId IS NULL AND pm.CancelledBy_UserId IS NULL
-                    AND pk.NetPayment <> 0 AND pm.NetPayment <> 0) x)             AS RunsBothPaidList;
+                    AND pk.NetPayment <> 0 AND pm.NetPayment <> 0) x)             AS RunsBothPaidList,
+        -- What the kept account holds AFTER the merge (the portal's Result
+        -- column, James 2026-09-28). A run both accounts have under the same
+        -- name becomes one row with the stronger attendance and either's
+        -- hare flag; a kennel both have becomes one with the flags OR-ed —
+        -- the same rules hcportal_mergeHashers applies.
+        (SELECT COUNT(*) FROM (
+            SELECT MAX(e.AttendenceState) AS Att
+            FROM HC.HasherEventMap e
+            WHERE e.UserId IN (@keepId, @mergeId) AND e.removed = 0
+            GROUP BY e.EventId, COALESCE(e.DisplayName, N'')) r
+          WHERE r.Att >= 20)                                                      AS AfterRunsAttended,
+        (SELECT COUNT(*) FROM (
+            SELECT MAX(e.AttendenceState) AS Att, MAX(CAST(e.IsHare AS INT)) AS Hare
+            FROM HC.HasherEventMap e
+            WHERE e.UserId IN (@keepId, @mergeId) AND e.removed = 0
+            GROUP BY e.EventId, COALESCE(e.DisplayName, N'')) r
+          WHERE r.Att >= 20 AND r.Hare = 1)                                       AS AfterRunsHared,
+        (SELECT COUNT(*) FROM (
+            SELECT MAX(CAST(m.Following AS INT)) AS F
+            FROM HC.HasherKennelMap m
+            WHERE m.UserId IN (@keepId, @mergeId) AND m.removed = 0
+            GROUP BY m.KennelId) x WHERE x.F = 1)                                 AS AfterKennelsFollowed,
+        (SELECT COUNT(*) FROM (
+            SELECT MAX(CAST(m.IsMember AS INT)) AS M
+            FROM HC.HasherKennelMap m
+            WHERE m.UserId IN (@keepId, @mergeId) AND m.removed = 0
+            GROUP BY m.KennelId) x WHERE x.M = 1)                                 AS AfterKennelsMember,
+        (SELECT COUNT(*) FROM (
+            SELECT MAX(COALESCE(m.AppAccessFlags, 0) & 1) AS A
+            FROM HC.HasherKennelMap m
+            WHERE m.UserId IN (@keepId, @mergeId) AND m.removed = 0
+            GROUP BY m.KennelId) x WHERE x.A = 1)                                 AS AfterKennelsAdmin;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
