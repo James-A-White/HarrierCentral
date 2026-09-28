@@ -299,7 +299,11 @@ WHERE hkm.KennelId = @kennelId
 -- ---------------------------------------------------------------
 -- BadgeTotal: the recipient's unread total for the app ICON (HC6.UserUnreadChatTotal,
 -- the same rule as the in-app badges); the API puts it in aps.badge (2026-09-28).
-SELECT DISTINCT a.UserId, a.FcmToken, bt.BadgeTotal
+-- NULL below HC6.MinBuildForIconBadge(): an older app never lowers the icon.
+SELECT DISTINCT a.UserId, a.FcmToken,
+    CASE WHEN EXISTS (SELECT 1 FROM HC.Device dv WHERE dv.FcmToken = a.FcmToken
+                    AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
+     THEN bt.BadgeTotal END AS BadgeTotal
 FROM #pushAudience a
 CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
 WHERE a.Pref = 1
@@ -309,7 +313,10 @@ WHERE a.Pref = 1
 -- Rowset 2: silent (data-only) recipients — badge moves, nothing buzzes.
 -- "On but muted", and "on before the run" while the run is still far off.
 -- ---------------------------------------------------------------
-SELECT DISTINCT a.UserId, a.FcmToken, bt.BadgeTotal
+SELECT DISTINCT a.UserId, a.FcmToken,
+    CASE WHEN EXISTS (SELECT 1 FROM HC.Device dv WHERE dv.FcmToken = a.FcmToken
+                    AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
+     THEN bt.BadgeTotal END AS BadgeTotal
 FROM #pushAudience a
 CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
 WHERE a.Pref = 3

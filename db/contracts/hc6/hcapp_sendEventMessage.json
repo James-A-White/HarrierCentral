@@ -191,8 +191,8 @@
         {
           "name": "BadgeTotal",
           "type": "INT",
-          "nullable": false,
-          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28."
+          "nullable": true,
+          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28. NULL for a device below HC6.MinBuildForIconBadge() (older apps never lower the icon)."
         }
       ]
     },
@@ -216,8 +216,8 @@
         {
           "name": "BadgeTotal",
           "type": "INT",
-          "nullable": false,
-          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28."
+          "nullable": true,
+          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28. NULL for a device below HC6.MinBuildForIconBadge() (older apps never lower the icon)."
         }
       ]
     }
