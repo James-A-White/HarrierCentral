@@ -1,3 +1,6 @@
+0.21.74 (2026-09-28 redeploy)
+    • Trail TV: every photo shown (no loop while queued), map eases to wait for photos, smoother 10 Hz replay with light track smoothing.
+
 0.21.74 (2026-09-27 redeploy)
     • Distances follow the viewer's units: m/km or yd/mi, on runs, My Kennels, PackTrack and Trail TV.
 

@@ -1,5 +1,14 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-28 redeploy)
+
+- **Trail TV shows every photo.** The replay no longer loops while photos are
+  still waiting, so the last ones (Black Death's On Inn photos) now appear.
+- **The map waits for the photos:** the replay eases down while photos are
+  queued and back up when they have caught up.
+- **Smoother replay:** runner dots update 10 times a second and tracks are
+  lightly smoothed.
+
 ## 0.21.74 (2026-09-27 redeploy)
 
 - **Distances follow the viewer's units.** Metres below 1 km then decimal km,
