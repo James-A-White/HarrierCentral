@@ -25,6 +25,7 @@ class KennelRequestModel {
     this.regionName,
     this.cityName,
     this.hashCash,
+    this.nonMemberPrice,
     this.runsPerMonth,
     this.hashersPerRun,
     this.nextRunNumber,
@@ -75,6 +76,7 @@ class KennelRequestModel {
       regionName: n('RegionName'),
       cityName: n('CityName'),
       hashCash: n('HashCash'),
+      nonMemberPrice: n('NonMemberPrice'),
       runsPerMonth: n('NumberOfRunsPerMonth'),
       hashersPerRun: n('NumberOfHashersPerRun'),
       nextRunNumber: n('NextRunNumber'),
@@ -122,6 +124,9 @@ class KennelRequestModel {
   final String? cityName;
 
   final String? hashCash;
+
+  /// The visitors' run fee (hashruns.org asks both since 2026-09-28).
+  final String? nonMemberPrice;
   final String? runsPerMonth;
   final String? hashersPerRun;
   final String? nextRunNumber;

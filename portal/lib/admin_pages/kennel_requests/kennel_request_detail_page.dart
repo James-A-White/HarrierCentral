@@ -49,7 +49,8 @@ class KennelRequestDetailPage extends StatelessWidget {
                 _field(c.description, 'Description', enabled: request.isOpen, maxLines: 6),
                 _field(c.kennelUrl, 'Website', enabled: request.isOpen),
                 _field(c.facebookUrl, 'Facebook page', enabled: request.isOpen),
-                _field(c.hashCash, 'Hash cash (the number becomes the default run price)', enabled: request.isOpen),
+                _field(c.hashCash, 'Run fee — members (the number becomes the default run price)', enabled: request.isOpen),
+                _field(c.nonMemberPrice, 'Run fee — visitors (blank: same as members)', enabled: request.isOpen),
                 _section('Where'),
                 if (request.countryText != null || request.cityText != null)
                   Padding(

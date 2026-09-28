@@ -71,6 +71,7 @@ class KennelRequestDetailController extends GetxController {
   late final TextEditingController kennelUrl = TextEditingController(text: request.kennelUrl ?? '');
   late final TextEditingController facebookUrl = TextEditingController(text: request.kennelFacebookUrl ?? '');
   late final TextEditingController hashCash = TextEditingController(text: request.hashCash ?? '');
+  late final TextEditingController nonMemberPrice = TextEditingController(text: request.nonMemberPrice ?? '');
   late final TextEditingController reviewNote = TextEditingController(text: request.reviewNote ?? '');
 
   final RxMap<String, String> countryOptions = <String, String>{}.obs;
@@ -89,7 +90,7 @@ class KennelRequestDetailController extends GetxController {
 
   List<TextEditingController> get _fields => [
     firstName, lastName, hashName, email, kennelName, shortName,
-    description, kennelUrl, facebookUrl, hashCash, reviewNote,
+    description, kennelUrl, facebookUrl, hashCash, nonMemberPrice, reviewNote,
   ];
 
   bool get shortNameIsValid => RegExp(r'^[A-Za-z0-9]{1,20}$').hasMatch(shortName.text.trim());
@@ -163,6 +164,7 @@ class KennelRequestDetailController extends GetxController {
       'kennelUrl': kennelUrl.text,
       'kennelFacebookUrl': facebookUrl.text,
       'hashCash': hashCash.text,
+      'nonMemberPrice': nonMemberPrice.text,
       'reviewNote': reviewNote.text,
       'countryId': countryId.value,
       'regionId': regionId.value,
