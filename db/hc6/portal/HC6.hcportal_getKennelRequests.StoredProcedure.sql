@@ -85,6 +85,7 @@ BEGIN TRY
         ki.nextRunNumber            AS NextRunNumber,
         ki.HowDidYouLearnAboutHc,
         ki.comments                 AS Comments,
+        ki.TermsAnswers,
         ki.SubmitIp,
         ki.ReviewNote,
         ki.ReviewedAt,

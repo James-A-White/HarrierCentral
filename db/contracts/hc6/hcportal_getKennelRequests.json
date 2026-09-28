@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getKennelRequests",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Kennel request review queue (E12.F1.S5): requests of one RequestStatus, newest first, with location names, SimilarKennels and ExistingHashName warnings. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1).",
   "parameters": [
     {
@@ -199,6 +199,12 @@
           "type": "see table",
           "nullable": true,
           "description": ""
+        },
+        {
+          "name": "TermsAnswers",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "The three opt-in answers, '1: … | 2: … | 3: …' (hashruns.org form only)."
         },
         {
           "name": "SubmitIp",
