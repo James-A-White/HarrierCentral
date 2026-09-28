@@ -16,9 +16,25 @@ const EMPTY = {
   firstName: "", lastName: "", hashName: "", email: "",
   kennelName: "", kennelShortName: "", kennelDescription: "", kennelUrl: "", kennelFacebookUrl: "",
   countryId: "", regionId: "", cityId: "", cityText: "",
-  runsPerMonth: "", hashersPerRun: "", hashCash: "", nextRunNumber: "", howDidYouLearn: "", comments: "",
+  runsPerMonth: "", hashersPerRun: "", hashCash: "", nonMemberPrice: "", nextRunNumber: "", howDidYouLearn: "", comments: "",
 };
 type Fields = typeof EMPTY;
+
+/**
+ * A run fee as the box allows it: digits and ONE decimal point, a comma taken
+ * as the point, everything else dropped as it is typed — so "two pounds" or
+ * "£5" can never reach the server (James, 2026-09-28).
+ */
+export function moneyOnly(raw: string): string {
+  const cleaned = raw.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+  const dot = cleaned.indexOf(".");
+  const whole = dot < 0 ? cleaned : cleaned.slice(0, dot + 1) + cleaned.slice(dot + 1).replace(/\./g, "");
+  // At most two decimals; a fee is money.
+  const m = whole.match(/^(\d*)(\.\d{0,2})?/);
+  const out = m ? (m[1] ?? "") + (m[2] ?? "") : "";
+  // ".5" means 0.50.
+  return out.startsWith(".") ? "0" + out : out;
+}
 
 /**
  * The three opt-in questions of the old harriercentral.com form, word for
@@ -77,6 +93,9 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
   const regions = usePlaces("countryId", f.countryId);
   const cities = usePlaces("regionId", f.regionId);
 
+  const setMoney = (k: "hashCash" | "nonMemberPrice") => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setF((prev) => ({ ...prev, [k]: moneyOnly(e.target.value) }));
+
   const set = (k: keyof Fields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setF((prev) => ({ ...prev, [k]: e.target.value }));
 
@@ -93,8 +112,19 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
   const ready =
     f.firstName.trim() && f.lastName.trim() && f.email.trim() && f.kennelName.trim() &&
     f.kennelShortName && f.kennelDescription.trim() && placeOk && terms.every((t) => t.length > 0);
+  // "5." is still being typed; only a whole number or a number with decimals is a fee.
+  const isFee = (v: string) => /^\d+(\.\d{1,2})?$/.test(v);
+  const feeMessage = !isFee(f.hashCash)
+    ? "Please enter the run fee for members — just the number, 0 if runs are free."
+    : !isFee(f.nonMemberPrice)
+      ? "Please enter the run fee for visitors — just the number, 0 if runs are free."
+      : null;
 
   async function submit() {
+    if (feeMessage) {
+      setError(feeMessage);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -270,6 +300,23 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
       </fieldset>
 
       <fieldset className="space-y-3">
+        <legend className="mb-2 text-lg font-bold">Run fees *</legend>
+        <p className="text-sm text-zinc-600">What a run costs, in your local currency — numbers only. Enter 0 if runs are free.</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className={label} htmlFor="feeMember">Members *</label>
+            <input id="feeMember" className={input} inputMode="decimal" autoComplete="off" placeholder="5" maxLength={10}
+              value={f.hashCash} onChange={setMoney("hashCash")} />
+          </div>
+          <div>
+            <label className={label} htmlFor="feeVisitor">Visitors *</label>
+            <input id="feeVisitor" className={input} inputMode="decimal" autoComplete="off" placeholder="7" maxLength={10}
+              value={f.nonMemberPrice} onChange={setMoney("nonMemberPrice")} />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-3">
         <legend className="mb-2 text-lg font-bold">About you</legend>
         <p className="text-sm text-zinc-600">You become the kennel&rsquo;s admin in Harrier Central, and can add others later.</p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -303,10 +350,6 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
           <div>
             <label className={label} htmlFor="hpr">Hashers per run</label>
             <input id="hpr" className={input} maxLength={50} value={f.hashersPerRun} onChange={set("hashersPerRun")} />
-          </div>
-          <div>
-            <label className={label} htmlFor="cash">Hash cash (price of a run)</label>
-            <input id="cash" className={input} maxLength={50} placeholder="5" value={f.hashCash} onChange={set("hashCash")} />
           </div>
           <div>
             <label className={label} htmlFor="next">Your next run number</label>

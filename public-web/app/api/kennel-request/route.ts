@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
       runsPerMonth: text(body.runsPerMonth),
       hashersPerRun: text(body.hashersPerRun),
       hashCash: text(body.hashCash),
+      nonMemberPrice: text(body.nonMemberPrice),
       nextRunNumber: text(body.nextRunNumber),
       howDidYouLearn: text(body.howDidYouLearn),
       comments: text(body.comments),

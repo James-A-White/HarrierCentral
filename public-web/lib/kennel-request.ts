@@ -58,6 +58,7 @@ export interface KennelRequestForm {
   runsPerMonth: string;
   hashersPerRun: string;
   hashCash: string;
+  nonMemberPrice: string;
   nextRunNumber: string;
   howDidYouLearn: string;
   comments: string;
