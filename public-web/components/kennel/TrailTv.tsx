@@ -1300,9 +1300,13 @@ export default function TrailTv({
         .tv-reveal-frame img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.6); }
         .tv-reveal-cap { flex: 0 0 auto; font-size: 15px; opacity: .85; text-align: center; }
         .tv-reveal-frame { position: relative; }
-        .tv-reveal-strip { flex: 0 0 14%; display: flex; gap: 8px; min-height: 0; }
-        .tv-reveal-thumb { position: relative; flex: 1 1 0; min-width: 0; height: 100%; }
-        .tv-reveal-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; opacity: .6; }
+        /* Earlier photos: one height, each at its own width, never cropped
+           (James, 2026-09-28: heads were being cut off). The strip wraps
+           onto a hidden second line, so a photo that does not fit drops out
+           WHOLE rather than being cut at the edge. */
+        .tv-reveal-strip { flex: 0 0 14%; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; min-height: 0; overflow: hidden; }
+        .tv-reveal-thumb { position: relative; flex: 0 0 auto; height: 100%; }
+        .tv-reveal-thumb img { display: block; height: 100%; width: auto; border-radius: 8px; opacity: .6; }
         .tv-marquee-item { position: relative; }
         /* Photo number — the same value pinned on the map where it was taken. */
         .tv-photo-num { position: absolute; top: 8px; left: 8px; z-index: 2; min-width: 40px; height: 40px; padding: 0 10px; border-radius: 999px; background: #e0a51e; color: #1a1a00; font: 800 22px/40px system-ui, sans-serif; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.55); }
