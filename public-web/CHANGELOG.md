@@ -1,5 +1,16 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-28 redeploy — fees, membership, Trail TV)
+
+- **Run fees are numbers.** add-kennel asks for the members' and visitors' run
+  fees; the boxes take digits and one decimal point only, with a friendly
+  message if one is empty.
+- **Membership box.** A "Membership" checkbox around the membership fee, the
+  type of membership and the members' run fee: greyed out when unticked,
+  required when ticked.
+- **Trail TV loads every photo first.** A replay shows "Loading image x of y"
+  and starts only when all the photos are in.
+
 ## 0.21.74 (2026-09-28 redeploy — add-kennel terms)
 
 - **The three opt-in questions are back.** hashruns.org/add-kennel asks the

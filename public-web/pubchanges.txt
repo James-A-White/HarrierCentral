@@ -1,3 +1,7 @@
+0.21.74 (2026-09-28 redeploy — fees, membership, Trail TV)
+    • add-kennel: numeric members'/visitors' run fees; Membership box (fee, type, members' fee).
+    • Trail TV: every photo loaded before a replay starts ("Loading image x of y").
+
 0.21.74 (2026-09-28 redeploy — add-kennel terms)
     • add-kennel asks the old site's three required opt-in questions; answers kept for the reviewer.
 

@@ -1,3 +1,8 @@
+## 2.0.87+730 (2026-09-28)
+### Improvements
+- **Kennel requests show the money.** The visitors' run fee (editable) and
+  the membership — fee and type — that the hashruns.org form now asks.
+
 ## 2.0.87+729 (2026-09-28)
 ### Improvements
 - **Merge accounts by hash name.** Type one or more hash names
