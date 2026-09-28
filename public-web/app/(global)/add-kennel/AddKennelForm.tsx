@@ -20,6 +20,29 @@ const EMPTY = {
 };
 type Fields = typeof EMPTY;
 
+/**
+ * The three opt-in questions of the old harriercentral.com form, word for
+ * word (James, 2026-09-28). Each needs an answer; the third has only one.
+ * The answer TEXT is sent and kept with the request for the reviewer.
+ */
+const TERMS: { title: string; text: string; options: string[] }[] = [
+  {
+    title: "#1",
+    text: "I understand that Opee and Tuna Melt are offering the basic features of Harrier Central for free because they LOVE Hashing and want to see more people participate in Hashing around the world.",
+    options: ["Yes, that makes sense", "No, I'm confused — I haven't had enough beer yet"],
+  },
+  {
+    title: "#2",
+    text: "I understand that by using the free version of Harrier Central, I am committing my Kennel to offering Tuna Melt and Opee each one free run per year with our Kennel if they happen to be visiting. We also agree to help them find crash space with a local Hasher to save on hotel costs, and to invite them out for drinks and show them the best local spots (when practical) on nights when the Hash is not running.",
+    options: ["Of course — we're happy to show Tuna and Opee a good time!", "We're a pretty boring group… they get a free run, but that's all"],
+  },
+  {
+    title: "#3",
+    text: "I understand that Tuna Melt and Opee are paying good money to professionally and securely host Harrier Central on a global cloud platform (Microsoft Azure) and they have to make some money to recover their costs. They're not in this to make a lot of money — but they will have to charge for some advanced features to recoup their out-of-pocket costs, and that's OK.",
+    options: ["I understand and that's OK!"],
+  },
+];
+
 async function post<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const json = (await res.json().catch(() => ({}))) as T & { error?: string };
@@ -45,6 +68,7 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
   const [f, setF] = useState<Fields>(EMPTY);
   const [cityNotListed, setCityNotListed] = useState(false);
   const [honeypot, setHoneypot] = useState("");
+  const [terms, setTerms] = useState<string[]>(["", "", ""]);
   const [step, setStep] = useState<Step>({ kind: "form" });
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -68,7 +92,7 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
   const placeOk = !!f.countryId && (cityNotListed ? f.cityText.trim().length > 0 : !!f.cityId);
   const ready =
     f.firstName.trim() && f.lastName.trim() && f.email.trim() && f.kennelName.trim() &&
-    f.kennelShortName && f.kennelDescription.trim() && placeOk;
+    f.kennelShortName && f.kennelDescription.trim() && placeOk && terms.every((t) => t.length > 0);
 
   async function submit() {
     setBusy(true);
@@ -80,6 +104,9 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
         cityText: cityNotListed ? f.cityText : "",
         stamp,
         website: honeypot,
+        terms1: terms[0],
+        terms2: terms[1],
+        terms3: terms[2],
       });
       // Already confirmed earlier: nothing to type, it is in the queue.
       if (r.alreadySubmitted && !r.codeSent) setStep({ kind: "done", already: true });
@@ -294,6 +321,31 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
           <label className={label} htmlFor="comments">Anything else?</label>
           <textarea id="comments" className={input} rows={3} maxLength={4000} value={f.comments} onChange={set("comments")} />
         </div>
+      </fieldset>
+
+      <fieldset className="space-y-4">
+        <legend className="mb-2 text-lg font-bold">Terms &amp; conditions *</legend>
+        {TERMS.map((q, i) => (
+          <div key={q.title} className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+            <p className="text-sm text-zinc-700">
+              <strong>{q.title}</strong> {q.text}
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              {q.options.map((o) => (
+                <label key={o} className="flex cursor-pointer items-start gap-2 text-sm text-zinc-800">
+                  <input
+                    type="radio"
+                    name={`terms${i + 1}`}
+                    className="mt-0.5 h-4 w-4 flex-none accent-orange-500"
+                    checked={terms[i] === o}
+                    onChange={() => setTerms((prev) => prev.map((t, j) => (j === i ? o : t)))}
+                  />
+                  {o}
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
       </fieldset>
 
       <button type="submit" className={primaryBtn} disabled={busy || !ready}>

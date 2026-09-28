@@ -6,7 +6,13 @@ import { logWebError } from "@/lib/web-log";
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type Body = Partial<KennelRequestForm> & { stamp?: string; website?: string };
+type Body = Partial<KennelRequestForm> & {
+  stamp?: string;
+  website?: string;
+  terms1?: string;
+  terms2?: string;
+  terms3?: string;
+};
 
 /**
  * POST the add-kennel form → { requestId, alreadySubmitted, codeSent }.
@@ -62,6 +68,9 @@ export async function POST(req: NextRequest) {
       howDidYouLearn: text(body.howDidYouLearn),
       comments: text(body.comments),
       submitIp: ip,
+      terms1: text(body.terms1),
+      terms2: text(body.terms2),
+      terms3: text(body.terms3),
     });
     const envelope = rowsets?.[0]?.[0] as { success?: number } | undefined;
     if (envelope?.success !== 1) return bad(userMessageOf(rowsets));
