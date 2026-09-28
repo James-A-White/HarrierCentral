@@ -687,6 +687,44 @@ class PaymentSnackBar extends SnackBar {
                     // way INTO payment options: a hasher on a €0 special
                     // price still needs that price changed, credit topped up
                     // or extras paid (James, 2026-09-27, Side Shitter).
+                    // Nothing owed (a 100% discount, a free-run price) is
+                    // still something to RECORD: one tap marks the run paid
+                    // as a free run. Without it the only way through was
+                    // payment options and a made-up special price
+                    // (Kilty as Charged, 2026-09-28, Side Shitter on 1417).
+                    if (!_showRunPayments && !multiSelectEnabled)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              await onPaidCallback(
+                                packMember,
+                                paymentFreeRun.value,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: hc_red,
+                            ),
+                            icon: Image.asset(
+                              'images/icons/payment_type_2.png',
+                              height: 22.0,
+                              width: 22.0,
+                              color: hc_red,
+                            ),
+                            label: Text(
+                              'Free run — mark as paid',
+                              style: ts_titleSmallCondensedBold.copyWith(
+                                color: hc_red,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
                     if (!_showRunPayments && !multiSelectEnabled)
                       Padding(
                         padding: const EdgeInsets.only(top: 10.0),
