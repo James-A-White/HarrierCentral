@@ -16,6 +16,12 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_submitKennelRequest]
     @hashersPerRun     NVARCHAR(MAX)    = NULL,
     @hashCash          NVARCHAR(MAX)    = NULL,   -- run fee for members
     @nonMemberPrice    NVARCHAR(MAX)    = NULL,   -- run fee for visitors
+    -- Membership (2026-09-28): 1 = the kennel has one. Then the fee, the type
+    -- (HC.Kennel.MembershipRenewalMode: 1 rolling, 2 fixed year, 3 lifetime)
+    -- and the members' run fee (@hashCash) are all required.
+    @hasMembership     NVARCHAR(MAX)    = NULL,
+    @membershipFee     NVARCHAR(MAX)    = NULL,
+    @membershipType    NVARCHAR(MAX)    = NULL,
     @nextRunNumber     NVARCHAR(MAX)    = NULL,
     @howDidYouLearn    NVARCHAR(MAX)    = NULL,
     @comments          NVARCHAR(MAX)    = NULL,
@@ -80,6 +86,11 @@ SET @runsPerMonth      = NULLIF(TRIM(@runsPerMonth), N'');
 SET @hashersPerRun     = NULLIF(TRIM(@hashersPerRun), N'');
 SET @hashCash          = NULLIF(TRIM(@hashCash), N'');
 SET @nonMemberPrice    = NULLIF(TRIM(@nonMemberPrice), N'');
+SET @membershipFee     = NULLIF(TRIM(@membershipFee), N'');
+DECLARE @member SMALLINT = CASE WHEN TRIM(COALESCE(@hasMembership, N'0')) IN (N'1', N'true') THEN 1 ELSE 0 END;
+DECLARE @mode SMALLINT = TRY_CAST(NULLIF(TRIM(@membershipType), N'') AS SMALLINT);
+-- No membership, no members: members pay what visitors pay.
+IF (@member = 0) SELECT @hashCash = @nonMemberPrice, @membershipFee = NULL, @mode = NULL;
 SET @nextRunNumber     = NULLIF(TRIM(@nextRunNumber), N'');
 SET @howDidYouLearn    = NULLIF(TRIM(@howDidYouLearn), N'');
 SET @comments          = NULLIF(TRIM(@comments), N'');
@@ -120,12 +131,19 @@ FROM (SELECT TOP 1 code, msg FROM (VALUES
                    THEN N'Please choose the city, or type it if it is not listed (at most 50 characters).' END),
     -- Run fees are numbers (James, 2026-09-28: "two pounds" is not a price):
     -- required, 0 or more, the form only lets digits and one point through.
-    (11.1, 1726, CASE WHEN @hashCash IS NULL OR TRY_CAST(@hashCash AS DECIMAL(10,4)) IS NULL
-                        OR TRY_CAST(@hashCash AS DECIMAL(10,4)) < 0
+    (11.1, 1726, CASE WHEN @member = 1 AND (@hashCash IS NULL OR TRY_CAST(@hashCash AS DECIMAL(10,4)) IS NULL
+                        OR TRY_CAST(@hashCash AS DECIMAL(10,4)) < 0)
                    THEN N'Please enter the run fee for members as a number — 0 if runs are free.' END),
+    (11.3, 1728, CASE WHEN @member = 1 AND (@membershipFee IS NULL OR TRY_CAST(@membershipFee AS DECIMAL(10,4)) IS NULL
+                        OR TRY_CAST(@membershipFee AS DECIMAL(10,4)) < 0 OR LEN(@membershipFee) > 50)
+                   THEN N'Please enter the membership fee as a number.' END),
+    (11.4, 1734, CASE WHEN @member = 1 AND (@mode IS NULL OR @mode NOT IN (1, 2, 3))
+                   THEN N'Please choose the type of membership.' END),
     (11.2, 1727, CASE WHEN @nonMemberPrice IS NULL OR TRY_CAST(@nonMemberPrice AS DECIMAL(10,4)) IS NULL
                         OR TRY_CAST(@nonMemberPrice AS DECIMAL(10,4)) < 0
-                   THEN N'Please enter the run fee for visitors as a number — 0 if runs are free.' END),
+                   THEN CASE WHEN @member = 1
+                             THEN N'Please enter the run fee for visitors as a number — 0 if runs are free.'
+                             ELSE N'Please enter the run fee as a number — 0 if runs are free.' END END),
     (12, 1721, CASE WHEN LEN(@runsPerMonth) > 50 OR LEN(@hashersPerRun) > 50 OR LEN(@hashCash) > 50
                         OR LEN(@nonMemberPrice) > 50 OR LEN(@nextRunNumber) > 250
                    THEN N'One of the answers is too long.' END),
@@ -195,7 +213,8 @@ BEGIN TRY
          Country, CountryId, Region, RegionId, City, CityId,
          HashCash, NonMemberPrice, KennelFacebookUrl, SubmitterEmail, SubmittedOn,
          nextRunNumber, comments, HashRunsDotOrg, HowDidYouLearnAboutHc,
-         RequestStatus, ConfirmCode, ConfirmAttempts, SubmitIp, TermsAnswers, updatedAt)
+         RequestStatus, ConfirmCode, ConfirmAttempts, SubmitIp, TermsAnswers,
+         MembershipFee, MembershipRenewalMode, updatedAt)
     SELECT
         @requestId, @firstName, @lastName, COALESCE(@hashName, N''), N'My Hash Name', @email, N'Yes',
         @kennelName, @kennelShortName, @kennelUrl, @kennelDescription, N'Blue',
@@ -206,6 +225,7 @@ BEGIN TRY
         @nextRunNumber, @comments, N'Yes', @howDidYouLearn,
         0, @code, 0, @submitIp,
         LEFT(N'1: ' + @terms1 + N' | 2: ' + @terms2 + N' | 3: ' + @terms3, 1000),
+        @membershipFee, @mode,
         GETDATE()
     FROM HC.Country co
     LEFT JOIN HC.Region re ON re.id = @regionId

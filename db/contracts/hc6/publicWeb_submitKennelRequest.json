@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_submitKennelRequest",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "hashruns.org/add-kennel (E12.F1.S7): stores a request as status 0 with a six-digit ConfirmCode. Same email + short name within 30 days reuses the open row (new code). 5 per SubmitIp per day. PublicWebAdminApi only, behind HC_INTERNAL_SECRET; the API emails the code and strips it.",
   "parameters": [
     {
@@ -114,7 +114,7 @@
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.HashCash",
-      "description": "Run fee for members: required, a number ≥ 0 (the form allows digits and one point only)."
+      "description": "Run fee for members: required when hasMembership=1 (a number ≥ 0); otherwise ignored and set to the visitors' fee."
     },
     {
       "name": "nextRunNumber",
@@ -171,6 +171,27 @@
       "nullable": false,
       "mapsToColumn": "OfficeForms_KennelImport.NonMemberPrice",
       "description": "Run fee for visitors: required, a number ≥ 0."
+    },
+    {
+      "name": "hasMembership",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "'1' when the kennel has a membership; then membershipFee, membershipType and hashCash are required."
+    },
+    {
+      "name": "membershipFee",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.MembershipFee",
+      "description": "Number ≥ 0."
+    },
+    {
+      "name": "membershipType",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.MembershipRenewalMode",
+      "description": "1 rolling (annual), 2 fixed year, 3 lifetime — HC.Kennel.MembershipRenewalMode."
     }
   ],
   "rowsets": [
@@ -303,7 +324,9 @@
     "1724": "terms not answered",
     "1725": "terms answer too long",
     "1726": "members' fee missing or not a number",
-    "1727": "visitors' fee missing or not a number"
+    "1727": "visitors' fee missing or not a number",
+    "1728": "membership fee missing or not a number",
+    "1734": "membership type missing"
   },
   "sideEffects": [
     "INSERT or UPDATE EXT.OfficeForms_KennelImport",
