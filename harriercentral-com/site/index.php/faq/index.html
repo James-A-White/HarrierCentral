@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ — Harrier Central</title>
+<meta name="description" content="Frequently asked questions about Harrier Central: what it costs (free for Hashers!), how your data is secured, where it's stored, and how to find and search for Hash runs worldwide.">
+<link rel="icon" href="/wp-content/uploads/2021/07/cropped-HC-Logo-32x32.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/hc.css">
+<style>
+/* ── FAQ page ── */
+.page-hero{padding:64px 0 40px;color:#fff;text-align:center}
+.page-hero h1{color:#fff;font-size:clamp(2rem,4.5vw,3rem);font-weight:900;text-shadow:0 3px 18px rgba(0,0,0,.55)}
+.page-hero p{color:#e4efdc;max-width:560px;margin:14px auto 0;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+
+.filter-bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0 8px}
+.filter-bar label{cursor:pointer;background:rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.4);color:#fff;font-weight:600;font-size:.92rem;padding:8px 20px;border-radius:999px}
+.filter-bar label:hover{border-color:#fff}
+#cat-all:checked ~ .page-hero label[for=cat-all],
+#cat-tech:checked ~ .page-hero label[for=cat-tech],
+#cat-general:checked ~ .page-hero label[for=cat-general],
+#cat-features:checked ~ .page-hero label[for=cat-features]{background:var(--red);border-color:var(--red)}
+#cat-tech:checked ~ .faq-body .panel:not(.cat-tech),
+#cat-general:checked ~ .faq-body .panel:not(.cat-general),
+#cat-features:checked ~ .faq-body .panel:not(.cat-features){display:none}
+.faq-cats input{display:none}
+
+.faq-panel h2{margin-bottom:6px}
+details.qa{border-bottom:1px solid var(--paper-edge)}
+details.qa:last-of-type{border-bottom:none}
+details.qa summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;padding:20px 4px;font-family:var(--font-display);font-weight:700;font-size:1.06rem;color:var(--jungle)}
+details.qa summary::-webkit-details-marker{display:none}
+details.qa summary::before{content:"";flex:none;width:26px;height:26px;border-radius:50%;background:var(--red);
+  -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 13H13v6h-2v-6H5v-2h6V5h2v6h6z"/></svg>') center/70% no-repeat;
+  mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 13H13v6h-2v-6H5v-2h6V5h2v6h6z"/></svg>') center/70% no-repeat;
+  transition:transform .2s}
+details.qa[open] summary::before{transform:rotate(45deg);background:var(--jungle)}
+details.qa .answer{padding:0 4px 22px 44px;color:var(--muted);font-size:.97rem}
+details.qa .answer p{margin-bottom:12px}
+details.qa .answer p:last-child{margin-bottom:0}
+details.qa .answer ul{margin:0 0 12px 20px}
+details.qa .answer li{margin-bottom:5px}
+
+.terms-panel{border-left:6px solid var(--amber)}
+.terms-panel ol{margin:14px 0 14px 22px;color:var(--muted)}
+.terms-panel ol li{margin-bottom:8px}
+.terms-panel .signoff{font-family:var(--font-display);font-weight:700;color:var(--jungle);margin-top:16px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="/">
+      <img src="/wp-content/uploads/2021/07/cropped-HC-Logo-180x180.jpg" alt="Harrier Central logo">
+      Harrier&nbsp;Central
+    </a>
+    <input type="checkbox" id="menu-toggle" aria-label="Open menu">
+    <label class="hamburger" for="menu-toggle" aria-hidden="true"><span></span><span></span><span></span></label>
+    <ul class="nav-links">
+      <li><a href="/index.php/about-us/">About</a></li>
+      <li><a href="/index.php/faq/">FAQ</a></li>
+      <li><a href="/index.php/news/">News</a></li>
+      <li><a href="/index.php/instructions/">Instructions</a></li>
+      <li><a href="https://www.hashruns.org/add-kennel">Add Kennel</a></li>
+      <li><a href="/index.php/contact/">Contact</a></li>
+      <li><a class="nav-cta" href="/#get-the-app">Get the App</a></li>
+    </ul>
+  </div>
+</header>
+
+<div class="faq-cats">
+<input type="radio" name="cat" id="cat-all" checked>
+<input type="radio" name="cat" id="cat-tech">
+<input type="radio" name="cat" id="cat-general">
+<input type="radio" name="cat" id="cat-features">
+
+<section class="page-hero">
+  <div class="wrap">
+    <h1>Frequently Asked Questions</h1>
+    <p>Everything you've wondered about Harrier Central — and a few things you haven't. Can't find your answer? <a href="/index.php/contact/" style="color:var(--amber);text-decoration:underline">Drop us a line</a>.</p>
+    <div class="filter-bar" style="margin-top:26px">
+      <label for="cat-all">All</label>
+      <label for="cat-tech">Technology</label>
+      <label for="cat-general">General</label>
+      <label for="cat-features">Features</label>
+    </div>
+  </div>
+</section>
+
+<div class="wrap faq-body" style="padding-bottom:40px">
+
+  <section class="panel faq-panel cat-general">
+    <span class="kicker">General</span>
+    <h2>The Basics</h2>
+
+    <details class="qa">
+      <summary>What is Harrier Central?</summary>
+      <div class="answer">
+        <p>Harrier Central is an app designed specifically to meet the unique needs of Hashers and Hash Kennels worldwide. If you are a Hasher you probably know that our &ldquo;tribe&rdquo; is quite different than other sporting groups — and as such we have unique needs to manage our Hash lives. Our app makes it easy to find runs anywhere in the world without having to join individual Facebook groups or hunt for websites.</p>
+        <p>For Kennels we offer a variety of Hash-specific administrative tools such as making it easy for Hares to volunteer, highlighting milestone run counts, managing email distribution (including for visitors), processing Hash Cash, allowing Hares to upload receipts for their expenses, financial break-even analysis by run, and more.</p>
+      </div>
+    </details>
+
+    <details class="qa">
+      <summary>How much does the app cost?</summary>
+      <div class="answer">
+        <p>Harrier Central is <strong>free for individual Hashers</strong> for all of the basic functions — and it always will be. You can locate Hash Kennels and specific runs anywhere in the world, RSVP for runs, and keep track of your run and haring counts. You can even download a spreadsheet with full details of all the runs you've done, with individual sheets containing run specifics for each Kennel you've run with.</p>
+        <p>With this in mind, we have invested a significant amount of time, energy and our own money in launching Harrier Central, and we have ongoing costs to host it in Microsoft's highly secure global cloud platform. We are committed to the highest levels of security and privacy for our users, so we will never connect Harrier Central to third-party advertising platforms (whenever you see ads in your other apps, it is highly likely that some of your personal information is being shared with third parties). To ensure we don't lose money, we charge Kennels for advanced features such as tracking Hash Cash, managing email distribution, promoting Haberdashery, and more.</p>
+        <p>We want the Hash community to know that we are not offering Harrier Central to make a profit off the Hash. We aim only to cover our costs.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="panel faq-panel cat-tech">
+    <span class="kicker">Technology</span>
+    <h2>Your Data, Protected</h2>
+
+    <details class="qa">
+      <summary>How is my data secured?</summary>
+      <div class="answer">
+        <p>For obvious reasons, we won't provide full details of our data security approaches — but here's an overview for those with a technical interest in our backend.</p>
+        <p>All data is stored in a Microsoft Azure SQL database with IP-restricted access: database access is only available from known and approved IP addresses, on top of the security architecture that comes &ldquo;out of the box&rdquo; with Azure and SQL Server.</p>
+        <p>Our public APIs (the connections from the app to the backend services) are all protected with TLS 1.2 or greater at the transport level, and calls to our backend are further protected by an application-level security token unique to each transaction. Although nothing can guarantee a system cannot be hacked, this makes it highly tamper-resistant.</p>
+        <p>There are other security measures in place too. We feel the value of the data stored within our system is worth less than the effort it would take to extract it — which is a primary goal of any information security system.</p>
+      </div>
+    </details>
+
+    <details class="qa">
+      <summary>What do you do with my data?</summary>
+      <div class="answer">
+        <p>We are very concerned about privacy and security, especially considering how irresponsible many companies have been with their users' sensitive data. Our philosophy: collect only the data we absolutely need to provide benefits to users of Harrier Central.</p>
+        <p>In terms of personal information, all we collect is your first and last name, email address and Hash name. We also use your current location (if you authorize the app to do so) to show you runs in your vicinity and to set app preferences — like whether to show distances in miles or kilometers. Finally, we capture parametric data on your device and browser (which OS, what type of phone) only to aid troubleshooting and debugging.</p>
+        <p>We also record your runs with Kennels in Harrier Central so we can maintain your run counts in our secure, resilient cloud-hosted database. If you've ever been with a Kennel that kept run counts in an Excel spreadsheet, only to have it lost — you know how frustrating that is. With Harrier Central, it's no longer a concern.</p>
+        <p>To help mismanagement run their Kennels, we also track who has paid, how much, and how (cash, bank transfer, PayPal, etc.). While we may store some banking information associated with Kennels to support easy mobile payments, we do not store any banking information for individual Hashers.</p>
+        <p>All information we collect stays within our &ldquo;walled garden&rdquo; and is never shared with any third party. Questions about our practices? Reach us via the <a href="/index.php/contact/">contact form</a> or at <a href="mailto:connect@harriercentral.com">connect@harriercentral.com</a>.</p>
+      </div>
+    </details>
+
+    <details class="qa">
+      <summary>Where is my data stored?</summary>
+      <div class="answer">
+        <p>The entire Harrier Central technology stack is built within the Microsoft Azure cloud platform. Although more expensive than many other cloud providers or a privately hosted server, we selected Azure for its security, ease of administration, ability to scale globally and broad range of built-in functions.</p>
+        <p>Our main database is hosted in the Northern Europe data center in Ireland, with a redundant backup in the Western Europe data center in Amsterdam. As our user base expands, we plan to geo-replicate to Azure data centers in the United States, Hong Kong, China and Australia — further ensuring redundancy and improving performance for our global user base.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="panel faq-panel cat-features">
+    <span class="kicker">Features</span>
+    <h2>Finding Your Trail</h2>
+
+    <details class="qa">
+      <summary>How do I see Hash runs?</summary>
+      <div class="answer">
+        <p>To find Hash runs, simply open the app. You'll see a list of all future runs for any Kennels you follow, plus Kennels within 50 miles / 50 kilometers of your current location (you can change this default distance in your personal profile).</p>
+        <p>The runs display is designed to make finding runs easy — especially when traveling. Each time you open the app, it receives run information from Kennels around the world. If you're traveling without an internet connection, you should still see runs for the local area when you arrive, provided your phone has accurate location information. If you follow a Kennel, you'll always see its runs regardless of where you are.</p>
+        <p><em>Keep in mind that Harrier Central can only display Kennels that have asked to be added to our database — make sure your Kennel <a href="https://www.hashruns.org/add-kennel">joins Harrier Central today</a>!</em></p>
+      </div>
+    </details>
+
+    <details class="qa">
+      <summary>How do I search for Hash runs?</summary>
+      <div class="answer">
+        <p>If the runs display isn't showing runs for a particular Kennel or part of the world, use the advanced run search: pull down slightly on the runs display to reveal the search box. You can search by any of the following:</p>
+        <ul>
+          <li>Continent name (Europe, Asia, North America, …)</li>
+          <li>Country, region / state, or city name</li>
+          <li>Street name, or post code / zip code (if provided)</li>
+          <li>Run name or run number</li>
+          <li>Kennel short name (e.g. AH3) or full name (e.g. Amsterdam Hash House Harriers)</li>
+          <li>Any words in the run description, or the name of any of the hares</li>
+          <li>Events: type &ldquo;is event&rdquo;, or scope it with &ldquo;is local&rdquo;, &ldquo;is regional&rdquo;, &ldquo;is nash hash&rdquo; / &ldquo;is national&rdquo;, &ldquo;is interhash&rdquo; / &ldquo;is continental&rdquo;, &ldquo;is global&rdquo; / &ldquo;is world interhash&rdquo;</li>
+          <li>Time: a weekday (&ldquo;Sunday&rdquo;), &ldquo;this Wednesday&rdquo;, &ldquo;today&rdquo; or &ldquo;tomorrow&rdquo;, a year or month (&ldquo;is 2021&rdquo;, &ldquo;is August&rdquo;), or the run time (&ldquo;2:45&rdquo; or &ldquo;14:45&rdquo;)</li>
+        </ul>
+        <p>Normally the search looks through runs already on your run list. To see, say, what's coming up in Africa, type Africa and tick &ldquo;Search all runs&rdquo; to expand the scope to every run in the system. Complex queries (&ldquo;in Europe next Thursday&rdquo;) aren't supported yet — but we may add them in the future.</p>
+        <p><em>The search can only find Kennels that have asked to be added to our database — make sure your Kennel <a href="https://www.hashruns.org/add-kennel">joins Harrier Central today</a>!</em></p>
+      </div>
+    </details>
+  </section>
+
+  <section class="panel terms-panel cat-general">
+    <span class="kicker">The Fine Print</span>
+    <h2>Terms and Conditions</h2>
+    <p class="lead">Harrier Central is a part-time project from a pair of enthusiastic Hashers. We don't make any money from this project — we do it to support Hashers and Hash Kennels around the world. Your Kennel may use our services and app on the conditions that:</p>
+    <ol>
+      <li>You offer Tuna Melt and Opee each one free run per year with your Kennel if we drop in,</li>
+      <li>You also offer to help us find crash space if we are visiting your area, and</li>
+      <li>Someone from your Kennel joins us at your favorite local Hash hangout on a non-Hash night.</li>
+    </ol>
+    <p style="color:var(--muted)">Finally, we have to charge for some features to cover the cost of secure cloud hosting and to offset some of our software development costs. We plan to keep the app free forever for Hashers and only charge Kennels a fair and reasonable fee for advanced features — we are not trying to profit from the Hash.</p>
+    <p class="signoff">OnOn! — Tuna Melt and Opee</p>
+  </section>
+
+</div>
+</div><!-- /faq-cats -->
+
+<footer class="site">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">
+          <img src="/wp-content/uploads/2021/07/cropped-HC-Logo-180x180.jpg" alt="">
+          Harrier Central
+        </div>
+        <p>A part-time project from a pair of enthusiastic Hashers. We don't make any money from this project — we do it to support Hashers and Hash kennels worldwide.</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="/index.php/about-us/">About Us</a></li>
+          <li><a href="/index.php/faq/">FAQ</a></li>
+          <li><a href="/index.php/news/">News</a></li>
+          <li><a href="/index.php/instructions/">Instructions</a></li>
+          <li><a href="https://www.hashruns.org/add-kennel">Add Kennel</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <ul>
+          <li><a href="/index.php/contact/">Contact / General Questions</a></li>
+          <li><a href="https://github.com/James-A-White/HarrierCentral/issues">Feature Requests &amp; Bug Reports</a></li>
+          <li><a href="https://www.facebook.com/groups/harriercentral">Facebook Group</a></li>
+          <li><a href="/index.php/privacy-policy/">Privacy Policy</a></li>
+          <li><a href="/index.php/delete_my_account/">Delete My Account</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Harrier Central. On-On!</span>
+      <span>Current app version: 3.0.1</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

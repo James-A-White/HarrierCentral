@@ -1,0 +1,8 @@
+{
+  "routes": [
+    { "route": "/index.php/add-kennel-standalone", "redirect": "https://www.hashruns.org/add-kennel", "statusCode": 301 },
+    { "route": "/index.php/add-kennel-standalone/*", "redirect": "https://www.hashruns.org/add-kennel", "statusCode": 301 },
+    { "route": "/index.php/kennel-signup-main/*", "redirect": "https://www.hashruns.org/add-kennel", "statusCode": 301 },
+    { "route": "/index.php/add-kennel-with-facebook-integration/*", "redirect": "https://www.hashruns.org/add-kennel", "statusCode": 301 }
+  ]
+}
