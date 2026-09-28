@@ -18,6 +18,25 @@ class KennelLogo extends StatelessWidget {
   final num? rightPadding;
   final KennelLogoZoomGesture zoomGesture;
 
+  /// A generic coin stored as an image URL (…/generic-logos/C-030.png), the
+  /// form new kennels get since 2026-09-28. Captures the coin code.
+  static final RegExp _coinUrl = RegExp(
+    r'/generic-logos/(C-[A-Za-z0-9]+)\.png$',
+    caseSensitive: false,
+  );
+
+  /// The bundled coin image — from `bundle://C-NNN` or a coin URL — or null
+  /// for a kennel's own logo. A coin is blank artwork: the kennel's short
+  /// name is written on it, as it always was for `bundle://` (James,
+  /// 2026-09-28).
+  String? get _coinAsset {
+    if (kennelLogoUrl.contains('bundle://')) {
+      return 'images/generic_logos/${kennelLogoUrl.replaceAll('bundle://', '')}.png'.toLowerCase();
+    }
+    final String? code = _coinUrl.firstMatch(kennelLogoUrl)?.group(1);
+    return code == null ? null : 'images/generic_logos/$code.png'.toLowerCase();
+  }
+
   // void _showZoomPage(BuildContext context) {
   //   Navigator.push<void>(
   //     context,
@@ -62,9 +81,9 @@ class KennelLogo extends StatelessWidget {
         width: (logoHeight ?? 10000.0) + .0,
         height: (logoHeight ?? 10000.0) + .0,
         margin: EdgeInsets.only(left: (leftPadding ?? 0.0) + .0, right: (rightPadding ?? 0.0) + .0),
-        child: kennelLogoUrl.contains('bundle://')
+        child: _coinAsset != null
             ? Stack(alignment: Alignment.center, children: <Widget>[
-                Image.asset(('images/generic_logos/${kennelLogoUrl.replaceAll('bundle://', '')}.png').toLowerCase(), fit: BoxFit.fill,
+                Image.asset(_coinAsset!, fit: BoxFit.fill,
                     errorBuilder: (_, _, _) => const SizedBox.shrink()),
                 FractionallySizedBox(
                   widthFactor: .55,
