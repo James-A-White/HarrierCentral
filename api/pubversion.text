@@ -1,3 +1,9 @@
+1.0.61+60
+    • SECURITY: the anonymous PublicWebApi route refuses every SP on
+      PublicWebAdminApi's allowlist (case-insensitive). savePageLayout,
+      issuePasskeyInviteCode, confirmAuthentication, createMember and the
+      other secret-guarded publicWeb_ SPs were reachable with no secret.
+
 1.0.61+59
     • PublicWebApi and PublicWebAdminApi now write every failure to HC.ErrorLog —
       an SP's error envelope, a reader exception, an unhandled exception. Until
