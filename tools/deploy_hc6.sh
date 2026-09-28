@@ -16,14 +16,14 @@
 #   5. HC6.ValidateAppAuth helper SP     ← must precede all app SPs
 #   6. All HC6.nonApi_* SPs (nonApi_updateRunNumbers redeploys idempotently)
 #   7. All HC6.util_* maintenance SPs (safe to redeploy; run by hand only)
-#  7b. All HC6.*.Function.sql helper functions ← must precede app SPs
+#  2b. All HC6.*.Function.sql helper functions ← must precede every SP that calls one
 #   8. All HC6.hcapp_* app SPs
 #
 # What this does NOT deploy:
 #   - Table DDL (HC.* tables are shared with HC5 and already exist)
 #   - DB functions in schema/functions/ (already deployed with HC5, use CREATE
 #     not CREATE OR ALTER — re-running would fail). HC6 functions live in
-#     db/hc6/app as HC6.*.Function.sql and ARE deployed, at step 7b.
+#     db/hc6/app as HC6.*.Function.sql and ARE deployed, at step 2b.
 #   - The API shim (deploy that via VS Code → Azure Functions extension)
 #
 # Deploy stamps (2026-09-26):
@@ -189,6 +189,19 @@ run_file "HC6.ValidatePortalAuth" \
 run_file "HC6.nonApi_updateRunNumbers" \
     "$APP_DIR/HC6.nonApi_updateRunNumbers.StoredProcedure.sql"
 
+echo "── Step 2b: Functions (must precede any SP that calls one) ──"
+# Unlike schema/functions/ (HC5-era, plain CREATE, deployed once), these are
+# CREATE OR ALTER and safe to redeploy every time. They MUST come before
+# every SP that calls one — portal SPs too since 2026-09-28, when
+# hcportal_sendEventMessage began calling HC6.UserUnreadChatTotal: deferred name resolution covers a missing TABLE, but a missing
+# FUNCTION fails at CREATE PROCEDURE time.
+shopt -s nullglob
+for file in "$APP_DIR"/HC6.*.Function.sql; do
+    name="$(basename "$file" .Function.sql)"
+    run_file "$name" "$file"
+done
+shopt -u nullglob
+
 echo ""
 echo "── Step 3: Portal SPs ───────────────────────────────────────"
 for file in "$SP_DIR"/HC6.hcportal_*.StoredProcedure.sql; do
@@ -228,18 +241,6 @@ for file in "$APP_DIR"/HC6.util_*.StoredProcedure.sql; do
 done
 
 echo ""
-echo "── Step 7b: Functions (must precede any SP that calls one) ──"
-# Unlike schema/functions/ (HC5-era, plain CREATE, deployed once), these are
-# CREATE OR ALTER and safe to redeploy every time. They MUST come before the
-# app SPs: deferred name resolution covers a missing TABLE, but a missing
-# FUNCTION fails at CREATE PROCEDURE time.
-shopt -s nullglob
-for file in "$APP_DIR"/HC6.*.Function.sql; do
-    name="$(basename "$file" .Function.sql)"
-    run_file "$name" "$file"
-done
-shopt -u nullglob
-
 echo ""
 echo "── Step 8: App SPs ──────────────────────────────────────────"
 for file in "$APP_DIR"/HC6.hcapp_*.StoredProcedure.sql; do
