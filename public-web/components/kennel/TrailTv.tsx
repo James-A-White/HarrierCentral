@@ -75,6 +75,11 @@ const REPLAY_RATE_EASE = 0.1;
 const TRACK_SMOOTH_RADIUS = 2;
 const TAKEOVER_LIVE_MS = 10_000;  // fresh-from-trail photo, live mode
 const PRELOAD_AHEAD = 4;          // photos warmed into cache ahead of the takeover
+/** Before a replay starts every photo is fetched first (James, 2026-09-28):
+ *  this many at once, and a photo that neither loads nor fails within the
+ *  timeout counts as done, so one dead image can never hold the wall. */
+const PRELOAD_ALL_CONCURRENCY = 6;
+const PRELOAD_ALL_TIMEOUT_MS = 20_000;
 const TAKEOVER_OUT_MS = 450;       // zoom-back-out exit animation (matches .closing CSS)
 const CALLOUT_MS = 6_000;
 const ACTIVE_WINDOW_MS = 10 * 60_000; // "on trail" = a point in the last 10 min
@@ -574,6 +579,10 @@ export default function TrailTv({
   const [nowTick, setNowTick] = useState(Date.now());
   const [loopClock, setLoopClock] = useState<number | null>(null);
   const [replayClock, setReplayClock] = useState<number | null>(null);
+  /** The photo list has arrived at least once (it may be empty). */
+  const [photosFetched, setPhotosFetched] = useState(false);
+  /** Replay waits for every photo: done of total, and whether it may start. */
+  const [photoPreload, setPhotoPreload] = useState({ done: 0, total: 0, ready: false });
 
   const knownPhotoIds = useRef<Set<string> | null>(null);
   const lastMarkTs = useRef<number>(0);
@@ -691,6 +700,7 @@ export default function TrailTv({
         outsideRun: false,
       }));
       setPhotos(entries);
+      setPhotosFetched(true);
 
       if (knownPhotoIds.current == null) {
         knownPhotoIds.current = new Set(entries.map((e) => e.photoId));
@@ -861,7 +871,9 @@ export default function TrailTv({
   }, [replayDurationMs]);
 
   useEffect(() => {
-    if (mode !== "replay" || !timeline) return;
+    // The replay does not start until every photo is in (see "Load every
+    // photo first" below), so none arrives late or paints blank.
+    if (mode !== "replay" || !timeline || !photoPreload.ready) return;
     const span = timeline.max - timeline.min;
     const cycle = replayDurationMs + trailingHoldMs;
 
@@ -893,7 +905,7 @@ export default function TrailTv({
       setReplayClock(timeline.min + Math.min(1, el / replayDurationMs) * span);
     }, REPLAY_TICK_MS);
     return () => clearInterval(t);
-  }, [mode, timeline, replayDurationMs, trailingHoldMs]);
+  }, [mode, timeline, replayDurationMs, trailingHoldMs, photoPreload.ready]);
 
   // ── Replay photo queue ───────────────────────────────────────────────────────
   // Reaching a photo's capture moment ENQUEUES it; the panel then shows each
@@ -955,6 +967,64 @@ export default function TrailTv({
     }, 250);
     return () => clearInterval(t);
   }, [mode, displayedIds.length]);
+
+  // ── Load every photo first (replay) ──────────────────────────────────────────
+  // A replay used to start at once and fetch each photo as the queue reached
+  // it, so on a slow link photos arrived late or showed blank. Now the wall
+  // fetches them all — at the two sizes a replay shows, the 1080px hero and the
+  // 256px strip — behind a "Loading image x of y" screen, and only then starts
+  // the clock (James, 2026-09-28). Runs once per page: photos that appear later
+  // are warmed by the look-ahead below as before. Live mode is untouched — a
+  // live wall must show a new photo the moment it lands.
+  const preloadAllStartedRef = useRef(false);
+  const unmountedRef = useRef(false);
+  // Reset on mount as well as set on unmount: React's development double
+  // mount runs the cleanup once, and a flag left true stopped every loader
+  // after its first photo ("Loading image 1 of 50" for ever).
+  useEffect(() => {
+    unmountedRef.current = false;
+    return () => { unmountedRef.current = true; };
+  }, []);
+  useEffect(() => {
+    if (mode !== "replay" || preloadAllStartedRef.current) return;
+    // Wait for both lists: until the tracks arrive the photos have no order.
+    if (!photosFetched || tracks.length === 0) return;
+    preloadAllStartedRef.current = true;
+    const list = timedPhotos.slice();
+    if (list.length === 0) {
+      setPhotoPreload({ done: 0, total: 0, ready: true });
+      return;
+    }
+    setPhotoPreload({ done: 0, total: list.length, ready: false });
+    const loadOne = (src: string) =>
+      new Promise<void>((resolve) => {
+        let settled = false;
+        const finish = () => { if (!settled) { settled = true; resolve(); } };
+        const img = new window.Image();
+        img.onload = finish;
+        img.onerror = finish;
+        img.src = src;
+        setTimeout(finish, PRELOAD_ALL_TIMEOUT_MS);
+      });
+    let next = 0;
+    let done = 0;
+    const worker = async () => {
+      while (!unmountedRef.current && next < list.length) {
+        const p = list[next++];
+        await Promise.all([loadOne(photoSrc(p.url, 1080)), loadOne(photoSrc(p.url, 256))]);
+        preloadedRef.current.add(p.photoId);
+        done += 1;
+        if (!unmountedRef.current) setPhotoPreload({ done, total: list.length, ready: false });
+      }
+    };
+    void Promise.all(
+      Array.from({ length: Math.min(PRELOAD_ALL_CONCURRENCY, list.length) }, worker),
+    ).then(() => {
+      if (!unmountedRef.current) setPhotoPreload({ done: list.length, total: list.length, ready: true });
+    });
+    // No cleanup: a changing dependency must not abandon the load half-way
+    // (the started ref would then never let it finish). Unmount stops it.
+  }, [mode, photosFetched, tracks.length, timedPhotos]);
 
   // ── Photo preloading ─────────────────────────────────────────────────────────
   // A photo's <img> only began fetching when it mounted, so on a slow link the
@@ -1481,6 +1551,39 @@ export default function TrailTv({
         ))}
       </div>
 
+      {mode === "replay" && !photoPreload.ready && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 5000, display: "flex",
+            flexDirection: "column", alignItems: "center", justifyContent: "center",
+            gap: 22, background: "rgba(6, 24, 8, 0.88)", color: "#fff", textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: ".02em" }}>
+            {photoPreload.total > 0
+              ? `Loading image ${Math.min(photoPreload.done + 1, photoPreload.total)} of ${photoPreload.total}`
+              : "Loading the trail…"}
+          </div>
+          {photoPreload.total > 0 && (
+            <div
+              style={{
+                width: "min(560px, 80vw)", height: 14, borderRadius: 999,
+                background: "rgba(255,255,255,.18)", overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: `${Math.round((100 * photoPreload.done) / photoPreload.total)}%`,
+                  height: "100%", background: "#f59e0b", transition: "width .3s ease",
+                }}
+              />
+            </div>
+          )}
+          <div style={{ fontSize: 16, opacity: 0.75 }}>
+            The replay starts when every photo is ready.
+          </div>
+        </div>
+      )}
       {takeover && (
         <div
           className={`tv-takeover${takeoverClosing ? " closing" : ""}`}
