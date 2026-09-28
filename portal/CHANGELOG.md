@@ -1,3 +1,10 @@
+## 2.0.87+732 (2026-09-28)
+### Improvements
+- **Merge preview shows the result.** Each Keep / Merge pair has a RESULT
+  column: the kept account after the merge — its name and sign-in email,
+  runs and kennels with overlaps counted once, payments, chats and photos
+  added up.
+
 ## 2.0.87+731 (2026-09-28)
 ### Improvements
 - **Kennel requests say what is missing.** An empty Country, Region or City
