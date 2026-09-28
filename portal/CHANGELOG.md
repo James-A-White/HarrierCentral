@@ -1,3 +1,14 @@
+## 2.0.87+725 (2026-09-28)
+### New Features
+- **Kennel requests.** HC Admin Tools › Kennel requests (platform admins
+  with Edit Kennel): the kennels asking to join, by status, with warnings for
+  a kennel of the same name and an email that already has an account. Correct
+  any field and pick the location from the lists, then Approve — which
+  creates the kennel with a coin logo, makes the requester its admin (with a
+  new account if needed), adds the platform admins as helpers and emails a
+  sign-in code — or Reject, Spam or Duplicate. Tick several to close them
+  together. Replaces approval in the old HC3W web app.
+
 ## 2.0.87+724 (2026-09-26)
 ### New Features
 - **Card payments settings.** Kennel › Hash Cash has a Card Payments group:
