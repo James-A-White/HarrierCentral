@@ -1,0 +1,134 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_mergeHashers",
+  "version": "1.0.0",
+  "description": "Merge accounts, step 2 (E12.F6.S2): moves every run row and payment row (and memberships, chat, photos, receipts, down downs, songs, products, promotions, track imports, organiser links) from the merge account to the kept one; combines rows where both have one (runs by EventId+DisplayName, kennels, chat badges); recalculates run counts and kennel credit; disables the merge account as hcapp_gdprDelete does (Removed, every device signed out with a new secret, push tokens cleared). Nothing is deleted except exact duplicates in down downs, promotion and newsflash-read maps and friend links. Logged to LOG.GeneralLog. Requires HC.PlatformAdmin with CanEditKennel = 1.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string."
+    },
+    {
+      "name": "keepHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "From the preview."
+    },
+    {
+      "name": "mergeHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "From the preview."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Success",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Moved (success only)",
+      "columns": [
+        {
+          "name": "RunsMoved",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RunsCombined",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "PaymentsMoved",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelsMoved",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelsCombined",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "ChatMessagesMoved",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "PhotosMoved",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "DevicesSignedOut",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherEventMap UserId (soft-remove combined twins)",
+    "UPDATE HC.Payment UserId, HasherEventMapId, *By columns",
+    "UPDATE HC.HasherKennelMap (combine / move / soft-remove)",
+    "UPDATE HC.EventMessage, EventMessageBadgeCounts, KennelPhotos, Receipt, DownDowns, DownDownHashers, Event (organiser), Song, SongSession, Product, Promotion, HasherPromotionMap, TrackImport, HasherOwnEvent, PortalNewsflash(Read), HasherFriendMap, PlatformAdmin",
+    "UPDATE HC.Hasher (keep fills blanks; merge Removed = 1)",
+    "UPDATE HC.Device (merge account signed out)",
+    "HC6.nonApi_updateRunCountsByUser, HC6.nonApi_updateKennelCreditByUser",
+    "INSERT LOG.GeneralLog"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "PackTrack points in Table Storage keep the old id",
+      "detail": "Live positions are keyed by userId in Azure Table Storage. A run tracked by the merge account and not yet archived (the nightly job) stays under the old id; runs already archived travel with their HasherEventMap row."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
