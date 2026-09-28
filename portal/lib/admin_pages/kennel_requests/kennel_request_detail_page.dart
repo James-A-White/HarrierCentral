@@ -40,11 +40,12 @@ class KennelRequestDetailPage extends StatelessWidget {
                 const SizedBox(height: 12),
                 ..._warnings(c),
                 _section('The kennel'),
-                _field(c.kennelName, 'Kennel name', enabled: request.isOpen),
+                _field(c.kennelName, 'Kennel name', enabled: request.isOpen, check: (c, 'kennelName')),
                 _field(
                   c.shortName,
                   'Short name — letters and digits, becomes hashruns.org/<short name>',
                   enabled: request.isOpen,
+                  check: (c, 'shortName'),
                 ),
                 _field(c.description, 'Description', enabled: request.isOpen, maxLines: 6),
                 _field(c.kennelUrl, 'Website', enabled: request.isOpen),
@@ -65,7 +66,7 @@ class KennelRequestDetailPage extends StatelessWidget {
                 _field(c.firstName, 'First name', enabled: request.isOpen),
                 _field(c.lastName, 'Last name', enabled: request.isOpen),
                 _field(c.hashName, 'Hash name', enabled: request.isOpen),
-                _field(c.email, 'Email (their sign-in code goes here)', enabled: request.isOpen),
+                _field(c.email, 'Email (their sign-in code goes here)', enabled: request.isOpen, check: (c, 'email')),
                 _answers(),
                 _section('Review'),
                 _field(c.reviewNote, 'Note (kept with the request; shown on the list)', maxLines: 3),
@@ -142,6 +143,26 @@ class KennelRequestDetailPage extends StatelessWidget {
     String label, {
     bool enabled = true,
     int maxLines = 1,
+    (KennelRequestDetailController, String)? check,
+  }) {
+    if (check != null) {
+      // Red once Approve has been pressed with this field wrong; clears as
+      // soon as it is put right.
+      final (c, key) = check;
+      return Obx(() {
+        final bool bad = c.approveTried.value && c.approveProblems.containsKey(key);
+        return _textField(controller, label, enabled: enabled, maxLines: maxLines, bad: bad);
+      });
+    }
+    return _textField(controller, label, enabled: enabled, maxLines: maxLines);
+  }
+
+  Widget _textField(
+    TextEditingController controller,
+    String label, {
+    required bool enabled,
+    required int maxLines,
+    bool bad = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -150,7 +171,12 @@ class KennelRequestDetailPage extends StatelessWidget {
         enabled: enabled,
         minLines: 1,
         maxLines: maxLines,
-        decoration: InputDecoration(labelText: label, border: const OutlineInputBorder(), isDense: true),
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          isDense: true,
+          errorText: bad ? 'Needed to approve' : null,
+        ),
       ),
     );
   }
@@ -163,13 +189,22 @@ class KennelRequestDetailPage extends StatelessWidget {
       void Function(String?) onChanged,
     ) {
       final entries = options.entries.toList();
+      // An open request cannot be approved without all three, so an empty
+      // picker says so in red — a bare "City" read as if it were chosen
+      // (James, 2026-09-28).
+      final bool missing = request.isOpen && !options.containsKey(value);
       return Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: DropdownButtonFormField<String>(
           // A value the options do not (yet) hold would assert.
           initialValue: options.containsKey(value) ? value : null,
           isExpanded: true,
-          decoration: InputDecoration(labelText: label, border: const OutlineInputBorder(), isDense: true),
+          decoration: InputDecoration(
+            labelText: missing ? '$label — not chosen' : label,
+            border: const OutlineInputBorder(),
+            isDense: true,
+            errorText: missing ? 'Choose a ${label.toLowerCase()}' : null,
+          ),
           items: [
             for (final e in entries) DropdownMenuItem(value: e.key, child: Text(e.value, overflow: TextOverflow.ellipsis)),
           ],
@@ -243,7 +278,8 @@ class KennelRequestDetailPage extends StatelessWidget {
     return Obx(() {
       final busy = c.isBusy.value;
       final dirty = c.isDirty.value;
-      final hasCity = c.cityId.value != null;
+      final problems = c.approveProblems;
+      final bool showProblems = c.approveTried.value && problems.isNotEmpty;
       if (!request.isOpen) {
         return Wrap(
           alignment: WrapAlignment.center,
@@ -257,7 +293,7 @@ class KennelRequestDetailPage extends StatelessWidget {
           ],
         );
       }
-      return Wrap(
+      final Widget buttons = Wrap(
         alignment: WrapAlignment.center,
         spacing: 12,
         runSpacing: 12,
@@ -266,7 +302,7 @@ class KennelRequestDetailPage extends StatelessWidget {
             label: 'Approve',
             icon: MaterialCommunityIcons.check,
             loading: busy,
-            onPressed: hasCity ? () => _approve(context, c) : null,
+            onPressed: () => _approve(context, c),
           ),
           HcButton.secondary(
             label: 'Save changes',
@@ -294,6 +330,21 @@ class KennelRequestDetailPage extends StatelessWidget {
           ),
         ],
       );
+      // What is missing sits beside the button, not at the top of the page.
+      return Column(
+        children: [
+          if (showProblems)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                'To approve, fill in: ${problems.values.join(', ')}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.w600),
+              ),
+            ),
+          buttons,
+        ],
+      );
     });
   }
 
@@ -315,8 +366,8 @@ class KennelRequestDetailPage extends StatelessWidget {
 
   Future<void> _approve(BuildContext context, KennelRequestDetailController c) async {
     final shortName = c.shortName.text.trim();
-    if (!c.shortNameIsValid) {
-      kennelRequestNotice('The short name may only hold letters and digits (up to 20) — edit it first.', isError: true);
+    if (c.approveProblems.isNotEmpty) {
+      c.approveTried.value = true;
       return;
     }
     final confirmed = await Get.defaultDialog<bool>(

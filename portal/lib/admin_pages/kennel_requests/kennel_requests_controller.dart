@@ -93,6 +93,27 @@ class KennelRequestDetailController extends GetxController {
     description, kennelUrl, facebookUrl, hashCash, nonMemberPrice, reviewNote,
   ];
 
+  /// Bumped on every keystroke, so an Obx can re-check the fields as they
+  /// are typed (isDirty only changes once).
+  final RxInt edits = 0.obs;
+
+  /// Approve was pressed with something missing: the missing fields turn red
+  /// and the reason shows beside the button (James, 2026-09-28).
+  final RxBool approveTried = false.obs;
+
+  /// What stops an approval, field → what to say. Empty = ready.
+  Map<String, String> get approveProblems {
+    edits.value; // re-evaluate as the reviewer types
+    return {
+      if (kennelName.text.trim().isEmpty) 'kennelName': 'Kennel name',
+      if (!shortNameIsValid) 'shortName': 'Short name (letters and digits, up to 20)',
+      if (!email.text.contains('@')) 'email': 'Email',
+      if (countryId.value == null) 'country': 'Country',
+      if (regionId.value == null) 'region': 'Region',
+      if (cityId.value == null) 'city': 'City',
+    };
+  }
+
   bool get shortNameIsValid => RegExp(r'^[A-Za-z0-9]{1,20}$').hasMatch(shortName.text.trim());
 
   @override
@@ -115,7 +136,10 @@ class KennelRequestDetailController extends GetxController {
     super.onClose();
   }
 
-  void _markDirty() => isDirty.value = true;
+  void _markDirty() {
+    isDirty.value = true;
+    edits.value++;
+  }
 
   Future<void> _loadLocations() async {
     countryOptions.assignAll(await queryCountries());

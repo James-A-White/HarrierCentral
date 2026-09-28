@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import type { Place } from "@/lib/api";
 
 const input =
-  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:bg-zinc-100";
+  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 placeholder:italic placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:bg-zinc-100";
 const label = "mb-1 block text-sm font-medium text-zinc-700";
+const labelBad = "mb-1 block text-sm font-semibold text-red-600";
+const inputBad = " border-red-500 ring-1 ring-red-500";
 const primaryBtn =
   "inline-flex w-full items-center justify-center rounded-full bg-orange-500 px-5 py-3 text-center text-base font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50";
 const linkBtn = "text-sm text-zinc-600 underline underline-offset-2 hover:text-zinc-900";
@@ -98,6 +100,8 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Send was pressed: from now on, what is missing is shown in red.
+  const [tried, setTried] = useState(false);
 
   const regions = usePlaces("countryId", f.countryId);
   const cities = usePlaces("regionId", f.regionId);
@@ -118,28 +122,34 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
     setF((prev) => ({ ...prev, regionId: e.target.value, cityId: "" }));
 
   const placeOk = !!f.countryId && (cityNotListed ? f.cityText.trim().length > 0 : !!f.cityId);
-  const ready =
-    f.firstName.trim() && f.lastName.trim() && f.email.trim() && f.kennelName.trim() &&
-    f.kennelShortName && f.kennelDescription.trim() && placeOk && terms.every((t) => t.length > 0);
   // "5." is still being typed; only a whole number or a number with decimals is a fee.
   const isFee = (v: string) => /^\d+(\.\d{1,2})?$/.test(v);
+  // Everything that stops the request, in page order: field key → its name.
   // Membership ticked ⇒ everything in its box is required; unticked ⇒ none
   // of it is, and the one run fee outside is the price for everyone.
-  const feeMessage = hasMembership && !isFee(f.membershipFee)
-    ? "Please enter the membership fee — just the number."
-    : hasMembership && !f.membershipType
-      ? "Please choose the type of membership."
-      : hasMembership && !isFee(f.hashCash)
-        ? "Please enter the run fee for members — just the number, 0 if runs are free."
-        : !isFee(f.nonMemberPrice)
-          ? hasMembership
-            ? "Please enter the run fee for visitors — just the number, 0 if runs are free."
-            : "Please enter the run fee — just the number, 0 if runs are free."
-          : null;
+  const problems: [string, string][] = [
+    ...(f.kennelName.trim() ? [] : [["kennelName", "Kennel name"]]),
+    ...(f.kennelShortName ? [] : [["shortName", "Short name"]]),
+    ...(f.kennelDescription.trim() ? [] : [["desc", "About the kennel"]]),
+    ...(f.countryId ? [] : [["country", "Country"]]),
+    ...(!f.countryId || placeOk ? [] : [["city", "City or town"]]),
+    ...(hasMembership && !isFee(f.membershipFee) ? [["memberFee", "Membership fee"]] : []),
+    ...(hasMembership && !f.membershipType ? [["memberType", "Type of membership"]] : []),
+    ...(hasMembership && !isFee(f.hashCash) ? [["feeMember", "Run fee for members"]] : []),
+    ...(isFee(f.nonMemberPrice) ? [] : [["feeVisitor", hasMembership ? "Run fee for visitors" : "Run fee"]]),
+    ...(f.firstName.trim() ? [] : [["first", "First name"]]),
+    ...(f.lastName.trim() ? [] : [["last", "Last name"]]),
+    ...(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()) ? [] : [["email", "Email"]]),
+    ...terms.flatMap((t, i) => (t ? [] : [[`terms${i + 1}`, `Terms question #${i + 1}`]])),
+  ] as [string, string][];
+  const bad = (k: string) => tried && problems.some(([p]) => p === k);
+  const lbl = (k: string) => (bad(k) ? labelBad : label);
+  const box = (k: string) => (bad(k) ? input + inputBad : input);
 
   async function submit() {
-    if (feeMessage) {
-      setError(feeMessage);
+    setTried(true);
+    if (problems.length > 0) {
+      setError(null);
       return;
     }
     setBusy(true);
@@ -230,8 +240,7 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
   }
 
   return (
-    <form className={`${panel} space-y-6`} onSubmit={(e) => { e.preventDefault(); if (!busy && ready) void submit(); }}>
-      {errorBox}
+    <form className={`${panel} space-y-6`} onSubmit={(e) => { e.preventDefault(); if (!busy) void submit(); }}>
 
       {/* Honeypot: people never see it, bots fill it in. */}
       <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
@@ -244,20 +253,20 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
       <fieldset className="space-y-3">
         <legend className="mb-2 text-lg font-bold">Your kennel</legend>
         <div>
-          <label className={label} htmlFor="kennelName">Kennel name *</label>
-          <input id="kennelName" className={input} maxLength={250} placeholder="London Hash House Harriers" value={f.kennelName} onChange={set("kennelName")} />
+          <label className={lbl("kennelName")} htmlFor="kennelName">Kennel name *</label>
+          <input id="kennelName" className={box("kennelName")} maxLength={250} placeholder="e.g. London Hash House Harriers" value={f.kennelName} onChange={set("kennelName")} />
         </div>
         <div>
-          <label className={label} htmlFor="shortName">Short name *</label>
-          <input id="shortName" className={input} placeholder="LH3" value={f.kennelShortName} onChange={setShortName} />
+          <label className={lbl("shortName")} htmlFor="shortName">Short name *</label>
+          <input id="shortName" className={box("shortName")} placeholder="e.g. LH3" value={f.kennelShortName} onChange={setShortName} />
           <p className="mt-1 text-xs text-zinc-500">
             Letters and digits. Your page will be at hashruns.org/{(f.kennelShortName || "lh3").toLowerCase()} (or close to it
             if the name is taken).
           </p>
         </div>
         <div>
-          <label className={label} htmlFor="desc">Tell hashers about the kennel *</label>
-          <textarea id="desc" className={input} rows={4} maxLength={4000} placeholder="When and where you run, what to expect…" value={f.kennelDescription} onChange={set("kennelDescription")} />
+          <label className={lbl("desc")} htmlFor="desc">Tell hashers about the kennel *</label>
+          <textarea id="desc" className={box("desc")} rows={4} maxLength={4000} placeholder="When and where you run, what to expect…" value={f.kennelDescription} onChange={set("kennelDescription")} />
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
@@ -279,8 +288,8 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
           </p>
         )}
         <div>
-          <label className={label} htmlFor="country">Country *</label>
-          <select id="country" className={input} value={f.countryId} onChange={pickCountry}>
+          <label className={lbl("country")} htmlFor="country">Country *</label>
+          <select id="country" className={box("country")} value={f.countryId} onChange={pickCountry}>
             <option value="">Choose…</option>
             {countries.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
@@ -297,8 +306,8 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
         {f.countryId && (
           cityNotListed || !f.regionId ? (
             <div>
-              <label className={label} htmlFor="cityText">City or town *</label>
-              <input id="cityText" className={input} maxLength={50} value={f.cityText} onChange={set("cityText")} />
+              <label className={lbl("city")} htmlFor="cityText">City or town *</label>
+              <input id="cityText" className={box("city")} maxLength={50} value={f.cityText} onChange={set("cityText")} />
               {f.regionId && (
                 <button type="button" className={`${linkBtn} mt-1`} onClick={() => setCityNotListed(false)}>
                   Pick from the list instead
@@ -307,8 +316,8 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
             </div>
           ) : (
             <div>
-              <label className={label} htmlFor="city">City or town *</label>
-              <select id="city" className={input} value={f.cityId} onChange={set("cityId")} disabled={cities.loading}>
+              <label className={lbl("city")} htmlFor="city">City or town *</label>
+              <select id="city" className={box("city")} value={f.cityId} onChange={set("cityId")} disabled={cities.loading}>
                 <option value="">{cities.loading ? "Loading…" : "Choose…"}</option>
                 {cities.places.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -338,28 +347,28 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
           </label>
           <fieldset disabled={!hasMembership} className={`grid gap-3 sm:grid-cols-2 ${hasMembership ? "" : "opacity-50"}`}>
             <div>
-              <label className={label} htmlFor="memberFee">Membership fee{hasMembership ? " *" : ""}</label>
-              <input id="memberFee" className={input} inputMode="decimal" autoComplete="off" placeholder="20" maxLength={10}
+              <label className={lbl("memberFee")} htmlFor="memberFee">Membership fee{hasMembership ? " *" : ""}</label>
+              <input id="memberFee" className={box("memberFee")} inputMode="decimal" autoComplete="off" placeholder="e.g. 20" maxLength={10}
                 value={f.membershipFee} onChange={setMoney("membershipFee")} />
             </div>
             <div>
-              <label className={label} htmlFor="memberType">Type of membership{hasMembership ? " *" : ""}</label>
-              <select id="memberType" className={input} value={f.membershipType} onChange={set("membershipType")}>
+              <label className={lbl("memberType")} htmlFor="memberType">Type of membership{hasMembership ? " *" : ""}</label>
+              <select id="memberType" className={box("memberType")} value={f.membershipType} onChange={set("membershipType")}>
                 <option value="">Choose…</option>
                 {MEMBERSHIP_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </div>
             <div className="sm:col-span-2">
-              <label className={label} htmlFor="feeMember">Run fee for members{hasMembership ? " *" : ""}</label>
-              <input id="feeMember" className={input} inputMode="decimal" autoComplete="off" placeholder="5" maxLength={10}
+              <label className={lbl("feeMember")} htmlFor="feeMember">Run fee for members{hasMembership ? " *" : ""}</label>
+              <input id="feeMember" className={box("feeMember")} inputMode="decimal" autoComplete="off" placeholder="e.g. 5" maxLength={10}
                 value={f.hashCash} onChange={setMoney("hashCash")} />
             </div>
           </fieldset>
         </div>
 
         <div>
-          <label className={label} htmlFor="feeVisitor">{hasMembership ? "Run fee for visitors *" : "Run fee *"}</label>
-          <input id="feeVisitor" className={input} inputMode="decimal" autoComplete="off" placeholder="7" maxLength={10}
+          <label className={lbl("feeVisitor")} htmlFor="feeVisitor">{hasMembership ? "Run fee for visitors *" : "Run fee *"}</label>
+          <input id="feeVisitor" className={box("feeVisitor")} inputMode="decimal" autoComplete="off" placeholder="e.g. 7" maxLength={10}
             value={f.nonMemberPrice} onChange={setMoney("nonMemberPrice")} />
         </div>
       </fieldset>
@@ -369,12 +378,12 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
         <p className="text-sm text-zinc-600">You become the kennel&rsquo;s admin in Harrier Central, and can add others later.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className={label} htmlFor="first">First name *</label>
-            <input id="first" className={input} autoComplete="given-name" maxLength={250} value={f.firstName} onChange={set("firstName")} />
+            <label className={lbl("first")} htmlFor="first">First name *</label>
+            <input id="first" className={box("first")} autoComplete="given-name" maxLength={250} value={f.firstName} onChange={set("firstName")} />
           </div>
           <div>
-            <label className={label} htmlFor="last">Last name *</label>
-            <input id="last" className={input} autoComplete="family-name" maxLength={250} value={f.lastName} onChange={set("lastName")} />
+            <label className={lbl("last")} htmlFor="last">Last name *</label>
+            <input id="last" className={box("last")} autoComplete="family-name" maxLength={250} value={f.lastName} onChange={set("lastName")} />
           </div>
         </div>
         <div>
@@ -382,8 +391,8 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
           <input id="hash" className={input} maxLength={250} value={f.hashName} onChange={set("hashName")} />
         </div>
         <div>
-          <label className={label} htmlFor="email">Email *</label>
-          <input id="email" className={input} type="email" inputMode="email" autoComplete="email" maxLength={250} placeholder="you@example.com" value={f.email} onChange={set("email")} />
+          <label className={lbl("email")} htmlFor="email">Email *</label>
+          <input id="email" className={box("email")} type="email" inputMode="email" autoComplete="email" maxLength={250} placeholder="you@example.com" value={f.email} onChange={set("email")} />
           <p className="mt-1 text-xs text-zinc-500">We send a code here to confirm it is you.</p>
         </div>
       </fieldset>
@@ -417,9 +426,9 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
       <fieldset className="space-y-4">
         <legend className="mb-2 text-lg font-bold">Terms &amp; conditions *</legend>
         {TERMS.map((q, i) => (
-          <div key={q.title} className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+          <div key={q.title} className={`rounded-xl border bg-zinc-50 p-4 ${bad(`terms${i + 1}`) ? "border-red-500 ring-1 ring-red-500" : "border-zinc-200"}`}>
             <p className="text-sm text-zinc-700">
-              <strong>{q.title}</strong> {q.text}
+              <strong className={bad(`terms${i + 1}`) ? "text-red-600" : undefined}>{q.title}</strong> {q.text}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               {q.options.map((o) => (
@@ -439,7 +448,15 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
         ))}
       </fieldset>
 
-      <button type="submit" className={primaryBtn} disabled={busy || !ready}>
+      {/* What is wrong sits beside the button, where the eye already is —
+          not at the top of a long form (James, 2026-09-28). */}
+      {tried && problems.length > 0 && (
+        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-700">
+          Please fill in the fields marked in red: {problems.map(([, n]) => n).join(", ")}.
+        </p>
+      )}
+      {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-center text-sm text-red-700">{error}</p>}
+      <button type="submit" className={primaryBtn} disabled={busy}>
         {busy ? "Sending…" : "Send my request"}
       </button>
       <p className="text-center text-xs text-zinc-500">* required</p>
