@@ -63,6 +63,13 @@ class HcAdminToolsPage extends StatelessWidget {
                   onTap: () => Get.to<KennelRequestsPage>(KennelRequestsPage.new),
                 ),
                 const SizedBox(height: 16),
+                _ToolCard(
+                  title: 'Merge accounts',
+                  subtitle: 'One person, two accounts: move everything to one and disable the other',
+                  icon: MaterialCommunityIcons.account_multiple_check,
+                  onTap: () => Get.to<MergeHashersPage>(MergeHashersPage.new),
+                ),
+                const SizedBox(height: 16),
               ],
               if (canManagePermissions)
                 _ToolCard(
