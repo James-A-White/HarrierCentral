@@ -1,0 +1,80 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_rejectKennelRequest",
+  "version": "1.0.0",
+  "description": "Closes open kennel requests as rejected (3), spam (4) or duplicate (5), or reopens one (1). Several ids at once, '|'-delimited. Never touches an approved request. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth (HC.Device.id)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string (device secret)."
+    },
+    {
+      "name": "kennelImportIds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
+      "description": "'|'-delimited ids; bad ids ignored"
+    },
+    {
+      "name": "newStatus",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.RequestStatus",
+      "description": "1, 3, 4 or 5"
+    },
+    {
+      "name": "reviewNote",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.ReviewNote",
+      "description": "≤1000; replaces the note when given"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Success",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "UpdatedCount",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE EXT.OfficeForms_KennelImport RequestStatus, ReviewNote, ReviewedBy/At, removed (0 on reopen, else 1), ConfirmCode cleared"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
