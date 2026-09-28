@@ -81,6 +81,8 @@ BEGIN TRY
         ci.CityName,
         ki.HashCash,
         ki.NonMemberPrice,
+        ki.MembershipFee,
+        ki.MembershipRenewalMode,
         ki.NumberOfRunsPerMonth,
         ki.NumberOfHashersPerRun,
         ki.nextRunNumber            AS NextRunNumber,

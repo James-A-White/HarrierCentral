@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getKennelRequests",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Kennel request review queue (E12.F1.S5): requests of one RequestStatus, newest first, with location names, SimilarKennels and ExistingHashName warnings. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1).",
   "parameters": [
     {
@@ -175,6 +175,18 @@
           "type": "NVARCHAR(50)",
           "nullable": true,
           "description": "Visitors' run fee."
+        },
+        {
+          "name": "MembershipFee",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MembershipRenewalMode",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "NULL = no membership"
         },
         {
           "name": "NumberOfRunsPerMonth",
