@@ -15,6 +15,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateKennelRequest]
     @regionId          UNIQUEIDENTIFIER = NULL,
     @cityId            UNIQUEIDENTIFIER = NULL,
     @hashCash          NVARCHAR(MAX)    = NULL,
+    @nonMemberPrice    NVARCHAR(MAX)    = NULL,
     @reviewNote        NVARCHAR(MAX)    = NULL
 AS
 -- =====================================================================
@@ -74,6 +75,7 @@ SET @kennelDescription = TRIM(@kennelDescription);
 SET @kennelUrl         = TRIM(@kennelUrl);
 SET @kennelFacebookUrl = TRIM(@kennelFacebookUrl);
 SET @hashCash          = TRIM(@hashCash);
+SET @nonMemberPrice    = TRIM(@nonMemberPrice);
 SET @reviewNote        = TRIM(@reviewNote);
 
 DECLARE @invalid NVARCHAR(500) = CASE
@@ -94,7 +96,8 @@ DECLARE @invalid NVARCHAR(500) = CASE
     WHEN LEN(@kennelDescription) > 4000             THEN 'The description may be at most 4000 characters'
     WHEN LEN(@kennelUrl) > 250 OR LEN(@kennelFacebookUrl) > 250
                                                     THEN 'Links may be at most 250 characters'
-    WHEN LEN(@hashCash) > 50                        THEN 'The price may be at most 50 characters'
+    WHEN LEN(@hashCash) > 50 OR LEN(@nonMemberPrice) > 50
+                                                    THEN 'The price may be at most 50 characters'
     WHEN LEN(@reviewNote) > 1000                    THEN 'The review note may be at most 1000 characters'
     WHEN @regionId IS NOT NULL AND NOT EXISTS (
             SELECT 1 FROM HC.Region r WHERE r.id = @regionId
@@ -144,6 +147,7 @@ BEGIN TRY
         KennelUrl         = CASE WHEN @kennelUrl IS NULL THEN ki.KennelUrl ELSE NULLIF(@kennelUrl, N'') END,
         KennelFacebookUrl = CASE WHEN @kennelFacebookUrl IS NULL THEN ki.KennelFacebookUrl ELSE NULLIF(@kennelFacebookUrl, N'') END,
         HashCash          = COALESCE(@hashCash, ki.HashCash),
+        NonMemberPrice    = CASE WHEN @nonMemberPrice IS NULL THEN ki.NonMemberPrice ELSE NULLIF(@nonMemberPrice, N'') END,
         ReviewNote        = CASE WHEN @reviewNote IS NULL THEN ki.ReviewNote ELSE NULLIF(@reviewNote, N'') END,
         CountryId         = COALESCE(@countryId, ki.CountryId),
         RegionId          = CASE WHEN @regionId IS NOT NULL THEN @regionId

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_updateKennelRequest",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Reviewer edits an open (status 0/1) kennel request before approval (E12.F1.S5). NULL keeps a field; '' clears an optional one. Region/city must agree with country/region; a country or region change clears what sits below it. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1).",
   "parameters": [
     {
@@ -122,6 +122,13 @@
       "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.CityId",
       "description": ""
+    },
+    {
+      "name": "nonMemberPrice",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.NonMemberPrice",
+      "description": "Visitors' run fee, ≤50; '' clears."
     }
   ],
   "rowsets": [
