@@ -122,6 +122,7 @@ class MergeHashersPage extends StatelessWidget {
   static const Color _warnText = Color(0xFF92400E);
   static const Color _keepColour = Color(0xFF15803D);
   static const Color _mergeColour = Color(0xFFDC2626);
+  static const Color _resultColour = Color(0xFF1D4ED8);
 
   @override
   Widget build(BuildContext context) {
@@ -361,6 +362,16 @@ class MergeHashersPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (ps.length > 1)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'Each RESULT column shows that one merge on its own. Merging them all '
+                  'adds each account\'s runs, kennels and payments to the kept one in turn.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                ),
+              ),
             for (final MergePreview p in ps) ...[
               _pairView(p),
               const SizedBox(height: 20),
@@ -389,21 +400,47 @@ class MergeHashersPage extends StatelessWidget {
       return d == null ? '—' : date.format(d.toLocal());
     }
 
-    final rows = <(String, String, String)>[
-      ('Hash name', p.keep.hashName, p.merge.hashName),
-      ('Email', p.keep.email, p.merge.email),
-      ('Last login', when(p.keep.s('LastLoginDateTime')), when(p.merge.s('LastLoginDateTime'))),
-      ('Signed-in devices', '${p.keep.n('SignedInDevices')}', '${p.merge.n('SignedInDevices')}'),
-      ('Kennels followed', '${p.keep.n('KennelsFollowed')}', '${p.merge.n('KennelsFollowed')}'),
+    String later(String a, String b) {
+      final DateTime? x = DateTime.tryParse(p.keep.s(a) ?? '');
+      final DateTime? y = DateTime.tryParse(p.merge.s(b) ?? '');
+      if (x == null) return when(p.merge.s(b));
+      if (y == null) return when(p.keep.s(a));
+      return date.format((x.isAfter(y) ? x : y).toLocal());
+    }
+
+    // An after-merge figure the preview SP computed (runs and kennels on
+    // both accounts count once); '—' if an older SP did not send it.
+    String after(String key) => p.overlap.containsKey(key) ? '${p.n(key)}' : '—';
+    int sum(String key) => p.keep.n(key) + p.merge.n(key);
+
+    // Label, KEEP, MERGE, and the RESULT: what the kept account looks like
+    // once the merge is done (James, 2026-09-28). Profile fields are the
+    // kept account's — the merge never overwrites them.
+    final rows = <(String, String, String, String)>[
+      ('Hash name', p.keep.hashName, p.merge.hashName, p.keep.hashName),
+      ('Email (signs in with)', p.keep.email, p.merge.email, p.keep.email),
+      ('Last login', when(p.keep.s('LastLoginDateTime')), when(p.merge.s('LastLoginDateTime')),
+          later('LastLoginDateTime', 'LastLoginDateTime')),
+      ('Signed-in devices', '${p.keep.n('SignedInDevices')}', '${p.merge.n('SignedInDevices')}',
+          '${p.keep.n('SignedInDevices')}'),
+      ('Kennels followed', '${p.keep.n('KennelsFollowed')}', '${p.merge.n('KennelsFollowed')}',
+          after('AfterKennelsFollowed')),
       ('Member / admin of', '${p.keep.n('KennelsMember')} / ${p.keep.n('KennelsAdmin')}',
-          '${p.merge.n('KennelsMember')} / ${p.merge.n('KennelsAdmin')}'),
+          '${p.merge.n('KennelsMember')} / ${p.merge.n('KennelsAdmin')}',
+          '${after('AfterKennelsMember')} / ${after('AfterKennelsAdmin')}'),
       ('Runs attended (hared)', '${p.keep.n('RunsAttended')} (${p.keep.n('RunsHared')})',
-          '${p.merge.n('RunsAttended')} (${p.merge.n('RunsHared')})'),
+          '${p.merge.n('RunsAttended')} (${p.merge.n('RunsHared')})',
+          '${after('AfterRunsAttended')} (${after('AfterRunsHared')})'),
       ('Payments', '${p.keep.n('Payments')} (${money.format(p.keep.d('PaymentsTotal'))})',
-          '${p.merge.n('Payments')} (${money.format(p.merge.d('PaymentsTotal'))})'),
-      ('Kennel credit', money.format(p.keep.d('CreditTotal')), money.format(p.merge.d('CreditTotal'))),
+          '${p.merge.n('Payments')} (${money.format(p.merge.d('PaymentsTotal'))})',
+          '${sum('Payments')} (${money.format(p.keep.d('PaymentsTotal') + p.merge.d('PaymentsTotal'))})'),
+      ('Kennel credit', money.format(p.keep.d('CreditTotal')), money.format(p.merge.d('CreditTotal')),
+          // Recalculated from the payments after the merge; the sum is what
+          // that comes to unless a kennel's credit was adjusted by hand.
+          '≈ ${money.format(p.keep.d('CreditTotal') + p.merge.d('CreditTotal'))}'),
       ('Chat messages / photos', '${p.keep.n('ChatMessages')} / ${p.keep.n('Photos')}',
-          '${p.merge.n('ChatMessages')} / ${p.merge.n('Photos')}'),
+          '${p.merge.n('ChatMessages')} / ${p.merge.n('Photos')}',
+          '${sum('ChatMessages')} / ${sum('Photos')}'),
     ];
 
     final warnings = <String>[
@@ -428,19 +465,26 @@ class MergeHashersPage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Table(
-              columnWidths: const {0: FlexColumnWidth(1.2), 1: FlexColumnWidth(1.5), 2: FlexColumnWidth(1.5)},
+              columnWidths: const {
+                0: FlexColumnWidth(1.2),
+                1: FlexColumnWidth(1.4),
+                2: FlexColumnWidth(1.4),
+                3: FlexColumnWidth(1.4),
+              },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
                 const TableRow(children: [
                   SizedBox.shrink(),
                   _Head('KEEP', _keepColour),
                   _Head('MERGE → disabled', _mergeColour),
+                  _Head('RESULT', _resultColour),
                 ]),
-                for (final (label, k, m) in rows)
+                for (final (label, k, m, r) in rows)
                   TableRow(children: [
                     _Cell(label, bold: true),
                     _Cell(k.isEmpty ? '—' : k),
                     _Cell(m.isEmpty ? '—' : m),
+                    _Cell(r.isEmpty ? '—' : r, bold: true),
                   ]),
               ],
             ),
