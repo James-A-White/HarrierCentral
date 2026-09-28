@@ -1,3 +1,6 @@
+0.21.74 (2026-09-28 redeploy — add kennel)
+    • hashruns.org/add-kennel: kennels ask to join with country/region/city picked from our lists and an emailed six-digit code; replaces the harriercentral.com form.
+
 0.21.74 (2026-09-28 redeploy)
     • Trail TV: every photo shown (no loop while queued), map eases to wait for photos, smoother 10 Hz replay with light track smoothing.
 
