@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_sendEventMessage",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Sends an event chat message. Inserts the message into HC.EventMessage (triggering the trgCreateSeqNum trigger which assigns MessageSequenceCount), upserts HC.EventMessageBadgeCounts so the sender never sees their own message as unread, then returns three rowsets: the inserted message detail, the list of users who qualify for a full push notification, and the list of users who get an in-app-only notification. Auth token is compound: DeviceSecret + eventId (as NVARCHAR). @messageReleasabilityFlags bitmask: 0x0001=mismanagement, 0x0002=members, 0x0004=followers, 0x0008=RSVPs, 0x0010=hares, 0x0020=everyone.",
   "parameters": [
     {
@@ -60,12 +60,42 @@
       "name": "ErrorResult",
       "description": "Returned on auth failure or any parameter validation error (messageId null, eventId null, messageContent empty, or releasabilityFlags missing/zero). Each validation error uses early RETURN so at most one error rowset is emitted.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification: 11=auth, 12=param." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code. Auth failures use codes from ValidateAppAuth; param validation uses 1261." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": true, "description": "Short error title for display." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification: 11=auth, 12=param."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code. Auth failures use codes from ValidateAppAuth; param validation uses 1261."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Short error title for display."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -73,17 +103,72 @@
       "name": "InsertedMessage",
       "description": "The just-inserted message. Single row. Returned on success in place of the error rowset.",
       "columns": [
-        { "name": "MessageId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id — the client-supplied messageId." },
-        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.EventId. Now UNIQUEIDENTIFIER (was NVARCHAR in HC5) — breaking change." },
-        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.PublicEventId — public-facing event UUID." },
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.PublicHasherId of the sender (not the internal Hasher.id)." },
-        { "name": "UserDisplayName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.DisplayName — computed column (hash name or real name per preference)." },
-        { "name": "UserPhoto", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo — URL of sender's profile photo." },
-        { "name": "MessageTitle", "type": "NVARCHAR(250)", "nullable": true, "description": "Formatted as DisplayName + ' - ' + MessageTitle. Reflects the COALESCE default if the caller passed null." },
-        { "name": "MessageContent", "type": "NVARCHAR(500)", "nullable": false, "description": "EventMessage.MessageContent." },
-        { "name": "MessageReleasabilityFlags", "type": "INT", "nullable": false, "description": "EventMessage.MessageReleasabilityFlags. Column name corrected from HC5 typo 'MessageRelesabilityFlags' — breaking change for any caller reading this column by name." },
-        { "name": "EventChatMessageCount", "type": "INT", "nullable": false, "description": "Always 0 — hardcoded. Obsolete field retained for client compatibility." },
-        { "name": "MessageType", "type": "INT", "nullable": false, "description": "EventMessage.MessageType — integer type code (INT in table, not NVARCHAR as incorrectly documented in HC5 contract)." }
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.id — the client-supplied messageId."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.EventId. Now UNIQUEIDENTIFIER (was NVARCHAR in HC5) — breaking change."
+        },
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "EventMessage.PublicEventId — public-facing event UUID."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId of the sender (not the internal Hasher.id)."
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.DisplayName — computed column (hash name or real name per preference)."
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo — URL of sender's profile photo."
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Formatted as DisplayName + ' - ' + MessageTitle. Reflects the COALESCE default if the caller passed null."
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent."
+        },
+        {
+          "name": "MessageReleasabilityFlags",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageReleasabilityFlags. Column name corrected from HC5 typo 'MessageRelesabilityFlags' — breaking change for any caller reading this column by name."
+        },
+        {
+          "name": "EventChatMessageCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 — hardcoded. Obsolete field retained for client compatibility."
+        },
+        {
+          "name": "MessageType",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageType — integer type code (INT in table, not NVARCHAR as incorrectly documented in HC5 contract)."
+        }
       ]
     },
     {
@@ -91,8 +176,24 @@
       "name": "FullPushNotificationRecipients",
       "description": "Users who qualify for a full push notification based on notification preferences, membership/releasability flags, and the 6-hour event proximity window. Only rows with a non-null FcmToken are included.",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId — internal Hasher.id (not PublicHasherId)." },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken — only non-null tokens are returned." }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap.UserId — internal Hasher.id (not PublicHasherId)."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken — only non-null tokens are returned."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": false,
+          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28."
+        }
       ]
     },
     {
@@ -100,8 +201,24 @@
       "name": "InAppOnlyNotificationRecipients",
       "description": "Kennel followers and members who did not qualify for a full push in rowset 1 — intended to receive an in-app realtime update only. Users in rowset 1 are excluded via a NOT IN subquery.",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId." },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken — only non-null tokens are returned." }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap.UserId."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken — only non-null tokens are returned."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": false,
+          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28."
+        }
       ]
     }
   ],

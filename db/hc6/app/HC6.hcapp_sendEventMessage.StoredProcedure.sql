@@ -38,8 +38,9 @@ AS
 --   Read SP (no envelope — data-driven by rowset count).
 --   Rowset 0: standard error detail (on error only)
 --   Rowset 0: message detail (on success)
---   Rowset 1: full-push FCM recipient rows { UserId, FcmToken }
---   Rowset 2: in-app FCM recipient rows { UserId, FcmToken }
+--   Rowset 1: full-push FCM recipient rows { UserId, FcmToken, BadgeTotal }
+--   Rowset 2: in-app FCM recipient rows { UserId, FcmToken, BadgeTotal }
+--   BadgeTotal (2026-09-28): the recipient's unread total for the app icon.
 -- Author: Harrier Central
 -- Created: 2026-05-10
 -- HC5 Source: HC5.hcapp_sendEventMessage
@@ -296,19 +297,23 @@ WHERE hkm.KennelId = @kennelId
 -- ---------------------------------------------------------------
 -- Rowset 1: visible push notification recipients
 -- ---------------------------------------------------------------
-SELECT DISTINCT UserId, FcmToken
-FROM #pushAudience
-WHERE Pref = 1
-   OR (Pref = 4 AND @isWithinWindow = 1);
+-- BadgeTotal: the recipient's unread total for the app ICON (HC6.UserUnreadChatTotal,
+-- the same rule as the in-app badges); the API puts it in aps.badge (2026-09-28).
+SELECT DISTINCT a.UserId, a.FcmToken, bt.BadgeTotal
+FROM #pushAudience a
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
+WHERE a.Pref = 1
+   OR (a.Pref = 4 AND @isWithinWindow = 1);
 
 -- ---------------------------------------------------------------
 -- Rowset 2: silent (data-only) recipients — badge moves, nothing buzzes.
 -- "On but muted", and "on before the run" while the run is still far off.
 -- ---------------------------------------------------------------
-SELECT DISTINCT UserId, FcmToken
-FROM #pushAudience
-WHERE Pref = 3
-   OR (Pref = 4 AND @isWithinWindow = 0);
+SELECT DISTINCT a.UserId, a.FcmToken, bt.BadgeTotal
+FROM #pushAudience a
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
+WHERE a.Pref = 3
+   OR (a.Pref = 4 AND @isWithinWindow = 0);
 
 DROP TABLE #pushAudience;
 
