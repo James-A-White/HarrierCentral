@@ -1,3 +1,9 @@
+1.0.61+62
+    • Chat pushes carry the recipient's unread total for the app icon
+      (aps.badge on iOS, notification_count on Android, data.BadgeTotal),
+      and read_sync carries the lowered total. Only builds 1418+ get it
+      (HC6.MinBuildForIconBadge).
+
 1.0.61+61
     • Kennel requests (E12.F1.S6-S8): PublicWebAdminApi accepts
       submitKennelRequest / confirmKennelRequest and emails the confirmation

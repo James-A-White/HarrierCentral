@@ -1,3 +1,13 @@
+## 3.1.8+1418 (2026-09-28)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Unread chats on the app icon.** The number of unread chat messages —
+  runs, kennels and rooms — now shows on the app icon, and chat pushes keep
+  it right while the app is closed. Reading a chat lowers it, on your other
+  devices too. On Android the number shows where the launcher supports one
+  (Samsung and others); elsewhere it is the usual dot.
+
 ## 3.1.8+1417 (2026-09-28)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version.
