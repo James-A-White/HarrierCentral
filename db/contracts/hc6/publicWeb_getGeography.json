@@ -1,0 +1,51 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getGeography",
+  "version": "1.0.0",
+  "description": "Anonymous Country → Region → City lists for the add-kennel form: no params = countries; @countryId = regions; @regionId = cities.",
+  "parameters": [
+    {
+      "name": "countryId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Region.CountryId",
+      "description": ""
+    },
+    {
+      "name": "regionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "City.RegionId",
+      "description": ""
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Places",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "name",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
