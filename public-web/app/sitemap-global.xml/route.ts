@@ -3,6 +3,7 @@ import { GLOBAL_BASE_URL } from "@/lib/seo";
 const PAGES = [
   { loc: GLOBAL_BASE_URL,              changefreq: "hourly",  priority: "1.0" },
   { loc: `${GLOBAL_BASE_URL}/calendar`, changefreq: "hourly",  priority: "0.8" },
+  { loc: `${GLOBAL_BASE_URL}/add-kennel`, changefreq: "monthly", priority: "0.5" },
 ];
 
 function buildXml(): string {

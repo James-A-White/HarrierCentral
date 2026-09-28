@@ -750,3 +750,23 @@ export async function resolveKennelsByUuid(ids: string): Promise<ResolvedKennel[
   });
   return rows ?? [];
 }
+
+// ─── Places (the add-kennel form) ─────────────────────────────────────────────
+
+export interface Place {
+  id: string;
+  name: string;
+}
+
+/**
+ * The database's own countries, a country's regions, or a region's cities —
+ * publicWeb_getGeography, reference data only. The add-kennel form picks
+ * from these so a request never names a place nobody can find later.
+ */
+export async function getGeography(params: { countryId?: string; regionId?: string } = {}): Promise<Place[]> {
+  const query: Record<string, string> = {};
+  if (params.regionId) query.regionId = params.regionId;
+  else if (params.countryId) query.countryId = params.countryId;
+  const rows = await callPublicWebApi<{ id: string; name: string }>("getGeography", query);
+  return (rows ?? []).map((r) => ({ id: String(r.id).toLowerCase(), name: r.name }));
+}

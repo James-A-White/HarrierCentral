@@ -917,14 +917,9 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
       {/* ── Footer ────────────────────────────────────────────────────────── */}
       <div className="shrink-0 py-3 w-screen text-center">
         <p className="text-sm sm:text-lg md:text-2xl text-white/70">
-          Powered by Harrier Central. Sign your Kennel up today at{" "}
-          <a
-            href="https://www.harriercentral.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-orange-400 hover:underline"
-          >
-            www.harriercentral.com
+          Powered by Harrier Central.{" "}
+          <a href="/add-kennel" className="text-orange-400 hover:underline">
+            Add your kennel today
           </a>
         </p>
         <p className="text-sm italic text-white/40 mt-0.5">Version: {process.env.NEXT_PUBLIC_APP_VERSION}</p>
