@@ -370,7 +370,9 @@ class AppBootService {
     // Hold the recovery key (if we're keeping it) before wiping.
     final String? recoveryCode = keepResetCode ? await getResetCode() : null;
 
-    // Wipe everything.
+    // Wipe everything — including the number on the app icon, which belongs
+    // to the account being signed out (2026-09-28).
+    await NotificationService.setAppIconBadge(0);
     await clearPrefs();
     await deleteAllSecure();
     await DBProvider.deleteDb(DB_NAME);

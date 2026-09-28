@@ -1,3 +1,4 @@
+import 'package:app_badge_plus/app_badge_plus.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/firebase_options.dart';
 
@@ -58,8 +59,10 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   Future<NotificationService> init() async {
     WidgetsBinding.instance.addObserver(this);
 
-    // Initial Badge Setup (Clear on service start)
-    _clearAppBadge();
+    // The app icon is NOT cleared here any more (2026-09-28): the chat pushes
+    // now set it to the true unread total while the app is closed, and
+    // clearing it at start would throw that away. The first badge fetch below
+    // writes the real number (see _recalculateGlobalBadgeCount).
 
     if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_UPGRADE_1_2) {
       return this;
@@ -489,17 +492,9 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       return;
     }
 
-    // 2. Badge Clear Logic: Reset badge counts when user interacts with notification
-    final publicEventId = message.payload['PublicEventId'] as String?;
-
-    // Attempt to clear the badges for the specific event if possible.
-    if (publicEventId != null) {
-      // We don't know the total server count here, so we assume the user has read all known messages
-      // by setting the viewed count to a very high number or by using the current unread count.
-      // For now, we clear the global badge since the app is being opened.
-      // Note: This might be too aggressive if the notification isn't chat-related.
-      _clearAppBadge(); // Clear external badge immediately for a clean look
-    }
+    // The app icon is not cleared on a tap any more (2026-09-28): the tap
+    // opens ONE chat, and the others may still be unread. Reading it moves the
+    // server count, and the refresh that follows sets the icon to what is left.
 
     //pop all the way back to the main page
     Get.until((route) => route.isFirst || route.settings.name == '/main');
@@ -585,8 +580,27 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
     globalTotalBadgeCount.value = unreadEventCounts.values.fold<int>(
       0,
-      (sum, rxInt) => sum + rxInt.value,
+      // A thread never takes the total down: the server's unread count can
+      // dip below zero when a message is removed, and HC6.UserUnreadChatTotal
+      // (the number the pushes put on the icon) counts only the positives.
+      (sum, rxInt) => sum + (rxInt.value > 0 ? rxInt.value : 0),
     );
+    // Every refresh ends here — boot, resume, a chat push, a read_sync, mark
+    // all read — so this is the one place the app ICON is set. Written every
+    // time, not only on a change: a push may have left a number on the icon
+    // that the app has not seen, and 0 → 0 would never correct it.
+    unawaited(setAppIconBadge(globalTotalBadgeCount.value));
+  }
+
+  /// The number on the app icon (2026-09-28). iOS shows it as given; Android
+  /// shows it where the launcher supports a number (Samsung and others) and a
+  /// dot elsewhere. Never throws: a badge is not worth an error.
+  static Future<void> setAppIconBadge(int count) async {
+    try {
+      await AppBadgePlus.updateBadge(count < 0 ? 0 : count);
+    } catch (e) {
+      if (kDebugMode) debugPrint('setAppIconBadge($count) failed: $e');
+    }
   }
 
   void _updateChatCountBadges(String? publicEventId, int serverChatCount) {
@@ -868,14 +882,6 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   //   // ⚠️ IMPLEMENT EXTERNAL BADGE LOGIC HERE
 
   /// Clears the native platform application badge.
-  void _clearAppBadge() {
-    // ⚠️ IMPLEMENT EXTERNAL BADGE CLEAR LOGIC HERE
-    // Example: FlutterAppBadger.removeBadge();
-    if (kDebugMode) {
-      debugPrint("Clearing native badge.");
-    }
-  }
-
   bool _hasCompleteAuthBundle({
     required String? userId,
     required String? deviceId,
