@@ -22,9 +22,32 @@ class KennelLogo extends StatelessWidget {
   final double? rightPadding;
   final KennelLogoZoomGesture zoomGesture;
 
+  /// One of Harrier Central's generic coins stored as an image URL —
+  /// `…/generic-logos/C-030.png` — which is how new kennels and the 63
+  /// kennels moved off `bundle://` on 2026-09-28 carry them. Captures the
+  /// coin's code (`C-030`, `C-Default`).
+  static final RegExp _coinUrl = RegExp(
+    r'/generic-logos/(C-[A-Za-z0-9]+)\.png$',
+    caseSensitive: false,
+  );
+
   bool get _isBundleImage => kennelLogoUrl?.contains('bundle://') ?? false;
 
+  /// The coin's code when the logo is a generic coin given as a URL.
+  String? get _coinCode => _isBundleImage
+      ? null
+      : _coinUrl.firstMatch(kennelLogoUrl ?? '')?.group(1);
+
+  /// Drawn from the app's own images, with the kennel's short name written
+  /// on it: a `bundle://` logo, or a generic coin given as a URL. A coin is
+  /// blank artwork — the short name IS the logo (James, 2026-09-28: "when a
+  /// coin is used it should overlay the kennel short name as it did when
+  /// bundle was used").
+  bool get _isLocalCoin => _isBundleImage || _coinCode != null;
+
   String? get _assetImagePath {
+    final String? coin = _coinCode;
+    if (coin != null) return 'images/generic_logos/$coin.png';
     if (!_isBundleImage) return null;
     final basePath = kennelLogoUrl!.toLowerCase().contains('avatar')
         ? 'images/avatars/'
@@ -41,8 +64,8 @@ class KennelLogo extends StatelessWidget {
             key: const Key('11126697697'),
             file: null,
             assetImage: _assetImagePath,
-            assetImageText: _isBundleImage ? kennelShortName : null,
-            imageUrl: _isBundleImage ? null : kennelLogoUrl,
+            assetImageText: _isLocalCoin ? kennelShortName : null,
+            imageUrl: _isLocalCoin ? null : kennelLogoUrl,
             pageTitle: 'Kennel logo',
             appBarBackgroundColor: themeAppBarBackground,
             background: Backgrounds.defaultHcBackground(),
@@ -74,7 +97,7 @@ class KennelLogo extends StatelessWidget {
           right: rightPadding ?? 0,
         ),
         alignment: Alignment.centerRight,
-        child: _isBundleImage
+        child: _isLocalCoin
             ? Stack(
                 alignment: Alignment.center,
                 children: [
