@@ -1,0 +1,159 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_updateKennelRequest",
+  "version": "1.0.0",
+  "description": "Reviewer edits an open (status 0/1) kennel request before approval (E12.F1.S5). NULL keeps a field; '' clears an optional one. Region/city must agree with country/region; a country or region change clears what sits below it. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth (HC.Device.id)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string (device secret)."
+    },
+    {
+      "name": "kennelImportId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
+      "description": ""
+    },
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.FirstName",
+      "description": "≤250"
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.LastName",
+      "description": "≤250"
+    },
+    {
+      "name": "hashName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.HashName",
+      "description": "≤250"
+    },
+    {
+      "name": "emailAddress",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.EmailAddress",
+      "description": "≤250, lower-cased"
+    },
+    {
+      "name": "kennelName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelName",
+      "description": "≤250"
+    },
+    {
+      "name": "kennelShortName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelShortName",
+      "description": "≤20, letters and digits only — becomes the web address"
+    },
+    {
+      "name": "kennelDescription",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelDescription",
+      "description": "≤4000"
+    },
+    {
+      "name": "kennelUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelUrl",
+      "description": "≤250"
+    },
+    {
+      "name": "kennelFacebookUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelFacebookUrl",
+      "description": "≤250"
+    },
+    {
+      "name": "hashCash",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.HashCash",
+      "description": "≤50, free text"
+    },
+    {
+      "name": "reviewNote",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.ReviewNote",
+      "description": "≤1000"
+    },
+    {
+      "name": "countryId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.CountryId",
+      "description": ""
+    },
+    {
+      "name": "regionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RegionId",
+      "description": ""
+    },
+    {
+      "name": "cityId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.CityId",
+      "description": ""
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Success",
+      "description": "{ Success, ErrorMessage } — also the auth / CanEditKennel refusal.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok, 0 refused"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Why, for the reviewer"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE EXT.OfficeForms_KennelImport (fields, and Country/Region/City text from the ids)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
