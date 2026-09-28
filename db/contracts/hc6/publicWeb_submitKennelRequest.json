@@ -1,0 +1,288 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_submitKennelRequest",
+  "version": "1.0.0",
+  "description": "hashruns.org/add-kennel (E12.F1.S7): stores a request as status 0 with a six-digit ConfirmCode. Same email + short name within 30 days reuses the open row (new code). 5 per SubmitIp per day. PublicWebAdminApi only, behind HC_INTERNAL_SECRET; the API emails the code and strips it.",
+  "parameters": [
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.FirstName",
+      "description": "required, ≤250"
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.LastName",
+      "description": "required, ≤250"
+    },
+    {
+      "name": "hashName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.HashName",
+      "description": "≤250"
+    },
+    {
+      "name": "email",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.EmailAddress",
+      "description": "required, ≤250, lower-cased"
+    },
+    {
+      "name": "kennelName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelName",
+      "description": "required, ≤250"
+    },
+    {
+      "name": "kennelShortName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelShortName",
+      "description": "required, ≤20, A-Z0-9 (upper-cased)"
+    },
+    {
+      "name": "kennelDescription",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelDescription",
+      "description": "required, ≤4000"
+    },
+    {
+      "name": "kennelUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelUrl",
+      "description": "≤250"
+    },
+    {
+      "name": "kennelFacebookUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelFacebookUrl",
+      "description": "≤250"
+    },
+    {
+      "name": "countryId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.CountryId",
+      "description": "required"
+    },
+    {
+      "name": "regionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RegionId",
+      "description": "must be in the country"
+    },
+    {
+      "name": "cityId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.CityId",
+      "description": "must be in the region"
+    },
+    {
+      "name": "cityText",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.City",
+      "description": "≤50, when the city is not listed"
+    },
+    {
+      "name": "runsPerMonth",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.NumberOfRunsPerMonth",
+      "description": "≤50"
+    },
+    {
+      "name": "hashersPerRun",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.NumberOfHashersPerRun",
+      "description": "≤50"
+    },
+    {
+      "name": "hashCash",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.HashCash",
+      "description": "≤50"
+    },
+    {
+      "name": "nextRunNumber",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.nextRunNumber",
+      "description": "≤250"
+    },
+    {
+      "name": "howDidYouLearn",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.HowDidYouLearnAboutHc",
+      "description": "≤4000"
+    },
+    {
+      "name": "comments",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.comments",
+      "description": "≤4000"
+    },
+    {
+      "name": "submitIp",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.SubmitIp",
+      "description": "set by the Next.js route, cut to 64"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "{ success, errorCode, errorType } — lower-case, as publicWeb_createMember, so the shim passes a refusal through for the page to show.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "0 on success; 17xx on refusal"
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 validation, 5 unhandled"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail (on failure)",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Shown on the form"
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Submitted (on success)",
+      "columns": [
+        {
+          "name": "requestId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "email",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "confirmCode",
+          "type": "NVARCHAR(6)",
+          "nullable": true,
+          "description": "NULL when the matching request is already confirmed; stripped by the API"
+        },
+        {
+          "name": "alreadySubmitted",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "errorCodes": {
+    "1710": "names",
+    "1711": "name length",
+    "1712": "email",
+    "1713": "kennel name",
+    "1714": "short name",
+    "1715": "description",
+    "1716": "links",
+    "1717": "country",
+    "1718": "region",
+    "1719": "city",
+    "1720": "city or city text",
+    "1721": "answer length",
+    "1722": "comments length",
+    "1723": "IP rate limit",
+    "1729": "unhandled"
+  },
+  "sideEffects": [
+    "INSERT or UPDATE EXT.OfficeForms_KennelImport",
+    "API: confirmation email via the Logic App"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
