@@ -293,8 +293,8 @@
   <p class="standfirst">Every epic, feature and user story across the five components — the Flutter mobile app, the Flutter admin portal, the Next.js public web, the Azure Functions shim and the SQL Server domain layer — plus the non-functional requirements that hold them together. <strong>Epics are organised by what a hasher is trying to do, not by which codebase serves it</strong>, because almost every feature here spans three surfaces at once.</p>
   <div class="meta-strip">
     <div><b>17</b> epics</div>
-    <div><b>84</b> features</div>
-    <div><b>329</b> stories</div>
+    <div><b>85</b> features</div>
+    <div><b>331</b> stories</div>
     <div><b>49</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -329,7 +329,7 @@
   <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 52 stories</span></a>
   <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 22 stories</span></a>
-  <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">5 features · 21 stories</span></a>
+  <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">6 features · 23 stories</span></a>
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 15 requirements</span></a>
   <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 20 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
@@ -1217,6 +1217,17 @@
       <li class="story"><span class="s-id">E12.F5.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want an external API key so that our own site or tooling can read our run data.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E12.F5.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to regenerate that key so that a leak has a remedy.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E12.F5.S3</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want a form on our old WordPress site to create a hasher here so that migration is gradual.</span><span class="chip c-ship">Shipped</span></li>
+    </ul>
+  </div>
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E12.F6</span><h3 class="feature-name">Account administration  </h3>
+      <span class="surfaces"><span class="surf">DB</span><span class="surf">Portal</span></span>
+    </div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E12.F6.S1</span><span class="s-text">As a <em>Platform Admin</em> with <code>CanEditKennel</code>, I want to enter the email (or hasher id) of the account to keep and of the duplicate, and see both side by side — runs, payments, credit, kennels, devices, chat, photos — with where they overlap (runs on both, kennels on both, runs both paid for), so that I know what a merge will do before it happens. <code>hcportal_previewHasherMerge</code>; HC Admin Tools › Merge accounts. Built 2026-09-28.</span><span class="chip c-build">Building</span>
+        <span class="gap">not deployed.</span></li>
+      <li class="story"><span class="s-id">E12.F6.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want the merge to move every run and payment row to the kept account — combining the rows where both had one, never deleting money — along with memberships, chat, photos and the rest, recalculate run counts and credit, and disable the duplicate (signed out everywhere, as a GDPR delete does), so that one person has one history. <code>hcportal_mergeHashers</code> replaces <code>HC3.utilApi_mergeUsers</code>, which deleted the duplicate's payment where both had paid and every past run either had not attended. Built 2026-09-28, tested in a rolled-back transaction.</span><span class="chip c-build">Building</span>
+        <span class="gap">not deployed; PackTrack points not yet archived (the nightly job) stay under the old id in Table Storage.</span></li>
     </ul>
   </div>
 </section>

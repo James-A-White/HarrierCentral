@@ -862,6 +862,14 @@ The things only Opee and Tuna Melt can do — onboarding kennels, holding the pe
 | `E12.F5.S2` | As a **Kennel HC Admin**, I want to regenerate that key so that a leak has a remedy. | `Shipped` |
 | `E12.F5.S3` | As a **Kennel HC Admin**, I want a form on our old WordPress site to create a hasher here so that migration is gradual. | `Shipped` |
 
+
+### E12.F6 · Account administration  
+`DB` `Portal`
+
+| ID | Story | Status |
+|---|---|---|
+| `E12.F6.S1` | As a **Platform Admin** with `CanEditKennel`, I want to enter the email (or hasher id) of the account to keep and of the duplicate, and see both side by side — runs, payments, credit, kennels, devices, chat, photos — with where they overlap (runs on both, kennels on both, runs both paid for), so that I know what a merge will do before it happens. `hcportal_previewHasherMerge`; HC Admin Tools › Merge accounts. Built 2026-09-28. **⚠ Known gap:** not deployed. | `Building` |
+| `E12.F6.S2` | As a **Platform Admin**, I want the merge to move every run and payment row to the kept account — combining the rows where both had one, never deleting money — along with memberships, chat, photos and the rest, recalculate run counts and credit, and disable the duplicate (signed out everywhere, as a GDPR delete does), so that one person has one history. `hcportal_mergeHashers` replaces `HC3.utilApi_mergeUsers`, which deleted the duplicate's payment where both had paid and every past run either had not attended. Built 2026-09-28, tested in a rolled-back transaction. **⚠ Known gap:** not deployed; PackTrack points not yet archived (the nightly job) stay under the old id in Table Storage. | `Building` |
 ---
 
 ## E13 · non-functional — Security, Privacy & Data Protection
