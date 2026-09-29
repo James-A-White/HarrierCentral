@@ -549,9 +549,10 @@ export async function searchKennels(q: string): Promise<KennelSearchRow[]> {
 
 // ── Chat (E9.F7.S15) — the app's own message SPs behind publicWeb_ wrappers ──
 
-export type ChatKind = "run" | "kennel" | "room";
+/** "dm" is a direct message between two hashers (E9.F1.S7); its id is the ThreadId. */
+export type ChatKind = "run" | "kennel" | "room" | "dm";
 
-/** hcapp_getEventBadgeCount list mode — one row per run, kennel or room thread. */
+/** hcapp_getEventBadgeCount list mode — one row per run, kennel, room or DM thread. */
 export interface ChatThreadRow {
   BadgeCount: number; PublicEventId: string | null; EventName: string | null; EventNumber: number | null;
   EventStartDatetimeGmt: string | null; EventImage: string | null; PublicKennelId: string | null;
@@ -559,6 +560,14 @@ export interface ChatThreadRow {
   Pinned: number; RoomType?: number | null;
   /** A platform room's coin, from HC6.ChatRoomCatalog(). Null until it has art. */
   RoomIcon?: string | null;
+  /** A direct message (E9.F1.S7): the thread, and who is on the other end.
+   *  Null on every other kind. EventName / KennelLogo carry the same name and
+   *  photo as fallbacks. The SP returns these rows only to devices whose
+   *  BuildNumber parses to >= HC6.MinBuildForDmPush(). */
+  ThreadId?: string | null;
+  OtherPublicHasherId?: string | null;
+  OtherDisplayName?: string | null;
+  OtherPhoto?: string | null;
 }
 
 /** hcapp_get*Messages row (flutter_chat_core shape). */
@@ -571,12 +580,18 @@ export interface ChatMessageRow {
   canDelete?: number | null;
 }
 
-const CHAT_GET_PROC: Record<ChatKind, string> = { run: "hcapp_getEventMessages", kennel: "hcapp_getKennelMessages", room: "hcapp_getRoomMessages" };
-const CHAT_SEND_PROC: Record<ChatKind, string> = { run: "hcapp_sendEventMessage", kennel: "hcapp_sendKennelMessage", room: "hcapp_sendRoomMessage" };
-const CHAT_READ_PROC: Record<ChatKind, string> = { run: "hcapp_markEventChatRead", kennel: "hcapp_markKennelChatRead", room: "hcapp_getRoomMessages" };
+// The wrapper SPs sign nothing themselves: the token is for the app SP the
+// kind selects, so a DM is read and sent through the DM SPs' own gates.
+const CHAT_GET_PROC: Record<ChatKind, string> = { run: "hcapp_getEventMessages", kennel: "hcapp_getKennelMessages", room: "hcapp_getRoomMessages", dm: "hcapp_getDirectMessages" };
+const CHAT_SEND_PROC: Record<ChatKind, string> = { run: "hcapp_sendEventMessage", kennel: "hcapp_sendKennelMessage", room: "hcapp_sendRoomMessage", dm: "hcapp_sendDirectMessage" };
+// Rooms and DMs mark themselves read through their reader's @markRead flag.
+const CHAT_READ_PROC: Record<"run" | "kennel", string> = { run: "hcapp_markEventChatRead", kennel: "hcapp_markKennelChatRead" };
 
 function chatIds(kind: ChatKind, id: string) {
-  return { publicEventId: kind === "run" ? id : null, publicKennelId: kind === "kennel" ? id : null, roomType: kind === "room" ? id : null };
+  return {
+    publicEventId: kind === "run" ? id : null, publicKennelId: kind === "kennel" ? id : null,
+    roomType: kind === "room" ? id : null, threadId: kind === "dm" ? id : null,
+  };
 }
 
 export async function getChatThreads(s: MemberSession): Promise<{ me: string; threads: ChatThreadRow[] }> {
@@ -585,7 +600,21 @@ export async function getChatThreads(s: MemberSession): Promise<{ me: string; th
   if (env.success !== 1) return { me: "", threads: [] };
   // The badge SP returns its thread rows as the next rowset that carries BadgeCount.
   const rows = (rowsets.slice(1).find((r) => r.length > 0 && "BadgeCount" in (r[0] as object)) ?? []) as unknown as ChatThreadRow[];
-  return { me: (env.Me ?? "").toUpperCase(), threads: rows.filter((t) => t.PublicEventId || t.PublicKennelId || t.RoomType != null) };
+  // A row that names no thread at all is a kind this build does not know: skip it, never crash on it.
+  return { me: (env.Me ?? "").toUpperCase(), threads: rows.filter((t) => t.PublicEventId || t.PublicKennelId || t.RoomType != null || t.ThreadId) };
+}
+
+/** The other half of a direct message, from hcapp_getDirectMessages' status rowset (E9.F1.S7). */
+export interface DmThreadInfo {
+  /** UPPER, as the chat rowsets carry authorId. */
+  otherPublicHasherId: string;
+  otherDisplayName: string;
+  otherPhoto: string | null;
+  /** 0 when either side has ended the conversation or blocked the other: the composer closes. */
+  canSend: number;
+  /** 1 when this member has muted the thread's pushes. */
+  muted: number;
+  unreadCount: number;
 }
 
 export interface ChatMessages {
@@ -593,6 +622,8 @@ export interface ChatMessages {
   messages: ChatMessageRow[];
   /** Every removed message in the thread, UPPER. A delta fetch never sees a deletion, so the client drops these. */
   removed: string[];
+  /** A DM's status — who, whether I may send, muted. Absent for every other kind, and absent when the DM SP refused (not my thread). */
+  dm?: DmThreadInfo;
 }
 
 export async function getChatMessages(s: MemberSession, kind: ChatKind, id: string, since?: number, markRead?: boolean): Promise<ChatMessages | null> {
@@ -607,7 +638,23 @@ export async function getChatMessages(s: MemberSession, kind: ChatKind, id: stri
   // path puts a badge rowset in front of it. Empty when nothing was removed.
   const removedRows = (rowsets.slice(1).find((r) => r.length > 0 && "removedId" in (r[0] as object)) ?? []) as { removedId?: unknown }[];
   const removed = removedRows.map((r) => String(r.removedId ?? "").toUpperCase()).filter(Boolean);
-  return { me: (env.Me ?? "").toUpperCase(), messages: rows, removed };
+  const out: ChatMessages = { me: (env.Me ?? "").toUpperCase(), messages: rows, removed };
+  if (kind === "dm") {
+    // The wrapper emits its own success envelope BEFORE the DM SP runs, so a
+    // refusal (not my thread) looks like an empty thread with no status
+    // rowset. No status ⇒ no DM: the page treats that as not found.
+    const st = rowsets.slice(1).find((r) => r.length > 0 && "canSend" in (r[0] as object))?.[0] as Partial<DmThreadInfo> | undefined;
+    if (!st?.otherPublicHasherId) return null;
+    out.dm = {
+      otherPublicHasherId: String(st.otherPublicHasherId).toUpperCase(),
+      otherDisplayName: String(st.otherDisplayName ?? ""),
+      otherPhoto: st.otherPhoto ? String(st.otherPhoto) : null,
+      canSend: Number(st.canSend) === 1 ? 1 : 0,
+      muted: Number(st.muted) === 1 ? 1 : 0,
+      unreadCount: Number(st.unreadCount) || 0,
+    };
+  }
+  return out;
 }
 
 export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: string, messageId: string, text: string, messageKind: ChatMessageKind = CHAT_KIND_TEXT): Promise<{ ok: boolean; message?: string }> {
@@ -700,6 +747,122 @@ export async function reportChatMessage(s: MemberSession, messageId: string, rea
   });
   if (succeeded(rowsets)) return { ok: true };
   return { ok: false, message: refusalOf(rowsets) ?? "The report could not be sent. Please try again." };
+}
+
+// ── Direct messages (E9.F1.S7/S18/S19) ───────────────────────────────────────
+//
+// Six thin publicWeb_ wrappers, each EXECing the app SP the token is signed
+// for — the rules (who may message whom, what a request is, who is told)
+// live there and nowhere else. Each reply is the app SP's own: the envelope
+// wherever `success` sits, the data row found by a column it alone carries.
+
+/** 0 friends only (the default — every row is 0 today) · 1 anyone · 2 nobody. */
+export type DmPreference = 0 | 1 | 2;
+
+/** HC.Hasher.Preferences bits 0x4000|0x8000 — the same read as HC6.DirectMessagePreference. 3 is unused and reads as nobody. */
+export function dmPreferenceOf(preferences: number | null | undefined): DmPreference {
+  const p = ((preferences ?? 0) >> 14) & 3;
+  return p === 0 ? 0 : p === 1 ? 1 : 2;
+}
+
+/** What hcapp_startDirectMessage answers: the door, and who is behind it. */
+export interface DmStart {
+  /** open → go to ThreadId. requested → they will be asked (also the answer when they blocked me, or once declined — nothing may reveal either). refused → they accept nobody. blocked → I blocked them. */
+  outcome: "open" | "requested" | "refused" | "blocked";
+  /** UPPER; set only when open. */
+  threadId: string | null;
+  otherPublicHasherId: string;
+  otherDisplayName: string;
+  otherPhoto: string | null;
+}
+
+/** The rowset carrying Outcome, wherever the SP put it; the outcome is checked against what each SP may say by its caller. */
+function dmOutcomeOf(rowsets: Rowsets): (Omit<DmStart, "outcome"> & { outcome: string }) | null {
+  const r = rowsets.find((x) => x.length > 0 && "Outcome" in (x[0] as object))?.[0] as
+    { Outcome?: string; ThreadId?: string | null; OtherPublicHasherId?: string; OtherDisplayName?: string; OtherPhoto?: string | null } | undefined;
+  if (!r?.Outcome) return null;
+  return {
+    outcome: String(r.Outcome),
+    threadId: r.ThreadId ? String(r.ThreadId).toUpperCase() : null,
+    otherPublicHasherId: String(r.OtherPublicHasherId ?? "").toUpperCase(),
+    otherDisplayName: String(r.OtherDisplayName ?? ""),
+    otherPhoto: r.OtherPhoto ? String(r.OtherPhoto) : null,
+  };
+}
+
+const START_OUTCOMES: readonly DmStart["outcome"][] = ["open", "requested", "refused", "blocked"];
+
+/** "Message <name>" from any chat (E9.F1.S19): one of four outcomes, never an error for a refusal. */
+export async function startDirectMessage(s: MemberSession, targetPublicHasherId: string): Promise<{ ok: true; start: DmStart } | { ok: false; message: string }> {
+  const rowsets = await callAdminApi("startDirectMessage", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_startDirectMessage"), targetPublicHasherId,
+  });
+  const r = succeeded(rowsets) ? dmOutcomeOf(rowsets) : null;
+  const outcome = START_OUTCOMES.find((o) => o === r?.outcome);
+  if (r && outcome) return { ok: true, start: { ...r, outcome } };
+  return { ok: false, message: refusalOf(rowsets) ?? "That conversation could not be started. Please try again." };
+}
+
+/** A request I have received and not yet answered, as hcapp_getDirectMessageRequests lists them. */
+export interface DmRequest {
+  /** UPPER. */
+  FromPublicHasherId: string;
+  DisplayName: string;
+  Photo: string | null;
+  RequestedAt: string;
+}
+
+/** Requests waiting on me, oldest first as the SP orders them. Empty on refusal too. */
+export async function getDirectMessageRequests(s: MemberSession): Promise<DmRequest[]> {
+  const rowsets = await callAdminApi("getDirectMessageRequests", { deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_getDirectMessageRequests") });
+  if (refusalOf(rowsets)) return [];
+  return (rowsets.find((r) => r.length > 0 && "FromPublicHasherId" in (r[0] as object)) ?? []) as unknown as DmRequest[];
+}
+
+/**
+ * Accept (1) or decline (0) one request. Accepting makes the pair friends
+ * and mints the thread — `threadId` is where to go next. Declining is
+ * silent: the requester is never told.
+ */
+export async function respondDirectMessageRequest(s: MemberSession, fromPublicHasherId: string, accept: 0 | 1): Promise<{ ok: true; outcome: "open" | "declined"; threadId: string | null } | { ok: false; message: string }> {
+  const rowsets = await callAdminApi("respondDirectMessageRequest", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_respondDirectMessageRequest"), fromPublicHasherId, accept: String(accept),
+  });
+  const r = succeeded(rowsets) ? dmOutcomeOf(rowsets) : null;
+  if (r?.outcome === "open" || r?.outcome === "declined") return { ok: true, outcome: r.outcome, threadId: r.threadId };
+  return { ok: false, message: refusalOf(rowsets) ?? "That request could not be answered. Please try again." };
+}
+
+/** Ends the conversation from my side (E9.F1.S7): it stays readable, but neither of us can send until they start it again. Silent to them. */
+export async function endDirectMessage(s: MemberSession, threadId: string): Promise<{ ok: boolean; message?: string }> {
+  const rowsets = await callAdminApi("endDirectMessage", { deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_endDirectMessage"), threadId });
+  if (succeeded(rowsets)) return { ok: true };
+  return { ok: false, message: refusalOf(rowsets) ?? "That could not be saved. Please try again." };
+}
+
+/** Mutes (1) or unmutes (0) the thread's pushes to my devices. Returns the value as it now stands. */
+export async function setDirectMessageMute(s: MemberSession, threadId: string, mute: 0 | 1): Promise<{ ok: true; muted: 0 | 1 } | { ok: false; message: string }> {
+  const rowsets = await callAdminApi("setDirectMessageMute", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_setDirectMessageMute"), threadId, mute: String(mute),
+  });
+  if (succeeded(rowsets)) {
+    const r = rowsets.find((x) => x.length > 0 && "Muted" in (x[0] as object))?.[0] as { Muted?: unknown } | undefined;
+    return { ok: true, muted: Number(r?.Muted ?? mute) === 1 ? 1 : 0 };
+  }
+  return { ok: false, message: refusalOf(rowsets) ?? "That could not be saved. Please try again." };
+}
+
+/** Who may message me (E9.F1.S18). The SP read-modify-writes its two bits and hands back the value as stored. */
+export async function setDirectMessagePreference(s: MemberSession, preference: DmPreference): Promise<{ ok: true; preference: DmPreference } | { ok: false; message: string }> {
+  const rowsets = await callAdminApi("setDirectMessagePreference", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_setDirectMessagePreference"), preference: String(preference),
+  });
+  if (succeeded(rowsets)) {
+    const r = rowsets.find((x) => x.length > 0 && "Preference" in (x[0] as object))?.[0] as { Preference?: unknown } | undefined;
+    const p = Number(r?.Preference ?? preference);
+    return { ok: true, preference: p === 1 ? 1 : p === 2 ? 2 : 0 };
+  }
+  return { ok: false, message: refusalOf(rowsets) ?? "That setting could not be saved. Please try again." };
 }
 
 /**

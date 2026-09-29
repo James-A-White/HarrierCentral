@@ -5,7 +5,8 @@ import { readMember } from "@/lib/member-session";
 import { bad, jsonBody } from "@/lib/member-routes";
 import { logWebError } from "@/lib/web-log";
 
-const KINDS: ChatKind[] = ["run", "kennel", "room"];
+/** "dm" (E9.F1.S7): the id is the ThreadId. */
+const KINDS: ChatKind[] = ["run", "kennel", "room", "dm"];
 const MESSAGE_KINDS: ChatMessageKind[] = [CHAT_KIND_TEXT, CHAT_KIND_PHOTO, CHAT_KIND_LOCATION];
 /** HC.EventMessage.MessageContent is NVARCHAR(4000). */
 export const CHAT_MESSAGE_MAX = 4000;
@@ -14,8 +15,9 @@ const okId = (kind: ChatKind, id: string) => kind === "room" ? /^\d{1,6}$/.test(
 
 /**
  * GET ?threads=1 → { me, threads }   (the app's Unseen Chats list + badges)
- * GET ?kind=&id=&since= → { me, messages, removed }   (a thread, or just what is new,
- *                          plus every removed id so a deletion reaches an open page)
+ * GET ?kind=&id=&since= → { me, messages, removed, dm? }   (a thread, or just what is new,
+ *                          plus every removed id so a deletion reaches an open page;
+ *                          a DM also carries its status — canSend, muted — every time)
  * POST { kind, id, messageId, text, messageKind? } → { ok }
  * DELETE { messageId } → { ok }   (E9.F1.S13/S14 — the SP decides who may)
  */

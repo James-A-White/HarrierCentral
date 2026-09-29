@@ -9,6 +9,8 @@ import { ChatThread } from "@/components/member/ChatThread";
 
 export const metadata: Metadata = { title: "Chat" };
 
+// A direct message has its own page at /me/chat/dm/[threadId] — the static
+// segment wins over [kind], so "dm" never reaches here.
 const KINDS: ChatKind[] = ["run", "kennel", "room"];
 const GUID = /^[0-9a-f-]{36}$/i;
 
@@ -46,7 +48,7 @@ export default async function ChatPage({ params, searchParams }: { params: Promi
     backdropKennel(kk, id.toLowerCase(), k?.toLowerCase()),
   ]);
   if (!r) notFound();
-  if (kk !== "room") void markChatRead(s, kk, id.toLowerCase());
+  if (kk === "run" || kk === "kennel") void markChatRead(s, kk, id.toLowerCase());
   const safeBack = back && back.startsWith("/") && !back.startsWith("//") ? back : "/me/chat";
   return <ChatThread kind={kk} id={id.toLowerCase()} title={(title ?? "").slice(0, 80) || "Chat"} me={r.me} initial={r.messages} back={safeBack} kennel={kennel} />;
 }
