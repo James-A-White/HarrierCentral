@@ -23,6 +23,11 @@ class PermissionArea {
   static const String photos = 'photos';
   static const String web = 'web';
   static const String songs = 'songs';
+
+  /// Chat moderation. Deliberately NO doorway: nothing calls [canEnterArea]
+  /// for it — a moderator acts from inside the chat, on the messages the
+  /// server marks canDelete. An area here only groups the capability.
+  static const String chat = 'chat';
 }
 
 enum KennelFeature {
@@ -57,7 +62,11 @@ enum KennelFeature {
   writeHashTrash(0x00121806, authCanManagePublicWebContent, false, PermissionArea.web),
   viewHashTrashDrafts(0x00121806, authCanManagePublicWebContent, false, PermissionArea.web),
   manageKennelSettings(0x00000006, authCanManageKennel, false, PermissionArea.kennelTools),
-  manageSongs(0x00000086, authCanManageSongs, false, PermissionArea.songs);
+  manageSongs(0x00000086, authCanManageSongs, false, PermissionArea.songs),
+  // Delete anyone's message in this kennel's run and kennel chats: GM (0x02)
+  // | Web Meister (0x1000), or the Manage chat flag. The server decides per
+  // message (the readers' canDelete); this entry is the mirror (E9.F1.S14).
+  moderateChat(0x00001002, authCanManageChat, false, PermissionArea.chat);
 
   const KennelFeature(this.mmMask, this.flagMask, this.hareScoped, this.areaKey);
 

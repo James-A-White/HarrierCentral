@@ -98,6 +98,10 @@ const String PHOTO_UPLOAD_TOKEN_URL =
     'https://$BASE_AF_URL/api/GetPhotoUploadToken';
 const String PROFILE_PHOTO_UPLOAD_TOKEN_URL =
     'https://$BASE_AF_URL/api/GetProfilePhotoUploadToken';
+// A 15-minute write SAS for one chat photo (E9.F1.S11). Token proc name:
+// hcapp_getChatPhotoUploadToken, standard (deviceSecret) token.
+const String CHAT_PHOTO_UPLOAD_TOKEN_URL =
+    'https://$BASE_AF_URL/api/GetChatPhotoUploadToken';
 
 const String EMAIL_KENNEL_RUN_STATS_API_URL =
     "https://$BASE_AF_URL/api/SendKennelRunStatsReport";
@@ -283,11 +287,16 @@ const int authCanManagePublicWebContent = 0x00000080;
 /// given to ANY hasher, on mismanagement or not — which is why no separate
 /// "photo approver" flag was added (James, 2026-08-30).
 const int authCanManagePhotos = 0x00000100;
+
+/// "Manage chat": delete anyone's message in this kennel's run and kennel
+/// chats (KennelFeature.moderateChat, E9.F1.S14, 2026-09-29). GM and Web
+/// Meister hold it by role; this flag hands it to anyone else.
+const int authCanManageChat = 0x00000200;
 const int authIsSuperAdmin = 0x40000000;
 // All assignable functional flags (everything except SuperAdmin). Widen this
 // whenever a new functional flag bit is added, or the new flag will be stripped
 // when app access is saved (app_access_page.dart masks with authAllFlags).
-const int authAllFlags = 0x000001ff;
+const int authAllFlags = 0x000003ff;
 
 const int selfPaymentNone = 0x00000000;
 const int selfPaymentAutoPayAfterBankTransfer = 0x00000001;

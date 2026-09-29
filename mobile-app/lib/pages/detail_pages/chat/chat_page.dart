@@ -93,6 +93,10 @@ class ChatPage extends StatelessWidget {
       chatController: controller.chatController,
       onMessageSend: controller.handleSendPressed,
       onAttachmentTap: controller.handleAttachmentPressed,
+      // Tap: a photo opens the carousel, a location the map app. Long press:
+      // Copy, and Delete where allowed (E9.F1.S11-S15).
+      onMessageTap: controller.handleMessageTap,
+      onMessageLongPress: controller.handleMessageLongPress,
       theme: _chatTheme,
       timeFormat: _timeFormat,
       builders: core.Builders(
@@ -116,6 +120,29 @@ class ChatPage extends StatelessWidget {
                   theme: _chatTheme,
                   timeFormat: _timeFormat,
                 ),
+        // A photo, whole and at its own aspect ratio (E9.F1.S11).
+        imageMessageBuilder:
+            (context, message, index, {required isSentByMe, groupStatus}) =>
+                ChatImageBubble(
+                  message: message,
+                  isSentByMe: isSentByMe,
+                  theme: _chatTheme,
+                  timeFormat: _timeFormat,
+                ),
+        // The only custom message is a location card (E9.F1.S12). Anything
+        // else custom — none today — shows nothing rather than throwing.
+        customMessageBuilder:
+            (context, message, index, {required isSentByMe, groupStatus}) {
+              final ChatLocation? at = chatLocationOf(message);
+              if (at == null) return const SizedBox.shrink();
+              return ChatLocationCard(
+                message: message,
+                location: at,
+                isSentByMe: isSentByMe,
+                theme: _chatTheme,
+                timeFormat: _timeFormat,
+              );
+            },
         chatMessageBuilder:
             (
               context,
@@ -241,8 +268,12 @@ class _LinkAwareTextMessageState extends State<_LinkAwareTextMessage> {
       }
     }
 
-    final DateTime? sent = widget.message.resolvedTime;
-    final core.MessageStatus? status = widget.message.resolvedStatus;
+    final Widget? stamp = chatTimeAndStatus(
+      widget.message,
+      isSentByMe: mine,
+      style: time,
+      timeFormat: widget.timeFormat,
+    );
     return ClipRRect(
       borderRadius: t.shape,
       child: Container(
@@ -253,59 +284,19 @@ class _LinkAwareTextMessageState extends State<_LinkAwareTextMessage> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             RichText(text: TextSpan(children: spans)),
-            if (sent != null || (mine && status != null))
+            if (stamp != null)
               Padding(
+                // Only MY bubbles carry a tick — it reports what became of
+                // something I sent. The stock SimpleTextMessage draws this
+                // through TimeAndStatus; this bubble replaced it for
+                // tappable links (2026-09-15) and dropped the tick with it,
+                // so no chat message showed one until it was put back here.
                 padding: const EdgeInsets.only(top: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 3,
-                  children: <Widget>[
-                    if (sent != null)
-                      Text(
-                        widget.timeFormat.format(sent.toLocal()),
-                        style: time,
-                      ),
-                    // Only MY bubbles carry a tick — it reports what became of
-                    // something I sent. The stock SimpleTextMessage draws this
-                    // through TimeAndStatus; this bubble replaced it for
-                    // tappable links (2026-09-15) and dropped the tick with it,
-                    // so no chat message has shown one since.
-                    if (mine && status != null) _statusIcon(status, time.color),
-                  ],
-                ),
+                child: stamp,
               ),
           ],
         ),
       ),
     );
-  }
-
-  /// sending → spinner, sent → one tick (the server took it), delivered → two
-  /// ticks (its own push came back to this device, or the server handed the
-  /// message back on a fetch), error → a warning.
-  ///
-  /// Drawn here rather than through flutter_chat_core's getIconForStatus,
-  /// which returns the SAME single Icons.check for sent and delivered — the
-  /// upgrade in _upgradeOwnMessagesToDelivered would be invisible.
-  Widget _statusIcon(core.MessageStatus status, Color? colour) {
-    switch (status) {
-      case core.MessageStatus.sending:
-        return SizedBox(
-          width: 10,
-          height: 10,
-          child: CircularProgressIndicator(color: colour, strokeWidth: 1.5),
-        );
-      case core.MessageStatus.error:
-        return const Icon(
-          Icons.error_outline,
-          size: 15,
-          color: Colors.amberAccent,
-        );
-      case core.MessageStatus.sent:
-        return Icon(Icons.check, size: 15, color: colour);
-      case core.MessageStatus.delivered:
-      case core.MessageStatus.seen:
-        return Icon(Icons.done_all, size: 15, color: colour);
-    }
   }
 }

@@ -107,6 +107,13 @@ class AppAccessPageState extends State<AppAccessPage> {
                         appAccess.setAppAccess(authCanManagePhotos, value);
                       },
                     ),
+                    getOption(
+                      'Manage chat',
+                      appAccess.getAppAccess(authCanManageChat),
+                      (bool value) {
+                        appAccess.setAppAccess(authCanManageChat, value);
+                      },
+                    ),
 
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: hc_red),
