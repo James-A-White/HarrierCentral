@@ -70,7 +70,7 @@ rowset after it:
 |---|---|
 | `messageKind` (SMALLINT) | 0 / 1 / 2 as above |
 | `canDelete` (SMALLINT) | 1 when the caller may delete this row (their own, or they moderate the thread) |
-| next rowset: `{ id }` | ids of **removed** messages in this thread, UPPER like the message ids |
+| LAST rowset: `{ removedId }` | ids of **removed** messages in this thread (found by column name — the room reader has a badge rowset before it) |
 
 `publicWeb_getChatMessages` delegates to the app SPs, so it inherits all three.
 
