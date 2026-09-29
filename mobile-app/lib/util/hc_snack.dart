@@ -8,13 +8,36 @@ import 'package:harrier_central/imports.dart';
 /// overlay is not ready, and a GetX snackbar throwing around show/close has
 /// crashed the app twice (11 and 12 Sep 2026), so it is guarded here once
 /// rather than at every call site.
-void hcSnack(String message, {bool error = false, int seconds = 3}) {
+///
+/// [actionLabel] + [onAction] put one button on the toast — "Reported —
+/// thank you. [Block]" — which closes the toast before it acts, so the
+/// action's own dialog is not fighting a snackbar for `Get.back()`.
+void hcSnack(
+  String message, {
+  bool error = false,
+  int seconds = 3,
+  String? actionLabel,
+  VoidCallback? onAction,
+}) {
   try {
     Get.rawSnackbar(
       message: message,
       backgroundColor: error ? Colors.red.shade700 : Colors.green.shade700,
       duration: Duration(seconds: seconds),
       snackPosition: SnackPosition.BOTTOM,
+      mainButton: actionLabel == null
+          ? null
+          : TextButton(
+              onPressed: () {
+                closeAllSnackbarsSafely();
+                onAction?.call();
+              },
+              child: Text(
+                actionLabel,
+                style: ts_button,
+                textAlign: TextAlign.center,
+              ),
+            ),
     );
   } catch (e, s) {
     BootLogger.logError('[hcSnack] $message', e, s);
