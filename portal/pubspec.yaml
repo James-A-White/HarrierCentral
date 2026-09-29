@@ -79,6 +79,12 @@ dependencies:
 
 dependency_overrides:
   image: 4.5.4
+  # The pub.dev package has four icon constants whose glyphs are missing from
+  # its fonts, and Flutter's icon tree-shaker aborts the whole web build on
+  # them. third_party/ holds the same package with those four removed — see
+  # third_party/flutter_vector_icons/HARRIER_CENTRAL_PATCH.md (2026-09-29).
+  flutter_vector_icons:
+    path: third_party/flutter_vector_icons
   # freezed_annotation: ^2.4.1
   # intl: ^0.19.0
 

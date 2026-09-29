@@ -252,15 +252,14 @@ extension ApplicationProposal on TestFormPage {
   }
 
   Widget _embedBuilder(BuildContext context, fleather.EmbedNode node) {
-    if (node.value.type == 'icon') {
-      final data = node.value.data;
-      // Icons.rocket_launch_outlined
-      return Icon(
-        IconData(int.parse(data['codePoint']), fontFamily: data['fontFamily']),
-        color: Color(int.parse(data['color'])),
-        size: 18,
-      );
-    }
+    // No 'icon' embed branch: nothing inserts one (the toolbar action is
+    // commented out in application_form_ui.dart) and no document is stored
+    // server-side, so it was unreachable — and its runtime
+    // `IconData(int.parse(...))` was the one non-constant IconData in the
+    // portal, which made a plain `flutter build web` fail on icon
+    // tree-shaking and forced --no-tree-shake-icons on every deploy
+    // (2026-09-29). A dynamic code point can never work with tree-shaking
+    // anyway: the glyph it names would have been stripped from the font.
 
     if (node.value.type == 'image') {
       final sourceType = node.value.data['source_type'];
