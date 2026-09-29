@@ -137,30 +137,39 @@ export function RunListBlock({
   const { futureRuns, pastRuns, kennelData, slug, isCustomDomain = false } = useKennelData();
   const kennel = toKennelContext(kennelData);
 
-  const [otherRuns, setOtherRuns] = useState<MultiKennelRunEvent[]>([]);
-  const [loadingOther, setLoadingOther] = useState(false);
-
+  // Other-kennel runs are keyed by the request that produced them, so "still
+  // loading" and "which runs to show" are derived from whether the stored
+  // answer matches the current request — no separate loading flag to keep in
+  // step, and a late reply to an old request can never be shown as current.
   const slugsTrimmed = otherKennelSlugs.trim();
+  const otherKey = slugsTrimmed ? `${slugsTrimmed}|${isFuture ? 1 : 0}|${days}` : "";
+  const [otherResult, setOtherResult] = useState<{ key: string; runs: MultiKennelRunEvent[] }>({
+    key: "", runs: [],
+  });
 
   useEffect(() => {
-    if (!slugsTrimmed) {
-      setOtherRuns([]);
-      return;
-    }
+    if (!otherKey) return;
 
-    setLoadingOther(true);
     const params = new URLSearchParams({
       slugs:    slugsTrimmed,
       isFuture: isFuture ? "1" : "0",
     });
     if (days > 0) params.set("daysOffset", String(days));
 
+    let cancelled = false;
     fetch(`/api/runs/multi-kennel?${params}`)
       .then((r) => r.json())
-      .then((data: { events?: MultiKennelRunEvent[] }) => setOtherRuns(data.events ?? []))
-      .catch(() => setOtherRuns([]))
-      .finally(() => setLoadingOther(false));
-  }, [slugsTrimmed, isFuture, days]);
+      .then((data: { events?: MultiKennelRunEvent[] }) => {
+        if (!cancelled) setOtherResult({ key: otherKey, runs: data.events ?? [] });
+      })
+      .catch(() => {
+        if (!cancelled) setOtherResult({ key: otherKey, runs: [] });
+      });
+    return () => { cancelled = true; };
+  }, [otherKey, slugsTrimmed, isFuture, days]);
+
+  const otherRuns    = otherResult.key === otherKey ? otherResult.runs : [];
+  const loadingOther = otherKey !== "" && otherResult.key !== otherKey;
 
   // ── Primary kennel runs ───────────────────────────────────────────────────
 

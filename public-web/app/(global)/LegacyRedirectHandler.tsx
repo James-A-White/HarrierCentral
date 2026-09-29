@@ -10,10 +10,10 @@
 import { useEffect, useState } from "react";
 
 type SelectorKennel = { slug: string; name: string; customDomain: string | null };
+type SelectorChoice = { slug: string; name: string; dest: string };
 
 export function LegacyRedirectHandler() {
-  const [kennels, setKennels] = useState<SelectorKennel[] | null>(null);
-  const [origin, setOrigin] = useState("");
+  const [kennels, setKennels] = useState<SelectorChoice[] | null>(null);
 
   useEffect(() => {
     const h = window.location.hash;
@@ -25,11 +25,21 @@ export function LegacyRedirectHandler() {
     const parts = ids.split(",").map((s) => s.trim()).filter(Boolean);
     if (parts.length <= 1) return; // single UUID handled by inline script redirect
 
-    setOrigin(window.location.origin);
+    // The destination hrefs need the page origin, which is only knowable in the
+    // browser — resolved here, alongside the kennels, in the one setState.
+    const origin = window.location.origin;
     fetch(`/api/resolve-kennels?ids=${encodeURIComponent(ids)}`)
       .then((r) => r.json())
       .then((resolved: SelectorKennel[]) => {
-        if (resolved.length > 0) setKennels(resolved);
+        if (resolved.length > 0) {
+          setKennels(resolved.map((k) => ({
+            slug: k.slug,
+            name: k.name,
+            dest: k.customDomain
+              ? `https://${k.customDomain}/runs`
+              : `${origin}/${k.slug}/runs`,
+          })));
+        }
       })
       .catch(() => {});
   }, []);
@@ -42,21 +52,16 @@ export function LegacyRedirectHandler() {
         <h2 className="text-xl font-semibold text-zinc-100 mb-1">Multiple kennels found</h2>
         <p className="text-sm text-zinc-400 mb-6">Choose a kennel to continue</p>
         <ul className="space-y-2">
-          {kennels.map((k) => {
-            const dest = k.customDomain
-              ? `https://${k.customDomain}/runs`
-              : `${origin}/${k.slug}/runs`;
-            return (
-              <li key={k.slug}>
-                <a
-                  href={dest}
-                  className="block px-4 py-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-100 transition-colors"
-                >
-                  {k.name}
-                </a>
-              </li>
-            );
-          })}
+          {kennels.map((k) => (
+            <li key={k.slug}>
+              <a
+                href={k.dest}
+                className="block px-4 py-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-100 transition-colors"
+              >
+                {k.name}
+              </a>
+            </li>
+          ))}
         </ul>
       </div>
     </div>
