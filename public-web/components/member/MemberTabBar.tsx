@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutList, Users, Map as MapIcon, History, Music, MessageSquare, KeyRound } from "lucide-react";
+import { LayoutList, Users, Map as MapIcon, History, Music, MessageSquare, KeyRound, UserX } from "lucide-react";
 
 const TABS = [
   { label: "Runs",    title: "Hash Runs", href: "/me/runs",    icon: LayoutList },
@@ -64,6 +64,10 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
                 phone, where the hash name is already hidden. */}
             <Link href="/me/passkeys" aria-label="Passkeys" title="Passkeys" className="text-white/80 hover:text-white">
               <KeyRound className="h-5 w-5" />
+            </Link>
+            {/* Blocked hashers sit with the other account settings (E9.F1.S16). */}
+            <Link href="/me/blocked" aria-label="Blocked hashers" title="Blocked hashers" className="text-white/80 hover:text-white">
+              <UserX className="h-5 w-5" />
             </Link>
             <button type="button" onClick={signOut} className="underline underline-offset-2 hover:text-white">Sign out</button>
           </div>
