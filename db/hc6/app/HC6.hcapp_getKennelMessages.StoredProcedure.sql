@@ -19,6 +19,11 @@ AS
 -- Created: 2026-07-06
 -- HC5 Source: none (new — kennel chat, design of record)
 -- Breaking Changes: none
+--   2026-09-29 (E9.F1.S11-S14): adds messageKind (0 text, 1 photo,
+--   2 location) and canDelete to each message, and a LAST rowset
+--   { removedId } — every removed message in the thread, so a client
+--   that already drew one can drop it (a delta fetch by sequence number
+--   never sees a deletion). Clients find it by its column name. Additive.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -56,6 +61,9 @@ BEGIN
     RETURN;
 END
 
+DECLARE @mayModerate SMALLINT;
+EXEC HC6.nonApi_mayModerateChat @userId = @userId, @kennelId = @kennelId, @allowed = @mayModerate OUTPUT;
+
 SELECT
     UPPER(msg.id)                                                    AS id,
     'text'                                                           AS type,
@@ -65,7 +73,9 @@ SELECT
     UPPER(h.PublicHasherId)                                          AS authorId,
     h.DisplayName                                                    AS authorFirstName,
     h.Photo                                                          AS authorImageUrl,
-    msg.MessageSequenceCount                                         AS sequenceCount
+    msg.MessageSequenceCount                                         AS sequenceCount,
+    msg.MessageKind                                          AS messageKind,
+    CAST(CASE WHEN msg.UserId = @userId OR @mayModerate = 1 THEN 1 ELSE 0 END AS SMALLINT) AS canDelete
 FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
 WHERE msg.KennelId = @kennelId
@@ -74,6 +84,10 @@ WHERE msg.KennelId = @kennelId
   AND h.Removed = 0
   AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount > @sinceSequenceCount)
 ORDER BY msg.createdAt DESC;
+
+SELECT UPPER(msg.id) AS removedId
+FROM HC.EventMessage msg
+WHERE msg.KennelId = @kennelId AND msg.EventId IS NULL AND msg.Removed = 1;
 
 END TRY
 BEGIN CATCH

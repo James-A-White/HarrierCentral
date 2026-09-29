@@ -24,6 +24,13 @@
       "nullable": true,
       "mapsToColumn": "EventMessage.EventId",
       "description": "Internal event ID to retrieve messages for. A NULL value passes the zero UUID as the token suffix before the explicit null check fires, causing an auth failure before the null validation error is reached."
+    },
+    {
+      "name": "sinceSequenceCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Delta fetch: only messages with a higher MessageSequenceCount; NULL = full fetch"
     }
   ],
   "rowsets": [
@@ -32,12 +39,42 @@
       "name": "AuthOrValidationError",
       "description": "Returned when ValidateAppAuth fails (auth) or @eventId is NULL (param validation). errorType 11 = auth failure from ValidateAppAuth; errorType 12 = null @eventId. SP RETURNs after either error.",
       "columns": [
-        { "name": "errorId",          "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
-        { "name": "errorType",        "type": "INT",              "nullable": false, "description": "11 for auth failure; 12 for null/missing @eventId." },
-        { "name": "errorCode",        "type": "INT",              "nullable": false, "description": "Numeric error code. 1260 for null @eventId." },
-        { "name": "errorTitle",       "type": "NVARCHAR(500)",    "nullable": false, "description": "Short error title." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)",    "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc",        "type": "NVARCHAR(128)",    "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "11 for auth failure; 12 for null/missing @eventId."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code. 1260 for null @eventId."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -45,14 +82,79 @@
       "name": "Messages",
       "description": "All messages for the event on success, ordered by createdAt DESC. Author identity is returned as flat columns joined from HC.Hasher.",
       "columns": [
-        { "name": "id",              "type": "NVARCHAR(36)",    "nullable": false, "description": "EventMessage.id uppercased via UPPER(). Returned as string, not typed UNIQUEIDENTIFIER." },
-        { "name": "type",            "type": "NVARCHAR(4)",     "nullable": false, "description": "Literal constant 'text' for all rows." },
-        { "name": "text",            "type": "NVARCHAR(500)",   "nullable": false, "description": "EventMessage.MessageContent. NOT NULL in base table." },
-        { "name": "roomId",          "type": "UNIQUEIDENTIFIER","nullable": false, "description": "EventMessage.PublicEventId. NOT NULL in base table." },
-        { "name": "createdAt",       "type": "BIGINT",          "nullable": false, "description": "Unix timestamp in milliseconds computed via DATEDIFF_BIG(MILLISECOND, '1970-01-01', msg.createdAt)." },
-        { "name": "authorId",        "type": "NVARCHAR(36)",    "nullable": false, "description": "Hasher.PublicHasherId uppercased via UPPER(). NOT NULL in base table." },
-        { "name": "authorFirstName", "type": "NVARCHAR(MAX)",   "nullable": true,  "description": "Hasher.DisplayName — computed persisted column derived from HashName/FirstName/LastName. Nullable when all name fields are empty (falls back to '<no names provided>')." },
-        { "name": "authorImageUrl",  "type": "NVARCHAR(1000)",  "nullable": true,  "description": "Hasher.Photo. NULL when hasher has no profile photo." }
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "EventMessage.id uppercased via UPPER(). Returned as string, not typed UNIQUEIDENTIFIER."
+        },
+        {
+          "name": "type",
+          "type": "NVARCHAR(4)",
+          "nullable": false,
+          "description": "Literal constant 'text' for all rows."
+        },
+        {
+          "name": "text",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent. NOT NULL in base table."
+        },
+        {
+          "name": "roomId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.PublicEventId. NOT NULL in base table."
+        },
+        {
+          "name": "createdAt",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "Unix timestamp in milliseconds computed via DATEDIFF_BIG(MILLISECOND, '1970-01-01', msg.createdAt)."
+        },
+        {
+          "name": "authorId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId uppercased via UPPER(). NOT NULL in base table."
+        },
+        {
+          "name": "authorFirstName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Hasher.DisplayName — computed persisted column derived from HashName/FirstName/LastName. Nullable when all name fields are empty (falls back to '<no names provided>')."
+        },
+        {
+          "name": "authorImageUrl",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo. NULL when hasher has no profile photo."
+        },
+        {
+          "name": "messageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location"
+        },
+        {
+          "name": "canDelete",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the caller wrote it or may moderate this thread (HC6.nonApi_mayModerateChat)"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "RemovedMessageIds",
+      "description": "LAST rowset (added 2026-09-29, E9.F1.S13/S14): every removed message in this thread, so a client drops any it already drew. Find it by column name, not position.",
+      "columns": [
+        {
+          "name": "removedId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Id of a removed message (same case as the message ids)"
+        }
       ]
     }
   ],
@@ -85,6 +187,7 @@
     "HC5 hcapp_getEventMessages 'author' column (nested JSON string via FOR JSON PATH) removed — replaced with three flat columns: authorId (UNIQUEIDENTIFIER), authorFirstName (DisplayName), authorImageUrl (Photo)",
     "HC5 hcapp_getEventMessages2 SP removed — its flat-column behaviour is now the only rowset format returned by this SP",
     "Error rowset shape changed: HC5 included debugMessage column; HC6 error rowset omits debugMessage and adds errorCode",
-    "Auth token compound formula unchanged (DeviceSecret + CAST(@eventId AS NVARCHAR(50))), but token is now validated via centralised HC6.ValidateAppAuth instead of inline logic"
+    "Auth token compound formula unchanged (DeviceSecret + CAST(@eventId AS NVARCHAR(50))), but token is now validated via centralised HC6.ValidateAppAuth instead of inline logic",
+    "2026-09-29 (E9.F1.S11-S14): additive — see docs/chat_photos_location_delete_plan.md"
   ]
 }

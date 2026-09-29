@@ -41,6 +41,10 @@ AS
 --     instead of silently returning zero rows
 --   - Added msg.removed = 0 and h.Removed = 0 filters: soft-deleted
 --     messages and messages from removed hashers are now excluded
+--   2026-09-29 (E9.F1.S11-S14): adds messageKind (0 text, 1 photo,
+--     2 location) and canDelete to each message, and a LAST rowset
+--     { removedId } — every removed message in this run's chat, so an open
+--     chat can drop one it already drew. CATCH now logs to HC.ErrorLog.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -78,6 +82,9 @@ BEGIN TRY
 		RETURN;
 	END
 
+	DECLARE @mayModerate SMALLINT;
+	EXEC HC6.nonApi_mayModerateChat @userId = @hasherId, @eventId = @eventId, @allowed = @mayModerate OUTPUT;
+
 	-- Main query: Event Messages (excluding soft-deleted messages and removed hashers)
 	SELECT
 		msg.id AS [id],
@@ -86,6 +93,8 @@ BEGIN TRY
 		@publicEventId AS roomId,
 		DATEDIFF_BIG(MILLISECOND, '1970-01-01 00:00:00', msg.createdAt) AS [createdAt],
 		msg.MessageSequenceCount AS sequenceCount,
+		msg.MessageKind AS messageKind,
+		CAST(CASE WHEN msg.UserId = @hasherId OR @mayModerate = 1 THEN 1 ELSE 0 END AS SMALLINT) AS canDelete,
 
 		JSON_QUERY(
 			CASE
@@ -107,10 +116,17 @@ BEGIN TRY
 	  AND msg.removed = 0
 	  AND h.Removed = 0
 	  AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount > @sinceSequenceCount)
-	ORDER BY createdAt DESC
+	ORDER BY createdAt DESC;
+
+	SELECT msg.id AS removedId
+	FROM HC.EventMessage msg
+	WHERE msg.EventId = @eventId AND msg.Removed = 1;
 
 END TRY
 BEGIN CATCH
 	IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+	INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+	VALUES (NEWID(), '<portal>', 'Unhandled error in hcportal_getEventMessages',
+	        ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), NULL);
 	SELECT 0 AS Success, ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
