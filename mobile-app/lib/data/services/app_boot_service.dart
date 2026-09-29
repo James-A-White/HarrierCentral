@@ -927,6 +927,15 @@ class AppBootService {
       BoolPrefsEnum.debugHarvestEnabled,
       (prefs & hasherPref_debugHarvestEnabled) != 0,
     );
+    // The whole bitfield too (2026-09-29). It used to be written only at
+    // device registration and by this app's own saves, so a preference set
+    // anywhere else — the web's DM setting, the portal — never reached the
+    // phone, and the next distance change here sent the stale bits back
+    // over it. The server is the truth at login; every writer starts from
+    // this value.
+    if (login.hasherPreferences != null) {
+      await setIntPref(IntPrefsEnum.hasherPreferences, prefs);
+    }
   }
 
   /// Show the server login message if one is present.

@@ -34,6 +34,35 @@ class SettingsPageController extends GetxController {
   final RxBool chatRoomsFailed = false.obs;
   final RxInt savingRoomType = (-1).obs;
 
+  /// Who may send this hasher a direct message (E9.F1.S18): friends only,
+  /// anyone, nobody. Read from the Preferences bits the login handed over;
+  /// written ONLY through hcapp_setDirectMessagePreference, never through
+  /// the whole-bitfield save below — which is why these two bits are not in
+  /// [_ownedMask]: they ride through that save untouched.
+  final RxInt dmPreference = DirectMessagePreference.current().obs;
+  final RxBool savingDmPreference = false.obs;
+
+  /// Optimistic, then reconciled, like the room chips: the chip moves at
+  /// once and a failure puts it back.
+  Future<void> setDmPreference(int value) async {
+    if (dmPreference.value == value || savingDmPreference.value) return;
+    final int previous = dmPreference.value;
+    dmPreference.value = value;
+    savingDmPreference.value = true;
+    final int? stored = await DirectMessagePreference.set(value);
+    if (isClosed) return;
+    savingDmPreference.value = false;
+    if (stored == null) {
+      dmPreference.value = previous;
+      hcSnack(
+        'That setting could not be saved. Please try again.',
+        error: true,
+      );
+      return;
+    }
+    dmPreference.value = stored;
+  }
+
   HashersModel? _hasher;
 
   /// The bits of hasherPreferences this page owns. Everything else (the
@@ -695,13 +724,24 @@ class SettingsPage extends StatelessWidget {
     ChatRoom room,
     int state,
     String label,
-  ) {
-    final bool selected = room.participationState == state;
+  ) => _choiceChip(
+    label: label,
+    selected: room.participationState == state,
+    onTap: () => unawaited(controller.setParticipation(room, state)),
+  );
+
+  /// One pill of a three-way choice, in the contrast this page needs (see
+  /// [_participationChip] for why it is not a ChoiceChip).
+  Widget _choiceChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => unawaited(controller.setParticipation(room, state)),
+        onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
           decoration: BoxDecoration(
@@ -724,6 +764,76 @@ class SettingsPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Who may start a direct message with this hasher (E9.F1.S18). Three
+  /// states, friends only by default; the line under the chips says what a
+  /// friend is, because nothing else in the app does.
+  Widget _directMessagesSection(SettingsPageController controller) {
+    final int current = controller.dmPreference.value;
+    final bool busy = controller.savingDmPreference.value;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        const FancyDivider(
+          key: Key('settings_direct_messages_divider'),
+          innerColor: Colors.white,
+          topMargin: 20.0,
+          bottomMargin: 10.0,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Direct Messages',
+            style: ts_headingLarge,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 8, right: 8, bottom: 12),
+          child: Text(
+            'Who can send you a direct message.',
+            style: ts_body,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        // Wrap, not Row: three labelled choices are wider than a phone at a
+        // large text size, and a Wrap takes a second line where a Row
+        // overflows.
+        AbsorbPointer(
+          absorbing: busy,
+          child: Opacity(
+            opacity: busy ? 0.5 : 1.0,
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: <Widget>[
+                for (final int value in const <int>[
+                  DirectMessagePreference.friendsOnly,
+                  DirectMessagePreference.anyone,
+                  DirectMessagePreference.nobody,
+                ])
+                  _choiceChip(
+                    label: DirectMessagePreference.label(value),
+                    selected: current == value,
+                    onTap: () => unawaited(controller.setDmPreference(value)),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 8, right: 8, top: 12),
+          child: Text(
+            'Friends are hashers who have accepted your request, or whose '
+            'request you accepted.',
+            style: ts_bodySmall.copyWith(color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
     );
   }
 
@@ -1095,6 +1205,7 @@ class SettingsPage extends StatelessWidget {
                         _autoShowRunsSection(controller),
                         _mapProviderSection(controller),
                         _chatRoomsSection(controller),
+                        _directMessagesSection(controller),
                         _blockedHashersSection(),
                       ],
                     ),
