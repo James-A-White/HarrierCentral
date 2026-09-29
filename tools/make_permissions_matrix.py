@@ -46,6 +46,8 @@ groups = [
     ]),
     ("Chat", [
         ("Post event chat message", "sendEventMessage", "UNGATED", "open to all", "P1: no membership check"),
+        ("Delete any chat message", "deleteChatMessage", "own, else moderateChat (GM|WebMeister | flag 0x200); rooms SuperAdmin",
+         "canDelete from the readers", "E9.F1.S13/S14 (2026-09-29)"),
     ]),
 ]
 
@@ -69,13 +71,13 @@ ALL_FN = {f[1] for f in functions}
 # These are DEFAULTS for review — the flag override layer is separate.
 FILL = {
     "Super Admin (flag)": set(ALL_FN),
-    "Admin (flag)": set(ALL_FN),
+    "Admin (flag)": set(ALL_FN) - {"Delete any chat message"},
     # Hare = run-scoped: only for the run they are haring.
     "Hare (this run only) *": {"Manage receipts (expenses)", "Create / edit runs",
                                "Print QR codes", "Manage attendance"},
     "On Mismanagement": {"Post event chat message"},
     "GM (Grand Master)": set(ALL_FN) - {"Assign app-access flags"},
-    "VGM (Vice GM)": set(ALL_FN) - {"Assign app-access flags"},
+    "VGM (Vice GM)": set(ALL_FN) - {"Assign app-access flags", "Delete any chat message"},
     "RA (Religious Advisor)": {"View payment report", "Take payment (check-in)", "Bulk payment",
                                "Manage receipts (expenses)", "Manage attendance",
                                "Award list (drinks)", "Manage Down Downs", "Post event chat message"},
@@ -90,7 +92,8 @@ FILL = {
     "Hash Cash": {"View payment report", "Take payment (check-in)", "Bulk payment",
                   "Manage receipts (expenses)"},
     "Scribe": {"Write / save Hash Trash", "View Hash Trash drafts"},
-    "Web Meister": {"Batch / view all photos", "Write / save Hash Trash", "View Hash Trash drafts"},
+    "Web Meister": {"Batch / view all photos", "Write / save Hash Trash", "View Hash Trash drafts",
+                    "Delete any chat message"},
     "Hash Hugs": {"Post event chat message"},
     "Hash Ho": set(),          # unsure of this role — left blank for James
     "Haberdasher": {"Manage receipts (expenses)"},
