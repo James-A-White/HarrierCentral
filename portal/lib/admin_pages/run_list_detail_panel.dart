@@ -758,6 +758,8 @@ class RunListDetailPanel extends StatelessWidget {
                   publicEventId: rdm.publicEventId!,
                   messageTitle: rdm.eventName,
                   eventName: rdm.eventName,
+                  runLat: rdm.hcLatitude,
+                  runLng: rdm.hcLongitude,
                 ),
               );
               controller.resetBadgeCount(rdm.publicEventId!);

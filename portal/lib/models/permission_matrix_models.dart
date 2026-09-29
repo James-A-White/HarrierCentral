@@ -11,6 +11,12 @@ const int kSurfacePortal = 2;
 /// still returns them and we drop them here.
 const Set<String> kEntryGateKeys = {'enterRunAdmin', 'enterKennelAdmin'};
 
+/// Areas whose capabilities open NO admin section — they act in place (the
+/// chat itself), so the "Can enter" preview must not list them as a doorway.
+/// `chat` holds moderateChat, "Delete any chat message" (E9.F1.S14,
+/// 2026-09-29). The capability still shows, and is edited, in the matrix.
+const Set<String> kNonDoorwayAreaKeys = {'chat'};
+
 /// A gate-able function (a matrix column).
 class PermissionFunction {
   const PermissionFunction({
@@ -110,12 +116,15 @@ class PermissionMatrixData {
   List<PermissionFunction> get capabilities =>
       functions.where((f) => !f.isEntryGate).toList();
 
-  /// Distinct area keys in display order, with their display label (from FeatureArea).
+  /// Distinct DOORWAY area keys in display order, with their display label
+  /// (from FeatureArea). Areas in [kNonDoorwayAreaKeys] are left out: they
+  /// open no section, so they are never "entered".
   List<({String key, String label})> get areas {
     final seen = <String>{};
     final out = <({String key, String label})>[];
     for (final f in capabilities) {
-      if (f.areaKey.isEmpty || !seen.add(f.areaKey)) continue;
+      if (f.areaKey.isEmpty || kNonDoorwayAreaKeys.contains(f.areaKey)) continue;
+      if (!seen.add(f.areaKey)) continue;
       out.add((key: f.areaKey, label: f.featureArea));
     }
     return out;

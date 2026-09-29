@@ -92,8 +92,13 @@ const int authCanManageMembers = 0x00000010;
 const int authCanManageAwards = 0x00000020;
 const int authCanManageSongs = 0x00000040;
 const int authCanManagePublicWebContent = 0x00000080;
+const int authCanManagePhotos = 0x00000100;
+// "Manage chat" — the chat administrator grantor (flagManageChat): by default
+// may delete anyone's message in the kennel's chats (moderateChat).
+// E9.F1.S14, 2026-09-29. Same bit as the app's authCanManageChat.
+const int authCanManageChat = 0x00000200;
 const int authIsSuperAdmin = 0x40000000;
-const int authAllFlags = 0x000000ff;
+const int authAllFlags = 0x000003ff;
 
 const String TAG_NORMAL_RUN = 'Normal run';
 const String TAG_RED_DRESS = 'Red Dress run';

@@ -3,6 +3,9 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart' as core;
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:hcportal/admin_pages/chat_page/chat_message_kinds.dart';
+import 'package:hcportal/admin_pages/chat_page/chat_photo_carousel.dart';
+import 'package:hcportal/admin_pages/chat_page/chat_pin_picker.dart';
 import 'package:hcportal/imports.dart';
 import 'package:web/web.dart' as web;
 
@@ -10,10 +13,26 @@ class ChatSheetController extends GetxController {
   ChatSheetController({
     required this.publicEventId,
     required this.messageTitle,
+    this.runLat,
+    this.runLng,
   });
 
   String publicEventId;
   String messageTitle;
+
+  /// Where the pin picker opens (the run's location, when it has one).
+  final double? runLat;
+  final double? runLng;
+
+  /// Ids of messages this user may delete (their own, or any when they
+  /// moderate this run's chat) — the SP's `canDelete` (E9.F1.S13/S14).
+  final _canDeleteIds = <String>{};
+
+  /// The message the mouse is over — its menu button shows (web hover menu).
+  final RxnString hoveredId = RxnString();
+
+  /// True while a photo is being resized and uploaded.
+  final RxBool isUploading = false.obs;
 
   final chatController = core.InMemoryChatController();
   final _userCache = <String, core.User>{};
@@ -77,12 +96,17 @@ class ChatSheetController extends GetxController {
       final result = await _getEventMessages(publicEventId);
       if (result != null) {
         final outerItem = jsonDecode(result) as List<dynamic>;
-        final rawMessages = outerItem[0] as List<dynamic>;
+        final rawMessages = outerItem.isEmpty
+            ? const <dynamic>[]
+            : outerItem[0] as List<dynamic>;
 
         final newSeq = _extractMaxSequenceCount(rawMessages);
         if (newSeq != null) _lastKnownSequenceCount = newSeq;
 
-        final messages = _parseMessages(rawMessages);
+        final removed = _removedIds(outerItem);
+        final messages = _parseMessages(
+          rawMessages,
+        ).where((m) => !removed.contains(m.id)).toList();
         await chatController.setMessages(messages);
 
         final chatsCounts =
@@ -166,6 +190,10 @@ class ChatSheetController extends GetxController {
       );
       if (result == null) return;
       final outerItem = jsonDecode(result) as List<dynamic>;
+      // A deletion changes no sequence number, so the delta never carries it:
+      // every fetch returns the removed ids and we drop any we still show.
+      await _applyRemoved(_removedIds(outerItem));
+      if (outerItem.isEmpty) return;
       final rawMessages = outerItem[0] as List<dynamic>;
       if (rawMessages.isEmpty) return;
 
@@ -205,15 +233,60 @@ class ChatSheetController extends GetxController {
   }
 
   void _upgradeToDelivered(core.Message msg) {
-    core.Message? updated;
-    if (msg is core.TextMessage) {
-      updated = msg.copyWith(status: core.MessageStatus.delivered);
-    } else if (msg is core.ImageMessage) {
-      updated = msg.copyWith(status: core.MessageStatus.delivered);
-    } else if (msg is core.FileMessage) {
-      updated = msg.copyWith(status: core.MessageStatus.delivered);
-    }
+    final updated = _withStatus(msg, core.MessageStatus.delivered);
     if (updated != null) unawaited(chatController.updateMessage(msg, updated));
+  }
+
+  /// [msg] with a new status, for the kinds this chat draws.
+  core.Message? _withStatus(
+    core.Message msg,
+    core.MessageStatus status, {
+    DateTime? sentAt,
+  }) => switch (msg) {
+    core.TextMessage() => msg.copyWith(
+      status: status,
+      sentAt: sentAt ?? msg.sentAt,
+    ),
+    core.ImageMessage() => msg.copyWith(
+      status: status,
+      sentAt: sentAt ?? msg.sentAt,
+    ),
+    core.CustomMessage() => msg.copyWith(
+      status: status,
+      sentAt: sentAt ?? msg.sentAt,
+    ),
+    core.FileMessage() => msg.copyWith(
+      status: status,
+      sentAt: sentAt ?? msg.sentAt,
+    ),
+    _ => null,
+  };
+
+  /// The ids in the reply's `{ removedId }` rowset (the last one). Lowercase,
+  /// like every id this controller holds.
+  Set<String> _removedIds(List<dynamic> outerItem) {
+    final ids = <String>{};
+    for (var i = 1; i < outerItem.length; i++) {
+      final rowset = outerItem[i];
+      if (rowset is! List) continue;
+      for (final row in rowset) {
+        if (row is Map && row['removedId'] is String) {
+          ids.add((row['removedId'] as String).asUuid);
+        }
+      }
+    }
+    return ids;
+  }
+
+  Future<void> _applyRemoved(Set<String> removed) async {
+    if (removed.isEmpty || isClosed) return;
+    final gone = chatController.messages
+        .where((m) => removed.contains(m.id))
+        .toList();
+    for (final m in gone) {
+      await chatController.removeMessage(m);
+      _canDeleteIds.remove(m.id);
+    }
   }
 
   int? _extractMaxSequenceCount(List<dynamic> rawMessages) {
@@ -303,14 +376,22 @@ class ChatSheetController extends GetxController {
       );
 
       final createdAtMs = msg['createdAt'];
+      final id = (msg['id'] as String).asUuid;
+      final createdAt = createdAtMs is int
+          ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
+          : null;
+      final content = (msg['text'] as String?) ?? '';
+      final kind = (msg['messageKind'] as num?)?.toInt() ?? chatKindText;
+      if (msg['canDelete'] == 1 || msg['canDelete'] == true) {
+        _canDeleteIds.add(id);
+      }
       result.add(
-        core.Message.text(
-          id: (msg['id'] as String).asUuid,
+        _buildMessage(
+          id: id,
           authorId: authorId,
-          text: msg['text'] as String,
-          createdAt: createdAtMs is int
-              ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
-              : null,
+          kind: kind,
+          content: content,
+          createdAt: createdAt,
           status: core.MessageStatus.sent,
         ),
       );
@@ -320,39 +401,87 @@ class ChatSheetController extends GetxController {
     return result.reversed.toList();
   }
 
+  /// One message of any kind. An unknown kind — or a photo / location whose
+  /// content is not what the server would have accepted — is drawn as text.
+  core.Message _buildMessage({
+    required String id,
+    required String authorId,
+    required int kind,
+    required String content,
+    required DateTime? createdAt,
+    required core.MessageStatus status,
+  }) {
+    if (kind == chatKindPhoto && isChatPhotoUrl(content)) {
+      return core.Message.image(
+        id: id,
+        authorId: authorId,
+        source: content,
+        createdAt: createdAt,
+        status: status,
+      );
+    }
+    if (kind == chatKindLocation) {
+      final p = parseChatLocationUrl(content);
+      if (p != null) {
+        return core.Message.custom(
+          id: id,
+          authorId: authorId,
+          createdAt: createdAt,
+          status: status,
+          metadata: <String, dynamic>{
+            chatMetaKind: chatMetaLocation,
+            chatMetaUrl: content,
+            chatMetaLat: p.lat,
+            chatMetaLng: p.lng,
+          },
+        );
+      }
+    }
+    return core.Message.text(
+      id: id,
+      authorId: authorId,
+      text: content,
+      createdAt: createdAt,
+      status: status,
+    );
+  }
+
+  // ── Attach: photo or location ─────────────────────────────────────────────
+
   Future<void> handleAttachmentPressed() async {
     await Get.bottomSheet<void>(
       SafeArea(
-        child: SizedBox(
-          height: 144,
+        child: ColoredBox(
+          color: Colors.white,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              TextButton(
-                onPressed: () async {
-                  Get.back<void>();
-                  await handleImageSelection();
-                },
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('Photo'),
+              Builder(
+                builder: (ctx) => ListTile(
+                  leading: const Icon(Icons.photo_outlined),
+                  title: const Text('Photo'),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    unawaited(handleImageSelection());
+                  },
                 ),
               ),
-              TextButton(
-                onPressed: () async {
-                  Get.back<void>();
-                  await handleFileSelection();
-                },
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('File'),
+              Builder(
+                builder: (ctx) => ListTile(
+                  leading: const Icon(Icons.place_outlined),
+                  title: const Text('Drop a pin'),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    unawaited(handleLocationSelection());
+                  },
                 ),
               ),
-              TextButton(
-                onPressed: () => Get.back<void>(),
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('Cancel'),
+              Builder(
+                builder: (ctx) => ListTile(
+                  leading: const Icon(Icons.close),
+                  title: const Text('Cancel'),
+                  onTap: () => Navigator.of(ctx).pop(),
                 ),
               ),
             ],
@@ -363,44 +492,49 @@ class ChatSheetController extends GetxController {
     );
   }
 
-  Future<void> handleFileSelection() async {
-    final result = await FilePicker.platform.pickFiles();
-
-    if (result != null && result.files.single.path != null) {
-      final message = core.Message.file(
-        id: const Uuid().v4(),
-        authorId: currentUser.id,
-        source: result.files.single.path!,
-        name: result.files.single.name,
-        size: result.files.single.size,
-        mimeType: lookupMimeType(result.files.single.path!),
-      );
-      unawaited(chatController.insertMessage(message));
-    }
-  }
-
+  /// Picks an image, resizes it to at most 1600 px as a JPEG, uploads it to
+  /// `chat-photos` and sends it as a kind-1 message (E9.F1.S11).
   Future<void> handleImageSelection() async {
-    final result = await ImagePicker().pickImage(
-      imageQuality: 70,
-      maxWidth: 1440,
-      source: ImageSource.gallery,
+    if (isUploading.value) return;
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
     );
+    final bytes = picked?.files.single.bytes;
+    if (bytes == null) return;
 
-    if (result != null) {
-      final bytes = await result.readAsBytes();
-      final image = await decodeImageFromList(bytes);
-
-      final message = core.Message.image(
-        id: const Uuid().v4(),
-        authorId: currentUser.id,
-        source: result.path,
-        width: image.width.toDouble(),
-        height: image.height.toDouble(),
-        size: bytes.length,
-      );
-      unawaited(chatController.insertMessage(message));
+    isUploading.value = true;
+    try {
+      final jpeg = chatPhotoJpeg(bytes);
+      if (jpeg == null) {
+        _toast('That file could not be read as a photo. Try a JPEG or PNG.');
+        return;
+      }
+      final url = await ServiceCommon.uploadChatPhoto(jpeg);
+      if (url == null) {
+        _toast('The photo could not be uploaded. Please try again.');
+        return;
+      }
+      if (isClosed) return;
+      await _send(kind: chatKindPhoto, content: url);
+    } finally {
+      if (!isClosed) isUploading.value = false;
     }
   }
+
+  /// Opens the pin picker and sends the point as a kind-2 message (E9.F1.S12).
+  Future<void> handleLocationSelection() async {
+    final pin = await showChatPinPicker(lat: runLat, lng: runLng);
+    if (pin == null || isClosed) return;
+    final url = chatLocationUrl(pin.lat, pin.lng);
+    if (url == null) {
+      _toast('That point is not on the map.');
+      return;
+    }
+    await _send(kind: chatKindLocation, content: url);
+  }
+
+  // ── Tap, copy, delete ────────────────────────────────────────────────────
 
   void handleMessageTap(
     BuildContext _,
@@ -408,18 +542,224 @@ class ChatSheetController extends GetxController {
     required int index,
     required TapUpDetails details,
   }) {
-    // File tap handling reserved for future use
+    if (message is core.ImageMessage) {
+      openPhoto(message);
+    } else if (_locationUrlOf(message) case final url?) {
+      unawaited(launchUrl(Uri.parse(url), webOnlyWindowName: '_blank'));
+    }
   }
 
-  Future<void> handleSendPressed(String text) async {
+  /// Opens every photo in this chat, oldest first, at the one clicked.
+  void openPhoto(core.ImageMessage message) {
+    final photos = chatController.messages
+        .whereType<core.ImageMessage>()
+        .toList();
+    final urls = photos.map((m) => m.source).toList();
+    final start = photos.indexWhere((m) => m.id == message.id);
+    unawaited(
+      Get.to<void>(
+        () => ChatPhotoCarouselPage(
+          urls: urls,
+          initialIndex: start < 0 ? 0 : start,
+          title: 'Trail Chat photos',
+        ),
+      ),
+    );
+  }
+
+  String? _locationUrlOf(core.Message m) {
+    if (m is! core.CustomMessage) return null;
+    final meta = m.metadata;
+    if (meta == null || meta[chatMetaKind] != chatMetaLocation) return null;
+    return meta[chatMetaUrl] as String?;
+  }
+
+  /// What Copy puts on the clipboard: the text, or the photo / map URL.
+  String copyTextOf(core.Message m) => switch (m) {
+    core.TextMessage() => m.text,
+    core.ImageMessage() => m.source,
+    _ => _locationUrlOf(m) ?? '',
+  };
+
+  bool canDelete(core.Message m) =>
+      _canDeleteIds.contains(m.id) &&
+      m.status != core.MessageStatus.sending &&
+      m.status != core.MessageStatus.error;
+
+  Future<void> copyMessage(core.Message m) async {
+    final text = copyTextOf(m);
+    if (text.isEmpty) return;
+    await Clipboard.setData(ClipboardData(text: text));
+    _toast(switch (m) {
+      core.ImageMessage() => 'Photo link copied',
+      core.CustomMessage() => 'Location link copied',
+      _ => 'Copied',
+    });
+  }
+
+  /// Long-press menu at [position] (global coordinates).
+  Future<void> showMessageMenu(
+    BuildContext context,
+    core.Message m,
+    Offset position,
+  ) async {
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (overlay == null) return;
+    final choice = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        position & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: menuItemsFor(m),
+    );
+    await onMenuSelected(choice, m);
+  }
+
+  List<PopupMenuEntry<String>> menuItemsFor(core.Message m) => [
+    const PopupMenuItem(
+      value: 'copy',
+      child: ListTile(
+        dense: true,
+        leading: Icon(Icons.copy),
+        title: Text('Copy'),
+      ),
+    ),
+    if (canDelete(m))
+      const PopupMenuItem(
+        value: 'delete',
+        child: ListTile(
+          dense: true,
+          leading: Icon(Icons.delete_outline, color: Color(0xFFB91C1C)),
+          title: Text('Delete', style: TextStyle(color: Color(0xFFB91C1C))),
+        ),
+      ),
+  ];
+
+  Future<void> onMenuSelected(String? choice, core.Message m) async {
+    switch (choice) {
+      case 'copy':
+        await copyMessage(m);
+      case 'delete':
+        await deleteMessage(m);
+    }
+  }
+
+  /// Confirms, removes the bubble at once, and asks the server; the bubble
+  /// comes back if the server refuses (E9.F1.S13/S14). The SP's refusal text
+  /// is shown by sendHttpPostToHC6Api's error dialog.
+  Future<void> deleteMessage(core.Message m) async {
+    final someoneElses = m.authorId != currentUser.id;
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Delete this message?', textAlign: TextAlign.center),
+        content: Text(
+          someoneElses
+              ? 'It will disappear from this chat for everyone. '
+                    "You are deleting another hasher's message as a chat "
+                    'administrator.'
+              : 'It will disappear from this chat for everyone.',
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          Builder(
+            builder: (ctx) => ElevatedButton(
+              style: hcDialogButtonStyle(hcDialogCancelColor),
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel', textAlign: TextAlign.center),
+            ),
+          ),
+          Builder(
+            builder: (ctx) => ElevatedButton(
+              style: hcDialogButtonStyle(HcButtonTokens.destructive),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Delete', textAlign: TextAlign.center),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || isClosed) return;
+
+    final index = chatController.messages.indexWhere((x) => x.id == m.id);
+    if (index < 0) return;
+    final shown = chatController.messages[index];
+    await chatController.removeMessage(shown);
+
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    // The SP binds the token to CAST(@messageId AS NVARCHAR(40)), which SQL
+    // renders UPPERCASE; generateToken upper-cases the whole access string and
+    // ValidatePortalAuth UPPERs its side, so the case of m.id does not matter
+    // (the same as sendEventMessage's publicEventId:messageId).
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_deleteChatMessage',
+      paramString: '$deviceSecret:${m.id}',
+    );
+    final result = await ServiceCommon.sendHttpPostToHC6Api(<String, dynamic>{
+      'queryType': 'deleteChatMessage',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'messageId': m.id,
+    });
+    if (kDebugMode) {
+      debugPrint(
+        'SP [deleteChatMessage] called — '
+        '${result is ApiError ? 'FAILED' : 'success'}',
+      );
+    }
+    if (isClosed) return;
+    if (result is ApiError) {
+      if (chatController.messages.every((x) => x.id != m.id)) {
+        await chatController.insertMessage(
+          shown,
+          index: min(index, chatController.messages.length),
+        );
+      }
+      _toast('The message was not deleted.');
+      return;
+    }
+    _canDeleteIds.remove(m.id);
+  }
+
+  /// A short notice. A ScaffoldMessenger SnackBar, not a GetX one: GetX's
+  /// Get.back() will not pop the page while its own snackbar is open.
+  void _toast(String text) {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null) return;
+    ScaffoldMessenger.maybeOf(ctx)
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(text, textAlign: TextAlign.center),
+          behavior: SnackBarBehavior.floating,
+          width: 360,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+  }
+
+  // ── Send ─────────────────────────────────────────────────────────────────
+
+  Future<void> handleSendPressed(String text) =>
+      _send(kind: chatKindText, content: text);
+
+  /// Sends one message of [kind]. It appears at once (sending), then turns
+  /// sent / delivered, or error if the SP refuses.
+  Future<void> _send({required int kind, required String content}) async {
     final uuid = const Uuid().v4();
-    final newMsg = core.Message.text(
+    final newMsg = _buildMessage(
       id: uuid,
       authorId: currentUser.id,
-      text: text,
+      kind: kind,
+      content: content,
       createdAt: DateTime.now(),
       status: core.MessageStatus.sending,
     );
+    _canDeleteIds.add(uuid);
 
     unawaited(chatController.insertMessage(newMsg));
 
@@ -440,9 +780,11 @@ class ChatSheetController extends GetxController {
       'accessToken': accessToken,
       'publicEventId': publicEventId,
       'messageId': uuid,
-      'messageContent': text,
+      'messageContent': content,
       'messageReleasabilityFlags': 63,
       'messageTitle': messageTitle,
+      // Only sent when not text, so a text send is exactly as before.
+      if (kind != chatKindText) 'messageKind': kind,
     };
 
     final sendResult = await ServiceCommon.sendHttpPostToHC6Api(body);
@@ -454,15 +796,15 @@ class ChatSheetController extends GetxController {
             : 'SP 17 [sendEventMessage] called — success',
       );
     }
+    if (isClosed) return;
 
     final sent = chatController.messages.firstWhereOrNull((m) => m.id == uuid);
-    if (sent is! core.TextMessage) return;
+    if (sent == null) return;
 
     if (failed) {
-      await chatController.updateMessage(
-        sent,
-        sent.copyWith(status: core.MessageStatus.error),
-      );
+      _canDeleteIds.remove(uuid);
+      final errored = _withStatus(sent, core.MessageStatus.error);
+      if (errored != null) await chatController.updateMessage(sent, errored);
       _pendingDeliveryIds.remove(uuid);
       return;
     }
@@ -471,21 +813,26 @@ class ChatSheetController extends GetxController {
       // Safari FCM delivery is unreliable after the browser's silent push
       // quota (~3 messages). Go directly to delivered so the sender always
       // gets confirmation without waiting up to 15 seconds for the poll.
-      await chatController.updateMessage(
+      final delivered = _withStatus(
         sent,
-        sent.copyWith(
-          status: core.MessageStatus.delivered,
-          sentAt: DateTime.now(),
-        ),
+        core.MessageStatus.delivered,
+        sentAt: DateTime.now(),
       );
+      if (delivered != null) {
+        await chatController.updateMessage(sent, delivered);
+      }
     } else {
       // Chrome/Firefox: SP confirm → single tick. The sender's FCM echo
       // (from Rowset 2 of hcportal_sendEventMessage) will trigger the
       // delta fetch that upgrades to double tick.
-      await chatController.updateMessage(
+      final confirmed = _withStatus(
         sent,
-        sent.copyWith(status: core.MessageStatus.sent, sentAt: DateTime.now()),
+        core.MessageStatus.sent,
+        sentAt: DateTime.now(),
       );
+      if (confirmed != null) {
+        await chatController.updateMessage(sent, confirmed);
+      }
 
       // Handle race: if the FCM echo arrived and ran _refreshMessages()
       // before the SP response returned, the message was still in `sending`
@@ -494,12 +841,7 @@ class ChatSheetController extends GetxController {
         final updated = chatController.messages.firstWhereOrNull(
           (m) => m.id == uuid,
         );
-        if (updated is core.TextMessage) {
-          await chatController.updateMessage(
-            updated,
-            updated.copyWith(status: core.MessageStatus.delivered),
-          );
-        }
+        if (updated != null) _upgradeToDelivered(updated);
       }
     }
   }
