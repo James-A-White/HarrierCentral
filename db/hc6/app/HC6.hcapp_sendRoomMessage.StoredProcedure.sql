@@ -3,7 +3,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendRoomMessage]
     @accessToken    NVARCHAR(1000)   = NULL,
     @roomType       INT              = NULL,
     @messageId      UNIQUEIDENTIFIER = NULL,
-    @messageContent NVARCHAR(MAX)    = NULL
+    @messageContent NVARCHAR(MAX)    = NULL,
+    -- 0 text, 1 photo, 2 location (E9.F1.S11/S12, 2026-09-29). Optional.
+    @messageKind    SMALLINT         = 0
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_sendRoomMessage
@@ -42,6 +44,10 @@ AS
 -- Created: 2026-09-13
 -- HC5 Source: none (new)
 -- Breaking Changes: none
+--   2026-09-29: optional @messageKind (0 text, 1 photo, 2 location;
+--   E9.F1.S11/S12). Rowset 0 gains messageKind and canDelete; rowset 1's
+--   MessageContent is now HC6.ChatMessagePreview — it is the push body —
+--   and gains MessageKind. Additive for every existing caller.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -115,6 +121,22 @@ BEGIN
     RETURN;
 END
 
+-- A photo must be one of ours, a location a well-formed map link
+-- (HC6.ChatMessageKindError, E9.F1.S11/S12, 2026-09-29).
+SET @messageKind = COALESCE(@messageKind, 0);
+DECLARE @kindError NVARCHAR(200) = HC6.ChatMessageKindError(@messageKind, @messageContent);
+IF (@kindError IS NOT NULL)
+BEGIN
+    SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Bad message kind',
+            CONCAT('kind=', @messageKind, ' content=', LEFT(@messageContent, 300)), @procName, @userId);
+    SELECT @errorId AS errorId, 2 AS errorType, 1944 AS errorCode,
+           'Message not sent' AS errorTitle, @kindError AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 -- Authorization. ValidateAppAuth proved WHO, not what they may do. An
 -- unknown @roomType returns 0 here, so a bad room is refused rather than
 -- opening an empty one.
@@ -140,10 +162,10 @@ BEGIN TRY
     -- EventId, KennelId and ThreadId all NULL; MessageType names the room.
     INSERT INTO HC.EventMessage
         ([id], [EventId], [KennelId], [UserId], [PublicHasherId],
-         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageType])
+         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageType], [MessageKind])
     VALUES
         (@messageId, NULL, NULL, @userId, @publicHasherId,
-         '', @messageContent, 63, @roomType);
+         '', @messageContent, 63, @roomType, @messageKind);
 
     DECLARE @seq INT;
     SELECT @seq = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;
@@ -197,7 +219,9 @@ SELECT
     UPPER(h.PublicHasherId)                                          AS authorId,
     h.DisplayName                                                    AS authorFirstName,
     h.Photo                                                          AS authorImageUrl,
-    msg.MessageSequenceCount                                         AS sequenceCount
+    msg.MessageSequenceCount                                         AS sequenceCount,
+    msg.MessageKind                                                  AS messageKind,
+    CAST(1 AS SMALLINT)                                              AS canDelete   -- the sender's own
 FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
 WHERE msg.id = @messageId;
@@ -223,7 +247,9 @@ SELECT
     h.DisplayName                            AS UserDisplayName,
     h.Photo                                  AS UserPhoto,
     c.RoomName + ' — ' + h.DisplayName       AS MessageTitle,
-    msg.MessageContent                       AS MessageContent
+    -- The preview, not the raw URL: the shim uses this as the push body.
+    HC6.ChatMessagePreview(msg.MessageKind, msg.MessageContent) AS MessageContent,
+    msg.MessageKind                          AS MessageKind
 FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
 LEFT JOIN HC6.ChatRoomCatalog() c ON c.RoomType = msg.MessageType

@@ -52,6 +52,13 @@
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageReleasabilityFlags",
       "description": "Bitmask controlling who receives notifications. At least one bit in 0x003F must be set. 0x0001=mismanagement, 0x0002=members, 0x0004=followers, 0x0008=RSVPs, 0x0010=hares, 0x0020=everyone. Null or zero triggers a param validation error."
+    },
+    {
+      "name": "messageKind",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageKind",
+      "description": "Optional, default 0. 0 text, 1 photo (MessageContent = blob URL in chat-photos), 2 location (MessageContent = Google Maps search URL). Validated by HC6.ChatMessageKindError; invalid → validation error. Added 2026-09-29 (E9.F1.S11/S12)."
     }
   ],
   "rowsets": [
@@ -149,7 +156,7 @@
           "name": "MessageContent",
           "type": "NVARCHAR(500)",
           "nullable": false,
-          "description": "EventMessage.MessageContent."
+          "description": "HC6.ChatMessagePreview: the text, or '📷 Photo' / '📍 Location'. The API shim uses it as the push body."
         },
         {
           "name": "MessageReleasabilityFlags",
@@ -168,6 +175,12 @@
           "type": "INT",
           "nullable": false,
           "description": "EventMessage.MessageType — integer type code (INT in table, not NVARCHAR as incorrectly documented in HC5 contract)."
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location"
         }
       ]
     },
@@ -268,6 +281,7 @@
     "@eventId type changed from NVARCHAR(250) to UNIQUEIDENTIFIER — callers must pass a typed UUID, not a string",
     "InsertedMessage rowset: EventId column type changed from NVARCHAR to UNIQUEIDENTIFIER",
     "InsertedMessage rowset: column renamed from 'MessageRelesabilityFlags' (HC5 typo) to 'MessageReleasabilityFlags' — any caller reading this column by name must be updated",
-    "Error path now uses early RETURN after each validation failure — at most one error rowset is emitted (HC5 could emit multiple error rowsets without RETURN)"
+    "Error path now uses early RETURN after each validation failure — at most one error rowset is emitted (HC5 could emit multiple error rowsets without RETURN)",
+    "2026-09-29 (E9.F1.S11-S14): additive — see docs/chat_photos_location_delete_plan.md"
   ]
 }

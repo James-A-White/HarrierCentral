@@ -19,7 +19,10 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_sendChatMessage]
     @messageId      UNIQUEIDENTIFIER,
     -- MAX, not a width: an NVARCHAR(n) parameter truncates silently. The app
     -- SP this delegates to refuses anything over 4,000 (2026-09-23).
-    @messageContent NVARCHAR(MAX)
+    @messageContent NVARCHAR(MAX),
+    -- 0 text, 1 photo, 2 location (E9.F1.S11/S12, 2026-09-29). The app SP
+    -- checks it, so this wrapper only passes it on.
+    @messageKind    SMALLINT = 0
 AS
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -46,11 +49,11 @@ BEGIN TRY
     END
 
     IF (@kind = 'run')
-        EXEC HC6.hcapp_sendEventMessage  @deviceId = @deviceId, @accessToken = @accessToken, @eventId = @eventId, @messageId = @messageId, @messageTitle = NULL, @messageContent = @messageContent;
+        EXEC HC6.hcapp_sendEventMessage  @deviceId = @deviceId, @accessToken = @accessToken, @eventId = @eventId, @messageId = @messageId, @messageTitle = NULL, @messageContent = @messageContent, @messageKind = @messageKind;
     ELSE IF (@kind = 'kennel')
-        EXEC HC6.hcapp_sendKennelMessage @deviceId = @deviceId, @accessToken = @accessToken, @kennelId = @kennelId, @messageId = @messageId, @messageTitle = NULL, @messageContent = @messageContent;
+        EXEC HC6.hcapp_sendKennelMessage @deviceId = @deviceId, @accessToken = @accessToken, @kennelId = @kennelId, @messageId = @messageId, @messageTitle = NULL, @messageContent = @messageContent, @messageKind = @messageKind;
     ELSE
-        EXEC HC6.hcapp_sendRoomMessage   @deviceId = @deviceId, @accessToken = @accessToken, @roomType = @roomType, @messageId = @messageId, @messageContent = @messageContent;
+        EXEC HC6.hcapp_sendRoomMessage   @deviceId = @deviceId, @accessToken = @accessToken, @roomType = @roomType, @messageId = @messageId, @messageContent = @messageContent, @messageKind = @messageKind;
 
     -- The app's send SPs return no rowset on success (the app reads the
     -- message back through sync); the web reads an envelope, so give it one

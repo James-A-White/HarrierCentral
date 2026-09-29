@@ -6,7 +6,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendEventMessage]
     @messageId                   UNIQUEIDENTIFIER = NULL,
     @messageTitle                NVARCHAR(250)    = NULL,
     @messageContent              NVARCHAR(MAX)    = NULL,
-    @messageReleasabilityFlags   INT              = NULL
+    @messageReleasabilityFlags   INT              = NULL,
+    -- 0 text, 1 photo, 2 location (E9.F1.S11/S12, 2026-09-29). Optional,
+    -- so every existing caller still sends text.
+    @messageKind                 SMALLINT         = 0
 
 AS
 -- =====================================================================
@@ -45,6 +48,10 @@ AS
 -- Created: 2026-05-10
 -- HC5 Source: HC5.hcapp_sendEventMessage
 -- Breaking Changes:
+--   2026-09-29: optional @messageKind (0 text, 1 photo, 2 location;
+--   E9.F1.S11/S12). The push rowset's MessageContent is now
+--   HC6.ChatMessagePreview — it is the push body — and it gains MessageKind.
+--   Additive for every existing caller.
 --   @eventId changed NVARCHAR(250) → UNIQUEIDENTIFIER.
 --   DATALENGTH checks replaced with NULL/LEN checks.
 --   HC5's @isError flag pattern replaced with early RETURN on each error.
@@ -144,6 +151,22 @@ BEGIN
     RETURN;
 END
 
+-- A photo must be one of ours, a location a well-formed map link
+-- (HC6.ChatMessageKindError, E9.F1.S11/S12, 2026-09-29).
+SET @messageKind = COALESCE(@messageKind, 0);
+DECLARE @kindError NVARCHAR(200) = HC6.ChatMessageKindError(@messageKind, @messageContent);
+IF (@kindError IS NOT NULL)
+BEGIN
+    SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Bad message kind',
+            CONCAT('kind=', @messageKind, ' content=', LEFT(@messageContent, 300)), @procName, @userId);
+    SELECT @errorId AS errorId, 2 AS errorType, 1265 AS errorCode,
+           'Message not sent' AS errorTitle, @kindError AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 -- ---------------------------------------------------------------
 -- Load event and sender context
 -- ---------------------------------------------------------------
@@ -200,10 +223,10 @@ BEGIN TRY
 
     INSERT INTO HC.EventMessage
         ([id], [EventId], [PublicEventId], [UserId], [PublicHasherId],
-         [MessageTitle], [MessageContent], [MessageReleasabilityFlags])
+         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageKind])
     VALUES
         (@messageId, @eventId, @publicEventId, @userId, @publicHasherId,
-         @messageTitle, @messageContent, @messageReleasabilityFlags);
+         @messageTitle, @messageContent, @messageReleasabilityFlags, @messageKind);
 
     SELECT @messageSequenceCount = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;
 
@@ -237,7 +260,9 @@ SELECT
     h.DisplayName                                          AS UserDisplayName,
     h.Photo                                                AS UserPhoto,
     h.DisplayName + ' - ' + msg.MessageTitle               AS MessageTitle,
-    msg.MessageContent                                     AS MessageContent,
+    -- The preview, not the raw URL: the shim uses this as the push body.
+    HC6.ChatMessagePreview(msg.MessageKind, msg.MessageContent) AS MessageContent,
+    msg.MessageKind                                        AS MessageKind,
     msg.MessageReleasabilityFlags                          AS MessageReleasabilityFlags,
     0                                                      AS EventChatMessageCount,
     msg.MessageType                                        AS MessageType

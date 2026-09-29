@@ -7,7 +7,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_sendEventMessage]
 @messageId uniqueidentifier = NULL,
 @messageTitle nvarchar(250) = NULL,
 @messageContent nvarchar(MAX) = NULL,
-@messageReleasabilityFlags int = NULL
+@messageReleasabilityFlags int = NULL,
+-- 0 text, 1 photo, 2 location (E9.F1.S11/S12, 2026-09-29). Optional.
+@messageKind smallint = 0
 
 AS
 -- =====================================================================
@@ -29,6 +31,9 @@ AS
 -- Created: 2026-03-15
 -- HC5 Source: HC5.hcportal_sendEventMessage
 -- Breaking Changes:
+--   2026-09-29: optional @messageKind (0 text, 1 photo, 2 location;
+--   E9.F1.S11/S12). Rowset 0's MessageContent is now
+--   HC6.ChatMessagePreview — it is the push body — and it gains MessageKind.
 --   Removed EventChatMessageCount from MessageDetails rowset (obsolete).
 --   Fixed LOG.GeneralLog LogSource from 'hcportal_getKennelHashers' to
 --   'hcportal_sendEventMessage'. Validation now short-circuits on first
@@ -138,6 +143,16 @@ BEGIN
         RETURN;
 END
 
+-- A photo must be one of ours, a location a well-formed map link
+-- (HC6.ChatMessageKindError — the same rule as the app's send SPs).
+SET @messageKind = COALESCE(@messageKind, 0);
+DECLARE @kindError NVARCHAR(200) = HC6.ChatMessageKindError(@messageKind, @messageContent);
+IF (@kindError IS NOT NULL)
+BEGIN
+        SELECT 0 AS Success, @kindError AS ErrorMessage;
+        RETURN;
+END
+
     DECLARE @timeLimitForNotificationsInHours smallint = 6;
 
     DECLARE @eventId uniqueidentifier,
@@ -185,6 +200,7 @@ END
                   , [MessageTitle]
                   , [MessageContent]
                   , [MessageReleasabilityFlags]
+                  , [MessageKind]
                   )
           VALUES
                   (
@@ -196,6 +212,7 @@ END
                   , @messageTitle
                   , @messageContent
                   , @messageReleasabilityFlags
+                  , @messageKind
                   );
 
     COMMIT TRANSACTION;
@@ -217,7 +234,9 @@ END
         , h.DisplayName as UserDisplayName
         , h.Photo as UserPhoto
         , h.DisplayName + ' - ' + [MessageTitle] as MessageTitle
-        , [MessageContent] as MessageContent
+        -- The preview, not the raw URL: the shim uses this as the push body.
+        , HC6.ChatMessagePreview(msg.MessageKind, msg.MessageContent) as MessageContent
+        , msg.MessageKind as MessageKind
         , [MessageReleasabilityFlags] as MessageRelesabilityFlags
         , msg.[MessageType] as MessageType
     FROM HC.EventMessage msg

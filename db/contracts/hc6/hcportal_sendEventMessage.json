@@ -52,6 +52,13 @@
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageReleasabilityFlags",
       "description": "Required: bit flags controlling who receives the message. 0x0001=Mismanagement/admins, 0x0002=Members, 0x0004=Followers, 0x0008=RSVPs, 0x0010=Hares, 0x0020=Everyone. Validation error if NULL or if (value & 0x0000003f) = 0."
+    },
+    {
+      "name": "messageKind",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageKind",
+      "description": "Optional, default 0. 0 text, 1 photo (MessageContent = blob URL in chat-photos), 2 location (MessageContent = Google Maps search URL). Validated by HC6.ChatMessageKindError; invalid → validation error. Added 2026-09-29 (E9.F1.S11/S12)."
     }
   ],
   "rowsets": [
@@ -125,7 +132,7 @@
           "name": "MessageContent",
           "type": "NVARCHAR(500)",
           "nullable": false,
-          "description": "EventMessage.MessageContent"
+          "description": "HC6.ChatMessagePreview: the text, or '📷 Photo' / '📍 Location'. The API shim uses it as the push body."
         },
         {
           "name": "MessageRelesabilityFlags",
@@ -138,6 +145,12 @@
           "type": "INT",
           "nullable": true,
           "description": "EventMessage.MessageType"
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location"
         }
       ]
     },
@@ -213,6 +226,7 @@
     "Never change the 6-hour proximity threshold without coordinating with the API shim and portal"
   ],
   "changes": [
-    "1.2.0 (2026-09-25): rowsets 1 and 2 keep their columns (UserId, DisplayName, FcmToken); the audience rules now match hcapp_sendEventMessage (pref IN (1,3,4), one push per token, retired/180-day-idle devices, deleted hashers and removed links skipped). The sender still gets the silent echo when following/member and not switched off."
+    "1.2.0 (2026-09-25): rowsets 1 and 2 keep their columns (UserId, DisplayName, FcmToken); the audience rules now match hcapp_sendEventMessage (pref IN (1,3,4), one push per token, retired/180-day-idle devices, deleted hashers and removed links skipped). The sender still gets the silent echo when following/member and not switched off.",
+    "2026-09-29 (E9.F1.S11-S14): additive — see docs/chat_photos_location_delete_plan.md"
   ]
 }
