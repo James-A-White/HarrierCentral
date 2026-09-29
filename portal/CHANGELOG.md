@@ -1,3 +1,9 @@
+## 2.0.87+735 (2026-09-29)
+### Improvements
+- **Direct messages exist server-side.** The chat readers, the unread
+  count and mark-all-read know about direct-message threads; the portal's
+  run chat is unchanged.
+
 ## 2.0.87+734 (2026-09-29)
 ### Improvements
 - **Button labels stay centred when they wrap.** Every portal button

@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-29 redeploy — direct messages)
+
+- **Direct messages.** Message <name> from any chat message; a
+  conversation page with mute, block and end; requests to accept or
+  decline at the top of Chats; a Direct messages setting (Friends only
+  by default, Anyone, Nobody) on the Messages and blocking page.
+
 ## 0.21.74 (2026-09-29 redeploy — block, report, lint clean-up)
 
 - **Block a hasher.** The message menu offers Block <name>; their messages

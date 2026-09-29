@@ -1,3 +1,16 @@
+## 3.1.8+1423 (2026-09-29)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### New Features
+- **Direct messages.** Long-press a message in any chat and choose
+  **Message <name>**. If you are friends, or they accept messages from
+  anyone, the conversation opens; otherwise they get a request to accept
+  or decline. Requests sit at the top of Chats. A conversation can be
+  muted, blocked or ended from its menu, and everything a chat can do —
+  photos, locations, copy, delete, report — works in it.
+- **Settings → Direct Messages:** Friends only (the default), Anyone, or
+  Nobody.
+
 ## 3.1.8+1422 (2026-09-29)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version.

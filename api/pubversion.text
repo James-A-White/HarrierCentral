@@ -1,3 +1,10 @@
+1.0.61+65
+    • Direct messages (E9.F1.S7/S19): ChatPushKind.Dm for sendDirectMessage;
+      request / accepted pushes from startDirectMessage and
+      respondDirectMessageRequest (SendDmEventAsync); recipient rowsets
+      stripped from the DM replies. PublicWebAdminApi allows the six DM
+      wrappers.
+
 1.0.61+64
     • reportChatMessage: emails a reported chat message to the platform
       reviewers (platform admins + the shared mailbox — the kennel-request
