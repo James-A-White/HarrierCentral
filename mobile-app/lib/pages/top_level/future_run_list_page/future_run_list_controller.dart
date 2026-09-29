@@ -544,6 +544,7 @@ class FutureRunListPageController extends GetxController {
     notifications?.dmRequests.removeWhere(
       (DirectMessageRequest x) => x.fromPublicHasherId == r.fromPublicHasherId,
     );
+    notifications?.recalculateBadges();
     filterRuns(false);
 
     if (result.outcome == DmOutcome.open && result.threadId != null) {

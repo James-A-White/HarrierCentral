@@ -123,13 +123,23 @@ class ChatPage extends StatelessWidget {
         // the server (or refused by it). A DM whose sending is refused — the
         // other side ended it, or somebody blocks — shows why instead.
         composerBuilder: (BuildContext context) => dm == null
-            ? const Composer(maxLength: kChatMessageMaxLength)
+            ? Composer(
+                  maxLength: kChatMessageMaxLength,
+                  // Purple, not the theme's blue, once there is something to
+                  // send (James, 2026-09-29); greyed while the field is empty.
+                  sendIconColor: themeAppBarBackground,
+                )
             : Obx(() {
                 // Both Rx reads come first, before the branch (obx_scan).
                 final bool canSend = dm.canSend.value;
                 final String name = dm.otherDisplayName.value;
                 if (canSend) {
-                  return const Composer(maxLength: kChatMessageMaxLength);
+                  return Composer(
+                  maxLength: kChatMessageMaxLength,
+                  // Purple, not the theme's blue, once there is something to
+                  // send (James, 2026-09-29); greyed while the field is empty.
+                  sendIconColor: themeAppBarBackground,
+                );
                 }
                 return _CannotMessageBar(name: name);
               }),

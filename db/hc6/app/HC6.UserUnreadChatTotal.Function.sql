@@ -17,5 +17,15 @@ AS
 -- Created: 2026-09-28
 -- =====================================================================
 RETURN
-    SELECT CAST(COALESCE(SUM(CASE WHEN t.BadgeCount > 0 THEN t.BadgeCount ELSE 0 END), 0) AS INT) AS BadgeTotal
+    -- Unread messages across every thread, PLUS requests to message this
+    -- hasher that are still waiting (E9.F1.S19, 2026-09-29): a request is
+    -- something to act on, so it counts on the icon like an unread message
+    -- until it is accepted or declined.
+    SELECT CAST(COALESCE(SUM(CASE WHEN t.BadgeCount > 0 THEN t.BadgeCount ELSE 0 END), 0)
+                + (SELECT COUNT(*) FROM HC.HasherFriendMap f
+                   JOIN HC.Hasher h ON h.id = f.UserId AND h.Removed = 0
+                   WHERE f.Friend_UserId = @userId AND f.FriendSince IS NULL AND f.Removed = 0 AND f.Ignore = 0
+                     AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap m
+                                     WHERE m.UserId = @userId AND m.Friend_UserId = f.UserId AND (m.Ignore = 1 OR m.Removed = 0)))
+           AS INT) AS BadgeTotal
     FROM HC6.UserUnreadChatThreads(@userId) t;

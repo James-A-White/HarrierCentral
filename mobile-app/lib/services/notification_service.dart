@@ -289,7 +289,12 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         await DirectMessageService.fetchRequests();
     if (list == null) return;
     dmRequests.value = list;
+    _recalculateGlobalBadgeCount();
   }
+
+  /// Re-counts the badges after a request is answered locally (the chat
+  /// list removes it from [dmRequests] before the server is asked again).
+  void recalculateBadges() => _recalculateGlobalBadgeCount();
 
   // --- FCM Listener Management ---
 
@@ -634,7 +639,12 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       // dip below zero when a message is removed, and HC6.UserUnreadChatTotal
       // (the number the pushes put on the icon) counts only the positives.
       (sum, rxInt) => sum + (rxInt.value > 0 ? rxInt.value : 0),
-    );
+    ) +
+        // A request to message this hasher is something to act on, so it
+        // counts like an unread message until answered — the same rule
+        // HC6.UserUnreadChatTotal applies to the number a push puts on the
+        // icon (James, 2026-09-29).
+        dmRequests.length;
     // Every refresh ends here — boot, resume, a chat push, a read_sync, mark
     // all read — so this is the one place the app ICON is set. Written every
     // time, not only on a change: a push may have left a number on the icon

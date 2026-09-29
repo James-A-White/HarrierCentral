@@ -64,10 +64,16 @@ BEGIN TRY
     -- Update Device record
     BEGIN TRANSACTION;
 
+    -- A PHONE's row keeps its own version and build (2026-09-29). The portal
+    -- signed in on the same device id stamped 12 phones with the portal's
+    -- build number (735), and every build-gated push — kennel and room chat,
+    -- the icon badge, direct messages — then skipped those phones as "too
+    -- old" until the app next wrote its own number. Only the app may say
+    -- what build a phone runs; a browser row (IsMobile = 0) is the portal's.
     UPDATE HC.Device SET
         FcmToken = @fcmToken,
-        [Version] = @version,
-        [BuildNumber] = @buildNumber,
+        [Version] = CASE WHEN ISNULL(IsMobile, 0) = 1 THEN [Version] ELSE @version END,
+        [BuildNumber] = CASE WHEN ISNULL(IsMobile, 0) = 1 THEN [BuildNumber] ELSE @buildNumber END,
         [LastLogin] = GetDate()
     where id = @deviceId
 
