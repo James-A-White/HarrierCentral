@@ -639,6 +639,69 @@ export async function deleteChatMessage(s: MemberSession, messageId: string): Pr
   return { ok: false, message: msg ?? "That message could not be deleted." };
 }
 
+// ── Block and report (E9.F1.S16/S17) ─────────────────────────────────────────
+
+/** One hasher the signed-in member has blocked, as hcapp_getBlockedHashers lists them. */
+export interface BlockedHasher {
+  /** UPPER — what the chat rowsets carry as authorId. */
+  PublicHasherId: string;
+  DisplayName: string;
+  Photo: string | null;
+  BlockedAt: string;
+}
+
+/** `success = 1` anywhere in the reply: an auth failure returns the error rowset alone, so rowset 0 cannot be trusted. */
+const succeeded = (rowsets: Rowsets) => rowsets.some((r) => (r?.[0] as { success?: number } | undefined)?.success === 1);
+const refusalOf = (rowsets: Rowsets) => rowsets.map((r) => r?.[0] as { errorUserMessage?: string } | undefined).find((r) => r?.errorUserMessage)?.errorUserMessage;
+
+/** The blocked list is the rowset whose rows carry PublicHasherId — index-free, so an SP that grows a rowset in front does not break it. */
+function blockedListOf(rowsets: Rowsets): BlockedHasher[] {
+  return (rowsets.find((r) => r.length > 0 && "PublicHasherId" in (r[0] as object)) ?? []) as unknown as BlockedHasher[];
+}
+
+/** Everyone this member has blocked, newest first. Empty on refusal too — a settings list has nothing better to say. */
+export async function getBlockedHashers(s: MemberSession): Promise<BlockedHasher[]> {
+  const rowsets = await callAdminApi("getBlockedHashers", { deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_getBlockedHashers") });
+  if (refusalOf(rowsets)) return [];
+  return blockedListOf(rowsets);
+}
+
+/**
+ * Blocks (1) or unblocks (0) one hasher through publicWeb_setHasherBlock,
+ * which EXECs hcapp_setHasherBlock. From then on every chat reader hides
+ * their messages from this member, so the caller re-fetches any open
+ * thread in full. Returns the blocked list as it now stands, so a screen
+ * repaints from the reply rather than asking again.
+ */
+export async function setHasherBlock(
+  s: MemberSession,
+  targetPublicHasherId: string,
+  blocked: 0 | 1,
+): Promise<{ ok: boolean; message?: string; blocked: BlockedHasher[] }> {
+  const rowsets = await callAdminApi("setHasherBlock", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_setHasherBlock"), targetPublicHasherId, blocked: String(blocked),
+  });
+  if (succeeded(rowsets)) return { ok: true, blocked: blockedListOf(rowsets) };
+  return { ok: false, message: refusalOf(rowsets) ?? "That could not be saved. Please try again.", blocked: [] };
+}
+
+/** hcapp_reportChatMessage caps the reason here and refuses a longer one. */
+export const CHAT_REPORT_REASON_MAX = 1000;
+
+/**
+ * Reports one message to Harrier Central's reviewers (E9.F1.S17) through
+ * publicWeb_reportChatMessage → hcapp_reportChatMessage. The SP hands the
+ * API what to email and the API strips it, so only the envelope reaches
+ * here. Reporting the same message twice is a success that sends nothing.
+ */
+export async function reportChatMessage(s: MemberSession, messageId: string, reason: string | null): Promise<{ ok: boolean; message?: string }> {
+  const rowsets = await callAdminApi("reportChatMessage", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_reportChatMessage"), messageId, reason,
+  });
+  if (succeeded(rowsets)) return { ok: true };
+  return { ok: false, message: refusalOf(rowsets) ?? "The report could not be sent. Please try again." };
+}
+
 /**
  * A 15-minute write-only SAS for one chat photo, from the
  * GetChatPhotoUploadToken function (E9.F1.S11). The blob path is built from
