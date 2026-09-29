@@ -81,7 +81,14 @@ class MainNavigationPage extends StatelessWidget {
                                         RunsTimeScope.future;
                                   }
 
-                                  await setPage(0);
+                                  // The tab bar's onTap now closes Chats, so
+                                  // tell it this tap is the way in.
+                                  controller.openingChats = true;
+                                  try {
+                                    await setPage(0);
+                                  } finally {
+                                    controller.openingChats = false;
+                                  }
                                   await badgeController.refreshFromTable(true);
 
                                   // return badgeController

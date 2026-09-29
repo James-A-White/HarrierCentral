@@ -527,12 +527,31 @@ class MainNavigationController extends GetxController
     initializationMessage.value = message;
   }
 
+  /// Raised by the top-bar chat badge while it moves to the Runs tab, so
+  /// [onTabChanged] keeps the Chats view the badge has just chosen.
+  bool openingChats = false;
+
   Future<void> onTabChanged(int index) async {
+    // Any tab tap closes the Chats view: re-tapping Runs, or going to another
+    // tab and back, shows the runs again (James, 2026-09-29). Must run before
+    // the first await — the badge clears openingChats as soon as the tap
+    // returns.
+    var leftChats = false;
+    if (!openingChats && Get.isRegistered<FutureRunListPageController>()) {
+      final ctrl = Get.find<FutureRunListPageController>();
+      if (ctrl.isChatsMode) {
+        ctrl.runsToDisplay.value = RunsToDisplay.allRuns;
+        ctrl.runsTimeScope.value = RunsTimeScope.future;
+        leftChats = true;
+      }
+    }
+
     currentPage.value = index;
     appBarText.value = tabTitles[index];
     if (index == 0 && Get.isRegistered<FutureRunListPageController>()) {
       final ctrl = Get.find<FutureRunListPageController>();
       await ctrl.refreshFromTable(true); // instant local refresh
+      if (leftChats) ctrl.scrollToInitialAnchor();
       unawaited(
         ctrl.triggerBackgroundSync(),
       ); // background API sync (1-min debounce)
