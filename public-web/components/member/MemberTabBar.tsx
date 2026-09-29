@@ -65,8 +65,9 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
             <Link href="/me/passkeys" aria-label="Passkeys" title="Passkeys" className="text-white/80 hover:text-white">
               <KeyRound className="h-5 w-5" />
             </Link>
-            {/* Blocked hashers sit with the other account settings (E9.F1.S16). */}
-            <Link href="/me/blocked" aria-label="Blocked hashers" title="Blocked hashers" className="text-white/80 hover:text-white">
+            {/* Who can reach you — the direct-message preference and blocked
+                hashers — sits with the other account settings (E9.F1.S16/S18). */}
+            <Link href="/me/blocked" aria-label="Messages and blocking" title="Messages and blocking" className="text-white/80 hover:text-white">
               <UserX className="h-5 w-5" />
             </Link>
             <button type="button" onClick={signOut} className="underline underline-offset-2 hover:text-white">Sign out</button>

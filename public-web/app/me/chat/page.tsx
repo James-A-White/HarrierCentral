@@ -1,23 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getChatThreads } from "@/lib/member-api";
+import { getChatThreads, getDirectMessageRequests, type ChatThreadRow } from "@/lib/member-api";
 import { requireMember } from "@/lib/member-server";
-import { chatHref } from "@/lib/chat-links";
+import { chatHref, dmHref } from "@/lib/chat-links";
 import { HC_RED } from "@/components/member/app-look";
+import { DmRequests } from "@/components/member/DmRequests";
+import { HasherPhoto } from "@/components/member/HasherPhoto";
 
 export const metadata: Metadata = { title: "Chats" };
 
 /**
- * The app's chat list (E9.F7.S15): the rooms I may enter, then every run
+ * The app's chat list (E9.F7.S15): requests to message me (E9.F1.S19), then
+ * the rooms I may enter, then my direct messages (E9.F1.S7) and every run
  * and kennel thread with messages — unread first, with the red badge.
  */
 export default async function ChatListPage() {
   const s = await requireMember();
-  const { threads } = await getChatThreads(s).catch(() => ({ me: "", threads: [] }));
+  const [{ threads }, requests] = await Promise.all([
+    getChatThreads(s).catch(() => ({ me: "", threads: [] as ChatThreadRow[] })),
+    getDirectMessageRequests(s).catch(() => []),
+  ]);
+  const byRecent = (a: ChatThreadRow, b: ChatThreadRow) =>
+    (b.BadgeCount > 0 ? 1 : 0) - (a.BadgeCount > 0 ? 1 : 0) || (b.LastMessageAt ?? "").localeCompare(a.LastMessageAt ?? "");
   const rooms = threads.filter((t) => t.RoomType != null);
+  // A DM row names its thread and nothing else; an accepted request with no
+  // message yet is listed too, so it has somewhere to go.
+  const dms = threads.filter((t) => t.ThreadId).sort(byRecent);
   const others = threads
-    .filter((t) => t.RoomType == null && (t.MessageCount > 0 || t.BadgeCount > 0))
-    .sort((a, b) => (b.BadgeCount > 0 ? 1 : 0) - (a.BadgeCount > 0 ? 1 : 0) || (b.LastMessageAt ?? "").localeCompare(a.LastMessageAt ?? ""));
+    .filter((t) => t.RoomType == null && !t.ThreadId && (t.PublicEventId || t.PublicKennelId) && (t.MessageCount > 0 || t.BadgeCount > 0))
+    .sort(byRecent);
 
   return (
     <div className="-mx-3 -mt-3 pb-8 sm:-mt-4">
@@ -27,12 +38,28 @@ export default async function ChatListPage() {
         <span className="w-4" />
       </div>
 
+      <DmRequests initial={requests} />
+
       {rooms.length > 0 && (
         <>
           <h3 className="px-3 pb-1 pt-4 text-[15px] font-bold uppercase tracking-wide text-white/90">Chat rooms</h3>
           <ul className="space-y-2 px-2">
             {rooms.map((t) => (
               <Row key={`room-${t.RoomType}`} href={chatHref("room", String(t.RoomType), t.EventName ?? "Room", "/me/chat")} title={t.EventName ?? "Room"} sub={`${t.MessageCount} message${t.MessageCount === 1 ? "" : "s"}`} badge={t.BadgeCount} logo={t.RoomIcon} />
+            ))}
+          </ul>
+        </>
+      )}
+
+      {dms.length > 0 && (
+        <>
+          <h3 className="px-3 pb-1 pt-4 text-[15px] font-bold uppercase tracking-wide text-white/90">Messages</h3>
+          <ul className="space-y-2 px-2">
+            {dms.map((t) => (
+              <Row key={`dm-${t.ThreadId}`} href={dmHref(t.ThreadId!)}
+                title={t.OtherDisplayName ?? t.EventName ?? "Hasher"}
+                sub={t.MessageCount > 0 ? `${t.MessageCount} message${t.MessageCount === 1 ? "" : "s"} · ${whenLast(t.LastMessageAt)}` : "No messages yet"}
+                badge={t.BadgeCount} photo={t.OtherPhoto ?? t.KennelLogo} />
             ))}
           </ul>
         </>
@@ -55,11 +82,25 @@ export default async function ChatListPage() {
   );
 }
 
-function Row({ href, title, sub, badge, logo }: { href: string; title: string; sub: string; badge: number; logo?: string | null }) {
+/** "14:05" today, "Tue" this week, "12 Mar" otherwise — the app's list shorthand. Rendered on the server, so it is UTC-ish; a chat list wears that fine. */
+function whenLast(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const age = Date.now() - d.getTime();
+  if (age < 24 * 3600_000) return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  if (age < 7 * 24 * 3600_000) return d.toLocaleDateString("en-GB", { weekday: "short" });
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+function Row({ href, title, sub, badge, logo, photo }: { href: string; title: string; sub: string; badge: number; logo?: string | null; photo?: string | null }) {
   return (
     <li>
       <Link href={href} className="flex items-center gap-3 rounded-md bg-white px-3 py-2.5 text-zinc-900 shadow">
-        {logo?.startsWith("https://") ? (
+        {photo !== undefined ? (
+          // A hasher's photo is a portrait: it keeps the circle.
+          <HasherPhoto url={photo} className="h-12 w-12" />
+        ) : logo?.startsWith("https://") ? (
           // Contained, never masked: a kennel logo must not be cropped, and a
           // room's coin is already a circle whose raised rim is what makes it
           // readable at 48px — a circular mask shaves it off.
