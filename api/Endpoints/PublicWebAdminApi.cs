@@ -56,6 +56,9 @@ namespace HcWebApi.Endpoints
             "getChatMessages",
             "sendChatMessage",
             "markChatRead",
+            // Deleting a message: your own, or any as a chat administrator
+            // (E9.F1.S13/S14, 2026-09-29). Wraps hcapp_deleteChatMessage.
+            "deleteChatMessage",
             "issuePasskeyInviteCode",
             // Managing passkeys, not just making them (E9.F7.S18, 2026-09-20).
             // Both are thin wrappers over the app's hcapp_ SPs, so the web and
@@ -110,6 +113,7 @@ namespace HcWebApi.Endpoints
             "getChatMessages",
             "sendChatMessage",
             "markChatRead",
+            "deleteChatMessage",
             "issuePasskeyInviteCode",
             "getAllSongs",
             "getReportContext",

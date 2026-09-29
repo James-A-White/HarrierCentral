@@ -14,7 +14,9 @@ namespace HcWebApi.Endpoints
     {
         private static readonly HashSet<string> AllowedContainers = new(StringComparer.OrdinalIgnoreCase)
         {
-            "newsflash", "harrier", "event-images"
+            "newsflash", "harrier", "event-images",
+            // Chat photos from the portal (E9.F1.S11, 2026-09-29).
+            "chat-photos"
         };
 
         private readonly ILogger<GetPortalUploadSas> _log;

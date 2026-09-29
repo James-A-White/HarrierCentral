@@ -1,0 +1,82 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getChatPhotoUploadToken",
+  "version": "1.0.0",
+  "description": "Auth for one chat photo upload. The API function GetChatPhotoUploadToken signs a 15-minute write-only SAS for chat-photos/<yyyy>/<MM>/<userId>-<photoGuid>.jpg using the userId returned here. No DB writes. E9.F1.S11.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token"
+    },
+    {
+      "name": "photoGuid",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Client-chosen; names the file. Null/empty → 1984"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok"
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Caller",
+      "description": "On success",
+      "columns": [
+        {
+          "name": "userId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The token's user"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "On failure"
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
