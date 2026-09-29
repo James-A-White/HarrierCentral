@@ -186,6 +186,7 @@ export 'package:harrier_central/widgets/pin_glyph.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_scaffold.dart';
 export 'package:harrier_central/services/chat_rooms/chat_room_service.dart';
 export 'package:harrier_central/services/chat_safety/chat_safety_service.dart';
+export 'package:harrier_central/services/direct_messages/direct_message_service.dart';
 export 'package:harrier_central/services/passkeys/passkey_manage_service.dart';
 export 'package:harrier_central/data/services/signed_out_handler.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_page_controller.dart';

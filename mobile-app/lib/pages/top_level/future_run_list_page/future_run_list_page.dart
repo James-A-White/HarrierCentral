@@ -764,6 +764,27 @@ class FutureRunsListPage extends StatelessWidget {
                                         ],
                                       ],
                                     );
+                                  } else if (items[index]
+                                      is DirectMessageRequest) {
+                                    final DirectMessageRequest r =
+                                        items[index] as DirectMessageRequest;
+                                    // The Requests group sits at the top of
+                                    // the Chats view; the first row carries
+                                    // the group's heading.
+                                    final bool first =
+                                        index == 0 ||
+                                        items[index - 1]
+                                            is! DirectMessageRequest;
+                                    return Obx(() {
+                                      final String busyId = listController
+                                          .dmRequestBusyId
+                                          .value;
+                                      return _dmRequestRow(
+                                        r,
+                                        first: first,
+                                        busy: busyId == r.fromPublicHasherId,
+                                      );
+                                    });
                                   } else if (items[index] is EventChatSummary) {
                                     return _chatRunRow(
                                       items[index] as EventChatSummary,
@@ -818,6 +839,8 @@ class FutureRunsListPage extends StatelessWidget {
   /// run name/number, date, and the unread-message count. Taps straight into the
   /// chat, so it works even for runs that aren't synced locally.
   Widget _chatRunRow(EventChatSummary s) {
+    // A direct message is a person, not a run, a kennel or a room.
+    if (s.isDmThread) return _dmThreadRow(s);
     // A room has no kennel, no run number and no date — its name IS the row.
     final String title = s.isRoomThread
         ? (s.eventName ?? 'Chat room')
@@ -877,20 +900,7 @@ class FutureRunsListPage extends StatelessWidget {
             // takes the colour rather than assuming the jungle.
             ? const PinGlyph(pinned: true, size: 18, color: Colors.black54)
             : s.badgeCount > 0
-            ? Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Text(
-                  '${s.badgeCount}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              )
+            ? _unreadBadge(s.badgeCount)
             : const Icon(Icons.chevron_right, color: Colors.black38),
         onTap: () async {
           // A room is named by its type alone — no event, no kennel.
@@ -931,6 +941,188 @@ class FutureRunsListPage extends StatelessWidget {
           }
         },
       ),
+    );
+  }
+
+  /// The red unread count on a chat row.
+  Widget _unreadBadge(int count) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+    decoration: BoxDecoration(
+      color: Colors.red,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Text(
+      '$count',
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+    ),
+  );
+
+  /// When a thread last had something said in it, for a DM row.
+  static String _lastMessageLabel(EventChatSummary s) {
+    if ((s.messageCount ?? 0) == 0) return 'No messages yet';
+    final DateTime? at = DateTime.tryParse(s.lastMessageAt ?? '');
+    if (at == null) return 'Direct message';
+    return DateFormat('EEE, d MMM yyyy HH:mm').format(at.toLocal());
+  }
+
+  /// A direct message thread in the Chats view (E9.F1.S7): the other
+  /// party's photo — a person, so a circle — their name, when the thread
+  /// last moved, and the unread count. Opens the thread; the badges are
+  /// refreshed on return.
+  Widget _dmThreadRow(EventChatSummary s) {
+    final HcId threadId = s.threadId!;
+    final String name = (s.otherDisplayName ?? '').trim().isEmpty
+        ? (s.eventName ?? 'A hasher')
+        : s.otherDisplayName!.trim();
+    final String? photo = s.otherPhoto ?? s.kennelLogo;
+    return Card(
+      key: ValueKey<String>('dm-$threadId'),
+      elevation: 3,
+      margin: const EdgeInsets.only(top: 10.0),
+      child: ListTile(
+        leading: CircleAvatar(
+          radius: 22,
+          backgroundColor: Colors.black12,
+          backgroundImage: avatarImageProvider(photo),
+        ),
+        title: Text(name, style: ts_tileText),
+        subtitle: Text(
+          _lastMessageLabel(s),
+          style: ts_footnoteBlack,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: s.badgeCount > 0
+            ? _unreadBadge(s.badgeCount)
+            : const Icon(Icons.chevron_right, color: Colors.black38),
+        onTap: () => unawaited(
+          ChatPageController.openDirectMessage(
+            threadId: threadId,
+            otherPublicHasherId: s.otherPublicHasherId ?? HcId.empty,
+            otherDisplayName: name,
+            otherPhoto: photo,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// One hasher asking to message this one (E9.F1.S19), with Accept and
+  /// Decline. The first row of the group carries its heading, in the same
+  /// bar the run list uses for its sections.
+  Widget _dmRequestRow(
+    DirectMessageRequest r, {
+    required bool first,
+    required bool busy,
+  }) {
+    final DateTime? at = r.requestedAt;
+    return Column(
+      key: ValueKey<String>('dm-request-${r.fromPublicHasherId}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        if (first)
+          Container(
+            margin: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.only(top: 2.0),
+            color: themeButtonColors,
+            height: 40.0,
+            alignment: Alignment.center,
+            child: Text(
+              'Message requests',
+              textAlign: TextAlign.center,
+              style: ts_titleLarge,
+            ),
+          ),
+        Card(
+          elevation: 3,
+          margin: const EdgeInsets.only(top: 10.0),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: Colors.black12,
+                  backgroundImage: avatarImageProvider(r.photo),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(r.displayName, style: ts_tileText),
+                      Text(
+                        at == null
+                            ? 'wants to message you'
+                            : 'wants to message you — '
+                                  '${DateFormat('d MMM').format(at.toLocal())}',
+                        style: ts_footnoteBlack,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      // Wrap, not Row: two buttons at a large text size are
+                      // wider than the space beside a photo.
+                      AbsorbPointer(
+                        absorbing: busy,
+                        child: Opacity(
+                          opacity: busy ? 0.5 : 1.0,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: <Widget>[
+                              ElevatedButton(
+                                onPressed: () => unawaited(
+                                  controller.respondToDmRequest(
+                                    r,
+                                    accept: true,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Accept',
+                                  style: ts_button,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.blueGrey,
+                                ),
+                                onPressed: () => unawaited(
+                                  controller.respondToDmRequest(
+                                    r,
+                                    accept: false,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Decline',
+                                  style: ts_button,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (busy)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1531,12 +1723,28 @@ class EventChatSummary {
   /// applied and the app does not re-derive it.
   final bool pinned;
 
+  /// A direct message thread (E9.F1.S7): named by its ThreadId, with the
+  /// other party in the three fields below. Null for the other three kinds.
+  /// SQL sends the ids UPPERCASE; [HcId] lowercases them.
+  final HcId? threadId;
+  final HcId? otherPublicHasherId;
+  final String? otherDisplayName;
+
+  /// The other party's HC.Hasher.Photo — a URL, a `bundle://` avatar, or
+  /// nothing. Drawn through avatarImageProvider, as a circle: it is a
+  /// person, not a kennel logo.
+  final String? otherPhoto;
+
   EventChatSummary({
     required this.publicEventId,
     required this.badgeCount,
     this.pinned = false,
     this.roomType,
     this.roomIcon,
+    this.threadId,
+    this.otherPublicHasherId,
+    this.otherDisplayName,
+    this.otherPhoto,
     this.eventId,
     this.eventName,
     this.eventNumber,
@@ -1556,6 +1764,9 @@ class EventChatSummary {
 
   /// A platform-wide room — no run, no kennel, just a room type.
   bool get isRoomThread => roomType != null;
+
+  /// A direct message — no run, no kennel, no room, just a ThreadId.
+  bool get isDmThread => threadId != null;
 
   /// The same thread with a different unread count — used when a chat is
   /// opened, so the row loses its badge but STAYS in the list (James,
@@ -1577,6 +1788,10 @@ class EventChatSummary {
     pinned: pinned,
     roomType: roomType,
     roomIcon: roomIcon,
+    threadId: threadId,
+    otherPublicHasherId: otherPublicHasherId,
+    otherDisplayName: otherDisplayName,
+    otherPhoto: otherPhoto,
   );
 
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
@@ -1598,6 +1813,12 @@ class EventChatSummary {
       pinned: json['Pinned'] == true || json['Pinned'] == 1,
       roomType: (json['RoomType'] as num?)?.toInt(),
       roomIcon: json['RoomIcon'] as String?,
+      // The four DM columns (2026-09-29). An older SP has none of them, and
+      // tryParse makes an absent or empty id a null, never a DM.
+      threadId: HcId.tryParse(json['ThreadId']),
+      otherPublicHasherId: HcId.tryParse(json['OtherPublicHasherId']),
+      otherDisplayName: json['OtherDisplayName'] as String?,
+      otherPhoto: json['OtherPhoto'] as String?,
     );
   }
 

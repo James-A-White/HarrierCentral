@@ -9,6 +9,8 @@ class ChatPage extends StatelessWidget {
     required this.publicEventId,
     this.isKennelThread = false,
     this.roomType,
+    this.threadId,
+    this.dmState,
     super.key,
   });
 
@@ -18,11 +20,24 @@ class ChatPage extends StatelessWidget {
   factory ChatPage.room({required int roomType, Key? key}) =>
       ChatPage(eventId: '', publicEventId: '', roomType: roomType, key: key);
 
+  /// A direct message thread (E9.F1.S7): named by its ThreadId alone, with
+  /// the other party's name and photo carried in [dmState] so the first
+  /// paint has them before the server answers.
+  factory ChatPage.dm({required DmThreadState state, Key? key}) => ChatPage(
+    eventId: '',
+    publicEventId: '',
+    threadId: state.threadId,
+    dmState: state,
+    key: key,
+  );
+
   /// Kennel thread: [eventId]=kennelId, [publicEventId]=publicKennelId.
   final String eventId;
   final String publicEventId;
   final bool isKennelThread;
   final int? roomType;
+  final HcId? threadId;
+  final DmThreadState? dmState;
 
   static final _chatTheme = () {
     final base = core.ChatTheme.light();
@@ -72,13 +87,15 @@ class ChatPage extends StatelessWidget {
     // thread gets a new controller rather than inheriting the old one.
     return GetBuilder<ChatPageController>(
       key: ValueKey<String>(
-        '$eventId|$publicEventId|$isKennelThread|$roomType',
+        '$eventId|$publicEventId|$isKennelThread|$roomType|$threadId',
       ),
       init: ChatPageController(
         eventId: eventId,
         publicEventId: publicEventId,
         isKennelThread: isKennelThread,
         roomType: roomType,
+        threadId: threadId,
+        dmState: dmState,
       ),
       global: false,
       dispose: (state) => state.controller?.onDelete(),
@@ -87,6 +104,7 @@ class ChatPage extends StatelessWidget {
   }
 
   Widget _chat(ChatPageController controller) {
+    final DmThreadState? dm = dmState;
     return Chat(
       currentUserId: controller.currentUser.id,
       resolveUser: controller.resolveUser,
@@ -102,9 +120,19 @@ class ChatPage extends StatelessWidget {
       builders: core.Builders(
         // The stock Composer with one addition: a hard cap at the column
         // width, so a long message is stopped in the box rather than cut on
-        // the server (or refused by it).
-        composerBuilder: (BuildContext context) =>
-            const Composer(maxLength: kChatMessageMaxLength),
+        // the server (or refused by it). A DM whose sending is refused — the
+        // other side ended it, or somebody blocks — shows why instead.
+        composerBuilder: (BuildContext context) => dm == null
+            ? const Composer(maxLength: kChatMessageMaxLength)
+            : Obx(() {
+                // Both Rx reads come first, before the branch (obx_scan).
+                final bool canSend = dm.canSend.value;
+                final String name = dm.otherDisplayName.value;
+                if (canSend) {
+                  return const Composer(maxLength: kChatMessageMaxLength);
+                }
+                return _CannotMessageBar(name: name);
+              }),
         // Links in a bubble are tappable, and a hashruns.org run link opens
         // the run IN the app. The stock bubble renders plain text — there is
         // no url_launcher anywhere in flutter_chat_ui 2.11 — and even if it
@@ -186,6 +214,32 @@ class ChatPage extends StatelessWidget {
                 child: child,
               );
             },
+      ),
+    );
+  }
+}
+
+/// What a DM shows in place of its composer once sending is refused: the
+/// conversation was ended by either side, or one of them blocks the other.
+/// The line names nobody's reason, on purpose — a block must not show.
+class _CannotMessageBar extends StatelessWidget {
+  const _CannotMessageBar({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        color: const Color(0xFFE2E8F0),
+        child: Text(
+          "You can't message $name.",
+          style: ts_footnoteBlack,
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

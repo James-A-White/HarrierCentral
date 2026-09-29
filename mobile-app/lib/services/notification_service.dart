@@ -33,6 +33,16 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   /// a colon cannot appear in a UUID, so this can never collide with one.
   static String roomBadgeKey(int roomType) => 'room:$roomType';
 
+  /// Key for a direct message thread (E9.F1.S7) in [unreadEventCounts]. A
+  /// DM is named by its ThreadId, which is a GUID that could collide with a
+  /// publicEventId only in theory; the prefix removes the theory.
+  static String dmBadgeKey(HcId threadId) => 'dm:$threadId';
+
+  /// Hashers asking to message this one (E9.F1.S19), newest first, from
+  /// hcapp_getDirectMessageRequests. Refreshed with the badge counts, so a
+  /// request push and a resume both bring it up to date.
+  final RxList<DirectMessageRequest> dmRequests = <DirectMessageRequest>[].obs;
+
   /// Threads that contain at least one message, keyed by **lowercase**
   /// publicEventId (run threads) / publicKennelId (kennel threads). Populated
   /// from the Mode 3 badge fetch (SP v1.1.0 returns every visible thread with
@@ -123,6 +133,10 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       'deviceId': deviceId,
     };
 
+    // The DM request list rides alongside, in parallel, so it costs no
+    // latency; it is joined below before the list UI is refreshed.
+    final Future<void> requests = _refreshDmRequests();
+
     // Background badge fetch during boot — never show an error dialog for it
     // (initServices runs pre-overlay; and a badge count is not worth an alert).
     String responseBody = await ServiceCommon.sendHttpPost(() {
@@ -196,6 +210,15 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
               summary.badgeCount.obs;
         }
       }
+      // And the FOURTH kind, a direct message (E9.F1.S7): no run, no kennel,
+      // no room — its ThreadId is its whole identity. Folded into the same
+      // map so the app-bar bubble and the icon count it like any thread.
+      for (final summary in serverChatSummary) {
+        if (summary.isDmThread) {
+          unreadEventCounts[dmBadgeKey(summary.threadId!)] =
+              summary.badgeCount.obs;
+        }
+      }
       // Which threads have any content at all (read or not).
       threadsWithMessages
         ..clear()
@@ -221,8 +244,13 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
                     // discoverable, since almost none of them has a message
                     // yet (E9.F1.S8). Everything else still needs traffic to
                     // earn a row.
-                    ((s.messageCount ?? 0) > 0 || s.pinned) &&
-                    (s.eventId != null || s.isKennelThread || s.isRoomThread),
+                    // A DM is listed even with nothing in it yet: an
+                    // accepted request needs somewhere to go (E9.F1.S19).
+                    ((s.messageCount ?? 0) > 0 || s.pinned || s.isDmThread) &&
+                    (s.eventId != null ||
+                        s.isKennelThread ||
+                        s.isRoomThread ||
+                        s.isDmThread),
               )
               .toList()
             ..sort((a, b) {
@@ -246,9 +274,21 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       _recalculateGlobalBadgeCount();
     }
 
+    await requests;
+
     if (Get.isRegistered<FutureRunListPageController>()) {
       Get.find<FutureRunListPageController>().refreshRunListUi();
     }
+  }
+
+  /// The pending DM requests, from the server. A FAILED call leaves the
+  /// list as it was: a request that was there a moment ago has not gone
+  /// away because the phone lost signal.
+  Future<void> _refreshDmRequests() async {
+    final List<DirectMessageRequest>? list =
+        await DirectMessageService.fetchRequests();
+    if (list == null) return;
+    dmRequests.value = list;
   }
 
   // --- FCM Listener Management ---
@@ -530,6 +570,16 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       return;
     }
 
+    // A DM EVENT — somebody asked to message you, or accepted your ask — is
+    // not a chat message and opens no thread by itself. The request list
+    // was refreshed by the caller; this is the in-app banner for it.
+    final Map<String, dynamic> payload = message.payload;
+    if ('${payload['ThreadKind'] ?? ''}' == 'dm' &&
+        payload['DmEvent'] != null) {
+      _showDmEventToast(payload);
+      return;
+    }
+
     // `?? 0` only guards a FAILED parse — it does not guard a null INPUT, and
     // int.tryParse takes a String, so a push with no 'MessageType' key threw
     // "type 'Null' is not a subtype of type 'String'" and aborted the whole
@@ -756,6 +806,78 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
     if (changed && Get.isRegistered<FutureRunListPageController>()) {
       Get.find<FutureRunListPageController>().refreshRunListUi();
+    }
+  }
+
+  /// The DM counterpart of [clearUnreadForRoom]: zeroes a direct message
+  /// thread's badge the instant it is opened. Server-side the read is
+  /// already durable — hcapp_getDirectMessages is called with markRead —
+  /// so this is purely the optimistic half.
+  void clearUnreadForDm(HcId threadId) {
+    final String key = dmBadgeKey(threadId);
+    var changed = false;
+
+    final RxInt? count = unreadEventCounts[key];
+    if (count != null && count.value != 0) {
+      count.value = 0;
+      changed = true;
+    }
+    if (changed) _recalculateGlobalBadgeCount();
+
+    // The row loses its badge but KEEPS its place (James, 2026-09-13).
+    for (int i = 0; i < unreadChatRuns.length; i++) {
+      final EventChatSummary s = unreadChatRuns[i];
+      if (!s.isDmThread || s.threadId != threadId || s.badgeCount == 0) {
+        continue;
+      }
+      unreadChatRuns[i] = s.withBadgeCount(0);
+      changed = true;
+    }
+
+    if (changed && Get.isRegistered<FutureRunListPageController>()) {
+      Get.find<FutureRunListPageController>().refreshRunListUi();
+    }
+  }
+
+  /// The in-app banner for a DM event push while the app is open. A tap on
+  /// the system notification goes through the run list's tap handler
+  /// instead; this mirrors where that lands.
+  void _showDmEventToast(Map<String, dynamic> payload) {
+    final String event = '${payload['DmEvent'] ?? ''}';
+    final String rawName = '${payload['FromDisplayName'] ?? ''}'.trim();
+    final String name = rawName.isEmpty ? 'A hasher' : rawName;
+    if (event == 'request') {
+      hcSnack(
+        '$name wants to message you.',
+        seconds: 8,
+        actionLabel: 'View',
+        onAction: () {
+          if (Get.isRegistered<FutureRunListPageController>()) {
+            unawaited(Get.find<FutureRunListPageController>().openChatsView());
+          }
+        },
+      );
+      return;
+    }
+    if (event == 'accepted') {
+      final HcId? threadId = HcId.tryParse(payload['ThreadId']);
+      final HcId other = HcId('${payload['FromPublicHasherId'] ?? ''}');
+      final Object? rawPhoto = payload['FromPhoto'];
+      hcSnack(
+        '$name accepted your request.',
+        seconds: 8,
+        actionLabel: threadId == null ? null : 'Open',
+        onAction: threadId == null
+            ? null
+            : () => unawaited(
+                ChatPageController.openDirectMessage(
+                  threadId: threadId,
+                  otherPublicHasherId: other,
+                  otherDisplayName: name,
+                  otherPhoto: rawPhoto is String ? rawPhoto : null,
+                ),
+              ),
+      );
     }
   }
 
