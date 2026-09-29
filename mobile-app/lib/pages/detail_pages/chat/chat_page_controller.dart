@@ -1,5 +1,7 @@
 import 'package:flutter_chat_core/flutter_chat_core.dart' as core;
 import 'package:harrier_central/imports.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:map_launcher/map_launcher.dart' as maps;
 
 const int kChatReleasabilityAll = 63;
 
@@ -93,6 +95,10 @@ class ChatPageController extends GetxController {
   bool _isFetching = false;
   bool _pendingFetch = false;
 
+  /// "Always use this map app", for a location card's tap — the same
+  /// chooser the run pin uses (Utilities.showOnMap).
+  final ValueNotifier<bool> saveUserMapPreference = ValueNotifier<bool>(false);
+
   /// Every chat page on screen. Each page owns its controller (see
   /// ChatPage.build), so the app's resume handler cannot look one up in the
   /// GetX registry; it refreshes all of these instead.
@@ -103,6 +109,7 @@ class ChatPageController extends GetxController {
     open.remove(this);
     unawaited(_fcmSubscription?.cancel());
     chatController.dispose();
+    saveUserMapPreference.dispose();
     super.onClose();
   }
 
@@ -222,6 +229,9 @@ class ChatPageController extends GetxController {
         updated = msg.copyWith(status: core.MessageStatus.delivered);
       } else if (msg is core.FileMessage) {
         updated = msg.copyWith(status: core.MessageStatus.delivered);
+      } else if (msg is core.CustomMessage) {
+        // A location card (E9.F1.S12).
+        updated = msg.copyWith(status: core.MessageStatus.delivered);
       }
       if (updated != null) unawaited(chatController.updateMessage(msg, updated));
     }
@@ -246,6 +256,11 @@ class ChatPageController extends GetxController {
       if (isClosed) return;
       if (result == null || result.startsWith(ERROR_PREFIX)) return;
       final outerItem = jsonDecode(result) as List<dynamic>;
+      if (outerItem.isEmpty) return;
+      // Deletions first, and before the empty-delta return below: a delta
+      // that brings no new message can still carry a removal (E9.F1.S13).
+      await _applyRemovedIds(outerItem);
+      if (isClosed) return;
       final rawMessages = outerItem[0] as List<dynamic>;
       if (rawMessages.isEmpty) return;
 
@@ -380,10 +395,14 @@ class ChatPageController extends GetxController {
       );
 
       final createdAtMs = msg['createdAt'];
-      result.add(core.Message.text(
-        id: (msg['id'] as String).asUuid,
+      result.add(_messageFor(
+        id: HcId((msg['id'] as String?) ?? ''),
         authorId: authorId,
-        text: (msg['text'] as String?) ?? '',
+        content: (msg['text'] as String?) ?? '',
+        // An older reader has no messageKind and no canDelete: text, and
+        // not deletable — the server decides that, never this side.
+        kind: ChatMessageKind.fromJson(msg['messageKind']),
+        canDelete: msg['canDelete'] == 1 || msg['canDelete'] == true,
         createdAt: createdAtMs is int
             ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
             : (createdAtMs is num)
@@ -403,65 +422,194 @@ class ChatPageController extends GetxController {
     return result.reversed.toList();
   }
 
-  void handleAttachmentPressed() {
-    unawaited(
-      Get.bottomSheet<void>(
-        SafeArea(
-          child: SizedBox(
-            height: 96,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                TextButton(
-                  onPressed: () async {
-                    Get.back<void>();
-                    await handleImageSelection();
-                  },
-                  child: const Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Text('Photo'),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Get.back<void>(),
-                  child: const Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Text('Cancel'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        barrierColor: Colors.black54,
-      ),
+  // ── Message kinds (E9.F1.S11/S12) ────────────────────────────────────────
+
+  /// Metadata keys every message this controller builds carries. The chat
+  /// library's message types say how a bubble LOOKS; these say what the
+  /// server knows about it.
+  static const String _kKind = 'hcKind';
+  static const String _kCanDelete = 'hcCanDelete';
+
+  /// The message's content as the server holds it: the text, the photo's
+  /// blob URL, or the location's maps link. '' for a photo still uploading.
+  static const String _kContent = 'hcContent';
+
+  /// One message, drawn the way its kind asks. A kind this build does not
+  /// know — or a photo / location whose content is not what this app would
+  /// have sent — falls back to a text bubble showing the content, so nothing
+  /// is ever silently dropped.
+  core.Message _messageFor({
+    required String id,
+    required String authorId,
+    required String content,
+    required int kind,
+    required bool canDelete,
+    DateTime? createdAt,
+    core.MessageStatus? status,
+    String? localPath,
+    double? width,
+    double? height,
+    int? size,
+  }) {
+    final Map<String, dynamic> meta = <String, dynamic>{
+      _kKind: kind,
+      _kCanDelete: canDelete,
+      _kContent: content,
+    };
+    if (kind == ChatMessageKind.photo &&
+        (localPath != null || isChatPhotoUrl(content))) {
+      return core.Message.image(
+        id: id,
+        authorId: authorId,
+        source: localPath ?? content,
+        createdAt: createdAt,
+        status: status,
+        width: width,
+        height: height,
+        size: size,
+        metadata: meta,
+      );
+    }
+    if (kind == ChatMessageKind.location) {
+      final ChatLocation? at = ChatLocation.parseUrl(content);
+      if (at != null) {
+        return core.Message.custom(
+          id: id,
+          authorId: authorId,
+          createdAt: createdAt,
+          status: status,
+          metadata: <String, dynamic>{
+            ...meta,
+            kChatLocationLatKey: at.latitude,
+            kChatLocationLngKey: at.longitude,
+          },
+        );
+      }
+    }
+    return core.Message.text(
+      id: id,
+      authorId: authorId,
+      text: content,
+      createdAt: createdAt,
+      status: status,
+      metadata: meta,
     );
   }
 
-  Future<void> handleImageSelection() async {
-    final result = await ImagePicker().pickImage(
-      imageQuality: 70,
-      maxWidth: 1440,
-      source: ImageSource.gallery,
-    );
+  /// What Copy puts on the clipboard: the text, or the photo / location URL.
+  String _copyTextFor(core.Message m) {
+    final Object? content = m.metadata?[_kContent];
+    if (content is String && content.isNotEmpty) return content;
+    if (m is core.TextMessage) return m.text;
+    return '';
+  }
 
-    if (result != null) {
-      final bytes = await result.readAsBytes();
-      final image = await decodeImageFromList(bytes);
+  /// The photo's public URL, once it has one — null while it is still only
+  /// on this phone.
+  String? _photoUrlFor(core.ImageMessage m) {
+    final Object? content = m.metadata?[_kContent];
+    if (content is String && isChatPhotoUrl(content)) return content;
+    return isChatPhotoUrl(m.source) ? m.source : null;
+  }
 
-      final message = core.Message.image(
-        id: const Uuid().v4(),
-        authorId: currentUser.id,
-        source: result.path,
-        width: image.width.toDouble(),
-        height: image.height.toDouble(),
-        size: bytes.length,
-      );
-      // Picking an image and decoding it are both long awaits, and the
-      // hasher can leave the chat inside either one.
-      if (isClosed) return;
-      unawaited(chatController.insertMessage(message));
+  /// Delete is offered when the server said this caller may delete the row
+  /// (their own, or they moderate the thread), or it is a message they sent
+  /// from this screen. Never while it is still sending: until the server
+  /// has it there is nothing there to delete.
+  bool _canDelete(core.Message m) =>
+      m.metadata?[_kCanDelete] == true &&
+      m.status != core.MessageStatus.sending;
+
+  // ── Removed messages (E9.F1.S13/S14) ──────────────────────────────────────
+
+  /// Drop every message on screen that the server lists as removed.
+  ///
+  /// Every reader ends with a rowset whose one column is `removedId`; the
+  /// room reader has its badge rowset in between, so it is found by the
+  /// column name, never by position. A delta fetch by sequence number never
+  /// sees a deletion otherwise — the removed row simply stops coming back —
+  /// so without this a message deleted elsewhere stayed on this phone for
+  /// as long as the chat was open. Ids come UPPERCASE from SQL; HcId
+  /// lowercases them to match the ids on screen.
+  Future<void> _applyRemovedIds(List<dynamic> rowsets) async {
+    final Set<String> removed = <String>{};
+    for (final dynamic rowset in rowsets.skip(1)) {
+      if (rowset is! List || rowset.isEmpty) continue;
+      final dynamic first = rowset.first;
+      if (first is! Map || !first.containsKey('removedId')) continue;
+      for (final dynamic row in rowset) {
+        final Object? id = (row as Map<String, dynamic>)['removedId'];
+        if (id is String && id.isNotEmpty) removed.add(HcId(id));
+      }
     }
+    if (removed.isEmpty) return;
+    for (final core.Message m in List.of(chatController.messages)) {
+      if (isClosed) return;
+      if (removed.contains(m.id.asUuid)) {
+        await chatController.removeMessage(m);
+      }
+    }
+  }
+
+  // ── Sending ───────────────────────────────────────────────────────────────
+
+  /// Post one message to the thread's send SP. True when the server took it.
+  Future<bool> _postMessage({
+    required String id,
+    required String content,
+    int kind = ChatMessageKind.text,
+  }) async {
+    final userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final result = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': _sendQueryType,
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          _sendProcName,
+          paramString: deviceSecret,
+        ),
+        ?_idKey: eventId,
+        if (roomType != null) 'roomType': roomType,
+        'messageId': id,
+        'messageContent': content,
+        // Every body key becomes an SP parameter in the shim, so a key the
+        // SP does not declare is a "too many arguments" failure, not an
+        // ignored extra. A room has no kennel or run to be releasable to —
+        // hcapp_sendRoomMessage stores the all-audiences value itself rather
+        // than accepting a parameter it would never branch on.
+        if (roomType == null)
+          'messageReleasabilityFlags': kChatReleasabilityAll,
+        // Optional on all three send SPs (default 0), so text leaves it out
+        // and a text send is byte-for-byte what it was before photos.
+        if (kind != ChatMessageKind.text) 'messageKind': kind,
+      }),
+    );
+    return !result.startsWith(ERROR_PREFIX);
+  }
+
+  /// Settle an optimistic bubble: one tick when the server took it, the
+  /// warning when it did not. [content] records the server-side content
+  /// once known (a photo's blob URL, after its upload).
+  Future<void> _settle(String id, {required bool ok, String? content}) async {
+    if (isClosed) return;
+    final core.Message? m =
+        chatController.messages.where((m) => m.id == id).firstOrNull;
+    if (m == null) return;
+    await chatController.updateMessage(
+      m,
+      m.copyWith(
+        status: ok ? core.MessageStatus.sent : core.MessageStatus.error,
+        sentAt: ok ? DateTime.now() : null,
+        metadata: <String, dynamic>{
+          ...?m.metadata,
+          _kContent: ?content,
+        },
+      ),
+    );
   }
 
   Future<void> handleSendPressed(String text) async {
@@ -479,58 +627,445 @@ class ChatPageController extends GetxController {
     if (text.trim().isEmpty) return;
 
     final uuid = const Uuid().v4();
-    final newMsg = core.Message.text(
-      id: uuid,
-      authorId: currentUser.id,
-      text: text,
-      createdAt: DateTime.now(),
-      status: core.MessageStatus.sending,
-    );
-
-    unawaited(chatController.insertMessage(newMsg));
-
-    final userId = currentUserId;
-    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
-
-    final result = await ServiceCommon.sendHttpPost(
-      () => jsonEncode(<String, dynamic>{
-        'queryType': _sendQueryType,
-        'deviceId': deviceId,
-        'accessToken': Utilities.generateToken(
-          userId,
-          _sendProcName,
-          paramString: deviceSecret,
+    unawaited(
+      chatController.insertMessage(
+        _messageFor(
+          id: uuid,
+          authorId: currentUser.id,
+          content: text,
+          kind: ChatMessageKind.text,
+          canDelete: true,
+          createdAt: DateTime.now(),
+          status: core.MessageStatus.sending,
         ),
-        ?_idKey: eventId,
-        if (roomType != null) 'roomType': roomType,
-        'messageId': uuid,
-        'messageContent': text,
-        // Every body key becomes an SP parameter in the shim, so a key the
-        // SP does not declare is a "too many arguments" failure, not an
-        // ignored extra. A room has no kennel or run to be releasable to —
-        // hcapp_sendRoomMessage stores the all-audiences value itself rather
-        // than accepting a parameter it would never branch on.
-        if (roomType == null)
-          'messageReleasabilityFlags': kChatReleasabilityAll,
-      }),
+      ),
     );
 
-    final failed = result.startsWith(ERROR_PREFIX);
+    final bool ok = await _postMessage(id: uuid, content: text);
     // Same disposal race as _fetchDelta: send, leave, and the reply lands on
     // a closed controller.
     if (isClosed) return;
-    final sent = chatController.messages.where((m) => m.id == uuid).firstOrNull;
-    if (sent is core.TextMessage) {
-      await chatController.updateMessage(
-        sent,
-        sent.copyWith(
-          status: failed ? core.MessageStatus.error : core.MessageStatus.sent,
-          sentAt: failed ? null : DateTime.now(),
+    await _settle(uuid, ok: ok);
+  }
+
+  // ── The 📎 sheet ──────────────────────────────────────────────────────────
+
+  /// A white sheet of choices; returns the chosen key, or null. Closed with
+  /// hcPop, never Get.back(): with a GetX toast up, Get.back() closes the
+  /// toast and leaves the sheet open (CLAUDE.md).
+  Future<String?> _chooseFrom(List<_SheetChoice> choices) {
+    return Get.bottomSheet<String>(
+      SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            for (final _SheetChoice c in choices)
+              ListTile(
+                leading: Icon(c.icon, color: c.colour ?? hc_blue),
+                title: Text(
+                  c.label,
+                  style: ts_titleBlack.copyWith(color: c.colour),
+                ),
+                onTap: () => hcPop<String>(result: c.key),
+              ),
+            ListTile(
+              leading: const Icon(Icons.close, color: Colors.black54),
+              title: Text('Cancel', style: ts_titleBlack),
+              onTap: () => hcPop<String>(),
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.white,
+      barrierColor: Colors.black54,
+    );
+  }
+
+  void handleAttachmentPressed() => unawaited(_attachmentMenu());
+
+  Future<void> _attachmentMenu() async {
+    final String? choice = await _chooseFrom(const <_SheetChoice>[
+      _SheetChoice('library', 'Photo from library', Icons.photo_library),
+      _SheetChoice('camera', 'Take a photo', Icons.photo_camera),
+      _SheetChoice('location', 'Location', Icons.location_on),
+    ]);
+    if (isClosed) return;
+    switch (choice) {
+      case 'library':
+        await handleImageSelection(ImageSource.gallery);
+      case 'camera':
+        await handleImageSelection(ImageSource.camera);
+      case 'location':
+        await _locationMenu();
+    }
+  }
+
+  // ── Photos (E9.F1.S11) ────────────────────────────────────────────────────
+
+  /// Pick, shrink, upload, send. The bubble appears at once with a spinner
+  /// (drawn from the file on this phone), becomes one tick when the server
+  /// has the message, or the warning if the upload or the send failed.
+  Future<void> handleImageSelection(ImageSource source) async {
+    XFile? picked;
+    try {
+      picked = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: ChatPhotoService.maxEdge.toDouble(),
+        maxHeight: ChatPhotoService.maxEdge.toDouble(),
+        // No imageQuality here: prepareJpeg encodes once, at jpegQuality.
+        // Asking the picker too would compress the photo twice.
+      );
+    } catch (e, s) {
+      // Camera or library access refused, or no camera (a simulator).
+      BootLogger.logError('[ChatPageController.handleImageSelection]', e, s);
+      hcSnack(
+        source == ImageSource.camera
+            ? 'The camera could not be opened.'
+            : 'Your photos could not be opened.',
+        error: true,
+      );
+      return;
+    }
+    // Picking is a long await, and the hasher can leave the chat inside it.
+    if (picked == null || isClosed) return;
+
+    final Uint8List? jpeg = await ChatPhotoService.prepareJpeg(picked);
+    if (isClosed) return;
+    if (jpeg == null) {
+      hcSnack('That photo could not be read.', error: true);
+      return;
+    }
+
+    double? width;
+    double? height;
+    try {
+      final image = await decodeImageFromList(jpeg);
+      width = image.width.toDouble();
+      height = image.height.toDouble();
+      image.dispose();
+    } catch (_) {
+      // Only the bubble's placeholder size; the upload does not need it.
+    }
+    if (isClosed) return;
+
+    final String id = const Uuid().v4();
+    await chatController.insertMessage(
+      _messageFor(
+        id: id,
+        authorId: currentUser.id,
+        content: '',
+        kind: ChatMessageKind.photo,
+        canDelete: true,
+        localPath: picked.path,
+        createdAt: DateTime.now(),
+        status: core.MessageStatus.sending,
+        width: width,
+        height: height,
+        size: jpeg.length,
+      ),
+    );
+
+    final String? blobUrl = await ChatPhotoService.upload(jpeg);
+    if (isClosed) return;
+    if (blobUrl == null) {
+      await _settle(id, ok: false);
+      hcSnack('That photo could not be uploaded. Please try again.',
+          error: true);
+      return;
+    }
+    final bool ok = await _postMessage(
+      id: id,
+      content: blobUrl,
+      kind: ChatMessageKind.photo,
+    );
+    if (isClosed) return;
+    await _settle(id, ok: ok, content: blobUrl);
+  }
+
+  /// Every photo in this chat that has a public URL, oldest first, in a
+  /// carousel starting at [tapped] — on the jungle, like every photo viewer
+  /// in the app (CLAUDE.md photo rule).
+  Future<void> _openPhotoCarousel(core.ImageMessage tapped) async {
+    final List<core.ImageMessage> photos = chatController.messages
+        .whereType<core.ImageMessage>()
+        .where((core.ImageMessage m) => _photoUrlFor(m) != null)
+        .toList();
+    final int index = photos.indexWhere((m) => m.id == tapped.id);
+    // Still uploading: nothing to show beyond the bubble itself.
+    if (index < 0) return;
+    final List<MapPhotoItem> items = <MapPhotoItem>[
+      for (final core.ImageMessage m in photos)
+        MapPhotoItem(
+          imageUrl: _photoUrlFor(m)!,
+          caption: '',
+          uploaderName: _userCache[m.authorId]?.name ?? '',
+          uploaderPhotoUrl: _userCache[m.authorId]?.imageSource ?? '',
+          capturedAt: m.createdAt?.toUtc(),
+        ),
+    ];
+    await Get.to<void>(
+      () => MapPhotoPage(
+        pageTitle: 'Chat photos',
+        photos: items,
+        initialIndex: index,
+        background: Backgrounds.defaultHcBackground(),
+      ),
+    );
+  }
+
+  // ── Locations (E9.F1.S12) ─────────────────────────────────────────────────
+
+  Future<void> _locationMenu() async {
+    final String? choice = await _chooseFrom(const <_SheetChoice>[
+      _SheetChoice('here', 'Where I am now', Icons.my_location),
+      _SheetChoice('pin', 'Drop a pin', Icons.push_pin),
+    ]);
+    if (isClosed) return;
+    switch (choice) {
+      case 'here':
+        await _sendCurrentLocation();
+      case 'pin':
+        final ChatLocation? at = await Get.to<ChatLocation>(
+          () => const ChatLocationPickerPage(),
+        );
+        if (at == null || isClosed) return;
+        await _sendLocation(at.latitude, at.longitude);
+    }
+  }
+
+  /// One fresh fix, through LocationService.freshFix — which reuses the live
+  /// stream's fix when it has one, so this never opens a second geolocator
+  /// stream (memory: lost-compass-local-track).
+  Future<void> _sendCurrentLocation() async {
+    Position? fix;
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (isClosed) return;
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        hcSnack(
+          'Harrier Central is not allowed to see your location. '
+          'You can drop a pin instead.',
+          error: true,
+          seconds: 5,
+        );
+        return;
+      }
+      fix = await LocationService.ensure().freshFix().timeout(
+        const Duration(seconds: 20),
+      );
+    } catch (e, s) {
+      BootLogger.logError('[ChatPageController._sendCurrentLocation]', e, s);
+    }
+    if (isClosed) return;
+    if (fix == null) {
+      hcSnack(
+        'Your location could not be found. You can drop a pin instead.',
+        error: true,
+        seconds: 5,
+      );
+      return;
+    }
+    await _sendLocation(fix.latitude, fix.longitude);
+  }
+
+  Future<void> _sendLocation(double latitude, double longitude) async {
+    final String? url = ChatLocation.buildUrl(latitude, longitude);
+    if (url == null) {
+      hcSnack('That location could not be sent.', error: true);
+      return;
+    }
+    final String id = const Uuid().v4();
+    await chatController.insertMessage(
+      _messageFor(
+        id: id,
+        authorId: currentUser.id,
+        content: url,
+        kind: ChatMessageKind.location,
+        canDelete: true,
+        createdAt: DateTime.now(),
+        status: core.MessageStatus.sending,
+      ),
+    );
+    final bool ok = await _postMessage(
+      id: id,
+      content: url,
+      kind: ChatMessageKind.location,
+    );
+    if (isClosed) return;
+    await _settle(id, ok: ok);
+  }
+
+  // ── Taps on a message ─────────────────────────────────────────────────────
+
+  /// A photo opens the carousel; a location opens the map app, through the
+  /// same chooser as the run pin. Text taps are the links' business (their
+  /// own recognizers win the gesture), so they end here doing nothing.
+  void handleMessageTap(
+    BuildContext context,
+    core.Message message, {
+    required int index,
+    required TapUpDetails details,
+  }) {
+    if (message is core.ImageMessage) {
+      unawaited(_openPhotoCarousel(message));
+      return;
+    }
+    final ChatLocation? at = chatLocationOf(message);
+    if (at != null) {
+      unawaited(
+        Utilities.showOnMap(
+          context,
+          'Location',
+          maps.Coords(at.latitude, at.longitude),
+          at.display,
+          saveUserMapPreference,
         ),
       );
     }
   }
+
+  /// Copy always; Delete when this caller may (E9.F1.S13-S15).
+  void handleMessageLongPress(
+    BuildContext context,
+    core.Message message, {
+    required int index,
+    required LongPressStartDetails details,
+  }) => unawaited(_messageMenu(message));
+
+  Future<void> _messageMenu(core.Message message) async {
+    final String copyText = _copyTextFor(message);
+    final bool canDelete = _canDelete(message);
+    if (copyText.isEmpty && !canDelete) return;
+    final String? choice = await _chooseFrom(<_SheetChoice>[
+      if (copyText.isNotEmpty)
+        const _SheetChoice('copy', 'Copy', Icons.copy),
+      if (canDelete)
+        _SheetChoice(
+          'delete',
+          'Delete',
+          Icons.delete_outline,
+          colour: hc_red,
+        ),
+    ]);
+    if (isClosed) return;
+    switch (choice) {
+      case 'copy':
+        await Clipboard.setData(ClipboardData(text: copyText));
+        hcSnack('Copied');
+      case 'delete':
+        await _confirmAndDelete(message.id);
+    }
+  }
+
+  Future<bool> _confirmDelete() async {
+    final bool? yes = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text('Delete this message?', style: ts_alertDialogTitle),
+        content: Text(
+          'It will be removed for everyone in this chat.',
+          style: ts_alertDialogBody,
+        ),
+        actions: <Widget>[
+          // hcPop, not Get.back(): a "Copied" toast still up would make
+          // Get.back() close the toast and leave this dialog open.
+          TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.blueGrey),
+            onPressed: () => hcPop<bool>(result: false),
+            child: Text(
+              'Cancel',
+              style: ts_button,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(backgroundColor: hc_red),
+            onPressed: () => hcPop<bool>(result: true),
+            child: Text(
+              'Delete',
+              style: ts_button,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+    return yes ?? false;
+  }
+
+  /// Remove the bubble at once, then ask the server; put it back, in the
+  /// same place, if the server refuses.
+  Future<void> _confirmAndDelete(String id) async {
+    if (!await _confirmDelete() || isClosed) return;
+    final List<core.Message> before = List.of(chatController.messages);
+    final int position = before.indexWhere((m) => m.id == id);
+    if (position < 0) return; // gone already — removed by a fetch meanwhile
+    final core.Message message = before[position];
+    await chatController.removeMessage(message);
+
+    // Never reached the server: removing it here is the whole job.
+    if (message.status == core.MessageStatus.error) return;
+
+    String? refusal;
+    final String result = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': 'deleteChatMessage',
+        'deviceId': getStringPref(StringPrefsEnum.deviceId) ?? '',
+        'accessToken': Utilities.generateToken(
+          currentUserId,
+          'hcapp_deleteChatMessage',
+          paramString: getStringPref(StringPrefsEnum.deviceSecret) ?? '',
+        ),
+        'messageId': id,
+      }),
+      // The server's reason goes in a toast under the restored bubble,
+      // rather than the generic error dialog on top of it.
+      errorCallback: (DbErrorModel e) async {
+        refusal = e.errorUserMessage;
+        return true;
+      },
+    );
+    if (isClosed) return;
+
+    bool ok = false;
+    if (!result.startsWith(ERROR_PREFIX)) {
+      try {
+        final List<dynamic> rowsets = jsonDecode(result) as List<dynamic>;
+        final Map<String, dynamic>? row = rowsets.isEmpty
+            ? null
+            : firstRow(rowsets[0] as List<dynamic>?);
+        ok = row?['success'] == 1 || row?['success'] == true;
+      } catch (_) {}
+    }
+    if (ok) return;
+
+    if (!chatController.messages.any((m) => m.id == id)) {
+      await chatController.insertMessage(
+        message,
+        index: position.clamp(0, chatController.messages.length),
+        animated: false,
+      );
+    }
+    hcSnack(
+      (refusal == null || refusal!.isEmpty)
+          ? 'That message could not be deleted. Please try again.'
+          : refusal!,
+      error: true,
+      seconds: 5,
+    );
+  }
+}
+
+/// One line of a [ChatPageController] choice sheet.
+class _SheetChoice {
+  const _SheetChoice(this.key, this.label, this.icon, {this.colour});
+  final String key;
+  final String label;
+  final IconData icon;
+  final Color? colour;
 }
 
 /// The three kinds of thread [ChatPageController] serves. Private: callers
