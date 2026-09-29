@@ -59,9 +59,31 @@ new path-based URL. Remove once no inbound legacy links remain.
 
 ## User Populations
 
-Three distinct user populations with separate access levels. Auth uses
-NextAuth.js (email/password) — entirely separate from the Flutter portal's
-device-bound token system.
+Three distinct user populations with separate access levels. **There is no
+username/password anywhere on the public web** (see the root `CLAUDE.md`'s
+non-negotiables). Two auth systems exist, both built on the same device-bound
+token model the app and portal use:
+
+- **Member — "the browser is a device" (E9.F7).** Signing in registers the
+  browser as an `HC.Device` row through the app's own SPs, so it holds a device
+  secret and mints the same 30-second SHA-256 tokens the phone does
+  (`/hc-access-tokens`). The credentials live in an AES-encrypted httpOnly
+  cookie (`hc_member`, `lib/member-session.ts`) and never reach page
+  JavaScript; every `/api/member/*` route is a server route that reads the
+  cookie, signs the token and calls the API. Ways in: an emailed one-time
+  code (`/api/member/request-code` → `verify-code`), a QR scanned from the
+  app (`/api/member/qr`), or a passkey (`/api/member/passkey`, managed at
+  `/me/passkeys`). Member pages live under `/me`.
+- **Admin — one-time token from the Flutter portal.** `hcportal_generateWebAdminToken`
+  → `?token=` in the URL → `/api/admin/auth` redeems it against
+  `HC.PublicWebAdminToken` → HMAC-signed httpOnly cookie `hc_admin_session`
+  (24h, `HC_ADMIN_SESSION_SECRET`). Used for the Puck page builder and content
+  management only.
+
+Server routes that write on a member's behalf call `PublicWebAdminApi` with
+the server secret (`HC_INTERNAL_SECRET`); the allowlist there is the list of
+`publicWeb_` SPs the browser may reach. Adding a member feature means adding
+its SP to that allowlist, not adding an auth layer.
 
 | Population | Who | Access |
 |------------|-----|--------|
@@ -88,7 +110,7 @@ device-bound token system.
 | Smooth scroll | Lenis (`react-lenis`) | Applied globally; gives a premium feel without being distracting |
 | Maps | React-Leaflet | OSM tiles, GPX trail overlay, elevation markers, directions |
 | Charts | Recharts | Elevation profiles for run trails |
-| Auth | NextAuth.js | Email/password; session is kennel-scoped |
+| Auth | Device-bound tokens (no NextAuth, no passwords) | Member: encrypted `hc_member` cookie holding the browser's device credentials; Admin: portal-issued one-time token → `hc_admin_session` cookie |
 
 ---
 
@@ -372,7 +394,9 @@ In production, `HC_API_URL` is set as an environment variable on the hosting pla
   /lib
     /types/kennel.ts     ← KennelContext and KennelTheme types (shared by all components)
     /tenant.ts           ← tenant resolution logic
-    /auth.ts             ← NextAuth config
+    /member-session.ts   ← encrypted member cookie + token minting (server only)
+    /member-api.ts       ← server-side calls to PublicWebAdminApi as the member
+    /admin-session.ts    ← admin cookie (portal one-time token flow)
     /api.ts              ← API shim client (KennelLandingData and other API types live here)
   /styles
     /globals.css         ← CSS custom properties, base resets
