@@ -251,6 +251,7 @@ export 'package:harrier_central/widgets/payment_outbox_banner.dart';
 export 'package:harrier_central/widgets/rose_canvas.dart';
 export 'package:harrier_central/widgets/runner_list_canvas.dart';
 export 'package:harrier_central/pages/menu_pages/settings_page.dart';
+export 'package:harrier_central/pages/menu_pages/blocked_hashers_page.dart';
 export 'package:harrier_central/pages/menu_pages/import_gpx_page.dart';
 export 'package:harrier_central/pages/menu_pages/support_page.dart';
 export 'package:harrier_central/pages/menu_pages/support_controller.dart';

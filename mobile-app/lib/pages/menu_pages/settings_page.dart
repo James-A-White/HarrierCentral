@@ -727,6 +727,54 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  /// The way to a block's undo (E9.F1.S16). A block is made from a chat
+  /// message's long-press menu; the list of who is blocked, and Unblock,
+  /// live on their own page because the list is fetched from the server
+  /// and most hashers have nobody on it.
+  Widget _blockedHashersSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        const FancyDivider(
+          key: Key('settings_blocked_hashers_divider'),
+          innerColor: Colors.white,
+          topMargin: 20.0,
+          bottomMargin: 10.0,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Blocked Hashers',
+            style: ts_headingLarge,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Text(
+            'Messages from hashers you have blocked are hidden from you in '
+            'every chat, and they are not told.',
+            style: ts_body,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 14.0, bottom: 30.0),
+          child: ElevatedButton.icon(
+            key: const Key('settings_blocked_hashers_button'),
+            icon: const Icon(Icons.block, color: Colors.white),
+            label: Text(
+              'Manage blocked hashers',
+              style: ts_button,
+              textAlign: TextAlign.center,
+            ),
+            onPressed: () => Get.to<void>(() => const BlockedHashersPage()),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _sectionSpinner(SettingsPageController controller) {
     if (!controller.isSaving.value) return const SizedBox.shrink();
     return const Padding(
@@ -1047,6 +1095,7 @@ class SettingsPage extends StatelessWidget {
                         _autoShowRunsSection(controller),
                         _mapProviderSection(controller),
                         _chatRoomsSection(controller),
+                        _blockedHashersSection(),
                       ],
                     ),
                   ),
