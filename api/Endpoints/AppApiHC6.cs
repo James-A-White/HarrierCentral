@@ -271,6 +271,12 @@ namespace HcWebApi.Endpoints
                     case "markEventChatRead":
                         await SendReadSyncAsync(multipleResults, log);
                         break;
+                    // A reported message goes to the platform reviewers by email; the
+                    // report and the addresses are API-only rowsets (E9.F1.S17).
+                    case "reportChatMessage":
+                        if (AbuseReportEmails.Extract(multipleResults) is { } abuse)
+                            _ = AbuseReportEmails.SendAsync(abuse.report, abuse.reviewers, log);
+                        break;
                     case "selectSong":
                         _ = SendSongToAttendeesAsync(multipleResults, log);
                         break;

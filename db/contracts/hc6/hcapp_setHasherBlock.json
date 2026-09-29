@@ -1,0 +1,104 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setHasherBlock",
+  "version": "1.0.0",
+  "description": "Blocks (1) or unblocks (0) another hasher for the caller: HC.HasherFriendMap (UserId=caller, Friend_UserId=target, Ignore). Every chat reader hides the blocked hasher's messages from the caller, no push from them reaches the caller, unread counts leave them out. Directional; the blocked hasher is told nothing. E9.F1.S16.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "targetPublicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "The other hasher's PUBLIC id (chat authorId)"
+    },
+    {
+      "name": "blocked",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherFriendMap.Ignore",
+      "description": "1 block, 0 unblock (default 1)"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure returns the detail alone."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 saved"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "BlockedHashers",
+      "description": "On success: the caller's blocked list, newest first (same shape as hcapp_getBlockedHashers). On failure: error detail — 1985 bad target/self/flag (errorType 2), 1986 unhandled (5).",
+      "columns": [
+        {
+          "name": "PublicHasherId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Blocked hasher's public id, UPPER"
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Blocked hasher's display name"
+        },
+        {
+          "name": "Photo",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Profile photo URL"
+        },
+        {
+          "name": "BlockedAt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": "When the block was last set"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "MERGE HC.HasherFriendMap",
+    "LOG.GeneralLog line"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

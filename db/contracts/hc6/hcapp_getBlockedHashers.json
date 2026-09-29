@@ -1,0 +1,68 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getBlockedHashers",
+  "version": "1.0.0",
+  "description": "The caller's blocked hashers for the Blocked hashers settings screen. E9.F1.S16.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On auth failure"
+    },
+    {
+      "index": 0,
+      "name": "BlockedHashers",
+      "columns": [
+        {
+          "name": "PublicHasherId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Blocked hasher's public id, UPPER"
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Blocked hasher's display name"
+        },
+        {
+          "name": "Photo",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Profile photo URL"
+        },
+        {
+          "name": "BlockedAt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": "When the block was last set"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_reportChatMessage",
+  "version": "1.0.0",
+  "description": "Reports a chat message to the platform reviewers (platform admins + the shared mailbox), as a letterbox: LOG.GeneralLog line and an email sent by the API from rowsets 1–2, which the API strips before replying. Nothing is hidden or removed. Reporting the same message again succeeds and sends nothing. E9.F1.S17.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "EventMessage.id",
+      "description": "The message"
+    },
+    {
+      "name": "reason",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional, up to 1,000 characters"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure returns the detail alone."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 reported (or already was)"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Report",
+      "description": "API-only, stripped from the client reply. On failure this position holds the error detail: 1987 own message / not found / reason too long (errorType 2), 1988 unhandled (5).",
+      "columns": [
+        {
+          "name": "MessageId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "ReporterName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "ReporterEmail",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "SenderName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "SenderPublicHasherId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "ThreadLabel",
+          "type": "NVARCHAR(400)",
+          "nullable": true,
+          "description": "Kennel — run, kennel chat, or room name"
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text 1 photo 2 location"
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "The text, or the photo/location URL"
+        },
+        {
+          "name": "MessageAt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "Reason",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "AlreadyReported",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when this reporter already reported this message; the API then sends no email"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Reviewers",
+      "description": "API-only, stripped. Same rule as publicWeb_confirmKennelRequest.",
+      "columns": [
+        {
+          "name": "reviewerEmail",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "LOG.GeneralLog line (first report per reporter+message)",
+    "API emails the reviewers"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

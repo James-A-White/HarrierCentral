@@ -115,6 +115,9 @@ BEGIN TRY
 	WHERE msg.EventId = @eventId
 	  AND msg.removed = 0
 	  AND h.Removed = 0
+	  -- Messages from a hasher the reader has blocked are hidden (E9.F1.S16).
+	  AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+	                  WHERE blk.UserId = @hasherId AND blk.Friend_UserId = msg.UserId AND blk.Ignore = 1)
 	  AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount > @sinceSequenceCount)
 	ORDER BY createdAt DESC;
 

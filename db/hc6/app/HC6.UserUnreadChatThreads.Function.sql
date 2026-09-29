@@ -29,7 +29,7 @@ RETURN
 SELECT
     CASE WHEN COALESCE(NULLIF(hem.EventNotificationPreference, 0),
                        hkm.KennelNotificationPreference, 0) <> 2
-         THEN t.MaxSeq - COALESCE(embc.LastSequenceCount, 0)
+         THEN t.MaxSeq - COALESCE(embc.LastSequenceCount, 0) - blocked.N
          ELSE 0 END          AS BadgeCount,
     e.PublicEventId,
     e.id                    AS EventId,
@@ -84,6 +84,20 @@ OUTER APPLY (
     WHERE b.EventId = t.EventId AND b.UserId = @userId
     ORDER BY b.Removed, b.LastSequenceCount DESC
 ) AS embc
+OUTER APPLY (
+    -- Messages above the read mark from hashers this user has BLOCKED
+    -- (E9.F1.S16). The readers hide them, so they must not count as unread
+    -- or the badge could never be cleared by reading. Zero for the many
+    -- hashers with no blocks: the EXISTS seeks the unique (UserId, Friend)
+    -- key and finds nothing.
+    SELECT COUNT(*) AS N
+    FROM HC.EventMessage bm
+    WHERE bm.EventId = t.EventId
+      AND bm.Removed = 0
+      AND bm.MessageSequenceCount > COALESCE(embc.LastSequenceCount, 0)
+      AND EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                  WHERE blk.UserId = @userId AND blk.Friend_UserId = bm.UserId AND blk.Ignore = 1)
+) AS blocked
 WHERE e.deleted = 0
   AND e.IsVisible <> 0
   AND (
@@ -105,7 +119,7 @@ UNION ALL
 -- to 0 when the kennel notification preference is ignore (2).
 SELECT
     CASE WHEN hkm.KennelNotificationPreference <> 2
-         THEN t.MaxSeq - COALESCE(embc.LastSequenceCount, 0)
+         THEN t.MaxSeq - COALESCE(embc.LastSequenceCount, 0) - blocked.N
          ELSE 0 END                                AS BadgeCount,
     CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicEventId,
     CAST(NULL AS UNIQUEIDENTIFIER)                 AS EventId,
@@ -151,6 +165,20 @@ OUTER APPLY (
     WHERE b.KennelId = t.KennelId AND b.UserId = @userId AND b.EventId IS NULL
     ORDER BY b.Removed, b.LastSequenceCount DESC
 ) AS embc
+OUTER APPLY (
+    -- Messages above the read mark from hashers this user has BLOCKED
+    -- (E9.F1.S16). The readers hide them, so they must not count as unread
+    -- or the badge could never be cleared by reading. Zero for the many
+    -- hashers with no blocks: the EXISTS seeks the unique (UserId, Friend)
+    -- key and finds nothing.
+    SELECT COUNT(*) AS N
+    FROM HC.EventMessage bm
+    WHERE bm.KennelId = t.KennelId AND bm.EventId IS NULL
+      AND bm.Removed = 0
+      AND bm.MessageSequenceCount > COALESCE(embc.LastSequenceCount, 0)
+      AND EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                  WHERE blk.UserId = @userId AND blk.Friend_UserId = bm.UserId AND blk.Ignore = 1)
+) AS blocked
 
 UNION ALL
 
@@ -217,7 +245,7 @@ UNION ALL
 -- ---------------------------------------------------------------
 SELECT
     CASE WHEN ISNULL(embc.ParticipationState, 0) = 2 THEN 0
-         ELSE ISNULL(t.MaxSeq, 0) - ISNULL(embc.LastSequenceCount, 0)
+         ELSE ISNULL(t.MaxSeq, 0) - ISNULL(embc.LastSequenceCount, 0) - blocked.N
     END                                            AS BadgeCount,
     CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicEventId,
     CAST(NULL AS UNIQUEIDENTIFIER)                 AS EventId,
@@ -258,5 +286,20 @@ OUTER APPLY (
       AND b.ThreadId IS NULL AND b.MessageType = c.RoomType
     ORDER BY b.Removed, b.LastSequenceCount DESC
 ) AS embc
+OUTER APPLY (
+    -- Messages above the read mark from hashers this user has BLOCKED
+    -- (E9.F1.S16). The readers hide them, so they must not count as unread
+    -- or the badge could never be cleared by reading. Zero for the many
+    -- hashers with no blocks: the EXISTS seeks the unique (UserId, Friend)
+    -- key and finds nothing.
+    SELECT COUNT(*) AS N
+    FROM HC.EventMessage bm
+    WHERE bm.EventId IS NULL AND bm.KennelId IS NULL AND bm.ThreadId IS NULL
+      AND bm.MessageType = c.RoomType
+      AND bm.Removed = 0
+      AND bm.MessageSequenceCount > COALESCE(embc.LastSequenceCount, 0)
+      AND EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                  WHERE blk.UserId = @userId AND blk.Friend_UserId = bm.UserId AND blk.Ignore = 1)
+) AS blocked
 WHERE HC6.UserMayEnterChatRoom(@userId, c.RoomType) = 1
   AND ISNULL(embc.ParticipationState, 0) <> 2;

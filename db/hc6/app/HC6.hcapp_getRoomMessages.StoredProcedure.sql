@@ -111,6 +111,9 @@ WHERE msg.EventId IS NULL
   AND msg.MessageType = @roomType
   AND msg.Removed = 0
   AND h.Removed = 0
+  -- Messages from a hasher the reader has blocked are hidden (E9.F1.S16).
+  AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                  WHERE blk.UserId = @userId AND blk.Friend_UserId = msg.UserId AND blk.Ignore = 1)
   AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount > @sinceSequenceCount)
 ORDER BY msg.createdAt DESC;
 
@@ -120,7 +123,9 @@ SELECT
       WHERE em.EventId IS NULL AND em.KennelId IS NULL AND em.ThreadId IS NULL
         AND em.MessageType = @roomType AND em.Removed = 0
         AND em.UserId <> @userId
-        AND em.MessageSequenceCount > @lastRead)      AS unreadCount,
+        AND em.MessageSequenceCount > @lastRead
+        AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                        WHERE blk.UserId = @userId AND blk.Friend_UserId = em.UserId AND blk.Ignore = 1))      AS unreadCount,
     ISNULL(@newestSeq, 0)                             AS newestSequenceCount;
 
 IF (@markRead = 1 AND @newestSeq IS NOT NULL)

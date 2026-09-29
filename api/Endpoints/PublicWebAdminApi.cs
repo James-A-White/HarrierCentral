@@ -59,6 +59,10 @@ namespace HcWebApi.Endpoints
             // Deleting a message: your own, or any as a chat administrator
             // (E9.F1.S13/S14, 2026-09-29). Wraps hcapp_deleteChatMessage.
             "deleteChatMessage",
+            // Block a hasher and report a message (E9.F1.S16/S17, 2026-09-29).
+            "setHasherBlock",
+            "getBlockedHashers",
+            "reportChatMessage",
             "issuePasskeyInviteCode",
             // Managing passkeys, not just making them (E9.F7.S18, 2026-09-20).
             // Both are thin wrappers over the app's hcapp_ SPs, so the web and
@@ -114,6 +118,9 @@ namespace HcWebApi.Endpoints
             "sendChatMessage",
             "markChatRead",
             "deleteChatMessage",
+            "setHasherBlock",
+            "getBlockedHashers",
+            "reportChatMessage",
             "issuePasskeyInviteCode",
             "getAllSongs",
             "getReportContext",
@@ -260,6 +267,11 @@ namespace HcWebApi.Endpoints
                         .ToList();
                     multipleResults.RemoveAt(2);
                     _ = KennelRequestEmails.SendReviewerNoticeAsync(confirmed, reviewers, _log);
+                }
+                else if (string.Equals(queryType, "reportChatMessage", StringComparison.OrdinalIgnoreCase)
+                    && AbuseReportEmails.Extract(multipleResults) is { } abuse)
+                {
+                    _ = AbuseReportEmails.SendAsync(abuse.report, abuse.reviewers, _log);
                 }
 
                 return new OkObjectResult(multipleResults);

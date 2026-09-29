@@ -283,6 +283,9 @@ END
       AND hkm.removed  = 0
       AND h.Removed    = 0
       AND device.FcmToken IS NOT NULL
+      -- A hasher who has blocked the sender gets nothing from them (E9.F1.S16).
+      AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                      WHERE blk.UserId = hkm.UserId AND blk.Friend_UserId = @hasherId AND blk.Ignore = 1)
       AND device.removed   = 0
       AND device.LastLogin >= @idleCutoff
       AND (

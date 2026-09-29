@@ -114,6 +114,9 @@ INNER JOIN HC.Hasher h ON msg.UserId = h.id
 WHERE msg.EventId = @eventId
   AND msg.Removed = 0
   AND h.Removed = 0
+  -- Messages from a hasher the reader has blocked are hidden (E9.F1.S16).
+  AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                  WHERE blk.UserId = @userId AND blk.Friend_UserId = msg.UserId AND blk.Ignore = 1)
   AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount > @sinceSequenceCount)
 ORDER BY msg.createdAt DESC;
 
