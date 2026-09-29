@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 
 import 'package:flutter/foundation.dart' as foundation;
+import 'package:hcportal/admin_pages/chat_page/chat_message_kinds.dart';
 import 'package:hcportal/imports.dart';
 
 import 'package:http/http.dart' as http;
@@ -170,6 +171,72 @@ class ServiceCommon {
     }
 
     return fileName;
+  }
+
+  /// Uploads a chat photo (E9.F1.S11) to the `chat-photos` container and
+  /// returns its blob URL, or null if any step failed (the caller tells the
+  /// user). [jpegBytes] must already be a resized JPEG. The name is
+  /// `<yyyy>/<MM>/<publicHasherId>-<guid>.jpg`, lowercase, which is what
+  /// HC6.ChatMessageKindError accepts as a photo.
+  static Future<String?> uploadChatPhoto(Uint8List jpegBytes) async {
+    const container = 'chat-photos';
+    final box = Hive.box(HIVE_NAME);
+    final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final hasherId = normalizeUuid(box.get(HIVE_HASHER_ID) as String?);
+    final now = DateTime.now().toUtc();
+    final owner = hasherId.isEmpty ? const Uuid().v4() : hasherId;
+    final fileName = ('${now.year.toString().padLeft(4, '0')}/'
+            '${now.month.toString().padLeft(2, '0')}/'
+            '$owner-${const Uuid().v4()}.jpg')
+        .toLowerCase();
+
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_getPortalUploadSas',
+      paramString: '$deviceSecret:$container:$fileName',
+    );
+
+    try {
+      final sasResponse = await http
+          .post(
+            Uri.parse(BASE_GET_PORTAL_UPLOAD_SAS_URL),
+            headers: {'content-type': 'application/json'},
+            body: jsonEncode({
+              'deviceId': deviceId,
+              'accessToken': accessToken,
+              'container': container,
+              'filename': fileName,
+            }),
+          )
+          .timeout(const Duration(seconds: DEFAULT_HTTP_TIMEOUT));
+      if (sasResponse.statusCode < 200 || sasResponse.statusCode >= 300) {
+        return null;
+      }
+      final sasJson = jsonDecode(sasResponse.body) as Map<String, dynamic>;
+      final sasUrl = sasJson['sasUrl'] as String?;
+      if (sasUrl == null || sasUrl.isEmpty) return null;
+
+      final put = await http
+          .put(
+            Uri.parse(sasUrl),
+            headers: const {
+              'x-ms-blob-type': 'BlockBlob',
+              'content-type': 'image/jpeg',
+            },
+            body: jpegBytes,
+          )
+          .timeout(const Duration(seconds: 60));
+      if (put.statusCode < 200 || put.statusCode >= 300) return null;
+
+      // The server's blobUrl is the truth; the built one is the fallback.
+      final blobUrl = sasJson['blobUrl'] as String?;
+      if (blobUrl != null && isChatPhotoUrl(blobUrl)) return blobUrl;
+      return '$chatPhotoUrlPrefix$fileName';
+    } on Object catch (error) {
+      if (foundation.kDebugMode) debugPrint('uploadChatPhoto error: $error');
+      return null;
+    }
   }
 
   // HC5 methods — commented out after full HC6 migration (2026-03-19)
