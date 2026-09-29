@@ -1,3 +1,15 @@
+## 2.0.87+734 (2026-09-29)
+### Improvements
+- **Button labels stay centred when they wrap.** Every portal button
+  (`HcButton`) centres its label, so a narrow window or a long label no
+  longer leaves the second line hugging the left.
+- **Smaller download.** The portal is built with icon-font tree-shaking
+  again (the icon fonts lose the glyphs nothing uses); the one runtime
+  `IconData` that blocked it and four broken constants in the icon package
+  are gone.
+- **Run chat hides hashers you have blocked** (block is set from the app or
+  hashruns.org).
+
 ## 2.0.87+733 (2026-09-29)
 ### New Features
 - **Photos and pins in run chat.** Attach a photo (resized, location data

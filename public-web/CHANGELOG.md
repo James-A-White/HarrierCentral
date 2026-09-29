@@ -1,5 +1,17 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-29 redeploy — block, report, lint clean-up)
+
+- **Block a hasher.** The message menu offers Block <name>; their messages
+  vanish from every chat and they are not told. Blocked hashers are listed
+  at /me/blocked, with Unblock.
+- **Report a message.** The message menu offers Report, with an optional
+  reason; it goes to Harrier Central's reviewers. A report hides nothing.
+- **Code hygiene.** 48 lint problems fixed with no change in behaviour:
+  unused code removed, internal links use Next's Link, "your time" labels
+  and the run list's other-kennel loading are derived rather than set in
+  effects.
+
 ## 0.21.74 (2026-09-29 redeploy — chat photos, locations, copy and delete)
 
 - **Photos in chat.** Attach a photo; it is resized and its location data

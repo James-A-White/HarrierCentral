@@ -1,3 +1,16 @@
+## 3.1.8+1422 (2026-09-29)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Block a hasher.** Long-press any message and choose Block: you will not
+  see that hasher's messages in any chat, their pushes will not reach your
+  phone, and they are not told. Settings → Blocked hashers lists them, with
+  Unblock.
+- **Report a message.** Long-press → Report sends the message, with an
+  optional reason, to Harrier Central's reviewers. Nobody at Harrier Central
+  reads chats otherwise, and a report hides nothing — Block is your own
+  tool for that.
+
 ## 3.1.8+1421 (2026-09-29)
 iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
 only; same version. First build to the beta testers since 1418, so it also

@@ -1,3 +1,11 @@
+1.0.61+64
+    • reportChatMessage: emails a reported chat message to the platform
+      reviewers (platform admins + the shared mailbox — the kennel-request
+      list) from AppApiHC6 and PublicWebAdminApi, and strips the two
+      API-only rowsets from the reply.
+    • PublicWebAdminApi allows setHasherBlock, getBlockedHashers and
+      reportChatMessage (server secret required).
+
 1.0.61+63
     • GetChatPhotoUploadToken: a 15-minute write-only SAS for one chat photo
       (chat-photos/<yyyy>/<MM>/<userId>-<guid>.jpg), the user taken from the
