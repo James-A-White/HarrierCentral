@@ -17,19 +17,30 @@
  * then on every chat reader hides them from me, so the thread is re-fetched
  * in full to drop what was already drawn — and Report, which sends the
  * message to Harrier Central's reviewers with an optional reason.
+ *
+ * E9.F1.S7/S19: someone else's message offers Message <name>, the only
+ * door to a direct message — the server answers open (go there), requested,
+ * refused or blocked. A DM is this same page with kind `dm`: the other
+ * hasher's photo and name up top, a header menu (Mute, Block, End
+ * conversation), and a composer that closes when the server says canSend
+ * is 0 — which every poll re-checks, so an ending made elsewhere reaches
+ * an open page.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ImagePlus, Loader2, MapPin, MoreHorizontal, Send } from "lucide-react";
-import { CHAT_REPORT_REASON_MAX, type ChatKind, type ChatMessageRow } from "@/lib/member-api";
+import { useRouter } from "next/navigation";
+import { ImagePlus, Loader2, MapPin, MoreHorizontal, MoreVertical, Send } from "lucide-react";
+import { CHAT_REPORT_REASON_MAX, type ChatKind, type ChatMessageRow, type DmThreadInfo } from "@/lib/member-api";
 import type { KennelContext } from "@/lib/types/kennel";
 import {
   CHAT_KIND_LOCATION, CHAT_KIND_PHOTO, CHAT_KIND_TEXT, chatKindOf, chatLocationUrl, formatChatLocation, parseChatLocation,
   type ChatMessageKind,
 } from "@/lib/chat-content";
+import { dmHref } from "@/lib/chat-links";
 import { HC_BLUE, HC_RED } from "@/components/member/app-look";
 import { ChatPhotoViewer, type ChatPhoto } from "@/components/member/ChatPhotoViewer";
+import { HasherPhoto } from "@/components/member/HasherPhoto";
 
 // Leaflet touches window at import time, so the pin picker is client-only.
 const ChatPinPicker = dynamic(() => import("@/components/member/ChatPinPicker"), { ssr: false });
@@ -52,19 +63,41 @@ type Shown = ChatMessageRow & {
 
 const upper = (id: string) => id.toUpperCase();
 
-export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
+/** Someone to block or message: a message's author, or the other half of a DM. */
+type Who = { authorId: string; authorFirstName: string };
+
+/** What a poll or reload learns about a DM, applied on top of what the page opened with. */
+type DmLive = Pick<DmThreadInfo, "canSend" | "muted">;
+
+export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
   kind: ChatKind; id: string; title: string; me: string; initial: ChatMessageRow[]; back: string; kennel: KennelContext | null;
+  /** The other hasher and my standing with them; set for kind "dm" only. */
+  dm?: DmThreadInfo;
 }) {
+  const router = useRouter();
   // Oldest first on screen; the SP hands them newest first.
   const [messages, setMessages] = useState<Shown[]>(() => [...initial].sort((a, b) => a.sequenceCount - b.sequenceCount));
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ text: string; ms: number } | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Shown | null>(null);
-  const [confirmBlock, setConfirmBlock] = useState<Shown | null>(null);
+  const [confirmBlock, setConfirmBlock] = useState<Who | null>(null);
   const [blocking, setBlocking] = useState(false);
+  // Direct messages (E9.F1.S7/S19).
+  const [dmLive, setDmLive] = useState<DmLive>({ canSend: dm?.canSend ?? 1, muted: dm?.muted ?? 0 });
+  const [headerMenu, setHeaderMenu] = useState(false);
+  const [confirmEnd, setConfirmEnd] = useState(false);
+  const [dmBusy, setDmBusy] = useState(false);
+  /** The author being messaged, while the server decides. */
+  const [messaging, setMessaging] = useState<string | null>(null);
+  const applyDm = useCallback((d: Partial<DmLive> | undefined) => {
+    if (!d || d.canSend == null) return;
+    setDmLive({ canSend: Number(d.canSend) === 1 ? 1 : 0, muted: Number(d.muted) === 1 ? 1 : 0 });
+  }, []);
+  const other: Who | null = dm ? { authorId: dm.otherPublicHasherId, authorFirstName: dm.otherDisplayName } : null;
+  const canSend = kind !== "dm" || dmLive.canSend === 1;
   const [reportFor, setReportFor] = useState<Shown | null>(null);
   const [reportReason, setReportReason] = useState("");
   const [reporting, setReporting] = useState(false);
@@ -113,10 +146,11 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
       try {
         const r = await fetch(`/api/member/chat?kind=${kind}&id=${encodeURIComponent(id)}&since=${lastSeq.current}`, { cache: "no-store" });
         if (r.ok) {
-          const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[] };
+          const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[]; dm?: Partial<DmLive> };
           if (stop) return;
           drop(j.removed ?? []);
           merge(j.messages ?? []);
+          applyDm(j.dm);
         }
       } catch { /* next tick */ }
     };
@@ -124,7 +158,7 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
     const onVisible = () => { if (document.visibilityState === "visible") tick(); };
     document.addEventListener("visibilitychange", onVisible);
     return () => { stop = true; window.clearInterval(h); document.removeEventListener("visibilitychange", onVisible); };
-  }, [kind, id, merge, drop]);
+  }, [kind, id, merge, drop, applyDm]);
 
   // Object URLs outlive nothing: let them go with the page.
   useEffect(() => {
@@ -136,9 +170,12 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
 
   useEffect(() => {
     if (!notice) return;
-    const h = window.setTimeout(() => setNotice(null), 2000);
+    const h = window.setTimeout(() => setNotice(null), notice.ms);
     return () => window.clearTimeout(h);
   }, [notice]);
+
+  /** A passing line under the messages: two seconds for "Copied", longer for something worth reading. */
+  const say = (text: string, ms = 2000) => setNotice({ text, ms });
 
   /** POST one message. Null on success, else the reason to show. */
   async function post(messageId: string, content: string, messageKind: ChatMessageKind): Promise<string | null> {
@@ -260,7 +297,7 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
     try {
       // Text is the text; a photo or a location is its URL.
       await navigator.clipboard.writeText(m.text);
-      setNotice("Copied");
+      say("Copied");
     } catch {
       setError("Couldn't copy on this browser.");
     }
@@ -297,27 +334,91 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
   const reload = useCallback(async () => {
     const r = await fetch(`/api/member/chat?kind=${kind}&id=${encodeURIComponent(id)}`, { cache: "no-store" });
     if (!r.ok) return;
-    const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[] };
+    const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[]; dm?: Partial<DmLive> };
     for (const x of j.removed ?? []) gone.current.add(upper(x));
     const rows: Shown[] = (j.messages ?? []).filter((m) => !gone.current.has(upper(m.id)));
     for (const m of rows) if (Number.isInteger(m.sequenceCount)) lastSeq.current = Math.max(lastSeq.current, m.sequenceCount);
     setMessages((ms) => [...rows, ...ms.filter((m) => m.pending)].sort((a, b) => a.sequenceCount - b.sequenceCount));
-  }, [kind, id]);
+    applyDm(j.dm);
+  }, [kind, id, applyDm]);
 
-  async function reallyBlock(m: Shown) {
+  async function reallyBlock(w: Who) {
     if (blocking) return;
     setBlocking(true); setError(null);
     try {
-      const r = await fetch("/api/member/blocked", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetPublicHasherId: m.authorId.toLowerCase(), blocked: 1 }) });
+      const r = await fetch("/api/member/blocked", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetPublicHasherId: w.authorId.toLowerCase(), blocked: 1 }) });
       const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!r.ok || !j.ok) { setError(j.error ?? "They could not be blocked."); return; }
       setConfirmBlock(null);
       await reload().catch(() => undefined);
-      setNotice(`${m.authorFirstName || "They"} blocked`);
+      say(`${w.authorFirstName || "They"} blocked`);
     } catch {
       setError("Couldn't block them. Check your connection.");
     } finally {
       setBlocking(false);
+    }
+  }
+
+  // ── Direct messages (E9.F1.S7/S19) ─────────────────────────────────────────
+
+  /**
+   * "Message <name>": the server decides. `open` goes to the thread; the
+   * other three are answers, not errors, and each has its line. A refusal
+   * says only what the target chose — a block by them looks like a request.
+   */
+  async function messageHasher(m: Shown) {
+    setMenuFor(null); setError(null);
+    if (messaging) return;
+    const name = m.authorFirstName || "They";
+    setMessaging(upper(m.authorId));
+    try {
+      const r = await fetch("/api/member/dm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetPublicHasherId: m.authorId.toLowerCase() }) });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; outcome?: string; threadId?: string | null; error?: string };
+      if (!r.ok || !j.ok) { setError(j.error ?? "That conversation could not be started."); return; }
+      // Back from the DM is this chat, title and all.
+      if (j.outcome === "open" && j.threadId) { router.push(dmHref(j.threadId, window.location.pathname + window.location.search)); return; }
+      if (j.outcome === "requested") say(`${name} will be asked. You'll be told when they accept.`, 4000);
+      else if (j.outcome === "refused") say(`${name} isn't accepting messages.`, 3500);
+      else if (j.outcome === "blocked") say(`You've blocked ${name}.`, 3500);
+      else setError("That conversation could not be started.");
+    } catch {
+      setError("Couldn't start that conversation. Check your connection.");
+    } finally {
+      setMessaging(null);
+    }
+  }
+
+  async function setMute(mute: 0 | 1) {
+    setHeaderMenu(false);
+    if (dmBusy) return;
+    setDmBusy(true); setError(null);
+    try {
+      const r = await fetch("/api/member/dm", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ threadId: id, mute }) });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; muted?: number; error?: string };
+      if (!r.ok || !j.ok) { setError(j.error ?? "That could not be saved."); return; }
+      setDmLive((d) => ({ ...d, muted: Number(j.muted) === 1 ? 1 : 0 }));
+      say(Number(j.muted) === 1 ? "Muted — no notifications for this conversation" : "Unmuted", 3000);
+    } catch {
+      setError("Couldn't change that. Check your connection.");
+    } finally {
+      setDmBusy(false);
+    }
+  }
+
+  async function reallyEnd() {
+    if (dmBusy) return;
+    setDmBusy(true); setError(null);
+    try {
+      const r = await fetch("/api/member/dm", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ threadId: id }) });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!r.ok || !j.ok) { setError(j.error ?? "That could not be saved."); return; }
+      setConfirmEnd(false);
+      setDmLive((d) => ({ ...d, canSend: 0 }));
+      say("Conversation ended", 3000);
+    } catch {
+      setError("Couldn't end the conversation. Check your connection.");
+    } finally {
+      setDmBusy(false);
     }
   }
 
@@ -334,7 +435,7 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
       const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!r.ok || !j.ok) { setError(j.error ?? "The report could not be sent."); return; }
       setReportFor(null);
-      setNotice("Reported — thank you.");
+      say("Reported — thank you.");
     } catch {
       setError("Couldn't send the report. Check your connection.");
     } finally {
@@ -351,8 +452,44 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
     <div className="-mx-3 -mt-3 flex flex-col sm:-mt-4" style={{ minHeight: "calc(100vh - 60px - 64px)" }}>
       <div className="sticky top-12 z-40 flex items-center gap-3 px-3 py-3 text-white" style={{ backgroundColor: "#580438" }}>
         <Link href={back} aria-label="Back" className="text-2xl leading-none">‹</Link>
-        <h2 className="min-w-0 flex-1 truncate text-center text-[22px] font-medium">{title}</h2>
-        <span className="w-4" />
+        {dm ? (
+          <>
+            {/* A person, not a run: their photo beside their name. */}
+            <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
+              <HasherPhoto url={dm.otherPhoto} className="h-8 w-8" />
+              <h2 className="min-w-0 truncate text-[22px] font-medium">{title}</h2>
+            </div>
+            <div className="relative">
+              <button type="button" aria-label="Conversation options" aria-expanded={headerMenu} disabled={dmBusy} onClick={() => setHeaderMenu((v) => !v)}
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/15 disabled:opacity-60">
+                {dmBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : <MoreVertical className="h-6 w-6" />}
+              </button>
+              {headerMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setHeaderMenu(false)} />
+                  <div role="menu" className="absolute right-0 top-full z-50 mt-1 min-w-[190px] overflow-hidden rounded-xl border border-zinc-200 bg-white text-[16px] text-zinc-900 shadow-xl">
+                    <button type="button" role="menuitem" onClick={() => setMute(dmLive.muted === 1 ? 0 : 1)} className="block w-full px-4 py-2.5 text-left hover:bg-zinc-100">
+                      {dmLive.muted === 1 ? "Unmute" : "Mute"}
+                    </button>
+                    <button type="button" role="menuitem" onClick={() => { setHeaderMenu(false); setError(null); setConfirmBlock(other); }} className="block w-full border-t border-zinc-200 px-4 py-2.5 text-left hover:bg-zinc-100">
+                      Block {dm.otherDisplayName || "them"}
+                    </button>
+                    {dmLive.canSend === 1 && (
+                      <button type="button" role="menuitem" onClick={() => { setHeaderMenu(false); setError(null); setConfirmEnd(true); }} className="block w-full border-t border-zinc-200 px-4 py-2.5 text-left font-semibold hover:bg-zinc-100" style={{ color: HC_RED }}>
+                        End conversation
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="min-w-0 flex-1 truncate text-center text-[22px] font-medium">{title}</h2>
+            <span className="w-4" />
+          </>
+        )}
       </div>
 
       <div className="flex-1 bg-white px-3 py-3">
@@ -368,6 +505,9 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
                 menuOpen={menuFor === upper(m.id)} canMenu={!m.pending}
                 onMenu={(open) => setMenuFor(open ? upper(m.id) : null)}
                 onCopy={() => copy(m)} onDelete={canDelete ? () => { setMenuFor(null); setConfirmDelete(m); } : undefined}
+                // Not inside a DM: the only other author there is the one you are already messaging.
+                onMessage={!isMine && kind !== "dm" ? () => messageHasher(m) : undefined}
+                messaging={messaging === upper(m.authorId)}
                 onBlock={!isMine ? () => { setMenuFor(null); setError(null); setConfirmBlock(m); } : undefined}
                 onReport={!isMine ? () => openReport(m) : undefined}
                 onOpenPhoto={() => { const at = photos.findIndex((p) => upper(p.id) === upper(m.id)); if (at >= 0) setViewerAt(at); }}
@@ -379,9 +519,14 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
       </div>
 
       {error && <p className="bg-white px-3 py-1 text-center text-sm font-semibold" style={{ color: HC_RED }}>{error}</p>}
-      {notice && <p className="bg-white px-3 py-1 text-center text-sm font-semibold text-zinc-600" role="status">{notice}</p>}
+      {notice && <p className="bg-white px-3 py-1 text-center text-sm font-semibold text-zinc-600" role="status">{notice.text}</p>}
 
-      {/* Composer */}
+      {/* Composer — or, in a DM one side has ended or blocked, the reason there is none. */}
+      {!canSend ? (
+        <p className="sticky bottom-16 border-t border-zinc-200 bg-white px-3 py-4 text-center text-[16px] text-zinc-600" role="status">
+          You can&apos;t message {dm?.otherDisplayName || "them"}.
+        </p>
+      ) : (
       <form className="sticky bottom-16 flex items-end gap-1.5 border-t border-zinc-200 bg-white px-3 py-2" onSubmit={(e) => { e.preventDefault(); send(); }}>
         <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={onPickPhoto} />
         <button type="button" aria-label="Send a photo" onClick={() => fileInput.current?.click()}
@@ -406,6 +551,7 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
           <Send className="h-5 w-5" />
         </button>
       </form>
+      )}
 
       {locationMenu && (
         <Sheet title="Send a location" onClose={() => setLocationMenu(false)}>
@@ -430,6 +576,13 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
         </Sheet>
       )}
 
+      {confirmEnd && (
+        <Sheet title="End this conversation?" onClose={() => { if (!dmBusy) setConfirmEnd(false); }}
+          note={`You can still read it, but neither of you can send in it unless ${dm?.otherDisplayName || "they"} start${dm?.otherDisplayName ? "s" : ""} a new one. They won't be told.`}>
+          <SheetButton danger disabled={dmBusy} onClick={reallyEnd}>{dmBusy ? "Ending…" : "End conversation"}</SheetButton>
+        </Sheet>
+      )}
+
       {reportFor && (
         <ReportDialog reason={reportReason} onReason={setReportReason} busy={reporting}
           onSend={sendReport} onClose={() => { if (!reporting) setReportFor(null); }} />
@@ -442,9 +595,11 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
   );
 }
 
-function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCopy, onDelete, onBlock, onReport, onOpenPhoto, onRetry, onDiscard }: {
+function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCopy, onDelete, onMessage, messaging, onBlock, onReport, onOpenPhoto, onRetry, onDiscard }: {
   m: Shown; mine: boolean; showAuthor: boolean; kind: ChatMessageKind; menuOpen: boolean; canMenu: boolean;
   onMenu: (open: boolean) => void; onCopy: () => void; onDelete?: () => void;
+  /** Someone else's message in a run, kennel or room chat: Message <name> (E9.F1.S19), first in the menu. */
+  onMessage?: () => void; messaging?: boolean;
   /** Someone else's message only: Block <name> and Report (E9.F1.S16/S17). */
   onBlock?: () => void; onReport?: () => void;
   onOpenPhoto: () => void; onRetry: () => void; onDiscard: () => void;
@@ -519,6 +674,11 @@ function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCo
             {/* Any tap outside closes it. */}
             <div className="fixed inset-0 z-40" onClick={() => onMenu(false)} />
             <div role="menu" className={`absolute top-full z-50 mt-1 min-w-[140px] overflow-hidden rounded-xl border border-zinc-200 bg-white text-[16px] text-zinc-900 shadow-xl ${mine ? "right-0" : "left-0"}`}>
+              {onMessage && (
+                <button type="button" role="menuitem" onClick={onMessage} disabled={messaging} className="flex w-full items-center gap-2 border-b border-zinc-200 px-4 py-2.5 text-left font-semibold hover:bg-zinc-100 disabled:opacity-60">
+                  {messaging && <Loader2 className="h-4 w-4 animate-spin" />} Message {m.authorFirstName || "them"}
+                </button>
+              )}
               <button type="button" role="menuitem" onClick={onCopy} className="block w-full px-4 py-2.5 text-left hover:bg-zinc-100">Copy</button>
               {onReport && (
                 <button type="button" role="menuitem" onClick={onReport} className="block w-full border-t border-zinc-200 px-4 py-2.5 text-left hover:bg-zinc-100">Report</button>
