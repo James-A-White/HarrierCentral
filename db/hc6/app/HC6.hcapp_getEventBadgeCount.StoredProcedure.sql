@@ -287,11 +287,17 @@ END
 -- The query itself lives in HC6.UserUnreadChatThreads (2026-09-28) — the ONE
 -- definition of unread chat, shared with the number the chat pushes put on
 -- the app icon (HC6.UserUnreadChatTotal). Columns and rules unchanged.
+-- Direct-message rows (ThreadId set) are new on 2026-09-29 and only for
+-- builds that know what to do with them; an older list gets the same rows
+-- it always did. Fail closed: an unparseable build number sees none.
+DECLARE @dmBuild INT = TRY_CAST((SELECT d.BuildNumber FROM HC.Device d WHERE d.id = @deviceId) AS INT);
 SELECT BadgeCount, PublicEventId, EventId, EventName, EventNumber,
        EventStartDatetimeGmt, EventImage, KennelId, PublicKennelId,
        KennelShortName, KennelLogo, MessageCount, LastMessageAt, Pinned,
-       RoomType, RoomIcon
-FROM HC6.UserUnreadChatThreads(@userId);
+       RoomType, RoomIcon,
+       ThreadId, OtherPublicHasherId, OtherDisplayName, OtherPhoto
+FROM HC6.UserUnreadChatThreads(@userId)
+WHERE ThreadId IS NULL OR @dmBuild >= HC6.MinBuildForDmPush();
 
 END TRY
 BEGIN CATCH

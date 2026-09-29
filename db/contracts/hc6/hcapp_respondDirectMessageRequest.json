@@ -1,0 +1,171 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_respondDirectMessageRequest",
+  "version": "1.0.0",
+  "description": "Accept (both rows become friends sharing a new ThreadId; requester pushed) or decline (requester's row Removed; requester NOT told) a request. E9.F1.S19.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "fromPublicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": ""
+    },
+    {
+      "name": "accept",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "1 accept, 0 decline"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure returns the detail alone; other refusals return {success:0, errorCode, errorType} then the detail: 2004 no such pending request (2), 2005 unhandled (5)"
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Result",
+      "columns": [
+        {
+          "name": "Outcome",
+          "type": "NVARCHAR(10)",
+          "nullable": false,
+          "description": "open | declined"
+        },
+        {
+          "name": "ThreadId",
+          "type": "NVARCHAR(36)",
+          "nullable": true,
+          "description": "UPPER; on accept"
+        },
+        {
+          "name": "OtherPublicHasherId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER"
+        },
+        {
+          "name": "OtherDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "OtherPhoto",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "PushDetail",
+      "description": "API-only, stripped: present only when a push is due.",
+      "columns": [
+        {
+          "name": "Kind",
+          "type": "NVARCHAR(20)",
+          "nullable": false,
+          "description": "'dmAccepted'"
+        },
+        {
+          "name": "ThreadId",
+          "type": "NVARCHAR(36)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "FromPublicHasherId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "FromDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "FromPhoto",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "Recipients",
+      "description": "API-only, stripped: the other party's devices on builds >= HC6.MinBuildForDmPush().",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "HasherFriendMap",
+    "accepted push via API"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

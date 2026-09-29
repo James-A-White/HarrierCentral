@@ -63,6 +63,14 @@ namespace HcWebApi.Endpoints
             "setHasherBlock",
             "getBlockedHashers",
             "reportChatMessage",
+            // Direct messages (E9.F1.S7/S18/S19, 2026-09-29). No push from this
+            // endpoint yet — the web sends nothing to phones today (E9.F7.S15 gap).
+            "setDirectMessagePreference",
+            "startDirectMessage",
+            "getDirectMessageRequests",
+            "respondDirectMessageRequest",
+            "endDirectMessage",
+            "setDirectMessageMute",
             "issuePasskeyInviteCode",
             // Managing passkeys, not just making them (E9.F7.S18, 2026-09-20).
             // Both are thin wrappers over the app's hcapp_ SPs, so the web and
@@ -121,6 +129,12 @@ namespace HcWebApi.Endpoints
             "setHasherBlock",
             "getBlockedHashers",
             "reportChatMessage",
+            "setDirectMessagePreference",
+            "startDirectMessage",
+            "getDirectMessageRequests",
+            "respondDirectMessageRequest",
+            "endDirectMessage",
+            "setDirectMessageMute",
             "issuePasskeyInviteCode",
             "getAllSongs",
             "getReportContext",
@@ -272,6 +286,16 @@ namespace HcWebApi.Endpoints
                     && AbuseReportEmails.Extract(multipleResults) is { } abuse)
                 {
                     _ = AbuseReportEmails.SendAsync(abuse.report, abuse.reviewers, _log);
+                }
+                else if ((string.Equals(queryType, "startDirectMessage", StringComparison.OrdinalIgnoreCase)
+                          || string.Equals(queryType, "respondDirectMessageRequest", StringComparison.OrdinalIgnoreCase))
+                    && multipleResults.Count > 2)
+                {
+                    // Push detail and device tokens are for the API, never for a
+                    // browser. (The web does not dispatch these pushes yet.) Not
+                    // applied to sendChatMessage: its wrapper puts the web's own
+                    // success envelope LAST, after the app SP's rowsets.
+                    multipleResults.RemoveRange(2, multipleResults.Count - 2);
                 }
 
                 return new OkObjectResult(multipleResults);

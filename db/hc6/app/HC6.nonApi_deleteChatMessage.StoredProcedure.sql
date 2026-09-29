@@ -36,10 +36,10 @@ SET @outcome = 2;
 SET @errorId = NULL;
 
 BEGIN TRY
-    DECLARE @authorId UNIQUEIDENTIFIER, @eventId UNIQUEIDENTIFIER, @kennelId UNIQUEIDENTIFIER,
+    DECLARE @authorId UNIQUEIDENTIFIER, @eventId UNIQUEIDENTIFIER, @kennelId UNIQUEIDENTIFIER, @threadId UNIQUEIDENTIFIER,
             @roomType INT, @removed SMALLINT, @content NVARCHAR(MAX);
 
-    SELECT @authorId = em.UserId, @eventId = em.EventId, @kennelId = em.KennelId,
+    SELECT @authorId = em.UserId, @eventId = em.EventId, @kennelId = em.KennelId, @threadId = em.ThreadId,
            @roomType = em.MessageType, @removed = em.Removed, @content = em.MessageContent
     FROM HC.EventMessage em
     WHERE em.id = @messageId;
@@ -91,7 +91,8 @@ BEGIN TRY
                      + ' author=' + CAST(@authorId AS NVARCHAR(40))
                      + ' event=' + COALESCE(CAST(@eventId AS NVARCHAR(40)), '-')
                      + ' kennel=' + COALESCE(CAST(@kennelId AS NVARCHAR(40)), '-')
-                     + ' room=' + CASE WHEN @eventId IS NULL AND @kennelId IS NULL
+                     + ' thread=' + COALESCE(CAST(@threadId AS NVARCHAR(40)), '-')
+                     + ' room=' + CASE WHEN @eventId IS NULL AND @kennelId IS NULL AND @threadId IS NULL
                                        THEN CAST(@roomType AS NVARCHAR(10)) ELSE '-' END
                      + ' via=' + @callerProcName
                      + ' text=' + COALESCE(@content, ''), 4000),

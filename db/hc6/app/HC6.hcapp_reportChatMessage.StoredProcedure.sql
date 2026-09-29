@@ -50,9 +50,9 @@ BEGIN
     RETURN;
 END
 
-DECLARE @senderId UNIQUEIDENTIFIER, @eventId UNIQUEIDENTIFIER, @kennelId UNIQUEIDENTIFIER,
+DECLARE @senderId UNIQUEIDENTIFIER, @eventId UNIQUEIDENTIFIER, @kennelId UNIQUEIDENTIFIER, @threadId UNIQUEIDENTIFIER,
         @roomType INT, @kind SMALLINT, @content NVARCHAR(MAX), @messageAt DATETIMEOFFSET(7);
-SELECT @senderId = em.UserId, @eventId = em.EventId, @kennelId = em.KennelId, @roomType = em.MessageType,
+SELECT @senderId = em.UserId, @eventId = em.EventId, @kennelId = em.KennelId, @threadId = em.ThreadId, @roomType = em.MessageType,
        @kind = em.MessageKind, @content = em.MessageContent, @messageAt = em.createdAt
 FROM HC.EventMessage em WHERE em.id = @messageId;
 
@@ -78,6 +78,10 @@ DECLARE @threadLabel NVARCHAR(400) =
              (SELECT k.KennelShortName + N' — ' + e.EventName FROM HC.Event e JOIN HC.Kennel k ON k.id = e.KennelId WHERE e.id = @eventId)
          WHEN @kennelId IS NOT NULL THEN
              (SELECT k.KennelShortName + N' kennel chat' FROM HC.Kennel k WHERE k.id = @kennelId)
+         WHEN @threadId IS NOT NULL THEN
+             (SELECT N'DM: ' + s.DisplayName + N' ↔ ' + o.DisplayName
+              FROM HC.HasherFriendMap f JOIN HC.Hasher s ON s.id = f.UserId JOIN HC.Hasher o ON o.id = f.Friend_UserId
+              WHERE f.ThreadId = @threadId AND f.UserId = @senderId)
          ELSE (SELECT c.RoomName FROM HC6.ChatRoomCatalog() c WHERE c.RoomType = @roomType) END;
 
 DECLARE @key NVARCHAR(200) = 'message=' + CAST(@messageId AS NVARCHAR(40)) + ' reporter=' + CAST(@userId AS NVARCHAR(40));

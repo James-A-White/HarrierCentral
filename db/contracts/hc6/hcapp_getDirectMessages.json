@@ -1,0 +1,193 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getDirectMessages",
+  "version": "1.0.0",
+  "description": "Reads a DM thread in hcapp_getRoomMessages' shape; the caller must hold a row for it (ended still reads). Marks read when @markRead=1. E9.F1.S7.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "threadId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "EventMessage.ThreadId",
+      "description": ""
+    },
+    {
+      "name": "sinceSequenceCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "delta; NULL = full"
+    },
+    {
+      "name": "markRead",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 marks the newest as read"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "2015 not found / not yours (3)"
+    },
+    {
+      "index": 0,
+      "name": "Messages",
+      "columns": [
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER"
+        },
+        {
+          "name": "type",
+          "type": "NVARCHAR(10)",
+          "nullable": false,
+          "description": "'text'"
+        },
+        {
+          "name": "text",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "roomId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "the ThreadId, UPPER"
+        },
+        {
+          "name": "createdAt",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "epoch ms"
+        },
+        {
+          "name": "authorId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "PublicHasherId, UPPER"
+        },
+        {
+          "name": "authorFirstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "authorImageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "sequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "messageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text 1 photo 2 location"
+        },
+        {
+          "name": "canDelete",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "own or SuperAdmin"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Thread",
+      "columns": [
+        {
+          "name": "unreadCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "before the mark"
+        },
+        {
+          "name": "newestSequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "canSend",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when both rows live and nobody blocks"
+        },
+        {
+          "name": "otherPublicHasherId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "otherDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "otherPhoto",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "muted",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "RemovedMessageIds",
+      "columns": [
+        {
+          "name": "removedId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "badge MERGE when markRead"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

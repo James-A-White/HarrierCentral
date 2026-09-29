@@ -1,0 +1,68 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getDirectMessageRequests",
+  "version": "1.0.0",
+  "description": "Pending requests to message the caller. E9.F1.S19.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On auth failure"
+    },
+    {
+      "index": 0,
+      "name": "Requests",
+      "columns": [
+        {
+          "name": "FromPublicHasherId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER"
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "Photo",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RequestedAt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

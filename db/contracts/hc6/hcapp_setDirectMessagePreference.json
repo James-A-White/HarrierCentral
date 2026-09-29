@@ -1,0 +1,77 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setDirectMessagePreference",
+  "version": "1.0.0",
+  "description": "Who may message the caller: 0 friends only (default), 1 anyone, 2 nobody. Two bits of HC.Hasher.Preferences (0x4000|0x8000), read-modify-written server-side. E9.F1.S18.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "preference",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "Hasher.Preferences",
+      "description": "0|1|2"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure returns the detail alone; other refusals return {success:0, errorCode, errorType} then the detail: 2000 bad value (2), 2001 unhandled (5)"
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Preference",
+      "columns": [
+        {
+          "name": "Preference",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "the value now stored"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher.Preferences bits 0x4000|0x8000"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

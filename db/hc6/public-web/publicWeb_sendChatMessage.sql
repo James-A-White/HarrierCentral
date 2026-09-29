@@ -16,6 +16,8 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_sendChatMessage]
     @publicEventId  UNIQUEIDENTIFIER = NULL,
     @publicKennelId UNIQUEIDENTIFIER = NULL,
     @roomType       INT              = NULL,
+    -- 'dm' (E9.F1.S7, 2026-09-29).
+    @threadId       UNIQUEIDENTIFIER = NULL,
     @messageId      UNIQUEIDENTIFIER,
     -- MAX, not a width: an NVARCHAR(n) parameter truncates silently. The app
     -- SP this delegates to refuses anything over 4,000 (2026-09-23).
@@ -33,7 +35,7 @@ BEGIN TRY
     IF (@kind = 'kennel') SELECT @kennelId = k.id FROM HC.Kennel k WHERE k.PublicKennelId = @publicKennelId AND k.deleted = 0 AND k.removed = 0;
 
     IF ((@kind = 'run' AND @eventId IS NULL) OR (@kind = 'kennel' AND @kennelId IS NULL)
-        OR (@kind = 'room' AND @roomType IS NULL) OR @kind NOT IN ('run', 'kennel', 'room')
+        OR (@kind = 'room' AND @roomType IS NULL) OR (@kind = 'dm' AND @threadId IS NULL) OR @kind NOT IN ('run', 'kennel', 'room', 'dm')
         OR @messageId IS NULL OR LEN(LTRIM(RTRIM(COALESCE(@messageContent, '')))) = 0)
     BEGIN
         DECLARE @errorId UNIQUEIDENTIFIER = NEWID();
@@ -52,6 +54,8 @@ BEGIN TRY
         EXEC HC6.hcapp_sendEventMessage  @deviceId = @deviceId, @accessToken = @accessToken, @eventId = @eventId, @messageId = @messageId, @messageTitle = NULL, @messageContent = @messageContent, @messageKind = @messageKind;
     ELSE IF (@kind = 'kennel')
         EXEC HC6.hcapp_sendKennelMessage @deviceId = @deviceId, @accessToken = @accessToken, @kennelId = @kennelId, @messageId = @messageId, @messageTitle = NULL, @messageContent = @messageContent, @messageKind = @messageKind;
+    ELSE IF (@kind = 'dm')
+        EXEC HC6.hcapp_sendDirectMessage @deviceId = @deviceId, @accessToken = @accessToken, @threadId = @threadId, @messageId = @messageId, @messageContent = @messageContent, @messageKind = @messageKind;
     ELSE
         EXEC HC6.hcapp_sendRoomMessage   @deviceId = @deviceId, @accessToken = @accessToken, @roomType = @roomType, @messageId = @messageId, @messageContent = @messageContent, @messageKind = @messageKind;
 

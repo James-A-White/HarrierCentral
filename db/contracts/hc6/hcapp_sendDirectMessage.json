@@ -1,0 +1,245 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_sendDirectMessage",
+  "version": "1.0.0",
+  "description": "Posts to a DM thread (EventMessage with ThreadId; EventId/KennelId NULL). Refused unless both HasherFriendMap rows are live and neither side blocks. Mirrors hcapp_sendRoomMessage's rowsets. E9.F1.S7.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "threadId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "EventMessage.ThreadId",
+      "description": ""
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "EventMessage.id",
+      "description": "client id (idempotent)"
+    },
+    {
+      "name": "messageContent",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "EventMessage.MessageContent",
+      "description": "≤4000; refused not cut"
+    },
+    {
+      "name": "messageKind",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageKind",
+      "description": "0 text 1 photo 2 location"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "2010 missing (2), 2011 too long (2), 2012 bad kind (2), 2013 not open — 'You can't message <name>.' (3), 2014 unhandled (5)"
+    },
+    {
+      "index": 0,
+      "name": "Message",
+      "columns": [
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER"
+        },
+        {
+          "name": "type",
+          "type": "NVARCHAR(10)",
+          "nullable": false,
+          "description": "'text'"
+        },
+        {
+          "name": "text",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "roomId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "the ThreadId, UPPER"
+        },
+        {
+          "name": "createdAt",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "epoch ms"
+        },
+        {
+          "name": "authorId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "PublicHasherId, UPPER"
+        },
+        {
+          "name": "authorFirstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "authorImageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "sequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "messageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text 1 photo 2 location"
+        },
+        {
+          "name": "canDelete",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "own or SuperAdmin"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "PushDetail",
+      "columns": [
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "ThreadId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "sender PublicHasherId"
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "sender name"
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "preview"
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "VisibleRecipients",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "SilentRecipients",
+      "description": "the other party muted the thread",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.EventMessage",
+    "sender badge MERGE",
+    "push via API"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

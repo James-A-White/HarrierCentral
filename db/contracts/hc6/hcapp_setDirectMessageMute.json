@@ -1,0 +1,84 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setDirectMessageMute",
+  "version": "1.0.0",
+  "description": "Mute (silent pushes) or unmute one DM thread for the caller: HasherFriendMap.FriendNotificationPreference 3|0. E9.F1.S7.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "threadId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherFriendMap.ThreadId",
+      "description": ""
+    },
+    {
+      "name": "mute",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "HasherFriendMap.FriendNotificationPreference",
+      "description": "1 mute, 0 normal"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure returns the detail alone; other refusals return {success:0, errorCode, errorType} then the detail: 2008 not found (2), 2009 unhandled (5)"
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Muted",
+      "columns": [
+        {
+          "name": "Muted",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "HasherFriendMap.FriendNotificationPreference"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

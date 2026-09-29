@@ -271,6 +271,18 @@ namespace HcWebApi.Endpoints
                     case "markEventChatRead":
                         await SendReadSyncAsync(multipleResults, log);
                         break;
+                    // Direct messages (E9.F1.S7/S19). The recipient rowsets are read
+                    // before the sender's first await, so they can be dropped from
+                    // the reply straight after: a device token is not for a client.
+                    case "sendDirectMessage":
+                        _ = SendChatNotifications(multipleResults, ChatPushKind.Dm, log);
+                        if (multipleResults.Count >= 4) multipleResults.RemoveRange(2, multipleResults.Count - 2);
+                        break;
+                    case "startDirectMessage":
+                    case "respondDirectMessageRequest":
+                        _ = SendDmEventAsync(multipleResults, data.queryType, log);
+                        if (multipleResults.Count >= 4) multipleResults.RemoveRange(2, multipleResults.Count - 2);
+                        break;
                     // A reported message goes to the platform reviewers by email; the
                     // report and the addresses are API-only rowsets (E9.F1.S17).
                     case "reportChatMessage":
@@ -585,7 +597,7 @@ namespace HcWebApi.Endpoints
         // The shared EventMessage class (PortalApi.cs) retains the old HC5 typo for
         // backward compat with HC5 paths. This local class is used only in the HC6
         // sendEventMessage notification path.
-        public enum ChatPushKind { Kennel, Room }
+        public enum ChatPushKind { Kennel, Room, Dm }
 
         /// <summary>
         /// Push for the two thread kinds that are not a run: kennel chat and the
@@ -607,7 +619,9 @@ namespace HcWebApi.Endpoints
         {
             try
             {
-                int detail = kind == ChatPushKind.Room ? 1 : 0;
+                // Room and DM sends put the chat-page message in rowset 0 and the
+                // push detail in rowset 1; a kennel send starts at 0.
+                int detail = kind == ChatPushKind.Kennel ? 0 : 1;
                 if (multipleResults == null || multipleResults.Count < detail + 3)
                 {
                     logger.LogWarning("{Kind} push: expected {N} rowsets, got {Got}. Nothing sent.",
@@ -637,7 +651,7 @@ namespace HcWebApi.Endpoints
                 var data = new Dictionary<string, string> { ["MessageType"] = "0" };
                 void Put(string k, string? v) { if (!string.IsNullOrEmpty(v)) data[k] = v!; }
 
-                Put("ThreadKind",      kind == ChatPushKind.Room ? "room" : "kennel");
+                Put("ThreadKind",      kind switch { ChatPushKind.Room => "room", ChatPushKind.Dm => "dm", _ => "kennel" });
                 Put("MessageId",       Str("MessageId"));
                 Put("Title",           Str("MessageTitle"));
                 Put("Message",         Str("MessageContent"));
@@ -648,6 +662,11 @@ namespace HcWebApi.Endpoints
                 {
                     Put("RoomType", Str("RoomType"));
                     Put("RoomName", Str("RoomName"));
+                }
+                else if (kind == ChatPushKind.Dm)
+                {
+                    // A direct message routes on its thread (E9.F1.S7).
+                    Put("ThreadId", Str("ThreadId"));
                 }
                 else
                 {
@@ -663,7 +682,7 @@ namespace HcWebApi.Endpoints
                 var results = await Task.WhenAll(recipients.Select(r =>
                     SendDataPushAsync(r.Token, WithBadge(data, r.Badge), title, body, r.Visible, accessToken, logger, r.Badge)));
 
-                var queryType = kind == ChatPushKind.Room ? "sendRoomMessage" : "sendKennelMessage";
+                var queryType = kind switch { ChatPushKind.Room => "sendRoomMessage", ChatPushKind.Dm => "sendDirectMessage", _ => "sendKennelMessage" };
                 _ = LogPushBatchAsync(
                     queryType,
                     null,                       // no EventId: neither kind belongs to a run
@@ -683,6 +702,48 @@ namespace HcWebApi.Endpoints
         /// One line for the portal's push log: who/where, then what was said.
         /// Capped so the drill-down column stays readable.
         /// </summary>
+        /// <summary>
+        /// A direct-message REQUEST ("X wants to message you") or ACCEPTANCE ("X
+        /// accepted your request"), E9.F1.S19. The SP returns the detail in
+        /// rowset 2 and the recipient devices in rowset 3 only when a push is
+        /// due; otherwise there is nothing past rowset 1 and nothing is sent.
+        /// Reads both rowsets before its first await so the caller may strip
+        /// them from the reply immediately.
+        /// </summary>
+        public async Task SendDmEventAsync(List<List<Dictionary<string, object?>>> multipleResults, string queryType, ILogger logger)
+        {
+            try
+            {
+                if (multipleResults == null || multipleResults.Count < 4) return;
+                var detailRow = multipleResults[2].FirstOrDefault();
+                if (detailRow == null) return;
+                string? Str(string key) => detailRow.TryGetValue(key, out var v) && v != null ? v.ToString() : null;
+                var recipients = Tokens(multipleResults[3], visible: true).ToList();
+                if (recipients.Count == 0) { logger.LogInformation("DM event push: no recipients."); return; }
+
+                bool accepted = string.Equals(Str("Kind"), "dmAccepted", StringComparison.OrdinalIgnoreCase);
+                var data = new Dictionary<string, string> { ["MessageType"] = "0", ["ThreadKind"] = "dm", ["DmEvent"] = accepted ? "accepted" : "request" };
+                void Put(string k, string? v) { if (!string.IsNullOrEmpty(v)) data[k] = v!; }
+                Put("ThreadId",           Str("ThreadId"));
+                Put("FromPublicHasherId", Str("FromPublicHasherId"));
+                Put("FromDisplayName",    Str("FromDisplayName"));
+                Put("FromPhoto",          Str("FromPhoto"));
+
+                string? accessToken = await GetFirebaseAccessTokenAsync();
+                var title = Str("FromDisplayName") ?? "Harrier Central";
+                var body  = accepted ? "accepted your request. You can message each other now." : "wants to message you.";
+                var results = await Task.WhenAll(recipients.Select(r =>
+                    SendDataPushAsync(r.Token, WithBadge(data, r.Badge), title, body, true, accessToken, logger, r.Badge)));
+                _ = LogPushBatchAsync(queryType, null, Summarise(title, body),
+                    recipients.Select((r, i) => new PushLogEntry(r.Token, r.UserId, SenderUserId: Str("FromPublicHasherId"), IsVisible: true, FcmResult: results[i])),
+                    logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error sending DM event push: {Message}", ex.Message);
+            }
+        }
+
         private static string Summarise(string? title, string? body)
         {
             var text = (body ?? string.Empty).Replace("\r", " ").Replace("\n", " ").Trim();

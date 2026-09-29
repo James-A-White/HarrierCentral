@@ -13,8 +13,9 @@ AS
 --
 --   Run chat     -> moderateChat in the RUN'S kennel
 --   Kennel chat  -> moderateChat in that kennel
---   Room         -> (both NULL) SuperAdmin only: rooms span kennels, so
---                   no kennel's office can moderate them
+--   Room or DM   -> (both NULL) SuperAdmin only: rooms span kennels, so
+--                   no kennel's office can moderate them, and a direct
+--                   message belongs to no kennel at all (E9.F1.S7)
 --   SuperAdmin anywhere moderates everything — it is the platform's own
 --   bypass, and a platform admin need not follow a kennel to clean up
 --   its chat.

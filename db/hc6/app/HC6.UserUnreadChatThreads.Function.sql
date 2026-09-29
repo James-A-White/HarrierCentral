@@ -50,7 +50,11 @@ SELECT
     -- Pinned (E9.F1.S8). A run never auto-pins, so absent means 0.
     ISNULL(hem.Pinned, 0)   AS Pinned,
     CAST(NULL AS INT)       AS RoomType,
-    CAST(NULL AS NVARCHAR(500)) AS RoomIcon
+    CAST(NULL AS NVARCHAR(500)) AS RoomIcon,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS ThreadId,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
+    CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
+    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto
 FROM (
     SELECT em.EventId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -140,7 +144,11 @@ SELECT
          WHEN hkm.IsHomeKennel = 1   THEN 1
          ELSE 0 END                                AS Pinned,
     CAST(NULL AS INT)                              AS RoomType,
-    CAST(NULL AS NVARCHAR(500))                    AS RoomIcon
+    CAST(NULL AS NVARCHAR(500))                    AS RoomIcon,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS ThreadId,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
+    CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
+    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto
 FROM (
     SELECT em.KennelId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -212,7 +220,11 @@ SELECT
     CAST(NULL AS DATETIMEOFFSET(7))                AS LastMessageAt,
     1                                              AS Pinned,
     CAST(NULL AS INT)                              AS RoomType,
-    CAST(NULL AS NVARCHAR(500))                    AS RoomIcon
+    CAST(NULL AS NVARCHAR(500))                    AS RoomIcon,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS ThreadId,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
+    CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
+    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto
 FROM HC.Kennel k
 CROSS APPLY (
     -- TOP 1 for the same reason as above: HasherKennelMap is not guaranteed
@@ -268,7 +280,11 @@ SELECT
     c.RoomType                                     AS RoomType,
     -- The room's coin. NULL means no art yet; the client falls back to its
     -- own glyph rather than showing a hole.
-    c.IconUrl                                      AS RoomIcon
+    c.IconUrl                                      AS RoomIcon,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS ThreadId,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
+    CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
+    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto
 FROM HC6.ChatRoomCatalog() c
 LEFT JOIN HC.Hasher hs ON hs.id = @userId
 OUTER APPLY (
@@ -302,4 +318,64 @@ OUTER APPLY (
                   WHERE blk.UserId = @userId AND blk.Friend_UserId = bm.UserId AND blk.Ignore = 1)
 ) AS blocked
 WHERE HC6.UserMayEnterChatRoom(@userId, c.RoomType) = 1
-  AND ISNULL(embc.ParticipationState, 0) <> 2;
+  AND ISNULL(embc.ParticipationState, 0) <> 2
+
+UNION ALL
+
+-- ---------------------------------------------------------------
+-- DIRECT MESSAGES (E9.F1.S7, 2026-09-29): one row per thread the user
+-- holds a HasherFriendMap row in — friends, and ended (Removed) threads
+-- that still have messages, which stay readable. A thread with no message
+-- yet is listed too, so an accepted request has somewhere to go.
+-- Blocked senders' messages are subtracted like everywhere else. Older
+-- builds are shielded from these rows in hcapp_getEventBadgeCount.
+-- ---------------------------------------------------------------
+SELECT
+    CASE WHEN f.Ignore = 1 THEN 0
+         ELSE ISNULL(t.MaxSeq, 0) - ISNULL(embc.LastSequenceCount, 0) - blocked.N
+    END                                            AS BadgeCount,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicEventId,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS EventId,
+    o.DisplayName                                  AS EventName,
+    CAST(NULL AS INT)                              AS EventNumber,
+    CAST(NULL AS DATETIMEOFFSET(7))                AS EventStartDatetimeGmt,
+    CAST(NULL AS NVARCHAR(500))                    AS EventImage,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS KennelId,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicKennelId,
+    CAST(NULL AS NVARCHAR(100))                    AS KennelShortName,
+    o.Photo                                        AS KennelLogo,
+    ISNULL(t.MsgCount, 0)                          AS MessageCount,
+    COALESCE(t.LastMessageAt, f.FriendSince)       AS LastMessageAt,
+    CAST(0 AS SMALLINT)                            AS Pinned,
+    CAST(NULL AS INT)                              AS RoomType,
+    CAST(NULL AS NVARCHAR(500))                    AS RoomIcon,
+    f.ThreadId                                     AS ThreadId,
+    o.PublicHasherId                               AS OtherPublicHasherId,
+    o.DisplayName                                  AS OtherDisplayName,
+    o.Photo                                        AS OtherPhoto
+FROM HC.HasherFriendMap f
+INNER JOIN HC.Hasher o ON o.id = f.Friend_UserId AND o.Removed = 0
+OUTER APPLY (
+    SELECT MAX(em.MessageSequenceCount) AS MaxSeq, COUNT(*) AS MsgCount, MAX(em.createdAt) AS LastMessageAt
+    FROM HC.EventMessage em
+    WHERE em.ThreadId = f.ThreadId AND em.Removed = 0
+) AS t
+OUTER APPLY (
+    SELECT TOP 1 b.LastSequenceCount
+    FROM HC.EventMessageBadgeCounts b
+    WHERE b.UserId = @userId AND b.EventId IS NULL AND b.KennelId IS NULL
+      AND b.ThreadId = f.ThreadId AND b.MessageType = 0
+    ORDER BY b.Removed, b.LastSequenceCount DESC
+) AS embc
+OUTER APPLY (
+    SELECT COUNT(*) AS N
+    FROM HC.EventMessage bm
+    WHERE bm.ThreadId = f.ThreadId AND bm.Removed = 0
+      AND bm.MessageSequenceCount > COALESCE(embc.LastSequenceCount, 0)
+      AND EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                  WHERE blk.UserId = @userId AND blk.Friend_UserId = bm.UserId AND blk.Ignore = 1)
+) AS blocked
+WHERE f.UserId = @userId
+  AND f.ThreadId IS NOT NULL
+  AND f.FriendSince IS NOT NULL
+  AND (f.Removed = 0 OR t.MsgCount > 0);

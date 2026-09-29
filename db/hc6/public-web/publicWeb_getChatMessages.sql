@@ -19,6 +19,8 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getChatMessages]
     @publicEventId      UNIQUEIDENTIFIER = NULL,
     @publicKennelId     UNIQUEIDENTIFIER = NULL,
     @roomType           INT              = NULL,
+    -- 'dm' (E9.F1.S7, 2026-09-29): the thread id from the chat list.
+    @threadId           UNIQUEIDENTIFIER = NULL,
     @sinceSequenceCount INT              = NULL,
     @markRead           SMALLINT         = 0
 AS
@@ -34,7 +36,8 @@ BEGIN TRY
     IF (@kind = 'kennel') SELECT @kennelId = k.id FROM HC.Kennel k WHERE k.PublicKennelId = @publicKennelId AND k.deleted = 0 AND k.removed = 0;
 
     IF (@me IS NULL OR (@kind = 'run' AND @eventId IS NULL) OR (@kind = 'kennel' AND @kennelId IS NULL)
-        OR (@kind = 'room' AND @roomType IS NULL) OR @kind NOT IN ('run', 'kennel', 'room'))
+        OR (@kind = 'room' AND @roomType IS NULL) OR (@kind = 'dm' AND @threadId IS NULL)
+        OR @kind NOT IN ('run', 'kennel', 'room', 'dm'))
     BEGIN
         DECLARE @errorId UNIQUEIDENTIFIER = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId)
@@ -54,6 +57,8 @@ BEGIN TRY
         EXEC HC6.hcapp_getEventMessages  @deviceId = @deviceId, @accessToken = @accessToken, @eventId = @eventId, @sinceSequenceCount = @sinceSequenceCount;
     ELSE IF (@kind = 'kennel')
         EXEC HC6.hcapp_getKennelMessages @deviceId = @deviceId, @accessToken = @accessToken, @kennelId = @kennelId, @sinceSequenceCount = @sinceSequenceCount;
+    ELSE IF (@kind = 'dm')
+        EXEC HC6.hcapp_getDirectMessages @deviceId = @deviceId, @accessToken = @accessToken, @threadId = @threadId, @sinceSequenceCount = @sinceSequenceCount, @markRead = @markRead;
     ELSE
         EXEC HC6.hcapp_getRoomMessages   @deviceId = @deviceId, @accessToken = @accessToken, @roomType = @roomType, @sinceSequenceCount = @sinceSequenceCount, @markRead = @markRead;
 END TRY
