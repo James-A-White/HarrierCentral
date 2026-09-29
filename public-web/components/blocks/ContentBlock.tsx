@@ -59,6 +59,7 @@ export function ContentBlock({ imageUrl, imageAlt, heading, headingColor, headin
       }}
     >
       {imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element -- natural aspect ratio, remote host
         <img
           src={imageUrl}
           alt={imageAlt || ""}

@@ -10,7 +10,7 @@ import L from "leaflet";
 import { safeFlyTo } from "@/lib/leaflet-teardown";
 import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera, Download } from "lucide-react";
 import {
-  fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, trackUpTo, sumDistanceMeters,
+  fetchPackTrack, fetchRunnerNames, fetchRunPhotos, trackUpTo, sumDistanceMeters,
   withoutPhotoPoints,
   formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
   resolveTrailTypeMap, trailValueForTrack, photoSrc,
@@ -55,25 +55,6 @@ function durationFor(zoom: number, trailMeters: number): number {
   const t = Math.max(0, Math.min(1, (zoom - ZOOM_FAST) / (ZOOM_SLOW - ZOOM_FAST)));
   const msPerKm = MS_PER_KM_FAST + t * (MS_PER_KM_SLOW - MS_PER_KM_FAST);
   return Math.max(MIN_DURATION_MS, km * msPerKm);
-}
-
-// Icons are cached by their visual identity. Playback re-renders ~60×/s; without
-// a cache a fresh L.divIcon each render makes React-Leaflet rebuild every marker's
-// DOM every frame, which flickers and reads as "jumpy".
-const dotIconCache = new Map<string, L.DivIcon>();
-function userDotIcon(color: string, big: boolean): L.DivIcon {
-  const key = `${color}|${big}`;
-  const cached = dotIconCache.get(key);
-  if (cached) return cached;
-  const s = big ? 18 : 13;
-  const icon = L.divIcon({
-    html: `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${color};border:2.5px solid white;box-shadow:0 1px 5px rgba(0,0,0,0.7)"></div>`,
-    className: "",
-    iconSize: [s, s],
-    iconAnchor: [s / 2, s / 2],
-  });
-  dotIconCache.set(key, icon);
-  return icon;
 }
 
 // App-style runner marker: profile photo (or coloured initials) inset in the
@@ -568,7 +549,6 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
         headingHandlerRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLocateTap = () => {
@@ -855,7 +835,6 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     const next = Math.min(1, Math.max(0, (anchoredTs - minTs) / span));
     progressRef.current = next;
     setProgress(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minTs, maxTs]);
 
   // ── rAF animation loop ───────────────────────────────────────────────────────
@@ -1092,7 +1071,6 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     });
     const t = setTimeout(() => { carouselSyncing.current = false; }, 450);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
   const runnerEmoji = (id: string) =>

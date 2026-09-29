@@ -43,7 +43,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-export function RowBlock({ layout, gap, verticalAlign, collapseBelow = "sm", children }: Props) {
+export function RowBlock({ gap, verticalAlign, collapseBelow = "sm", children }: Props) {
   const bp         = collapseBelow in DIR_CLASSES ? collapseBelow : "sm";
   const dirClass   = DIR_CLASSES[bp];
   const alignClass = ALIGN_CLASSES[bp][verticalAlign] ?? "";

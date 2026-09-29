@@ -3,7 +3,6 @@ import { getKennelLandingData, getEvents } from "@/lib/api";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { ScrollHero } from "@/components/kennel/ScrollHero";
-import type { KennelContext } from "@/lib/types/kennel";
 import { FeaturedRunCard } from "@/components/kennel/FeaturedRunCard";
 import { UpcomingRunsList } from "@/components/kennel/UpcomingRunsList";
 import { PhotoGrid } from "@/components/kennel/PhotoGrid";

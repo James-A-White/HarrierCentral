@@ -306,7 +306,6 @@ export function trailValueForTrack(positions: TrackPoint[]): number {
 
 // ── Geometry / formatting (ported from run_tracker_map_controller) ───────────────
 
-const METERS_TO_MILES = 0.000621371;
 export const MARK_DEDUPE_METERS = 25;
 
 // ── GPS noise filter (ported from lib/util/track_point_filter.dart) ─────────────
@@ -347,10 +346,6 @@ function pointIsTyped(p: TrackPoint): boolean {
 /** Any typed point — a mark drawn by the marker layer, never a GPS fix. */
 function pointIsMark(p: TrackPoint): boolean {
   return !!(p.type && p.type.trim().length > 0);
-}
-
-function pointIsPhoto(p: TrackPoint): boolean {
-  return !!parseMark(p.type)?.isPhoto;
 }
 
 /**

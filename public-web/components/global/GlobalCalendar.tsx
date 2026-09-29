@@ -72,8 +72,8 @@ function KennelLogo({ kennel }: { kennel: GlobalCalendarRow }) {
 
   if (hasImage) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
       <a href={href} title={kennel.KennelName} className="block flex-shrink-0 transition-transform duration-150 hover:scale-105">
+        {/* eslint-disable-next-line @next/next/no-img-element -- kennel logo at natural aspect ratio, remote host */}
         <img
           src={kennel.KennelLogo!}
           alt={kennel.KennelName}

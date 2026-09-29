@@ -5,7 +5,6 @@ import { SignInLink } from "@/components/member/SignInLink";
 import { motion, AnimatePresence, useTransform, useMotionValueEvent } from "framer-motion";
 import { Menu, X, MapPin, ArrowRight, Globe } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import type { KennelContext, KennelPageFeatures } from "@/lib/types/kennel";
 import type { RunEvent } from "@/lib/api";
 import { useWindowScrollMotionValue } from "@/lib/useWindowScrollMotionValue";
@@ -46,7 +45,7 @@ const NAV_ITEMS: { label: string; featureKey?: keyof KennelPageFeatures; href: (
   { label: "Events", featureKey: "showEvents", href: (s) => `/${s}/events` },
   { label: "Stats",  featureKey: "showStats",  href: (s) => `/${s}/stats` },
   { label: "Songs",  featureKey: "showSongs",  href: (s) => `/${s}/songs` },
-  { label: "About",  featureKey: "showAbout",  href: (s) => `#about` },
+  { label: "About",  featureKey: "showAbout",  href: () => `#about` },
 ];
 
 export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navItems }: StickyNavProps) {
@@ -264,14 +263,14 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navIte
                 </a>
               ))}
               <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
-                <a
+                <Link
                   href="/"
                   style={{ opacity: 0.5 }}
                   className="block rounded-xl px-3 py-3 text-xl font-medium dark:hover:bg-white/[0.06] hover:bg-zinc-100 transition-opacity hover:opacity-100"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Harrier Central
-                </a>
+                </Link>
               </div>
               <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
                 <SignInLink className="flex items-center gap-2 rounded-xl px-3 py-3 text-xl font-medium dark:hover:bg-white/[0.06] hover:bg-zinc-100 transition-colors" />
