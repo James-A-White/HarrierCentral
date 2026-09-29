@@ -280,7 +280,10 @@ namespace HcWebApi.Endpoints
                         break;
                     case "startDirectMessage":
                     case "respondDirectMessageRequest":
-                        _ = SendDmEventAsync(multipleResults, data.queryType, log);
+                        // data is dynamic JSON: without the cast this binds a JValue to
+                        // a string parameter at RUNTIME and every DM start returned 500
+                        // with nothing in HC.ErrorLog (2026-09-29, 3.1.8+1423).
+                        _ = SendDmEventAsync(multipleResults, (string?)data.queryType ?? "startDirectMessage", log);
                         if (multipleResults.Count >= 4) multipleResults.RemoveRange(2, multipleResults.Count - 2);
                         break;
                     // A reported message goes to the platform reviewers by email; the

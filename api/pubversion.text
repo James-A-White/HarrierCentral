@@ -1,3 +1,8 @@
+1.0.61+66
+    • HOTFIX: startDirectMessage / respondDirectMessageRequest returned 500
+      on every call — a dynamic JSON value bound to a string parameter at
+      runtime. Cast added.
+
 1.0.61+65
     • Direct messages (E9.F1.S7/S19): ChatPushKind.Dm for sendDirectMessage;
       request / accepted pushes from startDirectMessage and
