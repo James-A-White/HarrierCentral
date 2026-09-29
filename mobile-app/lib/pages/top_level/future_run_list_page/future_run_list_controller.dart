@@ -501,11 +501,126 @@ class FutureRunListPageController extends GetxController {
     await _processMessage(message.payload);
   }
 
+  /// The request whose Accept / Decline is in flight, so its buttons show a
+  /// spinner and a second tap does nothing. '' when none.
+  final RxString dmRequestBusyId = ''.obs;
+
+  /// Accept (the thread opens) or decline (the requester is told nothing)
+  /// one request to message this hasher (E9.F1.S19).
+  Future<void> respondToDmRequest(
+    DirectMessageRequest r, {
+    required bool accept,
+  }) async {
+    if (dmRequestBusyId.value.isNotEmpty) return;
+    dmRequestBusyId.value = r.fromPublicHasherId;
+    String? refusal;
+    final DmStartResult? result = await DirectMessageService.respond(
+      r.fromPublicHasherId,
+      accept: accept,
+      onRefused: (String? why) => refusal = why,
+    );
+    if (isClosed) return;
+    dmRequestBusyId.value = '';
+
+    final NotificationService? notifications =
+        Get.isRegistered<NotificationService>()
+        ? Get.find<NotificationService>()
+        : null;
+
+    if (result == null) {
+      // "That request is no longer waiting." means it is gone either way;
+      // anything else leaves the row for another try.
+      hcSnack(
+        (refusal == null || refusal!.isEmpty)
+            ? 'That could not be done. Please try again.'
+            : refusal!,
+        error: true,
+        seconds: 5,
+      );
+      unawaited(notifications?.getEventChatMessageCounts());
+      return;
+    }
+
+    notifications?.dmRequests.removeWhere(
+      (DirectMessageRequest x) => x.fromPublicHasherId == r.fromPublicHasherId,
+    );
+    filterRuns(false);
+
+    if (result.outcome == DmOutcome.open && result.threadId != null) {
+      await ChatPageController.openDirectMessage(
+        threadId: result.threadId!,
+        otherPublicHasherId: result.otherPublicHasherId,
+        otherDisplayName: result.otherDisplayName,
+        otherPhoto: result.otherPhoto,
+      );
+      return;
+    }
+    hcSnack(
+      accept
+          ? '${result.otherDisplayName} could not be messaged right now.'
+          : 'Declined',
+      error: accept,
+    );
+    unawaited(notifications?.getEventChatMessageCounts());
+  }
+
+  /// Show the Chats view — what the top-bar badge does — from a push or a
+  /// toast. Refreshes the threads and requests on the way in.
+  Future<void> openChatsView() async {
+    runsToDisplay.value = RunsToDisplay.unreadChats;
+    runsTimeScope.value = RunsTimeScope.all;
+    if (Get.isRegistered<NotificationService>()) {
+      unawaited(Get.find<NotificationService>().getEventChatMessageCounts());
+    }
+    if (Get.isRegistered<MainNavigationController>()) {
+      final MainNavigationController nav = Get.find<MainNavigationController>();
+      // The tab bar's onTap closes Chats; tell it this is the way in.
+      nav.openingChats = true;
+      try {
+        nav.bottomNavigationKey.currentState?.setPage(0);
+        await refreshFromTable(true);
+      } finally {
+        nav.openingChats = false;
+      }
+      return;
+    }
+    await refreshFromTable(true);
+  }
+
   Future<void> _processMessage(Map<String, dynamic> data) async {
     // Kennel chat and the role rooms carry a ThreadKind and NO event, so they
     // are routed before the run lookup below, which needs an event id and
     // would otherwise drop the tap on the floor (E9.F1.S10).
     final String threadKind = '${data['ThreadKind'] ?? ''}';
+    if (threadKind == 'dm') {
+      // A direct message (E9.F1.S7). A REQUEST opens the Chats view, where
+      // the Requests group is; a message or an ACCEPTED opens the thread.
+      // Ids arrive lowercased through message.payload and are HcIds here.
+      final String dmEvent = '${data['DmEvent'] ?? ''}';
+      if (dmEvent == 'request') {
+        await openChatsView();
+        return;
+      }
+      final HcId? threadId = HcId.tryParse(data['ThreadId']);
+      if (threadId == null) {
+        BootLogger.logBreadcrumb('[NOTIFY] dm tap: no ThreadId in payload');
+        return;
+      }
+      final bool accepted = dmEvent == 'accepted';
+      final String rawName =
+          '${data[accepted ? 'FromDisplayName' : 'UserDisplayName'] ?? ''}'
+              .trim();
+      final Object? rawPhoto = data[accepted ? 'FromPhoto' : 'UserPhoto'];
+      await ChatPageController.openDirectMessage(
+        threadId: threadId,
+        otherPublicHasherId: HcId(
+          '${data[accepted ? 'FromPublicHasherId' : 'UserId'] ?? ''}',
+        ),
+        otherDisplayName: rawName.isEmpty ? 'A hasher' : rawName,
+        otherPhoto: rawPhoto is String ? rawPhoto : null,
+      );
+      return;
+    }
     if (threadKind == 'room') {
       final int? roomType = int.tryParse('${data['RoomType'] ?? ''}');
       if (roomType != null) {
@@ -744,9 +859,14 @@ class FutureRunListPageController extends GetxController {
     // (which includes runs the user hasn't synced locally) as lightweight chat
     // rows, so the list always matches the unread-chat badge.
     if (isChatsMode) {
-      final all = Get.isRegistered<NotificationService>()
-          ? Get.find<NotificationService>().unreadChatRuns.toList()
-          : <EventChatSummary>[];
+      final NotificationService? notifications =
+          Get.isRegistered<NotificationService>()
+          ? Get.find<NotificationService>()
+          : null;
+      final all = notifications?.unreadChatRuns.toList() ?? <EventChatSummary>[];
+      // Requests to message this hasher sit above every thread (E9.F1.S19).
+      final List<DirectMessageRequest> requests =
+          notifications?.dmRequests.toList() ?? <DirectMessageRequest>[];
       final q = searchRunsText.value.trim().toLowerCase();
       final list = q.isEmpty
           ? all
@@ -755,10 +875,16 @@ class FutureRunListPageController extends GetxController {
                   (s) =>
                       (s.kennelShortName ?? '').toLowerCase().contains(q) ||
                       (s.eventName ?? '').toLowerCase().contains(q) ||
+                      (s.otherDisplayName ?? '').toLowerCase().contains(q) ||
                       (s.eventNumber?.toString() ?? '').contains(q),
                 )
                 .toList();
-      filteredRuns.value = List<dynamic>.from(list);
+      final List<DirectMessageRequest> asked = q.isEmpty
+          ? requests
+          : requests
+                .where((r) => r.displayName.toLowerCase().contains(q))
+                .toList();
+      filteredRuns.value = <dynamic>[...asked, ...list];
       resultCount.value = filteredRuns.length;
       if (pastRuns.isNotEmpty) pastRuns.clear();
       _update([UpdateIds.runList]);

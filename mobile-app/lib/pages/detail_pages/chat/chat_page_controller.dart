@@ -22,6 +22,8 @@ class ChatPageController extends GetxController {
     required this.publicEventId,
     this.isKennelThread = false,
     this.roomType,
+    this.threadId,
+    this.dmState,
   });
 
   /// For a KENNEL thread, [eventId] carries the kennel id and [publicEventId]
@@ -30,6 +32,17 @@ class ChatPageController extends GetxController {
   final String eventId;
   final String publicEventId;
   final bool isKennelThread;
+
+  /// A direct message thread (E9.F1.S7) between this hasher and one other,
+  /// named by its ThreadId alone — no run, no kennel, no room. Read and
+  /// written through hcapp_getDirectMessages / hcapp_sendDirectMessage,
+  /// which answer in the room reader's shape, so the page is unchanged.
+  final HcId? threadId;
+
+  /// The DM thread's live state (who the other party is, can we still send,
+  /// is it muted), shared with the scaffold that draws the app-bar menu.
+  /// Updated from rowset 1 of every read.
+  final DmThreadState? dmState;
 
   /// A platform-wide room from HC6.ChatRoomCatalog() — admins, GMs, RAs and
   /// so on. Belongs to no kennel and no run, so [eventId] and [publicEventId]
@@ -47,11 +60,15 @@ class ChatPageController extends GetxController {
   /// cannot be half-added.
   final int? roomType;
 
-  _ThreadKind get _kind => roomType != null
+  _ThreadKind get _kind => threadId != null
+      ? _ThreadKind.dm
+      : roomType != null
       ? _ThreadKind.room
       : isKennelThread
       ? _ThreadKind.kennel
       : _ThreadKind.event;
+
+  bool get isDirectMessage => _kind == _ThreadKind.dm;
 
   /// The request field naming the thread. The admin room has no id — it is
   /// THE room — so it sends none.
@@ -59,30 +76,49 @@ class ChatPageController extends GetxController {
     _ThreadKind.event => 'eventId',
     _ThreadKind.kennel => 'kennelId',
     _ThreadKind.room => null,
+    _ThreadKind.dm => 'threadId',
+  };
+
+  /// What [_idKey] carries: the run or kennel id, or the DM's ThreadId.
+  String? get _idValue => switch (_kind) {
+    _ThreadKind.event || _ThreadKind.kennel => eventId,
+    _ThreadKind.room => null,
+    _ThreadKind.dm => threadId,
+  };
+
+  /// A room and a DM are marked read by the same call that reads them; the
+  /// run and kennel threads have their own mark-read SPs.
+  bool get _readMarksRead => switch (_kind) {
+    _ThreadKind.room || _ThreadKind.dm => true,
+    _ThreadKind.event || _ThreadKind.kennel => false,
   };
 
   String get _getQueryType => switch (_kind) {
     _ThreadKind.event => 'getEventMessages',
     _ThreadKind.kennel => 'getKennelMessages',
     _ThreadKind.room => 'getRoomMessages',
+    _ThreadKind.dm => 'getDirectMessages',
   };
 
   String get _getProcName => switch (_kind) {
     _ThreadKind.event => 'hcapp_getEventMessages',
     _ThreadKind.kennel => 'hcapp_getKennelMessages',
     _ThreadKind.room => 'hcapp_getRoomMessages',
+    _ThreadKind.dm => 'hcapp_getDirectMessages',
   };
 
   String get _sendQueryType => switch (_kind) {
     _ThreadKind.event => 'sendEventMessage',
     _ThreadKind.kennel => 'sendKennelMessage',
     _ThreadKind.room => 'sendRoomMessage',
+    _ThreadKind.dm => 'sendDirectMessage',
   };
 
   String get _sendProcName => switch (_kind) {
     _ThreadKind.event => 'hcapp_sendEventMessage',
     _ThreadKind.kennel => 'hcapp_sendKennelMessage',
     _ThreadKind.room => 'hcapp_sendRoomMessage',
+    _ThreadKind.dm => 'hcapp_sendDirectMessage',
   };
 
   final chatController = core.InMemoryChatController();
@@ -186,7 +222,10 @@ class ChatPageController extends GetxController {
     // the stale count. The SP remains the durable server-side backstop.
     if (Get.isRegistered<NotificationService>()) {
       final NotificationService notifications = Get.find<NotificationService>();
-      if (roomType != null) {
+      if (threadId != null) {
+        // A DM is keyed by its ThreadId, like a room by its type.
+        notifications.clearUnreadForDm(threadId!);
+      } else if (roomType != null) {
         // A room has no publicEventId to key a local badge on — its roomType
         // IS the key. The server read still happens through the GET's
         // @markRead; this is the optimistic half, and without it the app-bar
@@ -223,6 +262,12 @@ class ChatPageController extends GetxController {
   /// message never upgraded its sender's tick and never pulled its own delta.
   bool _pushIsForThisThread(Map<String, dynamic> data) {
     switch (_kind) {
+      case _ThreadKind.dm:
+        // The payload is read through message.payload, which lowercases every
+        // GUID, and threadId is an HcId — so a plain == is the right test.
+        if ('${data['ThreadKind'] ?? ''}' != 'dm') return false;
+        final HcId? pushed = HcId.tryParse(data['ThreadId']);
+        return pushed != null && pushed == threadId;
       case _ThreadKind.room:
         final int? pushed = int.tryParse('${data['RoomType'] ?? ''}');
         return pushed != null && pushed == roomType;
@@ -286,6 +331,7 @@ class ChatPageController extends GetxController {
       // that brings no new message can still carry a removal (E9.F1.S13).
       await _applyRemovedIds(outerItem);
       if (isClosed) return;
+      _applyDmThreadRow(outerItem);
       final rawMessages = outerItem[0] as List<dynamic>;
       if (rawMessages.isEmpty) {
         // A FULL fetch that comes back empty is an answer, not a no-op: the
@@ -336,13 +382,41 @@ class ChatPageController extends GetxController {
     return max;
   }
 
+  /// A DM read ends with `{ canSend, muted, otherDisplayName, ... }` between
+  /// the messages and the removed ids. Found by its column name, never by
+  /// position, for the same reason as [_applyRemovedIds].
+  void _applyDmThreadRow(List<dynamic> rowsets) {
+    final DmThreadState? state = dmState;
+    if (state == null) return;
+    for (final dynamic rowset in rowsets.skip(1)) {
+      if (rowset is! List || rowset.isEmpty) continue;
+      final dynamic first = rowset.first;
+      if (first is! Map<String, dynamic> || !first.containsKey('canSend')) {
+        continue;
+      }
+      state.applyThreadRow(first);
+      // The other party's name and photo as the chat draws them.
+      final HcId other = state.otherPublicHasherId.value;
+      if (other.isValid) {
+        _userCache[other] = core.User(
+          id: other,
+          name: state.otherDisplayName.value,
+          imageSource: state.otherPhoto.value.isEmpty
+              ? null
+              : state.otherPhoto.value,
+        );
+      }
+      return;
+    }
+  }
+
   Future<void> _markEventChatRead() async {
     // A room has no id to name, so there is no separate mark-read SP for it
-    // — hcapp_getRoomMessages does the job with @markRead. Without this guard
-    // `_idKey!` below is a null check on null, thrown inside the unawaited()
-    // call in onInitAsync and surfacing as an unhandled async error every
-    // single time the room is opened.
-    if (roomType != null) return;
+    // — hcapp_getRoomMessages does the job with @markRead, and a DM's reader
+    // does the same. Without this guard `_idKey!` below is a null check on
+    // null, thrown inside the unawaited() call in onInitAsync and surfacing
+    // as an unhandled async error every single time the room is opened.
+    if (_readMarksRead) return;
 
     final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
@@ -375,11 +449,11 @@ class ChatPageController extends GetxController {
     final body = <String, dynamic>{
       'queryType': _getQueryType,
       'deviceId': deviceId,
-      ?_idKey: eventId,
-      // A room is named by its type, and is marked read by the same call
-      // that reads it.
+      ?_idKey: _idValue,
+      // A room is named by its type. A room and a DM are marked read by the
+      // same call that reads them.
       if (roomType != null) 'roomType': roomType,
-      if (roomType != null) 'markRead': 1,
+      if (_readMarksRead) 'markRead': 1,
     };
     if (sinceSequenceCount != null) {
       body['sinceSequenceCount'] = sinceSequenceCount;
@@ -596,6 +670,8 @@ class ChatPageController extends GetxController {
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
+    String? refusal;
+    num? refusalType;
     final result = await ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, dynamic>{
         'queryType': _sendQueryType,
@@ -605,7 +681,7 @@ class ChatPageController extends GetxController {
           _sendProcName,
           paramString: deviceSecret,
         ),
-        ?_idKey: eventId,
+        ?_idKey: _idValue,
         if (roomType != null) 'roomType': roomType,
         'messageId': id,
         'messageContent': content,
@@ -613,15 +689,40 @@ class ChatPageController extends GetxController {
         // SP does not declare is a "too many arguments" failure, not an
         // ignored extra. A room has no kennel or run to be releasable to —
         // hcapp_sendRoomMessage stores the all-audiences value itself rather
-        // than accepting a parameter it would never branch on.
-        if (roomType == null)
+        // than accepting a parameter it would never branch on; a DM has one
+        // reader and no audience at all.
+        if (roomType == null && !isDirectMessage)
           'messageReleasabilityFlags': kChatReleasabilityAll,
-        // Optional on all three send SPs (default 0), so text leaves it out
+        // Optional on all the send SPs (default 0), so text leaves it out
         // and a text send is byte-for-byte what it was before photos.
         if (kind != ChatMessageKind.text) 'messageKind': kind,
       }),
+      // A DM's refusal — "You can't message <name>." (2013) — is an answer
+      // about the conversation, not a fault: it goes in a toast under the
+      // bubble, and the composer closes. The other kinds keep the generic
+      // error dialog they have always had.
+      errorCallback: isDirectMessage
+          ? (DbErrorModel e) async {
+              refusal = e.errorUserMessage;
+              refusalType = e.errorType;
+              return true;
+            }
+          : null,
     );
-    return !result.startsWith(ERROR_PREFIX);
+    final bool ok = !result.startsWith(ERROR_PREFIX);
+    if (!ok && isDirectMessage && !isClosed) {
+      if (refusal != null && refusal!.isNotEmpty) {
+        hcSnack(refusal!, error: true, seconds: 5);
+        // Only "not open" (errorType 3: ended, or somebody blocks) closes
+        // the composer — a message that was too long, or a dropped
+        // connection, is not "you can't message them".
+        if (refusalType == 3) dmState?.canSend.value = false;
+      } else {
+        hcSnack('The message could not be sent. Please try again.',
+            error: true);
+      }
+    }
+    return ok;
   }
 
   /// Settle an optimistic bubble: one tick when the server took it, the
@@ -988,6 +1089,14 @@ class ChatPageController extends GetxController {
     final bool fromSomeoneElse = _isFromSomeoneElse(message);
     if (copyText.isEmpty && !canDelete && !fromSomeoneElse) return;
     final String? choice = await _chooseFrom(<_SheetChoice>[
+      // The only door to a direct message (E9.F1.S19): the people you can
+      // already see. Not offered inside a DM — you are already talking.
+      if (fromSomeoneElse && !isDirectMessage)
+        _SheetChoice(
+          'message',
+          'Message ${_authorNameOf(message)}',
+          Icons.mail_outline,
+        ),
       if (copyText.isNotEmpty)
         const _SheetChoice('copy', 'Copy', Icons.copy),
       if (fromSomeoneElse) ...<_SheetChoice>[
@@ -1009,6 +1118,8 @@ class ChatPageController extends GetxController {
     ]);
     if (isClosed) return;
     switch (choice) {
+      case 'message':
+        await _startDirectMessage(message);
       case 'copy':
         await Clipboard.setData(ClipboardData(text: copyText));
         hcSnack('Copied');
@@ -1021,9 +1132,118 @@ class ChatPageController extends GetxController {
     }
   }
 
+  // ── Direct messages (E9.F1.S19) ───────────────────────────────────────────
+
+  /// "Message `<name>`". The server answers open / requested / refused /
+  /// blocked from THEIR preference and the friendship rows; this only shows
+  /// what it said. A block is never revealed to the blocked side: that case
+  /// comes back as "requested", by design.
+  Future<void> _startDirectMessage(core.Message message) async {
+    if (!_isFromSomeoneElse(message)) return;
+    final String name = _authorNameOf(message);
+    String? refusal;
+    final DmStartResult? result = await DirectMessageService.start(
+      HcId(message.authorId),
+      onRefused: (String? why) => refusal = why,
+    );
+    if (isClosed) return;
+
+    if (result == null) {
+      hcSnack(
+        (refusal == null || refusal!.isEmpty)
+            ? '$name could not be messaged. Please try again.'
+            : refusal!,
+        error: true,
+        seconds: 5,
+      );
+      return;
+    }
+
+    final String other = result.otherDisplayName;
+    switch (result.outcome) {
+      case DmOutcome.open:
+        final HcId? thread = result.threadId;
+        if (thread == null) {
+          hcSnack('$other could not be messaged. Please try again.',
+              error: true);
+          return;
+        }
+        await openDirectMessage(
+          threadId: thread,
+          otherPublicHasherId: result.otherPublicHasherId,
+          otherDisplayName: other,
+          otherPhoto: result.otherPhoto,
+        );
+      case DmOutcome.requested:
+        hcSnack(
+          "$other will be asked. You'll be told when they accept.",
+          seconds: 5,
+        );
+      case DmOutcome.refused:
+        hcSnack("$other isn't accepting messages.", error: true, seconds: 5);
+      case DmOutcome.blocked:
+        hcSnack(
+          "You've blocked $other.",
+          error: true,
+          seconds: 6,
+          actionLabel: 'Unblock',
+          onAction: () => unawaited(_unblock(result.otherPublicHasherId, other)),
+        );
+      case DmOutcome.declined:
+      case DmOutcome.unknown:
+        hcSnack('$other could not be messaged right now.', error: true);
+    }
+  }
+
+  Future<void> _unblock(HcId publicHasherId, String name) async {
+    final BlockOutcome outcome = await HasherBlockService.setBlock(
+      publicHasherId,
+      blocked: false,
+    );
+    if (isClosed) return;
+    if (!outcome.ok) {
+      final String? why = outcome.refusal;
+      hcSnack(
+        (why == null || why.isEmpty)
+            ? '$name could not be unblocked. Please try again.'
+            : why,
+        error: true,
+        seconds: 5,
+      );
+      return;
+    }
+    hcSnack('$name unblocked');
+    // Their messages come back into every chat, including this one.
+    refetchOpenThreads();
+  }
+
+  /// Open a DM thread standalone, then refresh the badges on return so the
+  /// chat list and the app-bar bubble agree with what was read.
+  static Future<void> openDirectMessage({
+    required HcId threadId,
+    required HcId otherPublicHasherId,
+    required String otherDisplayName,
+    String? otherPhoto,
+  }) async {
+    await Get.to<void>(
+      () => ChatScaffold.dm(
+        threadId: threadId,
+        otherPublicHasherId: otherPublicHasherId,
+        otherDisplayName: otherDisplayName,
+        otherPhoto: otherPhoto,
+        key: UniqueKey(),
+      ),
+    );
+    if (Get.isRegistered<NotificationService>()) {
+      unawaited(Get.find<NotificationService>().getEventChatMessageCounts());
+    }
+  }
+
   // ── Block (E9.F1.S16) ─────────────────────────────────────────────────────
 
-  Future<bool> _confirmBlock(String name) async {
+  /// "Block `<name>`?" — shared with the DM app bar, which blocks the other
+  /// party without a message to long-press.
+  static Future<bool> confirmBlock(String name) async {
     final bool? yes = await Get.dialog<bool>(
       AlertDialog(
         title: Text('Block $name?', style: ts_alertDialogTitle),
@@ -1062,7 +1282,7 @@ class ChatPageController extends GetxController {
   Future<void> _confirmAndBlock(core.Message message) async {
     if (isClosed || !_isFromSomeoneElse(message)) return;
     final String name = _authorNameOf(message);
-    if (!await _confirmBlock(name) || isClosed) return;
+    if (!await confirmBlock(name) || isClosed) return;
 
     // authorId is already an HcId-shaped lowercase string (parsed through
     // asUuid); the SP accepts either case, HcId keeps it to one.
@@ -1323,6 +1543,6 @@ class _SheetChoice {
   final Color? colour;
 }
 
-/// The three kinds of thread [ChatPageController] serves. Private: callers
+/// The four kinds of thread [ChatPageController] serves. Private: callers
 /// pass the public flags, and this is how the controller reasons about them.
-enum _ThreadKind { event, kennel, room }
+enum _ThreadKind { event, kennel, room, dm }
