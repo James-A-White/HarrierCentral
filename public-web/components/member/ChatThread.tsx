@@ -12,12 +12,17 @@
  * message has a menu — hover on a desktop, long-press or the ⋯ on a phone —
  * with Copy, and Delete where the SP says canDelete. Every fetch carries the
  * thread's removed ids, so a deletion made anywhere disappears here too.
+ *
+ * E9.F1.S16/S17: someone else's message also offers Block <name> — from
+ * then on every chat reader hides them from me, so the thread is re-fetched
+ * in full to drop what was already drawn — and Report, which sends the
+ * message to Harrier Central's reviewers with an optional reason.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ImagePlus, Loader2, MapPin, MoreHorizontal, Send } from "lucide-react";
-import type { ChatKind, ChatMessageRow } from "@/lib/member-api";
+import { CHAT_REPORT_REASON_MAX, type ChatKind, type ChatMessageRow } from "@/lib/member-api";
 import type { KennelContext } from "@/lib/types/kennel";
 import {
   CHAT_KIND_LOCATION, CHAT_KIND_PHOTO, CHAT_KIND_TEXT, chatKindOf, chatLocationUrl, formatChatLocation, parseChatLocation,
@@ -58,6 +63,11 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
   const [notice, setNotice] = useState<string | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Shown | null>(null);
+  const [confirmBlock, setConfirmBlock] = useState<Shown | null>(null);
+  const [blocking, setBlocking] = useState(false);
+  const [reportFor, setReportFor] = useState<Shown | null>(null);
+  const [reportReason, setReportReason] = useState("");
+  const [reporting, setReporting] = useState(false);
   const [viewerAt, setViewerAt] = useState<number | null>(null);
   const [locationMenu, setLocationMenu] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -276,6 +286,62 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
     setError(reason);
   }
 
+  // ── Block and report (E9.F1.S16/S17) ───────────────────────────────────────
+
+  /**
+   * The whole thread again, replacing what is drawn. A delta fetch only
+   * adds, so after a block — which changes what the server will show me —
+   * it is the only way the blocked hasher's messages leave the screen.
+   * Photos still on their way up are mine and stay.
+   */
+  const reload = useCallback(async () => {
+    const r = await fetch(`/api/member/chat?kind=${kind}&id=${encodeURIComponent(id)}`, { cache: "no-store" });
+    if (!r.ok) return;
+    const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[] };
+    for (const x of j.removed ?? []) gone.current.add(upper(x));
+    const rows: Shown[] = (j.messages ?? []).filter((m) => !gone.current.has(upper(m.id)));
+    for (const m of rows) if (Number.isInteger(m.sequenceCount)) lastSeq.current = Math.max(lastSeq.current, m.sequenceCount);
+    setMessages((ms) => [...rows, ...ms.filter((m) => m.pending)].sort((a, b) => a.sequenceCount - b.sequenceCount));
+  }, [kind, id]);
+
+  async function reallyBlock(m: Shown) {
+    if (blocking) return;
+    setBlocking(true); setError(null);
+    try {
+      const r = await fetch("/api/member/blocked", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetPublicHasherId: m.authorId.toLowerCase(), blocked: 1 }) });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!r.ok || !j.ok) { setError(j.error ?? "They could not be blocked."); return; }
+      setConfirmBlock(null);
+      await reload().catch(() => undefined);
+      setNotice(`${m.authorFirstName || "They"} blocked`);
+    } catch {
+      setError("Couldn't block them. Check your connection.");
+    } finally {
+      setBlocking(false);
+    }
+  }
+
+  function openReport(m: Shown) {
+    setMenuFor(null); setError(null); setReportReason(""); setReportFor(m);
+  }
+
+  async function sendReport() {
+    if (!reportFor || reporting) return;
+    const reason = reportReason.trim();
+    setReporting(true); setError(null);
+    try {
+      const r = await fetch("/api/member/chat/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messageId: reportFor.id.toLowerCase(), reason: reason || undefined }) });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!r.ok || !j.ok) { setError(j.error ?? "The report could not be sent."); return; }
+      setReportFor(null);
+      setNotice("Reported — thank you.");
+    } catch {
+      setError("Couldn't send the report. Check your connection.");
+    } finally {
+      setReporting(false);
+    }
+  }
+
   // Every sent photo, in chat order, for the carousel.
   const photos: ChatPhoto[] = useMemo(() => messages
     .filter((m) => !m.pending && chatKindOf(m.messageKind, m.text) === CHAT_KIND_PHOTO)
@@ -302,6 +368,8 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
                 menuOpen={menuFor === upper(m.id)} canMenu={!m.pending}
                 onMenu={(open) => setMenuFor(open ? upper(m.id) : null)}
                 onCopy={() => copy(m)} onDelete={canDelete ? () => { setMenuFor(null); setConfirmDelete(m); } : undefined}
+                onBlock={!isMine ? () => { setMenuFor(null); setError(null); setConfirmBlock(m); } : undefined}
+                onReport={!isMine ? () => openReport(m) : undefined}
                 onOpenPhoto={() => { const at = photos.findIndex((p) => upper(p.id) === upper(m.id)); if (at >= 0) setViewerAt(at); }}
                 onRetry={() => retryPhoto(m)} onDiscard={() => discardPhoto(m)} />
             );
@@ -355,6 +423,18 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
         </Sheet>
       )}
 
+      {confirmBlock && (
+        <Sheet title={`Block ${confirmBlock.authorFirstName || "this hasher"}?`} onClose={() => { if (!blocking) setConfirmBlock(null); }}
+          note="You won't see their messages in any chat, and they won't be told.">
+          <SheetButton danger disabled={blocking} onClick={() => reallyBlock(confirmBlock)}>{blocking ? "Blocking…" : "Block"}</SheetButton>
+        </Sheet>
+      )}
+
+      {reportFor && (
+        <ReportDialog reason={reportReason} onReason={setReportReason} busy={reporting}
+          onSend={sendReport} onClose={() => { if (!reporting) setReportFor(null); }} />
+      )}
+
       {viewerAt != null && photos.length > 0 && (
         <ChatPhotoViewer photos={photos} start={viewerAt} kennel={kennel} title={title} onClose={() => setViewerAt(null)} />
       )}
@@ -362,9 +442,12 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
   );
 }
 
-function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCopy, onDelete, onOpenPhoto, onRetry, onDiscard }: {
+function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCopy, onDelete, onBlock, onReport, onOpenPhoto, onRetry, onDiscard }: {
   m: Shown; mine: boolean; showAuthor: boolean; kind: ChatMessageKind; menuOpen: boolean; canMenu: boolean;
-  onMenu: (open: boolean) => void; onCopy: () => void; onDelete?: () => void; onOpenPhoto: () => void; onRetry: () => void; onDiscard: () => void;
+  onMenu: (open: boolean) => void; onCopy: () => void; onDelete?: () => void;
+  /** Someone else's message only: Block <name> and Report (E9.F1.S16/S17). */
+  onBlock?: () => void; onReport?: () => void;
+  onOpenPhoto: () => void; onRetry: () => void; onDiscard: () => void;
 }) {
   const press = useRef<number | null>(null);
   const pressed = useRef(false);
@@ -437,6 +520,14 @@ function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCo
             <div className="fixed inset-0 z-40" onClick={() => onMenu(false)} />
             <div role="menu" className={`absolute top-full z-50 mt-1 min-w-[140px] overflow-hidden rounded-xl border border-zinc-200 bg-white text-[16px] text-zinc-900 shadow-xl ${mine ? "right-0" : "left-0"}`}>
               <button type="button" role="menuitem" onClick={onCopy} className="block w-full px-4 py-2.5 text-left hover:bg-zinc-100">Copy</button>
+              {onReport && (
+                <button type="button" role="menuitem" onClick={onReport} className="block w-full border-t border-zinc-200 px-4 py-2.5 text-left hover:bg-zinc-100">Report</button>
+              )}
+              {onBlock && (
+                <button type="button" role="menuitem" onClick={onBlock} className="block w-full border-t border-zinc-200 px-4 py-2.5 text-left hover:bg-zinc-100">
+                  Block {m.authorFirstName || "them"}
+                </button>
+              )}
               {onDelete && (
                 <button type="button" role="menuitem" onClick={onDelete} className="block w-full border-t border-zinc-200 px-4 py-2.5 text-left font-semibold hover:bg-zinc-100" style={{ color: HC_RED }}>Delete</button>
               )}
@@ -505,11 +596,52 @@ function Sheet({ title, note, onClose, children }: { title: string; note?: strin
   );
 }
 
-function SheetButton({ onClick, danger, children }: { onClick: () => void; danger?: boolean; children: React.ReactNode }) {
+function SheetButton({ onClick, danger, disabled, children }: { onClick: () => void; danger?: boolean; disabled?: boolean; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} className="w-full px-5 py-3 text-center text-[18px] font-semibold hover:bg-zinc-100" style={danger ? { color: HC_RED } : undefined}>
+    <button type="button" onClick={onClick} disabled={disabled} className="w-full px-5 py-3 text-center text-[18px] font-semibold hover:bg-zinc-100 disabled:opacity-50" style={danger ? { color: HC_RED } : undefined}>
       {children}
     </button>
+  );
+}
+
+/**
+ * Report a message (E9.F1.S17): an optional reason, capped where the SP
+ * caps it, and one line that says where the report goes — the only time
+ * anyone at Harrier Central sees a chat message.
+ */
+function ReportDialog({ reason, onReason, busy, onSend, onClose }: {
+  reason: string; onReason: (s: string) => void; busy: boolean; onSend: () => void; onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const over = reason.length > CHAT_REPORT_REASON_MAX;
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-6" onClick={onClose} role="dialog" aria-modal="true" aria-label="Report this message">
+      <form className="w-full max-w-sm overflow-hidden rounded-2xl bg-white text-zinc-900 shadow-2xl" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); onSend(); }}>
+        <div className="border-b border-zinc-200 px-5 py-3 text-center text-[18px] font-bold">Report this message</div>
+        <div className="px-5 pt-4">
+          <label htmlFor="report-reason" className="block text-[15px] font-semibold">Why? <span className="font-normal text-zinc-500">(optional)</span></label>
+          <textarea id="report-reason" value={reason} onChange={(e) => onReason(e.target.value)} rows={4} autoFocus disabled={busy}
+            maxLength={CHAT_REPORT_REASON_MAX}
+            className="mt-1.5 w-full resize-y rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-[16px] text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-700 disabled:opacity-60" />
+          <div className={`mt-1 text-right text-xs tabular-nums ${over ? "font-semibold" : "text-zinc-500"}`} style={over ? { color: HC_RED } : undefined}>
+            {reason.length.toLocaleString()}/{CHAT_REPORT_REASON_MAX.toLocaleString()}
+          </div>
+          <p className="mt-2 pb-4 text-center text-[14px] text-zinc-600">
+            This sends the message to Harrier Central&apos;s reviewers. Nobody at Harrier Central reads chats otherwise.
+          </p>
+        </div>
+        <div className="flex flex-col divide-y divide-zinc-200 border-t border-zinc-200">
+          <button type="submit" disabled={busy || over} className="w-full px-5 py-3 text-center text-[18px] font-semibold hover:bg-zinc-100 disabled:opacity-50" style={{ color: HC_RED }}>
+            {busy ? "Sending…" : "Report"}
+          </button>
+          <button type="button" onClick={onClose} disabled={busy} className="w-full px-5 py-3 text-center text-[17px] font-semibold text-zinc-600 hover:bg-zinc-100 disabled:opacity-50">Cancel</button>
+        </div>
+      </form>
+    </div>
   );
 }
 
