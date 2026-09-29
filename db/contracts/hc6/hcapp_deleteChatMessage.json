@@ -1,0 +1,72 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_deleteChatMessage",
+  "version": "1.0.0",
+  "description": "Deletes one chat message (run, kennel or room) for everyone: the caller's own, or anyone's if they moderate the thread (moderateChat in the kennel; SuperAdmin for rooms). Soft delete via HC6.nonApi_deleteChatMessage. Idempotent. E9.F1.S13/S14.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token"
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "EventMessage.id",
+      "description": "The message to delete"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure (ValidateAppAuth) returns the error detail alone."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 deleted (or already was), 0 refused"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "After a 0 envelope: 1980 missing id, 1981 not found, 1982 not allowed (errorType 3), 1983 unhandled (5)."
+    }
+  ],
+  "sideEffects": [
+    "HC.EventMessage.Removed = 1, updatedAt",
+    "trgEventMessageActivityCount refreshes the run card's chat count",
+    "LOG.GeneralLog line with the removed text when a moderator removes someone else's message"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
