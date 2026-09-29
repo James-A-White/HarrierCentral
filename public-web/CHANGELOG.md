@@ -1,5 +1,20 @@
 # public-web Changelog
 
+## 0.21.74 (2026-09-29 redeploy — chat photos, locations, copy and delete)
+
+- **Photos in chat.** Attach a photo; it is resized and its location data
+  removed before upload. Photos show whole, and clicking one opens a
+  carousel of the chat's photos on the kennel's own backdrop.
+- **Send a location.** Where you are now, or a pin you drop on a map. A
+  location shows as a card that opens the map in a new tab.
+- **Copy and delete.** Each message has a menu to copy it, and to delete it
+  — your own, or anyone's if you are a chat administrator for the kennel.
+- **The site may now ask for your location.** A security header had
+  blocked location for the whole site.
+- **Chat keeps refreshing after you send.** After sending, the refresh check
+  asked the server for a half-number position it rejects; new messages then
+  stopped arriving until a reload.
+
 ## 0.21.74 (2026-09-28 redeploy — add-kennel form errors)
 
 - **The kennel sign-up form shows what is missing.** Pressing Send with a

@@ -1,3 +1,10 @@
+1.0.61+63
+    • GetChatPhotoUploadToken: a 15-minute write-only SAS for one chat photo
+      (chat-photos/<yyyy>/<MM>/<userId>-<guid>.jpg), the user taken from the
+      token via hcapp_getChatPhotoUploadToken.
+    • GetPortalUploadSas allows the chat-photos container.
+    • PublicWebAdminApi allows deleteChatMessage (server secret required).
+
 1.0.61+62
     • Chat pushes carry the recipient's unread total for the app icon
       (aps.badge on iOS, notification_count on Android, data.BadgeTotal),

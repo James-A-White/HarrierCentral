@@ -1,3 +1,7 @@
+0.21.74 (2026-09-29 redeploy — chat photos, locations, copy and delete)
+    • Chat: photos (resized, EXIF stripped, carousel), locations (here / drop a pin), copy, delete (own, or any as chat admin).
+    • Geolocation allowed for the site; chat refresh no longer sends a half-number sequence.
+
 0.21.74 (2026-09-28 redeploy — add-kennel form errors)
     • Add-kennel: missing fields red after Send; message above the button; placeholders read "e.g.".
 

@@ -1,3 +1,15 @@
+## 2.0.87+733 (2026-09-29)
+### New Features
+- **Photos and pins in run chat.** Attach a photo (resized, location data
+  removed) or drop a pin on a map. Photos show whole; clicking one opens a
+  carousel of the chat's photos on the Harrier Central backdrop.
+- **Copy and delete messages.** Each message has a menu: copy the text or
+  link, and delete — your own, or anyone's if you moderate the kennel's
+  chat (GM, Web Meister, or the new Manage chat flag).
+### Fixes
+- **Chat errors are logged.** A failure reading a run's chat now reaches
+  HC.ErrorLog instead of vanishing.
+
 ## 2.0.87+732 (2026-09-28)
 ### Improvements
 - **Merge preview shows the result.** Each Keep / Merge pair has a RESULT

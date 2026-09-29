@@ -1,3 +1,25 @@
+## 3.1.8+1421 (2026-09-29)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version. First build to the beta testers since 1418, so it also
+carries 1419 and 1420.
+### New Features
+- **Photos in chat.** The 📎 button in any chat — run, kennel or room —
+  offers your photo library or the camera. Photos are shrunk before upload
+  and their location data removed; they show whole, at their own shape, and
+  tapping one opens every photo in the chat as a carousel.
+- **Send a location.** 📎 → Location sends where you are now, or a pin you
+  drop on a map. A location shows as a card; tapping it opens your map app,
+  as the run pin does.
+- **Copy and delete.** Long-press any message to copy it (a photo or location
+  copies its link). Delete your own messages and they vanish for everyone.
+- **Chat administrators.** GMs and Web Meisters — and anyone given the new
+  **Manage chat** flag in the app-access editor — can delete any message in
+  their kennel's run and kennel chats.
+### Fixes
+- **The Runs tab shows runs.** Tapping the Runs tab while in the Chats view,
+  or leaving for another tab and coming back, returns to the runs list
+  instead of staying on Chats.
+
 ## 3.1.8+1420 (2026-09-28)
 iOS (TestFlight, James internal test only) and Android (internal app
 sharing link). Held from the beta testers. Build number only; same version.
