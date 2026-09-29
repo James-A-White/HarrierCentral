@@ -117,14 +117,21 @@ class HcButton extends StatelessWidget {
             child: CircularProgressIndicator(
                 strokeWidth: 2, color: spinnerColor),
           )
+        // A label that wraps must stay centred: Text defaults to
+        // TextAlign.start, which only shows once a narrow screen or a large
+        // text size puts the label on two lines (CLAUDE.md, James 2026-09-25).
         : (icon == null
-            ? Text(label)
+            ? Text(label, textAlign: TextAlign.center)
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(icon, size: 18),
                   const SizedBox(width: 8),
-                  Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+                  Flexible(
+                    child: Text(label,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis),
+                  ),
                 ],
               ));
 
