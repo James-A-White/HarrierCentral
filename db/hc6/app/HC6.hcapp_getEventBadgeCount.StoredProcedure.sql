@@ -290,14 +290,18 @@ END
 -- Direct-message rows (ThreadId set) are new on 2026-09-29 and only for
 -- builds that know what to do with them; an older list gets the same rows
 -- it always did. Fail closed: an unparseable build number sees none.
-DECLARE @dmBuild INT = TRY_CAST((SELECT d.BuildNumber FROM HC.Device d WHERE d.id = @deviceId) AS INT);
+-- A browser is a device with no build number ('<unknown>'): the web deploys
+-- as one unit and is always current, so IsMobile = 0 passes the gate.
+DECLARE @dmBuild INT, @isWeb SMALLINT;
+SELECT @dmBuild = TRY_CAST(d.BuildNumber AS INT), @isWeb = CASE WHEN ISNULL(d.IsMobile, 1) = 0 THEN 1 ELSE 0 END
+FROM HC.Device d WHERE d.id = @deviceId;
 SELECT BadgeCount, PublicEventId, EventId, EventName, EventNumber,
        EventStartDatetimeGmt, EventImage, KennelId, PublicKennelId,
        KennelShortName, KennelLogo, MessageCount, LastMessageAt, Pinned,
        RoomType, RoomIcon,
        ThreadId, OtherPublicHasherId, OtherDisplayName, OtherPhoto
 FROM HC6.UserUnreadChatThreads(@userId)
-WHERE ThreadId IS NULL OR @dmBuild >= HC6.MinBuildForDmPush();
+WHERE ThreadId IS NULL OR @isWeb = 1 OR @dmBuild >= HC6.MinBuildForDmPush();
 
 END TRY
 BEGIN CATCH
