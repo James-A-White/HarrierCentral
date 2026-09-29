@@ -1,3 +1,10 @@
+## 3.1.8+1424 (2026-09-29)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### Fixes
+- **Accept and Decline match.** The two buttons on a message request share
+  one shape and type and differ only by colour.
+
 ## 3.1.8+1423 (2026-09-29)
 iOS (TestFlight, James internal test only). Held from the beta testers.
 Build number only; same version.

@@ -1086,9 +1086,14 @@ class FutureRunsListPage extends StatelessWidget {
                                   textAlign: TextAlign.center,
                                 ),
                               ),
-                              TextButton(
-                                style: TextButton.styleFrom(
+                              // The same widget as Accept so the two share
+                              // the theme's shape, padding and type; only
+                              // the colour says which is which (James,
+                              // 2026-09-29).
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blueGrey,
+                                  foregroundColor: Colors.white,
                                 ),
                                 onPressed: () => unawaited(
                                   controller.respondToDmRequest(
