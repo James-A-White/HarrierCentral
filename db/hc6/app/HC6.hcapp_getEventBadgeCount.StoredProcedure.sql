@@ -144,13 +144,14 @@ BEGIN
                 WHEN embc.ThreadId IS NULL THEN
                     (SELECT MAX(em.MessageSequenceCount)
                      FROM HC.EventMessage em
-                     WHERE em.EventId IS NULL AND em.KennelId IS NULL
+                     WHERE em.EventId IS NULL AND em.KennelId IS NULL AND em.ThreadId IS NULL
                        AND em.MessageType = embc.MessageType
                        AND em.Removed = 0)
-                -- ThreadId NOT NULL is a future 1:1 DM. Deliberately no branch:
-                -- NULL here means COALESCE keeps the row untouched rather than
-                -- this SP guessing at a thread shape that does not exist yet.
-                ELSE NULL
+                -- A DIRECT MESSAGE row (E9.F1.S7, 2026-09-29): keyed by ThreadId.
+                ELSE
+                    (SELECT MAX(em.MessageSequenceCount)
+                     FROM HC.EventMessage em
+                     WHERE em.ThreadId = embc.ThreadId AND em.Removed = 0)
             END,
             embc.LastSequenceCount)
     FROM HC.EventMessageBadgeCounts embc
@@ -189,7 +190,7 @@ BEGIN
     FROM (
         SELECT em.MessageType, MAX(em.MessageSequenceCount) AS MaxSeq
         FROM HC.EventMessage em
-        WHERE em.EventId IS NULL AND em.KennelId IS NULL AND em.Removed = 0
+        WHERE em.EventId IS NULL AND em.KennelId IS NULL AND em.ThreadId IS NULL AND em.Removed = 0
         GROUP BY em.MessageType
     ) AS t
     WHERE HC6.UserMayEnterChatRoom(@userId, t.MessageType) = 1
@@ -199,6 +200,23 @@ BEGIN
           AND embc.EventId IS NULL AND embc.KennelId IS NULL
           AND embc.ThreadId IS NULL
           AND embc.MessageType = t.MessageType);
+
+    -- Direct-message threads (E9.F1.S7): a thread the user holds a
+    -- HasherFriendMap row in, with messages but no badge row yet, gets the
+    -- same caught-up row, keyed by ThreadId.
+    INSERT HC.EventMessageBadgeCounts (UserId, EventId, KennelId, ThreadId, MessageType, LastSequenceCount, LastReadAt)
+    SELECT @userId, NULL, NULL, f.ThreadId, 0, t.MaxSeq, GETUTCDATE()
+    FROM HC.HasherFriendMap f
+    CROSS APPLY (
+        SELECT MAX(em.MessageSequenceCount) AS MaxSeq
+        FROM HC.EventMessage em
+        WHERE em.ThreadId = f.ThreadId AND em.Removed = 0
+    ) AS t
+    WHERE f.UserId = @userId AND f.ThreadId IS NOT NULL AND t.MaxSeq IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM HC.EventMessageBadgeCounts embc
+        WHERE embc.UserId = @userId AND embc.ThreadId = f.ThreadId
+          AND embc.EventId IS NULL AND embc.KennelId IS NULL AND embc.MessageType = 0);
 
     -- Run threads surface unread before first read too (since 2026-08-28), so
     -- the same caught-up-row insert is needed for every run thread in the
