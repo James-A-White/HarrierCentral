@@ -4,6 +4,13 @@ Build number only; same version.
 ### Fixes
 - **Accept and Decline match.** The two buttons on a message request share
   one shape and type and differ only by colour.
+- **Message requests count.** A request waiting for your answer now shows
+  on the app icon, the Chats tab and the chat badge until you accept or
+  decline it.
+- **The send button turns purple** as soon as there is something to send.
+- **Pushes reach your phone again after a portal sign-in.** Signing into
+  the portal on the same device had been overwriting the phone's build
+  number, and every build-gated push then skipped that phone.
 
 ## 3.1.8+1423 (2026-09-29)
 iOS (TestFlight, James internal test only). Held from the beta testers.
