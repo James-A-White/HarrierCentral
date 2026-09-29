@@ -41,7 +41,11 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options",          value: "SAMEORIGIN" },
           { key: "X-XSS-Protection",         value: "1; mode=block" },
           { key: "Referrer-Policy",          value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy",       value: "camera=(), microphone=(), geolocation=()" },
+          // geolocation=(self), not (): chat's "Where I am now" (E9.F1.S12)
+          // asks for the member's position, and () blocks it outright —
+          // the browser refuses without even showing the prompt. (self)
+          // still denies it to any embedded third-party frame.
+          { key: "Permissions-Policy",       value: "camera=(), microphone=(), geolocation=(self)" },
         ],
       },
     ];

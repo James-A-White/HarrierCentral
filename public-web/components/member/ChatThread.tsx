@@ -6,39 +6,95 @@
  * in slate on the left with their avatar and name, the time under each,
  * a composer at the bottom. No push on the web: the thread polls for
  * what is new every ten seconds, and posting appends at once.
+ *
+ * E9.F1.S11–S15 (2026-09-29): a message is text, a photo or a location
+ * (messageKind); photos open a carousel of every photo in the chat; each
+ * message has a menu — hover on a desktop, long-press or the ⋯ on a phone —
+ * with Copy, and Delete where the SP says canDelete. Every fetch carries the
+ * thread's removed ids, so a deletion made anywhere disappears here too.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Send } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ImagePlus, Loader2, MapPin, MoreHorizontal, Send } from "lucide-react";
 import type { ChatKind, ChatMessageRow } from "@/lib/member-api";
+import type { KennelContext } from "@/lib/types/kennel";
+import {
+  CHAT_KIND_LOCATION, CHAT_KIND_PHOTO, CHAT_KIND_TEXT, chatKindOf, chatLocationUrl, formatChatLocation, parseChatLocation,
+  type ChatMessageKind,
+} from "@/lib/chat-content";
 import { HC_BLUE, HC_RED } from "@/components/member/app-look";
+import { ChatPhotoViewer, type ChatPhoto } from "@/components/member/ChatPhotoViewer";
+
+// Leaflet touches window at import time, so the pin picker is client-only.
+const ChatPinPicker = dynamic(() => import("@/components/member/ChatPinPicker"), { ssr: false });
 
 /** HC.EventMessage.MessageContent is NVARCHAR(4000); the SPs refuse more. */
 const CHAT_MESSAGE_MAX = 4000;
 
 const POLL_MS = 10000;
+const LONG_PRESS_MS = 500;
 
-export function ChatThread({ kind, id, title, me, initial, back }: {
-  kind: ChatKind; id: string; title: string; me: string; initial: ChatMessageRow[]; back: string;
+/** A row on screen: the SP's row, or one of mine that the server has not confirmed yet. */
+type Shown = ChatMessageRow & {
+  /** Mine, drawn before the server had it. Its sequenceCount is a placeholder, never a watermark. */
+  local?: boolean;
+  /** A photo on its way up, or one that failed and can be retried. */
+  pending?: "sending" | "failed";
+  /** The picked file as an object URL, drawn while the upload runs. */
+  preview?: string;
+};
+
+const upper = (id: string) => id.toUpperCase();
+
+export function ChatThread({ kind, id, title, me, initial, back, kennel }: {
+  kind: ChatKind; id: string; title: string; me: string; initial: ChatMessageRow[]; back: string; kennel: KennelContext | null;
 }) {
   // Oldest first on screen; the SP hands them newest first.
-  const [messages, setMessages] = useState<ChatMessageRow[]>(() => [...initial].sort((a, b) => a.sequenceCount - b.sequenceCount));
+  const [messages, setMessages] = useState<Shown[]>(() => [...initial].sort((a, b) => a.sequenceCount - b.sequenceCount));
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Shown | null>(null);
+  const [viewerAt, setViewerAt] = useState<number | null>(null);
+  const [locationMenu, setLocationMenu] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [pinPicker, setPinPicker] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
-  const lastSeq = useRef(messages.length ? messages[messages.length - 1].sequenceCount : 0);
+  const fileInput = useRef<HTMLInputElement>(null);
+  // Only server rows move the watermark. A local row's sequenceCount is
+  // last + 0.5 so it sorts at the end, and `since=12.5` is not an INT —
+  // the SP's parameter would refuse it and polling would stop.
+  const lastSeq = useRef(initial.reduce((m, r) => Math.max(m, r.sequenceCount), 0));
+  // Ids that must not come back: removed on the server, or being deleted here.
+  const gone = useRef(new Set<string>());
+  // Picked files by message id, so a failed photo can be retried.
+  const files = useRef(new Map<string, Blob>());
+  // Every object URL made for a preview, revoked when the page goes.
+  const previews = useRef(new Set<string>());
 
-  const merge = useCallback((rows: ChatMessageRow[]) => {
+  const merge = useCallback((rows: Shown[]) => {
     if (rows.length === 0) return;
+    for (const r of rows) if (!r.local && Number.isInteger(r.sequenceCount)) lastSeq.current = Math.max(lastSeq.current, r.sequenceCount);
     setMessages((ms) => {
-      const seen = new Set(ms.map((m) => m.id.toUpperCase()));
-      const add = rows.filter((r) => !seen.has(r.id.toUpperCase()));
+      const seen = new Set(ms.map((m) => upper(m.id)));
+      const add = rows.filter((r) => !seen.has(upper(r.id)) && !gone.current.has(upper(r.id)));
       if (add.length === 0) return ms;
-      const next = [...ms, ...add].sort((a, b) => a.sequenceCount - b.sequenceCount);
-      lastSeq.current = Math.max(lastSeq.current, ...next.map((m) => m.sequenceCount));
-      return next;
+      return [...ms, ...add].sort((a, b) => a.sequenceCount - b.sequenceCount);
     });
+  }, []);
+
+  const drop = useCallback((ids: string[]) => {
+    if (ids.length === 0) return;
+    const set = new Set(ids.map(upper));
+    for (const i of set) gone.current.add(i);
+    setMessages((ms) => ms.some((m) => set.has(upper(m.id))) ? ms.filter((m) => !set.has(upper(m.id))) : ms);
+  }, []);
+
+  const patch = useCallback((messageId: string, p: Partial<Shown>) => {
+    setMessages((ms) => ms.map((m) => upper(m.id) === upper(messageId) ? { ...m, ...p } : m));
   }, []);
 
   useEffect(() => {
@@ -46,16 +102,51 @@ export function ChatThread({ kind, id, title, me, initial, back }: {
     const tick = async () => {
       try {
         const r = await fetch(`/api/member/chat?kind=${kind}&id=${encodeURIComponent(id)}&since=${lastSeq.current}`, { cache: "no-store" });
-        if (r.ok) { const j = (await r.json()) as { messages?: ChatMessageRow[] }; if (!stop) merge(j.messages ?? []); }
+        if (r.ok) {
+          const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[] };
+          if (stop) return;
+          drop(j.removed ?? []);
+          merge(j.messages ?? []);
+        }
       } catch { /* next tick */ }
     };
     const h = window.setInterval(tick, POLL_MS);
     const onVisible = () => { if (document.visibilityState === "visible") tick(); };
     document.addEventListener("visibilitychange", onVisible);
     return () => { stop = true; window.clearInterval(h); document.removeEventListener("visibilitychange", onVisible); };
-  }, [kind, id, merge]);
+  }, [kind, id, merge, drop]);
+
+  // Object URLs outlive nothing: let them go with the page.
+  useEffect(() => {
+    const urls = previews.current;
+    return () => { for (const u of urls) URL.revokeObjectURL(u); urls.clear(); };
+  }, []);
 
   useEffect(() => { bottom.current?.scrollIntoView({ block: "end" }); }, [messages.length]);
+
+  useEffect(() => {
+    if (!notice) return;
+    const h = window.setTimeout(() => setNotice(null), 2000);
+    return () => window.clearTimeout(h);
+  }, [notice]);
+
+  /** POST one message. Null on success, else the reason to show. */
+  async function post(messageId: string, content: string, messageKind: ChatMessageKind): Promise<string | null> {
+    try {
+      const r = await fetch("/api/member/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, id, messageId, text: content, messageKind }) });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      return r.ok && j.ok ? null : j.error ?? "Couldn't send.";
+    } catch {
+      return "Couldn't send. Check your connection.";
+    }
+  }
+
+  function mine(messageId: string, content: string, messageKind: ChatMessageKind, extra: Partial<Shown> = {}): Shown {
+    return {
+      id: upper(messageId), type: "text", text: content, roomId: null, createdAt: Date.now(), authorId: me, authorFirstName: "",
+      authorImageUrl: null, sequenceCount: lastSeq.current + 0.5, messageKind, canDelete: 1, local: true, ...extra,
+    };
+  }
 
   async function send() {
     const body = text.trim();
@@ -63,13 +154,132 @@ export function ChatThread({ kind, id, title, me, initial, back }: {
     setSending(true); setError(null);
     const messageId = crypto.randomUUID();
     try {
-      const r = await fetch("/api/member/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, id, messageId, text: body }) });
-      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
-      if (!r.ok || !j.ok) { setError(j.error ?? "Couldn't send."); return; }
+      const err = await post(messageId, body, CHAT_KIND_TEXT);
+      if (err) { setError(err); return; }
       setText("");
-      merge([{ id: messageId.toUpperCase(), type: "text", text: body, roomId: null, createdAt: Date.now(), authorId: me, authorFirstName: "", authorImageUrl: null, sequenceCount: lastSeq.current + 0.5 }]);
+      merge([mine(messageId, body, CHAT_KIND_TEXT)]);
     } finally { setSending(false); }
   }
+
+  // ── Photos (E9.F1.S11) ─────────────────────────────────────────────────────
+
+  async function uploadAndSend(messageId: string, file: Blob) {
+    patch(messageId, { pending: "sending" });
+    let reason: string | null = null;
+    try {
+      const form = new FormData();
+      form.append("file", file, "photo.jpg");
+      const r = await fetch("/api/member/chat/photo", { method: "POST", body: form });
+      const j = (await r.json().catch(() => ({}))) as { blobUrl?: string; error?: string };
+      if (!r.ok || !j.blobUrl) reason = j.error ?? "Couldn't upload the photo.";
+      else {
+        reason = await post(messageId, j.blobUrl, CHAT_KIND_PHOTO);
+        if (!reason) {
+          files.current.delete(messageId);
+          patch(messageId, { text: j.blobUrl, pending: undefined });
+          return;
+        }
+      }
+    } catch {
+      reason = "Couldn't upload the photo. Check your connection.";
+    }
+    patch(messageId, { pending: "failed" });
+    setError(reason);
+  }
+
+  async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = e.target.files?.[0];
+    e.target.value = "";   // picking the same file again must still fire
+    if (!picked) return;
+    if (!picked.type.startsWith("image/")) { setError("Only photos can be sent."); return; }
+    setError(null);
+    const messageId = upper(crypto.randomUUID());
+    const file = await browserReadable(picked);
+    if (file.size > 10 * 1024 * 1024) { setError("That photo is too big. Photos can be up to 10 MB."); return; }
+    files.current.set(messageId, file);
+    const preview = URL.createObjectURL(file);
+    previews.current.add(preview);
+    merge([mine(messageId, "", CHAT_KIND_PHOTO, { pending: "sending", preview })]);
+    await uploadAndSend(messageId, file);
+  }
+
+  function retryPhoto(m: Shown) {
+    const file = files.current.get(upper(m.id));
+    if (file) { setError(null); void uploadAndSend(upper(m.id), file); }
+  }
+
+  function discardPhoto(m: Shown) {
+    files.current.delete(upper(m.id));
+    if (m.preview) { URL.revokeObjectURL(m.preview); previews.current.delete(m.preview); }
+    setMessages((ms) => ms.filter((x) => upper(x.id) !== upper(m.id)));
+  }
+
+  // ── Locations (E9.F1.S12) ──────────────────────────────────────────────────
+
+  async function sendLocation(lat: number, lng: number) {
+    setError(null); setSending(true);
+    const messageId = crypto.randomUUID();
+    const content = chatLocationUrl(lat, lng);
+    try {
+      const err = await post(messageId, content, CHAT_KIND_LOCATION);
+      if (err) { setError(err); return; }
+      merge([mine(messageId, content, CHAT_KIND_LOCATION)]);
+    } finally { setSending(false); }
+  }
+
+  function whereIAmNow() {
+    setLocationMenu(false);
+    if (!("geolocation" in navigator)) { setError("This browser can't share its location. Try dropping a pin."); return; }
+    setLocating(true); setError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setLocating(false); void sendLocation(pos.coords.latitude, pos.coords.longitude); },
+      (err) => {
+        setLocating(false);
+        setError(err.code === err.PERMISSION_DENIED
+          ? "Location is turned off for this site. Allow it in your browser, or drop a pin instead."
+          : "Couldn't find where you are just now. Try again, or drop a pin.");
+      },
+      { enableHighAccuracy: true, timeout: 15_000, maximumAge: 30_000 },
+    );
+  }
+
+  // ── Copy and delete (E9.F1.S13–S15) ────────────────────────────────────────
+
+  async function copy(m: Shown) {
+    setMenuFor(null);
+    try {
+      // Text is the text; a photo or a location is its URL.
+      await navigator.clipboard.writeText(m.text);
+      setNotice("Copied");
+    } catch {
+      setError("Couldn't copy on this browser.");
+    }
+  }
+
+  async function reallyDelete(m: Shown) {
+    setConfirmDelete(null);
+    const key = upper(m.id);
+    // Gone at once; back where it was if the server says no.
+    gone.current.add(key);
+    setMessages((ms) => ms.filter((x) => upper(x.id) !== key));
+    let reason: string | null = null;
+    try {
+      const r = await fetch("/api/member/chat", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messageId: m.id.toLowerCase() }) });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (r.ok && j.ok) return;
+      reason = j.error ?? "That message could not be deleted.";
+    } catch {
+      reason = "Couldn't delete. Check your connection.";
+    }
+    gone.current.delete(key);
+    setMessages((ms) => ms.some((x) => upper(x.id) === key) ? ms : [...ms, m].sort((a, b) => a.sequenceCount - b.sequenceCount));
+    setError(reason);
+  }
+
+  // Every sent photo, in chat order, for the carousel.
+  const photos: ChatPhoto[] = useMemo(() => messages
+    .filter((m) => !m.pending && chatKindOf(m.messageKind, m.text) === CHAT_KIND_PHOTO)
+    .map((m) => ({ id: m.id, url: m.text, createdAt: m.createdAt, author: upper(m.authorId) === me ? "You" : m.authorFirstName })), [messages, me]);
 
   return (
     <div className="-mx-3 -mt-3 flex flex-col sm:-mt-4" style={{ minHeight: "calc(100vh - 60px - 64px)" }}>
@@ -83,27 +293,17 @@ export function ChatThread({ kind, id, title, me, initial, back }: {
         {messages.length === 0 && <p className="py-10 text-center text-[17px] text-zinc-500">No messages yet. Say something!</p>}
         <ul className="space-y-3">
           {messages.map((m, i) => {
-            const mine = m.authorId.toUpperCase() === me;
-            const showAuthor = !mine && (i === 0 || messages[i - 1].authorId.toUpperCase() !== m.authorId.toUpperCase());
+            const isMine = upper(m.authorId) === me;
+            const showAuthor = !isMine && (i === 0 || upper(messages[i - 1].authorId) !== upper(m.authorId));
+            const shownKind = m.pending ? CHAT_KIND_PHOTO : chatKindOf(m.messageKind, m.text);
+            const canDelete = m.canDelete === 1 || (m.local === true && !m.pending);
             return (
-              <li key={m.id} className={`flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}>
-                {!mine && (
-                  <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-zinc-200">
-                    {m.authorImageUrl?.startsWith("http") && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.authorImageUrl} alt="" className="h-full w-full object-cover" />
-                    )}
-                  </div>
-                )}
-                <div className="max-w-[78%]">
-                  {showAuthor && <div className="mb-0.5 pl-1 text-[13px] text-zinc-500">{m.authorFirstName}</div>}
-                  <div className="rounded-2xl px-4 py-2.5 text-[17px] leading-snug"
-                    style={mine ? { backgroundColor: HC_BLUE, color: "#fff" } : { backgroundColor: "#E2E8F0", color: "#1E293B" }}>
-                    <div className="whitespace-pre-wrap break-words">{linkify(m.text)}</div>
-                    <div className="mt-1 text-right text-[13px]" style={{ opacity: 0.7 }} suppressHydrationWarning>{hhmm(m.createdAt)}</div>
-                  </div>
-                </div>
-              </li>
+              <MessageRow key={m.id} m={m} mine={isMine} showAuthor={showAuthor} kind={shownKind}
+                menuOpen={menuFor === upper(m.id)} canMenu={!m.pending}
+                onMenu={(open) => setMenuFor(open ? upper(m.id) : null)}
+                onCopy={() => copy(m)} onDelete={canDelete ? () => { setMenuFor(null); setConfirmDelete(m); } : undefined}
+                onOpenPhoto={() => { const at = photos.findIndex((p) => upper(p.id) === upper(m.id)); if (at >= 0) setViewerAt(at); }}
+                onRetry={() => retryPhoto(m)} onDiscard={() => discardPhoto(m)} />
             );
           })}
         </ul>
@@ -111,13 +311,23 @@ export function ChatThread({ kind, id, title, me, initial, back }: {
       </div>
 
       {error && <p className="bg-white px-3 py-1 text-center text-sm font-semibold" style={{ color: HC_RED }}>{error}</p>}
+      {notice && <p className="bg-white px-3 py-1 text-center text-sm font-semibold text-zinc-600" role="status">{notice}</p>}
 
       {/* Composer */}
-      <form className="sticky bottom-16 flex items-end gap-2 border-t border-zinc-200 bg-white px-3 py-2" onSubmit={(e) => { e.preventDefault(); send(); }}>
+      <form className="sticky bottom-16 flex items-end gap-1.5 border-t border-zinc-200 bg-white px-3 py-2" onSubmit={(e) => { e.preventDefault(); send(); }}>
+        <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={onPickPhoto} />
+        <button type="button" aria-label="Send a photo" onClick={() => fileInput.current?.click()}
+          className="flex h-11 w-9 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-800">
+          <ImagePlus className="h-6 w-6" />
+        </button>
+        <button type="button" aria-label="Send a location" disabled={locating || sending} onClick={() => setLocationMenu(true)}
+          className="flex h-11 w-9 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-800 disabled:opacity-40">
+          {locating ? <Loader2 className="h-6 w-6 animate-spin" /> : <MapPin className="h-6 w-6" />}
+        </button>
         <textarea
           value={text} onChange={(e) => setText(e.target.value)} rows={1} maxLength={CHAT_MESSAGE_MAX} placeholder="Message"
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-          className="max-h-32 min-h-[44px] flex-1 resize-y rounded-2xl border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-[17px] text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-700"
+          className="max-h-32 min-h-[44px] min-w-0 flex-1 resize-y rounded-2xl border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-[17px] text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-700"
         />
         {/* Only once it matters: a permanent "0/4000" is noise on a chat box. */}
         {text.length > CHAT_MESSAGE_MAX - 400 && (
@@ -128,8 +338,205 @@ export function ChatThread({ kind, id, title, me, initial, back }: {
           <Send className="h-5 w-5" />
         </button>
       </form>
+
+      {locationMenu && (
+        <Sheet title="Send a location" onClose={() => setLocationMenu(false)}>
+          <SheetButton onClick={whereIAmNow}>Where I am now</SheetButton>
+          <SheetButton onClick={() => { setLocationMenu(false); setPinPicker(true); }}>Drop a pin</SheetButton>
+        </Sheet>
+      )}
+
+      {pinPicker && <ChatPinPicker onClose={() => setPinPicker(false)} onPick={(p) => { setPinPicker(false); void sendLocation(p.lat, p.lng); }} />}
+
+      {confirmDelete && (
+        <Sheet title="Delete this message?" onClose={() => setConfirmDelete(null)}
+          note={upper(confirmDelete.authorId) === me ? "It disappears for everyone in this chat." : `This is ${confirmDelete.authorFirstName || "someone else"}'s message. It disappears for everyone in this chat.`}>
+          <SheetButton danger onClick={() => reallyDelete(confirmDelete)}>Delete</SheetButton>
+        </Sheet>
+      )}
+
+      {viewerAt != null && photos.length > 0 && (
+        <ChatPhotoViewer photos={photos} start={viewerAt} kennel={kennel} title={title} onClose={() => setViewerAt(null)} />
+      )}
     </div>
   );
+}
+
+function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCopy, onDelete, onOpenPhoto, onRetry, onDiscard }: {
+  m: Shown; mine: boolean; showAuthor: boolean; kind: ChatMessageKind; menuOpen: boolean; canMenu: boolean;
+  onMenu: (open: boolean) => void; onCopy: () => void; onDelete?: () => void; onOpenPhoto: () => void; onRetry: () => void; onDiscard: () => void;
+}) {
+  const press = useRef<number | null>(null);
+  const pressed = useRef(false);
+  const touch = useRef(false);
+  const cancelPress = () => { if (press.current != null) { window.clearTimeout(press.current); press.current = null; } };
+  useEffect(() => cancelPress, []);
+
+  const bubbleStyle = mine ? { backgroundColor: HC_BLUE, color: "#fff" } : { backgroundColor: "#E2E8F0", color: "#1E293B" };
+  const menuButton = canMenu && (
+    <button type="button" aria-label="Message options" aria-expanded={menuOpen} onClick={() => onMenu(!menuOpen)}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center self-center rounded-full text-zinc-500 transition hover:bg-zinc-100 focus-visible:opacity-100 ${menuOpen ? "opacity-100" : "opacity-60 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"}`}>
+      <MoreHorizontal className="h-5 w-5" />
+    </button>
+  );
+
+  return (
+    <li className={`group flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}>
+      {!mine && (
+        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-zinc-200">
+          {m.authorImageUrl?.startsWith("http") && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={m.authorImageUrl} alt="" className="h-full w-full object-cover" />
+          )}
+        </div>
+      )}
+      {mine && menuButton}
+      <div className="relative min-w-0 max-w-[78%]">
+        {showAuthor && <div className="mb-0.5 pl-1 text-[13px] text-zinc-500">{m.authorFirstName}</div>}
+        <div
+          className={`rounded-2xl text-[17px] leading-snug [-webkit-touch-callout:none] [@media(hover:none)]:select-none ${kind === CHAT_KIND_PHOTO ? "p-1.5" : "px-4 py-2.5"}`}
+          style={bubbleStyle}
+          // Long-press on a phone opens the menu. A click that ends a long
+          // press is swallowed, so it does not also open the photo or the map.
+          onPointerDown={(e) => {
+            touch.current = e.pointerType !== "mouse";
+            if (!canMenu || !touch.current) return;
+            pressed.current = false;
+            cancelPress();
+            press.current = window.setTimeout(() => { pressed.current = true; onMenu(true); }, LONG_PRESS_MS);
+          }}
+          onPointerUp={cancelPress} onPointerLeave={cancelPress} onPointerCancel={cancelPress}
+          onClickCapture={(e) => { if (pressed.current) { e.preventDefault(); e.stopPropagation(); pressed.current = false; } }}
+          // Android fires contextmenu for a long press at about the same
+          // moment as the timer: take it as the long press, not the
+          // browser's own menu. A mouse's right-click is left alone.
+          onContextMenu={(e) => {
+            if (!canMenu || !touch.current) return;
+            e.preventDefault();
+            cancelPress();
+            pressed.current = true;
+            onMenu(true);
+          }}
+        >
+          <MessageBody m={m} kind={kind} onOpenPhoto={onOpenPhoto} />
+          {m.pending === "failed" ? (
+            <div className="mt-1 flex flex-wrap items-center justify-end gap-3 px-2 pb-1 text-[13px]">
+              <span style={{ opacity: 0.8 }}>Not sent</span>
+              <button type="button" onClick={onRetry} className="text-center font-semibold underline">Retry</button>
+              <button type="button" onClick={onDiscard} className="text-center font-semibold underline">Remove</button>
+            </div>
+          ) : (
+            <div className={`mt-1 text-right text-[13px] ${kind === CHAT_KIND_PHOTO ? "px-2" : ""}`} style={{ opacity: 0.7 }} suppressHydrationWarning>
+              {m.pending === "sending" ? "Sending…" : hhmm(m.createdAt)}
+            </div>
+          )}
+        </div>
+        {menuOpen && (
+          <>
+            {/* Any tap outside closes it. */}
+            <div className="fixed inset-0 z-40" onClick={() => onMenu(false)} />
+            <div role="menu" className={`absolute top-full z-50 mt-1 min-w-[140px] overflow-hidden rounded-xl border border-zinc-200 bg-white text-[16px] text-zinc-900 shadow-xl ${mine ? "right-0" : "left-0"}`}>
+              <button type="button" role="menuitem" onClick={onCopy} className="block w-full px-4 py-2.5 text-left hover:bg-zinc-100">Copy</button>
+              {onDelete && (
+                <button type="button" role="menuitem" onClick={onDelete} className="block w-full border-t border-zinc-200 px-4 py-2.5 text-left font-semibold hover:bg-zinc-100" style={{ color: HC_RED }}>Delete</button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+      {!mine && menuButton}
+    </li>
+  );
+}
+
+function MessageBody({ m, kind, onOpenPhoto }: { m: Shown; kind: ChatMessageKind; onOpenPhoto: () => void }) {
+  if (kind === CHAT_KIND_PHOTO) {
+    const src = m.preview ?? m.text;
+    const img = (
+      // Whole, at its own aspect ratio: a cap on each edge, never a crop.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={src} alt="Photo" loading="lazy" className="block h-auto max-h-72 w-auto max-w-full rounded-xl object-contain" />
+    );
+    if (m.pending) {
+      return (
+        <div className="relative">
+          {img}
+          {m.pending === "sending" && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/30">
+              <Loader2 className="h-8 w-8 animate-spin text-white" />
+            </div>
+          )}
+        </div>
+      );
+    }
+    return <button type="button" onClick={onOpenPhoto} aria-label="Open photo" className="block">{img}</button>;
+  }
+  if (kind === CHAT_KIND_LOCATION) {
+    const p = parseChatLocation(m.text);
+    return (
+      <a href={m.text} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
+        <MapPin className="h-8 w-8 shrink-0" />
+        <span className="min-w-0">
+          <span className="block font-semibold">Location</span>
+          {p && <span className="block text-[14px] tabular-nums" style={{ opacity: 0.8 }}>{formatChatLocation(p)}</span>}
+        </span>
+      </a>
+    );
+  }
+  return <div className="whitespace-pre-wrap break-words">{linkify(m.text)}</div>;
+}
+
+/** The app's white option sheet, as ChoicePopup draws it. */
+function Sheet({ title, note, onClose, children }: { title: string; note?: string; onClose: () => void; children: React.ReactNode }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-6" onClick={onClose} role="dialog" aria-modal="true" aria-label={title}>
+      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white text-zinc-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="border-b border-zinc-200 px-5 py-3 text-center text-[18px] font-bold">{title}</div>
+        {note && <p className="px-5 pt-3 text-center text-[15px] text-zinc-600">{note}</p>}
+        <div className="flex flex-col divide-y divide-zinc-200">{children}</div>
+        <button type="button" onClick={onClose} className="w-full border-t border-zinc-200 px-5 py-3 text-center text-[17px] font-semibold text-zinc-600 hover:bg-zinc-100">Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function SheetButton({ onClick, danger, children }: { onClick: () => void; danger?: boolean; children: React.ReactNode }) {
+  return (
+    <button type="button" onClick={onClick} className="w-full px-5 py-3 text-center text-[18px] font-semibold hover:bg-zinc-100" style={danger ? { color: HC_RED } : undefined}>
+      {children}
+    </button>
+  );
+}
+
+/**
+ * A photo the server can take as it is — or, when it is a format sharp may
+ * not read (HEIC) or bigger than the 10 MB the route accepts, redrawn here
+ * as a JPEG at most 2400 px on its long edge. createImageBitmap applies the
+ * EXIF orientation, so the redraw comes out upright. Falls back to the
+ * original when the browser cannot decode it either.
+ */
+async function browserReadable(file: File): Promise<Blob> {
+  const easy = /^image\/(jpeg|png|webp|gif)$/.test(file.type);
+  if (easy && file.size <= 8 * 1024 * 1024) return file;
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, 2400 / Math.max(bmp.width, bmp.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bmp.width * scale);
+    canvas.height = Math.round(bmp.height * scale);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    bmp.close();
+    return await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b ?? file), "image/jpeg", 0.9));
+  } catch {
+    return file;
+  }
 }
 
 function hhmm(ms: number): string {

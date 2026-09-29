@@ -42,7 +42,7 @@ export default async function ChatListPage() {
       {others.length === 0 && <p className="px-3 py-6 text-center text-white/90">No chats yet. The chat bubble on a run or kennel card opens its thread.</p>}
       <ul className="space-y-2 px-2">
         {others.map((t) => t.PublicEventId ? (
-          <Row key={`run-${t.PublicEventId}`} href={chatHref("run", t.PublicEventId, t.EventName ?? "Run", "/me/chat")}
+          <Row key={`run-${t.PublicEventId}`} href={chatHref("run", t.PublicEventId, t.EventName ?? "Run", "/me/chat", t.PublicKennelId)}
             title={t.EventName ?? "Run"} sub={`${t.KennelShortName ?? ""}${t.EventNumber ? ` · Run #${t.EventNumber}` : ""} · ${t.MessageCount} message${t.MessageCount === 1 ? "" : "s"}`}
             badge={t.BadgeCount} logo={t.KennelLogo} />
         ) : (

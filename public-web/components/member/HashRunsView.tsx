@@ -443,7 +443,7 @@ export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref,
           )}
         </div>
         <div className="flex shrink-0 flex-col items-center gap-3 pt-4 text-zinc-500">
-          <ChatBubble kind="run" id={run.PublicEventId} title={run.EventName} back={back} threads={threads} />
+          <ChatBubble kind="run" id={run.PublicEventId} title={run.EventName} back={back} threads={threads} kennelId={run.PublicKennelId} />
           <button type="button" aria-label="More" onClick={onMenu} disabled={busy}><MoreVertical className="h-8 w-8" /></button>
         </div>
       </div>
