@@ -12,6 +12,7 @@
  */
 import { GUID_EMPTY, hcToken, type MemberSession } from "@/lib/member-session";
 import type { Song } from "@/lib/api";
+import { CHAT_KIND_TEXT, type ChatMessageKind } from "@/lib/chat-content";
 
 const API_BASE = process.env.HC_API_URL ?? "http://localhost:7071";
 const WEB_VERSION = "<web>";
@@ -564,6 +565,10 @@ export interface ChatThreadRow {
 export interface ChatMessageRow {
   id: string; type: string; text: string; roomId: string | null; createdAt: number;
   authorId: string; authorFirstName: string; authorImageUrl: string | null; sequenceCount: number;
+  /** 0 text, 1 photo (text = blob URL), 2 location (text = maps URL) — E9.F1.S11/S12. Anything else draws as text. */
+  messageKind?: number | null;
+  /** 1 when I may delete it: my own, or I moderate this thread (E9.F1.S13/S14). */
+  canDelete?: number | null;
 }
 
 const CHAT_GET_PROC: Record<ChatKind, string> = { run: "hcapp_getEventMessages", kennel: "hcapp_getKennelMessages", room: "hcapp_getRoomMessages" };
@@ -583,7 +588,14 @@ export async function getChatThreads(s: MemberSession): Promise<{ me: string; th
   return { me: (env.Me ?? "").toUpperCase(), threads: rows.filter((t) => t.PublicEventId || t.PublicKennelId || t.RoomType != null) };
 }
 
-export async function getChatMessages(s: MemberSession, kind: ChatKind, id: string, since?: number, markRead?: boolean): Promise<{ me: string; messages: ChatMessageRow[] } | null> {
+export interface ChatMessages {
+  me: string;
+  messages: ChatMessageRow[];
+  /** Every removed message in the thread, UPPER. A delta fetch never sees a deletion, so the client drops these. */
+  removed: string[];
+}
+
+export async function getChatMessages(s: MemberSession, kind: ChatKind, id: string, since?: number, markRead?: boolean): Promise<ChatMessages | null> {
   const rowsets = await callAdminApi("getChatMessages", {
     deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_GET_PROC[kind]), kind, ...chatIds(kind, id),
     sinceSequenceCount: since == null ? null : String(since), markRead: markRead ? "1" : "0",
@@ -591,12 +603,17 @@ export async function getChatMessages(s: MemberSession, kind: ChatKind, id: stri
   const env = (rowsets[0]?.[0] ?? {}) as { success?: number; Me?: string };
   if (env.success !== 1) return null;
   const rows = (rowsets.slice(1).find((r) => r.length > 0 && "sequenceCount" in (r[0] as object)) ?? []) as unknown as ChatMessageRow[];
-  return { me: (env.Me ?? "").toUpperCase(), messages: rows };
+  // The LAST rowset, found by its column rather than its index: the room
+  // path puts a badge rowset in front of it. Empty when nothing was removed.
+  const removedRows = (rowsets.slice(1).find((r) => r.length > 0 && "removedId" in (r[0] as object)) ?? []) as { removedId?: unknown }[];
+  const removed = removedRows.map((r) => String(r.removedId ?? "").toUpperCase()).filter(Boolean);
+  return { me: (env.Me ?? "").toUpperCase(), messages: rows, removed };
 }
 
-export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: string, messageId: string, text: string): Promise<{ ok: boolean; message?: string }> {
+export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: string, messageId: string, text: string, messageKind: ChatMessageKind = CHAT_KIND_TEXT): Promise<{ ok: boolean; message?: string }> {
   const rowsets = await callAdminApi("sendChatMessage", {
     deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_SEND_PROC[kind]), kind, ...chatIds(kind, id), messageId, messageContent: text,
+    messageKind: String(messageKind),
   });
   // The app's send SPs emit their push-recipient SELECTs as rowsets before
   // anything else, so the envelope is wherever a `success` column sits.
@@ -604,6 +621,43 @@ export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: stri
   if (env.some((r) => r?.success === 1)) return { ok: true };
   const msg = rowsets.map((r) => r?.[0] as { errorUserMessage?: string } | undefined).find((r) => r?.errorUserMessage)?.errorUserMessage;
   return { ok: false, message: msg ?? "Couldn't send." };
+}
+
+/**
+ * Deletes one message (E9.F1.S13/S14) through publicWeb_deleteChatMessage,
+ * which EXECs hcapp_deleteChatMessage — the rule (my own, or a chat
+ * administrator's) lives there, not here.
+ */
+export async function deleteChatMessage(s: MemberSession, messageId: string): Promise<{ ok: boolean; message?: string }> {
+  const rowsets = await callAdminApi("deleteChatMessage", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_deleteChatMessage"), messageId,
+  });
+  // An auth failure returns the error rowset alone (no success column), so
+  // look for success = 1 anywhere rather than trusting rowset 0.
+  if (rowsets.some((r) => (r?.[0] as { success?: number } | undefined)?.success === 1)) return { ok: true };
+  const msg = rowsets.map((r) => r?.[0] as { errorUserMessage?: string } | undefined).find((r) => r?.errorUserMessage)?.errorUserMessage;
+  return { ok: false, message: msg ?? "That message could not be deleted." };
+}
+
+/**
+ * A 15-minute write-only SAS for one chat photo, from the
+ * GetChatPhotoUploadToken function (E9.F1.S11). The blob path is built from
+ * the token's user, never from anything the browser sends. A 403 is the
+ * SP refusing the device (signed out elsewhere); anything else throws.
+ */
+export async function getChatPhotoUploadUrl(s: MemberSession, photoGuid: string): Promise<{ sasUrl: string; blobUrl: string } | { error: string }> {
+  const res = await fetch(`${API_BASE}/api/GetChatPhotoUploadToken`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_getChatPhotoUploadToken"), photoGuid }),
+    cache: "no-store",
+  });
+  const text = await res.text();
+  let j: { sasUrl?: string; blobUrl?: string; errorUserMessage?: string | null } = {};
+  try { j = JSON.parse(text) as typeof j; } catch { /* not JSON */ }
+  if (res.ok && j.sasUrl && j.blobUrl) return { sasUrl: j.sasUrl, blobUrl: j.blobUrl };
+  if (res.status === 403) return { error: j.errorUserMessage ?? "This browser is no longer signed in. Please sign in again." };
+  throw new Error(`GetChatPhotoUploadToken: ${res.status} ${text.slice(0, 200)}`);
 }
 
 export async function markChatRead(s: MemberSession, kind: "run" | "kennel", id: string): Promise<void> {

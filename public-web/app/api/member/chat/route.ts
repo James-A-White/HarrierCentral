@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getChatMessages, getChatThreads, sendChatMessage, type ChatKind } from "@/lib/member-api";
+import { deleteChatMessage, getChatMessages, getChatThreads, sendChatMessage, type ChatKind } from "@/lib/member-api";
+import { CHAT_KIND_LOCATION, CHAT_KIND_PHOTO, CHAT_KIND_TEXT, isChatPhotoUrl, parseChatLocation, type ChatMessageKind } from "@/lib/chat-content";
 import { readMember } from "@/lib/member-session";
 import { bad, jsonBody } from "@/lib/member-routes";
 import { logWebError } from "@/lib/web-log";
 
 const KINDS: ChatKind[] = ["run", "kennel", "room"];
+const MESSAGE_KINDS: ChatMessageKind[] = [CHAT_KIND_TEXT, CHAT_KIND_PHOTO, CHAT_KIND_LOCATION];
 /** HC.EventMessage.MessageContent is NVARCHAR(4000). */
 export const CHAT_MESSAGE_MAX = 4000;
-const okId = (kind: ChatKind, id: string) => kind === "room" ? /^\d{1,6}$/.test(id) : /^[0-9a-f-]{36}$/.test(id);
+const GUID = /^[0-9a-f-]{36}$/;
+const okId = (kind: ChatKind, id: string) => kind === "room" ? /^\d{1,6}$/.test(id) : GUID.test(id);
 
 /**
  * GET ?threads=1 → { me, threads }   (the app's Unseen Chats list + badges)
- * GET ?kind=&id=&since= → { me, messages }   (a thread, or just what is new)
- * POST { kind, id, messageId, text } → { ok }
+ * GET ?kind=&id=&since= → { me, messages, removed }   (a thread, or just what is new,
+ *                          plus every removed id so a deletion reaches an open page)
+ * POST { kind, id, messageId, text, messageKind? } → { ok }
+ * DELETE { messageId } → { ok }   (E9.F1.S13/S14 — the SP decides who may)
  */
 export async function GET(req: NextRequest) {
   const s = readMember(req);
@@ -34,18 +39,38 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const s = readMember(req);
   if (!s) return bad("Not signed in.", 401);
-  const body = await jsonBody<{ kind?: ChatKind; id?: string; messageId?: string; text?: string }>(req);
+  const body = await jsonBody<{ kind?: ChatKind; id?: string; messageId?: string; text?: string; messageKind?: number }>(req);
   const kind = body?.kind as ChatKind, id = (body?.id ?? "").toLowerCase(), messageId = (body?.messageId ?? "").toLowerCase();
   const text = (body?.text ?? "").trim();
-  if (!KINDS.includes(kind) || !okId(kind, id) || !/^[0-9a-f-]{36}$/.test(messageId) || !text) return bad("Bad request.");
+  const messageKind = (body?.messageKind ?? CHAT_KIND_TEXT) as ChatMessageKind;
+  if (!KINDS.includes(kind) || !okId(kind, id) || !GUID.test(messageId) || !text || !MESSAGE_KINDS.includes(messageKind)) return bad("Bad request.");
   // Refused, not sliced: a silent cut is how the first admin-room announcement
   // lost its second half (2026-09-23). The SPs enforce the same 4,000.
   if (text.length > CHAT_MESSAGE_MAX) return bad(`Messages can be up to ${CHAT_MESSAGE_MAX.toLocaleString()} characters; this one is ${text.length.toLocaleString()}.`);
+  // HC6.ChatMessageKindError is the rule; this only saves a round trip.
+  if (messageKind === CHAT_KIND_PHOTO && !isChatPhotoUrl(text)) return bad("That photo could not be sent. Please try again.");
+  if (messageKind === CHAT_KIND_LOCATION && !parseChatLocation(text)) return bad("That location could not be sent. Please try again.");
   try {
-    const r = await sendChatMessage(s, kind, id, messageId, text);
+    const r = await sendChatMessage(s, kind, id, messageId, text, messageKind);
     return r.ok ? NextResponse.json({ ok: true }) : bad(r.message ?? "Couldn't send.", 502);
   } catch (e) {
     await logWebError({ source: "/api/member/chat", error: e, session: s });
     return bad("Couldn't send just now.", 502);
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const s = readMember(req);
+  if (!s) return bad("Not signed in.", 401);
+  const body = await jsonBody<{ messageId?: string }>(req);
+  const messageId = (body?.messageId ?? "").toLowerCase();
+  if (!GUID.test(messageId)) return bad("Bad request.");
+  try {
+    const r = await deleteChatMessage(s, messageId);
+    // 403, not 502: a refusal is an answer, and the page shows its message.
+    return r.ok ? NextResponse.json({ ok: true }) : bad(r.message ?? "That message could not be deleted.", 403);
+  } catch (e) {
+    await logWebError({ source: "/api/member/chat DELETE", error: e, session: s });
+    return bad("Couldn't delete just now.", 502);
   }
 }
