@@ -95,6 +95,12 @@ class ChatPageController extends GetxController {
   bool _isFetching = false;
   bool _pendingFetch = false;
 
+  /// The next fetch asks for the WHOLE thread (since = null), not a delta.
+  /// A flag rather than nulling [_lastKnownSequenceCount]: a fetch already
+  /// in flight would write its own sequence count back over the null, and
+  /// the queued fetch would go out as a delta after all.
+  bool _fullFetchWanted = false;
+
   /// "Always use this map app", for a location card's tap — the same
   /// chooser the run pin uses (Utilities.showOnMap).
   final ValueNotifier<bool> saveUserMapPreference = ValueNotifier<bool>(false);
@@ -148,6 +154,24 @@ class ChatPageController extends GetxController {
 
   Future<void> onAppResumed() async {
     await _fetchDelta();
+  }
+
+  /// Fetch the whole thread again and replace what is on screen.
+  ///
+  /// A delta by sequence number can only ADD messages, and a block (or an
+  /// unblock) changes which of the existing ones the server will show this
+  /// hasher at all — so after either, the thread is asked for in full.
+  Future<void> refetchAll() async {
+    _fullFetchWanted = true;
+    await _fetchDelta();
+  }
+
+  /// Every chat on screen, in full — for the Blocked Hashers page, whose
+  /// Unblock changes what a chat open underneath it should be showing.
+  static void refetchOpenThreads() {
+    for (final ChatPageController c in List.of(open)) {
+      if (!c.isClosed) unawaited(c.refetchAll());
+    }
   }
 
   Future<void> onInitAsync() async {
@@ -244,7 +268,8 @@ class ChatPageController extends GetxController {
     }
     _isFetching = true;
     try {
-      final sinceSeq = _lastKnownSequenceCount;
+      final int? sinceSeq = _fullFetchWanted ? null : _lastKnownSequenceCount;
+      _fullFetchWanted = false;
       final result = await _getEventMessages(sinceSequenceCount: sinceSeq);
       // The page can be gone by the time the fetch lands — open a chat and
       // leave again inside the round trip and the InMemoryChatController has
@@ -262,7 +287,15 @@ class ChatPageController extends GetxController {
       await _applyRemovedIds(outerItem);
       if (isClosed) return;
       final rawMessages = outerItem[0] as List<dynamic>;
-      if (rawMessages.isEmpty) return;
+      if (rawMessages.isEmpty) {
+        // A FULL fetch that comes back empty is an answer, not a no-op: the
+        // thread has nothing this hasher may see (every message was from
+        // someone they just blocked), so the screen must empty too.
+        if (sinceSeq == null && chatController.messages.isNotEmpty) {
+          await chatController.setMessages(<core.Message>[]);
+        }
+        return;
+      }
 
       final newSeq = _extractMaxSequenceCount(rawMessages);
       if (newSeq != null) _lastKnownSequenceCount = newSeq;
@@ -928,7 +961,8 @@ class ChatPageController extends GetxController {
     }
   }
 
-  /// Copy always; Delete when this caller may (E9.F1.S13-S15).
+  /// Copy always; Delete when this caller may (E9.F1.S13-S15); Report and
+  /// Block on anyone else's message (E9.F1.S16/S17).
   void handleMessageLongPress(
     BuildContext context,
     core.Message message, {
@@ -936,13 +970,35 @@ class ChatPageController extends GetxController {
     required LongPressStartDetails details,
   }) => unawaited(_messageMenu(message));
 
+  /// Someone else's message — the only kind that can be reported or whose
+  /// author can be blocked. The server refuses both for one's own, so the
+  /// menu does not offer them.
+  bool _isFromSomeoneElse(core.Message m) =>
+      m.authorId.isNotEmpty && m.authorId != currentUser.id;
+
+  /// The author's name as the chat shows it, for the "Block …?" line.
+  String _authorNameOf(core.Message m) {
+    final String? name = _userCache[m.authorId]?.name;
+    return (name == null || name.trim().isEmpty) ? 'this hasher' : name.trim();
+  }
+
   Future<void> _messageMenu(core.Message message) async {
     final String copyText = _copyTextFor(message);
     final bool canDelete = _canDelete(message);
-    if (copyText.isEmpty && !canDelete) return;
+    final bool fromSomeoneElse = _isFromSomeoneElse(message);
+    if (copyText.isEmpty && !canDelete && !fromSomeoneElse) return;
     final String? choice = await _chooseFrom(<_SheetChoice>[
       if (copyText.isNotEmpty)
         const _SheetChoice('copy', 'Copy', Icons.copy),
+      if (fromSomeoneElse) ...<_SheetChoice>[
+        const _SheetChoice('report', 'Report', Icons.flag_outlined),
+        _SheetChoice(
+          'block',
+          'Block ${_authorNameOf(message)}',
+          Icons.block,
+          colour: hc_red,
+        ),
+      ],
       if (canDelete)
         _SheetChoice(
           'delete',
@@ -956,9 +1012,208 @@ class ChatPageController extends GetxController {
       case 'copy':
         await Clipboard.setData(ClipboardData(text: copyText));
         hcSnack('Copied');
+      case 'report':
+        await _reportMessage(message);
+      case 'block':
+        await _confirmAndBlock(message);
       case 'delete':
         await _confirmAndDelete(message.id);
     }
+  }
+
+  // ── Block (E9.F1.S16) ─────────────────────────────────────────────────────
+
+  Future<bool> _confirmBlock(String name) async {
+    final bool? yes = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text('Block $name?', style: ts_alertDialogTitle),
+        content: Text(
+          "You won't see their messages in any chat, and they won't be told.",
+          style: ts_alertDialogBody,
+        ),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.blueGrey),
+            onPressed: () => hcPop<bool>(result: false),
+            child: Text(
+              'Cancel',
+              style: ts_button,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(backgroundColor: hc_red),
+            onPressed: () => hcPop<bool>(result: true),
+            child: Text(
+              'Block',
+              style: ts_button,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+    return yes ?? false;
+  }
+
+  /// Block the message's author, then fetch the thread again in full: the
+  /// server now leaves out everything they wrote, and only a full fetch
+  /// takes what is already on screen away.
+  Future<void> _confirmAndBlock(core.Message message) async {
+    if (isClosed || !_isFromSomeoneElse(message)) return;
+    final String name = _authorNameOf(message);
+    if (!await _confirmBlock(name) || isClosed) return;
+
+    // authorId is already an HcId-shaped lowercase string (parsed through
+    // asUuid); the SP accepts either case, HcId keeps it to one.
+    final BlockOutcome outcome = await HasherBlockService.setBlock(
+      HcId(message.authorId),
+      blocked: true,
+    );
+    if (isClosed) return;
+
+    if (!outcome.ok) {
+      final String? why = outcome.refusal;
+      hcSnack(
+        (why == null || why.isEmpty)
+            ? '$name could not be blocked. Please try again.'
+            : why,
+        error: true,
+        seconds: 5,
+      );
+      return;
+    }
+    hcSnack('Blocked');
+    await refetchAll();
+  }
+
+  // ── Report (E9.F1.S17) ────────────────────────────────────────────────────
+
+  /// A white sheet: what a report does, an optional reason (capped where the
+  /// SP caps it), Send. Returns the reason ('' for none), or null if the
+  /// hasher backed out.
+  Future<String?> _reportSheet() async {
+    final TextEditingController reason = TextEditingController();
+    final String? result = await Get.bottomSheet<String>(
+      // The sheet rises with the keyboard: viewInsets read from a context
+      // INSIDE the sheet, which is the one that rebuilds when it opens.
+      Builder(
+        builder: (BuildContext context) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'Report this message',
+                    style: ts_alertDialogTitle,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "This sends the message to Harrier Central's reviewers. "
+                    'Nobody at Harrier Central reads chats otherwise.',
+                    style: ts_alertDialogBody,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: reason,
+                    autofocus: true,
+                    maxLength: kChatReportReasonMaxLength,
+                    maxLines: 4,
+                    minLines: 2,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: ts_alertDialogBody,
+                    decoration: const InputDecoration(
+                      hintText: 'Why are you reporting it? (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Wrap, not Row: two buttons at a large text size are
+                  // wider than a phone.
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: <Widget>[
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.blueGrey,
+                        ),
+                        onPressed: () => hcPop<String>(),
+                        child: Text(
+                          'Cancel',
+                          style: ts_button,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.flag, color: Colors.white),
+                        label: Text(
+                          'Send report',
+                          style: ts_button,
+                          textAlign: TextAlign.center,
+                        ),
+                        onPressed: () =>
+                            hcPop<String>(result: reason.text.trim()),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      backgroundColor: Colors.white,
+      barrierColor: Colors.black54,
+      isScrollControlled: true,
+    );
+    // The route's future completes as the sheet starts to leave; its
+    // TextField is still drawn for the exit animation.
+    unawaited(
+      Future<void>.delayed(const Duration(seconds: 1), reason.dispose),
+    );
+    return result;
+  }
+
+  Future<void> _reportMessage(core.Message message) async {
+    if (!_isFromSomeoneElse(message)) return;
+    final String? reason = await _reportSheet();
+    if (reason == null || isClosed) return;
+
+    final ReportOutcome outcome = await ChatReportService.report(
+      HcId(message.id),
+      reason: reason,
+    );
+    if (isClosed) return;
+
+    if (!outcome.ok) {
+      final String? why = outcome.refusal;
+      hcSnack(
+        (why == null || why.isEmpty)
+            ? 'The report could not be sent. Please try again.'
+            : why,
+        error: true,
+        seconds: 5,
+      );
+      return;
+    }
+    // Block offered as the follow-up: a report changes nothing on this
+    // phone, and the hasher most likely wants to stop seeing this person.
+    hcSnack(
+      'Reported — thank you.',
+      seconds: 6,
+      actionLabel: 'Block',
+      onAction: () => unawaited(_confirmAndBlock(message)),
+    );
   }
 
   Future<bool> _confirmDelete() async {
