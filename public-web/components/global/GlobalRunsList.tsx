@@ -3,9 +3,10 @@
 import { useState, useMemo, useCallback, useEffect, useRef, useTransition } from "react";
 import { SignInLink } from "@/components/member/SignInLink";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import QRCode from "react-qr-code";
 import {
-  Search, X, MapPin, Navigation, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays, Loader2, Map as MapIcon, Info,
+  Search, X, QrCode, ArrowLeft, LayoutList, CalendarDays, Loader2, Map as MapIcon, Info,
 } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import dynamic from "next/dynamic";
@@ -69,26 +70,6 @@ function formatDate(run: GlobalRunRow) {
     }),
     time: src.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: displayTz }),
   };
-}
-
-function mapsUrl(lat: number | null, lon: number | null): string | null {
-  if (!lat || !lon) return null;
-  return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
-}
-
-function formatFee(amount: number | null | undefined, currency: string | null): string {
-  if (!amount) return "Free";
-  return currency ? `${currency} ${amount.toFixed(2)}` : amount.toFixed(2);
-}
-
-function parseW3w(json: string | null): string | null {
-  if (!json) return null;
-  try {
-    const p = JSON.parse(json) as { map?: string; words?: string };
-    return p.map ?? (p.words ? `https://what3words.com/${p.words}` : null);
-  } catch {
-    return null;
-  }
 }
 
 function normalizeWebsiteUrl(domain: string): string {
@@ -212,22 +193,9 @@ function GlobalRunCard({
   );
 }
 
-// ─── Section divider ──────────────────────────────────────────────────────────
-
-function SectionDivider() {
-  return (
-    <div className="flex items-center px-6 py-1">
-      <div className="flex-1 h-px bg-white/20" />
-      <div className="mx-2 h-2 w-2 rounded-full bg-white/40" />
-      <div className="flex-1 h-px bg-white/20" />
-    </div>
-  );
-}
-
 // ─── QR section ───────────────────────────────────────────────────────────────
 
 function QRSection({ run }: { run: GlobalRunRow }) {
-  const bg = run.PrimaryColor ?? "#dc2626";
   const runUrl     = `${HASHRUNS_ORIGIN}/${run.KennelSlug}/${run.EventNumber}`;
   const nextRunUrl = `${HASHRUNS_ORIGIN}/${run.KennelSlug}/next-run`;
   const listUrl    = `${HASHRUNS_ORIGIN}/${run.KennelSlug}`;
@@ -261,10 +229,10 @@ function QRSection({ run }: { run: GlobalRunRow }) {
 // ─── Run detail panel ─────────────────────────────────────────────────────────
 
 function GlobalRunDetail({ run }: { run: GlobalRunRow }) {
+  // The parent keys this component on PublicEventId, so a change of run
+  // remounts it and showQr starts false again — no reset effect needed.
   const [showQr, setShowQr] = useState(false);
   const siteUrl = run.KennelWebsiteDomain ? normalizeWebsiteUrl(run.KennelWebsiteDomain) : null;
-
-  useEffect(() => { setShowQr(false); }, [run.PublicEventId]);
 
   const kennel = {
     name: run.KennelName,
@@ -357,6 +325,11 @@ function CalendarView({
     );
   }, [runs, sortDesc]);
 
+  // TanStack Virtual returns functions the React Compiler cannot memoise
+  // without freezing the list, so it skips this component — the intended
+  // outcome. The rule is diagnostic-only and ignores "use no memo" (plugin
+  // 7.0.1), and the compiler is not enabled in next.config anyway.
+  // eslint-disable-next-line react-hooks/incompatible-library -- useVirtualizer is not replaceable; compiler skip is correct
   const virtualizer = useVirtualizer({
     count: groups.length,
     getScrollElement: () => parentRef.current,
@@ -502,7 +475,6 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
   // Future runs — persisted across tab switches (pre-loaded from SSR).
   // Never reset on switch; switching back is instantaneous.
   const [futureRuns, setFutureRuns]       = useState<GlobalRunRow[]>(initialRuns);
-  const [futureTotal, setFutureTotal]     = useState(initialTotal);
   const [futureOffset, setFutureOffset]   = useState(initialRuns.length);
   const [futureHasMore, setFutureHasMore] = useState(initialTotal > initialRuns.length);
   const [futureLoading, setFutureLoading] = useState(false);
@@ -544,7 +516,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
       setTab("past");
       setSelectedRun(_pastCache.runs[0] ?? null);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Derived — no shared mutable "runs" state to reset on switch.
   const runs = tab === "future" ? futureRuns : pastRuns;
@@ -649,7 +621,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
         setPastDone(true);
       }
     })();
-  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tab]);
 
   const handleViewChange = (newView: "list" | "calendar") => {
     setView(newView);
@@ -695,14 +667,16 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
   });
 
   // Trigger future-runs infinite scroll when the last rendered item is visible.
+  // Only the index matters, so the effect keys on that number rather than the
+  // virtual-item object, which is rebuilt whenever the rendered range shifts.
   const virtualItems       = virtualizer.getVirtualItems();
-  const lastVirtualItem    = virtualItems[virtualItems.length - 1];
+  const lastVirtualIndex   = virtualItems[virtualItems.length - 1]?.index;
   useEffect(() => {
-    if (!lastVirtualItem) return;
-    if (lastVirtualItem.index >= filtered.length - 1 && tab === "future" && futureHasMore && !futureLoading) {
+    if (lastVirtualIndex === undefined) return;
+    if (lastVirtualIndex >= filtered.length - 1 && tab === "future" && futureHasMore && !futureLoading) {
       loadMore();
     }
-  }, [lastVirtualItem?.index, filtered.length, tab, futureHasMore, futureLoading, loadMore]);
+  }, [lastVirtualIndex, filtered.length, tab, futureHasMore, futureLoading, loadMore]);
 
   // ── Filter pending indicator ──────────────────────────────────────────────
   // True while the debounce is counting down OR while React is computing the
@@ -918,9 +892,9 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
       <div className="shrink-0 py-3 w-screen text-center">
         <p className="text-sm sm:text-lg md:text-2xl text-white/70">
           Powered by Harrier Central.{" "}
-          <a href="/add-kennel" className="text-orange-400 hover:underline">
+          <Link href="/add-kennel" className="text-orange-400 hover:underline">
             Add your kennel today
-          </a>
+          </Link>
         </p>
         <p className="text-sm italic text-white/40 mt-0.5">Version: {process.env.NEXT_PUBLIC_APP_VERSION}</p>
       </div>

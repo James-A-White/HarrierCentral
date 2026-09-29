@@ -20,7 +20,7 @@ function shortTime(iso: string) {
   return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function PhotoGrid({ runs, kennel: _kennel, slug }: PhotoGridProps) {
+export function PhotoGrid({ runs, slug }: PhotoGridProps) {
   if (runs.length === 0) return null;
 
   return (

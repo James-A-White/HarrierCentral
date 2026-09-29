@@ -287,8 +287,7 @@ export default async function LastRunPage({ params }: PageProps) {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.10] border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900"
                 >
-                  ///
-                  What3Words
+                  {"/// What3Words"}
                 </a>
               )}
               {event.EventUrl && (

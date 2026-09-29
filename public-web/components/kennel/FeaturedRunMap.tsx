@@ -75,7 +75,7 @@ export default function FeaturedRunMap({ run }: { run: RunEvent }) {
             rel="noopener noreferrer"
             className="inline-block text-xs text-white/50 hover:text-white/80 transition-colors pt-0.5"
           >
-            /// What3Words
+            {"/// What3Words"}
           </a>
         )}
       </div>
