@@ -106,6 +106,7 @@ class RunTabs extends StatelessWidget {
       isPaid: futureRun.extensions.isPaid,
       rsvpState: futureRun.extensions.rsvpState,
       ianaTimeZone: futureRun.extensions.ianaTimeZone,
+      run: futureRun,
       processPayment: c.onPaymentProcessed,
       bottomExtension: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1891,7 +1892,9 @@ class RunTabs extends StatelessWidget {
     return (
       lat: lat,
       lon: lon,
-      address: address.isEmpty ? (rda.event.locationOneLineDesc ?? '') : address,
+      address: address.isEmpty
+          ? (rda.event.locationOneLineDesc ?? '')
+          : address,
     );
   }
 
@@ -1946,11 +1949,7 @@ class RunTabs extends StatelessWidget {
       // The same as tapping the run's pin (James, 2026-09-26).
       onPressed: () => _launchMaps(context, c, futureRun),
       icon: const Icon(Icons.directions, color: Colors.white),
-      label: Text(
-        kind.label,
-        style: ts_button,
-        textAlign: TextAlign.center,
-      ),
+      label: Text(kind.label, style: ts_button, textAlign: TextAlign.center),
     );
   }
 

@@ -168,38 +168,9 @@ class RunPhotoGalleryController extends GetxController {
     if (result.imported > 0) await load();
   }
 
-  /// Resolves photographer name + avatar for every distinct uploader in the
-  /// current photo set, keyed by normalised userId. Cached per uploader so N
-  /// photos = at most N distinct reads.
-  Future<Map<String, ({String name, String photo})>>
-  resolvePhotographers() async {
-    final result = <String, ({String name, String photo})>{};
-    final currentUserId = normalizeUuid(
-      getStringPref(StringPrefsEnum.userId) ?? '',
-    );
-    for (final p in List<RunPhotoModel>.of(photos)) {
-      final uid = normalizeUuid(p.userId ?? '');
-      if (uid.isEmpty || result.containsKey(uid)) continue;
-
-      // Name: others carry uploaderDisplayName from the SP; own photos use the
-      // signed-in user's stored display name.
-      var name = p.uploaderDisplayName ?? '';
-      if (name.isEmpty && uid == currentUserId) {
-        name = getStringPref(StringPrefsEnum.displayName) ?? '';
-      }
-
-      // Avatar: the raw colPhoto value (may be http or bundle://) — resolved for
-      // display via avatarImageProvider in the viewer.
-      var photo = '';
-      final rows = await QueryUsers.querySingleUser(uid);
-      if (rows.isNotEmpty) {
-        photo =
-            (rows.first[tableModel.hashersTableHelper.colPhoto] as String?) ??
-            '';
-      }
-
-      result[uid] = (name: name, photo: photo);
-    }
-    return result;
-  }
+  /// Photographer name + avatar per distinct uploader in the current photo
+  /// set — the shared [resolvePhotographers], so the Photos tab and the
+  /// Featured strip cannot drift.
+  Future<Map<String, PhotographerInfo>> resolvePhotographers() =>
+      resolvePhotographersFor(photos);
 }

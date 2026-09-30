@@ -60,7 +60,12 @@ class RunDetails extends StatelessWidget {
     this.eventUrlWithKennelBackup,
     this.bottomExtension,
     this.ianaTimeZone,
+    this.run,
   });
+
+  /// The whole run, when the caller has it: lets the Featured strip's viewer
+  /// offer "Map" for a photo with a location. Run admin has no aggregate.
+  final RunDetailsAggregate? run;
 
   final EventModel event;
   final KennelsModel kennel;
@@ -228,6 +233,7 @@ class RunDetails extends StatelessWidget {
           _FeaturedPhotoStrip(
             eventId: event.eventId,
             eventName: event.eventName,
+            run: run,
           ),
           const Padding(
             padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
@@ -1220,10 +1226,15 @@ class RunDetails extends StatelessWidget {
 /// Details tab in addition to the Photos tab. Loads once; renders nothing while
 /// loading or when the run has no featured photos.
 class _FeaturedPhotoStrip extends StatefulWidget {
-  const _FeaturedPhotoStrip({required this.eventId, required this.eventName});
+  const _FeaturedPhotoStrip({
+    required this.eventId,
+    required this.eventName,
+    this.run,
+  });
 
   final String eventId;
   final String eventName;
+  final RunDetailsAggregate? run;
 
   @override
   State<_FeaturedPhotoStrip> createState() => _FeaturedPhotoStripState();
@@ -1231,6 +1242,10 @@ class _FeaturedPhotoStrip extends StatefulWidget {
 
 class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
   List<RunPhotoModel> _featured = const <RunPhotoModel>[];
+  // Photographer name + avatar per uploader, from the local hashers table —
+  // the same lookup the Photos tab uses, so the viewer's footer shows who
+  // took the photo rather than the default avatar (James, 2026-09-30).
+  Map<String, PhotographerInfo> _photographers = const {};
   bool _loaded = false;
 
   @override
@@ -1243,11 +1258,15 @@ class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
     final result = await KennelPhotoService().getRunPhotosForGallery(
       eventId: widget.eventId,
     );
+    final List<RunPhotoModel> featured = result.photos
+        .where((RunPhotoModel p) => p.status == 4)
+        .toList();
+    final Map<String, PhotographerInfo> photographers =
+        await resolvePhotographersFor(featured);
     if (!mounted) return;
     setState(() {
-      _featured = result.photos
-          .where((RunPhotoModel p) => p.status == 4)
-          .toList();
+      _featured = featured;
+      _photographers = photographers;
       _loaded = true;
     });
   }
@@ -1287,7 +1306,14 @@ class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
                         (RunPhotoModel photo) => MapPhotoItem(
                           imageUrl: photo.effectiveUrl,
                           caption: photo.displayCaption,
-                          uploaderName: photo.uploaderDisplayName ?? '',
+                          uploaderName:
+                              _photographers[normalizeUuid(photo.userId ?? '')]
+                                  ?.name ??
+                              (photo.uploaderDisplayName ?? ''),
+                          uploaderPhotoUrl:
+                              _photographers[normalizeUuid(photo.userId ?? '')]
+                                  ?.photo ??
+                              '',
                           capturedAt: photo.createdAt.year > 1
                               ? photo.createdAt
                               : null,
@@ -1305,6 +1331,8 @@ class _FeaturedPhotoStripState extends State<_FeaturedPhotoStrip> {
                         photos: items,
                         initialIndex: i,
                         background: Backgrounds.defaultHcBackground(),
+                        // With the run, a located photo gets the Map button.
+                        run: widget.run,
                       ),
                     ),
                   );
