@@ -4,7 +4,12 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addEditEvent]
     @accessToken               NVARCHAR(1000),
     @narrowEventsUpdatedAfter  NVARCHAR(50),
     @eventId                   UNIQUEIDENTIFIER    = NULL,
-    @kennelId                  UNIQUEIDENTIFIER,
+    -- NULL default since 2026-09-30: without one SQL refused any call that
+    -- omitted it BEFORE the procedure ran, so the graceful check below never
+    -- fired, nothing was logged, and the app saw an empty 500. The run-number
+    -- edit sends only @eventId (Rack of Lamb, Divahhh #45, 18 attempts on
+    -- 2026-09-29). When absent it is taken from the event.
+    @kennelId                  UNIQUEIDENTIFIER    = NULL,
     @startDatetime             DATETIMEOFFSET(7)   = NULL,
     @endDatetime               DATETIMEOFFSET(7)   = NULL,
     @isCountedRun              SMALLINT            = NULL,
@@ -143,6 +148,10 @@ END
 -- ---------------------------------------------------------------
 -- Validate required parameters
 -- ---------------------------------------------------------------
+IF ((@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
+    AND @eventId IS NOT NULL AND @eventId <> '00000000-0000-0000-0000-000000000000')
+    SELECT @kennelId = e.KennelId FROM HC.Event e WHERE e.id = @eventId;
+
 IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1220; SET @errorType = 12; SET @errorId = NEWID();

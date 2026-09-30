@@ -1160,6 +1160,9 @@ class EditRunDetailsPage extends StatelessWidget {
                                                     .eventAggregate
                                                     .event
                                                     .eventId,
+                                                // The SP needs the kennel even for a one-field edit (2026-09-30):
+                                                // without it the call was refused before the procedure ran.
+                                                kennelId: c.eventAggregate.event.kennelId,
                                                 useFbImage: 1,
                                               );
 
@@ -1562,6 +1565,9 @@ class EditRunDetailsPage extends StatelessWidget {
                                   final String eventId = await nSvc
                                       .addEditEvent(
                                         eventId: c.eventAggregate.event.eventId,
+                                        // The SP needs the kennel even for a one-field edit (2026-09-30):
+                                        // without it the call was refused before the procedure ran.
+                                        kennelId: c.eventAggregate.event.kennelId,
                                         useFbLatLon: 1,
                                       );
 
