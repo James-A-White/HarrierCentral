@@ -238,10 +238,37 @@ class PhotoReviewController extends GetxController {
 
   /// Reviewing every run's pending photos rather than one run's.
   bool get kennelWide => eventId.isEmpty;
+
+  /// Pending photos in the kennel's other runs (see [otherRunsPending]).
+  /// Best effort: a failure leaves the count at zero and says nothing.
+  Future<void> _countOtherRunsPending() async {
+    try {
+      final String result =
+          await _service.getKennelPendingPhotos(kennelId: kennelId);
+      if (isClosed || result.startsWith(ERROR_PREFIX)) return;
+      final outer = jsonDecode(result) as List<dynamic>;
+      if (outer.isEmpty || outer[0] is! List) return;
+      final String here = normalizeUuid(eventId);
+      otherRunsPending.value = (outer[0] as List<dynamic>)
+          .whereType<Map<String, dynamic>>()
+          .map(KennelPendingPhoto.fromJson)
+          .where((KennelPendingPhoto ph) =>
+              ph.isPending && normalizeUuid(ph.eventId) != here)
+          .length;
+    } catch (e, s) {
+      BootLogger.logError('[PhotoReviewController.otherRunsPending]', e, s);
+    }
+  }
   final String kennelSlug;
   final int eventNumber;
 
   final RxBool isLoading = true.obs;
+
+  /// Run-scoped only: photos still pending in the kennel's OTHER runs. A
+  /// reviewer who opens the manager from last night's run sees "nothing
+  /// pending" while 28 June photos wait kennel-wide (Tuna Melt vs James,
+  /// 2026-09-30); this line says so and offers the kennel-wide queue.
+  final RxInt otherRunsPending = 0.obs;
   final RxBool isSaving = false.obs;
   final RxBool isEditing = false.obs;
   final RxList<KennelPendingPhoto> allPhotos = <KennelPendingPhoto>[].obs;
@@ -580,6 +607,7 @@ class PhotoReviewController extends GetxController {
           .whereType<Map<String, dynamic>>()
           .map(KennelPendingPhoto.fromJson)
           .toList();
+      if (!kennelWide) unawaited(_countOtherRunsPending());
       // If there's nothing left to review, open on the Reviewed tab so the
       // reviewer isn't left staring at an empty pending state.
       if (pendingPhotos.isEmpty && reviewedPhotos.isNotEmpty) {
@@ -1109,6 +1137,7 @@ class PhotoReviewPage extends StatelessWidget {
             return Column(
               children: [
                 _RunHeader(page: this),
+                _OtherRunsPendingBanner(page: this),
                 _TabPills(controller: controller),
                 Expanded(child: _PhotoBody(page: this)),
               ],
@@ -1123,6 +1152,52 @@ class PhotoReviewPage extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Run header — kennel logo + event + status counts
 // ---------------------------------------------------------------------------
+
+/// "N more photos pending in other runs — Review all": shown under the run
+/// header when the manager was opened for one run and the kennel-wide queue
+/// holds more (2026-09-30).
+class _OtherRunsPendingBanner extends StatelessWidget {
+  const _OtherRunsPendingBanner({required this.page});
+  final PhotoReviewPage page;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final int n = page.controller.otherRunsPending.value;
+      if (page.controller.kennelWide || n == 0) return const SizedBox.shrink();
+      return Container(
+        color: Colors.black38,
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+        child: Row(
+          children: <Widget>[
+            const Icon(Icons.photo_library_outlined, color: Colors.white70, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '$n more photo${n == 1 ? '' : 's'} pending in other runs',
+                style: ts_body.copyWith(color: Colors.white),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Get.to<void>(
+                () => PhotoReviewPage(
+                  kennelId: page.kennelId,
+                  eventId: '',
+                  eventName: '',
+                  eventNumber: null,
+                  kennelSlug: page.kennelSlug,
+                  kennelLogoUrl: page.kennelLogoUrl,
+                  kennelShortName: page.kennelShortName,
+                ),
+              ),
+              child: const Text('Review all', textAlign: TextAlign.center),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
 
 class _RunHeader extends StatelessWidget {
   const _RunHeader({required this.page});

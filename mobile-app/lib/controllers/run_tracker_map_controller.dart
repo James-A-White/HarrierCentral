@@ -915,6 +915,14 @@ class RunTrackerMapController extends GetxController
   List<_MarkEntry> _dedupeNearbyMarks(List<_MarkEntry> entries) {
     final kept = <_MarkEntry>[];
     for (final entry in entries) {
+      // A photo is never a duplicate of another photo: two shots from one
+      // spot are two pictures. This pass used to swallow the second — City
+      // H3 #1941 lost two of Cockatool's seven that way (2026-09-30). The
+      // cluster layer draws stacked photos as a count and fans them out.
+      if (entry.parsed.type == HashRunPointTypes.photo) {
+        kept.add(entry);
+        continue;
+      }
       final bool isDuplicate = kept.any(
         (k) =>
             k.type == entry.type &&
@@ -2391,6 +2399,16 @@ class RunTrackerMapController extends GetxController
     return mine != null && hasTrack(mine) ? mine : null;
   }
 
+  /// Zooms the map to where [photo] was taken (the viewer's Map button).
+  /// Never zooms out: a map already closer stays where it is.
+  void focusPhoto(MapPhotoItem photo) {
+    final double? lat = photo.latitude;
+    final double? lng = photo.longitude;
+    if (lat == null || lng == null || isClosed) return;
+    final double zoom = mapController.camera.zoom;
+    mapController.move(latlng.LatLng(lat, lng), zoom < 17 ? 17 : zoom);
+  }
+
   void selectRunner(
     String? userId, {
     bool recenter = true,
@@ -2815,6 +2833,9 @@ class RunTrackerMapController extends GetxController
             photos: photoItems,
             initialIndex: tappedIndex.clamp(0, photoItems.length - 1),
             background: Backgrounds.defaultHcBackground(),
+            // "Map" in the viewer closes it and zooms THIS map to the photo
+            // (James, 2026-09-30) rather than opening a second map.
+            onShowOnMap: focusPhoto,
           ),
         ),
       ),

@@ -81,6 +81,7 @@ class MapPhotoPage extends StatefulWidget {
     required this.initialIndex,
     required this.background,
     this.run,
+    this.onShowOnMap,
   });
 
   final String pageTitle;
@@ -92,6 +93,11 @@ class MapPhotoPage extends StatefulWidget {
   /// the info footer opens the PackTrack map centered on where the photo was
   /// taken. Null (e.g. guest gallery, or opened from the map itself) hides it.
   final RunDetailsAggregate? run;
+
+  /// When the viewer was opened FROM a map: the Map button closes the viewer
+  /// and hands the photo back, so that map can zoom to it. Without it the
+  /// button opens the run's full-screen map at the photo (from a photo grid).
+  final void Function(MapPhotoItem photo)? onShowOnMap;
 
   @override
   State<MapPhotoPage> createState() => _MapPhotoPageState();
@@ -596,7 +602,9 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
   Widget _buildInfoFooter(BuildContext context, double bottomInset) {
     final photo = _currentPhoto;
     final bool showMap =
-        widget.run != null && photo.latitude != null && photo.longitude != null;
+        (widget.run != null || widget.onShowOnMap != null) &&
+        photo.latitude != null &&
+        photo.longitude != null;
 
     final metaParts = <String>[
       '${_currentIndex + 1} of ${_photos.length} photo${_photos.length == 1 ? '' : 's'}',
@@ -669,12 +677,20 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
           if (showMap) ...[
             const SizedBox(width: 8),
             TextButton.icon(
-              onPressed: () => Get.to<void>(
-                () => PackTrackFullScreenMap(
-                  run: widget.run!,
-                  focusPoint: latlng.LatLng(photo.latitude!, photo.longitude!),
-                ),
-              ),
+              onPressed: () {
+                final void Function(MapPhotoItem)? back = widget.onShowOnMap;
+                if (back != null) {
+                  Navigator.of(context).maybePop();
+                  back(photo);
+                  return;
+                }
+                Get.to<void>(
+                  () => PackTrackFullScreenMap(
+                    run: widget.run!,
+                    focusPoint: latlng.LatLng(photo.latitude!, photo.longitude!),
+                  ),
+                );
+              },
               style: TextButton.styleFrom(
                 backgroundColor: hc_red,
                 foregroundColor: Colors.white,
