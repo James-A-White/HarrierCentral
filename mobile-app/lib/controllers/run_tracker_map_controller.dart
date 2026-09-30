@@ -611,7 +611,8 @@ class RunTrackerMapController extends GetxController
   static bool _hasTrack(UserTrack u) => hasTrack(u);
 
   /// The people who actually ran: [userPositions] minus mark-only users.
-  List<UserTrack> get runners => userPositions.where(_hasTrack).toList(growable: false);
+  List<UserTrack> get runners =>
+      userPositions.where(_hasTrack).toList(growable: false);
   final Map<String, String> _uploaderNameCache = {}; // userId   → display name
   final Map<String, String> _uploaderPhotoCache =
       {}; // userId   → profile photo URL
@@ -1273,18 +1274,24 @@ class RunTrackerMapController extends GetxController
             _photoUrlCache[id] = url;
             final double lat = _num(row['Latitude'] ?? row['latitude']);
             final double lng = _num(row['Longitude'] ?? row['longitude']);
-            final int? takenAt = _sqlUtcMs(row['TakenAtUtc'] ?? row['takenAtUtc']);
-            final int? createdAt = _sqlUtcMs(row['CreatedAt'] ?? row['createdAt']);
+            final int? takenAt = _sqlUtcMs(
+              row['TakenAtUtc'] ?? row['takenAtUtc'],
+            );
+            final int? createdAt = _sqlUtcMs(
+              row['CreatedAt'] ?? row['createdAt'],
+            );
             final rawUploader = (row['UserId'] ?? row['userId']) as String?;
-            rows.add(_PhotoRow(
-              id: id,
-              lat: lat,
-              lng: lng,
-              timestampMs: takenAt ?? createdAt ?? 0,
-              uploaderId: rawUploader == null || rawUploader.isEmpty
-                  ? ''
-                  : normalizeUuid(rawUploader),
-            ));
+            rows.add(
+              _PhotoRow(
+                id: id,
+                lat: lat,
+                lng: lng,
+                timestampMs: takenAt ?? createdAt ?? 0,
+                uploaderId: rawUploader == null || rawUploader.isEmpty
+                    ? ''
+                    : normalizeUuid(rawUploader),
+              ),
+            );
             // AssetId is only present in rowset 0 (own photos). Store it so
             // CameraPhotoMarker can attempt local device loading first.
             final assetId = (row['AssetId'] ?? row['assetId']) as String?;
@@ -1513,7 +1520,11 @@ class RunTrackerMapController extends GetxController
         '(${own.positions.length} pts)',
       );
     } catch (e, s) {
-      BootLogger.logError('[RunTrackerMapController._showOwnTrailFromArchive]', e, s);
+      BootLogger.logError(
+        '[RunTrackerMapController._showOwnTrailFromArchive]',
+        e,
+        s,
+      );
     }
   }
 
@@ -1525,8 +1536,9 @@ class RunTrackerMapController extends GetxController
     _serverTracks.clear();
     _filteredTracks.clear();
     for (final user in incoming) {
-      _serverTracks[normalizeUuid(user.id)] = List<TrackPoint>.of(user.positions)
-        ..sort((a, b) => a.timestampMs.compareTo(b.timestampMs));
+      _serverTracks[normalizeUuid(user.id)] = List<TrackPoint>.of(
+        user.positions,
+      )..sort((a, b) => a.timestampMs.compareTo(b.timestampMs));
     }
     return _serverTracks.keys.toSet();
   }
@@ -2879,22 +2891,38 @@ class RunTrackerMapController extends GetxController
   }
 
   // Photo markers interpolate between two pixel-size anchors using a quadratic
-  // curve (t²) so they shrink faster as you zoom out while keeping both ends fixed:
-  //   initialZoom (full-run view) → 50 px
-  //   maxZoom     (closest zoom)  → 360 px  (≈ fills a phone screen horizontally)
-  double _photoMarkerScale() {
-    const double baseSize = 144.0;
-    const double pxAtInitial = 50.0;
-    const double pxAtMax = 360.0;
-    if (maxZoom <= initialZoom) return pxAtMax / baseSize;
+  // curve (t²) so they shrink faster as you zoom out while keeping both ends
+  // fixed:
+  //   initialZoom (full-run view)       → 50 px
+  //   initialZoom + _photoZoomSpan and beyond → _photoMaxPx
+  //
+  // Capped, not "fills the screen": the cap used to be 360 px at zoom 22, so
+  // a fanned-out cluster of five shots from one spot could never all be on
+  // screen at once (James, 2026-09-30). At 150 px a fan of eight on the
+  // cluster layer's circle fits a phone's width.
+  static const double _photoBasePx = 144.0;
+  static const double _photoMinPx = 50.0;
+  static const double _photoMaxPx = 150.0;
+  static const double _photoZoomSpan = 5.0;
+
+  double _photoMarkerPx() {
     final double zoom = _mapReady ? mapController.camera.zoom : initialZoom;
-    final double t = ((zoom - initialZoom) / (maxZoom - initialZoom)).clamp(
-      0.0,
-      1.0,
-    );
+    final double span = (maxZoom - initialZoom).clamp(0.0, _photoZoomSpan);
+    if (span <= 0) return _photoMaxPx;
+    final double t = ((zoom - initialZoom) / span).clamp(0.0, 1.0);
     final double tCurved = t * t; // quadratic: faster shrink toward initialZoom
-    return (pxAtInitial + (pxAtMax - pxAtInitial) * tCurved) / baseSize;
+    return _photoMinPx + (_photoMaxPx - _photoMinPx) * tCurved;
   }
+
+  double _photoMarkerScale() => _photoMarkerPx() / _photoBasePx;
+
+  /// How close (in screen pixels) two photo markers' centres must be before
+  /// the cluster layer stacks them behind one count. Follows the marker size
+  /// so it means the same thing at every zoom — "more than half overlapping"
+  /// — rather than a fixed radius that clustered nothing at close zoom
+  /// (150 px photos, 40 px radius) and too much at the overview.
+  int photoClusterRadiusPx() =>
+      (_photoMarkerPx() * 0.6).clamp(36.0, 100.0).round();
 
   String _formatDistanceLabel() {
     final meters = _selectedRunnerDistanceMeters();
@@ -3741,8 +3769,8 @@ class RunTrackerMapController extends GetxController
     UserTrack runnerRaw,
     double? cutoff,
   ) {
-    final UserTrack runner = runnerRaw.positions.length ==
-            _photoFreePositions(runnerRaw).length
+    final UserTrack runner =
+        runnerRaw.positions.length == _photoFreePositions(runnerRaw).length
         ? runnerRaw
         : runnerRaw.copyWith(positions: _photoFreePositions(runnerRaw));
     if (runner.positions.isEmpty) return null;
@@ -3976,12 +4004,12 @@ class _PhotoRow {
   bool get hasCoordinate => !(lat == 0 && lng == 0);
 
   TrackPoint get asPoint => TrackPoint(
-        lat: lat,
-        lng: lng,
-        acc: 0,
-        timestampMs: timestampMs,
-        type: '${HashRunPointTypes.photo.key}::$id',
-      );
+    lat: lat,
+    lng: lng,
+    acc: 0,
+    timestampMs: timestampMs,
+    type: '${HashRunPointTypes.photo.key}::$id',
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -3996,7 +4024,8 @@ class _PhotoRow {
   int get hashCode => Object.hash(id, lat, lng, timestampMs, uploaderId);
 }
 
-double _num(dynamic v) => v is num ? v.toDouble() : (double.tryParse('$v') ?? 0);
+double _num(dynamic v) =>
+    v is num ? v.toDouble() : (double.tryParse('$v') ?? 0);
 
 /// SQL DATETIME2 text (no zone) is UTC by convention here; the API may also
 /// hand back an offset string, which parses as-is.
@@ -4004,7 +4033,9 @@ int? _sqlUtcMs(dynamic v) {
   if (v == null) return null;
   final String t = '$v'.trim();
   if (t.isEmpty) return null;
-  final DateTime? d = DateTime.tryParse(t.endsWith('Z') || t.contains('+') ? t : '${t}Z');
+  final DateTime? d = DateTime.tryParse(
+    t.endsWith('Z') || t.contains('+') ? t : '${t}Z',
+  );
   return d?.millisecondsSinceEpoch;
 }
 

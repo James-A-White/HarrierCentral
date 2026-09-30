@@ -68,8 +68,7 @@ class RunTrackerMap extends StatelessWidget {
   /// registered and never hear about them. The host decides what, if
   /// anything, to draw (the run page's Get me there / Get Directions button).
   /// Never drawn over a playback panel: with a timeline there is no room.
-  final Widget Function(BuildContext context, bool hasTrackData)?
-  bottomOverlay;
+  final Widget Function(BuildContext context, bool hasTrackData)? bottomOverlay;
 
   /// Optional override for the GetX controller tag. Defaults to the event id so
   /// every map of a run shares one controller. The fullscreen map passes a
@@ -356,9 +355,19 @@ class RunTrackerMap extends StatelessWidget {
                   MarkerClusterLayerWidget(
                     options: MarkerClusterLayerOptions(
                       rotate: true, // photos and cluster counts stay upright
-                      maxClusterRadius: 40,
+                      // Radius tracks the photo size (see the controller):
+                      // the layer is rebuilt on every zoom change anyway,
+                      // because the marker sizes are.
+                      maxClusterRadius: controller.photoClusterRadiusPx(),
+                      // Tapping a count zooms to fit its photos up to here;
+                      // photos still stacked at 19 are from one spot and
+                      // fan out on the next tap (spiderfy) instead of the
+                      // map zooming on into blank tiles.
+                      maxZoom: 19,
                       size: const Size(52, 52),
-                      spiderfyCircleRadius: 90,
+                      // Wide enough for eight 150 px photos (the size cap)
+                      // to sit round the count without covering each other.
+                      spiderfyCircleRadius: 105,
                       markers: controller.photoCheckpointMarkers,
                       builder: (context, markers) => Container(
                         width: 52,
