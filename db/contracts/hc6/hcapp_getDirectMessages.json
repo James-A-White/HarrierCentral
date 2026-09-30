@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_getDirectMessages",
   "version": "1.0.0",
-  "description": "Reads a DM thread in hcapp_getRoomMessages' shape; the caller must hold a row for it (ended still reads). Marks read when @markRead=1. E9.F1.S7.",
+  "description": "Reads a DM thread in hcapp_getRoomMessages' shape; the caller must hold a row for it (ended still reads). Marks read when @markRead=1. E9.F1.S7. 2026-09-30: every message row also carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22).",
   "parameters": [
     {
       "name": "deviceId",
@@ -38,6 +38,13 @@
       "nullable": true,
       "mapsToColumn": null,
       "description": "1 marks the newest as read"
+    },
+    {
+      "name": "reactionsSince",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The last reactionsAsOf this client saw (E9.F1.S22). With it, the reader returns reactions changed since then on messages at or below sinceSequenceCount."
     }
   ],
   "rowsets": [
@@ -175,6 +182,38 @@
           "type": "NVARCHAR(36)",
           "nullable": false,
           "description": ""
+        }
+      ]
+    },
+    {
+      "index": "last-1",
+      "name": "ReactionUpdates",
+      "description": "Added 2026-09-30 (E9.F1.S22), ALWAYS present, after every older rowset: { id, reactions } for messages the client already holds whose reactions changed after @reactionsSince. Find by column.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Message id"
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "ReactionsJson"
+        }
+      ]
+    },
+    {
+      "index": "last",
+      "name": "ReactionsAsOf",
+      "description": "One row { reactionsAsOf } — server time; pass back as @reactionsSince.",
+      "columns": [
+        {
+          "name": "reactionsAsOf",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "SYSDATETIMEOFFSET()"
         }
       ]
     }

@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcportal_getEventMessages",
   "version": "1.1.0",
-  "description": "Retrieves all non-deleted event messages for a specific event, returning message content with author information formatted for a chat-like interface. Auth is validated first (consistent with all HC6 SPs). Returns an error if the event is not found. Messages are ordered by creation time descending (newest first).",
+  "description": "Retrieves all non-deleted event messages for a specific event, returning message content with author information formatted for a chat-like interface. Auth is validated first (consistent with all HC6 SPs). Returns an error if the event is not found. Messages are ordered by creation time descending (newest first). 2026-09-30: every message row also carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22).",
   "parameters": [
     {
       "name": "deviceId",
@@ -31,6 +31,13 @@
       "nullable": true,
       "mapsToColumn": null,
       "description": "Delta fetch: only messages with a higher MessageSequenceCount; NULL = full fetch"
+    },
+    {
+      "name": "reactionsSince",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The last reactionsAsOf this client saw (E9.F1.S22). With it, the reader returns reactions changed since then on messages at or below sinceSequenceCount."
     }
   ],
   "rowsets": [
@@ -118,6 +125,38 @@
           "type": "NVARCHAR(36)",
           "nullable": false,
           "description": "Id of a removed message (same case as the message ids)"
+        }
+      ]
+    },
+    {
+      "index": "last-1",
+      "name": "ReactionUpdates",
+      "description": "Added 2026-09-30 (E9.F1.S22), ALWAYS present, after every older rowset: { id, reactions } for messages the client already holds whose reactions changed after @reactionsSince. Find by column.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Message id"
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "ReactionsJson"
+        }
+      ]
+    },
+    {
+      "index": "last",
+      "name": "ReactionsAsOf",
+      "description": "One row { reactionsAsOf } — server time; pass back as @reactionsSince.",
+      "columns": [
+        {
+          "name": "reactionsAsOf",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "SYSDATETIMEOFFSET()"
         }
       ]
     }

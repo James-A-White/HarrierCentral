@@ -1,0 +1,94 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_reactToChatMessage",
+  "version": "1.0.0",
+  "description": "Adds or removes the caller's emoji reaction on a chat message of any thread kind (E9.F1.S22). Rule and write in HC6.nonApi_reactToChatMessage: same visibility as the readers, blocked authors refused, deleted messages refused. ReactionsJson is keyed by catalog code (an emoji equals '' in this collation).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Device auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Standard token (no param string)."
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "EventMessage.id",
+      "description": "The message reacted to."
+    },
+    {
+      "name": "reaction",
+      "type": "NVARCHAR(20)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "A code from HC6.ChatReactionCatalog(): thumbs, heart, laugh, beer, run, fire."
+    },
+    {
+      "name": "on",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 add (default) / 0 remove."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Result",
+      "description": "{ success = 1, messageId, reactions (JSON after the change, NULL when none) } — or { success = 0, errorCode, errorType } followed by the StandardErrorResult row (1990 missing fields, 1991 not found, 1992 not allowed, 1993 unknown reaction, 1994 unhandled).",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 / 0"
+        },
+        {
+          "name": "messageId",
+          "type": "NVARCHAR(36)",
+          "nullable": true,
+          "description": "UPPER"
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "{\"beer\":[\"<PublicHasherId>\"],...}"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "PushDetail",
+      "description": "API ONLY, stripped: { MessageId, ThreadKind, EventId, PublicEventId, KennelId, RoomType, ThreadId }.",
+      "columns": []
+    },
+    {
+      "index": 2,
+      "name": "SilentRecipients",
+      "description": "API ONLY, stripped: the message author's mobile devices { UserId, FcmToken } (never the reactor's own).",
+      "columns": []
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.EventMessage.ReactionsJson / ReactionsUpdatedAt",
+    "Silent FCM data push (Type=reaction) to the author's phones via AppApiHC6"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

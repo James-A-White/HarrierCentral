@@ -59,6 +59,13 @@
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageKind",
       "description": "Optional, default 0. 0 text, 1 photo (MessageContent = blob URL in chat-photos), 2 location (MessageContent = Google Maps search URL). Validated by HC6.ChatMessageKindError; invalid → validation error. Added 2026-09-29 (E9.F1.S11/S12)."
+    },
+    {
+      "name": "replyToMessageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.ReplyToMessageId",
+      "description": "The message this one quotes (E9.F1.S21). Kept only when it is in the same thread; otherwise the message sends without a quote."
     }
   ],
   "rowsets": [
