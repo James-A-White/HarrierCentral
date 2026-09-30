@@ -1,3 +1,8 @@
+## 2.0.87+736 (2026-09-30)
+### Improvements
+- **Merge accounts**: the search also matches a first name, last name or "First Last" (a duplicate made at signup often has no hash name yet), and the screen now reminds admins that several names can be entered as a comma-separated list — e.g. Opee, Opie — to see both accounts together.
+- **Device Health**: a "GPS this session" strip for sessions that tracked a run (app 3.1.8+1427 and later): tracking-quality setting, OS battery saver, GPS fixes, average and worst accuracy, fixes over 25 m.
+
 ## 2.0.87+735 (2026-09-29)
 ### Improvements
 - **Direct messages exist server-side.** The chat readers, the unread

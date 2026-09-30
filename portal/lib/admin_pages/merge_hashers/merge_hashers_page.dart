@@ -153,7 +153,25 @@ class MergeHashersPage extends StatelessWidget {
                       style: TextStyle(color: _muted),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 12),
+                    // The reminder James asked for (2026-09-30): the search
+                    // has always taken a comma-separated list, but nobody
+                    // knew, and one name at a time never shows both accounts.
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEDE7F6),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Tip: enter every name the person might be under, separated by commas — '
+                        'for example Opee, Opie — and all the matching accounts appear in one list, '
+                        'so you can mark one Keep and the rest Merge.',
+                        style: TextStyle(fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
                     TextField(
                       controller: c.searchText,
                       decoration: const InputDecoration(

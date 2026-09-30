@@ -1,3 +1,10 @@
+## 3.1.8+1427 (2026-09-30)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### Improvements
+- **PackTrack photos**: photo markers cap at 150 px instead of growing to fill the screen, photos from one spot stack behind a count at every zoom (the cluster radius follows the marker size), and tapping the count fans them out wide enough that all of them fit on one screen.
+- **Device Health (portal)**: a session that tracked a run now records the tracking-quality setting it ran on, how many GPS fixes went onto the track, and their accuracy (average, worst, how many over 25 m), so a Power Saver trail and a bad-signal trail can be told apart.
+
 ## 3.1.8+1426 (2026-09-30)
 iOS (TestFlight, James internal test only). Held from the beta testers.
 Build number only; same version.
