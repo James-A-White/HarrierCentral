@@ -576,13 +576,10 @@ class FutureRunListPageController extends GetxController {
     if (Get.isRegistered<MainNavigationController>()) {
       final MainNavigationController nav = Get.find<MainNavigationController>();
       // The tab bar's onTap closes Chats; tell it this is the way in.
+      // Consumed by onTabChanged on the setPage tap below (2026-09-30).
       nav.openingChats = true;
-      try {
-        nav.bottomNavigationKey.currentState?.setPage(0);
-        await refreshFromTable(true);
-      } finally {
-        nav.openingChats = false;
-      }
+      nav.bottomNavigationKey.currentState?.setPage(0);
+      await refreshFromTable(true);
       return;
     }
     await refreshFromTable(true);

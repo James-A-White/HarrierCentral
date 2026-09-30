@@ -536,8 +536,14 @@ class MainNavigationController extends GetxController
     // tab and back, shows the runs again (James, 2026-09-29). Must run before
     // the first await — the badge clears openingChats as soon as the tap
     // returns.
+    // Consume the flag HERE, once: the bubble used to clear it in a finally
+    // after awaiting a list scroll, and when that scroll never completed the
+    // flag stuck at true and every later tab change kept the Chats view
+    // (simulator reproduction, 2026-09-30).
+    final bool opening = openingChats;
+    openingChats = false;
     var leftChats = false;
-    if (!openingChats && Get.isRegistered<FutureRunListPageController>()) {
+    if (!opening && Get.isRegistered<FutureRunListPageController>()) {
       final ctrl = Get.find<FutureRunListPageController>();
       if (ctrl.isChatsMode) {
         ctrl.runsToDisplay.value = RunsToDisplay.allRuns;
