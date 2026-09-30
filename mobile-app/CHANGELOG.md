@@ -1,3 +1,9 @@
+## 3.1.8+1426 (2026-09-30)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### Fixes
+- **Featured photos**: opening a photo from the Details tab's Featured strip now shows the photographer's avatar (it always showed the default) and offers the Map button for a located photo, as the Photos tab already did.
+
 ## 3.1.8+1425 (2026-09-30)
 iOS (TestFlight, James internal test only). Held from the beta testers.
 Build number only; same version.
