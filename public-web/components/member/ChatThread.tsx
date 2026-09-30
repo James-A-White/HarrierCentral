@@ -25,17 +25,25 @@
  * conversation), and a composer that closes when the server says canSend
  * is 0 — which every poll re-checks, so an ending made elsewhere reaches
  * an open page.
+ *
+ * E9.F1.S21/S22 (2026-09-30): Reply quotes one message — the quote is
+ * drawn inside the bubble from the row's own replyTo* fields, so it needs
+ * no original on the page, and clicking it scrolls to the original when
+ * there is one. Reactions are a fixed six, kept by CODE on the server
+ * (an emoji equals '' in the database's collation); each poll also carries
+ * `reactionUpdates` for older messages, since a delta by sequence count
+ * would never see a reaction land on yesterday's message.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Loader2, MapPin, MoreHorizontal, MoreVertical, Send } from "lucide-react";
-import { CHAT_REPORT_REASON_MAX, type ChatKind, type ChatMessageRow, type DmThreadInfo } from "@/lib/member-api";
+import { CornerUpLeft, ImagePlus, Loader2, MapPin, MoreHorizontal, MoreVertical, Send, X } from "lucide-react";
+import { CHAT_REPORT_REASON_MAX, type ChatKind, type ChatMessageRow, type ChatReactionUpdate, type DmThreadInfo } from "@/lib/member-api";
 import type { KennelContext } from "@/lib/types/kennel";
 import {
-  CHAT_KIND_LOCATION, CHAT_KIND_PHOTO, CHAT_KIND_TEXT, chatKindOf, chatLocationUrl, formatChatLocation, parseChatLocation,
-  type ChatMessageKind,
+  CHAT_KIND_LOCATION, CHAT_KIND_PHOTO, CHAT_KIND_TEXT, CHAT_REACTIONS, chatKindOf, chatLocationUrl, formatChatLocation, parseChatLocation,
+  parseReactions, quoteSnippet, reactionEmoji, type ChatMessageKind,
 } from "@/lib/chat-content";
 import { dmHref } from "@/lib/chat-links";
 import { HC_BLUE, HC_RED } from "@/components/member/app-look";
@@ -92,6 +100,10 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
   const [dmBusy, setDmBusy] = useState(false);
   /** The author being messaged, while the server decides. */
   const [messaging, setMessaging] = useState<string | null>(null);
+  /** The message the next send quotes (E9.F1.S21), or null. */
+  const [replyTo, setReplyTo] = useState<Shown | null>(null);
+  /** The server's clock at the last read: what the next poll asks reactions "since" (E9.F1.S22). */
+  const reactionsSince = useRef<string | null>(null);
   const applyDm = useCallback((d: Partial<DmLive> | undefined) => {
     if (!d || d.canSend == null) return;
     setDmLive({ canSend: Number(d.canSend) === 1 ? 1 : 0, muted: Number(d.muted) === 1 ? 1 : 0 });
@@ -140,16 +152,28 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
     setMessages((ms) => ms.map((m) => upper(m.id) === upper(messageId) ? { ...m, ...p } : m));
   }, []);
 
+  /** Reactions that landed on messages already drawn: the server's word replaces what is here. */
+  const applyReactions = useCallback((updates: ChatReactionUpdate[], asOf: string | null | undefined) => {
+    if (asOf) reactionsSince.current = asOf;
+    if (updates.length === 0) return;
+    const byId = new Map(updates.map((u) => [upper(u.id), u.reactions] as const));
+    setMessages((ms) => ms.some((m) => byId.has(upper(m.id)))
+      ? ms.map((m) => byId.has(upper(m.id)) ? { ...m, reactions: byId.get(upper(m.id)) ?? null } : m)
+      : ms);
+  }, []);
+
   useEffect(() => {
     let stop = false;
     const tick = async () => {
       try {
-        const r = await fetch(`/api/member/chat?kind=${kind}&id=${encodeURIComponent(id)}&since=${lastSeq.current}`, { cache: "no-store" });
+        const rs = reactionsSince.current ? `&reactionsSince=${encodeURIComponent(reactionsSince.current)}` : "";
+        const r = await fetch(`/api/member/chat?kind=${kind}&id=${encodeURIComponent(id)}&since=${lastSeq.current}${rs}`, { cache: "no-store" });
         if (r.ok) {
-          const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[]; dm?: Partial<DmLive> };
+          const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[]; dm?: Partial<DmLive>; reactionUpdates?: ChatReactionUpdate[]; reactionsAsOf?: string | null };
           if (stop) return;
           drop(j.removed ?? []);
           merge(j.messages ?? []);
+          applyReactions(j.reactionUpdates ?? [], j.reactionsAsOf);
           applyDm(j.dm);
         }
       } catch { /* next tick */ }
@@ -158,7 +182,7 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
     const onVisible = () => { if (document.visibilityState === "visible") tick(); };
     document.addEventListener("visibilitychange", onVisible);
     return () => { stop = true; window.clearInterval(h); document.removeEventListener("visibilitychange", onVisible); };
-  }, [kind, id, merge, drop, applyDm]);
+  }, [kind, id, merge, drop, applyDm, applyReactions]);
 
   // Object URLs outlive nothing: let them go with the page.
   useEffect(() => {
@@ -178,9 +202,9 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
   const say = (text: string, ms = 2000) => setNotice({ text, ms });
 
   /** POST one message. Null on success, else the reason to show. */
-  async function post(messageId: string, content: string, messageKind: ChatMessageKind): Promise<string | null> {
+  async function post(messageId: string, content: string, messageKind: ChatMessageKind, replyToMessageId: string | null = null): Promise<string | null> {
     try {
-      const r = await fetch("/api/member/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, id, messageId, text: content, messageKind }) });
+      const r = await fetch("/api/member/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, id, messageId, text: content, messageKind, replyToMessageId }) });
       const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       return r.ok && j.ok ? null : j.error ?? "Couldn't send.";
     } catch {
@@ -195,17 +219,66 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
     };
   }
 
+  /** The reply fields a local row carries so its quote draws before the server echoes it. */
+  function quoteOf(target: Shown | null): Partial<Shown> {
+    if (!target) return {};
+    return {
+      replyToMessageId: upper(target.id), replyToText: target.text, replyToKind: target.messageKind ?? CHAT_KIND_TEXT,
+      replyToAuthor: upper(target.authorId) === me ? "You" : target.authorFirstName, replyToRemoved: 0,
+    };
+  }
+
   async function send() {
     const body = text.trim();
     if (!body || sending) return;
     setSending(true); setError(null);
     const messageId = crypto.randomUUID();
+    const target = replyTo;
     try {
-      const err = await post(messageId, body, CHAT_KIND_TEXT);
+      const err = await post(messageId, body, CHAT_KIND_TEXT, target ? target.id.toLowerCase() : null);
       if (err) { setError(err); return; }
-      setText("");
-      merge([mine(messageId, body, CHAT_KIND_TEXT)]);
+      setText(""); setReplyTo(null);
+      merge([mine(messageId, body, CHAT_KIND_TEXT, quoteOf(target))]);
     } finally { setSending(false); }
+  }
+
+  // ── Reactions (E9.F1.S22) ──────────────────────────────────────────────────
+
+  /**
+   * My reaction on or off — on when it is not mine yet. Drawn at once from
+   * a local edit of the row's JSON, then replaced by the server's answer,
+   * or put back with its reason when it refused.
+   */
+  async function toggleReaction(m: Shown, code: string) {
+    setMenuFor(null);
+    const before = m.reactions ?? null;
+    const current = parseReactions(before);
+    const on: 0 | 1 = (current[code] ?? []).includes(me) ? 0 : 1;
+    const next: Record<string, string[]> = {};
+    for (const { code: c } of CHAT_REACTIONS) {
+      const ids = (current[c] ?? []).filter((x) => x !== me);
+      if (c === code && on === 1) ids.push(me);
+      if (ids.length) next[c] = ids;
+    }
+    patch(m.id, { reactions: Object.keys(next).length ? JSON.stringify(next) : null });
+    try {
+      const r = await fetch("/api/member/chat", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messageId: m.id.toLowerCase(), reaction: code, on }) });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; reactions?: string | null; error?: string };
+      if (r.ok && j.ok) { patch(m.id, { reactions: j.reactions ?? null }); return; }
+      patch(m.id, { reactions: before });
+      setError(j.error ?? "That reaction could not be saved.");
+    } catch {
+      patch(m.id, { reactions: before });
+      setError("Couldn't save that reaction. Check your connection.");
+    }
+  }
+
+  function scrollToMessage(messageId: string) {
+    const el = document.getElementById(`msg-${upper(messageId)}`);
+    if (!el) { say("That message isn't loaded here."); return; }
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    el.classList.add("ring-2", "ring-blue-400", "rounded-2xl");
+    window.setTimeout(() => el.classList.remove("ring-2", "ring-blue-400", "rounded-2xl"), 1200);
   }
 
   // ── Photos (E9.F1.S11) ─────────────────────────────────────────────────────
@@ -334,7 +407,8 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
   const reload = useCallback(async () => {
     const r = await fetch(`/api/member/chat?kind=${kind}&id=${encodeURIComponent(id)}`, { cache: "no-store" });
     if (!r.ok) return;
-    const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[]; dm?: Partial<DmLive> };
+    const j = (await r.json()) as { messages?: ChatMessageRow[]; removed?: string[]; dm?: Partial<DmLive>; reactionsAsOf?: string | null };
+    if (j.reactionsAsOf) reactionsSince.current = j.reactionsAsOf;
     for (const x of j.removed ?? []) gone.current.add(upper(x));
     const rows: Shown[] = (j.messages ?? []).filter((m) => !gone.current.has(upper(m.id)));
     for (const m of rows) if (Number.isInteger(m.sequenceCount)) lastSeq.current = Math.max(lastSeq.current, m.sequenceCount);
@@ -501,9 +575,12 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
             const shownKind = m.pending ? CHAT_KIND_PHOTO : chatKindOf(m.messageKind, m.text);
             const canDelete = m.canDelete === 1 || (m.local === true && !m.pending);
             return (
-              <MessageRow key={m.id} m={m} mine={isMine} showAuthor={showAuthor} kind={shownKind}
+              <MessageRow key={m.id} m={m} me={me} mine={isMine} showAuthor={showAuthor} kind={shownKind}
                 menuOpen={menuFor === upper(m.id)} canMenu={!m.pending}
                 onMenu={(open) => setMenuFor(open ? upper(m.id) : null)}
+                onReply={canSend && !m.local ? () => { setMenuFor(null); setError(null); setReplyTo(m); } : undefined}
+                onReact={!m.local ? (code) => toggleReaction(m, code) : undefined}
+                onQuoteClick={m.replyToMessageId ? () => scrollToMessage(m.replyToMessageId!) : undefined}
                 onCopy={() => copy(m)} onDelete={canDelete ? () => { setMenuFor(null); setConfirmDelete(m); } : undefined}
                 // Not inside a DM: the only other author there is the one you are already messaging.
                 onMessage={!isMine && kind !== "dm" ? () => messageHasher(m) : undefined}
@@ -527,7 +604,20 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
           You can&apos;t message {dm?.otherDisplayName || "them"}.
         </p>
       ) : (
-      <form className="sticky bottom-16 flex items-end gap-1.5 border-t border-zinc-200 bg-white px-3 py-2" onSubmit={(e) => { e.preventDefault(); send(); }}>
+      <form className="sticky bottom-16 border-t border-zinc-200 bg-white px-3 py-2" onSubmit={(e) => { e.preventDefault(); send(); }}>
+        {replyTo && (
+          <div className="mb-2 flex items-center gap-2 rounded-xl bg-zinc-100 px-3 py-1.5 text-[14px]" style={{ borderLeft: `3px solid ${HC_BLUE}` }} role="status">
+            <CornerUpLeft className="h-4 w-4 shrink-0 text-zinc-500" />
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-semibold" style={{ color: HC_BLUE }}>Replying to {upper(replyTo.authorId) === me ? "yourself" : replyTo.authorFirstName || "them"}</div>
+              <div className="truncate text-zinc-600">{quoteSnippet(replyTo.messageKind, replyTo.text)}</div>
+            </div>
+            <button type="button" aria-label="Cancel reply" onClick={() => setReplyTo(null)} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+        <div className="flex items-end gap-1.5">
         <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={onPickPhoto} />
         <button type="button" aria-label="Send a photo" onClick={() => fileInput.current?.click()}
           className="flex h-11 w-9 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-800">
@@ -550,6 +640,7 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white disabled:opacity-40" style={{ backgroundColor: HC_BLUE }}>
           <Send className="h-5 w-5" />
         </button>
+        </div>
       </form>
       )}
 
@@ -595,9 +686,16 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
   );
 }
 
-function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCopy, onDelete, onMessage, messaging, onBlock, onReport, onOpenPhoto, onRetry, onDiscard }: {
-  m: Shown; mine: boolean; showAuthor: boolean; kind: ChatMessageKind; menuOpen: boolean; canMenu: boolean;
-  onMenu: (open: boolean) => void; onCopy: () => void; onDelete?: () => void;
+function MessageRow({ m, me, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onReply, onReact, onQuoteClick, onCopy, onDelete, onMessage, messaging, onBlock, onReport, onOpenPhoto, onRetry, onDiscard }: {
+  m: Shown; me: string; mine: boolean; showAuthor: boolean; kind: ChatMessageKind; menuOpen: boolean; canMenu: boolean;
+  onMenu: (open: boolean) => void;
+  /** Reply (E9.F1.S21) — first in the menu, on every server-held message while I may send. */
+  onReply?: () => void;
+  /** My reaction on or off by code (E9.F1.S22); the six buttons in the menu and the chips under the bubble. */
+  onReact?: (code: string) => void;
+  /** The quote was clicked: scroll to the original. */
+  onQuoteClick?: () => void;
+  onCopy: () => void; onDelete?: () => void;
   /** Someone else's message in a run, kennel or room chat: Message <name> (E9.F1.S19), first in the menu. */
   onMessage?: () => void; messaging?: boolean;
   /** Someone else's message only: Block <name> and Report (E9.F1.S16/S17). */
@@ -611,6 +709,9 @@ function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCo
   useEffect(() => cancelPress, []);
 
   const bubbleStyle = mine ? { backgroundColor: HC_BLUE, color: "#fff" } : { backgroundColor: "#E2E8F0", color: "#1E293B" };
+  const reactions = parseReactions(m.reactions);
+  const reactionCodes = CHAT_REACTIONS.map((r) => r.code).filter((c) => (reactions[c] ?? []).length > 0);
+  const isReply = !!m.replyToMessageId;
   const menuButton = canMenu && (
     <button type="button" aria-label="Message options" aria-expanded={menuOpen} onClick={() => onMenu(!menuOpen)}
       className={`flex h-8 w-8 shrink-0 items-center justify-center self-center rounded-full text-zinc-500 transition hover:bg-zinc-100 focus-visible:opacity-100 ${menuOpen ? "opacity-100" : "opacity-60 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"}`}>
@@ -619,7 +720,7 @@ function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCo
   );
 
   return (
-    <li className={`group flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}>
+    <li id={`msg-${upper(m.id)}`} className={`group flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}>
       {!mine && (
         <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-zinc-200">
           {m.authorImageUrl?.startsWith("http") && (
@@ -656,6 +757,18 @@ function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCo
             onMenu(true);
           }}
         >
+          {isReply && (
+            // The quote, from the row's own fields: no original needed, and
+            // "Message deleted" when it has gone since (E9.F1.S21).
+            <button type="button" onClick={onQuoteClick} disabled={!onQuoteClick}
+              className={`mb-1.5 block w-full rounded-lg px-2.5 py-1.5 text-left ${kind === CHAT_KIND_PHOTO ? "mx-0.5 mt-0.5 w-auto" : ""}`}
+              style={{ backgroundColor: mine ? "rgba(255,255,255,0.18)" : "rgba(15,23,42,0.07)", borderLeft: `3px solid ${mine ? "#fff" : HC_BLUE}` }}>
+              <span className="block truncate text-[13px] font-semibold" style={{ opacity: 0.95 }}>{m.replyToAuthor || "Someone"}</span>
+              {m.replyToRemoved === 1 || m.replyToText == null
+                ? <span className="block truncate text-[14px] italic" style={{ opacity: 0.8 }}>Message deleted</span>
+                : <span className="block truncate text-[14px]" style={{ opacity: 0.85 }}>{quoteSnippet(m.replyToKind, m.replyToText)}</span>}
+            </button>
+          )}
           <MessageBody m={m} kind={kind} onOpenPhoto={onOpenPhoto} />
           {m.pending === "failed" ? (
             <div className="mt-1 flex flex-wrap items-center justify-end gap-3 px-2 pb-1 text-[13px]">
@@ -669,17 +782,53 @@ function MessageRow({ m, mine, showAuthor, kind, menuOpen, canMenu, onMenu, onCo
             </div>
           )}
         </div>
+        {reactionCodes.length > 0 && (
+          // Who reacted, as chips: emoji and count, mine outlined (E9.F1.S22).
+          <div className={`mt-1 flex flex-wrap gap-1 ${mine ? "justify-end" : "justify-start"}`}>
+            {reactionCodes.map((c) => {
+              const isMine = (reactions[c] ?? []).includes(me);
+              return (
+                <button key={c} type="button" onClick={onReact ? () => onReact(c) : undefined} disabled={!onReact}
+                  aria-label={`${reactionEmoji(c)} ${reactions[c].length}${isMine ? ", including you" : ""}`} aria-pressed={isMine}
+                  className="flex items-center gap-1 rounded-full border bg-white px-2 py-0.5 text-[13px] leading-5 text-zinc-800 shadow-sm"
+                  style={{ borderColor: isMine ? HC_BLUE : "#E4E4E7", borderWidth: isMine ? 2 : 1 }}>
+                  <span>{reactionEmoji(c)}</span><span className="tabular-nums">{reactions[c].length}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
         {menuOpen && (
           <>
             {/* Any tap outside closes it. */}
             <div className="fixed inset-0 z-40" onClick={() => onMenu(false)} />
             <div role="menu" className={`absolute top-full z-50 mt-1 min-w-[140px] overflow-hidden rounded-xl border border-zinc-200 bg-white text-[16px] text-zinc-900 shadow-xl ${mine ? "right-0" : "left-0"}`}>
+              {onReact && (
+                // The six reactions, mine highlighted; tap toggles (E9.F1.S22).
+                <div className="flex items-center gap-0.5 border-b border-zinc-200 px-1.5 py-1.5">
+                  {CHAT_REACTIONS.map((r) => {
+                    const isMine = (reactions[r.code] ?? []).includes(me);
+                    return (
+                      <button key={r.code} type="button" role="menuitemcheckbox" aria-label={r.label} aria-checked={isMine} onClick={() => onReact(r.code)}
+                        className="flex h-9 w-9 items-center justify-center rounded-full text-[22px] leading-none hover:bg-zinc-100"
+                        style={isMine ? { backgroundColor: "#DBEAFE" } : undefined}>
+                        {r.emoji}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {onReply && (
+                <button type="button" role="menuitem" onClick={onReply} className="flex w-full items-center gap-2 px-4 py-2.5 text-left hover:bg-zinc-100">
+                  <CornerUpLeft className="h-4 w-4 text-zinc-500" /> Reply
+                </button>
+              )}
               {onMessage && (
-                <button type="button" role="menuitem" onClick={onMessage} disabled={messaging} className="flex w-full items-center gap-2 border-b border-zinc-200 px-4 py-2.5 text-left font-semibold hover:bg-zinc-100 disabled:opacity-60">
+                <button type="button" role="menuitem" onClick={onMessage} disabled={messaging} className={`flex w-full items-center gap-2 border-b border-zinc-200 px-4 py-2.5 text-left font-semibold hover:bg-zinc-100 disabled:opacity-60 ${onReply ? "border-t" : ""}`}>
                   {messaging && <Loader2 className="h-4 w-4 animate-spin" />} Message {m.authorFirstName || "them"}
                 </button>
               )}
-              <button type="button" role="menuitem" onClick={onCopy} className="block w-full px-4 py-2.5 text-left hover:bg-zinc-100">Copy</button>
+              <button type="button" role="menuitem" onClick={onCopy} className={`block w-full px-4 py-2.5 text-left hover:bg-zinc-100 ${onReply && !onMessage ? "border-t border-zinc-200" : ""}`}>Copy</button>
               {onReport && (
                 <button type="button" role="menuitem" onClick={onReport} className="block w-full border-t border-zinc-200 px-4 py-2.5 text-left hover:bg-zinc-100">Report</button>
               )}

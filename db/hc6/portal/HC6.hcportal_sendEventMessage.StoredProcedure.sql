@@ -9,8 +9,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_sendEventMessage]
 @messageContent nvarchar(MAX) = NULL,
 @messageReleasabilityFlags int = NULL,
 -- 0 text, 1 photo, 2 location (E9.F1.S11/S12, 2026-09-29). Optional.
-@messageKind smallint = 0
-
+@messageKind smallint = 0,
+@replyToMessageId uniqueidentifier = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_sendEventMessage
@@ -190,6 +190,10 @@ END
     -- Insert the message inside a transaction
     BEGIN TRANSACTION;
 
+        -- A reply quotes a message of THIS run's chat (E9.F1.S21); anything else sends plain.
+    IF (@replyToMessageId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM HC.EventMessage r
+                                                    WHERE r.id = @replyToMessageId AND r.EventId = @eventId))
+        SET @replyToMessageId = NULL;
     INSERT INTO [HC].[EventMessage]
                   (
                     [id]
@@ -201,6 +205,7 @@ END
                   , [MessageContent]
                   , [MessageReleasabilityFlags]
                   , [MessageKind]
+                  , [ReplyToMessageId]
                   )
           VALUES
                   (
@@ -213,6 +218,7 @@ END
                   , @messageContent
                   , @messageReleasabilityFlags
                   , @messageKind
+                  , @replyToMessageId
                   );
 
     COMMIT TRANSACTION;

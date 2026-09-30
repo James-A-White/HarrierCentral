@@ -52,3 +52,55 @@ export function chatKindOf(kind: number | null | undefined, text: string): ChatM
   if (kind === CHAT_KIND_LOCATION && parseChatLocation(text)) return CHAT_KIND_LOCATION;
   return CHAT_KIND_TEXT;
 }
+
+// ── Replies and reactions (E9.F1.S21/S22, 2026-09-30) ───────────────────────
+
+/**
+ * The fixed six reactions, in the order every client draws them. Stored by
+ * CODE, never by glyph: in the database's collation an emoji compares equal
+ * to '', so a code is the only key that can be looked up. Codes are the
+ * JSON keys of HC.EventMessage.ReactionsJson.
+ */
+export const CHAT_REACTIONS: readonly { code: string; emoji: string; label: string }[] = [
+  { code: "thumbs", emoji: "\u{1F44D}", label: "Thumbs up" },
+  { code: "heart", emoji: "\u2764\uFE0F", label: "Heart" },
+  { code: "laugh", emoji: "\u{1F602}", label: "Laugh" },
+  { code: "beer", emoji: "\u{1F37A}", label: "Beer" },
+  { code: "run", emoji: "\u{1F3C3}", label: "Runner" },
+  { code: "fire", emoji: "\u{1F525}", label: "Fire" },
+];
+
+export const CHAT_REACTION_CODES: readonly string[] = CHAT_REACTIONS.map((r) => r.code);
+
+export function reactionEmoji(code: string): string {
+  return CHAT_REACTIONS.find((r) => r.code === code)?.emoji ?? code;
+}
+
+/**
+ * `{"beer":["<PUBLICHASHERID>", …]}` → the same map with every id UPPER and
+ * only the six known codes, in palette order. Anything unreadable is no
+ * reactions at all, never a crash: the column is server-written JSON, but a
+ * defensive parse costs nothing.
+ */
+export function parseReactions(json: string | null | undefined): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  if (!json) return out;
+  let raw: unknown;
+  try { raw = JSON.parse(json); } catch { return out; }
+  if (!raw || typeof raw !== "object") return out;
+  for (const { code } of CHAT_REACTIONS) {
+    const ids = (raw as Record<string, unknown>)[code];
+    if (!Array.isArray(ids)) continue;
+    const clean = ids.filter((x): x is string => typeof x === "string").map((x) => x.toUpperCase());
+    if (clean.length) out[code] = clean;
+  }
+  return out;
+}
+
+/** What a quoted message reads as: its text, or a word for a photo or a location. */
+export function quoteSnippet(kind: number | null | undefined, text: string | null | undefined): string {
+  const t = text ?? "";
+  if (kind === CHAT_KIND_PHOTO) return "\u{1F4F7} Photo";
+  if (kind === CHAT_KIND_LOCATION) return "\u{1F4CD} Location";
+  return t;
+}

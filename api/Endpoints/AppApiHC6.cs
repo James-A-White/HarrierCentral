@@ -278,6 +278,13 @@ namespace HcWebApi.Endpoints
                         _ = SendChatNotifications(multipleResults, ChatPushKind.Dm, log);
                         if (multipleResults.Count >= 4) multipleResults.RemoveRange(2, multipleResults.Count - 2);
                         break;
+                    // A reaction nudges the message's AUTHOR's phones with a silent
+                    // data push so an open thread refreshes its chips; nobody is
+                    // buzzed for a 🍺 (E9.F1.S22). Rowsets 1–2 are API-only.
+                    case "reactToChatMessage":
+                        _ = SendReactionPushAsync(multipleResults, log);
+                        if (multipleResults.Count >= 3) multipleResults.RemoveRange(1, multipleResults.Count - 1);
+                        break;
                     case "startDirectMessage":
                     case "respondDirectMessageRequest":
                         // data is dynamic JSON: without the cast this binds a JValue to
@@ -707,6 +714,52 @@ namespace HcWebApi.Endpoints
         /// One line for the portal's push log: who/where, then what was said.
         /// Capped so the drill-down column stays readable.
         /// </summary>
+        /// <summary>
+        /// Silent data push for an emoji reaction (E9.F1.S22): rowset 1 is the
+        /// message's thread in the keys the app's chat page matches a push on
+        /// (EventId / KennelId / RoomType / ThreadId + ThreadKind), rowset 2 the
+        /// author's devices. Data-only, no badge: the open thread re-fetches
+        /// and picks the reaction up through its reactionUpdates rowset; a
+        /// closed app sees it on its next open. Reads both rowsets before the
+        /// first await so the caller may strip them from the reply at once.
+        /// </summary>
+        public async Task SendReactionPushAsync(List<List<Dictionary<string, object?>>> multipleResults, ILogger logger)
+        {
+            try
+            {
+                if (multipleResults == null || multipleResults.Count < 3) return;
+                var detailRow = multipleResults[1].FirstOrDefault();
+                if (detailRow == null) return;
+                string? Str(string key) =>
+                    detailRow.TryGetValue(key, out var v) && v != null ? v.ToString() : null;
+                var recipients = Tokens(multipleResults[2], visible: false).ToList();
+                if (recipients.Count == 0) return;
+
+                // MessageType pinned to "0" for the same reason as SendChatNotifications.
+                var data = new Dictionary<string, string> { ["MessageType"] = "0", ["Type"] = "reaction" };
+                void Put(string k, string? v) { if (!string.IsNullOrEmpty(v)) data[k] = v!; }
+                Put("ThreadKind", Str("ThreadKind"));
+                Put("MessageId",  Str("MessageId"));
+                Put("EventId",    Str("EventId"));
+                Put("PublicEventId", Str("PublicEventId"));
+                Put("KennelId",   Str("KennelId"));
+                Put("RoomType",   Str("RoomType"));
+                Put("ThreadId",   Str("ThreadId"));
+
+                string? accessToken = await GetFirebaseAccessTokenAsync();
+                var results = await Task.WhenAll(recipients.Select(r =>
+                    SendDataPushAsync(r.Token, data, "Harrier Central", "", false, accessToken, logger, null)));
+                _ = LogPushBatchAsync(
+                    "reactToChatMessage", null, "reaction",
+                    recipients.Select((r, i) => new PushLogEntry(r.Token, r.UserId, SenderUserId: null, IsVisible: false, FcmResult: results[i])),
+                    logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error sending reaction push: {Message}", ex.Message);
+            }
+        }
+
         /// <summary>
         /// A direct-message REQUEST ("X wants to message you") or ACCEPTANCE ("X
         /// accepted your request"), E9.F1.S19. The SP returns the detail in

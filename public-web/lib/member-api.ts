@@ -578,7 +578,20 @@ export interface ChatMessageRow {
   messageKind?: number | null;
   /** 1 when I may delete it: my own, or I moderate this thread (E9.F1.S13/S14). */
   canDelete?: number | null;
+  /** A reply (E9.F1.S21): the quoted message, UPPER. The quote's own fields follow so it draws without the original. */
+  replyToMessageId?: string | null;
+  /** The quoted message's text (or URL); null when it is not a reply or the original was deleted. */
+  replyToText?: string | null;
+  replyToKind?: number | null;
+  replyToAuthor?: string | null;
+  /** 1 when the quoted message has since been deleted: the quote reads "Message deleted". */
+  replyToRemoved?: number | null;
+  /** Reactions (E9.F1.S22): `{"beer":["<PUBLICHASHERID>", …]}` as the server holds it, or null. parseReactions() reads it. */
+  reactions?: string | null;
 }
+
+/** One message whose reactions changed since the last poll (E9.F1.S22). */
+export interface ChatReactionUpdate { id: string; reactions: string | null }
 
 // The wrapper SPs sign nothing themselves: the token is for the app SP the
 // kind selects, so a DM is read and sent through the DM SPs' own gates.
@@ -624,12 +637,17 @@ export interface ChatMessages {
   removed: string[];
   /** A DM's status — who, whether I may send, muted. Absent for every other kind, and absent when the DM SP refused (not my thread). */
   dm?: DmThreadInfo;
+  /** Older messages whose reactions changed after `reactionsSince` (E9.F1.S22). Empty when none. */
+  reactionUpdates: ChatReactionUpdate[];
+  /** Server time of this read: pass it back as `reactionsSince` on the next poll. */
+  reactionsAsOf: string | null;
 }
 
-export async function getChatMessages(s: MemberSession, kind: ChatKind, id: string, since?: number, markRead?: boolean): Promise<ChatMessages | null> {
+export async function getChatMessages(s: MemberSession, kind: ChatKind, id: string, since?: number, markRead?: boolean, reactionsSince?: string | null): Promise<ChatMessages | null> {
   const rowsets = await callAdminApi("getChatMessages", {
     deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_GET_PROC[kind]), kind, ...chatIds(kind, id),
     sinceSequenceCount: since == null ? null : String(since), markRead: markRead ? "1" : "0",
+    reactionsSince: reactionsSince || null,
   });
   const env = (rowsets[0]?.[0] ?? {}) as { success?: number; Me?: string };
   if (env.success !== 1) return null;
@@ -638,7 +656,15 @@ export async function getChatMessages(s: MemberSession, kind: ChatKind, id: stri
   // path puts a badge rowset in front of it. Empty when nothing was removed.
   const removedRows = (rowsets.slice(1).find((r) => r.length > 0 && "removedId" in (r[0] as object)) ?? []) as { removedId?: unknown }[];
   const removed = removedRows.map((r) => String(r.removedId ?? "").toUpperCase()).filter(Boolean);
-  const out: ChatMessages = { me: (env.Me ?? "").toUpperCase(), messages: rows, removed };
+  // Reactions on messages the delta would not otherwise carry, and the server
+  // clock to poll from next time — both by column, both AFTER removedId.
+  const updateRows = (rowsets.slice(1).find((r) => r.length > 0 && "reactions" in (r[0] as object) && !("sequenceCount" in (r[0] as object))) ?? []) as { id?: unknown; reactions?: unknown }[];
+  const reactionUpdates: ChatReactionUpdate[] = updateRows
+    .map((r) => ({ id: String(r.id ?? "").toUpperCase(), reactions: r.reactions == null ? null : String(r.reactions) }))
+    .filter((r) => r.id);
+  const asOfRow = rowsets.slice(1).find((r) => r.length > 0 && "reactionsAsOf" in (r[0] as object))?.[0] as { reactionsAsOf?: unknown } | undefined;
+  const reactionsAsOf = asOfRow?.reactionsAsOf == null ? null : String(asOfRow.reactionsAsOf);
+  const out: ChatMessages = { me: (env.Me ?? "").toUpperCase(), messages: rows, removed, reactionUpdates, reactionsAsOf };
   if (kind === "dm") {
     // The wrapper emits its own success envelope BEFORE the DM SP runs, so a
     // refusal (not my thread) looks like an empty thread with no status
@@ -657,10 +683,12 @@ export async function getChatMessages(s: MemberSession, kind: ChatKind, id: stri
   return out;
 }
 
-export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: string, messageId: string, text: string, messageKind: ChatMessageKind = CHAT_KIND_TEXT): Promise<{ ok: boolean; message?: string }> {
+export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: string, messageId: string, text: string, messageKind: ChatMessageKind = CHAT_KIND_TEXT, replyToMessageId?: string | null): Promise<{ ok: boolean; message?: string }> {
   const rowsets = await callAdminApi("sendChatMessage", {
     deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_SEND_PROC[kind]), kind, ...chatIds(kind, id), messageId, messageContent: text,
     messageKind: String(messageKind),
+    // A reply quotes one message of the same thread (E9.F1.S21); the SP checks that.
+    replyToMessageId: replyToMessageId || null,
   });
   // The app's send SPs emit their push-recipient SELECTs as rowsets before
   // anything else, so the envelope is wherever a `success` column sits.
@@ -668,6 +696,22 @@ export async function sendChatMessage(s: MemberSession, kind: ChatKind, id: stri
   if (env.some((r) => r?.success === 1)) return { ok: true };
   const msg = rowsets.map((r) => r?.[0] as { errorUserMessage?: string } | undefined).find((r) => r?.errorUserMessage)?.errorUserMessage;
   return { ok: false, message: msg ?? "Couldn't send." };
+}
+
+/**
+ * Adds or removes MY reaction on one message (E9.F1.S22) through
+ * publicWeb_reactToChatMessage, which EXECs hcapp_reactToChatMessage — the
+ * palette and the "may I see this message" gate live there. Answers the
+ * message's whole reactions JSON as the server now holds it.
+ */
+export async function reactToChatMessage(s: MemberSession, messageId: string, reaction: string, on: 0 | 1): Promise<{ ok: true; reactions: string | null } | { ok: false; message: string }> {
+  const rowsets = await callAdminApi("reactToChatMessage", {
+    deviceId: s.deviceId, accessToken: tokenFor(s, "hcapp_reactToChatMessage"), messageId, reaction, on: String(on),
+  });
+  const row = rowsets.map((r) => r?.[0] as { success?: number; reactions?: unknown } | undefined).find((r) => r?.success === 1);
+  if (row) return { ok: true, reactions: row.reactions == null ? null : String(row.reactions) };
+  const msg = rowsets.map((r) => r?.[0] as { errorUserMessage?: string } | undefined).find((r) => r?.errorUserMessage)?.errorUserMessage;
+  return { ok: false, message: msg ?? "That reaction could not be saved." };
 }
 
 /**

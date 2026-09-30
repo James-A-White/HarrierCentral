@@ -59,6 +59,7 @@ namespace HcWebApi.Endpoints
             // Deleting a message: your own, or any as a chat administrator
             // (E9.F1.S13/S14, 2026-09-29). Wraps hcapp_deleteChatMessage.
             "deleteChatMessage",
+            "reactToChatMessage",
             // Block a hasher and report a message (E9.F1.S16/S17, 2026-09-29).
             "setHasherBlock",
             "getBlockedHashers",
@@ -126,6 +127,7 @@ namespace HcWebApi.Endpoints
             "sendChatMessage",
             "markChatRead",
             "deleteChatMessage",
+            "reactToChatMessage",
             "setHasherBlock",
             "getBlockedHashers",
             "reportChatMessage",

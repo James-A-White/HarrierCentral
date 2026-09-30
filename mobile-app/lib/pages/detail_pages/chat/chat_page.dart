@@ -134,8 +134,9 @@ class ChatPage extends StatelessWidget {
           return Center(
             child: Text(
               'No messages yet',
-              style: _chatTheme.typography.bodyLarge
-                  .copyWith(color: _chatTheme.colors.onSurface),
+              style: _chatTheme.typography.bodyLarge.copyWith(
+                color: _chatTheme.colors.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
           );
@@ -144,27 +145,39 @@ class ChatPage extends StatelessWidget {
         // width, so a long message is stopped in the box rather than cut on
         // the server (or refused by it). A DM whose sending is refused — the
         // other side ended it, or somebody blocks — shows why instead.
-        composerBuilder: (BuildContext context) => dm == null
-            ? Composer(
-                  maxLength: kChatMessageMaxLength,
-                  // Purple, not the theme's blue, once there is something to
-                  // send (James, 2026-09-29); greyed while the field is empty.
-                  sendIconColor: themeAppBarBackground,
-                )
-            : Obx(() {
-                // Both Rx reads come first, before the branch (obx_scan).
-                final bool canSend = dm.canSend.value;
-                final String name = dm.otherDisplayName.value;
-                if (canSend) {
-                  return Composer(
-                  maxLength: kChatMessageMaxLength,
-                  // Purple, not the theme's blue, once there is something to
-                  // send (James, 2026-09-29); greyed while the field is empty.
-                  sendIconColor: themeAppBarBackground,
-                );
-                }
-                return _CannotMessageBar(name: name);
-              }),
+        // The reply bar sits above the stock composer while a reply is
+        // being written (E9.F1.S21); the composer itself is as before.
+        composerBuilder: (BuildContext context) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ChatReplyBar(
+              replyingTo: controller.replyingTo,
+              authorName: controller.replyAuthorName,
+              onCancel: controller.cancelReply,
+            ),
+            dm == null
+                ? Composer(
+                    maxLength: kChatMessageMaxLength,
+                    // Purple, not the theme's blue, once there is something to
+                    // send (James, 2026-09-29); greyed while the field is empty.
+                    sendIconColor: themeAppBarBackground,
+                  )
+                : Obx(() {
+                    // Both Rx reads come first, before the branch (obx_scan).
+                    final bool canSend = dm.canSend.value;
+                    final String name = dm.otherDisplayName.value;
+                    if (canSend) {
+                      return Composer(
+                        maxLength: kChatMessageMaxLength,
+                        // Purple, not the theme's blue, once there is something to
+                        // send (James, 2026-09-29); greyed while the field is empty.
+                        sendIconColor: themeAppBarBackground,
+                      );
+                    }
+                    return _CannotMessageBar(name: name);
+                  }),
+          ],
+        ),
         // Links in a bubble are tappable, and a hashruns.org run link opens
         // the run IN the app. The stock bubble renders plain text — there is
         // no url_launcher anywhere in flutter_chat_ui 2.11 — and even if it
@@ -243,7 +256,15 @@ class ChatPage extends StatelessWidget {
                         child: Username(userId: message.authorId),
                       )
                     : null,
-                child: child,
+                // The quote above and the reaction chips below (E9.F1.S21/S22).
+                child: ChatMessageDecor(
+                  message: message,
+                  isSentByMe: isSentByMe,
+                  myId: controller.currentUser.id,
+                  onToggleReaction: (core.Message m, String code) =>
+                      unawaited(controller.toggleReaction(m, code)),
+                  child: child,
+                ),
               );
             },
       ),

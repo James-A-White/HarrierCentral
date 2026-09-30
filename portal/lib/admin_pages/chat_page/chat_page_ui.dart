@@ -1,6 +1,7 @@
 import 'package:flutter_chat_core/flutter_chat_core.dart' as core;
 import 'package:intl/intl.dart';
 import 'package:hcportal/admin_pages/chat_page/chat_message_kinds.dart';
+import 'package:hcportal/admin_pages/chat_page/chat_replies_reactions.dart';
 import 'package:hcportal/imports.dart';
 
 class ChatSheetPage extends StatelessWidget {
@@ -97,8 +98,19 @@ class ChatSheetPage extends StatelessWidget {
         builders: core.Builders(
           // Hard cap at HC.EventMessage.MessageContent's width (4,000); the SP
           // refuses more, this keeps a long message in the box instead.
-          composerBuilder: (BuildContext context) =>
-              const Composer(maxLength: 4000),
+          // A reply shows who and what is being answered above the box, with
+          // an × to drop it (E9.F1.S21). The Rx is read before anything
+          // else so the Obx always tracks it.
+          composerBuilder: (BuildContext context) => Obx(() {
+            final core.Message? target = chatSheetController.replyingTo.value;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (target != null) _replyBar(target),
+                const Composer(maxLength: 4000),
+              ],
+            );
+          }),
           // Photo (kind 1) and location (kind 2) — E9.F1.S11/S12.
           imageMessageBuilder:
               (context, message, index, {required isSentByMe, groupStatus}) =>
@@ -168,11 +180,190 @@ class ChatSheetPage extends StatelessWidget {
                         : null,
                     // Received: the hover menu sits to the right of the bubble.
                     trailingWidget: isSentByMe ? null : menu,
-                    child: child,
+                    // The quote strip and the reaction chips wrap the bubble
+                    // itself, so they stay aligned with it rather than with
+                    // the avatar / menu column (E9.F1.S21/S22).
+                    child: _decorated(message, child, isSentByMe: isSentByMe),
                   ),
                 );
               },
         ),
+      ),
+    );
+  }
+
+  // ── Replies and reactions (E9.F1.S21/S22) ────────────────────────────────
+
+  static const Color _slate = Color(0xFF475569);
+  static const Color _blue = Color(0xFF1D4ED8);
+
+  /// The bubble with, when it has them, the reply quote above and the
+  /// reaction chips below.
+  Widget _decorated(
+    core.Message message,
+    Widget bubble, {
+    required bool isSentByMe,
+  }) {
+    final meta = message.metadata;
+    final bool isReply = meta?[chatMetaReplyTo] != null;
+    final reactions = chatReactionsOf(meta);
+    if (!isReply && reactions.isEmpty) return bubble;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: isSentByMe
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        if (isReply) _quoteStrip(message, isSentByMe: isSentByMe),
+        bubble,
+        if (reactions.isNotEmpty) _reactionChips(message, reactions),
+      ],
+    );
+  }
+
+  /// "↳ Author · one line of what they said" over a reply, as every
+  /// messenger draws it: a bar down the left, the name bold and small.
+  Widget _quoteStrip(core.Message message, {required bool isSentByMe}) {
+    final String? snippet = chatReplySnippet(message.metadata);
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 320),
+      margin: const EdgeInsets.only(bottom: 3),
+      padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+        border: Border(left: BorderSide(color: _blue, width: 3)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            chatSheetController.replyAuthorNameOf(message),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: _blue,
+            ),
+          ),
+          Text(
+            snippet ?? 'Message deleted',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 13,
+              color: _slate,
+              fontStyle: snippet == null ? FontStyle.italic : FontStyle.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// `🍺 3` per code, mine outlined in blue; a click toggles my own.
+  Widget _reactionChips(
+    core.Message message,
+    Map<String, List<String>> reactions,
+  ) {
+    final mine = chatSheetController.myReactionCodes(message);
+    return Padding(
+      padding: const EdgeInsets.only(top: 3),
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        children: [
+          for (final r in chatReactionPalette)
+            if ((reactions[r.code]?.isNotEmpty ?? false))
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => unawaited(
+                  chatSheetController.toggleReaction(message, r.code),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: mine.contains(r.code)
+                        ? const Color(0xFFDBEAFE)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: mine.contains(r.code)
+                          ? _blue
+                          : const Color(0xFFCBD5E1),
+                    ),
+                  ),
+                  child: Text(
+                    '${r.emoji} ${reactions[r.code]!.length}',
+                    style: const TextStyle(fontSize: 13, color: _slate),
+                  ),
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+
+  /// Above the composer while a reply is being written: who and what, and
+  /// an × that drops the reply without losing the typed text.
+  Widget _replyBar(core.Message target) {
+    final String? snippet = chatReplySnippet(
+      chatSheetController.replyQuoteOf(target),
+    );
+    final String author =
+        (chatSheetController.replyQuoteOf(target)[chatMetaReplyAuthor]
+            as String?) ??
+        'A hasher';
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                border: Border(left: BorderSide(color: _blue, width: 3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Replying to $author',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: _blue,
+                    ),
+                  ),
+                  Text(
+                    snippet ?? 'Message deleted',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: _slate,
+                      fontStyle: snippet == null
+                          ? FontStyle.italic
+                          : FontStyle.normal,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Cancel reply',
+            icon: const Icon(Icons.close, size: 20, color: _slate),
+            onPressed: () => chatSheetController.replyingTo.value = null,
+          ),
+        ],
       ),
     );
   }

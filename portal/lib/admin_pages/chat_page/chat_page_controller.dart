@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/admin_pages/chat_page/chat_message_kinds.dart';
 import 'package:hcportal/admin_pages/chat_page/chat_photo_carousel.dart';
 import 'package:hcportal/admin_pages/chat_page/chat_pin_picker.dart';
+import 'package:hcportal/admin_pages/chat_page/chat_replies_reactions.dart';
 import 'package:hcportal/imports.dart';
 import 'package:web/web.dart' as web;
 
@@ -33,6 +34,13 @@ class ChatSheetController extends GetxController {
 
   /// True while a photo is being resized and uploaded.
   final RxBool isUploading = false.obs;
+
+  /// The message the composer is replying to (E9.F1.S21); null when not.
+  final Rxn<core.Message> replyingTo = Rxn<core.Message>();
+
+  /// Server time of the last reader reply, handed back as `reactionsSince`
+  /// so a reaction on an OLD message still reaches this page (E9.F1.S22).
+  String? _reactionsSince;
 
   final chatController = core.InMemoryChatController();
   final _userCache = <String, core.User>{};
@@ -108,6 +116,7 @@ class ChatSheetController extends GetxController {
           rawMessages,
         ).where((m) => !removed.contains(m.id)).toList();
         await chatController.setMessages(messages);
+        await _applyReactionRowsets(outerItem);
 
         final chatsCounts =
             (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>() ?? {};
@@ -193,6 +202,9 @@ class ChatSheetController extends GetxController {
       // A deletion changes no sequence number, so the delta never carries it:
       // every fetch returns the removed ids and we drop any we still show.
       await _applyRemoved(_removedIds(outerItem));
+      // A reaction changes no sequence number either: the reply's trailing
+      // rowsets carry every message whose reactions moved since last time.
+      await _applyReactionRowsets(outerItem);
       if (outerItem.isEmpty) return;
       final rawMessages = outerItem[0] as List<dynamic>;
       if (rawMessages.isEmpty) return;
@@ -345,6 +357,7 @@ class ChatSheetController extends GetxController {
     if (sinceSequenceCount != null) {
       body['sinceSequenceCount'] = sinceSequenceCount;
     }
+    if (_reactionsSince != null) body['reactionsSince'] = _reactionsSince;
 
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
     if (kDebugMode) {
@@ -393,6 +406,7 @@ class ChatSheetController extends GetxController {
           content: content,
           createdAt: createdAt,
           status: core.MessageStatus.sent,
+          extraMeta: _replyAndReactionMeta(msg),
         ),
       );
     }
@@ -401,8 +415,83 @@ class ChatSheetController extends GetxController {
     return result.reversed.toList();
   }
 
+  /// The reply quote and reactions on a reader row, as message metadata.
+  /// Ids are lowercased (the SP hands them back as SQL prints them).
+  Map<String, dynamic> _replyAndReactionMeta(Map<String, dynamic> msg) {
+    final meta = <String, dynamic>{};
+    final replyTo = msg['replyToMessageId'];
+    if (replyTo is String && replyTo.isNotEmpty) {
+      meta[chatMetaReplyTo] = replyTo.asUuid;
+      meta[chatMetaReplyText] = msg['replyToText'] as String?;
+      meta[chatMetaReplyKind] = (msg['replyToKind'] as num?)?.toInt() ?? 0;
+      meta[chatMetaReplyAuthor] = msg['replyToAuthor'] as String?;
+      meta[chatMetaReplyRemoved] =
+          msg['replyToRemoved'] == 1 || msg['replyToRemoved'] == true;
+    }
+    final reactions = parseChatReactions(msg['reactions']);
+    if (reactions.isNotEmpty) meta[chatMetaReactions] = reactions;
+    return meta;
+  }
+
+  /// The trailing `{ id, reactions }` and `{ reactionsAsOf }` rowsets of a
+  /// reader reply, found by column name — never by position, because the
+  /// rowsets before them keep theirs. Applied to messages already drawn.
+  Future<void> _applyReactionRowsets(List<dynamic> outerItem) async {
+    for (var i = 1; i < outerItem.length; i++) {
+      final rowset = outerItem[i];
+      if (rowset is! List || rowset.isEmpty) continue;
+      final first = rowset.first;
+      if (first is! Map) continue;
+      if (first.containsKey('reactionsAsOf')) {
+        final asOf = first['reactionsAsOf'];
+        if (asOf != null) _reactionsSince = asOf.toString();
+        continue;
+      }
+      if (!first.containsKey('reactions') || !first.containsKey('id')) {
+        continue;
+      }
+      for (final row in rowset) {
+        if (row is! Map || row['id'] is! String) continue;
+        if (isClosed) return;
+        final id = (row['id'] as String).asUuid;
+        final shown = chatController.messages.firstWhereOrNull(
+          (m) => m.id == id,
+        );
+        if (shown == null) continue;
+        await _setReactions(shown, parseChatReactions(row['reactions']));
+      }
+    }
+  }
+
+  /// [msg] redrawn with [reactions] (an empty map clears the chips).
+  Future<void> _setReactions(
+    core.Message msg,
+    Map<String, List<String>> reactions,
+  ) async {
+    final meta = <String, dynamic>{...?msg.metadata};
+    if (reactions.isEmpty) {
+      meta.remove(chatMetaReactions);
+    } else {
+      meta[chatMetaReactions] = reactions;
+    }
+    final updated = _withMetadata(msg, meta);
+    if (updated != null && !isClosed) {
+      await chatController.updateMessage(msg, updated);
+    }
+  }
+
+  core.Message? _withMetadata(core.Message msg, Map<String, dynamic> meta) =>
+      switch (msg) {
+        core.TextMessage() => msg.copyWith(metadata: meta),
+        core.ImageMessage() => msg.copyWith(metadata: meta),
+        core.CustomMessage() => msg.copyWith(metadata: meta),
+        core.FileMessage() => msg.copyWith(metadata: meta),
+        _ => null,
+      };
+
   /// One message of any kind. An unknown kind — or a photo / location whose
   /// content is not what the server would have accepted — is drawn as text.
+  /// [extraMeta] (the reply quote, the reactions) rides on every kind.
   core.Message _buildMessage({
     required String id,
     required String authorId,
@@ -410,7 +499,9 @@ class ChatSheetController extends GetxController {
     required String content,
     required DateTime? createdAt,
     required core.MessageStatus status,
+    Map<String, dynamic> extraMeta = const <String, dynamic>{},
   }) {
+    final meta = extraMeta.isEmpty ? null : Map<String, dynamic>.of(extraMeta);
     if (kind == chatKindPhoto && isChatPhotoUrl(content)) {
       return core.Message.image(
         id: id,
@@ -418,6 +509,7 @@ class ChatSheetController extends GetxController {
         source: content,
         createdAt: createdAt,
         status: status,
+        metadata: meta,
       );
     }
     if (kind == chatKindLocation) {
@@ -429,6 +521,7 @@ class ChatSheetController extends GetxController {
           createdAt: createdAt,
           status: status,
           metadata: <String, dynamic>{
+            ...extraMeta,
             chatMetaKind: chatMetaLocation,
             chatMetaUrl: content,
             chatMetaLat: p.lat,
@@ -443,6 +536,7 @@ class ChatSheetController extends GetxController {
       text: content,
       createdAt: createdAt,
       status: status,
+      metadata: meta,
     );
   }
 
@@ -617,7 +711,55 @@ class ChatSheetController extends GetxController {
     await onMenuSelected(choice, m);
   }
 
+  /// The palette as one un-selectable menu row; a tap on an emoji closes the
+  /// menu with `react:<code>`. Mine are highlighted so the row also reads as
+  /// "what I have already said".
+  PopupMenuEntry<String> _reactionRow(core.Message m) {
+    final mine = myReactionCodes(m);
+    return PopupMenuItem<String>(
+      enabled: false,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final r in chatReactionPalette)
+            Builder(
+              builder: (ctx) => InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () => Navigator.of(ctx).pop('react:${r.code}'),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: mine.contains(r.code)
+                        ? const Color(0xFFDBEAFE)
+                        : Colors.transparent,
+                  ),
+                  child: Text(r.emoji, style: const TextStyle(fontSize: 20)),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   List<PopupMenuEntry<String>> menuItemsFor(core.Message m) => [
+    if (m.status != core.MessageStatus.sending &&
+        m.status != core.MessageStatus.error) ...[
+      _reactionRow(m),
+      const PopupMenuDivider(),
+      const PopupMenuItem(
+        value: 'reply',
+        child: ListTile(
+          dense: true,
+          leading: Icon(Icons.reply),
+          title: Text('Reply'),
+        ),
+      ),
+    ],
     const PopupMenuItem(
       value: 'copy',
       child: ListTile(
@@ -638,11 +780,102 @@ class ChatSheetController extends GetxController {
   ];
 
   Future<void> onMenuSelected(String? choice, core.Message m) async {
+    if (choice != null && choice.startsWith('react:')) {
+      await toggleReaction(m, choice.substring('react:'.length));
+      return;
+    }
     switch (choice) {
+      case 'reply':
+        replyingTo.value = m;
       case 'copy':
         await copyMessage(m);
       case 'delete':
         await deleteMessage(m);
+    }
+  }
+
+  // ── Reactions (E9.F1.S22) ────────────────────────────────────────────────
+
+  /// The codes I have put on [m].
+  Set<String> myReactionCodes(core.Message m) => {
+    for (final e in chatReactionsOf(m.metadata).entries)
+      if (e.value.contains(currentUser.id)) e.key,
+  };
+
+  /// Adds or removes my [code] on [m]: the chips change at once, the server
+  /// is asked, and the chips go back (with the server's reason) if it says
+  /// no. The server's answer is the truth, so on success its JSON replaces
+  /// the guess.
+  Future<void> toggleReaction(core.Message m, String code) async {
+    final shown = chatController.messages.firstWhereOrNull((x) => x.id == m.id);
+    if (shown == null) return;
+    final before = chatReactionsOf(shown.metadata);
+    final on = !(before[code]?.contains(currentUser.id) ?? false);
+    final guess = <String, List<String>>{
+      for (final e in before.entries) e.key: List<String>.of(e.value),
+    };
+    if (on) {
+      (guess[code] ??= <String>[]).add(currentUser.id);
+    } else {
+      guess[code]?.remove(currentUser.id);
+      if (guess[code]?.isEmpty ?? false) guess.remove(code);
+    }
+    await _setReactions(shown, guess);
+    if (isClosed) return;
+
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_reactToChatMessage',
+      paramString: deviceSecret,
+    );
+    final result = await ServiceCommon.sendHttpPostToHC6Api(<String, dynamic>{
+      'queryType': 'reactToChatMessage',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'messageId': m.id,
+      'reaction': code,
+      'on': on ? 1 : 0,
+    });
+    if (kDebugMode) {
+      debugPrint(
+        'SP [reactToChatMessage] called — '
+        '${result is ApiError ? 'FAILED' : 'success'}',
+      );
+    }
+    if (isClosed) return;
+
+    String? refusal;
+    Map<String, List<String>>? truth;
+    if (result is ApiSuccess) {
+      try {
+        final rowsets = jsonDecode(result.body) as List<dynamic>;
+        final row = rowsets.isNotEmpty && (rowsets[0] as List).isNotEmpty
+            ? (rowsets[0] as List).first as Map<String, dynamic>
+            : null;
+        final ok = row?['Success'] == 1 || row?['Success'] == true;
+        if (ok) {
+          truth = parseChatReactions(row?['reactions']);
+        } else {
+          refusal =
+              (row?['ErrorMessage'] as String?) ??
+              'That reaction was not saved.';
+        }
+      } on Object {
+        refusal = 'That reaction was not saved.';
+      }
+    } else {
+      refusal = 'That reaction was not saved.';
+    }
+
+    final now = chatController.messages.firstWhereOrNull((x) => x.id == m.id);
+    if (now == null) return;
+    if (truth != null) {
+      await _setReactions(now, truth);
+    } else {
+      await _setReactions(now, before);
+      _toast(refusal ?? 'That reaction was not saved.');
     }
   }
 
@@ -742,6 +975,34 @@ class ChatSheetController extends GetxController {
       );
   }
 
+  /// The quote an optimistic reply carries, built from the original as this
+  /// page holds it — the same fields the reader will hand back.
+  Map<String, dynamic> _quoteMetaFor(core.Message target) => <String, dynamic>{
+    chatMetaReplyTo: target.id,
+    chatMetaReplyText: switch (target) {
+      core.TextMessage() => target.text,
+      _ => null,
+    },
+    chatMetaReplyKind: switch (target) {
+      core.ImageMessage() => chatKindPhoto,
+      core.CustomMessage() => chatKindLocation,
+      _ => chatKindText,
+    },
+    chatMetaReplyAuthor: _userCache[target.authorId]?.name,
+    chatMetaReplyRemoved: false,
+  };
+
+  /// The quote the composer's reply bar shows for [target].
+  Map<String, dynamic> replyQuoteOf(core.Message target) =>
+      _quoteMetaFor(target);
+
+  /// The name a reply strip shows for [m]'s author.
+  String replyAuthorNameOf(core.Message m) {
+    final meta = m.metadata;
+    final name = meta?[chatMetaReplyAuthor] as String?;
+    return (name == null || name.trim().isEmpty) ? 'A hasher' : name.trim();
+  }
+
   // ── Send ─────────────────────────────────────────────────────────────────
 
   Future<void> handleSendPressed(String text) =>
@@ -751,6 +1012,10 @@ class ChatSheetController extends GetxController {
   /// sent / delivered, or error if the SP refuses.
   Future<void> _send({required int kind, required String content}) async {
     final uuid = const Uuid().v4();
+    // The reply target is taken now and the bar cleared, so a second send
+    // while this one is in flight is not also a reply to it.
+    final core.Message? target = replyingTo.value;
+    replyingTo.value = null;
     final newMsg = _buildMessage(
       id: uuid,
       authorId: currentUser.id,
@@ -758,6 +1023,9 @@ class ChatSheetController extends GetxController {
       content: content,
       createdAt: DateTime.now(),
       status: core.MessageStatus.sending,
+      extraMeta: target == null
+          ? const <String, dynamic>{}
+          : _quoteMetaFor(target),
     );
     _canDeleteIds.add(uuid);
 
@@ -785,6 +1053,7 @@ class ChatSheetController extends GetxController {
       'messageTitle': messageTitle,
       // Only sent when not text, so a text send is exactly as before.
       if (kind != chatKindText) 'messageKind': kind,
+      if (target != null) 'replyToMessageId': target.id,
     };
 
     final sendResult = await ServiceCommon.sendHttpPostToHC6Api(body);

@@ -5,7 +5,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendRoomMessage]
     @messageId      UNIQUEIDENTIFIER = NULL,
     @messageContent NVARCHAR(MAX)    = NULL,
     -- 0 text, 1 photo, 2 location (E9.F1.S11/S12, 2026-09-29). Optional.
-    @messageKind    SMALLINT         = 0
+    @messageKind    SMALLINT         = 0,
+    @replyToMessageId UNIQUEIDENTIFIER = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_sendRoomMessage
@@ -160,12 +161,19 @@ BEGIN TRY
     BEGIN TRANSACTION;
 
     -- EventId, KennelId and ThreadId all NULL; MessageType names the room.
+    -- A reply quotes a message of THIS thread (E9.F1.S21). Anything else —
+    -- a stale id, another chat's message — sends as a plain message rather
+    -- than failing the send; the quote is decoration, the text is the point.
+    IF (@replyToMessageId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM HC.EventMessage r
+                                                    WHERE r.id = @replyToMessageId AND r.EventId IS NULL AND r.KennelId IS NULL AND r.ThreadId IS NULL AND r.MessageType = @roomType))
+        SET @replyToMessageId = NULL;
+
     INSERT INTO HC.EventMessage
         ([id], [EventId], [KennelId], [UserId], [PublicHasherId],
-         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageType], [MessageKind])
+         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageType], [MessageKind], [ReplyToMessageId])
     VALUES
         (@messageId, NULL, NULL, @userId, @publicHasherId,
-         '', @messageContent, 63, @roomType, @messageKind);
+         '', @messageContent, 63, @roomType, @messageKind, @replyToMessageId);
 
     DECLARE @seq INT;
     SELECT @seq = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;

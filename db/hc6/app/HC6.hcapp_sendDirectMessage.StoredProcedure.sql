@@ -4,7 +4,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendDirectMessage]
     @threadId       UNIQUEIDENTIFIER = NULL,
     @messageId      UNIQUEIDENTIFIER = NULL,
     @messageContent NVARCHAR(MAX)    = NULL,
-    @messageKind    SMALLINT         = 0
+    @messageKind    SMALLINT         = 0,
+    @replyToMessageId UNIQUEIDENTIFIER = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_sendDirectMessage
@@ -115,12 +116,19 @@ SELECT @publicHasherId = h.PublicHasherId FROM HC.Hasher h WHERE h.id = @userId;
 BEGIN TRY
     BEGIN TRANSACTION;
 
+    -- A reply quotes a message of THIS thread (E9.F1.S21). Anything else —
+    -- a stale id, another chat's message — sends as a plain message rather
+    -- than failing the send; the quote is decoration, the text is the point.
+    IF (@replyToMessageId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM HC.EventMessage r
+                                                    WHERE r.id = @replyToMessageId AND r.ThreadId = @threadId))
+        SET @replyToMessageId = NULL;
+
     INSERT INTO HC.EventMessage
         ([id], [EventId], [KennelId], [ThreadId], [UserId], [PublicHasherId],
-         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageType], [MessageKind])
+         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageType], [MessageKind], [ReplyToMessageId])
     VALUES
         (@messageId, NULL, NULL, @threadId, @userId, @publicHasherId,
-         '', @messageContent, 63, 0, @messageKind);
+         '', @messageContent, 63, 0, @messageKind, @replyToMessageId);
 
     DECLARE @seq INT;
     SELECT @seq = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;

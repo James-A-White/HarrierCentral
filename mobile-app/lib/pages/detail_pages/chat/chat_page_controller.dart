@@ -128,6 +128,23 @@ class ChatPageController extends GetxController {
   StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   int? _lastKnownSequenceCount;
+
+  /// The server's clock at the last fetch, echoed back as reactionsSince so
+  /// the readers hand back reactions on messages this page already holds
+  /// (E9.F1.S22) — a reaction changes an OLD row, which the sequence-count
+  /// delta would never see. Server time, never the phone's.
+  String? _reactionsAsOf;
+
+  /// The message a reply is being written to, or null (E9.F1.S21). The
+  /// composer shows a quote bar while it is set; sending clears it.
+  final Rxn<core.Message> replyingTo = Rxn<core.Message>();
+
+  void cancelReply() => replyingTo.value = null;
+
+  /// The author's name as the chat shows it — "You" for one's own.
+  String replyAuthorName(core.Message m) =>
+      m.authorId == currentUser.id ? 'You' : _authorNameOf(m);
+
   /// False until the FIRST full fetch has answered (with rows, none, or an
   /// error). The page shows a spinner until then: 'No messages yet' while
   /// the load is in flight reads as an empty chat (James, 2026-09-30).
@@ -165,9 +182,13 @@ class ChatPageController extends GetxController {
     super.onInit();
     open.add(this);
 
-    final String? publicHasherId = getStringPref(StringPrefsEnum.publicHasherId);
+    final String? publicHasherId = getStringPref(
+      StringPrefsEnum.publicHasherId,
+    );
     if (publicHasherId == null || publicHasherId.isEmpty) {
-      debugPrint('ChatPageController: publicHasherId not available, cannot open chat');
+      debugPrint(
+        'ChatPageController: publicHasherId not available, cannot open chat',
+      );
       currentUser = const core.User(id: '');
       WidgetsBinding.instance.addPostFrameCallback((_) => Get.back<void>());
       return;
@@ -244,7 +265,9 @@ class ChatPageController extends GetxController {
       }
     }
 
-    _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    _fcmSubscription = FirebaseMessaging.onMessage.listen((
+      RemoteMessage message,
+    ) {
       // Only act on (and log) pushes for THIS chat — every other foreground push
       // used to hit an error-level log with a full data interpolation.
       if (!_pushIsForThisThread(message.payload)) return;
@@ -307,7 +330,8 @@ class ChatPageController extends GetxController {
         // A location card (E9.F1.S12).
         updated = msg.copyWith(status: core.MessageStatus.delivered);
       }
-      if (updated != null) unawaited(chatController.updateMessage(msg, updated));
+      if (updated != null)
+        unawaited(chatController.updateMessage(msg, updated));
     }
   }
 
@@ -338,6 +362,10 @@ class ChatPageController extends GetxController {
       await _applyRemovedIds(outerItem);
       if (isClosed) return;
       _applyDmThreadRow(outerItem);
+      // Reactions on messages already drawn, and the watermark for next time
+      // — before the empty-delta return, as with removals.
+      await _applyReactionRowsets(outerItem);
+      if (isClosed) return;
       final rawMessages = outerItem[0] as List<dynamic>;
       if (rawMessages.isEmpty) {
         // A FULL fetch that comes back empty is an answer, not a no-op: the
@@ -430,27 +458,33 @@ class ChatPageController extends GetxController {
 
     final result = await ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, dynamic>{
-        'queryType':
-            isKennelThread ? 'markKennelChatRead' : 'markEventChatRead',
+        'queryType': isKennelThread
+            ? 'markKennelChatRead'
+            : 'markEventChatRead',
         'deviceId': deviceId,
         'accessToken': Utilities.generateToken(
           userId,
-          isKennelThread ? 'hcapp_markKennelChatRead' : 'hcapp_markEventChatRead',
+          isKennelThread
+              ? 'hcapp_markKennelChatRead'
+              : 'hcapp_markEventChatRead',
           paramString: deviceSecret,
         ),
         _idKey!: eventId,
       }),
     );
 
-    debugPrint(result.startsWith(ERROR_PREFIX)
-        ? 'SP [markEventChatRead] called — FAILED'
-        : 'SP [markEventChatRead] called — success');
+    debugPrint(
+      result.startsWith(ERROR_PREFIX)
+          ? 'SP [markEventChatRead] called — FAILED'
+          : 'SP [markEventChatRead] called — success',
+    );
   }
 
   Future<String?> _getEventMessages({int? sinceSequenceCount}) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final body = <String, dynamic>{
       'queryType': _getQueryType,
@@ -463,6 +497,9 @@ class ChatPageController extends GetxController {
     };
     if (sinceSequenceCount != null) {
       body['sinceSequenceCount'] = sinceSequenceCount;
+    }
+    if (_reactionsAsOf != null) {
+      body['reactionsSince'] = _reactionsAsOf;
     }
 
     return ServiceCommon.sendHttpPost(() {
@@ -508,27 +545,30 @@ class ChatPageController extends GetxController {
       );
 
       final createdAtMs = msg['createdAt'];
-      result.add(_messageFor(
-        id: HcId((msg['id'] as String?) ?? ''),
-        authorId: authorId,
-        content: (msg['text'] as String?) ?? '',
-        // An older reader has no messageKind and no canDelete: text, and
-        // not deletable — the server decides that, never this side.
-        kind: ChatMessageKind.fromJson(msg['messageKind']),
-        canDelete: msg['canDelete'] == 1 || msg['canDelete'] == true,
-        createdAt: createdAtMs is int
-            ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
-            : (createdAtMs is num)
-                ? DateTime.fromMillisecondsSinceEpoch(createdAtMs.toInt())
-                : null,
-        // A message the server hands back IS on the server, so my own come
-        // back with both ticks rather than sitting on one for ever. Messages
-        // I sent from another device — or from the portal, or straight into
-        // the table — only ever arrive this way, and showed no tick at all.
-        status: authorId == currentUser.id
-            ? core.MessageStatus.delivered
-            : core.MessageStatus.sent,
-      ));
+      result.add(
+        _messageFor(
+          id: HcId((msg['id'] as String?) ?? ''),
+          authorId: authorId,
+          content: (msg['text'] as String?) ?? '',
+          // An older reader has no messageKind and no canDelete: text, and
+          // not deletable — the server decides that, never this side.
+          kind: ChatMessageKind.fromJson(msg['messageKind']),
+          canDelete: msg['canDelete'] == 1 || msg['canDelete'] == true,
+          createdAt: createdAtMs is int
+              ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
+              : (createdAtMs is num)
+              ? DateTime.fromMillisecondsSinceEpoch(createdAtMs.toInt())
+              : null,
+          // A message the server hands back IS on the server, so my own come
+          // back with both ticks rather than sitting on one for ever. Messages
+          // I sent from another device — or from the portal, or straight into
+          // the table — only ever arrive this way, and showed no tick at all.
+          status: authorId == currentUser.id
+              ? core.MessageStatus.delivered
+              : core.MessageStatus.sent,
+          extraMeta: _replyAndReactionMeta(msg),
+        ),
+      );
     }
     // SP returns newest-first; reverse to oldest-first for display and
     // for oldest→newest insertMessage ordering on delta loads.
@@ -563,11 +603,13 @@ class ChatPageController extends GetxController {
     double? width,
     double? height,
     int? size,
+    Map<String, dynamic>? extraMeta,
   }) {
     final Map<String, dynamic> meta = <String, dynamic>{
       _kKind: kind,
       _kCanDelete: canDelete,
       _kContent: content,
+      ...?extraMeta,
     };
     if (kind == ChatMessageKind.photo &&
         (localPath != null || isChatPhotoUrl(content))) {
@@ -606,6 +648,134 @@ class ChatPageController extends GetxController {
       createdAt: createdAt,
       status: status,
       metadata: meta,
+    );
+  }
+
+  // ── Replies and reactions (E9.F1.S21 / S22) ───────────────────────────────
+
+  /// The reply and reaction fields of one reader row, as message metadata.
+  /// Older readers have none of them: nothing is added and nothing breaks.
+  static Map<String, dynamic> _replyAndReactionMeta(Map<String, dynamic> msg) {
+    final Map<String, dynamic> out = <String, dynamic>{};
+    final String? replyTo = msg['replyToMessageId'] as String?;
+    if (replyTo != null && replyTo.isNotEmpty) {
+      out[kChatReplyToKey] = replyTo.toLowerCase();
+      out[kChatReplyTextKey] = msg['replyToText'] as String?;
+      out[kChatReplyKindKey] = (msg['replyToKind'] as num?)?.toInt() ?? 0;
+      out[kChatReplyAuthorKey] = msg['replyToAuthor'] as String?;
+      out[kChatReplyRemovedKey] =
+          (msg['replyToRemoved'] == 1 || msg['replyToRemoved'] == true) ? 1 : 0;
+    }
+    final Map<String, List<String>> reactions = parseChatReactions(
+      msg['reactions'],
+    );
+    if (reactions.isNotEmpty) out[kChatReactionsKey] = reactions;
+    return out;
+  }
+
+  /// The two rowsets every reader now ends with: `{ id, reactions }` for
+  /// messages this page already holds whose reactions changed, then
+  /// `{ reactionsAsOf }`. Found by column, never by position — the room and
+  /// DM readers have a badge rowset in the middle and older builds' rowsets
+  /// must keep their places.
+  Future<void> _applyReactionRowsets(List<dynamic> rowsets) async {
+    for (final dynamic rowset in rowsets.skip(1)) {
+      if (rowset is! List || rowset.isEmpty) continue;
+      final dynamic first = rowset.first;
+      if (first is! Map<String, dynamic>) continue;
+      if (first.containsKey('reactionsAsOf')) {
+        final Object? asOf = first['reactionsAsOf'];
+        if (asOf != null) _reactionsAsOf = asOf.toString();
+        continue;
+      }
+      if (!first.containsKey('reactions') ||
+          !first.containsKey('id') ||
+          first.containsKey('sequenceCount')) {
+        continue;
+      }
+      for (final dynamic row in rowset) {
+        if (row is! Map<String, dynamic>) continue;
+        final String id = ((row['id'] as String?) ?? '').toLowerCase();
+        if (id.isEmpty) continue;
+        await _setReactions(id, parseChatReactions(row['reactions']));
+        if (isClosed) return;
+      }
+    }
+  }
+
+  /// Repaint one message with [reactions] (empty = none, key dropped).
+  Future<void> _setReactions(
+    String messageId,
+    Map<String, List<String>> reactions,
+  ) async {
+    final core.Message? m = chatController.messages
+        .where((x) => x.id == messageId)
+        .firstOrNull;
+    if (m == null) return;
+    final Map<String, dynamic> meta = <String, dynamic>{...?m.metadata};
+    if (reactions.isEmpty) {
+      meta.remove(kChatReactionsKey);
+    } else {
+      meta[kChatReactionsKey] = reactions;
+    }
+    await chatController.updateMessage(m, m.copyWith(metadata: meta));
+  }
+
+  /// The reactions a message carries, as the decorations read them.
+  static Map<String, List<String>> reactionsOf(core.Message m) {
+    final Object? raw = m.metadata?[kChatReactionsKey];
+    if (raw is Map<String, List<String>>) return raw;
+    return parseChatReactions(raw is Map ? jsonEncode(raw) : raw);
+  }
+
+  /// The codes the signed-in hasher has put on [m].
+  Set<String> myReactionsOn(core.Message m) => <String>{
+    for (final MapEntry<String, List<String>> e in reactionsOf(m).entries)
+      if (e.value.contains(currentUser.id)) e.key,
+  };
+
+  /// Add or remove my [code] on [m]: the chip changes at once, the server is
+  /// asked, and its answer replaces the guess — or the guess is undone and
+  /// the refusal toasted.
+  Future<void> toggleReaction(core.Message m, String code) async {
+    if (!ChatReaction.isKnown(code) || m.status == core.MessageStatus.sending) {
+      return;
+    }
+    final Map<String, List<String>> before = reactionsOf(m);
+    final bool on = !(before[code] ?? const <String>[]).contains(
+      currentUser.id,
+    );
+    final Map<String, List<String>> guess = <String, List<String>>{
+      for (final MapEntry<String, List<String>> e in before.entries)
+        e.key: List<String>.of(e.value),
+    };
+    if (on) {
+      (guess[code] ??= <String>[]).add(currentUser.id);
+    } else {
+      guess[code]?.remove(currentUser.id);
+      if ((guess[code] ?? const <String>[]).isEmpty) guess.remove(code);
+    }
+    await _setReactions(m.id, guess);
+    if (isClosed) return;
+
+    final ReactionOutcome outcome = await ChatReactionService.react(
+      HcId(m.id),
+      code,
+      on: on,
+    );
+    if (isClosed) return;
+    if (outcome.ok) {
+      await _setReactions(m.id, outcome.reactions!);
+      return;
+    }
+    await _setReactions(m.id, before);
+    if (isClosed) return;
+    final String? why = outcome.refusal;
+    hcSnack(
+      (why == null || why.isEmpty)
+          ? 'That reaction could not be saved. Please try again.'
+          : why,
+      error: true,
     );
   }
 
@@ -671,10 +841,12 @@ class ChatPageController extends GetxController {
     required String id,
     required String content,
     int kind = ChatMessageKind.text,
+    String? replyToMessageId,
   }) async {
     final userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     String? refusal;
     num? refusalType;
@@ -702,6 +874,8 @@ class ChatPageController extends GetxController {
         // Optional on all the send SPs (default 0), so text leaves it out
         // and a text send is byte-for-byte what it was before photos.
         if (kind != ChatMessageKind.text) 'messageKind': kind,
+        // Optional on every send SP: a quoted message (E9.F1.S21).
+        'replyToMessageId': ?replyToMessageId,
       }),
       // A DM's refusal — "You can't message <name>." (2013) — is an answer
       // about the conversation, not a fault: it goes in a toast under the
@@ -724,8 +898,10 @@ class ChatPageController extends GetxController {
         // connection, is not "you can't message them".
         if (refusalType == 3) dmState?.canSend.value = false;
       } else {
-        hcSnack('The message could not be sent. Please try again.',
-            error: true);
+        hcSnack(
+          'The message could not be sent. Please try again.',
+          error: true,
+        );
       }
     }
     return ok;
@@ -736,18 +912,16 @@ class ChatPageController extends GetxController {
   /// once known (a photo's blob URL, after its upload).
   Future<void> _settle(String id, {required bool ok, String? content}) async {
     if (isClosed) return;
-    final core.Message? m =
-        chatController.messages.where((m) => m.id == id).firstOrNull;
+    final core.Message? m = chatController.messages
+        .where((m) => m.id == id)
+        .firstOrNull;
     if (m == null) return;
     await chatController.updateMessage(
       m,
       m.copyWith(
         status: ok ? core.MessageStatus.sent : core.MessageStatus.error,
         sentAt: ok ? DateTime.now() : null,
-        metadata: <String, dynamic>{
-          ...?m.metadata,
-          _kContent: ?content,
-        },
+        metadata: <String, dynamic>{...?m.metadata, _kContent: ?content},
       ),
     );
   }
@@ -766,6 +940,20 @@ class ChatPageController extends GetxController {
     // so it stays a trim() test and never a length-in-characters one.
     if (text.trim().isEmpty) return;
 
+    // Taken and cleared BEFORE the await: a second send while this one is
+    // in flight must not quote the same message again.
+    final core.Message? target = replyingTo.value;
+    replyingTo.value = null;
+    final Map<String, dynamic>? replyMeta = target == null
+        ? null
+        : <String, dynamic>{
+            kChatReplyToKey: target.id,
+            kChatReplyTextKey: chatMessageSnippet(target),
+            kChatReplyKindKey: target.metadata?[_kKind] ?? ChatMessageKind.text,
+            kChatReplyAuthorKey: replyAuthorName(target),
+            kChatReplyRemovedKey: 0,
+          };
+
     final uuid = const Uuid().v4();
     unawaited(
       chatController.insertMessage(
@@ -777,11 +965,16 @@ class ChatPageController extends GetxController {
           canDelete: true,
           createdAt: DateTime.now(),
           status: core.MessageStatus.sending,
+          extraMeta: replyMeta,
         ),
       ),
     );
 
-    final bool ok = await _postMessage(id: uuid, content: text);
+    final bool ok = await _postMessage(
+      id: uuid,
+      content: text,
+      replyToMessageId: target?.id,
+    );
     // Same disposal race as _fetchDelta: send, leave, and the reply lands on
     // a closed controller.
     if (isClosed) return;
@@ -793,12 +986,13 @@ class ChatPageController extends GetxController {
   /// A white sheet of choices; returns the chosen key, or null. Closed with
   /// hcPop, never Get.back(): with a GetX toast up, Get.back() closes the
   /// toast and leaves the sheet open (CLAUDE.md).
-  Future<String?> _chooseFrom(List<_SheetChoice> choices) {
+  Future<String?> _chooseFrom(List<_SheetChoice> choices, {Widget? header}) {
     return Get.bottomSheet<String>(
       SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            ?header,
             for (final _SheetChoice c in choices)
               ListTile(
                 leading: Icon(c.icon, color: c.colour ?? hc_blue),
@@ -909,8 +1103,10 @@ class ChatPageController extends GetxController {
     if (isClosed) return;
     if (blobUrl == null) {
       await _settle(id, ok: false);
-      hcSnack('That photo could not be uploaded. Please try again.',
-          error: true);
+      hcSnack(
+        'That photo could not be uploaded. Please try again.',
+        error: true,
+      );
       return;
     }
     final bool ok = await _postMessage(
@@ -1093,37 +1289,56 @@ class ChatPageController extends GetxController {
     final String copyText = _copyTextFor(message);
     final bool canDelete = _canDelete(message);
     final bool fromSomeoneElse = _isFromSomeoneElse(message);
-    if (copyText.isEmpty && !canDelete && !fromSomeoneElse) return;
-    final String? choice = await _chooseFrom(<_SheetChoice>[
-      // The only door to a direct message (E9.F1.S19): the people you can
-      // already see. Not offered inside a DM — you are already talking.
-      if (fromSomeoneElse && !isDirectMessage)
-        _SheetChoice(
-          'message',
-          'Message ${_authorNameOf(message)}',
-          Icons.mail_outline,
-        ),
-      if (copyText.isNotEmpty)
-        const _SheetChoice('copy', 'Copy', Icons.copy),
-      if (fromSomeoneElse) ...<_SheetChoice>[
-        const _SheetChoice('report', 'Report', Icons.flag_outlined),
-        _SheetChoice(
-          'block',
-          'Block ${_authorNameOf(message)}',
-          Icons.block,
-          colour: hc_red,
-        ),
+    // A message the server has is one that can be replied to or reacted to
+    // — never one still on its way up.
+    final bool onServer =
+        message.status != core.MessageStatus.sending &&
+        message.status != core.MessageStatus.error;
+    if (copyText.isEmpty && !canDelete && !fromSomeoneElse && !onServer) return;
+    final String? choice = await _chooseFrom(
+      <_SheetChoice>[
+        if (onServer) const _SheetChoice('reply', 'Reply', Icons.reply),
+        // The only door to a direct message (E9.F1.S19): the people you can
+        // already see. Not offered inside a DM — you are already talking.
+        if (fromSomeoneElse && !isDirectMessage)
+          _SheetChoice(
+            'message',
+            'Message ${_authorNameOf(message)}',
+            Icons.mail_outline,
+          ),
+        if (copyText.isNotEmpty) const _SheetChoice('copy', 'Copy', Icons.copy),
+        if (fromSomeoneElse) ...<_SheetChoice>[
+          const _SheetChoice('report', 'Report', Icons.flag_outlined),
+          _SheetChoice(
+            'block',
+            'Block ${_authorNameOf(message)}',
+            Icons.block,
+            colour: hc_red,
+          ),
+        ],
+        if (canDelete)
+          _SheetChoice(
+            'delete',
+            'Delete',
+            Icons.delete_outline,
+            colour: hc_red,
+          ),
       ],
-      if (canDelete)
-        _SheetChoice(
-          'delete',
-          'Delete',
-          Icons.delete_outline,
-          colour: hc_red,
-        ),
-    ]);
+      header: onServer
+          ? ChatReactionPicker(
+              mine: myReactionsOn(message),
+              onPick: (String code) => hcPop<String>(result: 'react:$code'),
+            )
+          : null,
+    );
     if (isClosed) return;
+    if (choice != null && choice.startsWith('react:')) {
+      await toggleReaction(message, choice.substring('react:'.length));
+      return;
+    }
     switch (choice) {
+      case 'reply':
+        replyingTo.value = message;
       case 'message':
         await _startDirectMessage(message);
       case 'copy':
@@ -1170,8 +1385,10 @@ class ChatPageController extends GetxController {
       case DmOutcome.open:
         final HcId? thread = result.threadId;
         if (thread == null) {
-          hcSnack('$other could not be messaged. Please try again.',
-              error: true);
+          hcSnack(
+            '$other could not be messaged. Please try again.',
+            error: true,
+          );
           return;
         }
         await openDirectMessage(
@@ -1193,7 +1410,8 @@ class ChatPageController extends GetxController {
           error: true,
           seconds: 6,
           actionLabel: 'Unblock',
-          onAction: () => unawaited(_unblock(result.otherPublicHasherId, other)),
+          onAction: () =>
+              unawaited(_unblock(result.otherPublicHasherId, other)),
         );
       case DmOutcome.declined:
       case DmOutcome.unknown:
@@ -1270,11 +1488,7 @@ class ChatPageController extends GetxController {
           TextButton(
             style: TextButton.styleFrom(backgroundColor: hc_red),
             onPressed: () => hcPop<bool>(result: true),
-            child: Text(
-              'Block',
-              style: ts_button,
-              textAlign: TextAlign.center,
-            ),
+            child: Text('Block', style: ts_button, textAlign: TextAlign.center),
           ),
         ],
       ),
@@ -1404,9 +1618,7 @@ class ChatPageController extends GetxController {
     );
     // The route's future completes as the sheet starts to leave; its
     // TextField is still drawn for the exit animation.
-    unawaited(
-      Future<void>.delayed(const Duration(seconds: 1), reason.dispose),
-    );
+    unawaited(Future<void>.delayed(const Duration(seconds: 1), reason.dispose));
     return result;
   }
 

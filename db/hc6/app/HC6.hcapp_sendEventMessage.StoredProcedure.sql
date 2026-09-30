@@ -9,8 +9,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendEventMessage]
     @messageReleasabilityFlags   INT              = NULL,
     -- 0 text, 1 photo, 2 location (E9.F1.S11/S12, 2026-09-29). Optional,
     -- so every existing caller still sends text.
-    @messageKind                 SMALLINT         = 0
-
+    @messageKind                 SMALLINT         = 0,
+    @replyToMessageId UNIQUEIDENTIFIER = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_sendEventMessage
@@ -221,12 +221,19 @@ DECLARE @messageSequenceCount INT;
 BEGIN TRY
     BEGIN TRANSACTION;
 
+    -- A reply quotes a message of THIS thread (E9.F1.S21). Anything else —
+    -- a stale id, another chat's message — sends as a plain message rather
+    -- than failing the send; the quote is decoration, the text is the point.
+    IF (@replyToMessageId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM HC.EventMessage r
+                                                    WHERE r.id = @replyToMessageId AND r.EventId = @eventId))
+        SET @replyToMessageId = NULL;
+
     INSERT INTO HC.EventMessage
         ([id], [EventId], [PublicEventId], [UserId], [PublicHasherId],
-         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageKind])
+         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageKind], [ReplyToMessageId])
     VALUES
         (@messageId, @eventId, @publicEventId, @userId, @publicHasherId,
-         @messageTitle, @messageContent, @messageReleasabilityFlags, @messageKind);
+         @messageTitle, @messageContent, @messageReleasabilityFlags, @messageKind, @replyToMessageId);
 
     SELECT @messageSequenceCount = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;
 

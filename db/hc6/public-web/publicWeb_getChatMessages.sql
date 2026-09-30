@@ -22,6 +22,7 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getChatMessages]
     -- 'dm' (E9.F1.S7, 2026-09-29): the thread id from the chat list.
     @threadId           UNIQUEIDENTIFIER = NULL,
     @sinceSequenceCount INT              = NULL,
+    @reactionsSince     DATETIMEOFFSET(7) = NULL,
     @markRead           SMALLINT         = 0
 AS
 SET NOCOUNT ON;
@@ -54,13 +55,13 @@ BEGIN TRY
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType, @me AS Me;
 
     IF (@kind = 'run')
-        EXEC HC6.hcapp_getEventMessages  @deviceId = @deviceId, @accessToken = @accessToken, @eventId = @eventId, @sinceSequenceCount = @sinceSequenceCount;
+        EXEC HC6.hcapp_getEventMessages  @deviceId = @deviceId, @accessToken = @accessToken, @eventId = @eventId, @sinceSequenceCount = @sinceSequenceCount, @reactionsSince = @reactionsSince;
     ELSE IF (@kind = 'kennel')
-        EXEC HC6.hcapp_getKennelMessages @deviceId = @deviceId, @accessToken = @accessToken, @kennelId = @kennelId, @sinceSequenceCount = @sinceSequenceCount;
+        EXEC HC6.hcapp_getKennelMessages @deviceId = @deviceId, @accessToken = @accessToken, @kennelId = @kennelId, @sinceSequenceCount = @sinceSequenceCount, @reactionsSince = @reactionsSince;
     ELSE IF (@kind = 'dm')
-        EXEC HC6.hcapp_getDirectMessages @deviceId = @deviceId, @accessToken = @accessToken, @threadId = @threadId, @sinceSequenceCount = @sinceSequenceCount, @markRead = @markRead;
+        EXEC HC6.hcapp_getDirectMessages @deviceId = @deviceId, @accessToken = @accessToken, @threadId = @threadId, @sinceSequenceCount = @sinceSequenceCount, @reactionsSince = @reactionsSince, @markRead = @markRead;
     ELSE
-        EXEC HC6.hcapp_getRoomMessages   @deviceId = @deviceId, @accessToken = @accessToken, @roomType = @roomType, @sinceSequenceCount = @sinceSequenceCount, @markRead = @markRead;
+        EXEC HC6.hcapp_getRoomMessages   @deviceId = @deviceId, @accessToken = @accessToken, @roomType = @roomType, @sinceSequenceCount = @sinceSequenceCount, @reactionsSince = @reactionsSince, @markRead = @markRead;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

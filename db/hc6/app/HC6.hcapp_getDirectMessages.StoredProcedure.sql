@@ -3,6 +3,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getDirectMessages]
     @accessToken        NVARCHAR(1000)   = NULL,
     @threadId           UNIQUEIDENTIFIER = NULL,
     @sinceSequenceCount INT              = NULL,
+    @reactionsSince     DATETIMEOFFSET(7) = NULL,
     @markRead           SMALLINT         = 0
 AS
 -- =====================================================================
@@ -77,9 +78,19 @@ SELECT
     h.Photo                                                          AS authorImageUrl,
     msg.MessageSequenceCount                                         AS sequenceCount,
     msg.MessageKind                                                  AS messageKind,
-    CAST(CASE WHEN msg.UserId = @userId OR @mayModerate = 1 THEN 1 ELSE 0 END AS SMALLINT) AS canDelete
+    CAST(CASE WHEN msg.UserId = @userId OR @mayModerate = 1 THEN 1 ELSE 0 END AS SMALLINT) AS canDelete,
+    UPPER(msg.ReplyToMessageId)                                      AS replyToMessageId,
+    CASE WHEN rp.id IS NULL OR rp.Removed = 1 THEN NULL ELSE LEFT(rp.MessageContent, 200) END AS replyToText,
+    rp.MessageKind                                                   AS replyToKind,
+    rh.DisplayName                                                   AS replyToAuthor,
+    CAST(CASE WHEN rp.id IS NOT NULL AND rp.Removed = 1 THEN 1 ELSE 0 END AS SMALLINT) AS replyToRemoved,
+    msg.ReactionsJson                                                AS reactions
 FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
+-- The quoted message and its author, for replies (E9.F1.S21); a deleted
+-- original quotes as nothing (replyToRemoved = 1) rather than its text.
+LEFT JOIN HC.EventMessage rp ON rp.id = msg.ReplyToMessageId
+LEFT JOIN HC.Hasher rh ON rh.id = rp.UserId
 WHERE msg.ThreadId = @threadId
   AND msg.Removed = 0
   AND h.Removed = 0
@@ -119,6 +130,20 @@ BEGIN
 END
 
 SELECT UPPER(msg.id) AS removedId FROM HC.EventMessage msg WHERE msg.ThreadId = @threadId AND msg.Removed = 1;
+
+-- Reactions on messages the caller ALREADY holds (E9.F1.S22): a reaction
+-- changes an OLD row, and the delta above is by sequence count, so these
+-- come as their own rowset — followed by the server time to pass back as
+-- @reactionsSince. Both are last, so an older client's rowset positions
+-- are what they were. Empty (never absent) when nothing changed.
+SELECT UPPER(msg.id) AS id, msg.ReactionsJson AS reactions
+FROM HC.EventMessage msg
+WHERE msg.ThreadId = @threadId
+  AND msg.Removed = 0
+  AND @reactionsSince IS NOT NULL
+  AND msg.ReactionsUpdatedAt > @reactionsSince
+  AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount <= @sinceSequenceCount);
+SELECT SYSDATETIMEOFFSET() AS reactionsAsOf;
 
 END TRY
 BEGIN CATCH
