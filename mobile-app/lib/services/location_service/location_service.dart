@@ -273,6 +273,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
         // was recorded with.
         if (!_isResumingFromPause) {
           sessionTrackingTier = getIntPref(IntPrefsEnum.trackingQuality) ?? 2;
+          TrackQualityLedger.start(sessionTrackingTier);
         }
         _isResumingFromPause = false;
         _isResumingExistingTrack = false;
@@ -529,7 +530,8 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   /// Whether the boost should actually be costing anything right now. Every
   /// decision that reconfigures the shared stream reads THIS, not the bare
   /// ref count.
-  bool get _preciseBoostActive => _preciseStreamRequests > 0 && !_boostSuspended;
+  bool get _preciseBoostActive =>
+      _preciseStreamRequests > 0 && !_boostSuspended;
 
   /// Call when a surface needing a live position opens; pair with
   /// [releasePreciseStream] when it closes. While run tracking (or the pause
@@ -691,7 +693,8 @@ class LocationService extends GetxService with WidgetsBindingObserver {
               true,
               false,
               androidInterval: const Duration(seconds: 5),
-              notificationText: 'Auto start armed — tracking starts when you set off',
+              notificationText:
+                  'Auto start armed — tracking starts when you set off',
             )
           : getLocSettings(
               100,
@@ -708,7 +711,9 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       await _geoLocationStreamSubscription?.cancel();
       try {
         _geoLocationStreamSubscription =
-            Geolocator.getPositionStream(locationSettings: armedSettings).listen(
+            Geolocator.getPositionStream(
+              locationSettings: armedSettings,
+            ).listen(
               updateDeviceLocation,
               onError: (error) {
                 BootLogger.logBreadcrumb(
@@ -789,6 +794,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       onRemoteTrackingEnded: _onRemoteTrackingEnded,
     );
     for (final AutoStartFix f in backfill) {
+      TrackQualityLedger.record(f.acc);
       _runBuffer!.enqueue(
         UserEventLocation(
           ts: pad19(f.tsMs),
@@ -910,7 +916,9 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   /// began if there has not been one yet. Null when not tracking.
   DateTime? get lastTrackedFixAt {
     if (_sessionTrack.isNotEmpty) {
-      return DateTime.fromMillisecondsSinceEpoch(_sessionTrack.last.timestampMs);
+      return DateTime.fromMillisecondsSinceEpoch(
+        _sessionTrack.last.timestampMs,
+      );
     }
     if (_lastTrackingStartMs > 0) {
       return DateTime.fromMillisecondsSinceEpoch(_lastTrackingStartMs);
@@ -1404,6 +1412,8 @@ class LocationService extends GetxService with WidgetsBindingObserver {
         type: pointStr,
       );
       _runBuffer?.enqueue(point);
+      // Plain fixes only: marks are placed, not measured (E5.F1.S13).
+      if (pointStr == null) TrackQualityLedger.record(accuracy);
       recordedTsMs = tsMs;
       locationUpdateCount.value++;
       if (pointStr != null) _notifyTypedPointListeners(point, tsMs, eventId);

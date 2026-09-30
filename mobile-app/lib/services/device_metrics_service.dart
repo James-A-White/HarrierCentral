@@ -22,7 +22,8 @@ import 'package:harrier_central/imports.dart';
 ///   req=41 fail=0 lat_avg=420ms lat_max=8.2s dev_rx=n/a dev_tx=n/a
 ///   cpu=1m12s cpu%=2.1 db=12.3MB docs=45MB cache=210MB disk_free=41GB
 ///   bg_n=3 fg_n=3 sleep=2 wake=2
-///   loc_track=48m loc_idle=14m batt=87% state=unplugged Δ=-3%
+///   loc_track=48m loc_idle=14m trk=best pts=412 acc_avg=9.8m acc_max=48m
+///   acc_poor=6 batt=87% state=unplugged Δ=-3%
 ///   drain=2.9%/h chg=n/a lpm=0 therm=nominal
 /// ```
 ///
@@ -55,6 +56,12 @@ import 'package:harrier_central/imports.dart';
 /// * **Location.** `loc_*` from [LocationTimeLedger]: cumulative minutes the
 ///   shared stream spent tracking, paused, boosted for a map, or idle. GPS is
 ///   the app's dominant battery cost, so this is the denominator for `drain`.
+/// * **Track.** `trk`/`pts`/`acc_*` from [TrackQualityLedger], only in a
+///   session that tracked a run: the quality tier it was started on, how
+///   many fixes went onto the track and their reported radius (average,
+///   worst, and how many were wider than 25 m). A sparse trail on `saver`
+///   with tight fixes is the setting; hundreds of fixes at 30 m+ is the
+///   signal.
 /// * **Battery.** `batt`/`state` are the device battery, not the app's share
 ///   of it — no platform attributes drain to an app in real time. `Δ` and
 ///   `drain` are measured over the current UNPLUGGED stretch only (the
@@ -68,8 +75,9 @@ import 'package:harrier_central/imports.dart';
 class DeviceMetricsService with WidgetsBindingObserver {
   DeviceMetricsService._();
 
-  static const MethodChannel _channel =
-      MethodChannel('harrier_central/device_metrics');
+  static const MethodChannel _channel = MethodChannel(
+    'harrier_central/device_metrics',
+  );
   static const Duration _interval = Duration(minutes: 15);
 
   /// The fine-grained ring: one compact row a minute, the last [_ringRows]
@@ -163,14 +171,20 @@ class DeviceMetricsService with WidgetsBindingObserver {
       final int? pssMb = _mbOrNull(_int(n['pssBytes']));
       final int? availMb = _mbOrNull(_int(n['availMem']));
       final double? level = _double(n['batteryLevel']);
-      final int? batt = (level != null && level >= 0) ? (level * 100).round() : null;
+      final int? batt = (level != null && level >= 0)
+          ? (level * 100).round()
+          : null;
       final List<int> net = NetworkMeter.takeInterval();
 
       _peak('rss_max', rssMb.toDouble(), t, high: true, unit: 'MB');
-      if (pssMb != null) _peak('pss_max', pssMb.toDouble(), t, high: true, unit: 'MB');
-      if (availMb != null) _peak('avail_min', availMb.toDouble(), t, high: false, unit: 'MB');
-      if (batt != null) _peak('batt_min', batt.toDouble(), t, high: false, unit: '%');
-      if (net[2] > 0) _peak('lat_max', net[2].toDouble(), t, high: true, unit: 'ms');
+      if (pssMb != null)
+        _peak('pss_max', pssMb.toDouble(), t, high: true, unit: 'MB');
+      if (availMb != null)
+        _peak('avail_min', availMb.toDouble(), t, high: false, unit: 'MB');
+      if (batt != null)
+        _peak('batt_min', batt.toDouble(), t, high: false, unit: '%');
+      if (net[2] > 0)
+        _peak('lat_max', net[2].toDouble(), t, high: true, unit: 'ms');
 
       _ring.add(
         '$t,$cpuPct,$rssMb,${pssMb ?? ''},${availMb ?? ''},${batt ?? ''},'
@@ -193,7 +207,9 @@ class DeviceMetricsService with WidgetsBindingObserver {
   String _seriesBlock() {
     final StringBuffer b = StringBuffer();
     b.write('[${_sessionStart.toIso8601String()}] [METRICS:RING] ');
-    b.write('rows=${_ring.length} every=${_ringInterval.inSeconds}s cols=$ringColumns');
+    b.write(
+      'rows=${_ring.length} every=${_ringInterval.inSeconds}s cols=$ringColumns',
+    );
     for (final String row in _ring) {
       b.write('\n');
       b.write(row);
@@ -205,8 +221,13 @@ class DeviceMetricsService with WidgetsBindingObserver {
     return b.toString();
   }
 
-  void _peak(String key, double value, String at,
-      {required bool high, required String unit}) {
+  void _peak(
+    String key,
+    double value,
+    String at, {
+    required bool high,
+    required String unit,
+  }) {
     final _Peak? cur = _peaks[key];
     if (cur == null || (high ? value > cur.value : value < cur.value)) {
       _peaks[key] = _Peak(value, at, unit);
@@ -313,7 +334,9 @@ class DeviceMetricsService with WidgetsBindingObserver {
     final int? cpuMs = _int(n['cpuTimeMs']);
     if (cpuMs != null && cpuMs >= 0) {
       _cpuMsAtStart ??= cpuMs;
-      b.write('cpu=${_fmtDur(Duration(milliseconds: cpuMs - _cpuMsAtStart!))} ');
+      b.write(
+        'cpu=${_fmtDur(Duration(milliseconds: cpuMs - _cpuMsAtStart!))} ',
+      );
       final int? prev = _cpuMsAtLastSample;
       final DateTime? prevAt = _lastSampleAt;
       if (prev != null && prevAt != null) {
@@ -341,6 +364,9 @@ class DeviceMetricsService with WidgetsBindingObserver {
 
     // Location stream cost tiers this session
     b.write('${LocationTimeLedger.summary()} ');
+    // What PackTrack recorded, when it did: tier, fixes, accuracy
+    final String track = TrackQualityLedger.summary();
+    if (track.isNotEmpty) b.write('$track ');
 
     // Network — app layer, then the device's view of the process (Android)
     b.write('${NetworkMeter.summary()} ');
@@ -370,8 +396,7 @@ class DeviceMetricsService with WidgetsBindingObserver {
       }
       if (unplugged && _battRefTime != null && _battRefTime != now) {
         final double delta = (level - _battRefLevel!) * 100;
-        final double hours =
-            now.difference(_battRefTime!).inSeconds / 3600.0;
+        final double hours = now.difference(_battRefTime!).inSeconds / 3600.0;
         b.write('Δ=${delta.toStringAsFixed(0)}% ');
         b.write(
           hours >= 0.1
@@ -423,8 +448,10 @@ class DeviceMetricsService with WidgetsBindingObserver {
     int total = 0;
     int seen = 0;
     try {
-      await for (final FileSystemEntity e
-          in dir.list(recursive: true, followLinks: false)) {
+      await for (final FileSystemEntity e in dir.list(
+        recursive: true,
+        followLinks: false,
+      )) {
         if (++seen > _maxWalkEntries) break;
         if (e is File) {
           try {

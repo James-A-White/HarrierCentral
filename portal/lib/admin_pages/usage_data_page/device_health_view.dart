@@ -158,7 +158,8 @@ class _SessionCard extends StatelessWidget {
                           ? Text(
                               'open ${s.v('up')} (fg ${s.v('fg')} / bg ${s.v('bg')}) · cpu ${s.v('cpu')} · mem ${s.v('peak')} peak · '
                               'net ${s.v('app_rx')} / ${s.v('req', '0')} req · '
-                              'gps ${s.v('loc_track', '0s')} · batt ${s.battStart == null ? '' : '${s.battStart}%→'}${s.v('batt')}'
+                              'gps ${s.v('loc_track', '0s')}${s.summary.containsKey('trk') ? ' (${s.v('trk')}, ${s.v('pts', '0')} fixes, ±${s.v('acc_avg')})' : ''} · '
+                              'batt ${s.battStart == null ? '' : '${s.battStart}%→'}${s.v('batt')}'
                               '${drain.isEmpty ? '' : ' ↓$drain'}'
                               '${s.summary.containsKey('bg_n') ? ' · bg×${s.v('bg_n', '0')} sleep×${s.v('sleep', '0')}' : ''}',
                               style: const TextStyle(fontSize: 12),
@@ -208,6 +209,10 @@ class _SessionBody extends StatelessWidget {
           if (s.hasMetrics) ...<Widget>[
             const SizedBox(height: 6),
             _StatsStrip(s: s),
+          ],
+          if (s.summary.containsKey('trk')) ...<Widget>[
+            const SizedBox(height: 8),
+            _GpsStrip(s: s),
           ],
           if (s.appError != null) ...<Widget>[
             const SizedBox(height: 4),
@@ -299,6 +304,60 @@ class _StatsStrip extends StatelessWidget {
                 ],
               ))
           .toList(),
+    );
+  }
+}
+
+/// What PackTrack recorded in this session (app 3.1.8+1427 and later): the
+/// tracking-quality setting the run was started on, how many GPS fixes went
+/// onto the track, and how wide they were. Two trails can look equally bad on
+/// the map for opposite reasons — Power Saver starves the track (15 fixes in
+/// an hour, each one fine) while a poor signal floods it with 30–100 m fixes
+/// — and this strip is what tells them apart (James, 2026-09-30).
+class _GpsStrip extends StatelessWidget {
+  const _GpsStrip({required this.s});
+  final DeviceHealthSession s;
+
+  static const Map<String, String> _tierNames = <String, String>{
+    'saver': 'Power Saver',
+    'balanced': 'Balanced',
+    'best': 'Best',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final String tier = s.v('trk', '');
+    final int poor = int.tryParse(s.v('acc_poor', '0')) ?? 0;
+    final int pts = int.tryParse(s.v('pts', '0')) ?? 0;
+    final String lpm = s.v('lpm', '0');
+    final List<(String, String)> cells = <(String, String)>[
+      ('Tracking quality', _tierNames[tier] ?? tier),
+      ('OS battery saver', lpm == '1' ? 'on' : 'off'),
+      ('GPS fixes', '$pts'),
+      ('Accuracy avg', '±${s.v('acc_avg')}'),
+      ('Worst fix', '±${s.v('acc_max')}'),
+      ('Fixes over 25 m', pts == 0 ? '—' : '$poor (${(100 * poor / pts).round()}%)'),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text('GPS this session', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Colors.grey.shade800)),
+        const SizedBox(height: 2),
+        Wrap(
+          spacing: 14,
+          runSpacing: 6,
+          children: cells
+              .map((c) => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(c.$1, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+                      Text(c.$2, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    ],
+                  ))
+              .toList(),
+        ),
+      ],
     );
   }
 }
