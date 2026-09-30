@@ -1,0 +1,137 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getPlatformAdmins",
+  "version": "1.0.0",
+  "description": "Platform admins list (E12.F7.S1): every live HC.PlatformAdmin row with the hasher and the four capability flags; IsSelf marks the caller. Requires HC.PlatformAdmin.CanManagePermissions.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Refusal",
+      "description": "{ Success = 0, ErrorMessage } when auth or the CanManagePermissions gate fails.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": false,
+          "description": "Why"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "PlatformAdmins",
+      "description": "One row per live platform admin, ordered by hash name.",
+      "columns": [
+        {
+          "name": "HasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Hasher.id"
+        },
+        {
+          "name": "HashName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "FirstName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "LastName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "Email",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HomeKennel",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Home kennel short name"
+        },
+        {
+          "name": "CanViewMonitor",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Usage data / monitor"
+        },
+        {
+          "name": "CanManageNewsflash",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Newsflashes"
+        },
+        {
+          "name": "CanEditKennel",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Edit any kennel, approve kennel requests, merge accounts"
+        },
+        {
+          "name": "CanManagePermissions",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Permission matrix and this list"
+        },
+        {
+          "name": "CreatedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Minted"
+        },
+        {
+          "name": "UpdatedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Last change"
+        },
+        {
+          "name": "IsSelf",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 on the caller's own row"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -43,6 +43,7 @@ export 'package:hcportal/admin_pages/kennel_requests/kennel_request_detail_page.
 export 'package:hcportal/admin_pages/kennel_requests/kennel_requests_controller.dart';
 export 'package:hcportal/admin_pages/kennel_requests/kennel_requests_page.dart';
 export 'package:hcportal/admin_pages/merge_hashers/merge_hashers_page.dart';
+export 'package:hcportal/admin_pages/platform_admins/platform_admins_page.dart';
 export 'package:hcportal/admin_pages/newsflash/newsflash_dialog.dart';
 export 'package:hcportal/admin_pages/newsflash/newsflash_management_controller.dart';
 export 'package:hcportal/admin_pages/newsflash/newsflash_management_page.dart';
@@ -53,6 +54,7 @@ export 'package:hcportal/models/product_schema.dart';
 export 'package:hcportal/models/newsflash_model.dart';
 export 'package:hcportal/models/newsflash_reader_model.dart';
 export 'package:hcportal/queries/hasher_merge_query.dart';
+export 'package:hcportal/queries/platform_admin_query.dart';
 export 'package:hcportal/queries/kennel_request_query.dart';
 export 'package:hcportal/queries/location_query.dart';
 export 'package:hcportal/queries/newsflash_query.dart';

@@ -78,6 +78,15 @@ class HcAdminToolsPage extends StatelessWidget {
                   icon: MaterialCommunityIcons.shield_key,
                   onTap: () => Get.to<PermissionsPage>(PermissionsPage.new),
                 ),
+              if (canManagePermissions) ...[
+                const SizedBox(height: 16),
+                _ToolCard(
+                  title: 'Platform admins',
+                  subtitle: 'Who is Harrier Central staff: mint, change or remove a platform admin',
+                  icon: MaterialCommunityIcons.shield_account,
+                  onTap: () => Get.to<PlatformAdminsPage>(PlatformAdminsPage.new),
+                ),
+              ],
             ],
           ),
         ),

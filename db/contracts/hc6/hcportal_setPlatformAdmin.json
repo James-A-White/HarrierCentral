@@ -1,0 +1,97 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_setPlatformAdmin",
+  "version": "1.0.0",
+  "description": "Mint, change or de-mint a platform admin (E12.F7.S1): upsert on HC.PlatformAdmin.UserId; NULL capability = keep (0 for a new or revived row); @removed = 1 de-mints. Refuses: caller de-minting themselves or dropping their own CanManagePermissions; leaving nobody with CanManagePermissions; a disabled target. Logged to LOG.GeneralLog with before/after flags. Requires HC.PlatformAdmin.CanManagePermissions.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string."
+    },
+    {
+      "name": "targetHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "PlatformAdmin.UserId",
+      "description": "The person"
+    },
+    {
+      "name": "removed",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "PlatformAdmin.removed",
+      "description": "1 de-mints; default 0"
+    },
+    {
+      "name": "canViewMonitor",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "PlatformAdmin.CanViewMonitor",
+      "description": "NULL = keep"
+    },
+    {
+      "name": "canManageNewsflash",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "PlatformAdmin.CanManageNewsflash",
+      "description": "NULL = keep"
+    },
+    {
+      "name": "canEditKennel",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "PlatformAdmin.CanEditKennel",
+      "description": "NULL = keep"
+    },
+    {
+      "name": "canManagePermissions",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "PlatformAdmin.CanManagePermissions",
+      "description": "NULL = keep"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "{ Success, ErrorMessage }",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 / 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Why, on 0"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT/UPDATE HC.PlatformAdmin",
+    "INSERT LOG.GeneralLog"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

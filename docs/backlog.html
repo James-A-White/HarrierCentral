@@ -293,8 +293,8 @@
   <p class="standfirst">Every epic, feature and user story across the five components — the Flutter mobile app, the Flutter admin portal, the Next.js public web, the Azure Functions shim and the SQL Server domain layer — plus the non-functional requirements that hold them together. <strong>Epics are organised by what a hasher is trying to do, not by which codebase serves it</strong>, because almost every feature here spans three surfaces at once.</p>
   <div class="meta-strip">
     <div><b>17</b> epics</div>
-    <div><b>86</b> features</div>
-    <div><b>349</b> stories</div>
+    <div><b>87</b> features</div>
+    <div><b>350</b> stories</div>
     <div><b>49</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -329,7 +329,7 @@
   <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 63 stories</span></a>
   <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 22 stories</span></a>
-  <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">6 features · 24 stories</span></a>
+  <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">7 features · 25 stories</span></a>
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 15 requirements</span></a>
   <a class="idx" href="#e14"><span class="idx-id">E14</span><span class="idx-name">Reliability, Sync &amp; Observability</span><span class="idx-count">4 groups · 20 requirements</span></a>
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
@@ -1244,6 +1244,14 @@
         <span class="gap">PackTrack points not yet archived (the nightly job) stay under the old id in Table Storage.</span></li>
       <li class="story"><span class="s-id">E12.F6.S3</span><span class="s-text">As a <em>Platform Admin</em>, I want to find the accounts to merge by hash name — several names at once, comma-separated — see them in a table (email, kennels followed, last app use, runs, where the last three runs were), mark one Keep and one or more Merge, and merge them all into the Keep, so that I don't need anyone's email and can merge more than two accounts. <code>hcportal_searchHashersForMerge</code>; the merge itself reuses <code>hcportal_previewHasherMerge</code> / <code>hcportal_mergeHashers</code> by id, one account at a time. Shipped 2026-09-28 (portal 2.0.87+729).</span><span class="chip c-ship">Shipped</span>
         <span class="gap">the page has not yet been used on a real merge.</span></li>
+    </ul>
+  </div>
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E12.F7</span><h3 class="feature-name">Platform staff  </h3>
+      <span class="surfaces"><span class="surf">DB</span><span class="surf">Portal</span></span>
+    </div>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E12.F7.S1</span><span class="s-text">As a <em>Platform Admin</em> with <code>CanManagePermissions</code>, I want an HC Admin Tools page that lists the platform admins with their four capabilities as switches, removes one, and mints a new one by finding the person the way Merge accounts does, so that Harrier Central staff are managed in the portal rather than seeded by hand in SQL (James, 2026-09-30). <code>hcportal_getPlatformAdmins</code> / <code>hcportal_setPlatformAdmin</code> — the one write path for <code>HC.PlatformAdmin</code>, upsert on <code>UserId</code> (a removed admin is revived, not duplicated), NULL flag = keep. Guards: a caller cannot de-mint themselves or drop their own Permissions &amp; admins; the change cannot leave nobody holding it; every change goes to <code>LOG.GeneralLog</code> with before/after flags. A new admin starts with Monitor, Newsflash and Kennels &amp; merges; Permissions &amp; admins is switched on deliberately. <em><code>HC.PlatformAdmin</code> is the only platform-wide grant</em> — <code>AppAccessFlags 0x40000000</code> is the kennel-founder bit (E9.F1.S20). ⚠ Known gap: built on dev, <em>not deployed</em>; the search reuses <code>hcportal_searchHashersForMerge</code>, which needs <code>CanEditKennel</code> as well.</span><span class="chip c-build">Building</span></li>
     </ul>
   </div>
 </section>
