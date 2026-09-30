@@ -1,3 +1,9 @@
+## 2.0.87+737 (2026-09-30)
+### New Features
+- **Platform admins** (HC Admin Tools): list Harrier Central staff with their four capabilities as switches, remove one, or mint a new one by finding the person as Merge accounts does. Only a platform admin with Permissions & admins sees it; nobody can remove themselves or leave the platform with no one holding that capability.
+### Improvements
+- **Chat rooms** (server): "Harrier Central Admins" is now "Kennel Admins" — it is granted by the kennel-founder flag, which 294 hashers hold. A new "Platform Admins" room is for `HC.PlatformAdmin` rows only. Room and direct-message moderation now requires a platform admin. New coin set for all seven rooms.
+
 ## 2.0.87+736 (2026-09-30)
 ### Improvements
 - **Merge accounts**: the search also matches a first name, last name or "First Last" (a duplicate made at signup often has no hash name yet), and the screen now reminds admins that several names can be entered as a comma-separated list — e.g. Opee, Opie — to see both accounts together.
