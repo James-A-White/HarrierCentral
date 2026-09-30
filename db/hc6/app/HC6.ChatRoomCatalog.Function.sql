@@ -19,8 +19,10 @@ AS
 --
 -- GrantColumn is which bitfield on HC.HasherKennelMap decides membership,
 --   and it genuinely differs per room — this is not over-engineering:
---     'flags' → AppAccessFlags      (SuperAdmin is 0x40000000)
---     'mm'    → MismanagementRoles  (club offices)
+--     'flags'    → AppAccessFlags      (0x40000000 = kennel founder/admin)
+--     'mm'       → MismanagementRoles  (club offices)
+--     'platform' → HC.PlatformAdmin    (no bitfield; GrantMask is only the
+--                  pin-mirror bit, stored in UnpinnedAppAccessRooms)
 --   ⚠ The two collide: 0x08 is ManageHashCash in AppAccessFlags but RA in
 --   MismanagementRoles. A room must say which column it reads, never just
 --   which bit. See /hc-authorizations.
@@ -62,8 +64,21 @@ RETURN
     SELECT c.RoomType, c.RoomName, c.GrantColumn, c.GrantMask, c.SortOrder, c.IconUrl
     FROM (VALUES
         --  Type  Name                       Column   Mask          Sort  Icon
-            (1,  N'Harrier Central Admins',  'flags', 0x40000000,   10,
+            -- 0x40000000 is the KENNEL-founder grant (hcportal_approveKennelRequest
+            -- hands 0x4000003F to every new kennel's creator; 294 hashers hold
+            -- it), not platform staff — so this room is the kennel admins'
+            -- room and is named so (James, 2026-09-30; it read "Harrier
+            -- Central Admins" until then, and a founder asking how to become
+            -- super admin of his own kennel was posting to the right room).
+            (1,  N'Kennel Admins',           'flags', 0x40000000,   10,
                  N'https://harriercentral.blob.core.windows.net/chat-room-icons/admins.png'),
+            -- Platform staff only: HC.PlatformAdmin rows, not a bitfield.
+            -- GrantMask here is only the PIN mirror bit (kept in
+            -- UnpinnedAppAccessRooms, disjoint from room 1's 0x40000000).
+            -- Coin: NULL until James supplies platform-admins.png —
+            -- upload to chat-room-icons and put the full URL here.
+            (7,  N'Platform Admins',         'platform', 0x00000001, 5,
+                 CAST(NULL AS NVARCHAR(500))),
             -- GM + VGM together (James, 2026-09-15): 72 GMs and 87 once the
             -- vice GMs are in. A mask may name SEVERAL bits — the test is
             -- `& mask <> 0`, so any one of them grants the room.

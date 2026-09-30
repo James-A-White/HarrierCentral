@@ -65,6 +65,17 @@ SuperAdmin (0x40000000)                                            -- the ONLY a
   OR (AppAccessFlags     & <feature's override flag>)     != 0     -- per-hasher override
 ```
 
+⚠️ **`0x40000000` is kennel-scoped, not platform staff (found 2026-09-30).** It is the
+kennel-FOUNDER grant: `hcportal_approveKennelRequest` gives every new kennel's creator
+`0x4000003F`, and **294 hashers** hold it on some row. `CheckKennelPermission` reads it on
+THAT kennel's row, so it means "super admin of this kennel". Anything platform-wide —
+who moderates rooms and DMs, who is in the Platform Admins room, who may merge accounts
+— gates on **`HC.PlatformAdmin`** (2 rows), never on `AppAccessFlags & 0x40000000`
+across any row. The "Harrier Central Admins" room was keyed on the bit and admitted
+all 294; it is now "Kennel Admins", and `nonApi_mayModerateChat` was letting every one
+of them delete any room or DM message.
+
+
 Roles = defaults (a GM just works); flags = the override so any single feature can be
 granted to any hasher. The role→feature defaults are decided in the matrix
 (`docs/permissions_matrix.xlsx`) — keep it current as decisions land.

@@ -13,12 +13,14 @@ AS
 --
 --   Run chat     -> moderateChat in the RUN'S kennel
 --   Kennel chat  -> moderateChat in that kennel
---   Room or DM   -> (both NULL) SuperAdmin only: rooms span kennels, so
---                   no kennel's office can moderate them, and a direct
---                   message belongs to no kennel at all (E9.F1.S7)
---   SuperAdmin anywhere moderates everything — it is the platform's own
---   bypass, and a platform admin need not follow a kennel to clean up
---   its chat.
+--   Room or DM   -> (both NULL) platform admins only (HC.PlatformAdmin):
+--                   rooms span kennels, so no kennel's office can moderate
+--                   them, and a direct message belongs to no kennel at all
+--                   (E9.F1.S7)
+--   A platform admin moderates everything and need not follow a kennel to
+--   clean up its chat. A kennel's own SuperAdmin (AppAccessFlags
+--   0x40000000 on THAT kennel's row) still passes CheckKennelPermission
+--   for that kennel's run and kennel chats.
 --
 --   moderateChat is a HC.PermissionFunction row (defaults: GM, Web
 --   Meister, the Manage chat flag 0x200), so a kennel can widen or narrow
@@ -32,9 +34,11 @@ SET NOCOUNT ON;
 SET @allowed = 0;
 IF (@userId IS NULL) RETURN;
 
-IF EXISTS (SELECT 1 FROM HC.HasherKennelMap hkm
-           WHERE hkm.UserId = @userId AND hkm.removed = 0
-             AND (hkm.AppAccessFlags & 0x40000000) <> 0)
+-- Platform staff moderate everything. This read AppAccessFlags 0x40000000
+-- on any kennel row until 2026-09-30 — the kennel-FOUNDER grant, held by
+-- 294 hashers, every one of whom could delete any room or DM message.
+IF EXISTS (SELECT 1 FROM HC.PlatformAdmin pa
+           WHERE pa.UserId = @userId AND pa.removed = 0)
 BEGIN
     SET @allowed = 1;
     RETURN;
@@ -43,7 +47,7 @@ END
 IF (@eventId IS NOT NULL)
     SELECT @kennelId = e.KennelId FROM HC.Event e WHERE e.id = @eventId;
 ELSE IF (@eventId IS NULL AND @kennelId IS NULL)
-    RETURN;   -- a room, and the caller is not a SuperAdmin
+    RETURN;   -- a room or DM, and the caller is not a platform admin
 
 IF (@kennelId IS NOT NULL)
     EXEC HC6.CheckKennelPermission

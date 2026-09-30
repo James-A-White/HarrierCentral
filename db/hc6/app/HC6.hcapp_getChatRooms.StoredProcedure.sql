@@ -87,7 +87,7 @@ BEGIN TRY
         -- SET bit means the hasher turned that room off (E9.F1.S8).
         CASE WHEN (c.GrantColumn = 'mm'
                    AND (ISNULL(hs.UnpinnedMismanagementRooms, 0) & c.GrantMask) <> 0)
-               OR (c.GrantColumn = 'flags'
+               OR (c.GrantColumn IN ('flags', 'platform')
                    AND (ISNULL(hs.UnpinnedAppAccessRooms, 0) & c.GrantMask) <> 0)
              THEN 0 ELSE 1 END                       AS pinned
     FROM HC6.ChatRoomCatalog() c
