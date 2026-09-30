@@ -52,11 +52,14 @@ class DrinksList extends StatelessWidget {
               final bool predict = controller.canPredict;
               return Column(
                 children: <Widget>[
-                  if (predict)
-                    _FilterHeader(
-                      filter: filter,
-                      onSelect: (AwardFilter f) => controller.filter.value = f,
-                    ),
+                  // The same band for a past run as for a future one (James,
+                  // 2026-09-30): the past run has nothing to predict, so its
+                  // pill holds the one segment that applies.
+                  _FilterHeader(
+                    filter: predict ? filter : AwardFilter.atHash,
+                    predict: predict,
+                    onSelect: (AwardFilter f) => controller.filter.value = f,
+                  ),
                   Expanded(
                     child: shown.isEmpty
                         ? _EmptyState(
