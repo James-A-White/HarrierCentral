@@ -167,9 +167,16 @@ class _EmptyState extends StatelessWidget {
 /// The All | Coming | At Hash switch and what grey means. Only for today's
 /// and upcoming runs ([DrinksListController.canPredict]).
 class _FilterHeader extends StatelessWidget {
-  const _FilterHeader({required this.filter, required this.onSelect});
+  const _FilterHeader({
+    required this.filter,
+    required this.onSelect,
+    this.predict = true,
+  });
 
   final AwardFilter filter;
+  /// False for a past run: the pill holds At Hash alone and the note says
+  /// who was there, so the page matches a future run's.
+  final bool predict;
   final void Function(AwardFilter f) onSelect;
 
   @override
@@ -193,11 +200,15 @@ class _FilterHeader extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       for (final (AwardFilter f, String label)
-                          in const <(AwardFilter, String)>[
-                            (AwardFilter.all, 'All'),
-                            (AwardFilter.coming, 'Coming'),
-                            (AwardFilter.atHash, 'At Hash'),
-                          ])
+                          in predict
+                              ? const <(AwardFilter, String)>[
+                                  (AwardFilter.all, 'All'),
+                                  (AwardFilter.coming, 'Coming'),
+                                  (AwardFilter.atHash, 'At Hash'),
+                                ]
+                              : const <(AwardFilter, String)>[
+                                  (AwardFilter.atHash, 'At Hash'),
+                                ])
                         _segment(
                           label,
                           selected: filter == f,
@@ -209,11 +220,13 @@ class _FilterHeader extends StatelessWidget {
               ),
             ),
           ),
-          if (filter != AwardFilter.atHash) ...<Widget>[
+          if (!predict || filter != AwardFilter.atHash) ...<Widget>[
             const SizedBox(height: 6),
             Text(
-              'Greyed out: not checked in — the award they get if they come. '
-              'Counts as of today.',
+              !predict
+                  ? 'Who was checked in, and the award each earned that day.'
+                  : 'Greyed out: not checked in — the award they get if they come. '
+                      'Counts as of today.',
               textAlign: TextAlign.center,
               style: ts_body.copyWith(
                 color: themeBackgroundColor,
