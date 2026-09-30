@@ -12,12 +12,15 @@ AS
 --   be an email address or a hasher id / PublicHasherId, for an account
 --   whose hash name is blank or misspelt.
 --   Hash names match whole, ignoring case and surrounding spaces ("Smartarse"
---   finds "Smartarse " too). Each row carries what tells two records of one
+--   finds "Smartarse " too). A term also matches a first name, a last name,
+--   or "First Last" whole (James, 2026-09-30) — a duplicate made at signup
+--   often has no hash name yet, only the real one. Each row carries what
+--   tells two records of one
 --   person apart: email, kennels followed, when the app was last used, run
 --   counts and where the last three runs were.
 --   Requires an HC.PlatformAdmin row with CanEditKennel.
 -- Parameters: @deviceId, @accessToken (auth);
---   @searchTerms — '|'-delimited hash names / emails / ids (the portal turns
+--   @searchTerms — '|'-delimited hash names / real names / emails / ids (the portal turns
 --   the admin's comma-separated list into '|'). At most 20 terms.
 -- Returns:
 --   On refusal: rowset 0 — { Success = 0, ErrorMessage }.
@@ -60,7 +63,7 @@ WHERE LEN(TRIM(s.value)) > 0;
 
 IF NOT EXISTS (SELECT 1 FROM @terms)
 BEGIN
-    SELECT 0 AS Success, 'Enter one or more hash names, separated by commas' AS ErrorMessage;
+    SELECT 0 AS Success, 'Enter one or more hash names or real names, separated by commas' AS ErrorMessage;
     RETURN;
 END
 
@@ -71,6 +74,9 @@ BEGIN TRY
         JOIN HC.Hasher h
           ON h.Removed = 0
          AND (   TRIM(h.HashName) = t.Term
+              OR TRIM(h.FirstName) = t.Term
+              OR TRIM(h.LastName) = t.Term
+              OR TRIM(COALESCE(h.FirstName, N'') + N' ' + COALESCE(h.LastName, N'')) = t.Term
               OR (t.Term LIKE N'%_@_%' AND h.Email = t.Term)
               OR h.id = TRY_CAST(t.Term AS UNIQUEIDENTIFIER)
               OR h.PublicHasherId = TRY_CAST(t.Term AS UNIQUEIDENTIFIER))

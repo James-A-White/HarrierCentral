@@ -4,8 +4,9 @@ import 'package:intl/intl.dart';
 // ---------------------------------------------------------------------------
 // Merge accounts (E12.F6) — HC Admin Tools › Merge accounts.
 //
-// One person, several accounts. The admin types one or more hash names
-// (comma-separated — two records of one person often carry different names),
+// One person, several accounts. The admin types one or more hash names or
+// real names (comma-separated — two records of one person often carry
+// different names, and one made at signup may have no hash name yet),
 // sees every account that has one in a table, and marks ONE row Keep and one
 // or more rows Merge (James, 2026-09-28: "we don't need to know the email
 // addresses"). Preview shows each Merge account beside the Keep, with what
@@ -156,9 +157,9 @@ class MergeHashersPage extends StatelessWidget {
                     TextField(
                       controller: c.searchText,
                       decoration: const InputDecoration(
-                        labelText: 'Hash names',
-                        helperText: 'Separate several with commas, e.g. Smartarse, Smart Arse. '
-                            'An email or hasher id works too.',
+                        labelText: 'Hash names or real names',
+                        helperText: 'Separate several with commas, e.g. Smartarse, Smart Arse, Jane Smith. '
+                            'A first name, last name, email or hasher id works too.',
                         border: OutlineInputBorder(),
                       ),
                       onSubmitted: (_) => c.search(),

@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcportal_searchHashersForMerge",
   "version": "1.0.0",
-  "description": "Merge accounts search (E12.F6.S3): live accounts whose hash name matches a term (whole, case- and space-insensitive), or whose email / hasher id / PublicHasherId is a term. Up to 20 terms, 200 rows. Requires HC.PlatformAdmin.CanEditKennel.",
+  "description": "Merge accounts search (E12.F6.S3): live accounts whose hash name, first name, last name or 'First Last' matches a term (whole, case- and space-insensitive), or whose email / hasher id / PublicHasherId is a term. Up to 20 terms, 200 rows. Requires HC.PlatformAdmin.CanEditKennel.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": "Hasher.HashName",
-      "description": "'|'-delimited hash names / emails / ids (the portal converts the admin's commas)."
+      "description": "'|'-delimited hash names / first or last names / 'First Last' / emails / ids (the portal converts the admin's commas). Names match whole; added first/last/full-name matching 2026-09-30."
     }
   ],
   "rowsets": [
