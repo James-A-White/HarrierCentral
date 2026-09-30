@@ -1,3 +1,31 @@
+## 3.1.8+1425 (2026-09-30)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### New Features
+- **Send Help rings the pack.** Every phone on the run gets three beeps and
+  three buzzes when someone presses Send Help — the app open or not — and a
+  second request inside two minutes asks "send another?" first.
+- **GPS health.** Before tracking starts the app checks what would spoil a
+  trail — Location set to While Using, Precise Location off, Low Power Mode,
+  Android battery optimisation, the Power Saver tier — and says so, with a
+  button to fix each. A signal light shows the age and accuracy of the last
+  fix while tracking; you're told if PackTrack lost you; the run summary
+  says how many fixes and the longest gap.
+- **Photo viewer → Map.** From the map's photo viewer, Map zooms this map
+  to where the photo was taken.
+- **Photo review** opened for one run now says how many photos wait in the
+  kennel's other runs, with Review all.
+### Fixes
+- **The Chats view closes when you change tab** — the earlier fix never
+  fired on a phone; reproduced on a simulator and corrected, with a test.
+- **Auto start: pressing Start while armed keeps the buffered fixes**, so
+  your track begins where you set off, not where you tapped.
+- **No photo pin lost** when two photos were taken from the same spot.
+- **Renumbering a run works again** (server fix; the app now also sends the
+  kennel on that edit).
+- **Chat opens on a spinner**, not "No messages yet", while it loads.
+- **Drink chug-a-lug** for a past run has the same header as a future one.
+
 ## 3.1.8+1424 (2026-09-29)
 iOS (TestFlight, James internal test only). Held from the beta testers.
 Build number only; same version.

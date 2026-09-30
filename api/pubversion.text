@@ -1,3 +1,7 @@
+1.0.61+67
+    • Send Help pushes play the app's own alarm: aps.sound = sos.caf on iOS,
+      the hc_help channel + res/raw/sos on Android (Utilities.IsHelpMessage).
+
 1.0.61+66
     • HOTFIX: startDirectMessage / respondDirectMessageRequest returned 500
       on every call — a dynamic JSON value bound to a string parameter at
