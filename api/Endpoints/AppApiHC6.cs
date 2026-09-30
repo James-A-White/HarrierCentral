@@ -433,6 +433,8 @@ namespace HcWebApi.Endpoints
         {
             try
             {
+                // Send Help rings the alarm sound on both platforms (2026-09-30).
+                bool alarm = isNotification && Utilities.IsHelpMessage(eventMessage.MessageContent);
                 var messageBody = new
                 {
                     message = new
@@ -456,11 +458,11 @@ namespace HcWebApi.Endpoints
                             // The app sets its icon from this on a silent push.
                             BadgeTotal = badgeTotal?.ToString() ?? "",
                         },
-                        android = isNotification ? Utilities.ChatAndroidVisible(badgeTotal) : null,
+                        android = isNotification ? Utilities.ChatAndroidVisible(badgeTotal, alarm) : null,
                         apns = new
                         {
                             headers = new Dictionary<string, string> { ["apns-priority"] = isNotification ? "10" : "5" },
-                            payload = new { aps = Utilities.ChatAps(isNotification, badgeTotal) }
+                            payload = new { aps = Utilities.ChatAps(isNotification, badgeTotal, alarm) }
                         }
                     },
                 };

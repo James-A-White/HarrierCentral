@@ -1,6 +1,9 @@
 package com.harriercentral.app
 
 import android.app.ActivityManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.media.AudioAttributes
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -47,7 +50,34 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createHelpChannel()
         handleIncomingIntent(intent)
+    }
+
+    // The channel a Send Help push arrives on (2026-09-30). On Android 8+ a
+    // channel owns its sound, so the API naming "sos" in the payload is not
+    // enough: the channel must exist with res/raw/sos attached, and it must
+    // exist BEFORE the first such push, which is why it is made at launch.
+    // Creating an existing channel again is a no-op.
+    private fun createHelpChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val sound = Uri.parse("android.resource://" + packageName + "/raw/sos")
+        val attrs = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+        val channel = NotificationChannel(
+            "hc_help",
+            "Calls for help on trail",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "A hasher pressed Send Help on a run you are on"
+            setSound(sound, attrs)
+            enableVibration(true)
+            vibrationPattern = longArrayOf(0, 400, 200, 400, 200, 400)
+        }
+        manager.createNotificationChannel(channel)
     }
 
     override fun onNewIntent(intent: Intent) {

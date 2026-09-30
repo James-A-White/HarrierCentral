@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		1596FD998E40B6EFDB644E5B /* sos.caf in Resources */ = {isa = PBXBuildFile; fileRef = 44E14632B9DCDC197314D7BF /* sos.caf */; };
 		24330CF022B2D00F00FFB7E1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 24330CEF22B2D00F00FFB7E1 /* GoogleService-Info.plist */; };
 		2482437726B8887C0001B02F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2482437626B8887C0001B02F /* StoreKit.framework */; };
 		29EBCEDF6375C0BCD375FA1B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383857D31006AB8D91AC7ED8 /* ContentView.swift */; };
@@ -95,6 +96,7 @@
 		383857D31006AB8D91AC7ED8 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		3B543A8E2B5A880025CD6798 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
+		44E14632B9DCDC197314D7BF /* sos.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = sos.caf; sourceTree = "<group>"; };
 		52955867D46EEECBDB62D16A /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		6FD59D884FE65A5D4B85388A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -214,6 +216,7 @@
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				183E1A203AD135154ABAA020 /* PhoneWatchBridge.swift */,
 				A83555BFFF78FFEAB95E63E8 /* IncomingFileBridge.swift */,
+				44E14632B9DCDC197314D7BF /* sos.caf */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -391,6 +394,7 @@
 				24330CF022B2D00F00FFB7E1 /* GoogleService-Info.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+				1596FD998E40B6EFDB644E5B /* sos.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
