@@ -16,6 +16,10 @@ abstract class RunSummarySource {
   /// The marks could not be read (offline): distance and time still show.
   RxBool get summaryUnavailable;
   bool get summaryImperial;
+
+  /// The GPS health of the track — `412 fixes · longest gap 1 min · Best`
+  /// (E5.F1.S13). Null when there is nothing to say.
+  RxnString get trackHealth;
 }
 
 /// A summary whose numbers are already known — the map's, from a recorded
@@ -26,9 +30,11 @@ class FixedRunSummary implements RunSummarySource {
     required Duration elapsed,
     required RunSummary marks,
     required this.summaryImperial,
+    String? trackHealth,
   }) : summaryDistanceMeters = distanceMeters.obs,
        summaryElapsed = elapsed.obs,
-       summary = Rxn<RunSummary>(marks);
+       summary = Rxn<RunSummary>(marks),
+       trackHealth = RxnString(trackHealth);
 
   @override
   final RxDouble summaryDistanceMeters;
@@ -42,6 +48,8 @@ class FixedRunSummary implements RunSummarySource {
   final RxBool summaryUnavailable = false.obs;
   @override
   final bool summaryImperial;
+  @override
+  final RxnString trackHealth;
 }
 
 /// The run summary card (James, 2026-09-27): the runner's own distance and
@@ -102,6 +110,7 @@ Future<void> showRunSummaryDialog(
         final RunSummary? s = source.summary.value;
         final bool loading = source.summaryLoading.value;
         final bool unavailable = source.summaryUnavailable.value;
+        final String? health = source.trackHealth.value;
 
         // Time on trail: the whole run less the time at drink stops. Known
         // only once the marks are read; before then the pace row waits.
@@ -178,6 +187,29 @@ Future<void> showRunSummaryDialog(
                   'on the map when you are back online.',
                   style: ts_alertDialogBody,
                   textAlign: TextAlign.center,
+                ),
+              ),
+            // Track health (E5.F1.S13): what the GPS actually recorded, so
+            // an empty-looking map has its reason on the card.
+            if (health != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.gps_fixed, size: 16, color: Colors.black54),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        health,
+                        style: ts_alertDialogBody.copyWith(
+                          fontSize: 13,
+                          color: Colors.black54,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],

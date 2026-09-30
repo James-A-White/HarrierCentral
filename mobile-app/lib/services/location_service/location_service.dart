@@ -7,6 +7,7 @@ import 'run_point_buffer.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/location_service/auto_start_detector.dart';
 import 'package:harrier_central/services/location_service/auto_start_monitor.dart';
+import 'package:harrier_central/services/location_service/gps_health.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
 
 // Constants (replace with your actual constants)
@@ -265,6 +266,13 @@ class LocationService extends GetxService with WidgetsBindingObserver {
         if (!_isResumingFromPause && !_isResumingExistingTrack) {
           _sessionTrack.clear();
           filteredSessionDistanceMeters.value = 0.0;
+        }
+        // The tier this session runs on, for the run summary's health line
+        // (E5.F1.S13) — stamped on a real start, not a resume from pause,
+        // so a mid-run change of setting does not rewrite what the track
+        // was recorded with.
+        if (!_isResumingFromPause) {
+          sessionTrackingTier = getIntPref(IntPrefsEnum.trackingQuality) ?? 2;
         }
         _isResumingFromPause = false;
         _isResumingExistingTrack = false;
@@ -577,6 +585,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
+        _checkGapOnResume();
         if (!_boostSuspended) return;
         _boostSuspended = false;
         if (_preciseStreamRequests == 0) return;
@@ -871,6 +880,9 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   Future<void> stopTracking() async {
     _pausePoint = null;
     _isResumingFromPause = false;
+    _resumeGap = null;
+    _resumeGapTimer?.cancel();
+    _resumeGapTimer = null;
     final wasPaused = isPaused.value;
     if (wasPaused) isPaused.value = false;
     if (joinRunTracking.value) {
@@ -880,6 +892,105 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       // fire — manually restore the idle (or boosted) stream settings.
       await _subscribeIdleStream();
     }
+  }
+
+  // ── GPS health (E5.F1.S13) ─────────────────────────────────────────────
+
+  /// What the pre-flight found when this session started and the runner
+  /// went ahead regardless — `Location was While Using` — for the run
+  /// summary's health line. Set by the Live Run page before it starts
+  /// tracking; null when the start was clean.
+  String? sessionPreflightProblem;
+
+  /// The tracking-quality tier this session was recorded on (0 Power Saver,
+  /// 1 Balanced, 2 Best), stamped as tracking starts.
+  int sessionTrackingTier = 2;
+
+  /// The last GPS fix accepted onto the session track, or when tracking
+  /// began if there has not been one yet. Null when not tracking.
+  DateTime? get lastTrackedFixAt {
+    if (_sessionTrack.isNotEmpty) {
+      return DateTime.fromMillisecondsSinceEpoch(_sessionTrack.last.timestampMs);
+    }
+    if (_lastTrackingStartMs > 0) {
+      return DateTime.fromMillisecondsSinceEpoch(_lastTrackingStartMs);
+    }
+    return null;
+  }
+
+  /// Coming back to the app while tracking with the stream silent this long
+  /// is worth a word (the #1941 While-Using hole was 27 minutes).
+  static const Duration kResumeGapAfter = Duration(seconds: 120);
+
+  // A gap is only reported once the next fix shows the runner MOVED during
+  // it. The stream has a distance filter, so a phone that sat at a drink
+  // stop with the app in the background is silent too — and a toast at every
+  // pub saying PackTrack lost them would teach the pack to ignore it. If no
+  // fix at all arrives within [_resumeGapProbe] of coming back, the GPS
+  // really is dead and they are told regardless.
+  static const double _resumeGapMovedMeters = 100;
+  static const Duration _resumeGapProbe = Duration(seconds: 45);
+  Duration? _resumeGap;
+  Timer? _resumeGapTimer;
+
+  void _checkGapOnResume() {
+    if (!joinRunTracking.value) return;
+    final DateTime? last = lastTrackedFixAt;
+    if (last == null) return;
+    final Duration gap = DateTime.now().difference(last);
+    if (gap < kResumeGapAfter) return;
+    BootLogger.logBreadcrumb(
+      'PackTrack: app resumed with no fix for ${gap.inMinutes} min '
+      '${gap.inSeconds % 60} s (tier=${trackingTierName(sessionTrackingTier)}, '
+      'preflight=${sessionPreflightProblem ?? 'clean'})',
+    );
+    _resumeGap = gap;
+    _resumeGapTimer?.cancel();
+    _resumeGapTimer = Timer(_resumeGapProbe, () {
+      final Duration? pending = _resumeGap;
+      _resumeGap = null;
+      if (pending == null || !joinRunTracking.value) return;
+      _tellResumeGap(pending, moved: null);
+    });
+  }
+
+  /// Called with the next accepted fix (before it joins the session track).
+  void _settleResumeGap(double lat, double lon) {
+    final Duration? gap = _resumeGap;
+    if (gap == null) return;
+    _resumeGap = null;
+    _resumeGapTimer?.cancel();
+    _resumeGapTimer = null;
+    double moved = 0;
+    if (_sessionTrack.isNotEmpty) {
+      final TrackPoint p = _sessionTrack.last;
+      moved = const latlng.Distance()(
+        latlng.LatLng(p.lat, p.lng),
+        latlng.LatLng(lat, lon),
+      );
+    }
+    if (moved >= _resumeGapMovedMeters) {
+      _tellResumeGap(gap, moved: moved);
+    } else {
+      BootLogger.logBreadcrumb(
+        'PackTrack: the ${gap.inMinutes}-minute gap was a standstill '
+        '(${moved.round()} m) — not told',
+      );
+    }
+  }
+
+  void _tellResumeGap(Duration gap, {required double? moved}) {
+    final int minutes = (gap.inSeconds / 60).round().clamp(1, 1 << 20);
+    BootLogger.logBreadcrumb(
+      'PackTrack: lost the runner for $minutes min '
+      '(${moved == null ? 'no fix since resume' : '${moved.round()} m moved'})',
+    );
+    hcSnack(
+      'PackTrack lost you for $minutes minute${minutes == 1 ? '' : 's'}. '
+      'If this keeps happening, check Location is set to Always.',
+      error: true,
+      seconds: 6,
+    );
   }
 
   /// Newest usable fix for a mark, at most [_freshFixMaxAge] old.
@@ -1303,6 +1414,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       // of it — as a vertex it drew an out-and-back to wherever the mark's fix
       // landed and added that distance twice.
       if (pointStr == null) {
+        _settleResumeGap(lat, lon);
         _sessionTrack.add(
           TrackPoint(
             lat: double.parse(lat.toStringAsFixed(5)),

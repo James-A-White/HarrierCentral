@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/location_service/run_summary.dart';
+import 'package:harrier_central/services/location_service/gps_health.dart';
 import 'package:harrier_central/widgets/run_summary_dialog.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
 import 'package:flutter_compass/flutter_compass.dart';
@@ -2378,6 +2379,9 @@ class RunTrackerMapController extends GetxController
             : _serverTracks.values.expand((List<TrackPoint> p) => p),
       ),
       summaryImperial: imperialUnits.value,
+      // Tier and pre-flight are not known for a track read back from the
+      // server; the line ends at the gap.
+      trackHealth: TrackHealth.compute(points: raw, tier: null).line,
     );
   }
 

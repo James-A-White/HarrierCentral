@@ -3,7 +3,10 @@ import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/location_service/auto_start_monitor.dart';
 import 'package:harrier_central/services/location_service/auto_start_detector.dart';
 import 'package:harrier_central/services/location_service/run_summary.dart';
+import 'package:harrier_central/services/location_service/gps_health.dart';
+import 'package:harrier_central/services/location_service/tracking_preflight.dart';
 import 'package:harrier_central/widgets/run_summary_dialog.dart';
+import 'package:harrier_central/widgets/tracking_preflight_dialog.dart';
 import 'package:harrier_central/pages/live_run_pages/lost_compass_dialog.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
@@ -114,6 +117,22 @@ class LiveRunGeneralController extends GetxController
   // pre-run timer so the button enables itself when the window opens.
   late final RxBool canArmNow = canArmAutoStart.obs;
 
+  // ── GPS signal light (E5.F1.S13) ────────────────────────────────────────
+  // Age and accuracy of the last fix, re-read every five seconds while
+  // tracking — [LocationService.isLocationFresh] is a plain getter, so this
+  // is what makes it reactive.
+  final Rx<SignalLight> signalLight = SignalLight.amber.obs;
+  final RxString signalLabel = 'Waiting for GPS…'.obs;
+  static const Duration _signalTick = Duration(seconds: 5);
+  static const Duration _probeEvery = Duration(seconds: 60);
+  static const Duration _probeTimeout = Duration(seconds: 15);
+  Timer? _signalTicker;
+  bool _redTold = false;
+  bool _probing = false;
+  DateTime? _probeAt;
+  DateTime? _lastProbeTry;
+  double? _probeAccuracy;
+
   DateTime? _trackingStartedAt;
   DateTime? _trackingEndedAt;
   Timer? _elapsedTicker;
@@ -151,6 +170,7 @@ class LiveRunGeneralController extends GetxController
     if (isTracking.value) {
       _trackingStartedAt ??= DateTime.now();
       _startElapsedTicker();
+      _startSignalTicker();
       _notifyWatchSessionStart();
     }
   }
@@ -170,6 +190,7 @@ class LiveRunGeneralController extends GetxController
     _trackingWorker?.dispose();
     _positionWorker?.dispose();
     _stopElapsedTicker();
+    _stopSignalTicker();
     // Never leave the torch burning after the page goes away.
     if (torchOn.value) unawaited(TorchLight.disableTorch());
     super.onClose();
@@ -234,6 +255,10 @@ class LiveRunGeneralController extends GetxController
   );
 
   Future<void> armAutoStart() async {
+    // Arming is a promise to record in a pocket, so the same pre-flight as
+    // Start: a While-Using phone will never see the runner set off.
+    if (!await _runPreflight()) return;
+    if (isClosed) return;
     final bool hare = run.extensions.isHare == 1;
     await autoStart.arm(
       eventId: run.event.eventId,
@@ -268,7 +293,12 @@ class LiveRunGeneralController extends GetxController
       return;
     }
 
-    // Starting. Default to a fresh session…
+    // Starting. First, can this phone record a trail at all? (E5.F1.S13:
+    // the answer is given at the start line, not by an empty map later.)
+    if (!await _runPreflight()) return;
+    if (isClosed) return;
+
+    // Default to a fresh session…
     _preRunTimer?.cancel();
     _preRunTimer = null;
     _trackingStartedAt = DateTime.now();
@@ -317,6 +347,153 @@ class LiveRunGeneralController extends GetxController
     // Tag the (new or continued) track with the declared lane so playback can
     // label/filter it. Fire-and-forget — joinRunTracking is true so it buffers.
     unawaited(_locationService.declareTrailType(selectedTrailValue.value));
+  }
+
+  /// The pre-flight (E5.F1.S13): permission, Precise Location, Low Power
+  /// Mode, battery optimisation and the Power Saver tier. Anything found is
+  /// put to the runner in ONE dialog with a button per problem and "Start
+  /// anyway"; what they start with regardless goes on the run summary. A
+  /// start is never blocked — returns false only when the dialog was backed
+  /// out of. Best-effort: a check that throws is a clean check.
+  Future<bool> _runPreflight() async {
+    List<PreflightIssue> found;
+    try {
+      found = await TrackingPreflight.check();
+    } catch (e, s) {
+      BootLogger.logError('[LiveRunGeneral._runPreflight]', e, s);
+      found = const <PreflightIssue>[];
+    }
+    if (isClosed) return false;
+    _locationService.sessionPreflightProblem = null;
+    if (found.isEmpty) return true;
+    BootLogger.logBreadcrumb(
+      'PackTrack: pre-flight found '
+      '${found.map((PreflightIssue i) => i.kind.name).join(', ')}',
+    );
+    // Resolved AFTER the checks above, so it is live when the dialog opens
+    // (the lint sees the await, not the order).
+    final BuildContext? ctx = Get.context;
+    if (ctx == null) return true; // nowhere to ask: never block a start
+    final List<PreflightIssue>? left = await showTrackingPreflightDialog(
+      // ignore: use_build_context_synchronously
+      ctx,
+      found,
+    );
+    if (isClosed) return false;
+    if (left == null) return false;
+    final String? problem = TrackingPreflight.summarise(left);
+    _locationService.sessionPreflightProblem = problem;
+    BootLogger.logBreadcrumb(
+      'PackTrack: started with pre-flight ${problem ?? 'clean'}',
+    );
+    return true;
+  }
+
+  void _startSignalTicker() {
+    _redTold = false;
+    _probeAt = null;
+    _probeAccuracy = null;
+    _signalTicker ??= Timer.periodic(_signalTick, (_) => _signalTickNow());
+    _signalTickNow();
+  }
+
+  void _stopSignalTicker() {
+    _signalTicker?.cancel();
+    _signalTicker = null;
+  }
+
+  /// One reading of the light. The stream has a distance filter, so a phone
+  /// standing still goes quiet too; before two minutes of silence is called
+  /// red, a one-shot probe asks the GPS directly — a fresh answer means the
+  /// runner is at a drink stop, not lost, and the light says so.
+  void _signalTickNow() {
+    if (isClosed || !isTracking.value) return;
+    final DateTime now = DateTime.now();
+    final Position? pos = _locationService.lastKnownPosition.value;
+    final DateTime read = _locationService.lastKnownPositionRead.value;
+    final DateTime started = _trackingStartedAt ?? now;
+
+    DateTime lastAt = read.isAfter(started) ? read : started;
+    double? acc = read.isAfter(started) ? pos?.accuracy : null;
+    bool stationary = false;
+    final DateTime? probeAt = _probeAt;
+    if (probeAt != null && probeAt.isAfter(lastAt)) {
+      lastAt = probeAt;
+      acc = _probeAccuracy;
+      stationary = true;
+    }
+    final Duration age = now.difference(lastAt);
+
+    if (age >= kSignalRedAfter && !_probing) {
+      final bool started = _probeGps();
+      if (started && _lastProbeTry != null && probeAt == null) {
+        // First silence: hold amber for the probe's answer.
+        signalLight.value = SignalLight.amber;
+        signalLabel.value = 'Checking GPS…';
+        return;
+      }
+    }
+
+    final SignalLight light = classifySignal(age: age, accuracyM: acc);
+    signalLight.value = light;
+    signalLabel.value = signalText(
+      age: age,
+      accuracyM: acc,
+      stationary: stationary,
+    );
+    if (light == SignalLight.red) {
+      if (!_redTold) {
+        _redTold = true;
+        unawaited(HapticFeedback.heavyImpact());
+        BootLogger.logBreadcrumb(
+          'PackTrack: signal RED — no fix for ${age.inSeconds} s',
+        );
+        hcSnack(
+          "PackTrack hasn't heard from your GPS for 2 minutes — is Location "
+          'set to Always?',
+          error: true,
+          seconds: 6,
+        );
+      }
+    } else {
+      _redTold = false;
+    }
+  }
+
+  /// Starts a one-shot fix if one is not running and the last try is old
+  /// enough. Returns true when a probe was started.
+  bool _probeGps() {
+    final DateTime now = DateTime.now();
+    if (_lastProbeTry != null && now.difference(_lastProbeTry!) < _probeEvery) {
+      return false;
+    }
+    _lastProbeTry = now;
+    _probing = true;
+    unawaited(_probeGpsRun(now));
+    return true;
+  }
+
+  Future<void> _probeGpsRun(DateTime askedAt) async {
+    try {
+      final Position p = await Geolocator.getCurrentPosition(
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: _probeTimeout,
+        ),
+      );
+      if (isClosed) return;
+      // iOS answers a one-shot with its cached last location first; a fix
+      // older than the ask is not an answer.
+      if (!p.timestamp.isBefore(askedAt.subtract(_signalTick))) {
+        _probeAt = DateTime.now();
+        _probeAccuracy = p.accuracy;
+      }
+    } catch (e) {
+      BootLogger.logBreadcrumb('PackTrack: GPS probe failed: $e');
+    } finally {
+      _probing = false;
+      if (!isClosed) _signalTickNow();
+    }
   }
 
   /// Marks the tracker as At Hash on this run (⇒ RSVP Yes server-side).
@@ -521,6 +698,11 @@ class LiveRunGeneralController extends GetxController
     kennelDistanceUnitsPref: run.extensions.distanceUnitsPref,
   );
 
+  /// `412 fixes · longest gap 1 min · Best` — from this phone's own session
+  /// points, so it shows offline too (E5.F1.S13).
+  @override
+  final RxnString trackHealth = RxnString();
+
   /// Freezes distance and time, then reads every runner's marks for the run
   /// to count the checks and drink stops the runner went through. Their own
   /// track is the server copy (it holds anything before a resume) joined with
@@ -536,6 +718,11 @@ class LiveRunGeneralController extends GetxController
     final String eventId = run.event.eventId;
     final String me = normalizeUuid(currentUserId);
     final List<TrackPoint> local = _locationService.sessionTrackFor(eventId);
+    trackHealth.value = TrackHealth.compute(
+      points: local,
+      tier: _locationService.sessionTrackingTier,
+      problem: _locationService.sessionPreflightProblem,
+    ).line;
     final GetPositionsApi api = GetPositionsApi();
     try {
       final UserPositionsPayload payload = await api.fetchPositions(
@@ -876,9 +1063,11 @@ class LiveRunGeneralController extends GetxController
     if (value) {
       _trackingStartedAt ??= DateTime.now();
       _startElapsedTicker();
+      _startSignalTicker();
       _notifyWatchSessionStart();
     } else {
       _stopElapsedTicker();
+      _stopSignalTicker();
       // The watch bridge's own broadcast loop notices joinRunTracking
       // dropping and idles the wrist — nothing to do here.
     }
@@ -991,6 +1180,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                       _buildTrailTypePicker(context),
                       const SizedBox(height: 12),
                       _buildStatsRow(),
+                      _buildSignalRow(),
                       const SizedBox(height: 12),
                       IntrinsicHeight(
                         child: Row(
@@ -1482,6 +1672,50 @@ class LiveRunGeneralPage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// The GPS signal light (E5.F1.S13): a dot and the age and accuracy of
+  /// the last fix, only while tracking.
+  Widget _buildSignalRow() {
+    return Obx(() {
+      // Read every Rx first (an Obx whose reads can be skipped throws).
+      final bool tracking = controller.isTracking.value;
+      final SignalLight light = controller.signalLight.value;
+      final String label = controller.signalLabel.value;
+      if (!tracking) return const SizedBox.shrink();
+      final Color colour = switch (light) {
+        SignalLight.green => Colors.lightGreenAccent.shade400,
+        SignalLight.amber => Colors.amber.shade600,
+        SignalLight.red => Colors.redAccent,
+      };
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: colour,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: colour.withValues(alpha: 0.7), blurRadius: 6),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                style: ts_body.copyWith(fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _statCard({
