@@ -128,6 +128,11 @@ class ChatPageController extends GetxController {
   StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   int? _lastKnownSequenceCount;
+  /// False until the FIRST full fetch has answered (with rows, none, or an
+  /// error). The page shows a spinner until then: 'No messages yet' while
+  /// the load is in flight reads as an empty chat (James, 2026-09-30).
+  final RxBool initialLoadDone = false.obs;
+
   bool _isFetching = false;
   bool _pendingFetch = false;
 
@@ -324,6 +329,7 @@ class ChatPageController extends GetxController {
       // own disposal flag, checked after EVERY await below, because each one
       // is a fresh chance for the page to have gone.
       if (isClosed) return;
+      if (sinceSeq == null) initialLoadDone.value = true;
       if (result == null || result.startsWith(ERROR_PREFIX)) return;
       final outerItem = jsonDecode(result) as List<dynamic>;
       if (outerItem.isEmpty) return;

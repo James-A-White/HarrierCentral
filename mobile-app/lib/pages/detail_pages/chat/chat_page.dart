@@ -118,6 +118,28 @@ class ChatPage extends StatelessWidget {
       theme: _chatTheme,
       timeFormat: _timeFormat,
       builders: core.Builders(
+        // A spinner until the first fetch has answered; the package's own
+        // 'No messages yet' only once we know the chat is empty.
+        emptyChatListBuilder: (BuildContext context) => Obx(() {
+          final bool loaded = controller.initialLoadDone.value;
+          if (!loaded) {
+            return const Center(
+              child: SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(strokeWidth: 3),
+              ),
+            );
+          }
+          return Center(
+            child: Text(
+              'No messages yet',
+              style: _chatTheme.typography.bodyLarge
+                  .copyWith(color: _chatTheme.colors.onSurface),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }),
         // The stock Composer with one addition: a hard cap at the column
         // width, so a long message is stopped in the box rather than cut on
         // the server (or refused by it). A DM whose sending is refused — the
