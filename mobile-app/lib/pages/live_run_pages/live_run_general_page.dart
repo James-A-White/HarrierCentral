@@ -9,6 +9,10 @@ import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:torch_light/torch_light.dart';
 
+/// When this phone last sent a help request; a re-tap inside two minutes
+/// is asked about (see the Send Help dialog).
+DateTime? _lastHelpSentAt;
+
 // Trail-mark control tiles. A marker is a glyph or a short text on a yellow
 // rounded square (no border), per docs/trail_markers/SPEC.md §4. Glyphs are
 // bare monochrome silhouettes tinted to the ink colour (fixed-colour glyphs —
@@ -1794,15 +1798,30 @@ class LiveRunGeneralPage extends StatelessWidget {
       return;
     }
 
+    // A second request within a couple of minutes is nearly always a
+    // re-tap — City H3 #1941 sent two 16 s apart and pushed the pack twice
+    // (2026-09-29) — so the dialog says so and asks again.
+    final int sinceSec = _lastHelpSentAt == null
+        ? -1
+        : DateTime.now().difference(_lastHelpSentAt!).inSeconds;
+    final bool repeat = urgent && sinceSec >= 0 && sinceSec < 120;
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
         title: Text(
-          urgent ? 'Send Help Request?' : "Tell the pack you're lost?",
+          repeat
+              ? 'Send another help request?'
+              : urgent
+              ? 'Send Help Request?'
+              : "Tell the pack you're lost?",
           style: ts_alertDialogTitle,
         ),
         content: Text(
+          repeat
+              ? 'You sent a help request $sinceSec seconds ago and the pack '
+                    'was notified. Send it again?'
+              :
           urgent
               ? 'This sends an urgent request for assistance to the run chat, '
                     'including your current location. The pack will be notified.'
@@ -1832,6 +1851,7 @@ class LiveRunGeneralPage extends StatelessWidget {
     );
     if (confirmed != true) return;
 
+    if (urgent) _lastHelpSentAt = DateTime.now();
     final result = await controller.sendAssistanceMessage(urgent: urgent);
     final bool anySent = result.chatSent || result.markPlaced;
     Get.snackbar(

@@ -475,6 +475,16 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     // thread kind is handled because the rows say what they are — a fourth
     // kind needs no branch here, which is the mistake this file has now made
     // twice (see the room aggregation note above).
+    // Somebody pressed Send Help: beep and buzz before anything else, so
+    // the runner looks at the phone (James, 2026-09-30). Keyed on the
+    // message id so the map's sighting of the same mark does not ring again.
+    if (DistressAlert.isHelpMessage(message.payload['Message'])) {
+      unawaited(
+        DistressAlert.ring(
+          'msg:${message.payload['MessageId'] ?? message.payload['Message']}',
+        ),
+      );
+    }
     await getEventChatMessageCounts();
 
     // 2. Dispatch to internal controllers

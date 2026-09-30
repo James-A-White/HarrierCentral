@@ -1389,6 +1389,7 @@ class RunTrackerMapController extends GetxController
       if (full) _lastFullFetchAt = DateTime.now();
       if (full) showingOwnTrailOffline.value = false;
 
+      _ringForNewHelpMarks(changed);
       await _hydrateLogos(data.users);
       if (isClosed) return; // closed during the logo hydration await
 
@@ -1551,6 +1552,26 @@ class RunTrackerMapController extends GetxController
   }
 
   static String _pointKey(TrackPoint p) => '${p.timestampMs}|${p.type ?? ''}';
+
+  /// A help mark that just arrived from ANOTHER runner rings the phone
+  /// (James, 2026-09-30). Marks older than ten minutes are history, not an
+  /// alarm — a map opened after the run must stay quiet — and one's own
+  /// mark never rings.
+  void _ringForNewHelpMarks(Set<String> changedIds) {
+    final String? rawMe = _currentUserId;
+    final String? me = rawMe == null ? null : normalizeUuid(rawMe);
+    final int cutoff = DateTime.now().millisecondsSinceEpoch - 10 * 60 * 1000;
+    for (final String id in changedIds) {
+      if (me != null && normalizeUuid(id) == me) continue;
+      for (final TrackPoint p in _serverTracks[id] ?? const <TrackPoint>[]) {
+        if (p.timestampMs < cutoff) continue;
+        final String? key = p.type?.split('::').first;
+        if (key == HashRunPointTypes.helpNeeded.key) {
+          unawaited(DistressAlert.ring('mark:$id:${p.timestampMs}'));
+        }
+      }
+    }
+  }
 
   /// A trail has exactly one On Inn, at the end. A terminator followed by
   /// later points means the runner resumed: the server deletes that mark on

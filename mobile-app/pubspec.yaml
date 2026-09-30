@@ -166,6 +166,7 @@ flutter:
     - assets/documents/privacy_policy.pdf
     - assets/sounds/camera.mp3
     - assets/sounds/trail_found.wav
+    - assets/sounds/sos.wav
     - images/avatars/
     - images/backgrounds/
     - images/flags/
