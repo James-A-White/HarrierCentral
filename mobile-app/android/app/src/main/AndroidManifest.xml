@@ -18,6 +18,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <!-- LocationService enableWakeLock: keep CPU delivering fixes screen-off -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- PackTrack pre-flight (E5.F1.S13): ask to be exempt from Doze so a
+         tracked run in a pocket keeps its GPS stream. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <!-- firebase_messaging: runtime notification permission on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- No READ_MEDIA_IMAGES / READ_MEDIA_VIDEO. Play rejected 1312 on

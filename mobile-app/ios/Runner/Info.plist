@@ -57,6 +57,11 @@
 	<string>Allow Harrier Central to keep tracking your run even when the screen is off.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Harrier Central uses your location to record run progress in the background.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>PackTrack</key>
+		<string>Precise Location is needed to record your trail on the run map.</string>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

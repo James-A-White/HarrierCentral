@@ -146,6 +146,39 @@ class MainActivity : FlutterActivity() {
                     result.notImplemented()
                 }
             }
+        // PackTrack pre-flight (E5.F1.S13): is Doze allowed to pause us, and
+        // the two Settings pages that put it right. A GPS tracker's core
+        // function is what battery optimisation breaks, which is the case
+        // Play policy allows the direct request for.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "harrier_central/power")
+            .setMethodCallHandler { call, result ->
+                val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+                when (call.method) {
+                    "isIgnoringBatteryOptimizations" ->
+                        result.success(pm.isIgnoringBatteryOptimizations(packageName))
+                    "requestIgnoreBatteryOptimizations" -> {
+                        val direct = Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                            .setData(Uri.parse("package:$packageName"))
+                        try {
+                            startActivity(direct)
+                        } catch (_: Exception) {
+                            // No handler for the direct ask (some OEM builds):
+                            // the list page still lets them find the app.
+                            startActivity(Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                        }
+                        result.success(null)
+                    }
+                    "openBatterySaverSettings" -> {
+                        try {
+                            startActivity(Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS))
+                        } catch (_: Exception) {
+                            startActivity(Intent(android.provider.Settings.ACTION_SETTINGS))
+                        }
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
     }
 
     override fun onDestroy() {
