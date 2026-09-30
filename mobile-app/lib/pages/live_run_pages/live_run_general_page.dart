@@ -1,6 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/location_service/auto_start_monitor.dart';
+import 'package:harrier_central/services/location_service/auto_start_detector.dart';
 import 'package:harrier_central/services/location_service/run_summary.dart';
 import 'package:harrier_central/widgets/run_summary_dialog.dart';
 import 'package:harrier_central/pages/live_run_pages/lost_compass_dialog.dart';
@@ -280,7 +281,30 @@ class LiveRunGeneralController extends GetxController
     // and strip any On-Inn terminator so the resumed points render as one line.
     await _resumeExistingTrackIfAny();
 
-    _locationService.joinRunTracking.value = newValue;
+    // Armed for THIS run and pressing Start by hand: keep what the ring has
+    // seen since arming rather than starting the track at the tap
+    // (James, 2026-09-30), through the same door auto start uses.
+    final AutoStartMonitor auto = autoStart;
+    if (auto.armed.value &&
+        normalizeUuid(auto.eventId ?? '') == normalizeUuid(run.event.eventId)) {
+      final List<AutoStartFix> backfill = auto.takeRingForManualStart();
+      if (backfill.isNotEmpty) {
+        _trackingStartedAt =
+            DateTime.fromMillisecondsSinceEpoch(backfill.first.tsMs);
+      }
+      BootLogger.logBreadcrumb(
+        '[AutoStart] Start pressed while armed — ${backfill.length} buffered '
+        'fixes kept',
+      );
+      await auto.disarm(reason: 'Start pressed — buffered fixes kept');
+      await _locationService.startTrackingFromAutoStart(
+        eventId: run.event.eventId,
+        userId: getStringPref(StringPrefsEnum.userId) ?? '',
+        backfill: backfill,
+      );
+    } else {
+      _locationService.joinRunTracking.value = newValue;
+    }
 
     // Tracking this run IS attending it. Someone who turned up without an RSVP
     // (or who never got round to checking in) has just told us where they are

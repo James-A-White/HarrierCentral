@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>17</b> epics</div>
     <div><b>86</b> features</div>
-    <div><b>347</b> stories</div>
+    <div><b>348</b> stories</div>
     <div><b>49</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -322,7 +322,7 @@
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 18 stories</span></a>
   <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 27 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
-  <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 42 stories</span></a>
+  <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 43 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 20 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">8 features · 35 stories</span></a>
@@ -629,6 +629,7 @@
         <span class="gap">an auto-stop or admin stop shows no card at the moment it happens — the map button is the way back to it.</span></li>
       <li class="story"><span class="s-id">E5.F1.S12</span><span class="s-text">As a <em>Hasher</em> looking at my run card, I want my running time and running pace with the drink stops taken out, so that I see how fast I actually ran rather than how long the pub took. "Running time" (shown when there were drink stops) and "Running pace" (per km or per mile, <code>formatPace</code>, same unit rule as distances) under the drink stops; values shrink rather than overflow. Built 2026-09-28.</span><span class="chip c-build">Building</span>
         <span class="gap">not released (next app build).</span></li>
+      <li class="story"><span class="s-id">E5.F1.S13</span><span class="s-text">As a <em>Hasher</em> tracking a run, I want the app to tell me when my phone cannot record a trail — and why — so that I find out at the start line, not from an empty map afterwards (James, 2026-09-30). City H3 #1941: of five tracks, one was on Power Saver (15 fixes in an hour), one had Location set to *While Using* (a 27-minute hole with the app in the background), one stopped early — and the one genuinely noisy phone was handled by the smoothing. Four parts: (1) a pre-flight when tracking starts — iOS Always + Precise, Low Power Mode; Android background location, battery optimisation, and a Power Saver warning with a one-tap switch to Best; (2) a live signal light on the Live Run page (age and accuracy of the last fix, a buzz after two minutes of silence); (3) on return to the foreground, a note when tracking had a gap over two minutes; (4) a track-health line on the run summary. ⚠ Known gap: building.</span><span class="chip c-build">Building</span></li>
     </ul>
   </div>
   <div class="feature">

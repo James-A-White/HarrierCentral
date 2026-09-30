@@ -85,6 +85,7 @@ class AutoStartMonitor {
     _isHare = isHare;
     _anchor = hasStart ? latlng.LatLng(startLat, startLng) : null;
     _detector = AutoStartDetector(anchor: _anchor);
+    _armedAtMs = DateTime.now().millisecondsSinceEpoch;
     armed.value = true;
     await _save();
     _updateStatus();
@@ -107,6 +108,24 @@ class AutoStartMonitor {
   }
 
   /// Disarms. [reason] is shown when the runner did not ask for it.
+  /// When [arm] was called this session (epoch ms); null after a restore,
+  /// when the ring's own 15-minute window is the bound instead.
+  int? _armedAtMs;
+
+  /// The ring's fixes since the runner armed, for a MANUAL Start pressed
+  /// while armed (James, 2026-09-30). Pressing Start used to throw the ring
+  /// away: City H3 #1941 was armed at 19:33:16 as the pack set off and Start
+  /// was pressed 86 s later, so the track began 86 s after everyone else's.
+  /// The detector's departure test is still running, so this does not wait
+  /// for it: whatever was seen since arming is the run so far.
+  List<AutoStartFix> takeRingForManualStart() {
+    final AutoStartDetector? d = _detector;
+    if (d == null) return const <AutoStartFix>[];
+    final int since = _armedAtMs ??
+        DateTime.now().millisecondsSinceEpoch - 15 * 60 * 1000;
+    return d.pointsFrom(since);
+  }
+
   Future<void> disarm({String? reason}) async {
     if (!armed.value) return;
     armed.value = false;
