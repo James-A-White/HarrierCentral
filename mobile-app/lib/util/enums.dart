@@ -83,7 +83,8 @@ enum NumPrefsEnum {
 
 enum BoolPrefsEnum {
   clockOffsetNoticeShown, // RETIRED 1429: set by 1428 before the notice could draw (boot) — never read
-  clockNoticeShown, // the one-time 'your clock is off' notice, set only once it is ON SCREEN (E1.F1.S7)
+  clockNoticeShown, // RETIRED 1430: marked the 1429 toast, which was replaced by a dialog
+  clockNoticeDialogShown, // the one-time 'your clock is off' DIALOG, set only once it is on screen (E1.F1.S7)
   automaticallySetNotifiationPrefs,
   introSliderSeen,
   fcmTokenSavedToServer,

@@ -94,7 +94,7 @@ class ClockOffset {
   /// Show the notice once, for the offset in force, if it has not been seen.
   static void _maybeNotice() {
     if (offsetMs == 0 || _noticeTimer != null) return;
-    if (getBoolPref(BoolPrefsEnum.clockNoticeShown) == true) return;
+    if (getBoolPref(BoolPrefsEnum.clockNoticeDialogShown) == true) return;
     _showNoticeWhenReady(Duration(milliseconds: -offsetMs));
   }
 
@@ -118,7 +118,7 @@ class ClockOffset {
       t.cancel();
       _noticeTimer = null;
       try {
-        unawaited(setBoolPref(BoolPrefsEnum.clockNoticeShown, true));
+        unawaited(setBoolPref(BoolPrefsEnum.clockNoticeDialogShown, true));
         unawaited(_showDialog(phoneMinusServer));
       } catch (e, s) {
         BootLogger.logError('[ERROR][CLOCK]', 'notice failed: $e', s);
