@@ -1,3 +1,9 @@
+## 3.1.8+1429 (2026-10-01)
+iOS (TestFlight, James internal test only). Hotfix for 1428.
+### Fixes
+- **Chats open again**: every chat showed a grey screen on 1428 — the reply bar was placed in a way the chat page could not lay out; it now sits in the message box's own slot.
+- **The clock notice now appears**: it waits until the app's screen is ready, and says "behind Coordinated Universal Time" rather than "behind of".
+
 ## 3.1.8+1428 (2026-10-01)
 iOS (TestFlight, James internal test only). Held from the beta testers.
 Build number only; same version.

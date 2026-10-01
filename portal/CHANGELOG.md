@@ -1,3 +1,7 @@
+## 2.0.87+739 (2026-10-01)
+### Fixes
+- **Run chat opens again**: 738 showed a grey screen in run chat (the reply bar's placement); it now sits in the message box's own slot.
+
 ## 2.0.87+738 (2026-10-01)
 ### New Features
 - **Run chat: reply and react.** The message menu has Reply (a quote bar above the composer, a quote strip on the sent message) and the six reactions; reactions show as counts under each message.
