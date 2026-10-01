@@ -527,37 +527,14 @@ class MainNavigationController extends GetxController
     initializationMessage.value = message;
   }
 
-  /// Raised by the top-bar chat badge while it moves to the Runs tab, so
-  /// [onTabChanged] keeps the Chats view the badge has just chosen.
-  bool openingChats = false;
-
   Future<void> onTabChanged(int index) async {
-    // Any tab tap closes the Chats view: re-tapping Runs, or going to another
-    // tab and back, shows the runs again (James, 2026-09-29). Must run before
-    // the first await — the badge clears openingChats as soon as the tap
-    // returns.
-    // Consume the flag HERE, once: the bubble used to clear it in a finally
-    // after awaiting a list scroll, and when that scroll never completed the
-    // flag stuck at true and every later tab change kept the Chats view
-    // (simulator reproduction, 2026-09-30).
-    final bool opening = openingChats;
-    openingChats = false;
-    var leftChats = false;
-    if (!opening && Get.isRegistered<FutureRunListPageController>()) {
-      final ctrl = Get.find<FutureRunListPageController>();
-      if (ctrl.isChatsMode) {
-        ctrl.runsToDisplay.value = RunsToDisplay.allRuns;
-        ctrl.runsTimeScope.value = RunsTimeScope.future;
-        leftChats = true;
-      }
-    }
-
+    // Chats is its own pushed page since 2026-10-01, so a tab change has no
+    // Chats mode to close any more.
     currentPage.value = index;
     appBarText.value = tabTitles[index];
     if (index == 0 && Get.isRegistered<FutureRunListPageController>()) {
       final ctrl = Get.find<FutureRunListPageController>();
       await ctrl.refreshFromTable(true); // instant local refresh
-      if (leftChats) ctrl.scrollToInitialAnchor();
       unawaited(
         ctrl.triggerBackgroundSync(),
       ); // background API sync (1-min debounce)

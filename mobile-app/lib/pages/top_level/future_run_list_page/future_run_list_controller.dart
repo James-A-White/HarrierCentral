@@ -245,26 +245,6 @@ class FutureRunListPageController extends GetxController {
     });
   }
 
-  /// True while a "mark all chats read" round-trip is in flight. Drives the
-  /// reset button's spinner + colour flash so the tap is visibly acknowledged.
-  final RxBool chatResetInProgress = false.obs;
-
-  /// Marks every unseen chat as read (server reset + local badge clear). Guards
-  /// against re-entrant taps, and holds the busy state for a short minimum so
-  /// even a fast round-trip still registers as a deliberate press to the user.
-  Future<void> markAllChatsRead() async {
-    if (chatResetInProgress.value) return;
-    chatResetInProgress.value = true;
-    try {
-      if (Get.isRegistered<NotificationService>()) {
-        await Get.find<NotificationService>().resetAllEventChatCounts();
-      }
-    } finally {
-      await Future<void>.delayed(const Duration(milliseconds: 400));
-      chatResetInProgress.value = false;
-    }
-  }
-
   /// Whether the topmost visible row is in the attended-past section (above the
   /// divider). Drives the page title — "Past Runs" while scrolled into history,
   /// "Future Runs" otherwise. Maintained by [_updateViewingSection]; only
@@ -501,89 +481,7 @@ class FutureRunListPageController extends GetxController {
     await _processMessage(message.payload);
   }
 
-  /// The request whose Accept / Decline is in flight, so its buttons show a
-  /// spinner and a second tap does nothing. '' when none.
-  final RxString dmRequestBusyId = ''.obs;
-
-  /// Accept (the thread opens) or decline (the requester is told nothing)
-  /// one request to message this hasher (E9.F1.S19).
-  Future<void> respondToDmRequest(
-    DirectMessageRequest r, {
-    required bool accept,
-  }) async {
-    if (dmRequestBusyId.value.isNotEmpty) return;
-    dmRequestBusyId.value = r.fromPublicHasherId;
-    String? refusal;
-    final DmStartResult? result = await DirectMessageService.respond(
-      r.fromPublicHasherId,
-      accept: accept,
-      onRefused: (String? why) => refusal = why,
-    );
-    if (isClosed) return;
-    dmRequestBusyId.value = '';
-
-    final NotificationService? notifications =
-        Get.isRegistered<NotificationService>()
-        ? Get.find<NotificationService>()
-        : null;
-
-    if (result == null) {
-      // "That request is no longer waiting." means it is gone either way;
-      // anything else leaves the row for another try.
-      hcSnack(
-        (refusal == null || refusal!.isEmpty)
-            ? 'That could not be done. Please try again.'
-            : refusal!,
-        error: true,
-        seconds: 5,
-      );
-      unawaited(notifications?.getEventChatMessageCounts());
-      return;
-    }
-
-    notifications?.dmRequests.removeWhere(
-      (DirectMessageRequest x) => x.fromPublicHasherId == r.fromPublicHasherId,
-    );
-    notifications?.recalculateBadges();
-    filterRuns(false);
-
-    if (result.outcome == DmOutcome.open && result.threadId != null) {
-      await ChatPageController.openDirectMessage(
-        threadId: result.threadId!,
-        otherPublicHasherId: result.otherPublicHasherId,
-        otherDisplayName: result.otherDisplayName,
-        otherPhoto: result.otherPhoto,
-      );
-      return;
-    }
-    hcSnack(
-      accept
-          ? '${result.otherDisplayName} could not be messaged right now.'
-          : 'Declined',
-      error: accept,
-    );
-    unawaited(notifications?.getEventChatMessageCounts());
-  }
-
-  /// Show the Chats view — what the top-bar badge does — from a push or a
-  /// toast. Refreshes the threads and requests on the way in.
-  Future<void> openChatsView() async {
-    runsToDisplay.value = RunsToDisplay.unreadChats;
-    runsTimeScope.value = RunsTimeScope.all;
-    if (Get.isRegistered<NotificationService>()) {
-      unawaited(Get.find<NotificationService>().getEventChatMessageCounts());
-    }
-    if (Get.isRegistered<MainNavigationController>()) {
-      final MainNavigationController nav = Get.find<MainNavigationController>();
-      // The tab bar's onTap closes Chats; tell it this is the way in.
-      // Consumed by onTabChanged on the setPage tap below (2026-09-30).
-      nav.openingChats = true;
-      nav.bottomNavigationKey.currentState?.setPage(0);
-      await refreshFromTable(true);
-      return;
-    }
-    await refreshFromTable(true);
-  }
+  Future<void> openChatsView() => openChatsPage();
 
   Future<void> _processMessage(Map<String, dynamic> data) async {
     // Kennel chat and the role rooms carry a ThreadKind and NO event, so they

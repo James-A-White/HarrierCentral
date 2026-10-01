@@ -52,51 +52,10 @@ class MainNavigationPage extends StatelessWidget {
                             id: 'main_nav_page',
                             builder: (badgeController) {
                               return GestureDetector(
-                                onTap: () async {
-                                  bool forceChatPage = getPage() != 0;
-                                  if (forceChatPage ||
-                                      (badgeController.runsToDisplay.value !=
-                                          RunsToDisplay.unreadChats)) {
-                                    badgeController.runsToDisplay.value =
-                                        RunsToDisplay.unreadChats;
-                                    badgeController.runsTimeScope.value =
-                                        RunsTimeScope.all;
-                                    // Refresh the unread-chat runs on entry so
-                                    // the list isn't stale/empty under a
-                                    // non-zero badge. Fire-and-forget: cached
-                                    // rows show immediately, the fetch re-runs
-                                    // the list UI when it lands.
-                                    if (Get.isRegistered<
-                                      NotificationService
-                                    >()) {
-                                      unawaited(
-                                        Get.find<NotificationService>()
-                                            .getEventChatMessageCounts(),
-                                      );
-                                    }
-                                  } else {
-                                    badgeController.runsToDisplay.value =
-                                        RunsToDisplay.allRuns;
-                                    badgeController.runsTimeScope.value =
-                                        RunsTimeScope.future;
-                                  }
-
-                                  // The tab bar's onTap now closes Chats, so
-                                  // tell it this tap is the way in.
-                                  // Consumed by onTabChanged on the tap it
-                                  // triggers; never cleared here, because an
-                                  // await that does not return would leave
-                                  // it set (2026-09-30).
-                                  controller.openingChats = true;
-                                  await setPage(0);
-                                  await badgeController.refreshFromTable(true);
-
-                                  // return badgeController
-                                  //     .showOnlyEventsWithMessages
-                                  //     .value = !(badgeController
-                                  //     .showOnlyEventsWithMessages
-                                  //     .value);
-                                },
+                                // Chats is its own page over whatever tab
+                                // is showing: the bottom bar does not move
+                                // and Back returns here (James, 2026-10-01).
+                                onTap: () => unawaited(openChatsPage()),
                                 child: !Get.isRegistered<NotificationService>()
                                     ? SizedBox()
                                     : Obx(() {

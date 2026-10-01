@@ -289,6 +289,7 @@ export 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 // pages/top_level
 export 'package:harrier_central/pages/top_level/future_run_list_page/future_run_list_controller.dart';
 export 'package:harrier_central/pages/top_level/future_run_list_page/future_run_list_page.dart';
+export 'package:harrier_central/pages/top_level/chats_page/chats_page.dart';
 export 'package:harrier_central/pages/top_level/history_list_page.dart';
 export 'package:harrier_central/pages/top_level/history_list_controller.dart';
 export 'package:harrier_central/pages/top_level/kennel_list_controller.dart';

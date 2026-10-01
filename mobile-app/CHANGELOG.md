@@ -1,3 +1,11 @@
+## 3.1.8+1430 (2026-10-01)
+iOS (TestFlight, James internal test only).
+### Improvements
+- **Chats is its own page**: the chat bubble opens Chats over whatever screen you are on, the bottom bar no longer jumps to Runs, and Back returns you to where you were. The Runs list no longer flashes Chats when you come back to it.
+- **Clock notice is a dialog**: it says how far out your phone's clock is, where to fix it (iPhone: Settings › General › Date & Time › Set Automatically; Android: a button straight to Date & time), and that Harrier Central has corrected for it.
+### Diagnostics
+- The session log records what the phone allows for notifications (permission, badges, alerts, sound), to find out why some phones show no app-icon badge.
+
 ## 3.1.8+1429 (2026-10-01)
 iOS (TestFlight, James internal test only). Hotfix for 1428.
 ### Fixes
