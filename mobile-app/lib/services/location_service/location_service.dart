@@ -64,12 +64,15 @@ int _trackingDistanceFilter() {
 // distant points and looked like noise rather than a route. 3 minutes still
 // saves most of the battery and draws something recognisable (James,
 // 2026-09-13).
+// 2026-10-01 (James): 15s / 30s / 1min. Power Saver at 3 minutes still
+// drew too few points to read as a trail (Cockatool, City H3 #1941: 15
+// fixes in an hour), and Balanced closes the gap to Best.
 Duration _trackingAndroidInterval() {
   switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
     case 0:
-      return const Duration(minutes: 3); // Power Saver
+      return const Duration(minutes: 1); // Power Saver
     case 1:
-      return const Duration(minutes: 1); // Balanced
+      return const Duration(seconds: 30); // Balanced
     default:
       return const Duration(seconds: 15); // Best
   }
@@ -80,7 +83,7 @@ Duration _trackingAndroidInterval() {
 ///
 /// The tier's NAME is not enough. These tiers have been redefined between
 /// builds — the Android cadence has been 15s/15s/15min, then 15s/1min/15min,
-/// and from 2026-09-13 is 15s/1min/3min —
+/// then 15s/1min/3min (2026-09-13), and from 2026-10-01 is 15s/30s/1min —
 /// so "Balanced" does not say what a track was recorded with unless the build
 /// is recorded beside it. Hence the resolved values AND the build number.
 String trackingGpsSettingsJson() {
@@ -461,7 +464,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
     if (defaultTargetPlatform == TargetPlatform.android) {
       // Android update cadence is set explicitly per mode via the androidInterval
       // param (not derived from distance). Tracking tiers use
-      // _trackingAndroidInterval() — Best 15s / Balanced 1min / Power Saver 15min;
+      // _trackingAndroidInterval() — Best 15s / Balanced 30s / Power Saver 1min;
       // the pause monitor passes 15s for responsive auto-resume; idle/stopped
       // streams use the 15-minute default to save battery.
       //

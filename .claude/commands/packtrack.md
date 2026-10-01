@@ -227,8 +227,8 @@ and `_trackingAccuracy()` at the top of `location_service.dart`:
 | `trackingQuality` | Mode | Distance | Accuracy | Android interval |
 |---|---|---|---|---|
 | 2 (default) | Best | 5m | `bestForNavigation` | 15s |
-| 1 | Balanced | 10m | `high` | 1min |
-| 0 | Power Saver | 20m | `medium` | 15min |
+| 1 | Balanced | 10m | `high` | 30s |
+| 0 | Power Saver | 20m | `medium` | 1min |
 
 - Background: on. Points enqueued to `RunPointBuffer`, flushed every 60 seconds
 - Android: foreground notification ("Tracking run in progress")
@@ -376,7 +376,7 @@ successive `lastKnownPosition` updates using the `latlong2` `Distance` class.
   in the model but won't be drawn.
 - **Android interval is explicit per mode, not derived from distance** — `getLocSettings`
   takes an `androidInterval` named param (default 15min). Tracking tiers pass
-  `_trackingAndroidInterval()` (Best 15s / Balanced 1min / Power Saver 15min); the pause
+  `_trackingAndroidInterval()` (Best 15s / Balanced 30s / Power Saver 1min, since 2026-10-01); the pause
   monitor passes 15s for responsive auto-resume; the idle/stopped streams (250m / 100m)
   use the 15-minute default. Distance filter and interval are independent — set both
   deliberately when adding or retuning a tier. iOS has no interval (distance-filter only),
