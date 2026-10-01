@@ -34,9 +34,8 @@ class PendingSlotMark {
 // 0 = Power Saver, 1 = Balanced, 2 = Best. When unset (null pref), Best.
 //
 // From 2026-10-01 (James) the tier no longer changes the GPS at all: every
-// tier records at Best — 5 m / bestForNavigation, a fix every 15 s on
-// Android, and at most one point per 15 s kept on iOS (which reports on
-// movement). The radio, not the GPS, is what costs battery: each upload
+// tier records at Best — 5 m / bestForNavigation; Android a fix every 15 s
+// (one point per 15 s kept), iOS every point its 5 m filter reports. The radio, not the GPS, is what costs battery: each upload
 // wakes 4G/5G into its high-power state plus a tail of several seconds,
 // 20-50x the GPS receiver. So the tier sets how OFTEN the buffer is
 // uploaded while the phone is in the pocket — see [LocationService
@@ -63,7 +62,8 @@ Duration _backgroundUploadCadence() {
 
 const Duration _foregroundUploadCadence = Duration(seconds: 30);
 
-/// Plain GPS points are kept at most this often, on both platforms.
+/// Android only: plain GPS points are kept at most this often. iOS keeps
+/// every point its 5 m distance filter reports.
 const int _plainFixSpacingMs = 14000; // 15 s cadence, with a second of jitter slack
 
 /// The GPS parameters ACTUALLY in force for tracking, as JSON, to be stored
@@ -1427,10 +1427,13 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       // Server time when the phone is over 2 min out (E1.F1.S7): with a wrong phone clock the
       // trail would replay minutes away from the rest of the pack.
       final tsMs = atTsMs ?? ClockOffset.trackNowUtc().millisecondsSinceEpoch;
-      // One plain fix per 15 s on every platform: iOS reports on movement,
-      // every couple of seconds at a run, and Android may deliver early.
-      // Marks are never throttled.
-      if (pointStr == null && atTsMs == null) {
+      // Android only: at most one plain fix per 15 s — its location requests
+      // are timer-based and can deliver early. iOS is distance-gated (5 m)
+      // and keeps every point that gate lets through (James, 2026-10-01:
+      // 1433/1434 applied the 15 s gate to iOS too, and James's trail at
+      // Shoreditch #62 had 237 points to Tuna's 719 on 1429). Marks are
+      // never throttled.
+      if (Platform.isAndroid && pointStr == null && atTsMs == null) {
         final int? last = _lastPlainFixMs;
         if (last != null && tsMs - last >= 0 && tsMs - last < _plainFixSpacingMs) {
           await _maybeFlush(force: forceFlush);

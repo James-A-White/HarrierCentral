@@ -222,8 +222,10 @@ A GetX service (`Get.find<LocationService>()`). Manages two modes:
 **Run tracking mode** (when `joinRunTracking.value == true`) — **since 2026-10-01 the
 tier changes UPLOADS, not GPS** (James: the radio costs far more than a fix):
 
-- GPS for every tier: 5 m distance filter, `bestForNavigation`, Android interval 15 s;
-  at most ONE plain point kept per 15 s on both platforms (iOS reports on movement).
+- GPS for every tier: 5 m distance filter, `bestForNavigation`, Android interval 15 s.
+  **Android only** keeps at most ONE plain point per 15 s (timer-based requests can
+  deliver early); **iOS keeps every point its 5 m filter reports** (James, 2026-10-01 —
+  1433/1434 gated iOS too by mistake). Before 1433 iOS filters were 5 / 10 / 20 m by tier.
   Marks are never throttled.
 - Upload cadence (`RunPointBuffer.flush`, checked on every fix — not a timer):
 
