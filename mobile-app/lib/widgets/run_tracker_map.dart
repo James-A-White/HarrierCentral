@@ -627,7 +627,9 @@ class RunTrackerMap extends StatelessWidget {
           : secs < 3600
           ? 'Tracks updated ${secs ~/ 60} min ago'
           : 'Tracks updated ${secs ~/ 3600}h ${(secs % 3600) ~/ 60}m ago';
-      final bool lagging = secs >= 120;
+      // Orange only past what Power Saver's 3-minute pocket upload can
+      // explain (2026-10-01): a pack of Power Saver runners is not lagging.
+      final bool lagging = secs >= 240;
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(

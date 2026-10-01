@@ -1,3 +1,9 @@
+## 3.1.8+1433 (2026-10-01)
+iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
+### Improvements
+- **Every tracking setting records the same detailed trail.** The setting now decides how often your position is sent while the phone is in your pocket — Best every minute, Balanced every 2, Power Saver every 3 — because sending, not the GPS, is what uses the battery. With the app open, your position is sent every 30 seconds, and taking the phone out sends it at once.
+- Power Saver no longer warns before a run, and its distance is no longer marked approximate.
+
 ## 3.1.8+1432 (2026-10-01)
 iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
 ### New Features

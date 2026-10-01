@@ -31,52 +31,40 @@ class PendingSlotMark {
 }
 
 // Tracking quality tiers — chosen by the user in preferences.
-// 0 = Power Saver, 1 = Balanced, 2 = Best
-// When unset (null pref), Best is the default.
-LocationAccuracy _trackingAccuracy() {
-  switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
-    case 0:
-      return LocationAccuracy.medium;
-    case 1:
-      return LocationAccuracy.high;
-    default:
-      return LocationAccuracy.bestForNavigation;
-  }
-}
-
-int _trackingDistanceFilter() {
-  switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
-    case 0:
-      return 20; // Power Saver: coarse track
-    case 1:
-      return 10; // Balanced: moderate
-    default:
-      return 5; // Best: fine-grained
-  }
-}
-
-// Android update interval per tracking tier. Set explicitly (rather than derived
-// from the distance filter) so the tiers get a real cadence progression
-// 15s → 1min → 3min instead of the old 15s / 15s / 15min.
+// 0 = Power Saver, 1 = Balanced, 2 = Best. When unset (null pref), Best.
 //
-// Power Saver was 15 minutes, which is not a track: a hash covers a couple of
-// miles in that time, so the trail came back as a few straight lines between
-// distant points and looked like noise rather than a route. 3 minutes still
-// saves most of the battery and draws something recognisable (James,
-// 2026-09-13).
-// 2026-10-01 (James): 15s / 30s / 1min. Power Saver at 3 minutes still
-// drew too few points to read as a trail (Cockatool, City H3 #1941: 15
-// fixes in an hour), and Balanced closes the gap to Best.
-Duration _trackingAndroidInterval() {
+// From 2026-10-01 (James) the tier no longer changes the GPS at all: every
+// tier records at Best — 5 m / bestForNavigation, a fix every 15 s on
+// Android, and at most one point per 15 s kept on iOS (which reports on
+// movement). The radio, not the GPS, is what costs battery: each upload
+// wakes 4G/5G into its high-power state plus a tail of several seconds,
+// 20-50x the GPS receiver. So the tier sets how OFTEN the buffer is
+// uploaded while the phone is in the pocket — see [LocationService
+// ._uploadCadence]. Before: Android 15s / 1min / 3min (2026-09-13), then
+// 15s / 30s / 1min (never shipped), with coarser accuracy and distance.
+LocationAccuracy _trackingAccuracy() => LocationAccuracy.bestForNavigation;
+
+int _trackingDistanceFilter() => 5;
+
+Duration _trackingAndroidInterval() => const Duration(seconds: 15);
+
+/// The tier's upload cadence while the app is in the BACKGROUND. In the
+/// foreground every tier uploads every 30 s (James, 2026-10-01).
+Duration _backgroundUploadCadence() {
   switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
     case 0:
-      return const Duration(minutes: 1); // Power Saver
+      return const Duration(minutes: 3); // Power Saver
     case 1:
-      return const Duration(seconds: 30); // Balanced
+      return const Duration(minutes: 2); // Balanced
     default:
-      return const Duration(seconds: 15); // Best
+      return const Duration(minutes: 1); // Best
   }
 }
+
+const Duration _foregroundUploadCadence = Duration(seconds: 30);
+
+/// Plain GPS points are kept at most this often, on both platforms.
+const int _plainFixSpacingMs = 14000; // 15 s cadence, with a second of jitter slack
 
 /// The GPS parameters ACTUALLY in force for tracking, as JSON, to be stored
 /// against the track (2026-09-13).
@@ -99,6 +87,8 @@ String trackingGpsSettingsJson() {
     'intervalSec': Platform.isAndroid
         ? _trackingAndroidInterval().inSeconds
         : null,
+    'uploadBackgroundSec': _backgroundUploadCadence().inSeconds,
+    'uploadForegroundSec': _foregroundUploadCadence.inSeconds,
     'platform': Platform.isAndroid ? 'android' : 'ios',
     // "3.0.32+1347" — stamped at boot. The build is what makes the tier names
     // above mean something later.
@@ -134,6 +124,28 @@ class LocationService extends GetxService with WidgetsBindingObserver {
 
   RunPointBuffer? _runBuffer;
   DateTime _lastFlushTime = DateTime.now();
+
+  /// The app is on screen. Foreground uploads every 30 s whatever the tier;
+  /// background uses the tier's cadence (2026-10-01).
+  bool _inForeground =
+      WidgetsBinding.instance.lifecycleState == null ||
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+
+  /// The last PLAIN fix kept onto the track, to keep one per 15 s.
+  int? _lastPlainFixMs;
+
+  Duration get _uploadCadence =>
+      _inForeground ? _foregroundUploadCadence : _backgroundUploadCadence();
+
+  /// Uploads the buffer when [force]d or when the cadence has passed. Checked
+  /// on every fix rather than on a timer: a Dart timer can sleep with the app
+  /// in the background, but location updates keep arriving.
+  Future<void> _maybeFlush({bool force = false}) async {
+    if (force || DateTime.now().difference(_lastFlushTime) >= _uploadCadence) {
+      await _runBuffer?.flush();
+      _lastFlushTime = DateTime.now();
+    }
+  }
 
   // Armed by [seedSessionTrack] on a stop→restart; consumed when the live
   // buffer is next touched, which forwards it as `resumed: true` on the
@@ -590,6 +602,10 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
+        _inForeground = true;
+        // Out of the pocket: send what the pocket held at once, so the pack
+        // sees where this runner is (2026-10-01).
+        if (joinRunTracking.value) unawaited(_maybeFlush(force: true));
         _checkGapOnResume();
         if (!_boostSuspended) return;
         _boostSuspended = false;
@@ -606,6 +622,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       case AppLifecycleState.paused:
       case AppLifecycleState.hidden:
       case AppLifecycleState.detached:
+        _inForeground = false;
         if (_boostSuspended) return;
         _boostSuspended = true;
         if (_preciseStreamRequests == 0) return;
@@ -1410,6 +1427,17 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       // Server time when the phone is over 2 min out (E1.F1.S7): with a wrong phone clock the
       // trail would replay minutes away from the rest of the pack.
       final tsMs = atTsMs ?? ClockOffset.trackNowUtc().millisecondsSinceEpoch;
+      // One plain fix per 15 s on every platform: iOS reports on movement,
+      // every couple of seconds at a run, and Android may deliver early.
+      // Marks are never throttled.
+      if (pointStr == null && atTsMs == null) {
+        final int? last = _lastPlainFixMs;
+        if (last != null && tsMs - last >= 0 && tsMs - last < _plainFixSpacingMs) {
+          await _maybeFlush(force: forceFlush);
+          return null;
+        }
+        _lastPlainFixMs = tsMs;
+      }
       final point = UserEventLocation(
         ts: pad19(tsMs),
         lat: double.parse(lat.toStringAsFixed(5)),
@@ -1459,13 +1487,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       debugPrint('LocationService: Updated to Lat: $lat, Lon: $lon');
     }
 
-    if ((forceFlush) ||
-        (_lastFlushTime.isBefore(
-          DateTime.now().subtract(const Duration(minutes: 1)),
-        ))) {
-      await _runBuffer?.flush();
-      _lastFlushTime = DateTime.now();
-    }
+    await _maybeFlush(force: forceFlush);
 
     return recordedTsMs;
   }

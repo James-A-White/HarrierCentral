@@ -3120,13 +3120,11 @@ class RunTrackerMapController extends GetxController
 
   /// How old a runner's newest point may be before the rose fades them.
   ///
-  /// 3 minutes, not the freshness pill's 120 s: that measures the whole feed,
-  /// whereas this is one runner's own upload cadence. The buffer flushes every
-  /// 60 s, so Best (5 m / 15 s) and Balanced (10 m / 1 min) trackers comfortably
-  /// clear it. Power Saver reports every 15 minutes by design and WILL read as
-  /// stale — arguably correct, since a quarter-hour-old position is not much
-  /// use for finding somebody, but it is the trade-off in this number.
-  static const double _roseStaleAfterMs = 180000;
+  /// 4 minutes: a runner in their pocket on Power Saver uploads every 3
+  /// minutes (2026-10-01), so their newest point can be up to ~3¼ minutes old
+  /// and must not read as lost. Best uploads every minute, and every tier
+  /// every 30 s with the app open.
+  static const double _roseStaleAfterMs = 240000;
   Timer? _stalenessTimer;
 
   /// True while the event is inside its live window — the pill (and the

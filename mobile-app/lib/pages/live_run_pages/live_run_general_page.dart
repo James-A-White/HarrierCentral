@@ -1645,11 +1645,9 @@ class LiveRunGeneralPage extends StatelessWidget {
             valueBuilder: () {
               final dist = controller.distanceKm.value;
               if (dist <= 0) return '--';
-              // Power Saver's 20m sampling systematically under-reads distance
-              // (15-20% on a twisty trail — CH3 2026-08-18 analysis), so mark
-              // the number as approximate rather than let it read as exact.
-              final powerSaver =
-                  (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0;
+              // Every tier records at Best since 2026-10-01, so no tier's
+              // distance is approximate any more (Power Saver's old 20 m
+              // sampling under-read by 15-20%).
               // The hasher's units (their choice, else the kennel's): metres /
               // yards to start with, decimal km / miles after (2026-09-27).
               // This read "Dist (in km)" with two decimals for everyone.
@@ -1659,7 +1657,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                   kennelDistanceUnitsPref: controller.run.extensions.distanceUnitsPref,
                 ),
               );
-              return '${powerSaver ? '~' : ''}$text';
+              return text;
             },
           ),
         ),

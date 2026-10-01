@@ -219,20 +219,26 @@ A GetX service (`Get.find<LocationService>()`). Manages two modes:
 - Distance filter: 250m, accuracy: `lowest`, background: off
 - Updates `deviceInfo.deviceLat/Lon` and persisted prefs
 
-**Run tracking mode** (when `joinRunTracking.value == true`):
-Distance filter and accuracy depend on the user's **`trackingQuality`** pref
-(`IntPrefsEnum.trackingQuality`, default Best), resolved by `_trackingDistanceFilter()`
-and `_trackingAccuracy()` at the top of `location_service.dart`:
+**Run tracking mode** (when `joinRunTracking.value == true`) — **since 2026-10-01 the
+tier changes UPLOADS, not GPS** (James: the radio costs far more than a fix):
 
-| `trackingQuality` | Mode | Distance | Accuracy | Android interval |
-|---|---|---|---|---|
-| 2 (default) | Best | 5m | `bestForNavigation` | 15s |
-| 1 | Balanced | 10m | `high` | 30s |
-| 0 | Power Saver | 20m | `medium` | 1min |
+- GPS for every tier: 5 m distance filter, `bestForNavigation`, Android interval 15 s;
+  at most ONE plain point kept per 15 s on both platforms (iOS reports on movement).
+  Marks are never throttled.
+- Upload cadence (`RunPointBuffer.flush`, checked on every fix — not a timer):
 
-- Background: on. Points enqueued to `RunPointBuffer`, flushed every 60 seconds
-- Android: foreground notification ("Tracking run in progress")
-- iOS: `ActivityType.fitness`, `allowBackgroundLocationUpdates: true`
+| State | Best (2) | Balanced (1) | Power Saver (0) |
+|---|---|---|---|
+| App in **foreground** | 30 s | 30 s | 30 s |
+| App in **background** (pocket) | 1 min | 2 min | 3 min |
+
+- Coming to the foreground flushes immediately. Marks, photos, Send Help, I'm Lost and
+  Stop always flush at once.
+- Freshness thresholds sized for the 3-minute pocket upload: map pill orange at 240 s,
+  rose fades a runner at 240 s. The trackingParams JSON records `uploadBackgroundSec`
+  / `uploadForegroundSec` beside the build.
+- Background: on. Android: foreground notification ("Tracking run in progress").
+  iOS: `ActivityType.fitness`, `allowBackgroundLocationUpdates: true`
 
 **To start tracking:**
 ```dart

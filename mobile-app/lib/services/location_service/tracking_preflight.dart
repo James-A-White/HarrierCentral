@@ -253,24 +253,10 @@ class TrackingPreflight {
       }
     }
 
-    // The Power Saver tier is our own setting, so the fix is one tap.
-    if ((getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0) {
-      issues.add(
-        PreflightIssue(
-          kind: PreflightIssueKind.powerSaverTier,
-          title: 'Tracking quality is Power Saver',
-          detail: 'Power Saver takes a fix every few minutes — on one run '
-              'that was 15 fixes in an hour and no usable trail. "Use Best" '
-              'changes your tracking quality setting to Best; you can '
-              'change it back from the ⚡ icon on this page.',
-          summary: 'Power Saver',
-          actionLabel: 'Use Best for this run',
-          action: () async {
-            await setIntPref(IntPrefsEnum.trackingQuality, 2);
-          },
-        ),
-      );
-    }
+    // The Power Saver tier is no longer a problem to warn about: since
+    // 2026-10-01 every tier records the trail at Best and only uploads less
+    // often in the pocket (James). [PreflightIssueKind.powerSaverTier] is
+    // kept for older logs and never raised.
 
     return issues;
   }
