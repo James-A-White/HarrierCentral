@@ -48,8 +48,12 @@ Widget chatStatusIcon(core.MessageStatus status, Color? colour) {
     case core.MessageStatus.sent:
       return Icon(Icons.check, size: 15, color: colour);
     case core.MessageStatus.delivered:
-    case core.MessageStatus.seen:
       return Icon(Icons.done_all, size: 15, color: colour);
+    // Read by the other hasher (DMs, E9.F1.S24): the same double tick in a
+    // bright green that reads on the blue bubble — WhatsApp's blue would
+    // vanish against it.
+    case core.MessageStatus.seen:
+      return const Icon(Icons.done_all, size: 15, color: Color(0xFF69F0AE));
   }
 }
 
@@ -133,7 +137,9 @@ class ChatImageBubble extends StatelessWidget {
     final Color bg = isSentByMe
         ? theme.colors.primary
         : theme.colors.surfaceContainer;
-    final Color fg = isSentByMe ? theme.colors.onPrimary : theme.colors.onSurface;
+    final Color fg = isSentByMe
+        ? theme.colors.onPrimary
+        : theme.colors.onSurface;
     final TextStyle time = theme.typography.labelSmall.copyWith(
       color: fg.withValues(alpha: 0.7),
     );
@@ -214,7 +220,9 @@ class ChatLocationCard extends StatelessWidget {
     final Color bg = isSentByMe
         ? theme.colors.primary
         : theme.colors.surfaceContainer;
-    final Color fg = isSentByMe ? theme.colors.onPrimary : theme.colors.onSurface;
+    final Color fg = isSentByMe
+        ? theme.colors.onPrimary
+        : theme.colors.onSurface;
     final TextStyle title = theme.typography.bodyMedium.copyWith(
       color: fg,
       fontWeight: FontWeight.w600,

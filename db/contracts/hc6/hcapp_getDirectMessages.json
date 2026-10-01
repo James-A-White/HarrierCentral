@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_getDirectMessages",
   "version": "1.0.0",
-  "description": "Reads a DM thread in hcapp_getRoomMessages' shape; the caller must hold a row for it (ended still reads). Marks read when @markRead=1. E9.F1.S7. 2026-09-30: every message row also carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22).",
+  "description": "Reads a DM thread in hcapp_getRoomMessages' shape; the caller must hold a row for it (ended still reads). Marks read when @markRead=1. E9.F1.S7. 2026-09-30: every message row also carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22). 2026-10-01 (E9.F1.S24): the status row carries otherReadSequenceCount; a read that reaches the other hasher's messages ends with an API-only { ReadReceiptThreadId, UserId, FcmToken } rowset.",
   "parameters": [
     {
       "name": "deviceId",
@@ -45,6 +45,13 @@
       "nullable": true,
       "mapsToColumn": null,
       "description": "The last reactionsAsOf this client saw (E9.F1.S22). With it, the reader returns reactions changed since then on messages at or below sinceSequenceCount."
+    },
+    {
+      "name": "apiOnlyRowsets",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 (default, app via AppApiHC6): may end with the read-receipt device rowset, which the shim strips. 0 from publicWeb_getChatMessages."
     }
   ],
   "rowsets": [

@@ -59,7 +59,7 @@ BEGIN TRY
     ELSE IF (@kind = 'kennel')
         EXEC HC6.hcapp_getKennelMessages @deviceId = @deviceId, @accessToken = @accessToken, @kennelId = @kennelId, @sinceSequenceCount = @sinceSequenceCount, @reactionsSince = @reactionsSince;
     ELSE IF (@kind = 'dm')
-        EXEC HC6.hcapp_getDirectMessages @deviceId = @deviceId, @accessToken = @accessToken, @threadId = @threadId, @sinceSequenceCount = @sinceSequenceCount, @reactionsSince = @reactionsSince, @markRead = @markRead;
+        EXEC HC6.hcapp_getDirectMessages @deviceId = @deviceId, @accessToken = @accessToken, @threadId = @threadId, @sinceSequenceCount = @sinceSequenceCount, @reactionsSince = @reactionsSince, @markRead = @markRead, @apiOnlyRowsets = 0;
     ELSE
         EXEC HC6.hcapp_getRoomMessages   @deviceId = @deviceId, @accessToken = @accessToken, @roomType = @roomType, @sinceSequenceCount = @sinceSequenceCount, @reactionsSince = @reactionsSince, @markRead = @markRead;
 END TRY

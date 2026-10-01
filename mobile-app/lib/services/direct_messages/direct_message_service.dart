@@ -91,8 +91,7 @@ class DirectMessagePreference {
       final Map<String, dynamic>? envelope = firstRow(
         outer[0] as List<dynamic>?,
       );
-      final bool ok =
-          envelope?['success'] == 1 || envelope?['success'] == true;
+      final bool ok = envelope?['success'] == 1 || envelope?['success'] == true;
       if (!ok || outer.length < 2) return null;
       final Object? value = firstRow(outer[1] as List<dynamic>?)?['Preference'];
       return value is num ? decode(value.toInt() << shift) : null;
@@ -167,8 +166,7 @@ class DmStartResult {
       final Map<String, dynamic>? envelope = firstRow(
         outer[0] as List<dynamic>?,
       );
-      final bool ok =
-          envelope?['success'] == 1 || envelope?['success'] == true;
+      final bool ok = envelope?['success'] == 1 || envelope?['success'] == true;
       if (!ok || outer.length < 2) return null;
       final Map<String, dynamic>? row = firstRow(outer[1] as List<dynamic>?);
       return row == null ? null : DmStartResult.fromJson(row);
@@ -243,6 +241,10 @@ class DmThreadState {
   final RxBool canSend = true.obs;
   final RxBool muted = false.obs;
 
+  /// How far the other hasher has read this thread — my messages at or
+  /// below it are read (E9.F1.S24). 0 until the reader says.
+  final RxInt otherReadSequenceCount = 0.obs;
+
   /// Set once hcapp_getDirectMessages has answered, so the menu can show a
   /// Mute state it actually knows rather than a guess.
   final RxBool known = false.obs;
@@ -259,6 +261,8 @@ class DmThreadState {
     }
     final Object? photo = row['otherPhoto'];
     if (photo is String) otherPhoto.value = photo;
+    final Object? read = row['otherReadSequenceCount'];
+    if (read is num) otherReadSequenceCount.value = read.toInt();
     known.value = true;
   }
 }

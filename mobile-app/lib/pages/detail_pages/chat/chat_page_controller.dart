@@ -362,6 +362,10 @@ class ChatPageController extends GetxController {
       await _applyRemovedIds(outerItem);
       if (isClosed) return;
       _applyDmThreadRow(outerItem);
+      // Before the empty-delta return: a read-receipt nudge brings no new
+      // message, only a new read point.
+      await _applyReadReceipts();
+      if (isClosed) return;
       // Reactions on messages already drawn, and the watermark for next time
       // — before the empty-delta return, as with removals.
       await _applyReactionRowsets(outerItem);
@@ -391,11 +395,29 @@ class ChatPageController extends GetxController {
         // sequence count the sender never received back from the server.
         for (final msg in messages) {
           if (isClosed) return;
-          if (!chatController.messages.any((m) => m.id == msg.id)) {
+          final core.Message? mine = chatController.messages
+              .where((m) => m.id == msg.id)
+              .firstOrNull;
+          if (mine == null) {
             await chatController.insertMessage(msg);
+          } else if (mine.metadata?[_kSeq] == null &&
+              msg.metadata?[_kSeq] != null) {
+            // My optimistic bubble, now on the server: it learns its
+            // sequence number, which is what a read receipt is measured in.
+            await chatController.updateMessage(
+              mine,
+              mine.copyWith(
+                metadata: <String, dynamic>{
+                  ...?mine.metadata,
+                  _kSeq: msg.metadata![_kSeq],
+                },
+              ),
+            );
           }
         }
       }
+      if (isClosed) return;
+      await _applyReadReceipts();
     } finally {
       _isFetching = false;
       if (_pendingFetch && !isClosed) {
@@ -441,6 +463,28 @@ class ChatPageController extends GetxController {
         );
       }
       return;
+    }
+  }
+
+  /// A DM's read receipts (E9.F1.S24): my messages at or below the other
+  /// hasher's read point show as read. Only ever moves forward.
+  Future<void> _applyReadReceipts() async {
+    final DmThreadState? state = dmState;
+    if (state == null) return;
+    final int readTo = state.otherReadSequenceCount.value;
+    if (readTo <= 0) return;
+    for (final core.Message m in List<core.Message>.of(
+      chatController.messages,
+    )) {
+      if (isClosed) return;
+      if (m.authorId != currentUser.id) continue;
+      if (m.status == core.MessageStatus.seen) continue;
+      final Object? seq = m.metadata?[_kSeq];
+      if (seq is! int || seq > readTo) continue;
+      await chatController.updateMessage(
+        m,
+        m.copyWith(status: core.MessageStatus.seen),
+      );
     }
   }
 
@@ -566,7 +610,11 @@ class ChatPageController extends GetxController {
           status: authorId == currentUser.id
               ? core.MessageStatus.delivered
               : core.MessageStatus.sent,
-          extraMeta: _replyAndReactionMeta(msg),
+          extraMeta: <String, dynamic>{
+            ..._replyAndReactionMeta(msg),
+            if (msg['sequenceCount'] is num)
+              _kSeq: (msg['sequenceCount'] as num).toInt(),
+          },
         ),
       );
     }
@@ -586,6 +634,10 @@ class ChatPageController extends GetxController {
   /// The message's content as the server holds it: the text, the photo's
   /// blob URL, or the location's maps link. '' for a photo still uploading.
   static const String _kContent = 'hcContent';
+
+  /// The message's MessageSequenceCount, so a DM can tell which of my
+  /// messages the other hasher has read (E9.F1.S24).
+  static const String _kSeq = 'hcSeq';
 
   /// One message, drawn the way its kind asks. A kind this build does not
   /// know — or a photo / location whose content is not what this app would

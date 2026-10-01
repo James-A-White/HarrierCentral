@@ -1,5 +1,3 @@
-
-
 import 'package:harrier_central/imports.dart';
 
 /// A phone whose clock is wrong mints tokens the server refuses: a token's
@@ -82,10 +80,11 @@ class ClockOffset {
     }
     _cachedMs = newMs;
     unawaited(setIntPref(IntPrefsEnum.clockOffsetMs, newMs));
-    BootLogger.logError(
-      '[ERROR][CLOCK]',
-      'phone clock ${describe(-delta)} server UTC; token offset now ${newMs}ms',
-      null,
+    // A trace, not an error: a correction is the feature working, and an
+    // [ERROR] line with the offset in it looked NEW to log triage every time.
+    BootLogger.logBreadcrumb(
+      '[CLOCK] phone clock ${describe(-delta)} server UTC; '
+      'offset ${newMs == 0 ? 'cleared' : 'applied'}',
     );
     _maybeNotice();
     return true;

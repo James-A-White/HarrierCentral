@@ -4,7 +4,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getDirectMessages]
     @threadId           UNIQUEIDENTIFIER = NULL,
     @sinceSequenceCount INT              = NULL,
     @reactionsSince     DATETIMEOFFSET(7) = NULL,
-    @markRead           SMALLINT         = 0
+    @markRead           SMALLINT         = 0,
+    -- 0 from the web wrapper: the read-receipt push rowset is for the API
+    -- shim only (it carries device tokens), and a browser receives no push.
+    @apiOnlyRowsets     SMALLINT         = 1
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_getDirectMessages
@@ -114,8 +117,24 @@ SELECT
     UPPER(CAST(h.PublicHasherId AS NVARCHAR(40)))            AS otherPublicHasherId,
     h.DisplayName                                            AS otherDisplayName,
     h.Photo                                                  AS otherPhoto,
-    CAST(CASE WHEN @minePref = 3 THEN 1 ELSE 0 END AS SMALLINT) AS muted
+    CAST(CASE WHEN @minePref = 3 THEN 1 ELSE 0 END AS SMALLINT) AS muted,
+    -- How far the OTHER hasher has read this thread (E9.F1.S24 read
+    -- receipts): my messages at or below it show as read. Their badge row
+    -- is the record — written by this same SP's @markRead when they open it.
+    ISNULL((SELECT b.LastSequenceCount FROM HC.EventMessageBadgeCounts b
+             WHERE b.UserId = @otherId AND b.EventId IS NULL AND b.KennelId IS NULL
+               AND b.ThreadId = @threadId AND b.MessageType = 0), 0) AS otherReadSequenceCount
 FROM HC.Hasher h WHERE h.id = @otherId;
+
+-- Did this read reach any of the OTHER hasher's messages? Then their phones
+-- get a silent nudge so their ticks turn to read (E9.F1.S24). Decided
+-- BEFORE the MERGE moves @lastRead's row on.
+DECLARE @readReceipt SMALLINT = CASE WHEN @markRead = 1 AND @apiOnlyRowsets = 1
+    AND @mineIgnore = 0
+    AND EXISTS (SELECT 1 FROM HC.EventMessage em
+                 WHERE em.ThreadId = @threadId AND em.Removed = 0 AND em.UserId = @otherId
+                   AND em.MessageSequenceCount > @lastRead)
+    THEN 1 ELSE 0 END;
 
 IF (@markRead = 1 AND @newestSeq IS NOT NULL)
 BEGIN
@@ -144,6 +163,17 @@ WHERE msg.ThreadId = @threadId
   AND msg.ReactionsUpdatedAt > @reactionsSince
   AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount <= @sinceSequenceCount);
 SELECT SYSDATETIMEOFFSET() AS reactionsAsOf;
+
+-- API ONLY, last so no client's rowset positions move, and stripped by the
+-- shim: the other hasher's phones, for the read-receipt nudge.
+IF (@readReceipt = 1)
+    SELECT DISTINCT UPPER(CAST(@threadId AS NVARCHAR(40))) AS ReadReceiptThreadId,
+           d.UserId, d.FcmToken
+    FROM HC.Device d
+    WHERE d.UserId = @otherId AND d.FcmToken IS NOT NULL AND d.removed = 0 AND d.IsMobile = 1
+      AND TRY_CAST(d.BuildNumber AS INT) >= HC6.MinBuildForChatPush()
+      AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                      WHERE blk.UserId = @otherId AND blk.Friend_UserId = @userId AND blk.Ignore = 1);
 
 END TRY
 BEGIN CATCH

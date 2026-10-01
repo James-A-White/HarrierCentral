@@ -281,6 +281,20 @@ namespace HcWebApi.Endpoints
                     // A reaction nudges the message's AUTHOR's phones with a silent
                     // data push so an open thread refreshes its chips; nobody is
                     // buzzed for a 🍺 (E9.F1.S22). Rowsets 1–2 are API-only.
+                    // A DM read that reached the other hasher's messages ends with
+                    // an API-only rowset of their devices: a silent nudge turns
+                    // their ticks to read (E9.F1.S24). Found by column, stripped.
+                    case "getDirectMessages":
+                        {
+                            int rr = multipleResults.FindIndex(r => r.Count > 0 && r[0].ContainsKey("ReadReceiptThreadId"));
+                            if (rr >= 0)
+                            {
+                                var receipt = multipleResults[rr];
+                                multipleResults.RemoveAt(rr);
+                                _ = SendReadReceiptPushAsync(receipt, log);
+                            }
+                        }
+                        break;
                     case "reactToChatMessage":
                         _ = SendReactionPushAsync(multipleResults, log);
                         if (multipleResults.Count >= 3) multipleResults.RemoveRange(1, multipleResults.Count - 1);
@@ -723,6 +737,37 @@ namespace HcWebApi.Endpoints
         /// closed app sees it on its next open. Reads both rowsets before the
         /// first await so the caller may strip them from the reply at once.
         /// </summary>
+        /// <summary>
+        /// Silent data push to the author of DM messages that were just read
+        /// (E9.F1.S24): ThreadKind=dm + ThreadId is what an open DM page
+        /// matches on, so it re-fetches and picks up otherReadSequenceCount.
+        /// No badge, no banner.
+        /// </summary>
+        public async Task SendReadReceiptPushAsync(List<Dictionary<string, object?>> rows, ILogger logger)
+        {
+            try
+            {
+                var recipients = Tokens(rows, visible: false).ToList();
+                if (recipients.Count == 0) return;
+                var threadId = rows[0].TryGetValue("ReadReceiptThreadId", out var t) ? t?.ToString() : null;
+                if (string.IsNullOrEmpty(threadId)) return;
+                var data = new Dictionary<string, string>
+                {
+                    ["MessageType"] = "0", ["Type"] = "read_receipt", ["ThreadKind"] = "dm", ["ThreadId"] = threadId!,
+                };
+                string? accessToken = await GetFirebaseAccessTokenAsync();
+                var results = await Task.WhenAll(recipients.Select(r =>
+                    SendDataPushAsync(r.Token, data, "Harrier Central", "", false, accessToken, logger, null)));
+                _ = LogPushBatchAsync("getDirectMessages", null, "read receipt",
+                    recipients.Select((r, i) => new PushLogEntry(r.Token, r.UserId, SenderUserId: null, IsVisible: false, FcmResult: results[i])),
+                    logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error sending read-receipt push: {Message}", ex.Message);
+            }
+        }
+
         public async Task SendReactionPushAsync(List<List<Dictionary<string, object?>>> multipleResults, ILogger logger)
         {
             try
