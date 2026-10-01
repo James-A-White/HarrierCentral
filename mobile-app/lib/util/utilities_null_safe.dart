@@ -29,7 +29,10 @@ class Utilities {
     int? timeWindow,
   }) {
     timeWindow ??= getIntPref(IntPrefsEnum.timeWindow) ?? 30;
-    final Duration difference = DateTime.now().toUtc().difference(
+    // The phone's clock corrected by the offset learnt from the server
+    // (E1.F1.S7): a phone minutes or hours out still mints a token the
+    // server's ±2-window check accepts.
+    final Duration difference = ClockOffset.nowUtc().difference(
       DateTime.utc(1993, 7, 25, 15, 0, 0),
     );
     //final int timeBlocks = (difference.inSeconds / 5760).toInt();

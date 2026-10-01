@@ -235,6 +235,10 @@ class ServiceCommon {
         if (!tokenRetryUsed &&
             response.body.contains('"errorTitle":"Invalid access token"')) {
           tokenRetryUsed = true;
+          // A wrong phone clock is the other cause: learn the offset from
+          // the reply's own Date header so the retry's token is minted at
+          // the server's time (E1.F1.S7, James 2026-10-01).
+          ClockOffset.learnFrom(response.headers['date']);
           continue;
         }
         return checkHttpPostResponse(

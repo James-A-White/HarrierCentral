@@ -82,6 +82,7 @@ enum NumPrefsEnum {
 }
 
 enum BoolPrefsEnum {
+  clockOffsetNoticeShown, // the one-time 'your clock is off' notice (E1.F1.S7)
   automaticallySetNotifiationPrefs,
   introSliderSeen,
   fcmTokenSavedToServer,
@@ -105,6 +106,7 @@ enum IntPrefsEnum {
   splashSequenceType,
   timeWindow,
   trackingQuality, // 0 = Power Saver, 1 = Balanced, 2 = Best (default when set)
+  clockOffsetMs, // server UTC minus this phone's UTC, applied to every token (E1.F1.S7)
 }
 
 enum DatePrefsEnum {
