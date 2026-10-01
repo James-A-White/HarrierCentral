@@ -28,9 +28,6 @@ class ChatsPageController extends GetxController {
   /// The mark-all-read round trip, for the button's spinner.
   final RxBool chatResetInProgress = false.obs;
 
-  /// One Chats page at a time: the bubble, a push and a toast can all ask.
-  static bool isOpen = false;
-
   NotificationService? get _n => Get.isRegistered<NotificationService>()
       ? Get.find<NotificationService>()
       : null;
@@ -40,7 +37,6 @@ class ChatsPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    isOpen = true;
     final NotificationService? n = _n;
     if (n != null) {
       _workers
@@ -54,7 +50,6 @@ class ChatsPageController extends GetxController {
 
   @override
   void onClose() {
-    isOpen = false;
     for (final Worker w in _workers) {
       w.dispose();
     }
@@ -156,19 +151,30 @@ class ChatsPageController extends GetxController {
 
 /// Open Chats over whatever is on screen — the bubble, a DM-request push and
 /// its toast all come here. A second ask while it is open does nothing.
+///
+/// "Open" is whether the Chats ROUTE is on the stack, asked of the navigator
+/// each time — not a flag. 1430 kept a flag on the controller and cleared it
+/// in onClose, which a page-local GetBuilder never calls on pop, so after the
+/// first visit the bubble did nothing (James, 2026-10-01).
 Future<void> openChatsPage() async {
-  if (ChatsPageController.isOpen) return;
-  await Get.to<void>(() => const ChatsPage());
+  if (Get.currentRoute == ChatsPage.routeName) return;
+  await Get.to<void>(() => const ChatsPage(), routeName: ChatsPage.routeName);
 }
 
 class ChatsPage extends StatelessWidget {
   const ChatsPage({super.key});
+
+  static const String routeName = '/chats';
 
   @override
   Widget build(BuildContext context) {
     return GetBuilder<ChatsPageController>(
       init: ChatsPageController(),
       global: false,
+      // A page-local GetBuilder does not close its controller on pop; do it
+      // here, or its workers outlive the page (as in chat_page.dart).
+      dispose: (GetBuilderState<ChatsPageController> state) =>
+          state.controller?.onDelete(),
       builder: (ChatsPageController controller) => AppScaffold(
         appBar: AppBar(
           backgroundColor: themeAppBarBackground,
