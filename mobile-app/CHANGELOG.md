@@ -1,3 +1,11 @@
+## 3.1.8+1428 (2026-10-01)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### New Features
+- **Reply to a message**: long-press → Reply puts a quote bar above the composer; the sent message carries a quote of the one it answers (a deleted original shows "Message deleted"). Every chat: runs, kennels, rooms and direct messages.
+- **React with an emoji**: the long-press sheet has 👍 ❤️ 😂 🍺 🏃 🔥 across the top; reactions show as counts under the message, and tapping your own takes it back.
+- **A wrong phone clock no longer breaks the app**: the app learns the server's time from its replies and mints its sign-in tokens at the corrected time; the first correction shows a one-time notice of how far the clock is out. PackTrack uses the correction only when the clock is over two minutes out, so ordinary latency cannot jitter a trail.
+
 ## 3.1.8+1427 (2026-09-30)
 iOS (TestFlight, James internal test only). Held from the beta testers.
 Build number only; same version.

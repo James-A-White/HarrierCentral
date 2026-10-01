@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.74 (2026-10-01 redeploy — replies and reactions)
+
+- **Reply to a message.** Reply in the message menu; a quote bar above the
+  composer and a quoted strip on the sent message (click to jump to it).
+- **React with an emoji.** 👍 ❤️ 😂 🍺 🏃 🔥 at the top of the message
+  menu; counts under each message, mine outlined, tap to take it back.
+
 ## 0.21.74 (2026-09-29 redeploy — direct messages)
 
 - **Direct messages.** Message <name> from any chat message; a

@@ -1,3 +1,7 @@
+## 2.0.87+738 (2026-10-01)
+### New Features
+- **Run chat: reply and react.** The message menu has Reply (a quote bar above the composer, a quote strip on the sent message) and the six reactions; reactions show as counts under each message.
+
 ## 2.0.87+737 (2026-09-30)
 ### New Features
 - **Platform admins** (HC Admin Tools): list Harrier Central staff with their four capabilities as switches, remove one, or mint a new one by finding the person as Merge accounts does. Only a platform admin with Permissions & admins sees it; nobody can remove themselves or leave the platform with no one holding that capability.
