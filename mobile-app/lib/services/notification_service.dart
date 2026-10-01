@@ -11,7 +11,6 @@ extension HcPushPayload on RemoteMessage {
       lowerGuidsInPlace(Map<String, dynamic>.of(data)) as Map<String, dynamic>;
 }
 
-
 class NotificationService extends GetxService with WidgetsBindingObserver {
   // --- Reactive State for Badges ---
 
@@ -102,6 +101,22 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           false)) {
         await requestPermission();
       }
+
+      // What the OS actually allows, in the uploaded log: iOS keeps Badges
+      // as its own switch, and a badge it refuses fails silently. Tuna's icon
+      // showed no number on 1429 with everything server-side correct
+      // (2026-10-01) — this says whether the phone is refusing it.
+      unawaited(
+        FirebaseMessaging.instance.getNotificationSettings().then(
+          (NotificationSettings n) => BootLogger.logBreadcrumb(
+            '[NOTIF] permission=${n.authorizationStatus.name} '
+            'badge=${n.badge.name} alert=${n.alert.name} '
+            'sound=${n.sound.name} lockScreen=${n.lockScreen.name}',
+          ),
+          onError: (Object e) =>
+              BootLogger.logBreadcrumb('[NOTIF] settings unavailable: $e'),
+        ),
+      );
 
       await _setupInitialMessage();
       _setupFirebaseListeners();
@@ -643,13 +658,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     //     key: (clientChatCounts[key] ?? 0).obs,
     // };
 
-    globalTotalBadgeCount.value = unreadEventCounts.values.fold<int>(
-      0,
-      // A thread never takes the total down: the server's unread count can
-      // dip below zero when a message is removed, and HC6.UserUnreadChatTotal
-      // (the number the pushes put on the icon) counts only the positives.
-      (sum, rxInt) => sum + (rxInt.value > 0 ? rxInt.value : 0),
-    ) +
+    globalTotalBadgeCount.value =
+        unreadEventCounts.values.fold<int>(
+          0,
+          // A thread never takes the total down: the server's unread count can
+          // dip below zero when a message is removed, and HC6.UserUnreadChatTotal
+          // (the number the pushes put on the icon) counts only the positives.
+          (sum, rxInt) => sum + (rxInt.value > 0 ? rxInt.value : 0),
+        ) +
         // A request to message this hasher is something to act on, so it
         // counts like an unread message until answered — the same rule
         // HC6.UserUnreadChatTotal applies to the number a push puts on the
