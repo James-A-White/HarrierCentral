@@ -14,10 +14,6 @@ class MainNavigationPage extends StatelessWidget {
         ? Get.find<MainNavigationController>()
         : Get.put(MainNavigationController(), permanent: true);
 
-    final locService = Get.isRegistered<LocationService>()
-        ? Get.find<LocationService>()
-        : null;
-
     return GetBuilder<MainNavigationController>(
       id: 'AppScaffold',
       builder: (AppScaffoldController) {
@@ -36,9 +32,7 @@ class MainNavigationPage extends StatelessWidget {
                 backgroundColor: themeAppBarBackground,
                 iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
                 automaticallyImplyLeading: false,
-                leadingWidth: locService?.joinRunTracking.value ?? false
-                    ? 140
-                    : 80,
+                leadingWidth: 80,
                 leading: Row(
                   mainAxisSize: MainAxisSize.max,
                   children: [
@@ -101,174 +95,11 @@ class MainNavigationPage extends StatelessWidget {
                           )
                         : SizedBox(),
 
-                    controller.mainScreenReady.value
-                        ? (!Get.isRegistered<LocationService>() ||
-                                  !Get.find<LocationService>()
-                                      .joinRunTracking
-                                      .value)
-                              ? SizedBox()
-                              : GestureDetector(
-                                  onTap: () async {
-                                    var buttons = HashRunPointTypes.values.map((
-                                      type,
-                                    ) {
-                                      return <String, dynamic>{
-                                        'title': type.label,
-                                        'icon': <Widget>[
-                                          Container(
-                                            height: 30,
-                                            width: 45,
-                                            decoration: BoxDecoration(
-                                              color: Colors.green.shade800,
-                                              shape: BoxShape.rectangle,
-                                            ),
-                                          ),
-                                          Icon(type.iconData),
-                                        ],
-                                        'returnValue': type.index,
-                                      };
-                                    }).toList();
-
-                                    final MultipleChoicePopupHc popup =
-                                        MultipleChoicePopupHc(
-                                          key: const Key('5030202'),
-                                          title: 'Trail mark',
-                                          buttons: buttons,
-                                          cancelButtonTitle: 'Cancel',
-                                          cancelButtonReturnValue:
-                                              followTypeCancel,
-                                        );
-
-                                    var result = await showDialog<dynamic>(
-                                      context: context,
-                                      barrierDismissible:
-                                          false, // user must tap button!
-                                      builder: (BuildContext context) {
-                                        return popup;
-                                      },
-                                    );
-
-                                    // Bail if canceled or invalid
-                                    if (result == null ||
-                                        result == followTypeCancel) {
-                                      return;
-                                    }
-                                    if (result is! int ||
-                                        result < 0 ||
-                                        result >=
-                                            HashRunPointTypes.values.length) {
-                                      return;
-                                    }
-
-                                    HashRunPointTypes type =
-                                        HashRunPointTypes.values[result];
-
-                                    final locationService =
-                                        LocationService.ensure();
-                                    if (type == HashRunPointTypes.customLabel) {
-                                      GetPointLabelPopup popup =
-                                          GetPointLabelPopup();
-
-                                      if (context.mounted) {
-                                        var labelResult =
-                                            await showDialog<
-                                              Map<String, String>
-                                            >(
-                                              context: context,
-                                              barrierDismissible:
-                                                  false, // user must tap button!
-                                              builder: (BuildContext context) {
-                                                return popup;
-                                              },
-                                            );
-                                        if (labelResult != null) {
-                                          if ((labelResult['label'] ?? '')
-                                              .isNotEmpty) {
-                                            await locationService.markPoint(
-                                              type,
-                                              label: labelResult['label']!,
-                                            );
-                                          }
-                                        }
-                                      }
-                                    } else {
-                                      await locationService.markPoint(type);
-                                    }
-
-                                    // // Delay to ensure overlay is ready
-
-                                    closeAllSnackbarsSafely();
-
-                                    if (context.mounted) {
-                                      // Use ScaffoldMessenger to avoid missing Overlay issues
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            "You've marked a ${type.label}.",
-                                            style: ts_snackbar,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          duration: const Duration(seconds: 5),
-                                          backgroundColor: Colors.blue,
-                                          behavior: SnackBarBehavior.fixed,
-                                          padding: const EdgeInsets.fromLTRB(
-                                            16.0,
-                                            12.0,
-                                            16.0,
-                                            kBottomNavigationBarHeight - 15.0,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  child: Obx(() {
-                                    final locationService =
-                                        LocationService.ensure();
-
-                                    // 2. Use the reactive getter to determine the state
-                                    final isFresh =
-                                        locationService.isLocationFresh;
-
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 10.0,
-                                        bottom: 2.0,
-                                      ),
-                                      child: Container(
-                                        height: 25,
-                                        width: 40,
-                                        // Use the decoration property
-                                        decoration: BoxDecoration(
-                                          // Set the shape to circle
-                                          borderRadius: BorderRadius.circular(
-                                            7,
-                                          ), // Rounded corners
-                                          // Move the color property inside the decoration
-                                          color: isFresh
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                        child: Center(
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 4,
-                                            ),
-                                            child: Text(
-                                              locationService
-                                                  .locationUpdateCount
-                                                  .value
-                                                  .toString(),
-                                              style: ts_titleCondensed,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                )
-                        : SizedBox.shrink(),
+                    // The tracking chip (point count, green/red freshness,
+                    // and a tap-to-mark menu) lived here until 2026-10-01 —
+                    // removed: it predated the Live Run page, which has the
+                    // marks and the GPS signal light, and showed to every
+                    // tracking hasher.
                   ],
                 ),
                 title: AutoSizeText(
