@@ -1,3 +1,10 @@
+## 3.1.8+1434 (2026-10-01)
+iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
+### New Features
+- **Auto start knows when you set off on foot.** With auto start armed, the phone's own motion sensing starts your track as soon as you start running from the start (or walking once you are more than 100 m away), and never because you drove away. Asks for Motion & Fitness (iPhone) / Physical activity (Android) when you arm it; without it, auto start works as before.
+### Fixes
+- The clock notice appears again whenever your clock's error changes by two minutes or more, not only the first time.
+
 ## 3.1.8+1433 (2026-10-01)
 iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
 ### Improvements
