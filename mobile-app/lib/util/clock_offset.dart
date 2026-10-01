@@ -34,6 +34,9 @@ class ClockOffset {
   /// more than this — so latency cannot make the offset creep reply by reply.
   static const Duration _hysteresis = Duration(seconds: 30);
 
+  /// A change in the clock's error at least this big shows the dialog again.
+  static const Duration _noticeChangeThreshold = Duration(minutes: 2);
+
   static int? _cachedMs;
 
   static int get offsetMs =>
@@ -78,8 +81,18 @@ class ClockOffset {
       _maybeNotice();
       return false;
     }
+    final int previousMs = offsetMs;
     _cachedMs = newMs;
     unawaited(setIntPref(IntPrefsEnum.clockOffsetMs, newMs));
+    // The clock's error moved by more than two minutes since it was last
+    // learnt — set to another wrong time, or wrong for the first time: the
+    // hasher is told again (James, 2026-10-01). Smaller moves are latency.
+    if (newMs != 0 &&
+        (newMs - previousMs).abs() >= _noticeChangeThreshold.inMilliseconds) {
+      unawaited(setBoolPref(BoolPrefsEnum.clockNoticeDialogShown, false));
+      _noticeTimer?.cancel();
+      _noticeTimer = null;
+    }
     // Once per wrong-clock EPISODE, not once per phone (James, 2026-10-01:
     // he fixed his clock, set it wrong again, and saw nothing). The clock
     // being right again ends the episode, so the next one is told too.
