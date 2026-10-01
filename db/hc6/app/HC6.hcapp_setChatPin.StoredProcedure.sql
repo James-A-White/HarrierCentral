@@ -1,10 +1,11 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_setChatPin]
     @deviceId    UNIQUEIDENTIFIER = NULL,
     @accessToken NVARCHAR(1000)   = NULL,
-    -- Exactly ONE of these three names the chat being pinned.
+    -- Exactly ONE of these four names the chat being pinned.
     @eventId     UNIQUEIDENTIFIER = NULL,
     @kennelId    UNIQUEIDENTIFIER = NULL,
     @roomType    INT              = NULL,
+    @threadId    UNIQUEIDENTIFIER = NULL,   -- a direct message (2026-10-01)
     @pinned      SMALLINT         = NULL   -- 1 pin, 0 unpin
 AS
 -- =====================================================================
@@ -17,6 +18,8 @@ AS
 --     run     HasherEventMap.Pinned    0/1
 --     kennel  HasherKennelMap.Pinned   0/1, NULL = default (home kennel)
 --     room    HC.Hasher.Unpinned*Rooms bit SET means "turned off"
+--     DM      HasherFriendMap.Pinned   0/1 on the caller's own row for the
+--             thread (2026-10-01) — never created here: no row, no DM
 --
 --   MISSING ROWS ARE CREATED (James, 2026-09-14: "that's not a problem...
 --   just make one"). 42% of run chats that people have read have no HEM row,
@@ -69,16 +72,29 @@ END
 DECLARE @targets INT =
       CASE WHEN @eventId  IS NOT NULL THEN 1 ELSE 0 END
     + CASE WHEN @kennelId IS NOT NULL THEN 1 ELSE 0 END
-    + CASE WHEN @roomType IS NOT NULL THEN 1 ELSE 0 END;
+    + CASE WHEN @roomType IS NOT NULL THEN 1 ELSE 0 END
+    + CASE WHEN @threadId IS NOT NULL THEN 1 ELSE 0 END;
 
 IF (@targets <> 1 OR @pinned IS NULL OR @pinned NOT IN (0, 1))
 BEGIN
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Bad pin request',
-            'Expected exactly one of eventId/kennelId/roomType and pinned in (0,1)',
+            'Expected exactly one of eventId/kennelId/roomType/threadId and pinned in (0,1)',
             @procName, @userId);
     SELECT 0 AS Success, 'That chat could not be pinned.' AS ErrorMessage;
+    RETURN;
+END
+
+-- A DM is pinned on the caller's own row for it; no row means not their DM.
+IF (@threadId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap f
+                                          WHERE f.UserId = @userId AND f.ThreadId = @threadId))
+BEGIN
+    SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'No such conversation',
+            CONCAT('thread=', CAST(@threadId AS NVARCHAR(40))), @procName, @userId);
+    SELECT 0 AS Success, 'That conversation could not be found.' AS ErrorMessage;
     RETURN;
 END
 
@@ -127,6 +143,14 @@ BEGIN TRY
             INSERT HC.HasherKennelMap (UserId, KennelId, Pinned)
             VALUES (@userId, @kennelId, @pinned);
     END
+
+    -- ---------------------------------------------------------------
+    -- A DIRECT MESSAGE: the caller's own row only — the other side's pin is
+    -- theirs.
+    -- ---------------------------------------------------------------
+    IF (@threadId IS NOT NULL)
+        UPDATE HC.HasherFriendMap SET Pinned = @pinned
+         WHERE UserId = @userId AND ThreadId = @threadId;
 
     -- ---------------------------------------------------------------
     -- A ROOM. The mirrors store DEVIATIONS, so pinning CLEARS the bit and

@@ -346,7 +346,7 @@ SELECT
     o.Photo                                        AS KennelLogo,
     ISNULL(t.MsgCount, 0)                          AS MessageCount,
     COALESCE(t.LastMessageAt, f.FriendSince)       AS LastMessageAt,
-    CAST(0 AS SMALLINT)                            AS Pinned,
+    CAST(f.Pinned AS SMALLINT)                     AS Pinned,   -- the hasher's own pin (2026-10-01)
     CAST(NULL AS INT)                              AS RoomType,
     CAST(NULL AS NVARCHAR(500))                    AS RoomIcon,
     f.ThreadId                                     AS ThreadId,

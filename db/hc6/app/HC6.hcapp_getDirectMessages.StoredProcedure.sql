@@ -118,6 +118,8 @@ SELECT
     h.DisplayName                                            AS otherDisplayName,
     h.Photo                                                  AS otherPhoto,
     CAST(CASE WHEN @minePref = 3 THEN 1 ELSE 0 END AS SMALLINT) AS muted,
+    (SELECT CAST(f.Pinned AS SMALLINT) FROM HC.HasherFriendMap f
+      WHERE f.UserId = @userId AND f.ThreadId = @threadId)  AS pinned,
     -- How far the OTHER hasher has read this thread (E9.F1.S24 read
     -- receipts): my messages at or below it show as read. Their badge row
     -- is the record — written by this same SP's @markRead when they open it.

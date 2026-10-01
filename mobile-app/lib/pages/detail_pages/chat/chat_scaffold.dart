@@ -146,6 +146,34 @@ class _ChatScaffoldState extends State<ChatScaffold> {
 
   // ── DM menu ───────────────────────────────────────────────────────────────
 
+  /// Pin or unpin this conversation in the Chats list. Optimistic, put back
+  /// on failure; the list's badges refresh so it re-sorts.
+  Future<void> _toggleDmPin(DmThreadState dm) async {
+    if (_saving) return;
+    final bool next = !dm.pinned.value;
+    dm.pinned.value = next;
+    setState(() => _saving = true);
+    final bool ok = await ChatPinService.setPin(
+      threadId: dm.threadId,
+      pinned: next,
+    );
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (!ok) {
+      dm.pinned.value = !next;
+      hcSnack(
+        'That conversation could not be ${next ? 'pinned' : 'unpinned'}. '
+        'Please try again.',
+        error: true,
+      );
+      return;
+    }
+    hcSnack(next ? 'Pinned to the top of Chats' : 'Unpinned');
+    if (Get.isRegistered<NotificationService>()) {
+      unawaited(Get.find<NotificationService>().getEventChatMessageCounts());
+    }
+  }
+
   Future<void> _toggleMute(DmThreadState dm) async {
     if (_saving) return;
     final bool next = !dm.muted.value;
@@ -157,10 +185,7 @@ class _ChatScaffoldState extends State<ChatScaffold> {
     if (!mounted) return;
     setState(() => _saving = false);
     if (stored == null) {
-      hcSnack(
-        'That could not be saved. Please try again.',
-        error: true,
-      );
+      hcSnack('That could not be saved. Please try again.', error: true);
       return;
     }
     dm.muted.value = stored;
@@ -249,11 +274,14 @@ class _ChatScaffoldState extends State<ChatScaffold> {
       final bool muted = dm.muted.value;
       final bool known = dm.known.value;
       final bool canSend = dm.canSend.value;
+      final bool pinned = dm.pinned.value;
       return PopupMenuButton<String>(
         tooltip: 'Conversation options',
         icon: const Icon(Icons.more_vert, color: Colors.white),
         onSelected: (String key) {
           switch (key) {
+            case 'pin':
+              unawaited(_toggleDmPin(dm));
             case 'mute':
               unawaited(_toggleMute(dm));
             case 'block':
@@ -263,6 +291,18 @@ class _ChatScaffoldState extends State<ChatScaffold> {
           }
         },
         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+          // Pin, as rooms and kennel chats have — keeps this conversation at
+          // the top of Chats (James, 2026-10-01). Offered once the read has
+          // said which way it is.
+          if (known)
+            PopupMenuItem<String>(
+              value: 'pin',
+              enabled: !_saving,
+              child: ListTile(
+                leading: PinGlyph(pinned: !pinned, size: 22, color: hc_blue),
+                title: Text(pinned ? 'Unpin' : 'Pin', style: ts_titleBlack),
+              ),
+            ),
           // Mute is offered once the read has said which way it is, so the
           // label never flips a moment after it is shown.
           if (known)
@@ -346,7 +386,11 @@ class _ChatScaffoldState extends State<ChatScaffold> {
                     // so "pinned" looks like one thing across the app. An
                     // outline pin was too close to the filled one to tell
                     // apart at a glance.
-                    icon: PinGlyph(pinned: _pinned, size: 24, color: Colors.white),
+                    icon: PinGlyph(
+                      pinned: _pinned,
+                      size: 24,
+                      color: Colors.white,
+                    ),
                     onPressed: _saving ? null : () => unawaited(_togglePin()),
                   ),
               ],

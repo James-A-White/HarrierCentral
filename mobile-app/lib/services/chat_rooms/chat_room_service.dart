@@ -73,10 +73,13 @@ class ChatRoomService {
   /// [includeOptedOut] must be true for the settings console and false for
   /// the chat list. Opting out hides a room from the list, so without this
   /// the settings screen could not show it back — a one-way door.
-  static Future<List<ChatRoom>?> fetchRooms({bool includeOptedOut = false}) async {
+  static Future<List<ChatRoom>?> fetchRooms({
+    bool includeOptedOut = false,
+  }) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
     if (userId.isEmpty || deviceId.isEmpty) return null;
 
     final result = await ServiceCommon.sendHttpPost(() {
@@ -118,7 +121,8 @@ class ChatRoomService {
   }) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
     if (userId.isEmpty || deviceId.isEmpty) return false;
 
     final result = await ServiceCommon.sendHttpPost(() {
@@ -164,11 +168,13 @@ class ChatPinService {
     String? eventId,
     String? kennelId,
     int? roomType,
+    String? threadId,
     required bool pinned,
   }) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
     if (userId.isEmpty || deviceId.isEmpty) return false;
 
     final result = await ServiceCommon.sendHttpPost(() {
@@ -186,6 +192,8 @@ class ChatPinService {
         'eventId': ?eventId,
         'kennelId': ?kennelId,
         'roomType': ?roomType,
+        // A direct message (2026-10-01) — needs the SP that knows @threadId.
+        'threadId': ?threadId,
         'pinned': pinned ? 1 : 0,
       });
     });

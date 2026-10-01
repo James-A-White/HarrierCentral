@@ -440,8 +440,11 @@ class _ChatRows {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        // Pinned shows the same glyph as a pinned room or kennel chat.
         trailing: s.badgeCount > 0
             ? _unreadBadge(s.badgeCount)
+            : s.pinned
+            ? const PinGlyph(pinned: true, size: 18, color: Colors.black54)
             : const Icon(Icons.chevron_right, color: Colors.black38),
         onTap: () => unawaited(
           ChatPageController.openDirectMessage(

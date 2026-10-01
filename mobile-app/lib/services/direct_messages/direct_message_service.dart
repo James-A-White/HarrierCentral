@@ -245,6 +245,9 @@ class DmThreadState {
   /// below it are read (E9.F1.S24). 0 until the reader says.
   final RxInt otherReadSequenceCount = 0.obs;
 
+  /// Pinned to the top of this hasher's Chats list (2026-10-01).
+  final RxBool pinned = false.obs;
+
   /// Set once hcapp_getDirectMessages has answered, so the menu can show a
   /// Mute state it actually knows rather than a guess.
   final RxBool known = false.obs;
@@ -263,6 +266,7 @@ class DmThreadState {
     if (photo is String) otherPhoto.value = photo;
     final Object? read = row['otherReadSequenceCount'];
     if (read is num) otherReadSequenceCount.value = read.toInt();
+    pinned.value = row['pinned'] == 1 || row['pinned'] == true;
     known.value = true;
   }
 }
