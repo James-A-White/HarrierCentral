@@ -125,3 +125,11 @@ web /api/run-photos fetch failed	noise	web server → API fetch blip; one at 16:
 web /api/packtrack fetch failed	noise	web server → API fetch blip; one at 16:15 2026-09-27 alongside /api/run-photos — transient
 app NET closed www.berlin-h3.eu	noise	a kennel's own externally hosted image (berlin-h3.eu) dropped the connection
 web packtrack-client/packtrack Maximum call stack size exceeded	noise	puppeteer MCP console.log recursion while Claude tested /bdh3-uk/200 (2026-09-28 09:50) — the test tool, not the page
+app FLUTTER type 'FlexParentData' is not a subtype of type 'StackParentData' in type cast @ flutter Positioned.applyParentData	fixed:1429	Grey chat screen on 1428: reply bar wrapped the Composer (a Positioned) in a Column; fixed by Composer.topWidget (2026-10-01)
+app ASYNC Null check operator used on a null value @ hc_snack.dart hcSnack	fixed:1429	1428's clock notice called hcSnack at boot before any overlay existed; 1429 waits for Get.overlayContext (2026-10-01)
+app FLUTTER Expected: false @ package:matcher fail	noise	An integration-test assertion from a simulator run on dev builds, not a user session
+app CLOCK phone clock N minutes behind of server UTC; token offset now 1173398ms	noise	E1.F1.S7 clock correction working (James testing a wrong clock); informational, logged at error level until the line is downgraded
+app CLOCK phone clock N minutes behind server UTC; token offset now 400447ms	noise	E1.F1.S7 clock correction working (James testing)
+app CLOCK phone clock N minutes behind server UTC; token offset now 517693ms	noise	E1.F1.S7 clock correction working (James testing)
+app CLOCK phone clock N second ahead server UTC; token offset now 0ms	noise	E1.F1.S7 clock correction resetting to zero after the clock was fixed
+app CLOCK phone clock N seconds ahead server UTC; token offset now 0ms	noise	E1.F1.S7 clock correction resetting to zero after the clock was fixed
