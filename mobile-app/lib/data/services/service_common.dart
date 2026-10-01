@@ -200,6 +200,10 @@ class ServiceCommon {
       if (isSuccess) {
         // A round trip completed: the phone's network is awake again.
         _wakeUnsettled = false;
+        // Every reply carries the server's clock; learn the phone's offset
+        // before a token ever fails, so PackTrack stamps and tokens are right
+        // from the first call (E1.F1.S7). Cheap: writes only on a change.
+        ClockOffset.learnFrom(response.headers['date']);
         return response.body;
       }
 

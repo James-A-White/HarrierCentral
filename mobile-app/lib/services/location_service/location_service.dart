@@ -1042,7 +1042,9 @@ class LocationService extends GetxService with WidgetsBindingObserver {
     TrailSlot slot, {
     String? label,
   }) async {
-    final tsMs = DateTime.now().millisecondsSinceEpoch;
+    // Server time, not the phone's: a phone with a wrong clock would put its
+    // marks and its trail minutes away from everyone else's (E1.F1.S7).
+    final tsMs = ClockOffset.nowUtc().millisecondsSinceEpoch;
     final position = await freshFix();
     return PendingSlotMark(
       position: position,
@@ -1402,7 +1404,9 @@ class LocationService extends GetxService with WidgetsBindingObserver {
 
       // A deferred-commit mark carries its capture-time timestamp so it lands
       // on the timeline at the moment of the tap, not the card's dismissal.
-      final tsMs = atTsMs ?? DateTime.now().millisecondsSinceEpoch;
+      // Server time, not the phone's (E1.F1.S7): with a wrong phone clock the
+      // trail would replay minutes away from the rest of the pack.
+      final tsMs = atTsMs ?? ClockOffset.nowUtc().millisecondsSinceEpoch;
       final point = UserEventLocation(
         ts: pad19(tsMs),
         lat: double.parse(lat.toStringAsFixed(5)),

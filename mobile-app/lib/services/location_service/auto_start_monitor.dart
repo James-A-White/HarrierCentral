@@ -85,7 +85,7 @@ class AutoStartMonitor {
     _isHare = isHare;
     _anchor = hasStart ? latlng.LatLng(startLat, startLng) : null;
     _detector = AutoStartDetector(anchor: _anchor);
-    _armedAtMs = DateTime.now().millisecondsSinceEpoch;
+    _armedAtMs = ClockOffset.nowUtc().millisecondsSinceEpoch;
     armed.value = true;
     await _save();
     _updateStatus();
@@ -122,7 +122,7 @@ class AutoStartMonitor {
     final AutoStartDetector? d = _detector;
     if (d == null) return const <AutoStartFix>[];
     final int since = _armedAtMs ??
-        DateTime.now().millisecondsSinceEpoch - 15 * 60 * 1000;
+        ClockOffset.nowUtc().millisecondsSinceEpoch - 15 * 60 * 1000;
     return d.pointsFrom(since);
   }
 
@@ -152,7 +152,8 @@ class AutoStartMonitor {
         lng: p.longitude,
         acc: p.accuracy,
         alt: p.altitude,
-        tsMs: p.timestamp.millisecondsSinceEpoch,
+        // The fix's time on the server's clock, like every other point (E1.F1.S7).
+        tsMs: p.timestamp.millisecondsSinceEpoch + ClockOffset.offsetMs,
       ),
     );
     final bool wasArrived = status.value.startsWith('At the start');
