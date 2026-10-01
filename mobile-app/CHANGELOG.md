@@ -1,3 +1,10 @@
+## 3.1.8+1435 (2026-10-01)
+All beta testers (TestFlight Hash beta testers + Play internal), the production candidate.
+### Fixes
+- **iPhone trails keep every point again**: 1433-1434 kept at most one point per 15 seconds on iPhone too; the 15-second spacing is now Android-only, and iPhone records a point every 5 m of movement.
+### Improvements
+- The green point-count chip beside the chat bubble while tracking is gone — the Live Run page has the marks and the GPS signal light.
+
 ## 3.1.8+1434 (2026-10-01)
 iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
 ### New Features
