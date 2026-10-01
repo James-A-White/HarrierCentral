@@ -80,10 +80,17 @@ class ClockOffset {
     }
     _cachedMs = newMs;
     unawaited(setIntPref(IntPrefsEnum.clockOffsetMs, newMs));
+    // Once per wrong-clock EPISODE, not once per phone (James, 2026-10-01:
+    // he fixed his clock, set it wrong again, and saw nothing). The clock
+    // being right again ends the episode, so the next one is told too.
+    if (newMs == 0) {
+      unawaited(setBoolPref(BoolPrefsEnum.clockNoticeDialogShown, false));
+    }
     // A trace, not an error: a correction is the feature working, and an
     // [ERROR] line with the offset in it looked NEW to log triage every time.
     BootLogger.logBreadcrumb(
-      '[CLOCK] phone clock ${describe(-delta)} server UTC; '
+      '[CLOCK] phone clock ${describe(-delta)}'
+      '${delta.isNegative ? ' of' : ''} server UTC; '
       'offset ${newMs == 0 ? 'cleared' : 'applied'}',
     );
     _maybeNotice();
