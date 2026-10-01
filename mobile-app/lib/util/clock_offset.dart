@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show HttpDate;
 
 import 'package:harrier_central/imports.dart';
@@ -79,21 +80,47 @@ class ClockOffset {
     unawaited(setIntPref(IntPrefsEnum.clockOffsetMs, newMs));
     BootLogger.logError(
       '[ERROR][CLOCK]',
-      'phone clock ${describe(-delta)} of server UTC; token offset now ${newMs}ms',
+      'phone clock ${describe(-delta)} server UTC; token offset now ${newMs}ms',
       null,
     );
-    if (newMs != 0 &&
-        getBoolPref(BoolPrefsEnum.clockOffsetNoticeShown) != true) {
-      unawaited(setBoolPref(BoolPrefsEnum.clockOffsetNoticeShown, true));
-      hcSnack(noticeFor(-delta), seconds: 12);
+    if (newMs != 0 && getBoolPref(BoolPrefsEnum.clockNoticeShown) != true) {
+      _showNoticeWhenReady(noticeFor(-delta));
     }
     return true;
   }
 
+  static Timer? _noticeTimer;
+
+  /// The offset is usually learnt from the first reply at boot, before the
+  /// app has a screen to draw on: 1428 called the snackbar then, GetX threw
+  /// a null-check inside it, and the flag was already set, so James never saw
+  /// the notice (2026-10-01). So: wait until there is an overlay, show it,
+  /// and only THEN record that it was shown. Gives up after two minutes and
+  /// tries again on the next correction.
+  static void _showNoticeWhenReady(String text) {
+    _noticeTimer?.cancel();
+    int tries = 0;
+    _noticeTimer = Timer.periodic(const Duration(seconds: 2), (Timer t) {
+      tries++;
+      if (Get.overlayContext == null) {
+        if (tries >= 60) t.cancel();
+        return;
+      }
+      t.cancel();
+      try {
+        hcSnack(text, seconds: 12);
+        unawaited(setBoolPref(BoolPrefsEnum.clockNoticeShown, true));
+      } catch (e, s) {
+        BootLogger.logError('[ERROR][CLOCK]', 'notice failed: $e', s);
+      }
+    });
+  }
+
   /// [phoneMinusServer] positive = the phone is ahead.
   static String noticeFor(Duration phoneMinusServer) =>
-      "Your phone's clock is ${describe(phoneMinusServer)} of Coordinated "
-      'Universal Time. If you are experiencing problems with some of your '
+      "Your phone's clock is ${describe(phoneMinusServer)}"
+      "${phoneMinusServer.isNegative ? '' : ' of'} Coordinated Universal Time. "
+      'If you are experiencing problems with some of your '
       'apps, you may want to consider setting your phone to set the clock '
       'automatically from an internet time source.';
 

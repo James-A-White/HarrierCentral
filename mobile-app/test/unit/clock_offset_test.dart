@@ -20,6 +20,14 @@ void main() {
       '1 hour and 1 minute behind',
     );
   });
+  test('behind reads "behind Coordinated", never "behind of"', () {
+    expect(
+      ClockOffset.noticeFor(const Duration(minutes: -19)),
+      startsWith(
+        "Your phone's clock is 19 minutes behind Coordinated Universal Time.",
+      ),
+    );
+  });
   test('the notice reads as James wrote it', () {
     expect(
       ClockOffset.noticeFor(const Duration(hours: 1, minutes: 36)),
