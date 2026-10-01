@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:io' show HttpDate;
+
 
 import 'package:harrier_central/imports.dart';
 
@@ -75,7 +74,12 @@ class ClockOffset {
         '[CLOCK] phone is ${describe(-delta)} — beyond ±12 h, not corrected',
       );
     }
-    if ((newMs - offsetMs).abs() <= _hysteresis.inMilliseconds) return false;
+    if ((newMs - offsetMs).abs() <= _hysteresis.inMilliseconds) {
+      // Unchanged — but a correction already active whose notice was never
+      // seen (1428's notice failed at boot) still gets it once.
+      _maybeNotice();
+      return false;
+    }
     _cachedMs = newMs;
     unawaited(setIntPref(IntPrefsEnum.clockOffsetMs, newMs));
     BootLogger.logError(
@@ -83,10 +87,15 @@ class ClockOffset {
       'phone clock ${describe(-delta)} server UTC; token offset now ${newMs}ms',
       null,
     );
-    if (newMs != 0 && getBoolPref(BoolPrefsEnum.clockNoticeShown) != true) {
-      _showNoticeWhenReady(noticeFor(-delta));
-    }
+    _maybeNotice();
     return true;
+  }
+
+  /// Show the notice once, for the offset in force, if it has not been seen.
+  static void _maybeNotice() {
+    if (offsetMs == 0 || _noticeTimer != null) return;
+    if (getBoolPref(BoolPrefsEnum.clockNoticeShown) == true) return;
+    _showNoticeWhenReady(Duration(milliseconds: -offsetMs));
   }
 
   static Timer? _noticeTimer;
@@ -97,7 +106,7 @@ class ClockOffset {
   /// the notice (2026-10-01). So: wait until there is an overlay, show it,
   /// and only THEN record that it was shown. Gives up after two minutes and
   /// tries again on the next correction.
-  static void _showNoticeWhenReady(String text) {
+  static void _showNoticeWhenReady(Duration phoneMinusServer) {
     _noticeTimer?.cancel();
     int tries = 0;
     _noticeTimer = Timer.periodic(const Duration(seconds: 2), (Timer t) {
@@ -107,13 +116,87 @@ class ClockOffset {
         return;
       }
       t.cancel();
+      _noticeTimer = null;
       try {
-        hcSnack(text, seconds: 12);
         unawaited(setBoolPref(BoolPrefsEnum.clockNoticeShown, true));
+        unawaited(_showDialog(phoneMinusServer));
       } catch (e, s) {
         BootLogger.logError('[ERROR][CLOCK]', 'notice failed: $e', s);
       }
     });
+  }
+
+  static const MethodChannel _settings = MethodChannel('harrier_central/power');
+
+  /// Where the setting lives — iOS will not let an app open its Date & Time
+  /// page (a private URL gets an App Store rejection), so on iPhone the
+  /// path is spelled out; Android gets a button straight to it.
+  static String get _whereToFix => Platform.isIOS
+      ? 'Settings › General › Date & Time › Set Automatically'
+      : 'Settings › System › Date & time › Set time automatically';
+
+  /// A modal, not a toast (James, 2026-10-01: "give people a chance to
+  /// read and understand it").
+  static Future<void> _showDialog(Duration phoneMinusServer) {
+    return Get.dialog<void>(
+      AlertDialog(
+        title: Text(
+          "Your phone's clock is off",
+          style: ts_alertDialogTitle,
+          textAlign: TextAlign.center,
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                noticeFor(phoneMinusServer),
+                style: ts_alertDialogBody,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'To fix it: $_whereToFix.',
+                style: ts_alertDialogBody.copyWith(fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Harrier Central has corrected for it, so the app keeps working.',
+                style: ts_alertDialogBody,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: <Widget>[
+          if (Platform.isAndroid)
+            ElevatedButton(
+              key: const Key('clock-open-settings'),
+              onPressed: () {
+                hcPop<void>();
+                unawaited(
+                  _settings
+                      .invokeMethod<void>('openDateSettings')
+                      .catchError((Object _) {}),
+                );
+              },
+              child: Text(
+                'Open Date & time',
+                style: ts_button,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          TextButton(
+            key: const Key('clock-ok'),
+            onPressed: () => hcPop<void>(),
+            child: Text('OK', style: ts_button, textAlign: TextAlign.center),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
   }
 
   /// [phoneMinusServer] positive = the phone is ahead.

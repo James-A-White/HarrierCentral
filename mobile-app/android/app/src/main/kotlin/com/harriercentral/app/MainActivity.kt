@@ -168,6 +168,15 @@ class MainActivity : FlutterActivity() {
                         }
                         result.success(null)
                     }
+                    // The phone's own Date & time page (E1.F1.S7 clock notice).
+                    "openDateSettings" -> {
+                        try {
+                            startActivity(Intent(android.provider.Settings.ACTION_DATE_SETTINGS))
+                        } catch (_: Exception) {
+                            startActivity(Intent(android.provider.Settings.ACTION_SETTINGS))
+                        }
+                        result.success(null)
+                    }
                     "openBatterySaverSettings" -> {
                         try {
                             startActivity(Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS))
