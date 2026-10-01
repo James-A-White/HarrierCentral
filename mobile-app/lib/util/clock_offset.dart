@@ -25,14 +25,35 @@ class ClockOffset {
   static const Duration _ignoreBelow = Duration(seconds: 30);
   static const Duration _cap = Duration(hours: 12);
 
+  /// PackTrack uses the correction only beyond this (James, 2026-10-01): a
+  /// smaller offset is within what network latency and the Date header's
+  /// one-second rounding could make up, and applying it would add jitter to
+  /// a trail. Tokens use any offset over [_ignoreBelow], because the
+  /// server's tolerance is only a minute or so.
+  static const Duration _trackThreshold = Duration(minutes: 2);
+
+  /// A new measurement replaces the stored offset only when it differs by
+  /// more than this — so latency cannot make the offset creep reply by reply.
+  static const Duration _hysteresis = Duration(seconds: 30);
+
   static int? _cachedMs;
 
   static int get offsetMs =>
       _cachedMs ??= getIntPref(IntPrefsEnum.clockOffsetMs) ?? 0;
 
-  /// Now, in UTC, by the server's clock as best this phone knows it.
+  /// Now, in UTC, by the server's clock as best this phone knows it — for
+  /// minting tokens.
   static DateTime nowUtc() =>
       DateTime.now().toUtc().add(Duration(milliseconds: offsetMs));
+
+  /// The offset PackTrack applies: the learned one when it is over two
+  /// minutes, otherwise none — the phone's own clock, as before.
+  static int get trackOffsetMs =>
+      offsetMs.abs() > _trackThreshold.inMilliseconds ? offsetMs : 0;
+
+  /// Now, for stamping a track point or mark (see [trackOffsetMs]).
+  static DateTime trackNowUtc() =>
+      DateTime.now().toUtc().add(Duration(milliseconds: trackOffsetMs));
 
   /// Learn from a reply's `Date` header. Returns true when the stored offset
   /// changed (the caller retries either way).
@@ -53,7 +74,7 @@ class ClockOffset {
         '[CLOCK] phone is ${describe(-delta)} — beyond ±12 h, not corrected',
       );
     }
-    if (newMs == offsetMs) return false;
+    if ((newMs - offsetMs).abs() <= _hysteresis.inMilliseconds) return false;
     _cachedMs = newMs;
     unawaited(setIntPref(IntPrefsEnum.clockOffsetMs, newMs));
     BootLogger.logError(
