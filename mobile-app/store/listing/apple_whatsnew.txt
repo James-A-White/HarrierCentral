@@ -1,26 +1,27 @@
-Harrier Central 3.1 — everything since 3.0.12, in one update.
+Harrier Central 3.1.8 — everything since 3.1.0, in one update.
 
-POST THE RUN WHERE YOUR KENNEL ALREADY TALKS
-Setting a trail? Post it straight into your kennel's WhatsApp group from the run's share sheet — the notice is written for you, WhatsApp opens on the group picker, one tap sends. Telegram, Signal, Messenger and WeChat work too, and your kennel picks which one the button opens. Kennels that publish a group invite get a "Join the group" button, and a hashruns.org run link now opens the run in the app instead of the browser.
+MESSAGE ANOTHER HASHER
+Long-press anyone's message and choose "Message" to start a private conversation. You decide who can message you — friends only (the default), anyone, or nobody — and a request waits at the top of Chats for you to accept or decline. Pin the conversations you care about, and see when your message has been read.
 
-BRING YOUR RUNNING HISTORY WITH YOU
-Import a whole Strava or Garmin export and the app works out which of those tracks were hashes, matches them to the right runs and adds them to the PackTrack — so trails you recorded years ago before you ever had this app are on the map with everyone else's. A single GPX, TCX or FIT file works the same way, and your old runs join your run counts.
+REPLY, REACT, SHARE
+Reply to a message and your answer carries a quote of it. React with a thumbs up, a heart, a laugh, a beer, a runner or a flame. Send a photo, your location or a dropped pin, copy any message, and delete your own for everyone. Block someone and you will not see them in any chat; report a message and it goes to Harrier Central's reviewers.
 
-CHAT THAT REACHES YOUR PHONE
-Your kennel has a chat, and so does every role you hold — Grand Masters, Hash Cash, Hash Flash and the rest. Messages arrive as notifications, the bubble on Hash Runs counts what you have not read, and you choose per room whether to be notified, kept quiet or left alone. Pin the conversations you care about to the top.
+CHATS, ONE TAP AWAY
+The chat bubble opens Chats over whatever screen you are on, and the app icon shows how many messages you have not read.
 
-YOUR TRAILS, ON YOUR PHONE
-Runs you tracked now come down with your data instead of being fetched, so they draw the moment you open them and work with no signal at all. The trails map totals what it is showing — distance, time and pace across every trail on screen.
+AUTO START
+Arm it before the run and put your phone away: your trail starts by itself when you set off — your phone notices you running, and never starts it because you drove off. Press Start yourself and nothing you ran before is lost.
 
-FIND MY PHOTOS
-The photos of a run are already on your phone, buried in a camera roll with thousands of others. Find my photos picks out the ones taken on the trail, you choose which to share, and the pack sees them. Hash Flashes can review a whole kennel's photos in one place, and anyone can take their own photo back out of public view at any time.
+THE SAME TRAIL ON EVERY SETTING
+Every tracking setting now records the same detailed trail. The setting only decides how often your position is sent to the pack while your phone is in your pocket — sending is what uses the battery — and with the app open you are always up to date.
 
-EVERY PAST RUN, AT A GLANCE
-A past run's card now shows what actually happened on it — the trail and how many ran it, the photos, the chat, the down-downs — each with a count, so you can see which runs have something waiting without opening them. Add your own notes to any run, and share them with your kennel if you want to.
+WHEN YOU NEED HELP
+Send Help rings and buzzes the phones of the runners around you, even in a pocket. Before you start, the app checks the things that spoil a trail — location permission, battery saver — and a signal light on the run page shows how good your GPS is.
 
-SIGN IN WITHOUT WAITING FOR A CODE
-Use the passkey you made on hashruns.org, or point your camera at the QR code on your computer. My Account lists every device that can reach your account, what it was running and when it last signed in, and you can sign any of them out.
+A PHONE WITH THE WRONG TIME
+If your phone's clock is wrong, Harrier Central now corrects for it and keeps working, and tells you how to fix it.
 
-Plus a great deal of work on the unglamorous parts: check-in, payments and the pack list keep working when the signal drops, and your recorded GPS trail is a lot truer to the ground than it was.
+PHOTOS ON THE MAP
+Tap a photo on the map, then "Map" to see exactly where it was taken.
 
 On On!

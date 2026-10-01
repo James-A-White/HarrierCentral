@@ -8,7 +8,7 @@ is reviewable and the two stores can be compared side by side.
 | `play_short.txt` | Play short description | **80** chars |
 | `play_full.txt` | Play full description | 4000 chars |
 | `play_notes.txt` | Play release notes, per release | **500** chars — the tight one |
-| `apple_whatsnew.txt` | App Store "What's New in This Version" | 4000 chars |
+| `apple_whatsnew.txt` | App Store "What's New in This Version" | 4000 chars, **no emoji or symbols such as ✓** — Apple refuses them (409 INVALID_CHARACTERS, 2026-10-01) |
 
 The App Store *description* is not kept here: it is edited per version in App
 Store Connect and was already current at 3.0.
