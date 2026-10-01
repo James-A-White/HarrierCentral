@@ -1,3 +1,11 @@
+## 3.1.8+1432 (2026-10-01)
+iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
+### New Features
+- **Read receipts in direct messages**: your messages show ✓✓ in green once the other person has read them, and update while you watch.
+- **Pin a direct message**: Pin / Unpin in a conversation's ⋮ menu keeps it at the top of Chats, as rooms and kennel chats already could.
+### Improvements
+- The clock-correction note in the diagnostic log is a trace line, not an error.
+
 ## 3.1.8+1431 (2026-10-01)
 iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
 ### Fixes

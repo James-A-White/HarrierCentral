@@ -1,3 +1,7 @@
+1.0.61+69
+    • DM read receipts: getDirectMessages' API-only rowset of the other hasher's
+      devices becomes a silent read_receipt push; the rowset is stripped.
+
 1.0.61+68
     • Chat reactions: reactToChatMessage sends the message author's phones a silent
       data push (Type=reaction) so an open thread refreshes; API-only rowsets stripped.
