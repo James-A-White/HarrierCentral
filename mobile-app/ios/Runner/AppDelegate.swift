@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
 import MetricKit
+import CoreMotion
 import app_links
 
 @main
@@ -79,6 +80,11 @@ import app_links
           result(FlutterMethodNotImplemented)
         }
       }
+    }
+
+    // Motion activity for auto start (E5.F1.S15) — see MotionActivityBridge.
+    if let controller = window?.rootViewController as? FlutterViewController {
+      MotionActivityBridge.shared.start(messenger: controller.binaryMessenger)
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -266,5 +272,73 @@ final class MetricKitReporter: NSObject, MXMetricManagerSubscriber {
     }
     try? FileManager.default.removeItem(at: url)
     return content.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
+  }
+}
+
+/// Core Motion activity for auto start's motion trigger (E5.F1.S15). The
+/// motion coprocessor classifies the phone's movement for almost no battery;
+/// this passes each change to Dart as {type, confidence}. Started only while
+/// auto start is armed. The Motion & Fitness prompt appears on the first
+/// start — iOS asks by itself, no permission plugin involved.
+final class MotionActivityBridge: NSObject, FlutterStreamHandler {
+  static let shared = MotionActivityBridge()
+  private let manager = CMMotionActivityManager()
+  private var sink: FlutterEventSink?
+  private var running = false
+
+  func start(messenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(name: "harrier_central/activity", binaryMessenger: messenger)
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard let self = self else { return result(false) }
+      switch call.method {
+      case "start": result(self.startUpdates())
+      case "stop": self.stopUpdates(); result(nil)
+      default: result(FlutterMethodNotImplemented)
+      }
+    }
+    FlutterEventChannel(name: "harrier_central/activity/events", binaryMessenger: messenger)
+      .setStreamHandler(self)
+  }
+
+  func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+    sink = events
+    return nil
+  }
+
+  func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    sink = nil
+    return nil
+  }
+
+  private func startUpdates() -> Bool {
+    guard CMMotionActivityManager.isActivityAvailable() else { return false }
+    let status = CMMotionActivityManager.authorizationStatus()
+    if status == .denied || status == .restricted { return false }
+    if running { return true }
+    running = true
+    manager.startActivityUpdates(to: .main) { [weak self] activity in
+      guard let a = activity, let sink = self?.sink else { return }
+      let type: String
+      if a.automotive { type = "in_vehicle" }
+      else if a.running { type = "running" }
+      else if a.walking { type = "walking" }
+      else if a.cycling { type = "cycling" }
+      else if a.stationary { type = "still" }
+      else { type = "unknown" }
+      let confidence: Int
+      switch a.confidence {
+      case .high: confidence = 90
+      case .medium: confidence = 60
+      default: confidence = 30
+      }
+      sink(["type": type, "confidence": confidence])
+    }
+    return true
+  }
+
+  private func stopUpdates() {
+    guard running else { return }
+    manager.stopActivityUpdates()
+    running = false
   }
 }

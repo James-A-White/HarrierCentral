@@ -23,6 +23,9 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <!-- firebase_messaging: runtime notification permission on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Auto start's motion trigger (E5.F1.S15): walking / running / in a vehicle. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
     <!-- No READ_MEDIA_IMAGES / READ_MEDIA_VIDEO. Play rejected 1312 on
          2026-08-29 for requesting broad media access where the system photo
          picker suffices. It does: image_picker now uses the Android photo

@@ -1,6 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/location_service/auto_start_detector.dart';
+import 'package:harrier_central/services/location_service/motion_activity.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 /// How long before a run's start auto-start may be armed.
@@ -23,6 +24,11 @@ const Duration kAutoStartPreciseBefore = Duration(minutes: 5);
 ///   without one anchors on the first fix, so a hare arms where they start.
 /// * Disarms itself: the pack if not at (or within 1 km of) the start by
 ///   T+90, anyone by T+2h.
+/// * The phone's motion sensing (E5.F1.S15, 2026-10-01) can start it sooner:
+///   after arriving, running for 20 s — or walking for 20 s more than 100 m
+///   from the start — sets off; being in a vehicle vetoes any start, the GPS
+///   rule's too. Permission refused or no sensor: the GPS rule alone, as
+///   before. See [MotionStartRule].
 ///
 /// Owned by [LocationService], like the On-Inn auto-stop monitor.
 class AutoStartMonitor {
@@ -41,6 +47,8 @@ class AutoStartMonitor {
   bool _isHare = false;
   latlng.LatLng? _anchor;
   AutoStartDetector? _detector;
+  MotionStartRule? _motion;
+  MotionKind? _lastMotionKind;
   Timer? _tick;
 
   String? get eventId => _eventId;
@@ -78,15 +86,21 @@ class AutoStartMonitor {
     bool setRsvp = true,
   }) async {
     final bool hasStart =
-        startLat != null && startLng != null && (startLat != 0 || startLng != 0);
+        startLat != null &&
+        startLng != null &&
+        (startLat != 0 || startLng != 0);
     _eventId = normalizeUuid(eventId);
     _eventName = eventName;
     _startGmt = startGmt.toUtc();
     _isHare = isHare;
     _anchor = hasStart ? latlng.LatLng(startLat, startLng) : null;
     _detector = AutoStartDetector(anchor: _anchor);
+    _motion = MotionStartRule();
+    _lastMotionKind = null;
     _armedAtMs = ClockOffset.trackNowUtc().millisecondsSinceEpoch;
     armed.value = true;
+    // Asked here, on the Live Run page, so the permission prompt has a screen.
+    unawaited(MotionActivityService.start(_onMotion));
     await _save();
     _updateStatus();
     _startTick();
@@ -121,7 +135,8 @@ class AutoStartMonitor {
   List<AutoStartFix> takeRingForManualStart() {
     final AutoStartDetector? d = _detector;
     if (d == null) return const <AutoStartFix>[];
-    final int since = _armedAtMs ??
+    final int since =
+        _armedAtMs ??
         ClockOffset.trackNowUtc().millisecondsSinceEpoch - 15 * 60 * 1000;
     return d.pointsFrom(since);
   }
@@ -133,8 +148,12 @@ class AutoStartMonitor {
     _tick?.cancel();
     _tick = null;
     _detector = null;
+    _motion = null;
+    unawaited(MotionActivityService.stop());
     await setStringPref(StringPrefsEnum.autoStartJson, null);
-    BootLogger.logBreadcrumb('[AutoStart] disarmed ${reason ?? 'by the runner'}');
+    BootLogger.logBreadcrumb(
+      '[AutoStart] disarmed ${reason ?? 'by the runner'}',
+    );
     if (!_ls.joinRunTracking.value && !_ls.isPaused.value) {
       await _ls.refreshIdleStream();
     }
@@ -146,7 +165,10 @@ class AutoStartMonitor {
     if (!armed.value || !wantsPrecise) return;
     final AutoStartDetector? d = _detector;
     if (d == null) return;
+    final int nowMs = ClockOffset.trackNowUtc().millisecondsSinceEpoch;
     final int? startTs = d.add(
+      // In a vehicle: not setting off, however far from the start.
+      blocked: _motion?.vetoed(nowMs) ?? false,
       AutoStartFix(
         lat: p.latitude,
         lng: p.longitude,
@@ -158,13 +180,54 @@ class AutoStartMonitor {
     );
     final bool wasArrived = status.value.startsWith('At the start');
     if (d.hasArrived && !wasArrived) _updateStatus();
-    if (startTs != null) unawaited(_trigger(startTs));
+    if (startTs != null) {
+      unawaited(_trigger(startTs, via: 'gps'));
+      return;
+    }
+    _checkMotion(nowMs);
   }
 
-  Future<void> _trigger(int startTsMs) async {
+  /// A change in what the phone says the hasher is doing.
+  void _onMotion(MotionActivity a) {
+    final MotionStartRule? m = _motion;
+    if (!armed.value || m == null) return;
+    if (a.kind != _lastMotionKind) {
+      _lastMotionKind = a.kind;
+      BootLogger.logBreadcrumb(
+        '[AutoStart] motion: ${a.kind.name} (${a.confidence}%)',
+      );
+    }
+    m.onActivity(a.kind.name, a.confidence, a.tsMs);
+    _checkMotion(a.tsMs);
+  }
+
+  /// Asked on every fix and every motion change: has the motion rule seen
+  /// the hasher set off?
+  void _checkMotion(int nowMs) {
+    final MotionStartRule? m = _motion;
+    final AutoStartDetector? d = _detector;
+    if (!armed.value || m == null || d == null) return;
+    final List<AutoStartFix> ring = d.ring;
+    final latlng.LatLng? anchor = d.anchor;
+    final double? meters = (anchor == null || ring.isEmpty)
+        ? null
+        : const latlng.Distance().as(
+            latlng.LengthUnit.Meter,
+            anchor,
+            latlng.LatLng(ring.last.lat, ring.last.lng),
+          );
+    final int? startTs = m.check(
+      nowMs: nowMs,
+      arrived: d.hasArrived,
+      metersFromStart: meters,
+    );
+    if (startTs != null) unawaited(_trigger(startTs, via: 'motion'));
+  }
+
+  Future<void> _trigger(int startTsMs, {String via = 'gps'}) async {
     final String? eventId = _eventId;
     final AutoStartDetector? d = _detector;
-    if (eventId == null || d == null) return;
+    if (eventId == null || d == null || !armed.value) return;
     final List<AutoStartFix> backfill = d.pointsFrom(startTsMs);
     final String name = _eventName ?? 'the run';
     // Clear the armed state first: tracking owns the stream from here.
@@ -173,10 +236,12 @@ class AutoStartMonitor {
     _tick?.cancel();
     _tick = null;
     _detector = null;
+    _motion = null;
+    unawaited(MotionActivityService.stop());
     await setStringPref(StringPrefsEnum.autoStartJson, null);
 
     BootLogger.logBreadcrumb(
-      '[AutoStart] set off — tracking $eventId from '
+      '[AutoStart] set off (by $via) — tracking $eventId from '
       '${DateTime.fromMillisecondsSinceEpoch(startTsMs).toIso8601String()} '
       '(${backfill.length} buffered fixes)',
     );
@@ -213,7 +278,12 @@ class AutoStartMonitor {
     final DateTime now = DateTime.now().toUtc();
     final DateTime start = _startGmt!;
     if (now.isAfter(start.add(const Duration(hours: 2)))) {
-      unawaited(disarm(reason: 'Auto start switched off — the run started over two hours ago.'));
+      unawaited(
+        disarm(
+          reason:
+              'Auto start switched off — the run started over two hours ago.',
+        ),
+      );
       return;
     }
     // Not at the start by T+90 — and not near it either — so not coming.
@@ -226,7 +296,11 @@ class AutoStartMonitor {
         !(_detector?.hasArrived ?? false) &&
         now.isAfter(start.add(const Duration(minutes: 90))) &&
         !_nearStart()) {
-      unawaited(disarm(reason: 'Auto start switched off — you did not reach the start.'));
+      unawaited(
+        disarm(
+          reason: 'Auto start switched off — you did not reach the start.',
+        ),
+      );
       return;
     }
     final bool precise = wantsPrecise;

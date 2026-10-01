@@ -64,3 +64,10 @@ android {
 flutter {
     source = "../.."
 }
+
+// Activity Recognition for auto start's motion trigger (E5.F1.S15). Already
+// on the classpath through geolocator, but only as ITS implementation
+// dependency — the app module must declare it to compile against it.
+dependencies {
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+}

@@ -71,7 +71,11 @@ class AutoStartDetector {
 
   /// Adds a fix; returns the start time (epoch ms, backfill included) the
   /// first time the runner is judged to have set off, otherwise null.
-  int? add(AutoStartFix fix) {
+  ///
+  /// [blocked] (the hasher is in a vehicle, E5.F1.S15) keeps every fix in the
+  /// ring but lets none count towards a departure — driving away from the
+  /// start is not setting off.
+  int? add(AutoStartFix fix, {bool blocked = false}) {
     _ring.add(fix);
     final int cutoff = fix.tsMs - ringDuration.inMilliseconds;
     _ring.removeWhere((AutoStartFix f) => f.tsMs < cutoff);
@@ -101,7 +105,7 @@ class AutoStartDetector {
       return null;
     }
 
-    if (d <= departMeters) {
+    if (blocked || d <= departMeters) {
       _outsideSinceMs = null;
       return null;
     }
@@ -116,4 +120,90 @@ class AutoStartDetector {
   /// The ring's fixes at or after [tsMs], oldest first.
   List<AutoStartFix> pointsFrom(int tsMs) =>
       _ring.where((AutoStartFix f) => f.tsMs >= tsMs).toList();
+}
+
+/// The motion trigger for auto start (E5.F1.S15, James 2026-10-01). Pure — no
+/// sensors, no clock — so it is unit-tested; the monitor feeds it activity
+/// changes and asks it on every fix.
+///
+/// Hashers mill about the start, so being on foot there is not setting off.
+/// After ARRIVING at the start:
+///   * RUNNING sustained for [sustain] starts tracking — milling is walking;
+///   * WALKING / ON FOOT sustained for [sustain] starts tracking only when
+///     more than [walkDepartMeters] from the start (walking to the car and
+///     back stays inside the GPS rule's 150 m and so does nothing);
+///   * IN A VEHICLE vetoes any start, this rule's and the GPS rule's, for
+///     [vehicleVeto] after it was last seen.
+/// Below [minConfidence] an activity is ignored (it does not reset either).
+/// The start time handed back is when the qualifying motion began, less
+/// [backfill], like the GPS rule's.
+class MotionStartRule {
+  MotionStartRule({
+    this.sustain = const Duration(seconds: 20),
+    this.walkDepartMeters = 100,
+    this.vehicleVeto = const Duration(minutes: 2),
+    this.backfill = const Duration(seconds: 60),
+    this.minConfidence = 50,
+  });
+
+  final Duration sustain;
+  final double walkDepartMeters;
+  final Duration vehicleVeto;
+  final Duration backfill;
+  final int minConfidence;
+
+  bool _running = false;
+  bool _onFoot = false;
+  int? _sinceMs;
+  int? _lastVehicleMs;
+
+  /// A new reading from the phone.
+  void onActivity(String kind, int confidence, int tsMs) {
+    if (confidence < minConfidence) return;
+    switch (kind) {
+      case 'inVehicle':
+        _lastVehicleMs = tsMs;
+        _running = false;
+        _onFoot = false;
+        _sinceMs = null;
+      case 'running':
+        if (!_running) _sinceMs = tsMs;
+        _running = true;
+        _onFoot = true;
+      case 'walking':
+      case 'onFoot':
+        // Running → walking keeps the clock going: still on the move.
+        if (!_onFoot) _sinceMs = tsMs;
+        _running = false;
+        _onFoot = true;
+      case 'still':
+      case 'cycling':
+        _running = false;
+        _onFoot = false;
+        _sinceMs = null;
+      default:
+        break; // unknown / tilting: no opinion
+    }
+  }
+
+  /// In a vehicle within the last [vehicleVeto].
+  bool vetoed(int nowMs) =>
+      _lastVehicleMs != null &&
+      nowMs - _lastVehicleMs! < vehicleVeto.inMilliseconds;
+
+  /// The start time (epoch ms, backfill included) once the motion says the
+  /// hasher has set off; null otherwise. [metersFromStart] is null when the
+  /// distance is not known.
+  int? check({
+    required int nowMs,
+    required bool arrived,
+    required double? metersFromStart,
+  }) {
+    if (!arrived || vetoed(nowMs) || !_onFoot || _sinceMs == null) return null;
+    if (nowMs - _sinceMs! < sustain.inMilliseconds) return null;
+    final bool farEnough =
+        metersFromStart != null && metersFromStart > walkDepartMeters;
+    if (!_running && !farEnough) return null;
+    return _sinceMs! - backfill.inMilliseconds;
+  }
 }

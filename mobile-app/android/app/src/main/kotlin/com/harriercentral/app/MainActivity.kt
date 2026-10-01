@@ -19,6 +19,11 @@ import android.os.Debug
 import android.os.PowerManager
 import android.os.Process
 import android.os.StatFs
+import android.app.PendingIntent
+import com.google.android.gms.location.ActivityRecognition
+import com.google.android.gms.location.ActivityRecognitionResult
+import com.google.android.gms.location.DetectedActivity
+import io.flutter.plugin.common.EventChannel
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -120,6 +125,22 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // Motion activity for auto start (E5.F1.S15): Play Services Activity
+        // Recognition, delivered to a receiver registered here and passed to
+        // Dart as {type, confidence}. Started only while auto start is armed.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "harrier_central/activity")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "start" -> result.success(startActivityUpdates())
+                    "stop" -> { stopActivityUpdates(); result.success(null) }
+                    else -> result.notImplemented()
+                }
+            }
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "harrier_central/activity/events")
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(args: Any?, sink: EventChannel.EventSink?) { activitySink = sink }
+                override fun onCancel(args: Any?) { activitySink = null }
+            })
         incomingFileChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "harrier_central/incoming_file").apply {
             setMethodCallHandler { call, result ->
                 if (call.method == "takePending") {
@@ -190,7 +211,63 @@ class MainActivity : FlutterActivity() {
             }
     }
 
+    // ── Motion activity (E5.F1.S15) ──────────────────────────────────────────
+    private var activitySink: EventChannel.EventSink? = null
+    private var activityIntent: PendingIntent? = null
+    private val activityAction get() = "$packageName.ACTIVITY_UPDATE"
+
+    private val activityReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (!ActivityRecognitionResult.hasResult(intent)) return
+            val r = ActivityRecognitionResult.extractResult(intent) ?: return
+            val a = r.mostProbableActivity
+            val type = when (a.type) {
+                DetectedActivity.IN_VEHICLE -> "in_vehicle"
+                DetectedActivity.ON_BICYCLE -> "cycling"
+                DetectedActivity.ON_FOOT -> "on_foot"
+                DetectedActivity.WALKING -> "walking"
+                DetectedActivity.RUNNING -> "running"
+                DetectedActivity.STILL -> "still"
+                else -> "unknown"
+            }
+            activitySink?.success(mapOf("type" to type, "confidence" to a.confidence))
+        }
+    }
+
+    /** True when updates were requested; false when the API or permission is missing. */
+    private fun startActivityUpdates(): Boolean {
+        if (activityIntent != null) return true
+        return try {
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(activityReceiver, IntentFilter(activityAction), Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(activityReceiver, IntentFilter(activityAction))
+            }
+            val flags = PendingIntent.FLAG_UPDATE_CURRENT or
+                (if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_MUTABLE else 0)
+            val pi = PendingIntent.getBroadcast(
+                this, 7101, Intent(activityAction).setPackage(packageName), flags)
+            ActivityRecognition.getClient(this).requestActivityUpdates(10_000L, pi)
+            activityIntent = pi
+            true
+        } catch (_: SecurityException) {
+            try { unregisterReceiver(activityReceiver) } catch (_: IllegalArgumentException) {}
+            false
+        } catch (_: Exception) {
+            try { unregisterReceiver(activityReceiver) } catch (_: IllegalArgumentException) {}
+            false
+        }
+    }
+
+    private fun stopActivityUpdates() {
+        val pi = activityIntent ?: return
+        try { ActivityRecognition.getClient(this).removeActivityUpdates(pi) } catch (_: Exception) {}
+        try { unregisterReceiver(activityReceiver) } catch (_: IllegalArgumentException) {}
+        activityIntent = null
+    }
+
     override fun onDestroy() {
+        stopActivityUpdates()
         try { unregisterReceiver(screenReceiver) } catch (_: IllegalArgumentException) {}
         super.onDestroy()
     }

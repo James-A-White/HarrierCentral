@@ -68,6 +68,8 @@
 	<string>This app requires access to your calendar so you can add run details with the touch of a button.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires access to the camera to capture photos and videos.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Lets auto start begin tracking your run the moment you set off on foot, and never because you drove away.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Allow Harrier Central to keep tracking your run even when the screen is off.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
