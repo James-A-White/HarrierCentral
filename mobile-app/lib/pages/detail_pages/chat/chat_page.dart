@@ -103,6 +103,12 @@ class ChatPage extends StatelessWidget {
     );
   }
 
+  Widget _replyBar(ChatPageController controller) => ChatReplyBar(
+    replyingTo: controller.replyingTo,
+    authorName: controller.replyAuthorName,
+    onCancel: controller.cancelReply,
+  );
+
   Widget _chat(ChatPageController controller) {
     final DmThreadState? dm = dmState;
     return Chat(
@@ -147,37 +153,31 @@ class ChatPage extends StatelessWidget {
         // other side ended it, or somebody blocks — shows why instead.
         // The reply bar sits above the stock composer while a reply is
         // being written (E9.F1.S21); the composer itself is as before.
-        composerBuilder: (BuildContext context) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ChatReplyBar(
-              replyingTo: controller.replyingTo,
-              authorName: controller.replyAuthorName,
-              onCancel: controller.cancelReply,
-            ),
-            dm == null
-                ? Composer(
+        // The reply bar rides in the Composer's own topWidget slot (E9.F1.S21).
+        // NEVER wrap the Composer: it returns a Positioned that must sit
+        // directly in the chat's Stack. 1428 wrapped it in a Column and every
+        // chat page failed to build — the grey screen (2026-10-01).
+        composerBuilder: (BuildContext context) => dm == null
+            ? Composer(
+                maxLength: kChatMessageMaxLength,
+                // Purple, not the theme's blue, once there is something to
+                // send (James, 2026-09-29); greyed while the field is empty.
+                sendIconColor: themeAppBarBackground,
+                topWidget: _replyBar(controller),
+              )
+            : Obx(() {
+                // Both Rx reads come first, before the branch (obx_scan).
+                final bool canSend = dm.canSend.value;
+                final String name = dm.otherDisplayName.value;
+                if (canSend) {
+                  return Composer(
                     maxLength: kChatMessageMaxLength,
-                    // Purple, not the theme's blue, once there is something to
-                    // send (James, 2026-09-29); greyed while the field is empty.
                     sendIconColor: themeAppBarBackground,
-                  )
-                : Obx(() {
-                    // Both Rx reads come first, before the branch (obx_scan).
-                    final bool canSend = dm.canSend.value;
-                    final String name = dm.otherDisplayName.value;
-                    if (canSend) {
-                      return Composer(
-                        maxLength: kChatMessageMaxLength,
-                        // Purple, not the theme's blue, once there is something to
-                        // send (James, 2026-09-29); greyed while the field is empty.
-                        sendIconColor: themeAppBarBackground,
-                      );
-                    }
-                    return _CannotMessageBar(name: name);
-                  }),
-          ],
-        ),
+                    topWidget: _replyBar(controller),
+                  );
+                }
+                return _CannotMessageBar(name: name);
+              }),
         // Links in a bubble are tappable, and a hashruns.org run link opens
         // the run IN the app. The stock bubble renders plain text — there is
         // no url_launcher anywhere in flutter_chat_ui 2.11 — and even if it

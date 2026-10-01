@@ -101,14 +101,14 @@ class ChatSheetPage extends StatelessWidget {
           // A reply shows who and what is being answered above the box, with
           // an × to drop it (E9.F1.S21). The Rx is read before anything
           // else so the Obx always tracks it.
+          // The reply bar rides in the Composer's own topWidget slot. NEVER
+          // wrap the Composer: it returns a Positioned that must sit directly
+          // in the chat's Stack (738 wrapped it in a Column: grey screen).
           composerBuilder: (BuildContext context) => Obx(() {
             final core.Message? target = chatSheetController.replyingTo.value;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (target != null) _replyBar(target),
-                const Composer(maxLength: 4000),
-              ],
+            return Composer(
+              maxLength: 4000,
+              topWidget: target == null ? null : _replyBar(target),
             );
           }),
           // Photo (kind 1) and location (kind 2) — E9.F1.S11/S12.
