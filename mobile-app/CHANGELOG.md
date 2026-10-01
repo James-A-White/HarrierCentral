@@ -1,3 +1,8 @@
+## 3.1.8+1431 (2026-10-01)
+iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
+### Fixes
+- **Chats opens every time**: after the first visit, the chat bubble did nothing on 1430.
+
 ## 3.1.8+1430 (2026-10-01)
 iOS (TestFlight, James internal test only).
 ### Improvements

@@ -870,6 +870,12 @@ the fault, so that is an exposure figure, not a bug count.
   announcement in half (2026-09-23). Declare such parameters `NVARCHAR(MAX)`, check
   `LEN()` against the column width, and return the error envelope; cap the client
   at the same number so the refusal is a backstop.
+- **An SP parameter with NO default that a client might omit** — SQL refuses the
+  call ("expects parameter '@x', which was not supplied") BEFORE the procedure
+  runs: no `HC.ErrorLog` row, an empty 500 in the app, and the SP's own graceful
+  "missing parameter" check is unreachable. Give every parameter a default and
+  check for NULL inside; derive what can be derived (a kennel from an event).
+  Rack of Lamb hit this 18 times renumbering a run on 2026-09-29.
 - **SP body not wrapped in TRY/CATCH** — any runtime error becomes an unlogged raw 500
   (see "TRY/CATCH is mandatory" above). Flag on sight for reads AND writes.
 - CATCH block that doesn't log to `HC.ErrorLog` (swallows the error with no server record)
@@ -1042,6 +1048,16 @@ or the **"Dance baby!"** command below.
 When James says **"Dance baby!"**, execute a full release of all components that
 have changed since the last deploy. This is the sanctioned way to request a
 full coordinated release.
+
+### Who gets the app — two commands (James, 2026-10-01)
+
+| James says | Server side (SPs, API, web, portal) | Mobile app |
+|---|---|---|
+| **"I want a private dance"** | Deployed as usual | **James, Tuna Melt and Kilty only.** iOS: upload to TestFlight and assign NO group — the "James internal test" group (James, Melissa White, Martijn Körvers) receives every build automatically. Android: build the AAB and keep it in `~/HarrierCentral-builds/`; do NOT upload to Play internal, which reaches every Android tester. |
+| **"Dance baby!"** | Deployed as usual | **All beta testers.** iOS: upload, then assign the build to the "Hash beta testers" group. Android: upload the AAB to the Play internal track (`tools/play_upload.py`). |
+
+The server side has one audience — production — whichever command is used, so
+a private dance is still a production deploy of SPs, API, web and portal.
 
 ### Step 1 — Identify changed components
 
