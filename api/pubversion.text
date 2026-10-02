@@ -1,3 +1,8 @@
+1.0.61+70
+    • PackTrack deltas include deletions: DeletePositions and the resume On Inn strip
+      write tombstones to EventTrackingControl (RowKey del-…); an incremental
+      GetPositions reply carries `removed` (E5.F4.S8).
+
 1.0.61+69
     • DM read receipts: getDirectMessages' API-only rowset of the other hasher's
       devices becomes a silent read_receipt push; the rowset is stripped.

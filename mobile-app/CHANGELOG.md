@@ -1,3 +1,9 @@
+## 3.1.8+1436 (2026-10-02)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### Improvements
+- **Android trails as fine as iPhone ones**: Android records a point every 5 seconds on every tracking setting (was every 15 seconds, about 40 m apart at running pace). The setting still decides only how often the trail is sent while the phone is in a pocket.
+- **The live map downloads only what changed**: no more full re-download of every runner's trail every 5 minutes. Deleted points (a resumed runner's On Inn, a cleared LOST mark) now arrive as changes, so a cleared LOST badge leaves the map on the next poll.
+
 ## 3.1.8+1435 (2026-10-01)
 All beta testers (TestFlight Hash beta testers + Play internal), the production candidate.
 ### Fixes

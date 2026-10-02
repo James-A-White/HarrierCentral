@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.74 (2026-10-02 redeploy — live maps poll by deltas)
+
+- **The run page's live map and Trail TV download only what changed.** The
+  first poll fetches the pack; later ones ask only for points that arrived
+  or were deleted since (was the whole pack every 30 s / 12 s per viewer).
+
 ## 0.21.74 (2026-10-01 redeploy — replies and reactions)
 
 - **Reply to a message.** Reply in the message menu; a quote bar above the
