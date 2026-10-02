@@ -51,6 +51,8 @@ class HasherSummary {
     this.homeKennelLogo,
     this.runsTogether = 0,
     this.lastTogether,
+    this.firstTogether,
+    this.mostlyKennelShortName,
   });
 
   final HcId publicHasherId;
@@ -62,6 +64,11 @@ class HasherSummary {
   final int runsTogether;
   final DateTime? lastTogether;
 
+  /// By Hasher only (from 2026-10-02's getCoRunners): the first run together
+  /// and the kennel where the two have run together most.
+  final DateTime? firstTogether;
+  final String? mostlyKennelShortName;
+
   factory HasherSummary.fromJson(Map<String, dynamic> j) => HasherSummary(
     publicHasherId: HcId('${j['PublicHasherId'] ?? ''}'),
     displayName: _text(j['DisplayName']) ?? 'A hasher',
@@ -71,6 +78,8 @@ class HasherSummary {
     homeKennelLogo: _text(j['HomeKennelLogo']),
     runsTogether: _int(j['RunsTogether']),
     lastTogether: _date(j['LastTogether']),
+    firstTogether: _date(j['FirstTogether']),
+    mostlyKennelShortName: _text(j['MostlyKennelShortName']),
   );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -82,6 +91,8 @@ class HasherSummary {
     'HomeKennelLogo': homeKennelLogo,
     'RunsTogether': runsTogether,
     'LastTogether': lastTogether?.toIso8601String(),
+    'FirstTogether': firstTogether?.toIso8601String(),
+    'MostlyKennelShortName': mostlyKennelShortName,
   };
 
   /// What a search box matches on this phone (By Hasher's local filter):

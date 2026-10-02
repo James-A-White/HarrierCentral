@@ -5,25 +5,43 @@ import 'package:harrier_central/imports.dart';
 void main() {
   group('DirectoryVisibility', () {
     test('compose keeps the real-name flag only with a scope', () {
-      expect(DirectoryVisibility.compose(DirectoryVisibility.anyone, realName: true), 19);
-      expect(DirectoryVisibility.compose(DirectoryVisibility.runTogether, realName: false), 1);
+      expect(
+        DirectoryVisibility.compose(DirectoryVisibility.anyone, realName: true),
+        19,
+      );
+      expect(
+        DirectoryVisibility.compose(
+          DirectoryVisibility.runTogether,
+          realName: false,
+        ),
+        1,
+      );
       // nobody means nobody: the switch is dropped
-      expect(DirectoryVisibility.compose(DirectoryVisibility.nobody, realName: true), 0);
+      expect(
+        DirectoryVisibility.compose(DirectoryVisibility.nobody, realName: true),
+        0,
+      );
     });
 
     test('scope and real name read back', () {
-      expect(DirectoryVisibility.scopeOf(18), DirectoryVisibility.kennelMembers);
+      expect(
+        DirectoryVisibility.scopeOf(18),
+        DirectoryVisibility.kennelMembers,
+      );
       expect(DirectoryVisibility.realNameOf(18), isTrue);
       expect(DirectoryVisibility.realNameOf(2), isFalse);
     });
 
     test('the approved wording, in the approved order', () {
-      expect(DirectoryVisibility.scopes.map(DirectoryVisibility.label).toList(), <String>[
-        'Anyone on Harrier Central',
-        "Only hashers I've run with",
-        'Only members of kennels I belong to',
-        "Nobody. I don't want to be found",
-      ]);
+      expect(
+        DirectoryVisibility.scopes.map(DirectoryVisibility.label).toList(),
+        <String>[
+          'Anyone on Harrier Central',
+          "Only hashers I've run with",
+          'Only members of kennels I belong to',
+          "Nobody. I don't want to be found",
+        ],
+      );
     });
   });
 
@@ -73,5 +91,31 @@ void main() {
     expect(r.startLocal, DateTime(2026, 10, 1, 18, 45));
     expect(r.meHare, isFalse);
     expect(r.themHare, isTrue);
+  });
+
+  group('By Hasher small line', () {
+    test('since + mostly', () {
+      final HasherSummary h = HasherSummary.fromJson(<String, dynamic>{
+        'PublicHasherId': 'D0B7EF01-C6E3-4723-9D2F-2AE864A59F1A',
+        'DisplayName': 'Tuna Melt',
+        'HomeKennelShortName': 'City H3',
+        'FirstTogether': '2013-09-19T12:00:00+00:00',
+        'MostlyKennelShortName': 'EELS H3',
+      });
+      expect(byHasherLine(h), 'since Sep 2013 · mostly EELS H3');
+      expect(
+        HasherSummary.fromJson(h.toJson()).mostlyKennelShortName,
+        'EELS H3',
+      );
+    });
+
+    test('falls back to the home kennel on an older server', () {
+      const HasherSummary h = HasherSummary(
+        publicHasherId: HcId.empty,
+        displayName: 'Tuna Melt',
+        homeKennelShortName: 'City H3',
+      );
+      expect(byHasherLine(h), 'City H3');
+    });
   });
 }

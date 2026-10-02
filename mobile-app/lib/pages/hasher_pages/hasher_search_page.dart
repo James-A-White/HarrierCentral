@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 
 /// Find a hasher to message (E9.F1.S26), opened from Chats. The server
 /// decides who can be found — each hasher's own choice — and searches the
@@ -252,6 +253,21 @@ class HasherPhoto extends StatelessWidget {
   }
 }
 
+/// The small line under a By Hasher count (James, 2026-10-02): when you
+/// first ran together and where you have run together most —
+/// "since Sep 2013 · mostly EELS H3". Falls back to their home kennel when
+/// neither is known (a server before 2026-10-02, or an old cached list).
+String? byHasherLine(HasherSummary h) {
+  final List<String> parts = <String>[
+    if (h.firstTogether != null)
+      'since ${DateFormat('MMM yyyy').format(h.firstTogether!.toLocal())}',
+    if ((h.mostlyKennelShortName ?? '').isNotEmpty)
+      'mostly ${h.mostlyKennelShortName}',
+  ];
+  if (parts.isNotEmpty) return parts.join(' · ');
+  return h.homeKennelShortName ?? h.homeKennelName;
+}
+
 /// Run Counts › By Hasher's row, styled as By Kennel's
 /// (KennelRunHistoryCountListItem): picture = count, name above, a small
 /// line below. Opens the hasher page.
@@ -262,7 +278,7 @@ class HasherRunCountListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String? home = hasher.homeKennelShortName ?? hasher.homeKennelName;
+    final String? line = byHasherLine(hasher);
     return InkWell(
       onTap: () => unawaited(HasherPage.open(hasher)),
       child: Row(
@@ -304,10 +320,10 @@ class HasherRunCountListItem extends StatelessWidget {
                 ),
                 SizedBox(
                   height: 20.0,
-                  child: home == null
+                  child: line == null
                       ? null
                       : Text(
-                          '($home)',
+                          '($line)',
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           style: ts_titleMediumCondensedBlack.copyWith(
