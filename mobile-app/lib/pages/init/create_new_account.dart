@@ -381,6 +381,15 @@ class CreateNewAccountPageContentState
                                     return;
                                   }
 
+                                  // The sign-up step of "Can other hashers
+                                  // find you?" (E9.F1.S26): now, while the
+                                  // device is authorised and before the
+                                  // photo, so the launch question never
+                                  // has to ask a brand-new member.
+                                  if (!mounted) return;
+                                  await Get.to<int>(
+                                    () => const FindabilitySignupPage(),
+                                  );
                                   if (!mounted) return;
                                   await Navigator.pushReplacement<
                                     dynamic,

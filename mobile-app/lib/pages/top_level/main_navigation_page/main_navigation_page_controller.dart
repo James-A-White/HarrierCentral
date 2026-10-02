@@ -342,6 +342,10 @@ class MainNavigationController extends GetxController
     );
     _startScreenListening();
 
+    // "Can other hashers find you?" — once per hasher, after the main screen
+    // is up (E9.F1.S26). Asks nothing if the check fails or it was answered.
+    unawaited(DirectoryVisibilityPrompt.askIfUnanswered());
+
     // Returning users: the runs page is now visible with cached data. Run the
     // full user-data sync in the background and refresh the runs list when the
     // fresh data lands.

@@ -186,6 +186,15 @@ class ChatsPage extends StatelessWidget {
           title: Text('Chats', style: ts_appBarTitle),
           centerTitle: true,
           actions: <Widget>[
+            // Find a hasher to message (E9.F1.S26).
+            IconButton(
+              icon: const Icon(Icons.person_search, color: Colors.white),
+              tooltip: 'Find a hasher',
+              onPressed: () => unawaited(
+                Get.to<void>(() => const HasherSearchPage()) ??
+                    Future<void>.value(),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: _ChatsResetButton(controller: controller),

@@ -1,0 +1,113 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_searchHashers",
+  "version": "1.0.0",
+  "description": "Hasher search from Chats (E9.F1.S26). The found hasher's DirectoryVisibility is the only gate; hash name and home kennel always match, real name only with +16; blocks either way hide; 2..60 chars, 50 results, 30/min and 400/day per hasher.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "query",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "what was typed; LIKE wildcards are literal"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "14300 refused: too short/long or rate limit (2), message is user-facing; 14301 unhandled (5)"
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Hashers",
+      "columns": [
+        {
+          "name": "PublicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "upper-case text; the app lowercases"
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "the hasher's own display choice"
+        },
+        {
+          "name": "Photo",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "profile photo URL"
+        },
+        {
+          "name": "HomeKennelName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HomeKennelShortName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HomeKennelLogo",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RunsTogether",
+          "type": "INT",
+          "nullable": false,
+          "description": "0 when never"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT LOG.GeneralLog (LogSource 'hasherSearch', Message = user id; the query is not logged)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -71,6 +71,7 @@ enum StringPrefsEnum {
   thirdPartyUserId,
   userId,
   guestSavedSearchTerm,
+  coRunnersCache, // Run Counts › By Hasher's last list, JSON, for offline (E10.F1.S5)
 }
 
 enum NumPrefsEnum {

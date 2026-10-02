@@ -1413,85 +1413,17 @@ class ChatPageController extends GetxController {
   /// comes back as "requested", by design.
   Future<void> _startDirectMessage(core.Message message) async {
     if (!_isFromSomeoneElse(message)) return;
-    final String name = _authorNameOf(message);
-    String? refusal;
-    final DmStartResult? result = await DirectMessageService.start(
+    // The same flow as the hasher page's Message button (message_hasher.dart).
+    await messageHasher(
       HcId(message.authorId),
-      onRefused: (String? why) => refusal = why,
+      _authorNameOf(message),
+      onUnblocked: () {
+        // Their messages come back into every chat, including this one.
+        if (!isClosed) refetchOpenThreads();
+      },
     );
-    if (isClosed) return;
-
-    if (result == null) {
-      hcSnack(
-        (refusal == null || refusal!.isEmpty)
-            ? '$name could not be messaged. Please try again.'
-            : refusal!,
-        error: true,
-        seconds: 5,
-      );
-      return;
-    }
-
-    final String other = result.otherDisplayName;
-    switch (result.outcome) {
-      case DmOutcome.open:
-        final HcId? thread = result.threadId;
-        if (thread == null) {
-          hcSnack(
-            '$other could not be messaged. Please try again.',
-            error: true,
-          );
-          return;
-        }
-        await openDirectMessage(
-          threadId: thread,
-          otherPublicHasherId: result.otherPublicHasherId,
-          otherDisplayName: other,
-          otherPhoto: result.otherPhoto,
-        );
-      case DmOutcome.requested:
-        hcSnack(
-          "$other will be asked. You'll be told when they accept.",
-          seconds: 5,
-        );
-      case DmOutcome.refused:
-        hcSnack("$other isn't accepting messages.", error: true, seconds: 5);
-      case DmOutcome.blocked:
-        hcSnack(
-          "You've blocked $other.",
-          error: true,
-          seconds: 6,
-          actionLabel: 'Unblock',
-          onAction: () =>
-              unawaited(_unblock(result.otherPublicHasherId, other)),
-        );
-      case DmOutcome.declined:
-      case DmOutcome.unknown:
-        hcSnack('$other could not be messaged right now.', error: true);
-    }
   }
 
-  Future<void> _unblock(HcId publicHasherId, String name) async {
-    final BlockOutcome outcome = await HasherBlockService.setBlock(
-      publicHasherId,
-      blocked: false,
-    );
-    if (isClosed) return;
-    if (!outcome.ok) {
-      final String? why = outcome.refusal;
-      hcSnack(
-        (why == null || why.isEmpty)
-            ? '$name could not be unblocked. Please try again.'
-            : why,
-        error: true,
-        seconds: 5,
-      );
-      return;
-    }
-    hcSnack('$name unblocked');
-    // Their messages come back into every chat, including this one.
-    refetchOpenThreads();
-  }
 
   /// Open a DM thread standalone, then refresh the badges on return so the
   /// chat list and the app-bar bubble agree with what was read.

@@ -63,6 +63,30 @@ class SettingsPageController extends GetxController {
     dmPreference.value = stored;
   }
 
+  /// Who may find this hasher in hasher search (E9.F1.S26). Held on the
+  /// server only — read when Settings opens, never synced. Null = not
+  /// answered yet; [findabilityLoaded] false = the read failed.
+  final RxnInt findability = RxnInt();
+  final RxBool findabilityLoaded = false.obs;
+
+  Future<void> loadFindability() async {
+    final ({bool known, int? value}) mine =
+        await HasherDirectoryService.fetchMine();
+    if (isClosed) return;
+    findability.value = mine.value;
+    findabilityLoaded.value = mine.known;
+  }
+
+  Future<void> changeFindability() async {
+    final int? stored = await showFindabilityQuestion(
+      required: false,
+      current: findability.value,
+    );
+    if (isClosed || stored == null) return;
+    findability.value = stored;
+    findabilityLoaded.value = true;
+  }
+
   HashersModel? _hasher;
 
   /// The bits of hasherPreferences this page owns. Everything else (the
@@ -86,6 +110,7 @@ class SettingsPageController extends GetxController {
         (stored & hasherPref_cameraRollSaveDisabled) == 0;
     unawaited(_loadHasher());
     unawaited(loadChatRooms());
+    unawaited(loadFindability());
   }
 
   Future<void> loadChatRooms() async {
@@ -767,6 +792,57 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  /// Who may find this hasher in hasher search (E9.F1.S26): the same
+  /// question as the once-only dialog, opened on the current answer.
+  Widget _findabilitySection(SettingsPageController controller) {
+    final bool loaded = controller.findabilityLoaded.value;
+    final int? value = controller.findability.value;
+    final String now = !loaded
+        ? 'Could not be read just now.'
+        : value == null
+        ? 'Not chosen yet.'
+        : DirectoryVisibility.label(DirectoryVisibility.scopeOf(value)) +
+              (DirectoryVisibility.realNameOf(value)
+                  ? ', also by my real name.'
+                  : '.');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        const FancyDivider(
+          key: Key('settings_findability_divider'),
+          innerColor: Colors.white,
+          topMargin: 20.0,
+          bottomMargin: 10.0,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Who can find me',
+            style: ts_headingLarge,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 8, right: 8, bottom: 12),
+          child: Text(now, style: ts_body, textAlign: TextAlign.center),
+        ),
+        // Centred: the page's column stretches its children.
+        Center(
+          child: ElevatedButton(
+            onPressed: loaded
+                ? () => unawaited(controller.changeFindability())
+                : () => unawaited(controller.loadFindability()),
+            child: Text(
+              loaded ? 'Change' : 'Try again',
+              style: const TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   /// Who may start a direct message with this hasher (E9.F1.S18). Three
   /// states, friends only by default; the line under the chips says what a
   /// friend is, because nothing else in the app does.
@@ -1206,6 +1282,7 @@ class SettingsPage extends StatelessWidget {
                         _mapProviderSection(controller),
                         _chatRoomsSection(controller),
                         _directMessagesSection(controller),
+                        _findabilitySection(controller),
                         _blockedHashersSection(),
                       ],
                     ),

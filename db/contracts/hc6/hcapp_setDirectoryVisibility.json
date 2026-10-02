@@ -1,0 +1,77 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setDirectoryVisibility",
+  "version": "1.0.0",
+  "description": "Records who may find the caller in hasher search (E9.F1.S26). Writes HC.Hasher.DirectoryVisibility ALONE, never updatedAt (not synced).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "visibility",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "Hasher.DirectoryVisibility",
+      "description": "NULL not asked; low bits 0 nobody, 1 people I have run with, 2 members of a kennel I belong to, 3 anyone; +16 also findable by real name; the real-name flag is dropped with 0"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure returns the detail alone; other refusals return {success:0, errorCode, errorType} then the detail: 14200 bad value (2), 14201 unhandled (5)"
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Visibility",
+      "columns": [
+        {
+          "name": "DirectoryVisibility",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "the value now stored"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher.DirectoryVisibility (no updatedAt change)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

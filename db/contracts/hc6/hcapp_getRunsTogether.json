@@ -1,0 +1,189 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getRunsTogether",
+  "version": "1.0.0",
+  "description": "The hasher page (E10.F1.S5 / E9.F1.S26): the other hasher, a summary, and every run both attended, newest first.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)"
+    },
+    {
+      "name": "otherPublicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "the other hasher's PUBLIC id"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "14500 not found or yourself (3); 14501 unhandled (5)"
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Hasher",
+      "columns": [
+        {
+          "name": "PublicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "upper-case text; the app lowercases"
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "the hasher's own display choice"
+        },
+        {
+          "name": "Photo",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "profile photo URL"
+        },
+        {
+          "name": "HomeKennelName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HomeKennelShortName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HomeKennelLogo",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "RunsTogether",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "HaredTogether",
+          "type": "INT",
+          "nullable": false,
+          "description": "runs both hared"
+        },
+        {
+          "name": "FirstTogether",
+          "type": "DATE",
+          "nullable": true,
+          "description": "EventStartLocalDate"
+        },
+        {
+          "name": "LastTogether",
+          "type": "DATE",
+          "nullable": true,
+          "description": "EventStartLocalDate"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Runs",
+      "columns": [
+        {
+          "name": "EventId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "lower-case"
+        },
+        {
+          "name": "PublicEventId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "lower-case"
+        },
+        {
+          "name": "EventNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "EventName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "EventStartLocal",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "the run's local wall-clock start"
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MeHare",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 = the caller hared"
+        },
+        {
+          "name": "ThemHare",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 = the other hasher hared"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

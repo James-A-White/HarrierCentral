@@ -69,6 +69,108 @@ class HistoryListPage extends StatelessWidget {
     );
   }
 
+  /// Everyone I've run with, most runs together first (E10.F1.S5). The
+  /// search box filters the list on the phone; a hasher's real name is only
+  /// matched where it is the name they show.
+  Widget _buildHasherList(HistoryListController c) {
+    final String q = c.coRunnerQuery.value;
+    final List<HasherSummary> all = c.coRunners.toList();
+    final bool loading = c.coRunnersLoading.value;
+    final bool failed = c.coRunnersFailed.value;
+    final List<(int, HasherSummary)> shown = <(int, HasherSummary)>[
+      for (int i = 0; i < all.length; i++)
+        if (all[i].matches(q)) (i + 1, all[i]),
+    ];
+    return Expanded(
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+            child: Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              child: TextField(
+                controller: c.coRunnerSearch,
+                onChanged: (String v) => c.coRunnerQuery.value = v,
+                decoration: InputDecoration(
+                  hintText: "Search hashers you've run with",
+                  border: InputBorder.none,
+                  prefixIcon: const Icon(Icons.search, color: Colors.black),
+                  suffixIcon: q.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(Icons.close, color: Colors.black54),
+                          onPressed: () {
+                            c.coRunnerSearch.clear();
+                            c.coRunnerQuery.value = '';
+                          },
+                        ),
+                ),
+              ),
+            ),
+          ),
+          if (failed && all.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'Showing the last list saved on this phone.',
+                style: ts_bodySmall.copyWith(color: Colors.black54),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          Expanded(
+            child: all.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: <Widget>[
+                      const SizedBox(height: 40),
+                      if (loading)
+                        const Center(child: HcAppCircularProgressIndicator())
+                      else
+                        Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            children: <Widget>[
+                              Text(
+                                failed
+                                    ? "The list couldn't be loaded. It needs a connection."
+                                    : "You haven't run with anyone yet.",
+                                style: ts_title.copyWith(color: Colors.black87),
+                                textAlign: TextAlign.center,
+                              ),
+                              if (failed) ...<Widget>[
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      unawaited(c.loadCoRunners(force: true)),
+                                  child: const Text(
+                                    'Try again',
+                                    style: TextStyle(color: Colors.white),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                    ],
+                  )
+                : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(8, 4, 8, 24),
+                    itemCount: shown.length,
+                    itemBuilder: (BuildContext context, int i) {
+                      if (i >= shown.length) return const SizedBox.shrink();
+                      final (int rank, HasherSummary h) = shown[i];
+                      return HasherRow(hasher: h, onDark: false, rank: rank);
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildListView(BuildContext context, HistoryListController c) {
     final String? photo = getStringPref(StringPrefsEnum.profilePhotoUrl);
     final int tabIndex = c.tabIndex.value;
@@ -83,84 +185,72 @@ class HistoryListPage extends StatelessWidget {
           child: kennelCount == 0
               ? Center(child: Text('No runs logged yet.', style: ts_title))
               : RefreshIndicator(
-                  onRefresh: c.pullToRefresh,
+                  // By Hasher refreshes its own list, not the run counts.
+                  onRefresh: () => tabIndex == HistoryListController.byHasherTab
+                      ? c.loadCoRunners(force: true)
+                      : c.pullToRefresh(),
                   displacement: 40.0,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
-                      Container(
-                        width: 200,
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          top: 10.0,
-                        ),
-                        child: DefaultTabController(
-                          length: 2,
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            width: 140.0,
-                            height: 75.0,
-                            // reviewed for 2.0+
-                            child: TabBar(
-                              labelStyle: ts_tabSelected,
-                              unselectedLabelStyle: ts_tabUnselected,
-                              isScrollable: false,
-                              unselectedLabelColor: Colors.white,
-                              labelColor: Colors.white,
-                              labelPadding: const EdgeInsets.only(
-                                top: 5,
-                                left: 0,
-                                right: 0,
-                              ),
-                              indicatorSize: TabBarIndicatorSize.label,
-                              indicatorPadding: EdgeInsets.symmetric(
-                                horizontal: -5.0,
-                                vertical: 13.0,
-                              ),
-                              indicator: BoxDecoration(
-                                color: hc_red,
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              tabs: <Tab>[
-                                Tab(
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    width: 140,
-                                    child: Text(
-                                      'By Kennel',
-                                      style: ts_numberStyle.copyWith(
-                                        color: tabIndex == 0
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Tab(
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    width: 140,
-                                    child: Text(
-                                      'By Country',
-                                      style: ts_numberStyle.copyWith(
-                                        color: tabIndex == 1
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              controller: c.tabController,
+                      // Three choices, so the bar spans the width and each
+                      // label shrinks rather than overflowing at a large
+                      // text size (By Hasher, E10.F1.S5).
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+                        child: SizedBox(
+                          height: 60,
+                          child: TabBar(
+                            labelStyle: ts_tabSelected,
+                            unselectedLabelStyle: ts_tabUnselected,
+                            isScrollable: false,
+                            dividerColor: Colors.transparent,
+                            unselectedLabelColor: Colors.white,
+                            labelColor: Colors.white,
+                            labelPadding: const EdgeInsets.symmetric(
+                              horizontal: 2,
                             ),
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            indicatorPadding: const EdgeInsets.symmetric(
+                              horizontal: 2.0,
+                              vertical: 10.0,
+                            ),
+                            indicator: BoxDecoration(
+                              color: hc_red,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            tabs: <Tab>[
+                              for (final (int i, String label)
+                                  in const <(int, String)>[
+                                    (0, 'By Kennel'),
+                                    (1, 'By Country'),
+                                    (2, 'By Hasher'),
+                                  ])
+                                Tab(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      label,
+                                      style: ts_numberStyle.copyWith(
+                                        color: tabIndex == i
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                            controller: c.tabController,
                           ),
                         ),
                       ),
-                      tabIndex == 0
-                          ? _buildKennelStatsList(c)
-                          : _buildCountryStatsList(c),
+                      switch (tabIndex) {
+                        0 => _buildKennelStatsList(c),
+                        1 => _buildCountryStatsList(c),
+                        _ => _buildHasherList(c),
+                      },
                     ],
                   ),
                 ),
@@ -199,50 +289,50 @@ class HistoryListPage extends StatelessWidget {
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            'My total run counts',
-                            style: ts_titleMediumBold.copyWith(
-                              height: 1.2,
-                              color: Colors.black87,
-                            ),
-                            textAlign: TextAlign.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                'My total run counts',
+                                style: ts_titleMediumBold.copyWith(
+                                  height: 1.2,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                'Total runs: ${c.totalRuns.value}',
+                                style: ts_titleMedium.copyWith(
+                                  height: 1.2,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                              Text(
+                                'Total times hared: ${c.totalHaring.value}',
+                                style: ts_titleMedium.copyWith(
+                                  height: 1.2,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                              // How far the hashing has spread, not just how much
+                              // of it there has been (James, 2026-09-17). Both
+                              // lists are filled by setupInitialValues() before
+                              // this builds, whichever tab is showing.
+                              Text(
+                                '$kennelCount '
+                                '${kennelCount == 1 ? 'kennel' : 'kennels'} '
+                                'in $countryCount '
+                                '${countryCount == 1 ? 'country' : 'countries'}',
+                                style: ts_titleMedium.copyWith(
+                                  height: 1.2,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                            ],
                           ),
-                          Text(
-                            'Total runs: ${c.totalRuns.value}',
-                            style: ts_titleMedium.copyWith(
-                              height: 1.2,
-                              color: Colors.black87,
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                          Text(
-                            'Total times hared: ${c.totalHaring.value}',
-                            style: ts_titleMedium.copyWith(
-                              height: 1.2,
-                              color: Colors.black87,
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                          // How far the hashing has spread, not just how much
-                          // of it there has been (James, 2026-09-17). Both
-                          // lists are filled by setupInitialValues() before
-                          // this builds, whichever tab is showing.
-                          Text(
-                            '$kennelCount '
-                            '${kennelCount == 1 ? 'kennel' : 'kennels'} '
-                            'in $countryCount '
-                            '${countryCount == 1 ? 'country' : 'countries'}',
-                            style: ts_titleMedium.copyWith(
-                              height: 1.2,
-                              color: Colors.black87,
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                        ],
-                      ),
                         ),
                       ),
               ],

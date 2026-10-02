@@ -58,12 +58,43 @@ class HistoryListController extends GetxController
   final RxInt totalRuns = 0.obs;
   final RxInt totalHaring = 0.obs;
 
+  /// Run Counts › By Hasher (E10.F1.S5): everyone I've run with, most runs
+  /// together first. One server call, made the first time the tab is
+  /// opened (and on pull-to-refresh); the last good list is kept for a
+  /// phone without a connection. The search box filters it here.
+  static const int byHasherTab = 2;
+  final RxList<HasherSummary> coRunners = <HasherSummary>[].obs;
+  final RxBool coRunnersLoading = false.obs;
+  final RxBool coRunnersFailed = false.obs;
+  final RxString coRunnerQuery = ''.obs;
+  final TextEditingController coRunnerSearch = TextEditingController();
+  bool _coRunnersFetched = false;
+
+  Future<void> loadCoRunners({bool force = false}) async {
+    if (coRunnersLoading.value || (_coRunnersFetched && !force)) return;
+    if (coRunners.isEmpty) {
+      coRunners.assignAll(HasherDirectoryService.cachedCoRunners());
+    }
+    coRunnersLoading.value = true;
+    final List<HasherSummary>? fresh =
+        await HasherDirectoryService.fetchCoRunners();
+    if (isClosed) return;
+    coRunnersLoading.value = false;
+    if (fresh == null) {
+      coRunnersFailed.value = true;
+      return;
+    }
+    _coRunnersFetched = true;
+    coRunnersFailed.value = false;
+    coRunners.assignAll(fresh);
+  }
+
   StreamSubscription<DataChangeEvent>? _dataChangeSub;
 
   @override
   void onInit() {
     super.onInit();
-    tabController = TabController(length: 2, vsync: this);
+    tabController = TabController(length: 3, vsync: this);
     tabController.addListener(_onTab);
 
     unawaited(setupInitialValues());
@@ -84,6 +115,7 @@ class HistoryListController extends GetxController
     unawaited(_dataChangeSub?.cancel());
     tabController.removeListener(_onTab);
     tabController.dispose();
+    coRunnerSearch.dispose();
     super.onClose();
   }
 
@@ -91,6 +123,7 @@ class HistoryListController extends GetxController
     // Fires while the animation runs and again when it settles; either way
     // the label colours and the list follow the controller's index.
     tabIndex.value = tabController.index;
+    if (tabController.index == byHasherTab) unawaited(loadCoRunners());
   }
 
   Future<void> setupInitialValues() async {
