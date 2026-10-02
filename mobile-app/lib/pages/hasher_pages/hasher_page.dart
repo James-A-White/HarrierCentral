@@ -199,8 +199,13 @@ class HasherPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          // Square and whole, never trimmed into a circle.
-          HasherPhoto(url: h.photo, size: 120),
+          // Square and whole, never trimmed into a circle. A tap opens it
+          // full screen, zoomable (James, 2026-10-02) — the same viewer a
+          // kennel member's photo opens in.
+          GestureDetector(
+            onTap: () => _openPhoto(h),
+            child: HasherPhoto(url: h.photo, size: 120),
+          ),
           const SizedBox(height: 10),
           Text(
             h.displayName,
@@ -258,6 +263,26 @@ class HasherPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// The photo enlarged and zoomable. Nothing to open without a photo (the
+  /// placeholder is not theirs).
+  void _openPhoto(HasherSummary h) {
+    final String? url = blobUrlForPhoto(h.photo);
+    if (url == null) return;
+    unawaited(
+      navigatorKey.currentState?.push<void>(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => ZoomableImagePage2(
+            pageTitle: h.displayName,
+            imageUrl: url,
+            appBarBackgroundColor: themeAppBarBackground,
+            background: Backgrounds.defaultHcBackground(),
+            margin: 20.0,
+          ),
+        ),
       ),
     );
   }
