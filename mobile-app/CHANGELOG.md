@@ -1,3 +1,10 @@
+## 3.1.8+1437 (2026-10-02)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Test data: 500 real hashers carry seeded answers until the revert runs.
+### New Features
+- **Find a hasher**: a search button on Chats finds hashers by hash name or home kennel, and by real name where they allow it. Only hashers who chose to be found appear.
+- **Can other hashers find you?**: asked once, after launch (or during sign-up for new members); change it any time in Settings › Who can find me.
+- **Run Counts › By Hasher**: everyone you've run with, most runs together first, with a search box. Tap a hasher for your runs together and a Message button.
+
 ## 3.1.8+1436 (2026-10-02)
 Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
 ### Improvements
