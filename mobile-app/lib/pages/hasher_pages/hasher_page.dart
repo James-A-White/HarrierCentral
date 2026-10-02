@@ -426,6 +426,12 @@ class SharedRunListItem extends StatelessWidget {
                             color: Colors.purple.shade800,
                           ),
                         ),
+                      RunActivityIcons(
+                        runners: r.trackRunnerCount,
+                        photos: r.photoCount,
+                        messages: r.messageCount,
+                        downDowns: r.downDownCount,
+                      ),
                     ],
                   ),
                 ),

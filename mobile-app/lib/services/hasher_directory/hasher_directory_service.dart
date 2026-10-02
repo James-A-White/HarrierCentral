@@ -121,6 +121,10 @@ class SharedRun {
     this.themHare = false,
     this.myRunNumber = 0,
     this.myHareNumber = 0,
+    this.trackRunnerCount = 0,
+    this.photoCount = 0,
+    this.messageCount = 0,
+    this.downDownCount = 0,
   });
 
   final HcId eventId;
@@ -139,6 +143,12 @@ class SharedRun {
   final int myRunNumber;
   final int myHareNumber;
 
+  /// The past-run card's activity counts (RunActivityIcons).
+  final int trackRunnerCount;
+  final int photoCount;
+  final int messageCount;
+  final int downDownCount;
+
   factory SharedRun.fromJson(Map<String, dynamic> j) => SharedRun(
     eventId: HcId('${j['EventId'] ?? ''}'),
     eventNumber: _int(j['EventNumber']),
@@ -150,6 +160,10 @@ class SharedRun {
     themHare: _int(j['ThemHare']) != 0,
     myRunNumber: _int(j['MyRunNumber']),
     myHareNumber: _int(j['MyHareNumber']),
+    trackRunnerCount: _int(j['TrackRunnerCount']),
+    photoCount: _int(j['PhotoCount']),
+    messageCount: _int(j['MessageCount']),
+    downDownCount: _int(j['DownDownCount']),
   );
 }
 

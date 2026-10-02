@@ -19,7 +19,8 @@ AS
 --     the run's own calendar date);
 --   rowset 2 — { EventId, PublicEventId, EventNumber, EventName,
 --     EventStartLocal, KennelShortName, KennelLogo, MeHare, ThemHare,
---     MyRunNumber, MyHareNumber }  (the last two appended 2026-10-02)
+--     MyRunNumber, MyHareNumber, TrackRunnerCount, PhotoCount,
+--     MessageCount, DownDownCount }  (the last six appended 2026-10-02)
 --     (EventStartLocal = the run's local wall-clock start)
 -- Author: Harrier Central
 -- Created: 2026-10-02
@@ -107,7 +108,13 @@ BEGIN TRY
            e.EventNumber, e.EventName, e.EventStartLocal,
            k.KennelShortName, k.KennelLogo,
            r.MeHare, r.ThemHare,
-           r.MyRunNumber, r.MyHareNumber
+           r.MyRunNumber, r.MyHareNumber,
+           -- The past-run card's activity icons (HC.Event's counts, kept
+           -- by HC6.nonApi_refreshEventActivity), so the rows match.
+           ISNULL(e.TrackRunnerCount, 0) AS TrackRunnerCount,
+           ISNULL(e.PhotoCount, 0)       AS PhotoCount,
+           ISNULL(e.MessageCount, 0)     AS MessageCount,
+           ISNULL(e.DownDownCount, 0)    AS DownDownCount
     FROM #runs r
     JOIN HC.Event e ON e.id = r.EventId
     LEFT JOIN HC.Kennel k ON k.id = e.KennelId

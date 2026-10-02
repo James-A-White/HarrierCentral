@@ -127,6 +127,10 @@ void main() {
       themHare: true,
       myRunNumber: 114,
       myHareNumber: 63,
+      trackRunnerCount: 5,
+      photoCount: 12,
+      messageCount: 30,
+      downDownCount: 4,
     );
     await t.pumpWidget(
       _host(
@@ -139,6 +143,10 @@ void main() {
     expect(find.text('My FILTH run #114'), findsOneWidget);
     expect(find.text(' and #63 time haring'), findsOneWidget);
     expect(find.text('Tuna Melt hared'), findsOneWidget);
+    // The past-run card's icon row, with its counts.
+    expect(find.byType(RunActivityIcons), findsOneWidget);
+    expect(find.text('12'), findsOneWidget);
+    expect(find.byIcon(Icons.map_outlined), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 }

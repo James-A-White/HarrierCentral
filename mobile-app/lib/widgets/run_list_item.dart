@@ -1694,11 +1694,34 @@ class _ActivityIcons extends StatelessWidget {
   final EventModel event;
 
   @override
+  Widget build(BuildContext context) => RunActivityIcons(
+    runners: event.trackRunnerCount ?? 0,
+    photos: event.photoCount ?? 0,
+    messages: event.messageCount ?? 0,
+    downDowns: event.downDownCount ?? 0,
+  );
+}
+
+/// The row of activity icons along the bottom of a PAST run — PackTrack
+/// runners, photos, trail chat, down-downs, each with its count. Shared by
+/// the runs page's cards and the hasher page's shared runs (2026-10-02), so
+/// both draw it the same way. Nothing at all when every count is zero.
+class RunActivityIcons extends StatelessWidget {
+  const RunActivityIcons({
+    super.key,
+    required this.runners,
+    required this.photos,
+    required this.messages,
+    required this.downDowns,
+  });
+
+  final int runners;
+  final int photos;
+  final int messages;
+  final int downDowns;
+
+  @override
   Widget build(BuildContext context) {
-    final int runners = event.trackRunnerCount ?? 0;
-    final int photos = event.photoCount ?? 0;
-    final int messages = event.messageCount ?? 0;
-    final int downDowns = event.downDownCount ?? 0;
     if (runners == 0 && photos == 0 && messages == 0 && downDowns == 0) {
       return const SizedBox.shrink();
     }

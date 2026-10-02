@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRunsTogether",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "The hasher page (E10.F1.S5 / E9.F1.S26): the other hasher, a summary, and every run both attended, newest first.",
   "parameters": [
     {
@@ -185,6 +185,30 @@
           "type": "INT",
           "nullable": false,
           "description": "the caller's haring number at that kennel, historical included (added 2026-10-02)"
+        },
+        {
+          "name": "TrackRunnerCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "PackTrack runners on the run — HC.Event's activity count (added 2026-10-02)"
+        },
+        {
+          "name": "PhotoCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "photos — HC.Event's activity count (added 2026-10-02)"
+        },
+        {
+          "name": "MessageCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "run chat messages — HC.Event's activity count (added 2026-10-02)"
+        },
+        {
+          "name": "DownDownCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "down-downs — HC.Event's activity count (added 2026-10-02)"
         }
       ]
     }
