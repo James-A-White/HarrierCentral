@@ -124,12 +124,27 @@ run_query() {
 STAMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$STAMP_DIR"' EXIT
 
-last_build=$(_sqlcmd -h -1 -W -Q "SET NOCOUNT ON;
+# The database is the counter. If the lookup FAILS, stop — on 2026-10-02 a
+# failed lookup (its error went to /dev/null) silently restarted the count
+# at build 1 after build 25. HC_DEPLOY_BUILD forces a number (to put the
+# count back, or for the very first stamp).
+if ! build_rows=$(_sqlcmd -h -1 -W -Q "SET NOCOUNT ON;
     SELECT SUBSTRING(m.definition, CHARINDEX('-- HC-DEPLOY build=', m.definition) + 19, 12)
     FROM sys.sql_modules m
-    WHERE m.definition LIKE '%-- HC-DEPLOY build=%';" 2>/dev/null \
-    | grep -oE '^[0-9]+' | sort -n | tail -1)
-DEPLOY_BUILD=$(( ${last_build:-0} + 1 ))
+    WHERE m.definition LIKE '%-- HC-DEPLOY build=%';" 2>&1); then
+    echo "✗ Could not read the last deploy build from the database:" >&2
+    echo "$build_rows" >&2
+    exit 1
+fi
+last_build=$(echo "$build_rows" | grep -oE '^[0-9]+' | sort -n | tail -1)
+if [ -n "${HC_DEPLOY_BUILD:-}" ]; then
+    DEPLOY_BUILD="$HC_DEPLOY_BUILD"
+elif [ -z "$last_build" ]; then
+    echo "✗ No HC-DEPLOY stamp found in the database. Set HC_DEPLOY_BUILD to start the count." >&2
+    exit 1
+else
+    DEPLOY_BUILD=$(( last_build + 1 ))
+fi
 DEPLOY_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 DEPLOY_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short=8 HEAD)"
 if [[ -n "$(git -C "$REPO_ROOT" status --porcelain -- db/)" ]]; then
