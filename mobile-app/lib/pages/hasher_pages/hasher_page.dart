@@ -199,19 +199,8 @@ class HasherPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          // A hasher's photo is a portrait, drawn as a circle.
-          ClipOval(
-            child: SizedBox(
-              width: 96,
-              height: 96,
-              child: (h.photo ?? '').isEmpty
-                  ? Image.asset('images/icons/create_profile_photo.png')
-                  : Image(
-                      image: avatarImageProvider(h.photo),
-                      fit: BoxFit.cover,
-                    ),
-            ),
-          ),
+          // Square and whole, never trimmed into a circle.
+          HasherPhoto(url: h.photo, size: 120),
           const SizedBox(height: 10),
           Text(
             h.displayName,

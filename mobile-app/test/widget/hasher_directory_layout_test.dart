@@ -84,4 +84,30 @@ void main() {
     );
     expect(t.takeException(), isNull);
   });
+
+  testWidgets('By Hasher row: By Kennel layout, square photo, no clipping', (
+    WidgetTester t,
+  ) async {
+    t.view.physicalSize = const Size(320, 640);
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.reset);
+    const HasherSummary h = HasherSummary(
+      publicHasherId: HcId.empty,
+      displayName: 'Tuna Melt',
+      homeKennelShortName: 'City H3',
+      runsTogether: 492,
+    );
+    await t.pumpWidget(
+      _host(
+        const SizedBox(height: 100, child: HasherRunCountListItem(hasher: h)),
+        dark: false,
+      ),
+    );
+    expect(find.text('492'), findsOneWidget);
+    expect(find.text('(City H3)'), findsOneWidget);
+    expect(find.byType(ClipOval), findsNothing);
+    final Size photo = t.getSize(find.byType(HasherPhoto));
+    expect(photo.width, photo.height);
+    expect(t.takeException(), isNull);
+  });
 }

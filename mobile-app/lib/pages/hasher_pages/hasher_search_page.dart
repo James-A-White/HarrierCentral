@@ -197,18 +197,9 @@ class HasherRow extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
-            ClipOval(
-              child: SizedBox(
-                width: 48,
-                height: 48,
-                child: (hasher.photo ?? '').isEmpty
-                    ? Image.asset('images/icons/create_profile_photo.png')
-                    : Image(
-                        image: avatarImageProvider(hasher.photo),
-                        fit: BoxFit.cover,
-                      ),
-              ),
-            ),
+            // Profile photos are square and shown whole (James,
+            // 2026-10-02): never trimmed into a circle.
+            HasherPhoto(url: hasher.photo, size: 48),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -233,6 +224,102 @@ class HasherRow extends StatelessWidget {
             Icon(Icons.chevron_right, color: soft),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A hasher's profile photo: square and whole, never trimmed into a circle
+/// (James, 2026-10-02: "Profile photos are always square").
+class HasherPhoto extends StatelessWidget {
+  const HasherPhoto({super.key, required this.url, required this.size});
+
+  final String? url;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: (url ?? '').isEmpty
+          ? Image.asset(
+              'images/icons/create_profile_photo.png',
+              fit: BoxFit.contain,
+            )
+          : Image(image: avatarImageProvider(url), fit: BoxFit.contain),
+    );
+  }
+}
+
+/// Run Counts › By Hasher's row, styled as By Kennel's
+/// (KennelRunHistoryCountListItem): picture = count, name above, a small
+/// line below. Opens the hasher page.
+class HasherRunCountListItem extends StatelessWidget {
+  const HasherRunCountListItem({super.key, required this.hasher});
+
+  final HasherSummary hasher;
+
+  @override
+  Widget build(BuildContext context) {
+    final String? home = hasher.homeKennelShortName ?? hasher.homeKennelName;
+    return InkWell(
+      onTap: () => unawaited(HasherPage.open(hasher)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0),
+            child: HasherPhoto(url: hasher.photo, size: 80),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 2.0),
+            child: Text(
+              ' = ',
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: ts_titleCondensedVeryLargeBlack,
+              textAlign: TextAlign.left,
+            ),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  hasher.displayName,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: ts_titleCondensedBlack,
+                  textAlign: TextAlign.left,
+                ),
+                Text(
+                  '${hasher.runsTogether}',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: ts_titleCondensedVeryLargeBlack,
+                  textAlign: TextAlign.left,
+                ),
+                SizedBox(
+                  height: 20.0,
+                  child: home == null
+                      ? null
+                      : Text(
+                          '($home)',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: ts_titleMediumCondensedBlack.copyWith(
+                            fontSize: 18.0,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

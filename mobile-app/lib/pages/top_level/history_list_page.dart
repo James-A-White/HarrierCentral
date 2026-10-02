@@ -77,9 +77,9 @@ class HistoryListPage extends StatelessWidget {
     final List<HasherSummary> all = c.coRunners.toList();
     final bool loading = c.coRunnersLoading.value;
     final bool failed = c.coRunnersFailed.value;
-    final List<(int, HasherSummary)> shown = <(int, HasherSummary)>[
-      for (int i = 0; i < all.length; i++)
-        if (all[i].matches(q)) (i + 1, all[i]),
+    final List<HasherSummary> shown = <HasherSummary>[
+      for (final HasherSummary h in all)
+        if (h.matches(q)) h,
     ];
     return Expanded(
       child: Column(
@@ -155,14 +155,15 @@ class HistoryListPage extends StatelessWidget {
                         ),
                     ],
                   )
+                // The same rhythm as By Kennel: fixed 100-high rows.
                 : ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(8, 4, 8, 24),
+                    padding: const EdgeInsets.only(top: 10, bottom: 24),
+                    itemExtent: 100.0,
                     itemCount: shown.length,
                     itemBuilder: (BuildContext context, int i) {
                       if (i >= shown.length) return const SizedBox.shrink();
-                      final (int rank, HasherSummary h) = shown[i];
-                      return HasherRow(hasher: h, onDark: false, rank: rank);
+                      return HasherRunCountListItem(hasher: shown[i]);
                     },
                   ),
           ),
