@@ -301,15 +301,34 @@ WHERE msg.id = @messageId AND msg.removed = 0 AND h.Removed = 0;
 -- ---------------------------------------------------------------
 DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
 
+-- WHICH RUNS (E9.F1.S27, James 2026-10-02 — HC6.RunChatTie is the rule).
+-- A bell set on THE RUN itself is the hasher's word for this run and wins.
+-- With only the KENNEL's bell on, a run chat buzzes only for a run that is
+-- personally theirs (RSVP Yes, attended, posted in it) — or for the
+-- kennel's GM and On-Sec, who get every run. Every other run chat of a
+-- kennel they belong to or follow arrives SILENT, so the badge still moves.
+-- A traveller's bare HasherKennelMap row (ran there once) gets nothing.
 SELECT DISTINCT
     hkm.UserId,
     device.FcmToken,
-    COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) AS Pref
+    COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) AS Pref,
+    CAST(CASE WHEN NULLIF(hem.EventNotificationPreference, 0) IS NOT NULL THEN 1 ELSE 0 END AS SMALLINT) AS RunBellSet,
+    tie.IsPersonal, tie.HasKennelTie, tie.IsGmOrOnSec,
+    CAST(CASE WHEN (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) = 1
+                    OR (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) = 4
+                        AND @isWithinWindow = 1))
+               AND (NULLIF(hem.EventNotificationPreference, 0) IS NOT NULL
+                    OR tie.IsPersonal = 1 OR tie.IsGmOrOnSec = 1)
+              THEN 1 ELSE 0 END AS SMALLINT) AS Buzz,
+    CAST(CASE WHEN NULLIF(hem.EventNotificationPreference, 0) IS NOT NULL
+                OR tie.IsPersonal = 1 OR tie.HasKennelTie = 1 OR tie.IsGmOrOnSec = 1
+              THEN 1 ELSE 0 END AS SMALLINT) AS Silent
 INTO #pushAudience
 FROM HC.HasherKennelMap hkm
 INNER JOIN HC.Hasher h      ON h.id          = hkm.UserId
 INNER JOIN HC.Device device ON device.UserId = hkm.UserId
 LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
+CROSS APPLY HC6.RunChatTie(hkm.UserId, @eventId) tie
 WHERE hkm.KennelId = @kennelId
   AND hkm.removed  = 0
   AND h.Removed    = 0
@@ -329,6 +348,14 @@ WHERE hkm.KennelId = @kennelId
    OR (@sendToHares         != 0 AND hem.IsHare    != 0)
   );
 
+-- Decided once: Buzz = a visible push; Silent = the badge moves quietly.
+--   on (1), or on-before-run (4) inside the window, buzzes when the bell
+--   is the run's own, or the run is personally theirs, or they are the
+--   kennel's GM / On-Sec. Otherwise it is silent — but only for a run in
+--   their Chats list (personal, or a kennel they belong to or follow).
+--   muted (3) and before-run (4) outside the window: silent, same proviso.
+-- (computed in #pushAudience above)
+
 -- ---------------------------------------------------------------
 -- Rowset 1: visible push notification recipients
 -- ---------------------------------------------------------------
@@ -341,8 +368,7 @@ SELECT DISTINCT a.UserId, a.FcmToken,
      THEN bt.BadgeTotal END AS BadgeTotal
 FROM #pushAudience a
 CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
-WHERE a.Pref = 1
-   OR (a.Pref = 4 AND @isWithinWindow = 1);
+WHERE a.Buzz = 1;
 
 -- ---------------------------------------------------------------
 -- Rowset 2: silent (data-only) recipients — badge moves, nothing buzzes.
@@ -354,8 +380,10 @@ SELECT DISTINCT a.UserId, a.FcmToken,
      THEN bt.BadgeTotal END AS BadgeTotal
 FROM #pushAudience a
 CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
-WHERE a.Pref = 3
-   OR (a.Pref = 4 AND @isWithinWindow = 0);
+WHERE a.Buzz = 0 AND a.Silent = 1
+  -- A token already buzzed (another account on the same phone) is not sent
+  -- a second, silent copy.
+  AND NOT EXISTS (SELECT 1 FROM #pushAudience v WHERE v.FcmToken = a.FcmToken AND v.Buzz = 1);
 
 DROP TABLE #pushAudience;
 

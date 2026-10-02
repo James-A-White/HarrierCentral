@@ -275,16 +275,32 @@ END
     -- ---------------------------------------------------------------
     DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
 
+    -- WHICH RUNS (E9.F1.S27, James 2026-10-02 — the same rule as
+    -- hcapp_sendEventMessage, from HC6.RunChatTie). A bell set on the run
+    -- wins; with only the kennel's bell on, a run chat buzzes only for a run
+    -- that is personally theirs (RSVP Yes, attended, posted) or for the
+    -- kennel's GM / On-Sec; any other run of a kennel they belong to or
+    -- follow arrives silent; a bare "ran there once" row gets nothing.
     SELECT DISTINCT
         hkm.UserId,
         h.DisplayName,
         device.FcmToken,
-        COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) AS Pref
+        COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) AS Pref,
+        CAST(CASE WHEN (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) = 1
+                        OR (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) = 4
+                            AND @isEventWithinTimeLimitForNotifications = 1))
+                   AND (NULLIF(hem.EventNotificationPreference, 0) IS NOT NULL
+                        OR tie.IsPersonal = 1 OR tie.IsGmOrOnSec = 1)
+                  THEN 1 ELSE 0 END AS SMALLINT) AS Buzz,
+        CAST(CASE WHEN NULLIF(hem.EventNotificationPreference, 0) IS NOT NULL
+                    OR tie.IsPersonal = 1 OR tie.HasKennelTie = 1 OR tie.IsGmOrOnSec = 1
+                  THEN 1 ELSE 0 END AS SMALLINT) AS Silent
     INTO #pushAudience
     FROM HC.HasherKennelMap hkm
     INNER JOIN HC.Hasher h      ON h.id          = hkm.UserId
     INNER JOIN HC.Device device ON device.UserId = hkm.UserId
     LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
+    CROSS APPLY HC6.RunChatTie(hkm.UserId, @eventId) tie
     WHERE hkm.KennelId = @kennelId
       AND hkm.removed  = 0
       AND h.Removed    = 0
@@ -321,7 +337,7 @@ END
     FROM #pushAudience p
     CROSS APPLY HC6.UserUnreadChatTotal(p.UserId) bt
     WHERE p.UserId != @hasherId
-      AND (p.Pref = 1 OR (p.Pref = 4 AND @isEventWithinTimeLimitForNotifications = 1));
+      AND p.Buzz = 1;
 
     -- Rowset 2: InAppOnlyNotificationRecipients — silent, the badge moves.
     -- A token already in rowset 1 is not sent a second, silent copy.
@@ -332,13 +348,12 @@ END
     FROM #pushAudience a
     CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
     WHERE (a.UserId = @hasherId
-           OR a.Pref = 3
-           OR (a.Pref = 4 AND @isEventWithinTimeLimitForNotifications = 0))
+           OR (a.Buzz = 0 AND a.Silent = 1))
       AND NOT EXISTS (
           SELECT 1 FROM #pushAudience v
           WHERE v.FcmToken = a.FcmToken
             AND v.UserId  != @hasherId
-            AND (v.Pref = 1 OR (v.Pref = 4 AND @isEventWithinTimeLimitForNotifications = 1)));
+            AND v.Buzz = 1);
 
     DROP TABLE #pushAudience;
 

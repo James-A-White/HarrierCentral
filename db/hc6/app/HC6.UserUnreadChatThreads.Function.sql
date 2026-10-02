@@ -20,17 +20,27 @@ AS
 -- Created: 2026-09-28
 -- =====================================================================
 RETURN
--- Run threads. Scope: any event the user holds a badge row for (has posted
--- or read — not time-bounded), OR an event in a kennel they follow / have an
--- attendance row for, starting within the last 90 days or in the future.
+-- Run threads (E9.F1.S27, James 2026-10-02 — HC6.RunChatTie is the rule):
+-- a run they POSTED in or pinned (any time), OR — starting within the last
+-- 90 days or in the future — a run that is personally theirs (RSVP Yes,
+-- attended) or of a kennel they are a member of (membership not expired)
+-- or follow. The windows are today's: before 2026-10-02 only an opened or
+-- posted chat was kept without a limit. Until 2026-10-02 any badge row (merely having
+-- OPENED the chat) or any HasherKennelMap row (ran there once) was enough,
+-- which filled a traveller's list with every kennel they ever visited.
 -- No badge row ⇒ every message is unread (surfaces before first read, same
 -- as kennel threads). BadgeCount is forced to 0 when the effective
 -- notification preference for the run is ignore (2) — see header.
 SELECT
     CASE WHEN COALESCE(NULLIF(hem.EventNotificationPreference, 0),
-                       hkm.KennelNotificationPreference, 0) <> 2
-         THEN t.MaxSeq - COALESCE(embc.LastSequenceCount, 0) - blocked.N
-         ELSE 0 END          AS BadgeCount,
+                       hkm.KennelNotificationPreference, 0) = 2 THEN 0
+         -- A run over 90 days old with no read mark at all is history
+         -- that was never tracked, not news: listed (e.g. you posted in it
+         -- before read marks existed) but not counted as unread.
+         WHEN embc.LastSequenceCount IS NULL
+              AND e.EventStartDatetimeGmt < DATEADD(DAY, -90, SYSUTCDATETIME()) THEN 0
+         ELSE t.MaxSeq - COALESCE(embc.LastSequenceCount, 0) - blocked.N
+         END                 AS BadgeCount,
     e.PublicEventId,
     e.id                    AS EventId,
     e.EventName,
@@ -82,6 +92,21 @@ OUTER APPLY (
     FROM HC.HasherEventMap h
     WHERE h.EventId = e.id AND h.UserId = @userId
 ) AS hem
+-- E9.F1.S27: the SAME rule as HC6.RunChatTie, worked out ONCE per user as
+-- three sets rather than per thread — applying HC6.RunChatTie per thread
+-- took 0.4-1.2 s against ~50 ms, and this function runs once per push
+-- recipient (HC6.UserUnreadChatTotal). Change one, change the other.
+LEFT JOIN (SELECT DISTINCT p.EventId FROM HC.EventMessage p
+           WHERE p.UserId = @userId AND p.EventId IS NOT NULL AND p.Removed = 0
+          ) AS posted ON posted.EventId = t.EventId
+LEFT JOIN (SELECT DISTINCT m.EventId FROM HC.HasherEventMap m
+           WHERE m.UserId = @userId AND ISNULL(m.removed, 0) = 0
+             AND (m.RsvpState = 3 OR m.AttendenceState >= 20)
+          ) AS mine ON mine.EventId = t.EventId
+LEFT JOIN (SELECT DISTINCT k.KennelId FROM HC.HasherKennelMap k
+           WHERE k.UserId = @userId AND k.removed = 0
+             AND (k.Following = 1 OR k.MembershipExpirationDate > SYSDATETIMEOFFSET())
+          ) AS tied ON tied.KennelId = e.KennelId
 OUTER APPLY (
     SELECT TOP 1 b.LastSequenceCount
     FROM HC.EventMessageBadgeCounts b
@@ -105,16 +130,18 @@ OUTER APPLY (
 WHERE e.deleted = 0
   AND e.IsVisible <> 0
   AND (
-        embc.LastSequenceCount IS NOT NULL
+        posted.EventId IS NOT NULL
+        OR ISNULL(hem.Pinned, 0) = 1
         OR (
-            e.EventStartDatetimeGmt >= DATEADD(DAY, -90, SYSUTCDATETIME())
-            AND (hkm.Found = 1 OR hem.Found = 1)
+            (mine.EventId IS NOT NULL OR tied.KennelId IS NOT NULL)
+            AND e.EventStartDatetimeGmt >= DATEADD(DAY, -90, SYSUTCDATETIME())
         )
       )
 
 UNION ALL
 
--- Kennel-level chat threads the user follows that have ANY messages. A user
+-- Kennel-level chat threads of kennels the user belongs to or follows (see
+-- the CROSS APPLY below) that have ANY messages. A user
 -- with NO badge row yet sees the full thread count as unread. Fully-read
 -- threads are returned too (BadgeCount = 0) so the kennel card can draw a
 -- solid "has chats" icon vs an outline "no chats yet" icon — the app's
@@ -163,9 +190,19 @@ INNER JOIN HC.Kennel k ON k.id = t.KennelId
 -- fan out into duplicate rows for the same kennel thread; it also filters
 -- to followed kennels (no HKM row ⇒ no row).
 CROSS APPLY (
+    -- E9.F1.S27: the kennel's own chat is for its members (membership not
+    -- expired) and followers — plus the home kennel and a kennel the user
+    -- pinned, both their own choices. A bare HasherKennelMap row (ran
+    -- there once) no longer lists it.
     SELECT TOP 1 h.KennelNotificationPreference, h.Pinned, h.IsHomeKennel
     FROM HC.HasherKennelMap h
     WHERE h.KennelId = t.KennelId AND h.UserId = @userId
+      AND h.removed = 0
+      AND (   h.Following = 1
+           OR h.MembershipExpirationDate > SYSDATETIMEOFFSET()
+           OR h.IsHomeKennel = 1
+           OR h.Pinned = 1)
+    ORDER BY h.Following DESC, h.Pinned DESC
 ) AS hkm
 OUTER APPLY (
     SELECT TOP 1 b.LastSequenceCount

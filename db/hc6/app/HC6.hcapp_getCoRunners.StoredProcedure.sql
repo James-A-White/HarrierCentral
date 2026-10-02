@@ -42,12 +42,13 @@ BEGIN
 END
 
 BEGIN TRY
-    -- Where each co-runner and I have run together most (ties: the most
-    -- recent), for "mostly <kennel>".
-    SELECT ck.UserId, ck.KennelId,
+    -- The per-kennel counts ONCE (HC6.CoRunnerKennels holds the rule); the
+    -- totals and "mostly <kennel>" are both read from it. Calling
+    -- HC6.CoRunners as well worked the whole thing out twice (0.6-0.9 s).
+    SELECT ck.UserId, ck.KennelId, ck.RunsTogether, ck.FirstTogether, ck.LastTogether,
            ROW_NUMBER() OVER (PARTITION BY ck.UserId
                               ORDER BY ck.RunsTogether DESC, ck.LastTogether DESC) AS rn
-    INTO #top
+    INTO #ck
     FROM HC6.CoRunnerKennels(@userId) ck;
 
     SELECT UPPER(CAST(h.PublicHasherId AS NVARCHAR(40))) AS PublicHasherId,
@@ -59,10 +60,12 @@ BEGIN TRY
            c.LastTogether                                AS LastTogether,
            c.FirstTogether                               AS FirstTogether,
            tk.KennelShortName                            AS MostlyKennelShortName
-    FROM HC6.CoRunners(@userId) c
+    FROM (SELECT UserId, SUM(RunsTogether) AS RunsTogether,
+                 MIN(FirstTogether) AS FirstTogether, MAX(LastTogether) AS LastTogether
+          FROM #ck GROUP BY UserId) c
     JOIN HC.Hasher h ON h.id = c.UserId AND h.deleted = 0 AND ISNULL(h.Removed, 0) = 0
     LEFT JOIN HC.Kennel k ON k.id = h.HomeKennelId AND k.deleted = 0
-    LEFT JOIN #top t ON t.UserId = c.UserId AND t.rn = 1
+    LEFT JOIN #ck t ON t.UserId = c.UserId AND t.rn = 1
     LEFT JOIN HC.Kennel tk ON tk.id = t.KennelId
     ORDER BY c.RunsTogether DESC, c.LastTogether DESC;
 END TRY
