@@ -18,7 +18,8 @@ AS
 --     FirstTogether, LastTogether }  (First/Last = EventStartLocalDate,
 --     the run's own calendar date);
 --   rowset 2 — { EventId, PublicEventId, EventNumber, EventName,
---     EventStartLocal, KennelShortName, KennelLogo, MeHare, ThemHare }
+--     EventStartLocal, KennelShortName, KennelLogo, MeHare, ThemHare,
+--     MyRunNumber, MyHareNumber }  (the last two appended 2026-10-02)
 --     (EventStartLocal = the run's local wall-clock start)
 -- Author: Harrier Central
 -- Created: 2026-10-02
@@ -64,17 +65,26 @@ END
 
 BEGIN TRY
     -- The same rule as HC6.CoRunners, per run rather than counted.
-    CREATE TABLE #runs (EventId UNIQUEIDENTIFIER PRIMARY KEY, MeHare SMALLINT, ThemHare SMALLINT);
+    -- MyRunNumber / MyHareNumber: "My FILTH run #115 and #63 time haring",
+    -- the same sum the kennel run history shows — the running count at this
+    -- run plus the pre-app historical count at that kennel.
+    CREATE TABLE #runs (EventId UNIQUEIDENTIFIER PRIMARY KEY, MeHare SMALLINT, ThemHare SMALLINT,
+                        MyRunNumber INT, MyHareNumber INT);
     INSERT #runs
     SELECT m.EventId,
            CASE WHEN ISNULL(m.IsHare, 0) <> 0 THEN 1 ELSE 0 END,
-           CASE WHEN ISNULL(o.IsHare, 0) <> 0 THEN 1 ELSE 0 END
+           CASE WHEN ISNULL(o.IsHare, 0) <> 0 THEN 1 ELSE 0 END,
+           ISNULL(m.TotalRunsThisKennel, 0)   + ISNULL(hkm.HistoricalTotalRunCount, 0),
+           ISNULL(m.TotalHaringThisKennel, 0) + ISNULL(hkm.HistoricalHaringCount, 0)
     FROM HC.HasherEventMap m
     JOIN HC.HasherEventMap o
       ON o.EventId = m.EventId AND o.UserId = @otherId
      AND o.AttendenceState >= 20 AND ISNULL(o.removed, 0) = 0
     JOIN HC.Event e
       ON e.id = m.EventId AND e.deleted = 0 AND ISNULL(e.removed, 0) = 0 AND e.IsVisible = 1
+    OUTER APPLY (SELECT TOP (1) k.HistoricalTotalRunCount, k.HistoricalHaringCount
+                 FROM HC.HasherKennelMap k
+                 WHERE k.UserId = @userId AND k.KennelId = e.KennelId) hkm
     WHERE m.UserId = @userId AND m.AttendenceState >= 20 AND ISNULL(m.removed, 0) = 0;
 
     SELECT 1 AS success, NULL AS errorMessage;
@@ -96,7 +106,8 @@ BEGIN TRY
            LOWER(CAST(e.PublicEventId AS NVARCHAR(40))) AS PublicEventId,
            e.EventNumber, e.EventName, e.EventStartLocal,
            k.KennelShortName, k.KennelLogo,
-           r.MeHare, r.ThemHare
+           r.MeHare, r.ThemHare,
+           r.MyRunNumber, r.MyHareNumber
     FROM #runs r
     JOIN HC.Event e ON e.id = r.EventId
     LEFT JOIN HC.Kennel k ON k.id = e.KennelId

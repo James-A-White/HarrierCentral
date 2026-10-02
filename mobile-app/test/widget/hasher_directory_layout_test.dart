@@ -110,4 +110,35 @@ void main() {
     expect(photo.width, photo.height);
     expect(t.takeException(), isNull);
   });
+
+  testWidgets('shared run row matches the run history row', (
+    WidgetTester t,
+  ) async {
+    t.view.physicalSize = const Size(320, 640);
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.reset);
+    final SharedRun r = SharedRun(
+      eventId: HcId.empty,
+      eventNumber: 226,
+      eventName: 'FILTH #226 - Amsterdam',
+      startLocal: DateTime(2024, 3, 25, 19, 30),
+      kennelShortName: 'FILTH',
+      meHare: true,
+      themHare: true,
+      myRunNumber: 114,
+      myHareNumber: 63,
+    );
+    await t.pumpWidget(
+      _host(
+        SharedRunListItem(run: r, theirName: 'Tuna Melt', onTap: () {}),
+        dark: false,
+      ),
+    );
+    expect(find.text('FILTH #226 - Amsterdam'), findsOneWidget);
+    expect(find.text('Run #226 on Mon, Mar 25, 2024 at 7:30 PM'), findsOneWidget);
+    expect(find.text('My FILTH run #114'), findsOneWidget);
+    expect(find.text(' and #63 time haring'), findsOneWidget);
+    expect(find.text('Tuna Melt hared'), findsOneWidget);
+    expect(t.takeException(), isNull);
+  });
 }

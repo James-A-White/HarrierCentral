@@ -119,6 +119,8 @@ class SharedRun {
     this.kennelLogo,
     this.meHare = false,
     this.themHare = false,
+    this.myRunNumber = 0,
+    this.myHareNumber = 0,
   });
 
   final HcId eventId;
@@ -132,6 +134,11 @@ class SharedRun {
   final bool meHare;
   final bool themHare;
 
+  /// "My FILTH run #115 and #63 time haring": my count at that kennel at
+  /// this run, the pre-app historical count included (0 = not sent).
+  final int myRunNumber;
+  final int myHareNumber;
+
   factory SharedRun.fromJson(Map<String, dynamic> j) => SharedRun(
     eventId: HcId('${j['EventId'] ?? ''}'),
     eventNumber: _int(j['EventNumber']),
@@ -141,6 +148,8 @@ class SharedRun {
     kennelLogo: _text(j['KennelLogo']),
     meHare: _int(j['MeHare']) != 0,
     themHare: _int(j['ThemHare']) != 0,
+    myRunNumber: _int(j['MyRunNumber']),
+    myHareNumber: _int(j['MyHareNumber']),
   );
 }
 

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRunsTogether",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The hasher page (E10.F1.S5 / E9.F1.S26): the other hasher, a summary, and every run both attended, newest first.",
   "parameters": [
     {
@@ -173,6 +173,18 @@
           "type": "SMALLINT",
           "nullable": false,
           "description": "1 = the other hasher hared"
+        },
+        {
+          "name": "MyRunNumber",
+          "type": "INT",
+          "nullable": false,
+          "description": "the caller's run number at that kennel at this run, historical count included (added 2026-10-02)"
+        },
+        {
+          "name": "MyHareNumber",
+          "type": "INT",
+          "nullable": false,
+          "description": "the caller's haring number at that kennel, historical included (added 2026-10-02)"
         }
       ]
     }
