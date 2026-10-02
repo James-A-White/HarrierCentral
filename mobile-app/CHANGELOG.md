@@ -1,3 +1,12 @@
+## 3.1.8+1438 (2026-10-02)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Test data: 500 real hashers still carry seeded answers until the revert runs.
+### Improvements
+- **By Hasher looks like By Kennel**: square photos, big counts, and "(since Sep 2013 · mostly FILTH)" under each.
+- **A hasher's page looks like a kennel's run history**: your run and haring numbers on each shared run, the activity icons (PackTrack, photos, chat, down-downs), and tap the photo to see it full size.
+### Server (no app change needed)
+- **Fewer, better chat notifications**: with a kennel's bell on, only runs you said Yes to, attended or posted in buzz; other runs of kennels you belong to or follow update the badge silently. GMs and On-Secs still get every run.
+- **Chats lists only your kennels' runs**: a kennel you once visited no longer fills your Chats.
+
 ## 3.1.8+1437 (2026-10-02)
 Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Test data: 500 real hashers carry seeded answers until the revert runs.
 ### New Features
