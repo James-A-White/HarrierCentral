@@ -18,6 +18,10 @@ abstract class UserPositionsPayload with _$UserPositionsPayload {
     int? trimStartMs,
     int? trimEndMs,
     required List<UserTrack> users,
+    // Incremental polls only: points deleted since the mark (a resumed
+    // runner's On Inn, a cleared LOST mark, a trim boundary). Empty on a full
+    // fetch, which simply lacks them, and from servers before 2026-10-02.
+    @Default(<RemovedTrackPoint>[]) List<RemovedTrackPoint> removed,
   }) = _UserPositionsPayload;
 
   factory UserPositionsPayload.fromJson(Map<String, dynamic> json) =>
@@ -48,4 +52,18 @@ abstract class TrackPoint with _$TrackPoint {
 
   factory TrackPoint.fromJson(Map<String, dynamic> json) =>
       _$TrackPointFromJson(json);
+}
+
+/// A point the server deleted since the viewer's last poll: every point of
+/// runner [id] captured at [timestampMs] is gone.
+@freezed
+abstract class RemovedTrackPoint with _$RemovedTrackPoint {
+  const factory RemovedTrackPoint({
+    required String id,
+    @JsonKey(name: 'timestampMs') required int timestampMs,
+    String? type,
+  }) = _RemovedTrackPoint;
+
+  factory RemovedTrackPoint.fromJson(Map<String, dynamic> json) =>
+      _$RemovedTrackPointFromJson(json);
 }

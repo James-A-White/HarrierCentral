@@ -10,7 +10,7 @@ import L from "leaflet";
 import { safeFlyTo } from "@/lib/leaflet-teardown";
 import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera, Download } from "lucide-react";
 import {
-  fetchPackTrack, fetchRunnerNames, fetchRunPhotos, trackUpTo, sumDistanceMeters,
+  createPackTrackPoller, fetchRunnerNames, fetchRunPhotos, trackUpTo, sumDistanceMeters,
   withoutPhotoPoints,
   formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
   resolveTrailTypeMap, trailValueForTrack, photoSrc,
@@ -1605,9 +1605,10 @@ export default function PackTrackMap({
 
   useEffect(() => {
     let disposed = false;
+    const poll = createPackTrackPoller(eventId);
 
     const load = (isRefresh: boolean) => {
-      fetchPackTrack(eventId).then(data => {
+      poll().then(data => {
         if (disposed) return;
         // Clean each runner's track (drop GPS noise, interpolate gaps) and drop
         // runners left with nothing so they don't show as empty selector chips.

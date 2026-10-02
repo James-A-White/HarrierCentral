@@ -10,6 +10,9 @@ const API_KEY = process.env.GET_POSITIONS_API_KEY;
 
 export async function GET(req: NextRequest) {
   const eventId = req.nextUrl.searchParams.get("eventId");
+  // Present on every poll after the first (createPackTrackPoller): the
+  // server then answers with only what arrived, or was deleted, since.
+  const afterTimestampMs = req.nextUrl.searchParams.get("afterTimestampMs");
   if (!eventId) return NextResponse.json({ error: "eventId required" }, { status: 400 });
   if (!API_KEY) {
     console.error("[packtrack] GET_POSITIONS_API_KEY not set — cannot call GetPositions");
@@ -26,7 +29,7 @@ export async function GET(req: NextRequest) {
         "Accept": "application/json",
         "X-Api-Key": API_KEY,
       },
-      body: JSON.stringify({ eventId }),
+      body: JSON.stringify(afterTimestampMs ? { eventId, afterTimestampMs } : { eventId }),
       cache: "no-store",
     });
 
@@ -42,10 +45,11 @@ export async function GET(req: NextRequest) {
     const data = await res.json();
     const userCount = (data.users as unknown[])?.length ?? 0;
     const posCount = (data.users as { positions: unknown[] }[])?.reduce((s, u) => s + (u.positions?.length ?? 0), 0) ?? 0;
-    console.log(`[packtrack] users=${userCount} positions=${posCount}`);
+    console.log(`[packtrack] users=${userCount} positions=${posCount}${afterTimestampMs ? " (delta)" : ""}`);
 
+    // A delta answers one viewer's mark and must never be served to another.
     return NextResponse.json(data, {
-      headers: { "Cache-Control": "public, s-maxage=300" },
+      headers: { "Cache-Control": afterTimestampMs ? "no-store" : "public, s-maxage=300" },
     });
   } catch (err) {
     void logWebError({ source: "/api/packtrack", error: err, url: req.nextUrl.pathname });

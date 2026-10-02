@@ -633,11 +633,12 @@ class RunTrackerMapController extends GetxController
   final Map<String, List<TrackPoint>> _serverTracks = {};
   final Map<String, UserTrack> _filteredTracks = {};
 
-  /// When the last full fetch happened. An incremental poll cannot report a
-  /// deletion (an admin trim, a resumed runner's stripped On Inn), so a full
-  /// fetch is taken again on this interval as the safety net.
-  DateTime? _lastFullFetchAt;
-  static const Duration _fullRefreshInterval = Duration(minutes: 5);
+  // No periodic full fetch (James, 2026-10-02: "we should always be using
+  // watermarks to download only deltas"). Until then a full re-download was
+  // taken every 5 minutes, because a poll could not report a deletion; the
+  // server now returns deletions in `removed` (PositionTombstones), and a
+  // change of the official window — the one thing that can bring points
+  // BACK — triggers a single full fetch.
 
   // ── Operations ────────────────────────────────────────────────────────────
   // Lifecycle, data loading, playback control, camera, rendering helpers.
@@ -1357,17 +1358,12 @@ class RunTrackerMapController extends GetxController
       _afterTimestampMs = null;
     }
 
-    // Full fetch when we hold nothing, on reset, in the admin editor (its
-    // trims and deletes must be seen at once), and on the safety-net
-    // interval. Otherwise ask only for what ARRIVED since the last poll: the
-    // server answers from a minute before the mark and the merge below
-    // de-duplicates, so a batch still landing when the last poll ran is not
-    // missed (E5.F4.S6).
-    final bool full =
-        _afterTimestampMs == null ||
-        adminEditMode ||
-        _lastFullFetchAt == null ||
-        DateTime.now().difference(_lastFullFetchAt!) > _fullRefreshInterval;
+    // Full fetch when we hold nothing, on reset, and in the admin editor (it
+    // asks for the untrimmed track). Otherwise ask only for what ARRIVED, or
+    // was deleted, since the last poll: the server answers from a minute
+    // before the mark and the merge below de-duplicates, so a batch still
+    // landing when the last poll ran is not missed (E5.F4.S6).
+    final bool full = _afterTimestampMs == null || adminEditMode;
 
     try {
       final data = await _positionsApi.fetchPositions(
@@ -1388,6 +1384,15 @@ class RunTrackerMapController extends GetxController
       if (data.latestServerTimestampMs != null) {
         _afterTimestampMs = data.latestServerTimestampMs;
       }
+      // The official window moved: points outside the OLD window were never
+      // sent, and an incremental poll will not send them now. One full fetch
+      // puts the track right; it is rare (an admin dragging a handle).
+      if (!full &&
+          (data.trimStartMs != officialStartMs.value ||
+              data.trimEndMs != officialEndMs.value)) {
+        await loadPositions(reset: true);
+        return;
+      }
       // Trail-type config arrives on the full fetch only; cache it (incremental
       // polls return null, so don't clobber the cached value).
       if (data.trailTypesConfigJson != null) {
@@ -1401,8 +1406,8 @@ class RunTrackerMapController extends GetxController
 
       final Set<String> changed = full
           ? _replaceServerTracks(data.users)
-          : _mergeServerTracks(data.users);
-      if (full) _lastFullFetchAt = DateTime.now();
+          : (_mergeServerTracks(data.users)
+              ..addAll(_applyServerRemovals(data.removed)));
       if (full) showingOwnTrailOffline.value = false;
 
       _ringForNewHelpMarks(changed);
@@ -1568,6 +1573,22 @@ class RunTrackerMapController extends GetxController
       held.sort((a, b) => a.timestampMs.compareTo(b.timestampMs));
       _dropStaleTerminators(held);
       changed.add(id);
+    }
+    return changed;
+  }
+
+  /// Points the server deleted since the last poll — a resumed runner's On
+  /// Inn, a LOST mark cleared by the all clear, a trim boundary. Every point
+  /// of that runner at that capture time goes. Returns the runners touched.
+  Set<String> _applyServerRemovals(List<RemovedTrackPoint> removed) {
+    final Set<String> changed = {};
+    for (final RemovedTrackPoint r in removed) {
+      final String id = normalizeUuid(r.id);
+      final List<TrackPoint>? held = _serverTracks[id];
+      if (held == null) continue;
+      final int before = held.length;
+      held.removeWhere((TrackPoint p) => p.timestampMs == r.timestampMs);
+      if (held.length != before) changed.add(id);
     }
     return changed;
   }

@@ -17,6 +17,11 @@ _UserPositionsPayload _$UserPositionsPayloadFromJson(
   users: (json['users'] as List<dynamic>)
       .map((e) => UserTrack.fromJson(e as Map<String, dynamic>))
       .toList(),
+  removed:
+      (json['removed'] as List<dynamic>?)
+          ?.map((e) => RemovedTrackPoint.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const <RemovedTrackPoint>[],
 );
 
 Map<String, dynamic> _$UserPositionsPayloadToJson(
@@ -28,6 +33,7 @@ Map<String, dynamic> _$UserPositionsPayloadToJson(
   'trimStartMs': instance.trimStartMs,
   'trimEndMs': instance.trimEndMs,
   'users': instance.users,
+  'removed': instance.removed,
 };
 
 _UserTrack _$UserTrackFromJson(Map<String, dynamic> json) => _UserTrack(
@@ -55,6 +61,20 @@ Map<String, dynamic> _$TrackPointToJson(_TrackPoint instance) =>
       'lng': instance.lng,
       'acc': instance.acc,
       'alt': instance.alt,
+      'timestampMs': instance.timestampMs,
+      'type': instance.type,
+    };
+
+_RemovedTrackPoint _$RemovedTrackPointFromJson(Map<String, dynamic> json) =>
+    _RemovedTrackPoint(
+      id: json['id'] as String,
+      timestampMs: (json['timestampMs'] as num).toInt(),
+      type: json['type'] as String?,
+    );
+
+Map<String, dynamic> _$RemovedTrackPointToJson(_RemovedTrackPoint instance) =>
+    <String, dynamic>{
+      'id': instance.id,
       'timestampMs': instance.timestampMs,
       'type': instance.type,
     };

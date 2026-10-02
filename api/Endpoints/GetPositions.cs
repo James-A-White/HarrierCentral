@@ -189,6 +189,42 @@ namespace HcWebApi.Endpoints
             };
             } // live path
 
+            // Deletions since the viewer's mark (PositionTombstones). A delete
+            // never "arrives", so without these an incremental poll could not
+            // say a point was gone and the client had to re-download every
+            // track to find out. Only on an incremental poll: a full fetch
+            // already lacks the deleted rows. The mark moves past them so the
+            // next poll does not return them again.
+            if (!isFullFetch && afterTimestampBoundary is long sinceMs)
+            {
+                DateTimeOffset from = DateTimeOffset.FromUnixTimeMilliseconds(sinceMs) - IncrementalLookback;
+                var (removed, latestRemovalMs) =
+                    await PositionTombstones.ReadSinceAsync(_tableServiceClient, request.EventId, from, _log);
+                if (!string.IsNullOrEmpty(request.UserId))
+                {
+                    removed = removed
+                        .Where(r => string.Equals(r.UserId, request.UserId, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                if (removed.Count > 0)
+                {
+                    response.Removed = removed
+                        .Select(r => new RemovedPositionResponse
+                        {
+                            Id = r.UserId.ToLowerInvariant(),
+                            TimestampMs = r.TimestampMs,
+                            Type = r.Type
+                        })
+                        .ToList();
+                    string removalMark = latestRemovalMs.ToString("D19");
+                    if (response.LatestServerTimestamp == null ||
+                        string.CompareOrdinal(removalMark, response.LatestServerTimestamp) > 0)
+                    {
+                        response.LatestServerTimestamp = removalMark;
+                    }
+                }
+            }
+
             // On the full fetch (no / zero afterTimestamp), bundle the owning
             // kennel's PackTrack trail-type config so the playback payload is
             // self-describing — labels resolve on app and web even for viewers
@@ -702,6 +738,18 @@ namespace HcWebApi.Endpoints
             // than Table Storage (E5.F6.S4). Absent on the live path.
             [JsonProperty("source", NullValueHandling = NullValueHandling.Ignore)] public string? Source { get; set; }
             [JsonProperty("users")] public List<UserPositionsResponse> Users { get; set; } = new();
+            // Incremental polls only: points deleted since the caller's mark
+            // (a resumed runner's On Inn, a cleared LOST mark, a trim boundary).
+            // The client removes every point of that runner at that capture
+            // time. Absent when there are none, so older clients see no change.
+            [JsonProperty("removed", NullValueHandling = NullValueHandling.Ignore)] public List<RemovedPositionResponse>? Removed { get; set; }
+        }
+
+        internal class RemovedPositionResponse
+        {
+            [JsonProperty("id")] public string Id { get; set; } = string.Empty;
+            [JsonProperty("timestampMs")] public long TimestampMs { get; set; }
+            [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)] public string? Type { get; set; }
         }
 
         internal class UserPositionsResponse

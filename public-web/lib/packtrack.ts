@@ -18,6 +18,11 @@ export interface PackTrackPayload {
   latestServerTimestampMs?: string;
   /** Per-kennel trail-type config JSON, bundled by GetPositions on the full fetch. */
   trailTypesConfigJson?: string;
+  /** Official run window (epoch-ms) from the admin's AST/AEN markers. */
+  trimStartMs?: number;
+  trimEndMs?: number;
+  /** Incremental polls only: points deleted since the mark (PositionTombstones). */
+  removed?: { id: string; timestampMs: number; type?: string }[];
   users: UserTrack[];
 }
 
@@ -844,18 +849,100 @@ export async function fetchRunPhotos(
   }
 }
 
-export async function fetchPackTrack(eventId: string): Promise<PackTrackPayload | null> {
+export async function fetchPackTrack(
+  eventId: string,
+  afterTimestampMs?: string,
+): Promise<PackTrackPayload | null> {
   try {
-    const res = await fetch(`/api/packtrack?eventId=${encodeURIComponent(eventId)}`);
+    const after = afterTimestampMs ? `&afterTimestampMs=${encodeURIComponent(afterTimestampMs)}` : "";
+    const res = await fetch(`/api/packtrack?eventId=${encodeURIComponent(eventId)}${after}`, { cache: "no-store" });
     if (!res.ok) {
       reportClientError("packtrack-client/packtrack", new Error(`fetch failed: ${res.status}`), await res.text());
       return null;
     }
     const data = await res.json() as PackTrackPayload;
-    console.log(`[packtrack] eventId=${eventId} users=${data.users?.length ?? 0}`, data);
     return data;
   } catch (err) {
     reportClientError("packtrack-client/packtrack", err);
     return null;
   }
+}
+
+/**
+ * Live polling by deltas (2026-10-02). The first call downloads every track;
+ * each later call asks only for what ARRIVED, or was deleted, since the last
+ * one, and merges it into what this poller holds. Every call still returns
+ * the whole pack, so a caller is written exactly as it was for a full fetch.
+ *
+ * Until this the web downloaded the whole pack on every tick: every 30 s on
+ * the run page and every 12 s on Trail TV, per viewer. Mirrors the app's
+ * RunTrackerMapController: points are de-duplicated by capture time + type
+ * (the server answers from a minute before the mark, on purpose), and a
+ * change of the official window, the one thing that can bring points back,
+ * triggers a single full fetch.
+ */
+export function createPackTrackPoller(eventId: string) {
+  let mark: string | undefined;
+  let held = new Map<string, TrackPoint[]>();
+  let trailCfg: string | undefined;
+  let trimStart: number | undefined;
+  let trimEnd: number | undefined;
+  const key = (p: TrackPoint) => `${p.timestampMs}|${p.type ?? ""}`;
+
+  const snapshot = (): PackTrackPayload => ({
+    eventId,
+    latestServerTimestampMs: mark,
+    trailTypesConfigJson: trailCfg,
+    trimStartMs: trimStart,
+    trimEndMs: trimEnd,
+    users: [...held.entries()].map(([id, positions]) => ({ id, positions: [...positions] })),
+  });
+
+  const full = async (): Promise<PackTrackPayload | null> => {
+    const data = await fetchPackTrack(eventId);
+    if (!data) return null;
+    held = new Map(
+      (data.users ?? []).map(u => [
+        u.id.toLowerCase(),
+        [...u.positions].sort((a, b) => a.timestampMs - b.timestampMs),
+      ]),
+    );
+    mark = data.latestServerTimestampMs ?? mark;
+    if (data.trailTypesConfigJson) trailCfg = data.trailTypesConfigJson;
+    trimStart = data.trimStartMs;
+    trimEnd = data.trimEndMs;
+    return snapshot();
+  };
+
+  return async function poll(): Promise<PackTrackPayload | null> {
+    if (!mark) return full();
+    const data = await fetchPackTrack(eventId, mark);
+    if (!data) return null;
+    if (data.trimStartMs !== trimStart || data.trimEndMs !== trimEnd) {
+      mark = undefined;
+      return full();
+    }
+    if (data.latestServerTimestampMs) mark = data.latestServerTimestampMs;
+    for (const u of data.users ?? []) {
+      if (u.positions.length === 0) continue;
+      const id = u.id.toLowerCase();
+      const list = held.get(id) ?? [];
+      const seen = new Set(list.map(key));
+      let added = false;
+      for (const p of u.positions) {
+        if (seen.has(key(p))) continue;
+        seen.add(key(p));
+        list.push(p);
+        added = true;
+      }
+      if (added) list.sort((a, b) => a.timestampMs - b.timestampMs);
+      held.set(id, list);
+    }
+    for (const r of data.removed ?? []) {
+      const id = r.id.toLowerCase();
+      const list = held.get(id);
+      if (list) held.set(id, list.filter(p => p.timestampMs !== r.timestampMs));
+    }
+    return snapshot();
+  };
 }

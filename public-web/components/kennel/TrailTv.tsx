@@ -29,10 +29,10 @@ import {
   MARK_PANE, MARK_PANE_Z, checkpointIcon, photoPinIcon, visibleMarks,
 } from "./trackMarks";
 import {
-  fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn,
+  createPackTrackPoller, fetchRunnerNames, fetchRunPhotos, parseMark, isTerminalOnInn,
   trackUpTo, filterAndInterpolate, formatDistanceLabel, haversineMeters, photoSrc,
 } from "@/lib/packtrack";
-import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
+import type { UserTrack, TrackPoint, RunPhoto, PackTrackPayload } from "@/lib/packtrack";
 import "@/lib/leaflet-teardown";
 
 const TRACK_COLORS = [
@@ -616,8 +616,14 @@ export default function TrailTv({
   }, [dismissTakeover]);
 
   // ── Track polling ────────────────────────────────────────────────────────────
+  // One delta poller per run: the first tick downloads the pack, every later
+  // one only what arrived or was deleted since (createPackTrackPoller).
+  const pollerRef = useRef<{ eventId: string; poll: () => Promise<PackTrackPayload | null> } | null>(null);
   const loadTracks = useCallback(async () => {
-    const payload = await fetchPackTrack(eventId);
+    if (pollerRef.current?.eventId !== eventId) {
+      pollerRef.current = { eventId, poll: createPackTrackPoller(eventId) };
+    }
+    const payload = await pollerRef.current.poll();
     if (!payload?.users) return;
 
     // Photo capture times + mark stats + callouts come from the raw marks.

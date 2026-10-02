@@ -53,8 +53,9 @@ namespace HcWebApi.Endpoints
                 {
                     string filter =
                         $"PartitionKey eq '{EscapeForFilter(eventId)}' and UserId eq '{EscapeForFilter(userId)}' and Type ne ''";
+                    var gone = new List<(string RowKey, string? TimestampMs, string? Type)>();
                     await foreach (TableEntity row in eventTable.QueryAsync<TableEntity>(
-                        filter: filter, select: new[] { "RowKey", "Type" }))
+                        filter: filter, select: new[] { "RowKey", "Type", "TimestampMs" }))
                     {
                         string? rowType = row.TryGetValue("Type", out var t) ? t?.ToString() : null;
                         if (!IsTerminatorType(rowType)) continue;
@@ -63,6 +64,13 @@ namespace HcWebApi.Endpoints
                         try { await userTable.DeleteEntityAsync(userId, row.RowKey); }
                         catch (Azure.RequestFailedException ex) when (ex.Status == 404) { }
                         resumeDeleted++;
+                        gone.Add((row.RowKey, row.GetString("TimestampMs"), rowType));
+                    }
+                    // Watchers polling for deltas learn the On Inn is gone
+                    // from these, not from a full re-download (PositionTombstones).
+                    if (gone.Count > 0)
+                    {
+                        await PositionTombstones.WriteAsync(tables, eventId, userId, gone, log);
                     }
                 }
                 catch (Exception ex)

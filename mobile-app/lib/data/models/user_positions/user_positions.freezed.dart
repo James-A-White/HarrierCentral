@@ -20,7 +20,10 @@ mixin _$UserPositionsPayload {
  String? get trailTypesConfigJson;// Official run window (epoch-ms) derived server-side from the admin AST/AEN
 // boundary markers. Null on the unbounded side / when no marker is set.
 // Drives the admin trim editor's handles and lets the timeline clamp.
- int? get trimStartMs; int? get trimEndMs; List<UserTrack> get users;
+ int? get trimStartMs; int? get trimEndMs; List<UserTrack> get users;// Incremental polls only: points deleted since the mark (a resumed
+// runner's On Inn, a cleared LOST mark, a trim boundary). Empty on a full
+// fetch, which simply lacks them, and from servers before 2026-10-02.
+ List<RemovedTrackPoint> get removed;
 /// Create a copy of UserPositionsPayload
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,16 +36,16 @@ $UserPositionsPayloadCopyWith<UserPositionsPayload> get copyWith => _$UserPositi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserPositionsPayload&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.latestServerTimestampMs, latestServerTimestampMs) || other.latestServerTimestampMs == latestServerTimestampMs)&&(identical(other.trailTypesConfigJson, trailTypesConfigJson) || other.trailTypesConfigJson == trailTypesConfigJson)&&(identical(other.trimStartMs, trimStartMs) || other.trimStartMs == trimStartMs)&&(identical(other.trimEndMs, trimEndMs) || other.trimEndMs == trimEndMs)&&const DeepCollectionEquality().equals(other.users, users));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserPositionsPayload&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.latestServerTimestampMs, latestServerTimestampMs) || other.latestServerTimestampMs == latestServerTimestampMs)&&(identical(other.trailTypesConfigJson, trailTypesConfigJson) || other.trailTypesConfigJson == trailTypesConfigJson)&&(identical(other.trimStartMs, trimStartMs) || other.trimStartMs == trimStartMs)&&(identical(other.trimEndMs, trimEndMs) || other.trimEndMs == trimEndMs)&&const DeepCollectionEquality().equals(other.users, users)&&const DeepCollectionEquality().equals(other.removed, removed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,eventId,latestServerTimestampMs,trailTypesConfigJson,trimStartMs,trimEndMs,const DeepCollectionEquality().hash(users));
+int get hashCode => Object.hash(runtimeType,eventId,latestServerTimestampMs,trailTypesConfigJson,trimStartMs,trimEndMs,const DeepCollectionEquality().hash(users),const DeepCollectionEquality().hash(removed));
 
 @override
 String toString() {
-  return 'UserPositionsPayload(eventId: $eventId, latestServerTimestampMs: $latestServerTimestampMs, trailTypesConfigJson: $trailTypesConfigJson, trimStartMs: $trimStartMs, trimEndMs: $trimEndMs, users: $users)';
+  return 'UserPositionsPayload(eventId: $eventId, latestServerTimestampMs: $latestServerTimestampMs, trailTypesConfigJson: $trailTypesConfigJson, trimStartMs: $trimStartMs, trimEndMs: $trimEndMs, users: $users, removed: $removed)';
 }
 
 
@@ -53,7 +56,7 @@ abstract mixin class $UserPositionsPayloadCopyWith<$Res>  {
   factory $UserPositionsPayloadCopyWith(UserPositionsPayload value, $Res Function(UserPositionsPayload) _then) = _$UserPositionsPayloadCopyWithImpl;
 @useResult
 $Res call({
- String eventId, String? latestServerTimestampMs, String? trailTypesConfigJson, int? trimStartMs, int? trimEndMs, List<UserTrack> users
+ String eventId, String? latestServerTimestampMs, String? trailTypesConfigJson, int? trimStartMs, int? trimEndMs, List<UserTrack> users, List<RemovedTrackPoint> removed
 });
 
 
@@ -70,7 +73,7 @@ class _$UserPositionsPayloadCopyWithImpl<$Res>
 
 /// Create a copy of UserPositionsPayload
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? eventId = null,Object? latestServerTimestampMs = freezed,Object? trailTypesConfigJson = freezed,Object? trimStartMs = freezed,Object? trimEndMs = freezed,Object? users = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? eventId = null,Object? latestServerTimestampMs = freezed,Object? trailTypesConfigJson = freezed,Object? trimStartMs = freezed,Object? trimEndMs = freezed,Object? users = null,Object? removed = null,}) {
   return _then(_self.copyWith(
 eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as String,latestServerTimestampMs: freezed == latestServerTimestampMs ? _self.latestServerTimestampMs : latestServerTimestampMs // ignore: cast_nullable_to_non_nullable
@@ -78,7 +81,8 @@ as String?,trailTypesConfigJson: freezed == trailTypesConfigJson ? _self.trailTy
 as String?,trimStartMs: freezed == trimStartMs ? _self.trimStartMs : trimStartMs // ignore: cast_nullable_to_non_nullable
 as int?,trimEndMs: freezed == trimEndMs ? _self.trimEndMs : trimEndMs // ignore: cast_nullable_to_non_nullable
 as int?,users: null == users ? _self.users : users // ignore: cast_nullable_to_non_nullable
-as List<UserTrack>,
+as List<UserTrack>,removed: null == removed ? _self.removed : removed // ignore: cast_nullable_to_non_nullable
+as List<RemovedTrackPoint>,
   ));
 }
 
@@ -163,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String eventId,  String? latestServerTimestampMs,  String? trailTypesConfigJson,  int? trimStartMs,  int? trimEndMs,  List<UserTrack> users)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String eventId,  String? latestServerTimestampMs,  String? trailTypesConfigJson,  int? trimStartMs,  int? trimEndMs,  List<UserTrack> users,  List<RemovedTrackPoint> removed)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserPositionsPayload() when $default != null:
-return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConfigJson,_that.trimStartMs,_that.trimEndMs,_that.users);case _:
+return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConfigJson,_that.trimStartMs,_that.trimEndMs,_that.users,_that.removed);case _:
   return orElse();
 
 }
@@ -184,10 +188,10 @@ return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConf
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String eventId,  String? latestServerTimestampMs,  String? trailTypesConfigJson,  int? trimStartMs,  int? trimEndMs,  List<UserTrack> users)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String eventId,  String? latestServerTimestampMs,  String? trailTypesConfigJson,  int? trimStartMs,  int? trimEndMs,  List<UserTrack> users,  List<RemovedTrackPoint> removed)  $default,) {final _that = this;
 switch (_that) {
 case _UserPositionsPayload():
-return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConfigJson,_that.trimStartMs,_that.trimEndMs,_that.users);case _:
+return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConfigJson,_that.trimStartMs,_that.trimEndMs,_that.users,_that.removed);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +208,10 @@ return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConf
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String eventId,  String? latestServerTimestampMs,  String? trailTypesConfigJson,  int? trimStartMs,  int? trimEndMs,  List<UserTrack> users)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String eventId,  String? latestServerTimestampMs,  String? trailTypesConfigJson,  int? trimStartMs,  int? trimEndMs,  List<UserTrack> users,  List<RemovedTrackPoint> removed)?  $default,) {final _that = this;
 switch (_that) {
 case _UserPositionsPayload() when $default != null:
-return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConfigJson,_that.trimStartMs,_that.trimEndMs,_that.users);case _:
+return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConfigJson,_that.trimStartMs,_that.trimEndMs,_that.users,_that.removed);case _:
   return null;
 
 }
@@ -219,7 +223,7 @@ return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConf
 @JsonSerializable()
 
 class _UserPositionsPayload implements UserPositionsPayload {
-  const _UserPositionsPayload({required this.eventId, this.latestServerTimestampMs, this.trailTypesConfigJson, this.trimStartMs, this.trimEndMs, required final  List<UserTrack> users}): _users = users;
+  const _UserPositionsPayload({required this.eventId, this.latestServerTimestampMs, this.trailTypesConfigJson, this.trimStartMs, this.trimEndMs, required final  List<UserTrack> users, final  List<RemovedTrackPoint> removed = const <RemovedTrackPoint>[]}): _users = users,_removed = removed;
   factory _UserPositionsPayload.fromJson(Map<String, dynamic> json) => _$UserPositionsPayloadFromJson(json);
 
 @override final  String eventId;
@@ -239,6 +243,19 @@ class _UserPositionsPayload implements UserPositionsPayload {
   return EqualUnmodifiableListView(_users);
 }
 
+// Incremental polls only: points deleted since the mark (a resumed
+// runner's On Inn, a cleared LOST mark, a trim boundary). Empty on a full
+// fetch, which simply lacks them, and from servers before 2026-10-02.
+ final  List<RemovedTrackPoint> _removed;
+// Incremental polls only: points deleted since the mark (a resumed
+// runner's On Inn, a cleared LOST mark, a trim boundary). Empty on a full
+// fetch, which simply lacks them, and from servers before 2026-10-02.
+@override@JsonKey() List<RemovedTrackPoint> get removed {
+  if (_removed is EqualUnmodifiableListView) return _removed;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_removed);
+}
+
 
 /// Create a copy of UserPositionsPayload
 /// with the given fields replaced by the non-null parameter values.
@@ -253,16 +270,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserPositionsPayload&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.latestServerTimestampMs, latestServerTimestampMs) || other.latestServerTimestampMs == latestServerTimestampMs)&&(identical(other.trailTypesConfigJson, trailTypesConfigJson) || other.trailTypesConfigJson == trailTypesConfigJson)&&(identical(other.trimStartMs, trimStartMs) || other.trimStartMs == trimStartMs)&&(identical(other.trimEndMs, trimEndMs) || other.trimEndMs == trimEndMs)&&const DeepCollectionEquality().equals(other._users, _users));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserPositionsPayload&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.latestServerTimestampMs, latestServerTimestampMs) || other.latestServerTimestampMs == latestServerTimestampMs)&&(identical(other.trailTypesConfigJson, trailTypesConfigJson) || other.trailTypesConfigJson == trailTypesConfigJson)&&(identical(other.trimStartMs, trimStartMs) || other.trimStartMs == trimStartMs)&&(identical(other.trimEndMs, trimEndMs) || other.trimEndMs == trimEndMs)&&const DeepCollectionEquality().equals(other._users, _users)&&const DeepCollectionEquality().equals(other._removed, _removed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,eventId,latestServerTimestampMs,trailTypesConfigJson,trimStartMs,trimEndMs,const DeepCollectionEquality().hash(_users));
+int get hashCode => Object.hash(runtimeType,eventId,latestServerTimestampMs,trailTypesConfigJson,trimStartMs,trimEndMs,const DeepCollectionEquality().hash(_users),const DeepCollectionEquality().hash(_removed));
 
 @override
 String toString() {
-  return 'UserPositionsPayload(eventId: $eventId, latestServerTimestampMs: $latestServerTimestampMs, trailTypesConfigJson: $trailTypesConfigJson, trimStartMs: $trimStartMs, trimEndMs: $trimEndMs, users: $users)';
+  return 'UserPositionsPayload(eventId: $eventId, latestServerTimestampMs: $latestServerTimestampMs, trailTypesConfigJson: $trailTypesConfigJson, trimStartMs: $trimStartMs, trimEndMs: $trimEndMs, users: $users, removed: $removed)';
 }
 
 
@@ -273,7 +290,7 @@ abstract mixin class _$UserPositionsPayloadCopyWith<$Res> implements $UserPositi
   factory _$UserPositionsPayloadCopyWith(_UserPositionsPayload value, $Res Function(_UserPositionsPayload) _then) = __$UserPositionsPayloadCopyWithImpl;
 @override @useResult
 $Res call({
- String eventId, String? latestServerTimestampMs, String? trailTypesConfigJson, int? trimStartMs, int? trimEndMs, List<UserTrack> users
+ String eventId, String? latestServerTimestampMs, String? trailTypesConfigJson, int? trimStartMs, int? trimEndMs, List<UserTrack> users, List<RemovedTrackPoint> removed
 });
 
 
@@ -290,7 +307,7 @@ class __$UserPositionsPayloadCopyWithImpl<$Res>
 
 /// Create a copy of UserPositionsPayload
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? eventId = null,Object? latestServerTimestampMs = freezed,Object? trailTypesConfigJson = freezed,Object? trimStartMs = freezed,Object? trimEndMs = freezed,Object? users = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? eventId = null,Object? latestServerTimestampMs = freezed,Object? trailTypesConfigJson = freezed,Object? trimStartMs = freezed,Object? trimEndMs = freezed,Object? users = null,Object? removed = null,}) {
   return _then(_UserPositionsPayload(
 eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as String,latestServerTimestampMs: freezed == latestServerTimestampMs ? _self.latestServerTimestampMs : latestServerTimestampMs // ignore: cast_nullable_to_non_nullable
@@ -298,7 +315,8 @@ as String?,trailTypesConfigJson: freezed == trailTypesConfigJson ? _self.trailTy
 as String?,trimStartMs: freezed == trimStartMs ? _self.trimStartMs : trimStartMs // ignore: cast_nullable_to_non_nullable
 as int?,trimEndMs: freezed == trimEndMs ? _self.trimEndMs : trimEndMs // ignore: cast_nullable_to_non_nullable
 as int?,users: null == users ? _self._users : users // ignore: cast_nullable_to_non_nullable
-as List<UserTrack>,
+as List<UserTrack>,removed: null == removed ? _self._removed : removed // ignore: cast_nullable_to_non_nullable
+as List<RemovedTrackPoint>,
   ));
 }
 
@@ -847,6 +865,275 @@ as double,lng: null == lng ? _self.lng : lng // ignore: cast_nullable_to_non_nul
 as double,acc: null == acc ? _self.acc : acc // ignore: cast_nullable_to_non_nullable
 as double,alt: freezed == alt ? _self.alt : alt // ignore: cast_nullable_to_non_nullable
 as double?,timestampMs: null == timestampMs ? _self.timestampMs : timestampMs // ignore: cast_nullable_to_non_nullable
+as int,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$RemovedTrackPoint {
+
+ String get id;@JsonKey(name: 'timestampMs') int get timestampMs; String? get type;
+/// Create a copy of RemovedTrackPoint
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RemovedTrackPointCopyWith<RemovedTrackPoint> get copyWith => _$RemovedTrackPointCopyWithImpl<RemovedTrackPoint>(this as RemovedTrackPoint, _$identity);
+
+  /// Serializes this RemovedTrackPoint to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RemovedTrackPoint&&(identical(other.id, id) || other.id == id)&&(identical(other.timestampMs, timestampMs) || other.timestampMs == timestampMs)&&(identical(other.type, type) || other.type == type));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,timestampMs,type);
+
+@override
+String toString() {
+  return 'RemovedTrackPoint(id: $id, timestampMs: $timestampMs, type: $type)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RemovedTrackPointCopyWith<$Res>  {
+  factory $RemovedTrackPointCopyWith(RemovedTrackPoint value, $Res Function(RemovedTrackPoint) _then) = _$RemovedTrackPointCopyWithImpl;
+@useResult
+$Res call({
+ String id,@JsonKey(name: 'timestampMs') int timestampMs, String? type
+});
+
+
+
+
+}
+/// @nodoc
+class _$RemovedTrackPointCopyWithImpl<$Res>
+    implements $RemovedTrackPointCopyWith<$Res> {
+  _$RemovedTrackPointCopyWithImpl(this._self, this._then);
+
+  final RemovedTrackPoint _self;
+  final $Res Function(RemovedTrackPoint) _then;
+
+/// Create a copy of RemovedTrackPoint
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? timestampMs = null,Object? type = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,timestampMs: null == timestampMs ? _self.timestampMs : timestampMs // ignore: cast_nullable_to_non_nullable
+as int,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [RemovedTrackPoint].
+extension RemovedTrackPointPatterns on RemovedTrackPoint {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RemovedTrackPoint value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RemovedTrackPoint() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RemovedTrackPoint value)  $default,){
+final _that = this;
+switch (_that) {
+case _RemovedTrackPoint():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RemovedTrackPoint value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RemovedTrackPoint() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'timestampMs')  int timestampMs,  String? type)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RemovedTrackPoint() when $default != null:
+return $default(_that.id,_that.timestampMs,_that.type);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'timestampMs')  int timestampMs,  String? type)  $default,) {final _that = this;
+switch (_that) {
+case _RemovedTrackPoint():
+return $default(_that.id,_that.timestampMs,_that.type);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'timestampMs')  int timestampMs,  String? type)?  $default,) {final _that = this;
+switch (_that) {
+case _RemovedTrackPoint() when $default != null:
+return $default(_that.id,_that.timestampMs,_that.type);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _RemovedTrackPoint implements RemovedTrackPoint {
+  const _RemovedTrackPoint({required this.id, @JsonKey(name: 'timestampMs') required this.timestampMs, this.type});
+  factory _RemovedTrackPoint.fromJson(Map<String, dynamic> json) => _$RemovedTrackPointFromJson(json);
+
+@override final  String id;
+@override@JsonKey(name: 'timestampMs') final  int timestampMs;
+@override final  String? type;
+
+/// Create a copy of RemovedTrackPoint
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RemovedTrackPointCopyWith<_RemovedTrackPoint> get copyWith => __$RemovedTrackPointCopyWithImpl<_RemovedTrackPoint>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$RemovedTrackPointToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RemovedTrackPoint&&(identical(other.id, id) || other.id == id)&&(identical(other.timestampMs, timestampMs) || other.timestampMs == timestampMs)&&(identical(other.type, type) || other.type == type));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,timestampMs,type);
+
+@override
+String toString() {
+  return 'RemovedTrackPoint(id: $id, timestampMs: $timestampMs, type: $type)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RemovedTrackPointCopyWith<$Res> implements $RemovedTrackPointCopyWith<$Res> {
+  factory _$RemovedTrackPointCopyWith(_RemovedTrackPoint value, $Res Function(_RemovedTrackPoint) _then) = __$RemovedTrackPointCopyWithImpl;
+@override @useResult
+$Res call({
+ String id,@JsonKey(name: 'timestampMs') int timestampMs, String? type
+});
+
+
+
+
+}
+/// @nodoc
+class __$RemovedTrackPointCopyWithImpl<$Res>
+    implements _$RemovedTrackPointCopyWith<$Res> {
+  __$RemovedTrackPointCopyWithImpl(this._self, this._then);
+
+  final _RemovedTrackPoint _self;
+  final $Res Function(_RemovedTrackPoint) _then;
+
+/// Create a copy of RemovedTrackPoint
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? timestampMs = null,Object? type = freezed,}) {
+  return _then(_RemovedTrackPoint(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,timestampMs: null == timestampMs ? _self.timestampMs : timestampMs // ignore: cast_nullable_to_non_nullable
 as int,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

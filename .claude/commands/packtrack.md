@@ -61,8 +61,14 @@ Fetches all tracks for an event, optionally incremental.
   `afterTimestampMs` (epoch-ms of the storage service's system `Timestamp` = arrival time, from
   the previous response's `latestServerTimestampMs`); the server answers with every row that
   ARRIVED from 60 s before the mark, and the controller merges into `_serverTracks` (de-dup by
-  capture time + type), re-filtering only runners that gained a point. Full fetch on reset, in
-  admin edit mode, and every 5 min (deletions). Apps ≤ 3.0.20 sent `AfterTimestamp`, which the
+  capture time + type), re-filtering only runners that gained a point. **Deletions arrive as
+  deltas too (2026-10-02):** every delete (DeletePositions; PositionWriter's resume On Inn strip)
+  writes a tombstone to `EventTrackingControl` (PK eventId, RK `del-<rowKey>`,
+  `api/Endpoints/PositionTombstones.cs`) and an incremental reply carries
+  `removed: [{id, timestampMs, type}]`. Full fetch ONLY on first load / reset, in admin edit
+  mode, and when `trimStartMs`/`trimEndMs` changes; the 5-min backstop is gone. The web does the
+  same through `createPackTrackPoller` (`public-web/lib/packtrack.ts`); it full-fetched on every
+  poll until 2026-10-02. Never add a delete path that skips the tombstone. Apps ≤ 3.0.20 sent `AfterTimestamp`, which the
   server never read: every poll was a full fetch and the controller replaced wholesale — they
   still work unchanged. The partition is still scanned per poll; only the payload shrinks.
 - `users` — reserved, always pass `[]`
@@ -384,7 +390,8 @@ successive `lastKnownPosition` updates using the `latlong2` `Distance` class.
   in the model but won't be drawn.
 - **Android interval is explicit per mode, not derived from distance** — `getLocSettings`
   takes an `androidInterval` named param (default 15min). Tracking tiers pass
-  `_trackingAndroidInterval()` (Best 15s / Balanced 30s / Power Saver 1min, since 2026-10-01); the pause
+  `_trackingAndroidInterval()` (5 s on EVERY tier since 2026-10-02 — the tier sets only the
+  background upload cadence, 1 / 2 / 3 min; one plain point per 5 s kept); the pause
   monitor passes 15s for responsive auto-resume; the idle/stopped streams (250m / 100m)
   use the 15-minute default. Distance filter and interval are independent — set both
   deliberately when adding or retuning a tier. iOS has no interval (distance-filter only),

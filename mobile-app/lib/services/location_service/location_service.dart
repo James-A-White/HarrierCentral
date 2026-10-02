@@ -34,8 +34,10 @@ class PendingSlotMark {
 // 0 = Power Saver, 1 = Balanced, 2 = Best. When unset (null pref), Best.
 //
 // From 2026-10-01 (James) the tier no longer changes the GPS at all: every
-// tier records at Best — 5 m / bestForNavigation; Android a fix every 15 s
-// (one point per 15 s kept), iOS every point its 5 m filter reports. The radio, not the GPS, is what costs battery: each upload
+// tier records at Best — 5 m / bestForNavigation; Android a fix every 5 s
+// (one point per 5 s kept; 15 s until 2026-10-02, when Android trails were
+// visibly coarser than iPhone ones — about 40 m between points at running
+// pace against iOS's 5 m), iOS every point its 5 m filter reports. The radio, not the GPS, is what costs battery: each upload
 // wakes 4G/5G into its high-power state plus a tail of several seconds,
 // 20-50x the GPS receiver. So the tier sets how OFTEN the buffer is
 // uploaded while the phone is in the pocket — see [LocationService
@@ -45,7 +47,10 @@ LocationAccuracy _trackingAccuracy() => LocationAccuracy.bestForNavigation;
 
 int _trackingDistanceFilter() => 5;
 
-Duration _trackingAndroidInterval() => const Duration(seconds: 15);
+// The same on every tier, as iOS is: with high accuracy at intervals this
+// short the GPS receiver stays on whatever the interval, so a longer one
+// saves little, and the tiers' saving is in the uploads.
+Duration _trackingAndroidInterval() => const Duration(seconds: 5);
 
 /// The tier's upload cadence while the app is in the BACKGROUND. In the
 /// foreground every tier uploads every 30 s (James, 2026-10-01).
@@ -64,14 +69,15 @@ const Duration _foregroundUploadCadence = Duration(seconds: 30);
 
 /// Android only: plain GPS points are kept at most this often. iOS keeps
 /// every point its 5 m distance filter reports.
-const int _plainFixSpacingMs = 14000; // 15 s cadence, with a second of jitter slack
+const int _plainFixSpacingMs = 4000; // 5 s cadence, with a second of jitter slack
 
 /// The GPS parameters ACTUALLY in force for tracking, as JSON, to be stored
 /// against the track (2026-09-13).
 ///
 /// The tier's NAME is not enough. These tiers have been redefined between
 /// builds — the Android cadence has been 15s/15s/15min, then 15s/1min/15min,
-/// then 15s/1min/3min (2026-09-13), and from 2026-10-01 is 15s/30s/1min —
+/// then 15s/1min/3min (2026-09-13), 15 s on every tier from 2026-10-01, and
+/// 5 s on every tier from 2026-10-02 —
 /// so "Balanced" does not say what a track was recorded with unless the build
 /// is recorded beside it. Hence the resolved values AND the build number.
 String trackingGpsSettingsJson() {
@@ -131,7 +137,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       WidgetsBinding.instance.lifecycleState == null ||
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
 
-  /// The last PLAIN fix kept onto the track, to keep one per 15 s.
+  /// The last PLAIN fix kept onto the track, to keep one per 5 s.
   int? _lastPlainFixMs;
 
   Duration get _uploadCadence =>
@@ -476,7 +482,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
     if (defaultTargetPlatform == TargetPlatform.android) {
       // Android update cadence is set explicitly per mode via the androidInterval
       // param (not derived from distance). Tracking tiers use
-      // _trackingAndroidInterval() — Best 15s / Balanced 30s / Power Saver 1min;
+      // _trackingAndroidInterval() — 5 s on every tier (2026-10-02);
       // the pause monitor passes 15s for responsive auto-resume; idle/stopped
       // streams use the 15-minute default to save battery.
       //
@@ -1427,7 +1433,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
       // Server time when the phone is over 2 min out (E1.F1.S7): with a wrong phone clock the
       // trail would replay minutes away from the rest of the pack.
       final tsMs = atTsMs ?? ClockOffset.trackNowUtc().millisecondsSinceEpoch;
-      // Android only: at most one plain fix per 15 s — its location requests
+      // Android only: at most one plain fix per 5 s — its location requests
       // are timer-based and can deliver early. iOS is distance-gated (5 m)
       // and keeps every point that gate lets through (James, 2026-10-01:
       // 1433/1434 applied the 15 s gate to iOS too, and James's trail at

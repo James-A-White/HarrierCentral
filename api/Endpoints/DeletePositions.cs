@@ -101,18 +101,18 @@ namespace HcWebApi.Endpoints
             string filter =
                 $"PartitionKey eq '{EscapeForFilter(request.EventId)}' and UserId eq '{EscapeForFilter(request.UserId)}'";
 
-            var rowKeysToDelete = new List<string>();
+            var rowKeysToDelete = new List<(string RowKey, string? TimestampMs, string? Type)>();
             await foreach (var entity in eventTable.QueryAsync<TableEntity>(filter))
             {
                 string? ts = entity.GetString("TimestampMs") ?? ExtractCallerTimestampFromRowKey(entity.RowKey);
                 if (ts != null && wanted.Contains(NormalizeTimestamp(ts)))
                 {
-                    rowKeysToDelete.Add(entity.RowKey);
+                    rowKeysToDelete.Add((entity.RowKey, NormalizeTimestamp(ts), entity.GetString("Type")));
                 }
             }
 
             int deleted = 0;
-            foreach (var rowKey in rowKeysToDelete)
+            foreach (var (rowKey, _, _) in rowKeysToDelete)
             {
                 // Delete both copies. Missing entities (404) are ignored so the
                 // call is idempotent and a partial prior delete can be retried.
@@ -120,6 +120,15 @@ namespace HcWebApi.Endpoints
                 removed |= await TryDeleteAsync(eventTable, request.EventId, rowKey);
                 removed |= await TryDeleteAsync(userTable, request.UserId, rowKey);
                 if (removed) deleted++;
+            }
+
+            // Watchers polling for deltas drop these points from the record
+            // rather than from a full re-download — a cleared LOST mark leaves
+            // their map on the next poll (PositionTombstones).
+            if (rowKeysToDelete.Count > 0)
+            {
+                await PositionTombstones.WriteAsync(
+                    _tableServiceClient, request.EventId, request.UserId, rowKeysToDelete, _log);
             }
 
             // Clearing the official window is a boundary change like setting one, and
