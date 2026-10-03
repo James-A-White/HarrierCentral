@@ -125,6 +125,17 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   final RxInt locationUpdateCount = 0.obs;
 
   final RxBool joinRunTracking = false.obs;
+
+  /// Scouting a trail before the run (E5.F6.S6, James 2026-10-03): tracking
+  /// runs exactly as usual — same GPS settings, background, local session
+  /// track — but NOTHING is uploaded to the pack (no batch is queued, no
+  /// flush happens) and nobody is checked in. The scout's points live only in
+  /// [sessionTrackSnapshot] until they are made the run's official trail.
+  /// Help marks keep their own out-of-band path: an emergency is an emergency.
+  final RxBool scoutMode = false.obs;
+
+  /// The current session's plain GPS fixes, oldest first — the scout's trail.
+  List<TrackPoint> get sessionTrackSnapshot => List<TrackPoint>.unmodifiable(_sessionTrack);
   String? eventId;
   String? userId;
 
@@ -147,6 +158,7 @@ class LocationService extends GetxService with WidgetsBindingObserver {
   /// on every fix rather than on a timer: a Dart timer can sleep with the app
   /// in the background, but location updates keep arriving.
   Future<void> _maybeFlush({bool force = false}) async {
+    if (scoutMode.value) return; // a scout's trail is never uploaded to the pack
     if (force || DateTime.now().difference(_lastFlushTime) >= _uploadCadence) {
       await _runBuffer?.flush();
       _lastFlushTime = DateTime.now();
@@ -1455,7 +1467,8 @@ class LocationService extends GetxService with WidgetsBindingObserver {
         alt: double.parse(altitude.toStringAsFixed(2)),
         type: pointStr,
       );
-      _runBuffer?.enqueue(point);
+      // Scouting: kept on the phone only (see [scoutMode]).
+      if (!scoutMode.value) _runBuffer?.enqueue(point);
       // Plain fixes only: marks are placed, not measured (E5.F1.S13).
       if (pointStr == null) TrackQualityLedger.record(accuracy);
       recordedTsMs = tsMs;

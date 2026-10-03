@@ -646,8 +646,9 @@ screen — three things hold:
    width: auto`, or `SizedBox(height: h, child: Image(fit: BoxFit.fitHeight))`).
    A photo that does not fit the row drops out whole — wrap onto a hidden
    line — rather than being cut at the edge. This supersedes the old
-   allowance for square-cropped thumbnails. (Profile photos are portraits
-   and still circles; a kennel logo follows its own rule below.)
+   allowance for square-cropped thumbnails. (Profile photos are square and
+   shown whole, never trimmed into a circle — James, 2026-10-02; a kennel
+   logo follows its own rule below.)
 3. **On the right backdrop**, which differs per client:
 
 | Client | Backdrop | How |
@@ -688,8 +689,10 @@ circular mask, never square it off, never let a container clip it.
   corner radius of a card.
 
 This applies only to kennel logos and kennel cover art. Hasher profile
-photos are portraits and are still drawn as circles, and country flags keep
-the circular treatment the app already gives them.
+photos are always SQUARE and shown whole — never trimmed into a circle
+(James, 2026-10-02); new screens use `HasherPhoto`. Older screens that
+still draw circular avatars are to be changed as they are touched. Country
+flags keep the circular treatment the app already gives them.
 
 **Button text on red buttons (Flutter/Dart):**
 

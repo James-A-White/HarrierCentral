@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.74 (2026-10-03 redeploy — official trail replay)
+
+- **A timed official trail follows the replay.** Its first point starts with
+  the first runner's track, so the hare's pace runs alongside the pack; an
+  untimed trail is drawn whole as before.
+- The public trail info no longer carries who set a lane or the source file.
+
 ## 0.21.74 (2026-10-03 redeploy — official trails)
 
 - **A run's official trail.** Where a run has its hare's trail (E5.F6.S6), the

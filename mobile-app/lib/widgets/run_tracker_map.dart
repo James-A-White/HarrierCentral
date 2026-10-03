@@ -313,6 +313,10 @@ class RunTrackerMap extends StatelessWidget {
                     markers: controller.checkpointMarkers,
                   ),
 
+                  // The official (hare's) trail, dashed, under the pack's
+                  // tracks (E5.F6.S6).
+                  PolylineLayer(polylines: controller.officialTrailPolylines),
+                  MarkerLayer(markers: controller.officialTrailMarkers),
                   PolylineLayer(polylines: controller.dimmedPolylines),
                   if (controller.highlightedPolyline != null)
                     PolylineLayer(polylines: [controller.highlightedPolyline!]),
@@ -872,6 +876,27 @@ class RunTrackerMap extends StatelessWidget {
               ),
             ),
           ),
+          if (controller.canPromoteSelectedRunner) ...[
+            const SizedBox(width: 6),
+            Builder(
+              builder: (BuildContext ctx) => TextButton.icon(
+                style: TextButton.styleFrom(
+                  backgroundColor: hc_red,
+                  foregroundColor: Colors.white,
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                icon: const Icon(Icons.route, size: 16),
+                label: const Text(
+                  'Make official trail',
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: () =>
+                    unawaited(controller.promoteSelectedRunner(ctx)),
+              ),
+            ),
+          ],
         ],
       ),
     );

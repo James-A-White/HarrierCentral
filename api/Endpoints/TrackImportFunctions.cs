@@ -50,6 +50,72 @@ namespace HcWebApi.Endpoints
             _blobs = new BlobServiceClient(blobConnection);
         }
 
+        // ── Parse a track file (E5.F6.S6) ──────────────────────────────────────
+
+        /// A hare's GPX / TCX / FIT file (Strava, Garmin, Fitbit exports), read
+        /// with the import's own parsers and handed straight back as points so
+        /// the app can make it a run's OFFICIAL trail through
+        /// hcapp_setOfficialTrail (which does the hare/admin check). Nothing is
+        /// stored here. POST {deviceId, accessToken, fileName, fileBase64};
+        /// gzip is unwrapped. Points are thinned like an import and carry
+        /// t = ms after the first point, or no t when the file has no times.
+        [Function("ParseTrackFile")]
+        public async Task<IActionResult> ParseTrackFile(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        {
+            JObject? data = await ReadBodyAsync(req);
+            if (data == null) return new BadRequestObjectResult("Invalid JSON body.");
+            string? deviceId = data["deviceId"]?.ToString();
+            string? accessToken = data["accessToken"]?.ToString();
+            string? b64 = data["fileBase64"]?.ToString();
+            string name = SafeName(data["fileName"]?.ToString());
+            if (string.IsNullOrEmpty(deviceId) || string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(b64))
+                return new BadRequestObjectResult("deviceId, accessToken and fileBase64 are required.");
+
+            string connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString")
+                ?? throw new InvalidOperationException("HcDbConnectionString is not set.");
+            using (SqlConnection conn = new(connectionString))
+            {
+                await conn.OpenAsync();
+                (IActionResult? failure, _) = await AuthenticateAsync(conn, "[HC6].[hcapp_authorizeTrackFile]", deviceId, accessToken);
+                if (failure != null) return failure;
+            }
+
+            byte[] bytes;
+            try { bytes = Convert.FromBase64String(b64); }
+            catch { return new BadRequestObjectResult("fileBase64 is not base64."); }
+            if (bytes.Length > 25 * 1024 * 1024) return new BadRequestObjectResult("That file is too big (25 MB at most).");
+            if (bytes.Length > 2 && bytes[0] == 0x1F && bytes[1] == 0x8B)
+            {
+                using var gz = new System.IO.Compression.GZipStream(new MemoryStream(bytes), System.IO.Compression.CompressionMode.Decompress);
+                using var ms = new MemoryStream();
+                await gz.CopyToAsync(ms);
+                bytes = ms.ToArray();
+            }
+
+            TrackImportProcessor.Activity? a = null;
+            try { a = TrackImportProcessor.ParseActivity(new MemoryStream(bytes), name); }
+            catch (Exception ex) { _log.LogWarning("ParseTrackFile: {Name} unreadable: {Message}", name, ex.Message); }
+            if (a == null || a.Points.Count < 2)
+                return new OkObjectResult(new { success = false, errorUserMessage = "That file has no track in it that Harrier Central can read (GPX, TCX or FIT)." });
+
+            List<WritePoint> pts = TrackImportProcessor.Thin(a.Points);
+            bool timed = !a.HadUntimedPoints && pts.All(p => p.TimestampMs > 0);
+            long t0 = pts[0].TimestampMs;
+            var points = pts.Select(p => timed
+                ? new object[] { Math.Round(p.Latitude, 5), Math.Round(p.Longitude, 5), p.TimestampMs - t0 }
+                : new object[] { Math.Round(p.Latitude, 5), Math.Round(p.Longitude, 5) }).ToList();
+            return new OkObjectResult(new
+            {
+                success = true,
+                name = string.IsNullOrWhiteSpace(a.Title) ? a.Name : a.Title,
+                format = a.Format,
+                timed,
+                distanceM = (int)Math.Round(TrackImportProcessor.Distance(pts)),
+                points,
+            });
+        }
+
         // ── Upload token ──────────────────────────────────────────────────────
 
         [Function("GetTrackImportUploadToken")]

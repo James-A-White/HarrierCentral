@@ -4,6 +4,7 @@
 
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
+import 'package:harrier_central/pages/detail_pages/official_trail_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_charges_page.dart';
 import 'package:harrier_central/widgets/run_photo_gallery.dart';
 import 'package:harrier_central/widgets/hc_badges.dart' as badges;
@@ -133,6 +134,37 @@ class RunTabs extends StatelessWidget {
                           kennelSlug: futureRun.kennel.kennelUniqueShortName,
                           eventNumber: futureRun.event.eventNumber,
                         ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          // The run's official trail (E5.F6.S6): scout it, upload a file,
+          // remove a lane. Mirrors hcapp_setOfficialTrail's createEditRuns
+          // gate, hare-scoped.
+          if (isLoggedIn &&
+              canAccessFeature(
+                KennelFeature.createEditRuns,
+                appAccessFlags: futureRun.extensions.appAccessFlags,
+                mismanagementRoles: futureRun.extensions.mismanagementRoles,
+                isHareOfEvent: futureRun.extensions.isHare == 1,
+                kennelOverrideJson: futureRun.kennel.permissionOverrideJson,
+              ))
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.route),
+                label: const Text(
+                  'Official trail (scout / upload)',
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: () {
+                  if (Utilities.isConnected(showDialog: true)) {
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => OfficialTrailPage(run: futureRun),
                       ),
                     );
                   }

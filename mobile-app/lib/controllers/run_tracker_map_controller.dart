@@ -9,6 +9,9 @@ import 'package:flutter_compass/flutter_compass.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:harrier_central/widgets/camera_photo_marker.dart';
 import 'package:latlong2/latlong.dart' as latlng;
+import 'package:harrier_central/services/official_trails/official_trail_overlay.dart';
+import 'package:harrier_central/services/official_trails/official_trail_service.dart';
+import 'package:harrier_central/widgets/official_trail_type_picker.dart';
 
 /// Which canvas the PackTrack screen is showing. Map is the base rendering;
 /// rose (radar) and the runner list swap ONLY the canvas — the timeline,
@@ -136,6 +139,10 @@ class RunTrackerMapController extends GetxController
   final RxMap<String, String> userLogos = <String, String>{}.obs;
   final RxMap<String, String> userNames = <String, String>{}.obs;
   final TrackPointFilter _trackFilter = TrackPointFilter();
+  /// The run's official (hare's) trail, dashed under the tracks (E5.F6.S6).
+  late final OfficialTrailOverlay officialTrail = OfficialTrailOverlay(
+    HcId(event.eventId),
+  );
   final RxnDouble minTimestampMs = RxnDouble();
   final RxnDouble maxTimestampMs = RxnDouble();
   final RxnDouble currentTimestampMs = RxnDouble();
@@ -1172,6 +1179,64 @@ class RunTrackerMapController extends GetxController
     BootLogger.logBreadcrumb('PackTrack map OPENED (eventId=${event.eventId})');
     unawaited(loadPositions());
     unawaited(_loadPhotoCache());
+    officialTrail.start();
+  }
+
+  /// Replay time since the first pack track's start, for the official
+  /// trail's auto-align; null when there is no timeline (no pack tracks).
+  int? get officialTrailElapsedMs => timelineAvailable
+      ? (currentTimestampMs.value! - minTimestampMs.value!).round()
+      : null;
+
+  List<Polyline> get officialTrailPolylines =>
+      officialTrail.polylines(elapsedMs: officialTrailElapsedMs);
+
+  List<Marker> get officialTrailMarkers =>
+      officialTrail.markers(elapsedMs: officialTrailElapsedMs);
+
+  /// The selected runner's PackTrack can be made the official trail: the
+  /// viewer may edit it and the runner has a real track.
+  bool get canPromoteSelectedRunner {
+    if (!officialTrail.canEdit.value) return false;
+    final UserTrack? r = _runnerById(selectedRunnerId.value);
+    return r != null && _hasTrack(r);
+  }
+
+  /// Makes the selected runner's PackTrack the official trail for a lane
+  /// the viewer picks (E5.F6.S6 "promote", James 2026-10-03).
+  Future<void> promoteSelectedRunner(BuildContext context) async {
+    final UserTrack? r = _runnerById(selectedRunnerId.value);
+    if (r == null) return;
+    final List<TrackPoint> track =
+        OfficialTrailOverlay.trackForPromotion(r.positions);
+    final lane = OfficialTrailService.lanePointsFrom(track);
+    if (lane.points.length < 2) {
+      hcSnack("This runner's track is too short to use.");
+      return;
+    }
+    final String name = userNames[r.id] ?? 'this runner';
+    final int? type = await pickOfficialTrailType(
+      context,
+      types: TrailType.resolveVisible(trailTypesConfigJson.value),
+      taken: <int>{for (final OfficialTrailLane l in officialTrail.lanes) l.type},
+      title: "Make $name's track the official trail for…",
+    );
+    if (type == null || isClosed) return;
+    final String? refusal = await OfficialTrailService.setLane(
+      HcId(event.eventId),
+      trailType: type,
+      points: lane.points,
+      distanceM: lane.distanceM,
+      source: 'promote',
+      sourceRef: name,
+    );
+    if (isClosed) return;
+    if (refusal != null) {
+      hcSnack(refusal);
+      return;
+    }
+    hcSnack('Official trail saved.');
+    await officialTrail.load();
   }
 
   // The compass fires many times a second. A sub-degree wedge rotation isn't
@@ -1207,6 +1272,7 @@ class RunTrackerMapController extends GetxController
   @override
   void onClose() {
     BootLogger.logBreadcrumb('PackTrack map CLOSED');
+    officialTrail.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _releasePreciseBoost();
     if (Get.isRegistered<LocationService>()) {

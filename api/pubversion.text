@@ -1,3 +1,8 @@
+1.0.61+72
+    • ParseTrackFile: reads a GPX/TCX/FIT file for the app's official-trail upload
+      (E5.F6.S6) with the import parsers, authenticated by hcapp_authorizeTrackFile;
+      returns thinned [lat, lon, t] points and stores nothing.
+
 1.0.61+71
     • Reminder pushes match recipients on MessageId when present: a run now has two
       messages at the check-in moment (the check-in reminder and the E5.F1.S10

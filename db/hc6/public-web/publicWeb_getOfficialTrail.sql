@@ -33,8 +33,20 @@ BEGIN TRY
     FROM HC.Event e
     WHERE e.PublicEventId = @publicEventId AND e.deleted = 0 AND ISNULL(e.removed, 0) = 0 AND e.IsVisible = 1;
 
+    -- Public: who set a lane (setBy is an internal user id) and from what
+    -- (sourceRef: a runner's name or a file name) stay off the web.
+    DECLARE @publicInfo NVARCHAR(MAX) = NULL;
+    IF (@available = 1 AND ISJSON(@info) = 1)
+        SET @publicInfo = (
+            SELECT TRY_CAST(JSON_VALUE([value], '$.type') AS INT)      AS [type],
+                   TRY_CAST(JSON_VALUE([value], '$.distanceM') AS INT) AS distanceM,
+                   TRY_CAST(JSON_VALUE([value], '$.points') AS INT)    AS points,
+                   JSON_VALUE([value], '$.source')                     AS source
+            FROM OPENJSON(@info, '$.lanes')
+            FOR JSON PATH, ROOT('lanes'));
+
     SELECT @found AS EventFound, @available AS Available,
-           CASE WHEN @available = 1 THEN @info END AS OfficialTrailInfo;
+           @publicInfo AS OfficialTrailInfo;
     IF (@available = 1)
         SELECT CAST(DECOMPRESS(@trail) AS NVARCHAR(MAX)) AS OfficialTrail;
 END TRY

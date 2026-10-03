@@ -8,6 +8,7 @@ import 'package:harrier_central/services/location_service/tracking_preflight.dar
 import 'package:harrier_central/widgets/run_summary_dialog.dart';
 import 'package:harrier_central/widgets/tracking_preflight_dialog.dart';
 import 'package:harrier_central/pages/live_run_pages/lost_compass_dialog.dart';
+import 'package:harrier_central/services/official_trails/official_trail_overlay.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
 import 'package:intl/intl.dart';
@@ -2153,6 +2154,9 @@ class LiveRunGeneralPage extends StatelessWidget {
     // the time the arrow answers it and nobody needs troubling. Send Help is
     // the opposite: it exists to notify, so it still confirms and sends.
     if (!urgent) {
+      // The hare's official trail, for the lost runner only (E5.F6.S6):
+      // the PackTrack map draws it dashed once the server allows it.
+      OfficialTrailOverlay.revealForLost(run.event.eventId);
       await showLostCompassDialog(
         context,
         run.event.eventId,

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { Fragment, useState, useEffect, useRef, useMemo } from "react";
 import { prefersImperial } from "@/lib/distance";
 import { createPortal } from "react-dom";
 import {
-  MapContainer, TileLayer, Polyline, Marker, Circle, Pane, useMap, useMapEvents,
+  MapContainer, TileLayer, Polyline, Marker, Circle, CircleMarker, Pane, useMap, useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
 import { safeFlyTo } from "@/lib/leaflet-teardown";
@@ -17,7 +17,7 @@ import {
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
 import { AdventureTitle } from "./AdventureTitle";
-import { fetchOfficialTrail, laneColor, type OfficialTrail, type OfficialTrailLane } from "@/lib/official-trail";
+import { fetchOfficialTrail, laneColor, laneIsTimed, lanePath, laneUpTo, type OfficialTrail, type OfficialTrailLane } from "@/lib/official-trail";
 import {
   MARK_PANE, MARK_PANE_Z, checkpointIcon, escapeHtml, visibleMarks,
 } from "./trackMarks";
@@ -954,7 +954,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     ? users.flatMap(u => withoutPhotoPoints(u.positions).map(p => [p.lat, p.lng] as [number, number]))
     : officialLanes.length > 0
       // Nobody tracked it, but the hare's trail is known: fit to the trail.
-      ? officialLanes.flatMap(l => l.points)
+      ? officialLanes.flatMap(l => lanePath(l))
       : [[lat, lon]];
 
   // Per-runner visible track (capped at On Inn), current position, colour.
@@ -1131,13 +1131,33 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
 
         {/* The official (hare's) trail — dashed, under every runner's track,
             one line per trail type (E5.F6.S6). */}
-        {officialLanes.map(l => (
-          <Polyline
-            key={`official-${l.type}`}
-            positions={l.points}
-            pathOptions={{ color: laneColor(l.type), weight: 4, opacity: 0.85, dashArray: "8 6" }}
-          />
-        ))}
+        {officialLanes.map(l => {
+          // A timed lane follows the replay, its first point at the first
+          // pack track's start (auto-align); an untimed one is drawn whole.
+          const replay = hasTrack && maxTs > minTs && laneIsTimed(l) ? laneUpTo(l, currentTs - minTs) : null;
+          const animate = hasTrack && maxTs > minTs && laneIsTimed(l);
+          return (
+            <Fragment key={`official-${l.type}`}>
+              <Polyline
+                positions={lanePath(l)}
+                pathOptions={{ color: laneColor(l.type), weight: 4, opacity: animate ? 0.35 : 0.85, dashArray: "8 6" }}
+              />
+              {replay && replay.path.length >= 2 && (
+                <Polyline
+                  positions={replay.path}
+                  pathOptions={{ color: laneColor(l.type), weight: 4, opacity: 0.9, dashArray: "8 6" }}
+                />
+              )}
+              {replay && (
+                <CircleMarker
+                  center={replay.at}
+                  radius={7}
+                  pathOptions={{ color: "#ffffff", weight: 2, fillColor: laneColor(l.type), fillOpacity: 1 }}
+                />
+              )}
+            </Fragment>
+          );
+        })}
 
         {hasTrack ? (
           <>

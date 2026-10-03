@@ -1,6 +1,10 @@
-## 3.1.8+1439 (2026-10-03)
-Dance baby! — all beta testers (TestFlight Hash beta testers + Play internal). Everything since 1435 reaches the wider beta for the first time: hasher search, By Hasher, the hasher page, Android 5-second tracking, delta-only live maps (1436-1438). The 500-row test seed was reverted first.
+## 3.1.8+1440 (2026-10-03)
+Dance baby! — all beta testers (TestFlight Hash beta testers + Play internal). Supersedes 1439, which was bumped but never built: the dance was held until scouting was in. Everything since 1435 reaches the wider beta for the first time: hasher search, By Hasher, the hasher page, Android 5-second tracking, delta-only live maps (1436-1438). The 500-row test seed was reverted first.
 ### New Features
+- **Official trail** (hares and kennel admins): a run's details have an "Official trail" page. **Scout this trail** records the route ahead of the run on your phone only (it never appears on PackTrack), then saves it as the run's official trail for the trail type you choose. Or **upload a GPX, TCX or FIT file** — exports from Strava, Garmin Connect and Fitbit work. Remove a lane from the same page.
+- **Make official trail** on the PackTrack map: select a runner and promote their track to the run's official trail.
+- **The official trail on the PackTrack map**: drawn dashed under the pack. In replay a timed trail starts with the first runner, so the hare's pace runs alongside the pack; an untimed one is shown whole.
+- **I'm Lost shows the hare's trail**: the lost runner (only) sees the official trail on their map during the run.
 - **Get PackTrack ready**: about 10 minutes before a run you said Yes to (or are checked in to), a push opens Live Run, checks you in if you are at the start, and arms auto start. Replaces the generic check-in reminder for you.
 - **Kennel trail map**: a "Trail map" button on the kennel page opens a full-screen map of every run's official (hare's) trail; tap one to see and open its run.
 ### Fixes

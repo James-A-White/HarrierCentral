@@ -6,7 +6,8 @@ import { haversineMeters } from "@/lib/packtrack";
 export interface OfficialTrailLane {
   /** Trail type: 1 Walkers, 2 Short, 3 Normal, 4 Long, 5 Ballbreaker, >= 100 kennel-defined. */
   type: number;
-  points: [number, number][];
+  /** [lat, lon] or [lat, lon, t] — t is ms after the lane's first point. */
+  points: ([number, number] | [number, number, number])[];
 }
 export interface OfficialTrailLaneInfo {
   type: number;
@@ -40,6 +41,39 @@ export function laneLengthM(lane: OfficialTrailLane): number {
     m += haversineMeters(aLat, aLng, bLat, bLng);
   }
   return m;
+}
+
+/** True when every point carries its time, so replay can animate the lane. */
+export function laneIsTimed(lane: OfficialTrailLane): boolean {
+  return lane.points.length >= 2 && lane.points.every(p => p.length >= 3 && typeof p[2] === "number");
+}
+
+/** The lane as plain [lat, lon] pairs. */
+export function lanePath(lane: OfficialTrailLane): [number, number][] {
+  return lane.points.map(p => [p[0], p[1]] as [number, number]);
+}
+
+/**
+ * A timed lane up to `elapsedMs` after its first point — replay places that
+ * first point at the first pack track's start (auto-align, James
+ * 2026-10-03). Returns the path so far and the hare's position then, or null
+ * for an untimed lane.
+ */
+export function laneUpTo(lane: OfficialTrailLane, elapsedMs: number): { path: [number, number][]; at: [number, number] } | null {
+  if (!laneIsTimed(lane) || elapsedMs < 0) return null;
+  const pts = lane.points as [number, number, number][];
+  const path: [number, number][] = [];
+  for (let i = 0; i < pts.length; i++) {
+    const [lat, lon, t] = pts[i];
+    if (t <= elapsedMs) { path.push([lat, lon]); continue; }
+    if (i === 0) return null;
+    const [pLat, pLon, pT] = pts[i - 1];
+    const f = t > pT ? (elapsedMs - pT) / (t - pT) : 0;
+    const at: [number, number] = [pLat + (lat - pLat) * f, pLon + (lon - pLon) * f];
+    path.push(at);
+    return { path, at };
+  }
+  return { path, at: path[path.length - 1] };
 }
 
 /** Normal first, then the rest by type, so the main trail leads every list. */

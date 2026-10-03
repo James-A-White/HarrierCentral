@@ -135,6 +135,10 @@ const String TRACK_IMPORT_UPLOAD_TOKEN_URL =
 const String PROCESS_TRACK_IMPORT_URL =
     'https://$BASE_AF_URL/api/ProcessTrackImport';
 
+/// Reads a GPX / TCX / FIT file for a run's official trail (E5.F6.S6);
+/// stores nothing — hcapp_setOfficialTrail saves it.
+const String PARSE_TRACK_FILE_URL = 'https://$BASE_AF_URL/api/ParseTrackFile';
+
 // Admin web portal — opened from the drawer for admin users. The app registers
 // a one-time auth code and opens `$PORTAL_URL/?authCode=<code>` so the portal
 // logs in without a QR scan (same-device login).
