@@ -472,7 +472,10 @@ class _StartPin extends StatelessWidget {
   final int busiest;
   final bool selected;
 
-  static const double _hue = 217; // blue: clear of the trail colours
+  // Pink (James, 2026-10-03): the first scale started near white, and a
+  // one-run start vanished against the pale map. Even the lightest pin is a
+  // clear mid pink now, deepening to dark pink at the busiest place.
+  static const double _hue = 330;
 
   @override
   Widget build(BuildContext context) {
@@ -483,8 +486,8 @@ class _StartPin extends StatelessWidget {
     final Color fill = HSLColor.fromAHSL(
       1,
       _hue,
-      0.30 + 0.65 * t,
-      0.80 - 0.40 * t,
+      0.85 + 0.10 * t,
+      0.66 - 0.36 * t,
     ).toColor();
     return Container(
       width: d,
