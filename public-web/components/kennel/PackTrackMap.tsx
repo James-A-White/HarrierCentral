@@ -17,6 +17,7 @@ import {
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
 import { AdventureTitle } from "./AdventureTitle";
+import { fetchOfficialTrail, laneColor, type OfficialTrail, type OfficialTrailLane } from "@/lib/official-trail";
 import {
   MARK_PANE, MARK_PANE_Z, checkpointIcon, escapeHtml, visibleMarks,
 } from "./trackMarks";
@@ -375,9 +376,11 @@ interface PackTrackViewProps {
   kennelBackgroundUrl?: string | null;
   /** Kennel DistancePreference (bit 0: 1 = miles); null → browser region. */
   distancePreference?: number | null;
+  /** The run's official (hare's) trail lanes, once the run has ended (E5.F6.S6). */
+  officialLanes?: OfficialTrailLane[];
 }
 
-function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson, runPhotos, showTitle = false, kennelBackgroundUrl = null, distancePreference = null }: PackTrackViewProps) {
+function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson, runPhotos, showTitle = false, kennelBackgroundUrl = null, distancePreference = null, officialLanes = [] }: PackTrackViewProps) {
   // Opens at 1.0 — the most recent position info (live view); playing from the
   // end restarts from 0 via togglePlay's reset.
   const [progress, setProgress] = useState(1);    // 0.0 → 1.0
@@ -949,7 +952,10 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   // ── Derived render data ────────────────────────────────────────────────────────
   const allPoints: [number, number][] = hasTrack
     ? users.flatMap(u => withoutPhotoPoints(u.positions).map(p => [p.lat, p.lng] as [number, number]))
-    : [[lat, lon]];
+    : officialLanes.length > 0
+      // Nobody tracked it, but the hare's trail is known: fit to the trail.
+      ? officialLanes.flatMap(l => l.points)
+      : [[lat, lon]];
 
   // Per-runner visible track (capped at On Inn), current position, colour.
   // Iterates the filtered set; colour is keyed by id so it stays stable.
@@ -1122,6 +1128,16 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
             />
           </>
         )}
+
+        {/* The official (hare's) trail — dashed, under every runner's track,
+            one line per trail type (E5.F6.S6). */}
+        {officialLanes.map(l => (
+          <Polyline
+            key={`official-${l.type}`}
+            positions={l.points}
+            pathOptions={{ color: laneColor(l.type), weight: 4, opacity: 0.85, dashArray: "8 6" }}
+          />
+        ))}
 
         {hasTrack ? (
           <>
@@ -1573,6 +1589,8 @@ interface PackTrackMapProps {
   onTrackLoaded?: (hasTrack: boolean) => void;
   /** When `true`, render the full-screen playback overlay. */
   open?: boolean;
+  /** Notified when the run's official trail has loaded (empty when none / not yet public). */
+  onOfficialTrailLoaded?: (trail: OfficialTrail) => void;
   /** Called when the full-screen overlay requests to close. */
   onClose?: () => void;
   /** Kennel website background image for the photo lightbox backdrop. */
@@ -1588,8 +1606,23 @@ interface PackTrackMapProps {
 }
 
 export default function PackTrackMap({
-  lat, lon, eventId, publicEventId, height = 240, onTrackLoaded, open = false, onClose, fullPage = false, kennelBackgroundUrl = null, distancePreference = null,
+  lat, lon, eventId, publicEventId, height = 240, onTrackLoaded, open = false, onClose, fullPage = false, kennelBackgroundUrl = null, distancePreference = null, onOfficialTrailLoaded,
 }: PackTrackMapProps) {
+  // The run's official trail (E5.F6.S6): fetched once; the server returns
+  // nothing until the run has ended.
+  const [officialLanes, setOfficialLanes] = useState<OfficialTrailLane[]>([]);
+  const onOfficialRef = useRef(onOfficialTrailLoaded);
+  useEffect(() => { onOfficialRef.current = onOfficialTrailLoaded; });
+  useEffect(() => {
+    if (!publicEventId) return;
+    let disposed = false;
+    fetchOfficialTrail(publicEventId).then(t => {
+      if (disposed) return;
+      setOfficialLanes(t.lanes);
+      onOfficialRef.current?.(t);
+    });
+    return () => { disposed = true; };
+  }, [publicEventId]);
   const [users, setUsers] = useState<UserTrack[]>([]);
   const [minTs, setMinTs] = useState(0);
   const [maxTs, setMaxTs] = useState(0);
@@ -1682,7 +1715,7 @@ export default function PackTrackMap({
     };
   }, [eventId, publicEventId]);
 
-  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson: trailCfg, runPhotos, kennelBackgroundUrl, distancePreference };
+  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson: trailCfg, runPhotos, kennelBackgroundUrl, distancePreference, officialLanes };
 
   // Standalone full-viewport page (dedicated PackTrack route). Fills the screen
   // with the playback view; the close button hands control back to the caller.

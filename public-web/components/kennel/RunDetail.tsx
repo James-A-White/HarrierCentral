@@ -3,7 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Navigation, ExternalLink, Copy, Check, Footprints } from "lucide-react";
+import { Navigation, ExternalLink, Copy, Check, Footprints, Download } from "lucide-react";
+import { formatDistance, prefersImperial } from "@/lib/distance";
+import {
+  downloadOfficialTrail, laneColor, laneLabel, laneLengthM, orderedLanes, type OfficialTrail,
+} from "@/lib/official-trail";
 
 const PackTrackMap = dynamic(() => import("./PackTrackMap"), { ssr: false });
 
@@ -181,6 +185,8 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
   const [copied, setCopied] = useState(false);
   const [hasPackTrack, setHasPackTrack] = useState(false);
   const [packTrackOpen, setPackTrackOpen] = useState(false);
+  // The run's official (hare's) trail, once the run has ended (E5.F6.S6).
+  const [officialTrail, setOfficialTrail] = useState<OfficialTrail>({ lanes: [], info: [] });
   const { date, kennelTime, browserTime } = fmtRunTime(run);
   const mapsLink = mapsUrl(run.Latitude, run.Longitude, run.LocationOneLineDesc ?? run.EventName);
   const w3wLink = parseW3w(run.w3wJson);
@@ -304,7 +310,36 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
                   onClose={() => setPackTrackOpen(false)}
                   kennelBackgroundUrl={kennel.backgroundImageUrl ?? null}
                   distancePreference={kennel.distancePreference ?? null}
+                  onOfficialTrailLoaded={setOfficialTrail}
                 />
+              </div>
+            )}
+            {officialTrail.lanes.length > 0 && (
+              // The official trail's distance per trail type, and the trail
+              // as a GPX file (E5.F6.S6) — centred, as controls are.
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-center">
+                <span className="font-semibold">Trail</span>
+                {orderedLanes(officialTrail.lanes).map(l => {
+                  const m = officialTrail.info.find(i => i.type === l.type)?.distanceM ?? laneLengthM(l);
+                  return (
+                    <span key={l.type} className="inline-flex items-center gap-1.5">
+                      <span className="inline-block h-0.5 w-5 border-t-2 border-dashed" style={{ borderColor: laneColor(l.type) }} />
+                      {laneLabel(l.type)} {formatDistance(m, !prefersImperial(null, kennel.distancePreference ?? null))}
+                    </span>
+                  );
+                })}
+                <button
+                  onClick={() => downloadOfficialTrail(
+                    officialTrail.lanes,
+                    `${kennel.shortName} run ${run.EventNumber}`,
+                    `${kennel.shortName}-${run.EventNumber}-trail.gpx`.replace(/[^A-Za-z0-9._-]+/g, "_"),
+                  )}
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+                  style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download GPX
+                </button>
               </div>
             )}
           </div>
