@@ -1,3 +1,8 @@
+## 3.1.9+1444 (2026-10-03)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### Fixes
+- **Edit run › Map no longer greys out on imported runs**: the "Use external source" button broke the whole button row on runs imported from a calendar, covering the map with a grey box and hiding Set Location (TwH3 #2514).
+
 ## 3.1.9+1443 (2026-10-03)
 Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
 ### Improvements
