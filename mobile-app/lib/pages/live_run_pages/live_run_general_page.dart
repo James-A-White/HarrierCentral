@@ -182,6 +182,81 @@ class LiveRunGeneralController extends GetxController
       final ctx = Get.context;
       if (ctx != null) showTrackingQualityDialog(ctx);
     }
+    // Opened by a tap on the pre-run push (E5.F1.S10).
+    if (_preparePendingFor == run.event.eventId) {
+      _preparePendingFor = null;
+      unawaited(prepareFromPreRunPush());
+    }
+  }
+
+  // ── Pre-run push (E5.F1.S10, James 2026-10-03) ──────────────────────────
+
+  /// The run a pre-run push tap is opening Live Run for, until its
+  /// controller is ready to act on it.
+  static String? _preparePendingFor;
+
+  /// A tap on "Get PackTrack ready": open this run's Live Run, check the
+  /// hasher in if they only said Yes and are at the start, and arm auto
+  /// start — through the same path as the Live Run buttons, pre-flight
+  /// included, because arming is a promise to record in a pocket.
+  static Future<void> openFromPreRunPush(RunDetailsAggregate run) async {
+    final String tag = 'live-run-general-${run.event.eventId}';
+    final LiveRunGeneralController? open =
+        Get.isRegistered<LiveRunGeneralController>(tag: tag)
+        ? Get.find<LiveRunGeneralController>(tag: tag)
+        : null;
+    if (open == null) _preparePendingFor = run.event.eventId;
+    BootLogger.logBreadcrumb(
+      '[PRERUN] tap: run=${run.event.eventId} liveRunOpen=${open != null}',
+    );
+    unawaited(
+      navigatorKey.currentState?.push<void>(
+        MaterialPageRoute<void>(builder: (_) => LiveRunShell(run: run)),
+      ),
+    );
+    if (open != null) await open.prepareFromPreRunPush();
+  }
+
+  /// Check in (only if at the start) and arm auto start. Each step is
+  /// best-effort and says what it did; neither blocks the other.
+  Future<void> prepareFromPreRunPush() async {
+    if (run.extensions.attendenceState < attendenceAtHash.value) {
+      try {
+        // requireProximity: the push is proof they are COMING, not that they
+        // are HERE; only someone within the auto check-in geofence (1 mile)
+        // of the start is checked in.
+        final List<AreWeAtRunModel> here = await CommonQueries.isAtRunStart(
+          eventId: HcId(run.event.eventId),
+          requireProximity: true,
+        );
+        if (isClosed) return;
+        final bool atStart = here.any(
+          (AreWeAtRunModel r) =>
+              normalizeUuid(r.eventId) == normalizeUuid(run.event.eventId),
+        );
+        BootLogger.logBreadcrumb('[PRERUN] at start=$atStart');
+        if (atStart) {
+          await _checkInForTracking();
+          if (isClosed) return;
+          if (run.extensions.attendenceState >= attendenceAtHash.value) {
+            showHcSnackbar('Checked in to ${run.event.eventName}!');
+          }
+        }
+      } catch (e, s) {
+        BootLogger.logError(
+          '[LiveRunGeneral.prepareFromPreRunPush] check-in',
+          e,
+          s,
+        );
+      }
+    }
+    if (isClosed) return;
+    if (autoStartArmedHere) return;
+    if (!canArmAutoStart) {
+      BootLogger.logBreadcrumb('[PRERUN] auto start not armable now');
+      return;
+    }
+    await armAutoStart();
   }
 
   @override
@@ -232,8 +307,7 @@ class LiveRunGeneralController extends GetxController
     await RunShareLinks(run).showShareSheet(context);
   }
 
-  bool _checkCanStart() =>
-      trackingHasOpened(run.event.eventStartDatetimeGmt);
+  bool _checkCanStart() => trackingHasOpened(run.event.eventStartDatetimeGmt);
 
   // ── Auto start (2026-09-27) ─────────────────────────────────────────────
 
@@ -319,8 +393,9 @@ class LiveRunGeneralController extends GetxController
         normalizeUuid(auto.eventId ?? '') == normalizeUuid(run.event.eventId)) {
       final List<AutoStartFix> backfill = auto.takeRingForManualStart();
       if (backfill.isNotEmpty) {
-        _trackingStartedAt =
-            DateTime.fromMillisecondsSinceEpoch(backfill.first.tsMs);
+        _trackingStartedAt = DateTime.fromMillisecondsSinceEpoch(
+          backfill.first.tsMs,
+        );
       }
       BootLogger.logBreadcrumb(
         '[AutoStart] Start pressed while armed — ${backfill.length} buffered '
@@ -1314,7 +1389,11 @@ class LiveRunGeneralPage extends StatelessWidget {
                       },
                     ),
                   OutlinedButton.icon(
-                    icon: const Icon(Icons.close, size: 20, color: Colors.white),
+                    icon: const Icon(
+                      Icons.close,
+                      size: 20,
+                      color: Colors.white,
+                    ),
                     label: Text(
                       'Cancel auto start',
                       style: ts_button,
@@ -1372,7 +1451,11 @@ class LiveRunGeneralPage extends StatelessWidget {
       final leftButton = paused
           ? ElevatedButton.icon(
               icon: const Icon(Icons.play_arrow, size: 20, color: Colors.white),
-              label: Text('Resume', style: ts_button.copyWith(fontSize: 18), textAlign: TextAlign.center),
+              label: Text(
+                'Resume',
+                style: ts_button.copyWith(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade700,
                 foregroundColor: Colors.white,
@@ -1417,7 +1500,10 @@ class LiveRunGeneralPage extends StatelessWidget {
                     context: context,
                     barrierDismissible: false,
                     builder: (_) => AlertDialog(
-                      title: Text('Are you On Inn?', style: ts_alertDialogTitle),
+                      title: Text(
+                        'Are you On Inn?',
+                        style: ts_alertDialogTitle,
+                      ),
                       content: Text(
                         '"I\'m On Inn" marks the end of the trail on the map. '
                         'If you stopped before the end, choose "I stopped '
@@ -1435,7 +1521,11 @@ class LiveRunGeneralPage extends StatelessWidget {
                             backgroundColor: Colors.grey.shade600,
                             foregroundColor: Colors.white,
                           ),
-                          child: Text('Keep Tracking', style: ts_button, textAlign: TextAlign.center),
+                          child: Text(
+                            'Keep Tracking',
+                            style: ts_button,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                         ElevatedButton(
                           onPressed: () => Navigator.of(
@@ -1445,7 +1535,11 @@ class LiveRunGeneralPage extends StatelessWidget {
                             backgroundColor: Colors.orange.shade800,
                             foregroundColor: Colors.white,
                           ),
-                          child: Text('I stopped early', style: ts_button, textAlign: TextAlign.center),
+                          child: Text(
+                            'I stopped early',
+                            style: ts_button,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                         ElevatedButton(
                           onPressed: () =>
@@ -1454,7 +1548,11 @@ class LiveRunGeneralPage extends StatelessWidget {
                             backgroundColor: hc_red,
                             foregroundColor: Colors.white,
                           ),
-                          child: Text("I'm On Inn", style: ts_button, textAlign: TextAlign.center),
+                          child: Text(
+                            "I'm On Inn",
+                            style: ts_button,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ],
                     ),
@@ -1551,8 +1649,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      onPressed: () =>
-                          unawaited(controller.takePhotoSession()),
+                      onPressed: () => unawaited(controller.takePhotoSession()),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -1654,7 +1751,8 @@ class LiveRunGeneralPage extends StatelessWidget {
               final String text = formatDistance(
                 dist * 1000,
                 imperial: Utilities.prefersImperial(
-                  kennelDistanceUnitsPref: controller.run.extensions.distanceUnitsPref,
+                  kennelDistanceUnitsPref:
+                      controller.run.extensions.distanceUnitsPref,
                 ),
               );
               return text;
@@ -1698,7 +1796,10 @@ class LiveRunGeneralPage extends StatelessWidget {
                 color: colour,
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(color: colour.withValues(alpha: 0.7), blurRadius: 6),
+                  BoxShadow(
+                    color: colour.withValues(alpha: 0.7),
+                    blurRadius: 6,
+                  ),
                 ],
               ),
             ),
@@ -1951,7 +2052,11 @@ class LiveRunGeneralPage extends StatelessWidget {
           Expanded(
             child: ElevatedButton.icon(
               icon: const Icon(Icons.explore_off, size: 22),
-              label: Text("I'm Lost", style: ts_button.copyWith(fontSize: 16), textAlign: TextAlign.center),
+              label: Text(
+                "I'm Lost",
+                style: ts_button.copyWith(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrange.shade700,
                 foregroundColor: Colors.white,
@@ -1965,7 +2070,11 @@ class LiveRunGeneralPage extends StatelessWidget {
           Expanded(
             child: ElevatedButton.icon(
               icon: const Icon(Icons.sos, size: 22),
-              label: Text('Send Help', style: ts_button.copyWith(fontSize: 16), textAlign: TextAlign.center),
+              label: Text(
+                'Send Help',
+                style: ts_button.copyWith(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: hc_red,
                 foregroundColor: Colors.white,
@@ -2077,8 +2186,7 @@ class LiveRunGeneralPage extends StatelessWidget {
           repeat
               ? 'You sent a help request $sinceSec seconds ago and the pack '
                     'was notified. Send it again?'
-              :
-          urgent
+              : urgent
               ? 'This sends an urgent request for assistance to the run chat, '
                     'including your current location. The pack will be notified.'
               : "This posts a message to the run chat letting the pack know "
@@ -2092,7 +2200,11 @@ class LiveRunGeneralPage extends StatelessWidget {
               backgroundColor: Colors.grey.shade600,
               foregroundColor: Colors.white,
             ),
-            child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
+            child: Text(
+              'Cancel',
+              style: ts_button,
+              textAlign: TextAlign.center,
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -2100,7 +2212,11 @@ class LiveRunGeneralPage extends StatelessWidget {
               backgroundColor: urgent ? hc_red : Colors.deepOrange.shade700,
               foregroundColor: Colors.white,
             ),
-            child: Text(urgent ? 'Send Help' : "I'm Lost", style: ts_button, textAlign: TextAlign.center),
+            child: Text(
+              urgent ? 'Send Help' : "I'm Lost",
+              style: ts_button,
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),
@@ -2321,4 +2437,3 @@ class _SlotFlashDialogState extends State<_SlotFlashDialog>
     );
   }
 }
-

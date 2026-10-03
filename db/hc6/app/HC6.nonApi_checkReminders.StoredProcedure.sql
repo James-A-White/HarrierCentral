@@ -32,6 +32,13 @@ AS
 --   Temp tables dropped in CATCH to prevent session leaks on retry.
 --   2026-09-25: recipients skip deleted hashers (Hasher.Removed = 1) and
 --     removed kennel links (HasherKennelMap.removed = 1), as the chat SPs do.
+--   2026-10-03 (E5.F1.S10, James): MessageType 3 "get PackTrack ready" —
+--     at the check-in moment, a hasher who said RSVP Yes or is already
+--     checked in gets THIS instead of the generic check-in reminder. Its
+--     tap opens Live Run, arms auto start, and checks them in if they are
+--     at the start. Only devices on build >= @minBuildPreRun get it: older
+--     apps read an unknown MessageType as chat. Recipients carry MessageId
+--     and the API matches on it, because one run now has two messages.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -39,6 +46,7 @@ SET XACT_ABORT ON;
 DECLARE @checkInWindowMinutes INT = 10;
 DECLARE @rsvpWindowMinutes    INT = 4320; -- 3 days
 DECLARE @radiusKm             INT = 100;
+DECLARE @minBuildPreRun       INT = 1439; -- first app build that handles MessageType 3
 
 -- -----------------------------------------------------------------------
 -- Step 1: Collect events within their reminder windows that haven't had
@@ -138,6 +146,19 @@ INTO #messages
 FROM #events e
 WHERE e.minutesToEvent > 0;
 
+-- The pre-run "get PackTrack ready" message (MessageType 3), one per run in
+-- the check-in window, for the hashers who said Yes or are checked in.
+INSERT #messages (id, EventId, PublicEventId, UserId, PublicHasherId, MessageTitle,
+                  MessageContent, MessageReleasabilityFlags, MessageType, KennelId, lat, lon)
+SELECT NEWID(), e.EventId, e.PublicEventId,
+       '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC', 'B6BAFD0D-5D2E-41CD-8495-811D551F01D0',
+       N'Get PackTrack ready',
+       N'"' + e.EventName + N'" starts in ' + CAST(e.minutesToEvent AS NVARCHAR(10))
+         + N' minutes. Tap to arm auto start: your trail starts by itself when you set off.',
+       65535, 3, e.KennelId, e.lat, e.lon
+FROM #events e
+WHERE e.minutesToEvent > 0 AND e.MessageType = 1;
+
 -- -----------------------------------------------------------------------
 -- Step 3: Rowset 0 — message details for FCM payload construction.
 --         MessageRelesabilityFlags column name preserves the HC5 typo
@@ -191,6 +212,32 @@ WHERE COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference
   AND COALESCE(hem.AttendenceState, 0) < 20
   AND msg.MessageType = 1
   AND d.GeoPoint.STDistance(GEOGRAPHY::Point(msg.lat, msg.lon, 4326)) <= (@radiusKm * 1000)
+  -- Said Yes on a build that understands MessageType 3: they get that instead.
+  AND NOT (COALESCE(hem.RsvpState, 0) = 3 AND TRY_CAST(d.BuildNumber AS INT) >= @minBuildPreRun)
+
+UNION
+
+-- MessageType 3: everyone who said RSVP Yes (3) or is checked in (>= 20),
+-- unless they switched this run or kennel OFF (2). Unlike the generic
+-- reminder an unset bell (0) is no bar — they told us they are coming —
+-- and there is no 100 km fence: a "get ready" nudge is about THEIR run.
+SELECT hkm.UserId, d.FcmToken, msg.EventId, msg.id
+FROM #messages msg
+JOIN HC.HasherKennelMap hkm ON hkm.KennelId = msg.KennelId
+JOIN HC.Hasher hs           ON hs.id         = hkm.UserId
+JOIN HC.Device d            ON d.UserId      = hkm.UserId
+JOIN HC.HasherEventMap hem  ON hem.UserId    = hkm.UserId
+                           AND hem.EventId   = msg.EventId
+WHERE msg.MessageType = 3
+  AND (hem.RsvpState = 3 OR hem.AttendenceState >= 20)
+  AND ISNULL(hem.removed, 0) = 0
+  AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) <> 2
+  AND hs.Removed  = 0
+  AND hkm.removed = 0
+  AND d.FcmToken IS NOT NULL
+  AND d.removed    = 0
+  AND d.LastLogin >= @idleCutoff
+  AND TRY_CAST(d.BuildNumber AS INT) >= @minBuildPreRun
 
 UNION
 

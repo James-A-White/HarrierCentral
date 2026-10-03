@@ -143,7 +143,14 @@ namespace HcWebApi.Endpoints
                 {
                     foreach (var recipient in notificationList)
                     {
-                        if ((!string.IsNullOrEmpty(recipient.FcmToken)) && (eventMessage.EventId.ToUpper() == recipient.EventId?.ToUpper()))
+                        // A run can carry two messages at the same moment (the
+                        // check-in reminder and the pre-run push, 2026-10-03), so a
+                        // recipient row names its MessageId; match on that when it
+                        // is there, and on the run otherwise.
+                        bool forThisMessage = !string.IsNullOrEmpty(recipient.MessageId)
+                            ? string.Equals(eventMessage.MessageId, recipient.MessageId, StringComparison.OrdinalIgnoreCase)
+                            : string.Equals(eventMessage.EventId, recipient.EventId, StringComparison.OrdinalIgnoreCase);
+                        if (!string.IsNullOrEmpty(recipient.FcmToken) && forThisMessage)
                         {
                             await SendNotificationAsync(
                                 recipient.FcmToken,

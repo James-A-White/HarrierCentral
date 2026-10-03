@@ -471,7 +471,12 @@ enum RunsTimeScope {
 enum MessageType {
   chat(0),
   checkinReminder(1),
-  rsvpReminder(2);
+  rsvpReminder(2),
+  // "Get PackTrack ready" (E5.F1.S10, 2026-10-03): at the check-in moment,
+  // to hashers who said Yes or are checked in. The tap opens Live Run, arms
+  // auto start, and checks them in if they are at the start. The server
+  // sends it only to builds >= 1439 — older ones would read 3 as chat.
+  preRun(3);
 
   /// The integer ID associated with this tab.
   final int id;

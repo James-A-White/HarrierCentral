@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/live_run_pages/live_run_general_page.dart';
 
 /// Marker item inserted into the displayed run list to separate the user's
 /// attended past runs (above) from their upcoming/future runs (below).
@@ -594,6 +595,10 @@ class FutureRunListPageController extends GetxController {
             break;
           case MessageType.rsvpReminder:
             openToTab = RunTab.rsvp;
+            break;
+          case MessageType.preRun:
+            // Opens Live Run itself (and arms auto start there), so no tab.
+            await LiveRunGeneralController.openFromPreRunPush(run);
             break;
         }
 

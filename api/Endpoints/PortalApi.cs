@@ -537,5 +537,9 @@ public class Recipient
     /// The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal).
     /// Absent from HC5 rowsets, so null there and no badge is sent.
     public int? BadgeTotal { get; set; }
+    /// Which message this recipient gets, when one run has more than one
+    /// (nonApi_checkReminders: the check-in reminder and the pre-run push,
+    /// 2026-10-03). Null everywhere else: match on EventId as before.
+    public string? MessageId { get; set; }
 }
 
