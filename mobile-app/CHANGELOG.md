@@ -1,5 +1,5 @@
 ## 3.1.8+1440 (2026-10-03)
-Dance baby! — all beta testers (TestFlight Hash beta testers + Play internal). Supersedes 1439, which was bumped but never built: the dance was held until scouting was in. Everything since 1435 reaches the wider beta for the first time: hasher search, By Hasher, the hasher page, Android 5-second tracking, delta-only live maps (1436-1438). The 500-row test seed was reverted first.
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Supersedes 1439, which was bumped but never built. Held from the wider beta until the official-trail features (scout, upload, promote, map overlay, I'm-lost reveal) have been tried on a device; 1436-1440 then reach the wider beta together.
 ### New Features
 - **Official trail** (hares and kennel admins): a run's details have an "Official trail" page. **Scout this trail** records the route ahead of the run on your phone only (it never appears on PackTrack), then saves it as the run's official trail for the trail type you choose. Or **upload a GPX, TCX or FIT file** — exports from Strava, Garmin Connect and Fitbit work. Remove a lane from the same page.
 - **Make official trail** on the PackTrack map: select a runner and promote their track to the run's official trail.
