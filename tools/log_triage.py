@@ -72,12 +72,20 @@ def load_env() -> dict[str, str]:
 def query_json(env: dict[str, str], sql: str) -> list[dict]:
     """Runs a FOR JSON query. sqlcmd splits JSON output into ~2 KB rows;
     newlines inside JSON strings are escaped, so joining the rows is exact."""
-    out = subprocess.run(
+    # The password goes in SQLCMDPASSWORD, never on the command line: a failed
+    # run's CalledProcessError printed the whole argv, password included, and
+    # argv is visible to every process on the machine (2026-10-03).
+    proc = subprocess.run(
         ["sqlcmd", "-S", env["HC_SQL_SERVER"], "-d", env["HC_SQL_DATABASE"],
-         "-U", env["HC_SQL_USERNAME"], "-P", env["HC_SQL_PASSWORD"],
+         "-U", env["HC_SQL_USERNAME"],
          "-C", "-y", "0", "-Q", f"SET NOCOUNT ON; {sql}"],
-        capture_output=True, text=True, check=True,
-    ).stdout
+        capture_output=True, text=True, check=False,
+        env={**os.environ, "SQLCMDPASSWORD": env["HC_SQL_PASSWORD"]},
+    )
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout or "").strip().splitlines()
+        raise RuntimeError(f"sqlcmd exited {proc.returncode}: {detail[0] if detail else 'no output'}")
+    out = proc.stdout
     text = "".join(line.rstrip("\r\n") for line in out.splitlines()).strip()
     return json.loads(text) if text else []
 

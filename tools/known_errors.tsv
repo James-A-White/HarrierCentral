@@ -133,3 +133,5 @@ app CLOCK phone clock N minutes behind server UTC; token offset now 400447ms	noi
 app CLOCK phone clock N minutes behind server UTC; token offset now 517693ms	noise	E1.F1.S7 clock correction working (James testing)
 app CLOCK phone clock N second ahead server UTC; token offset now 0ms	noise	E1.F1.S7 clock correction resetting to zero after the clock was fixed
 app CLOCK phone clock N seconds ahead server UTC; token offset now 0ms	noise	E1.F1.S7 clock correction resetting to zero after the clock was fixed
+api publicWeb_markChatRead HC6 Public Web Admin Error: markChatRead — Procedure or function publicWeb_markChatRead has too many arguments specified.	fixed:2026-10-03	web read marks failed since 2026-09-29: chatIds() sent roomType/threadId, API forwards nulls as params; SP now accepts them, web sends only its id
+app ASYNC type 'EnumFollowType' is not a subtype of type 'NotificationState' in type cast @ kennel_list_item.dart KennelListItemState._showNotificationPopup	fixed:1439	Cancel in a kennel's notification menu returned followTypeCancel and was cast to NotificationState

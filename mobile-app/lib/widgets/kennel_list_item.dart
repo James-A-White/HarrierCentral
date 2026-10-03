@@ -585,6 +585,10 @@ class KennelListItemState extends State<KennelListItem> {
     );
 
     if (!mounted) return;
+    // Cancel returns followTypeCancel (an EnumFollowType), not a
+    // NotificationState: the cast below threw on every Cancel (1437,
+    // 2026-10-02). Anything that is not a choice means "do nothing".
+    if (retVal is! NotificationState) return;
     if (!Utilities.isConnected(
       showDialog: true,
       message:
@@ -594,7 +598,7 @@ class KennelListItemState extends State<KennelListItem> {
     }
 
     // Delegate to parent controller — no setState, no direct API call here.
-    await widget.onNotificationSelected(retVal as NotificationState);
+    await widget.onNotificationSelected(retVal);
   }
 
   String getDistanceString() {

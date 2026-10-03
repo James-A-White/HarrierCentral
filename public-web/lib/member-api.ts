@@ -931,7 +931,11 @@ export async function getChatPhotoUploadUrl(s: MemberSession, photoGuid: string)
 }
 
 export async function markChatRead(s: MemberSession, kind: "run" | "kennel", id: string): Promise<void> {
-  await callAdminApi("markChatRead", { deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_READ_PROC[kind]), kind, ...chatIds(kind, id) }).catch(() => undefined);
+  // Only the id this kind uses: chatIds() also sends roomType / threadId,
+  // which publicWeb_markChatRead refused ("too many arguments") until
+  // 2026-10-03 — every web read mark failed silently from 2026-09-29.
+  const ids: Record<string, string> = kind === "run" ? { publicEventId: id } : { publicKennelId: id };
+  await callAdminApi("markChatRead", { deviceId: s.deviceId, accessToken: tokenFor(s, CHAT_READ_PROC[kind]), kind, ...ids }).catch(() => undefined);
 }
 
 /**

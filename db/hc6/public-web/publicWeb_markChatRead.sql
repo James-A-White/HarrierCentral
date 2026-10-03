@@ -8,12 +8,22 @@
 -- Author: Harrier Central
 -- Created: 2026-09-17
 -- =====================================================================
+-- 2026-10-03: @roomType and @threadId are ACCEPTED, not used. The web's
+--   shared chatIds() sends every kind's id (null when not this kind) and
+--   PublicWebAdminApi forwards a JSON null as a real parameter, so since the
+--   DM work (2026-09-29) every call failed "too many arguments" and no web
+--   member's run or kennel chat was ever marked read. Rooms are marked read
+--   by hcapp_getRoomMessages and DMs by hcapp_getDirectMessages. Every
+--   parameter now has a default, so an omitted one reaches the SP's own
+--   graceful check instead of failing before it runs.
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_markChatRead]
-    @deviceId       UNIQUEIDENTIFIER,
-    @accessToken    NVARCHAR(1000),
-    @kind           NVARCHAR(10),
+    @deviceId       UNIQUEIDENTIFIER = NULL,
+    @accessToken    NVARCHAR(1000)   = NULL,
+    @kind           NVARCHAR(10)     = NULL,
     @publicEventId  UNIQUEIDENTIFIER = NULL,
-    @publicKennelId UNIQUEIDENTIFIER = NULL
+    @publicKennelId UNIQUEIDENTIFIER = NULL,
+    @roomType       INT              = NULL,   -- accepted, unused (see above)
+    @threadId       UNIQUEIDENTIFIER = NULL    -- accepted, unused (see above)
 AS
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
