@@ -1,3 +1,8 @@
+## 3.1.9+1442 (2026-10-03)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### New Features
+- **Start points on the kennel trail map**: every run's start is a pin, one per place (bigger where the kennel starts often). Tap a pin to step through the runs that started there and open one. Works for kennels with no official trails too.
+
 ## 3.1.9+1441 (2026-10-03)
 Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Same code as 1440. Apple refused 1440 (errors 90186/90062): App Store review approved 3.1.8 (build 1435), which closes the 3.1.8 train, so the version moves to 3.1.9 (James, 2026-10-03).
 
