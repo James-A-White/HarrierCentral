@@ -1,3 +1,11 @@
+## 3.1.8+1439 (2026-10-03)
+Dance baby! — all beta testers (TestFlight Hash beta testers + Play internal). Everything since 1435 reaches the wider beta for the first time: hasher search, By Hasher, the hasher page, Android 5-second tracking, delta-only live maps (1436-1438). The 500-row test seed was reverted first.
+### New Features
+- **Get PackTrack ready**: about 10 minutes before a run you said Yes to (or are checked in to), a push opens Live Run, checks you in if you are at the start, and arms auto start. Replaces the generic check-in reminder for you.
+- **Kennel trail map**: a "Trail map" button on the kennel page opens a full-screen map of every run's official (hare's) trail; tap one to see and open its run.
+### Fixes
+- Cancelling a kennel's notification menu no longer logs an error.
+
 ## 3.1.8+1438 (2026-10-02)
 Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Test data: 500 real hashers still carry seeded answers until the revert runs.
 ### Improvements
