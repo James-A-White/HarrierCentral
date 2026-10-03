@@ -1548,64 +1548,68 @@ class EditRunDetailsPage extends StatelessWidget {
                                   null) &&
                               (!c.isUpdating.value)) ...<Widget>[
                             const SizedBox(width: 20.0),
-                            Expanded(
-                              child: ElevatedButton(
-                                child: AutoSizeText(
-                                  'Use ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
-                                  style: ts_button,
-                                  minFontSize: 3.0,
-                                  maxLines: 1,
-                                  //overflow: TextOverflow.ellipsis,
-                                ),
-                                onPressed: () async {
-                                  c.mutate(() {
-                                    c.isUpdating.value = true;
-                                  });
-                                  final EventsService nSvc = EventsService();
-                                  final String eventId = await nSvc
-                                      .addEditEvent(
-                                        eventId: c.eventAggregate.event.eventId,
-                                        // The SP needs the kennel even for a one-field edit (2026-09-30):
-                                        // without it the call was refused before the procedure ran.
-                                        kennelId: c.eventAggregate.event.kennelId,
-                                        useFbLatLon: 1,
-                                      );
-
-                                  await c.refreshAfterSave(eventId);
-                                  c.mutate(() {
-                                    if ((c.eventAggregate.extensions.latitude ==
-                                            null) ||
-                                        (c
-                                                .eventAggregate
-                                                .extensions
-                                                .longitude ==
-                                            null)) {
-                                      c.mapCenter = latlng.LatLng(
-                                        c.eventAggregate.extensions.kenlLat,
-                                        c.eventAggregate.extensions.kenlLon,
-                                      );
-                                    } else {
-                                      c.mapCenter = latlng.LatLng(
-                                        c.eventAggregate.extensions.latitude!,
-                                        c.eventAggregate.extensions.longitude!,
-                                      );
-                                    }
-                                    c.isUpdating.value = false;
-                                    final SnackBar snackBar = SnackBar(
-                                      duration: const Duration(seconds: 3),
-                                      content: Text(
-                                        'Location is being synced from ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
-                                        textAlign: TextAlign.center,
-                                        style: ts_titleCondensedBlack,
-                                      ),
-                                      backgroundColor: hc_blue,
-                                    );
-                                    ScaffoldMessenger.of(
-                                      navigatorKey.currentContext!,
-                                    ).showSnackBar(snackBar);
-                                  });
-                                },
+                            // No Expanded here: this sits in a Wrap, and
+                            // Expanded only works in a Row/Column. In a Wrap
+                            // it threw, and the whole button row became a grey
+                            // error box over the map on every imported run
+                            // (James, TwH3 #2514, 2026-10-03).
+                            ElevatedButton(
+                              child: AutoSizeText(
+                                'Use ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
+                                style: ts_button,
+                                textAlign: TextAlign.center,
+                                minFontSize: 3.0,
+                                maxLines: 1,
+                                //overflow: TextOverflow.ellipsis,
                               ),
+                              onPressed: () async {
+                                c.mutate(() {
+                                  c.isUpdating.value = true;
+                                });
+                                final EventsService nSvc = EventsService();
+                                final String eventId = await nSvc
+                                    .addEditEvent(
+                                      eventId: c.eventAggregate.event.eventId,
+                                      // The SP needs the kennel even for a one-field edit (2026-09-30):
+                                      // without it the call was refused before the procedure ran.
+                                      kennelId: c.eventAggregate.event.kennelId,
+                                      useFbLatLon: 1,
+                                    );
+
+                                await c.refreshAfterSave(eventId);
+                                c.mutate(() {
+                                  if ((c.eventAggregate.extensions.latitude ==
+                                          null) ||
+                                      (c
+                                              .eventAggregate
+                                              .extensions
+                                              .longitude ==
+                                          null)) {
+                                    c.mapCenter = latlng.LatLng(
+                                      c.eventAggregate.extensions.kenlLat,
+                                      c.eventAggregate.extensions.kenlLon,
+                                    );
+                                  } else {
+                                    c.mapCenter = latlng.LatLng(
+                                      c.eventAggregate.extensions.latitude!,
+                                      c.eventAggregate.extensions.longitude!,
+                                    );
+                                  }
+                                  c.isUpdating.value = false;
+                                  final SnackBar snackBar = SnackBar(
+                                    duration: const Duration(seconds: 3),
+                                    content: Text(
+                                      'Location is being synced from ${c.eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[c.eventAggregate.event.eventInboundIntegrationId]}',
+                                      textAlign: TextAlign.center,
+                                      style: ts_titleCondensedBlack,
+                                    ),
+                                    backgroundColor: hc_blue,
+                                  );
+                                  ScaffoldMessenger.of(
+                                    navigatorKey.currentContext!,
+                                  ).showSnackBar(snackBar);
+                                });
+                              },
                             ),
                           ],
                         ],
