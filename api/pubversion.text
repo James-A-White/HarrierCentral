@@ -1,3 +1,8 @@
+1.0.61+71
+    • Reminder pushes match recipients on MessageId when present: a run now has two
+      messages at the check-in moment (the check-in reminder and the E5.F1.S10
+      "Get PackTrack ready" push for builds >= 1439).
+
 1.0.61+70
     • PackTrack deltas include deletions: DeletePositions and the resume On Inn strip
       write tombstones to EventTrackingControl (RowKey del-…); an incremental

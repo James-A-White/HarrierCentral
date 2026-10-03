@@ -1,5 +1,12 @@
 # public-web Changelog
 
+## 0.21.74 (2026-10-03 redeploy — official trails)
+
+- **A run's official trail.** Where a run has its hare's trail (E5.F6.S6), the
+  run page draws it dashed — one line per trail type (Normal, Walkers…) — with
+  its distance and a "Download GPX" button. Shown once the run has ended.
+- **Web chat read marks** send only the id each chat kind uses.
+
 ## 0.21.74 (2026-10-02 redeploy — live maps poll by deltas)
 
 - **The run page's live map and Trail TV download only what changed.** The
