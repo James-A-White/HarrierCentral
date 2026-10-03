@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/official_trails/official_trail_service.dart';
 import 'package:intl/intl.dart';
@@ -8,6 +10,9 @@ import 'package:latlong2/latlong.dart' as latlng;
 /// from the kennel page's "Trail map" button; fetched when it opens, never
 /// synced. Only runs that have ended (the server's rule). Tap a trail to
 /// see which run it was, and open the run from there.
+///
+/// Also every run's START POINT (James, 2026-10-03), one pin per place:
+/// tap a pin to step through the runs that started there.
 class KennelTrailsMapController extends GetxController {
   KennelTrailsMapController(this.kennelId);
 
@@ -17,6 +22,15 @@ class KennelTrailsMapController extends GetxController {
   final RxBool loading = true.obs;
   final RxBool failed = false.obs;
   final Rxn<KennelRunTrail> selected = Rxn<KennelRunTrail>();
+
+  /// Start points, one per place.
+  final RxList<KennelStartPlace> places = <KennelStartPlace>[].obs;
+  final Rxn<KennelStartPlace> selectedPlace = Rxn<KennelStartPlace>();
+
+  /// Which of the selected place's runs is shown (0 = newest).
+  final RxInt placeRunIndex = 0.obs;
+  int get startCount =>
+      places.fold<int>(0, (int n, KennelStartPlace p) => n + p.runs.length);
 
   /// Which trail a tap landed on; the polyline's hitValue is its run's id.
   final LayerHitNotifier<String> trailHits =
@@ -38,7 +52,7 @@ class KennelTrailsMapController extends GetxController {
   Future<void> load() async {
     loading.value = true;
     failed.value = false;
-    final List<KennelRunTrail>? got =
+    final KennelTrailMapData? got =
         await OfficialTrailService.fetchKennelTrails(kennelId);
     if (isClosed) return;
     loading.value = false;
@@ -46,12 +60,34 @@ class KennelTrailsMapController extends GetxController {
       failed.value = true;
       return;
     }
-    trails.assignAll(got);
+    trails.assignAll(got.trails);
+    places.assignAll(KennelRunStart.group(got.starts));
+  }
+
+  void selectPlace(KennelStartPlace p) {
+    selected.value = null;
+    placeRunIndex.value = 0;
+    selectedPlace.value = p;
+  }
+
+  void stepPlaceRun(int delta) {
+    final KennelStartPlace? p = selectedPlace.value;
+    if (p == null) return;
+    placeRunIndex.value = (placeRunIndex.value + delta).clamp(
+      0,
+      p.runs.length - 1,
+    );
+  }
+
+  void clearSelection() {
+    selected.value = null;
+    selectedPlace.value = null;
   }
 
   void onTrailTap() {
     final List<String>? hits = trailHits.value?.hitValues;
     if (hits == null || hits.isEmpty) return;
+    selectedPlace.value = null;
     selected.value = trails.firstWhereOrNull(
       (KennelRunTrail t) => t.eventId == HcId(hits.first),
     );
@@ -59,10 +95,10 @@ class KennelTrailsMapController extends GetxController {
 
   /// Opens the run when this phone holds it (it normally does for a kennel
   /// the hasher follows; very old runs may have aged out).
-  Future<void> openRun(KennelRunTrail t) async {
+  Future<void> openRun(HcId eventId) async {
     final List<dynamic> found = await QueryRuns.getRunDetailsAggregates(
       true,
-      eventId: t.eventId,
+      eventId: eventId,
       queryType: EnumRunQueryType.singleRun,
       runsTimeScope: RunsTimeScope.future,
       runsToDisplay: RunsToDisplay.allRuns,
@@ -122,10 +158,13 @@ class KennelTrailsMapPage extends StatelessWidget {
             final bool failed = c.failed.value;
             final List<KennelRunTrail> trails = c.trails.toList();
             final KennelRunTrail? sel = c.selected.value;
+            final List<KennelStartPlace> places = c.places.toList();
+            final KennelStartPlace? place = c.selectedPlace.value;
+            final int placeIdx = c.placeRunIndex.value;
             if (loading) {
               return const Center(child: HcAppCircularProgressIndicator());
             }
-            if (failed || trails.isEmpty) {
+            if (failed || (trails.isEmpty && places.isEmpty)) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -160,6 +199,7 @@ class KennelTrailsMapPage extends StatelessWidget {
             final List<latlng.LatLng> all = <latlng.LatLng>[
               for (final KennelRunTrail t in trails)
                 for (final OfficialTrailLane l in t.lanes) ...l.points,
+              for (final KennelStartPlace p in places) p.point,
             ];
             final List<Polyline<String>> lines = <Polyline<String>>[
               for (final KennelRunTrail t in trails)
@@ -214,6 +254,28 @@ class KennelTrailsMapPage extends StatelessWidget {
                         polylines: lines,
                       ),
                     ),
+                    // Start points above the trails, one pin per place;
+                    // the busier the place, the bigger the pin.
+                    MarkerLayer(
+                      markers: <Marker>[
+                        for (final KennelStartPlace p in places)
+                          Marker(
+                            point: p.point,
+                            width: 30,
+                            height: 30,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => c.selectPlace(p),
+                              child: Center(
+                                child: _StartPin(
+                                  runs: p.runs.length,
+                                  selected: identical(p, place),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
                 Positioned(
@@ -226,10 +288,12 @@ class KennelTrailsMapPage extends StatelessWidget {
                       color: Colors.black.withValues(alpha: 0.72),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: sel == null
+                    child: place != null
+                        ? _placeCard(c, place, placeIdx)
+                        : sel == null
                         ? Text(
-                            '${trails.length} run ${trails.length == 1 ? 'trail' : 'trails'} · '
-                            'tap a trail to see its run',
+                            '${<String>[if (trails.isNotEmpty) '${trails.length} run ${trails.length == 1 ? 'trail' : 'trails'}', if (places.isNotEmpty) '${c.startCount} runs from ${places.length} ${places.length == 1 ? 'start' : 'starts'}'].join(' · ')}\n'
+                            'tap a ${trails.isNotEmpty ? 'trail or ' : ''}start to see its run',
                             style: ts_body,
                             textAlign: TextAlign.center,
                           )
@@ -263,7 +327,8 @@ class KennelTrailsMapPage extends StatelessWidget {
                                 spacing: 12,
                                 children: <Widget>[
                                   ElevatedButton(
-                                    onPressed: () => unawaited(c.openRun(sel)),
+                                    onPressed: () =>
+                                        unawaited(c.openRun(sel.eventId)),
                                     child: const Text(
                                       'Open run',
                                       style: TextStyle(color: Colors.white),
@@ -271,7 +336,7 @@ class KennelTrailsMapPage extends StatelessWidget {
                                     ),
                                   ),
                                   TextButton(
-                                    onPressed: () => c.selected.value = null,
+                                    onPressed: c.clearSelection,
                                     child: const Text(
                                       'Close',
                                       style: TextStyle(color: Colors.white70),
@@ -288,6 +353,116 @@ class KennelTrailsMapPage extends StatelessWidget {
             );
           }),
         ),
+      ),
+    );
+  }
+
+  /// The selected start point: which run (stepping through every run that
+  /// started there), and a way into it.
+  Widget _placeCard(KennelTrailsMapController c, KennelStartPlace p, int i) {
+    final KennelRunStart r = p.runs[i.clamp(0, p.runs.length - 1)];
+    final int n = p.runs.length;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Text(
+          n == 1 ? '1 run started here' : '$n runs started here',
+          style: ts_body.copyWith(color: Colors.white70),
+          textAlign: TextAlign.center,
+        ),
+        Row(
+          children: <Widget>[
+            if (n > 1)
+              IconButton(
+                tooltip: 'Newer run',
+                icon: const Icon(Icons.chevron_left, color: Colors.white),
+                onPressed: i > 0 ? () => c.stepPlaceRun(-1) : null,
+              ),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    r.eventName.isNotEmpty
+                        ? r.eventName
+                        : 'Run ${r.eventNumber}',
+                    style: ts_titleMediumBold,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    <String>[
+                      if (r.eventNumber > 0) '#${r.eventNumber}',
+                      if (r.startLocal != null) _day.format(r.startLocal!),
+                      if (n > 1) '${i + 1} of $n',
+                    ].join(' · '),
+                    style: ts_body.copyWith(color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+            if (n > 1)
+              IconButton(
+                tooltip: 'Older run',
+                icon: const Icon(Icons.chevron_right, color: Colors.white),
+                onPressed: i < n - 1 ? () => c.stepPlaceRun(1) : null,
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: () => unawaited(c.openRun(r.eventId)),
+              child: const Text(
+                'Open run',
+                style: TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            TextButton(
+              onPressed: c.clearSelection,
+              child: const Text(
+                'Close',
+                style: TextStyle(color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// A start-point pin: white with a dark ring, larger for a place used often,
+/// yellow when selected.
+class _StartPin extends StatelessWidget {
+  const _StartPin({required this.runs, required this.selected});
+  final int runs;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final double d = (10 + 3 * math.sqrt(runs.toDouble())).clamp(10, 26);
+    return Container(
+      width: d,
+      height: d,
+      decoration: BoxDecoration(
+        color: selected ? const Color(0xFFFACC15) : Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: const Color(0xFF1E3A8A),
+          width: selected ? 3 : 2,
+        ),
+        boxShadow: const <BoxShadow>[
+          BoxShadow(color: Colors.black38, blurRadius: 2),
+        ],
       ),
     );
   }

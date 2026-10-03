@@ -91,7 +91,10 @@ class OfficialTrailLane {
   /// Lanes from the trail JSON `{"lanes":[{"type":3,"points":[[lat,lon,t?],...]}]}`
   /// plus the info JSON's distances. Tolerant: a lane that will not parse is
   /// left out.
-  static List<OfficialTrailLane> parseLanes(Object? trailJson, Object? infoJson) {
+  static List<OfficialTrailLane> parseLanes(
+    Object? trailJson,
+    Object? infoJson,
+  ) {
     Map<String, dynamic> trail = <String, dynamic>{};
     Map<String, dynamic> info = <String, dynamic>{};
     try {
@@ -118,8 +121,12 @@ class OfficialTrailLane {
       final List<int> ts = <int>[];
       bool allTimed = true;
       for (final dynamic p in (l['points'] as List<dynamic>? ?? <dynamic>[])) {
-        if (p is! List || p.length < 2 || p[0] is! num || p[1] is! num) continue;
-        pts.add(latlng.LatLng((p[0] as num).toDouble(), (p[1] as num).toDouble()));
+        if (p is! List || p.length < 2 || p[0] is! num || p[1] is! num) {
+          continue;
+        }
+        pts.add(
+          latlng.LatLng((p[0] as num).toDouble(), (p[1] as num).toDouble()),
+        );
         if (p.length >= 3 && p[2] is num) {
           ts.add((p[2] as num).toInt());
         } else {
@@ -200,6 +207,11 @@ class KennelRunTrail {
     return main.distanceM;
   }
 
+  /// A local wall-clock time from the server, ignoring any offset suffix.
+  static DateTime? parseLocal(Object? v) => DateTime.tryParse(
+    '${v ?? ''}'.replaceAll(RegExp(r'[Zz]$|[+-]\d{2}:\d{2}$'), ''),
+  );
+
   /// Rows of hcapp_getKennelOfficialTrails. A run whose trail will not
   /// parse is left out rather than failing the map.
   static KennelRunTrail? fromRow(Map<String, dynamic> j) {
@@ -213,18 +225,84 @@ class KennelRunTrail {
         eventId: HcId('${j['EventId'] ?? ''}'),
         eventNumber: (j['EventNumber'] as num?)?.toInt() ?? 0,
         eventName: '${j['EventName'] ?? ''}',
-        startLocal: DateTime.tryParse(
-          '${j['EventStartLocal'] ?? ''}'.replaceAll(
-            RegExp(r'[Zz]$|[+-]\d{2}:\d{2}$'),
-            '',
-          ),
-        ),
+        startLocal: parseLocal(j['EventStartLocal']),
         lanes: lanes,
       );
     } catch (_) {
       return null;
     }
   }
+}
+
+/// A run's start point on the kennel trail map.
+class KennelRunStart {
+  const KennelRunStart({
+    required this.eventId,
+    required this.eventNumber,
+    required this.eventName,
+    required this.point,
+    this.startLocal,
+  });
+
+  final HcId eventId;
+  final int eventNumber;
+  final String eventName;
+  final DateTime? startLocal;
+  final latlng.LatLng point;
+
+  static KennelRunStart? fromRow(Map<String, dynamic> j) {
+    final num? lat = j['Lat'] is num
+        ? j['Lat'] as num
+        : num.tryParse('${j['Lat']}');
+    final num? lon = j['Lon'] is num
+        ? j['Lon'] as num
+        : num.tryParse('${j['Lon']}');
+    if (lat == null || lon == null) return null;
+    return KennelRunStart(
+      eventId: HcId('${j['EventId'] ?? ''}'),
+      eventNumber: (j['EventNumber'] as num?)?.toInt() ?? 0,
+      eventName: '${j['EventName'] ?? ''}',
+      startLocal: KennelRunTrail.parseLocal(j['EventStartLocal']),
+      point: latlng.LatLng(lat.toDouble(), lon.toDouble()),
+    );
+  }
+
+  /// Runs that started at the same place (to ~10 m), one pin each, newest
+  /// run first — Chichester has 1,087 runs at 322 places.
+  static List<KennelStartPlace> group(List<KennelRunStart> starts) {
+    final Map<String, List<KennelRunStart>> by =
+        <String, List<KennelRunStart>>{};
+    for (final KennelRunStart s in starts) {
+      final String key =
+          '${s.point.latitude.toStringAsFixed(4)},${s.point.longitude.toStringAsFixed(4)}';
+      (by[key] ??= <KennelRunStart>[]).add(s);
+    }
+    return by.values
+        .map((List<KennelRunStart> runs) {
+          runs.sort(
+            (KennelRunStart a, KennelRunStart b) =>
+                (b.startLocal ?? DateTime(0)).compareTo(
+                  a.startLocal ?? DateTime(0),
+                ),
+          );
+          return KennelStartPlace(point: runs.first.point, runs: runs);
+        })
+        .toList(growable: false);
+  }
+}
+
+/// One pin on the kennel trail map: a place and every run that started there.
+class KennelStartPlace {
+  const KennelStartPlace({required this.point, required this.runs});
+  final latlng.LatLng point;
+  final List<KennelRunStart> runs;
+}
+
+/// What the kennel trail map shows: official trails and run start points.
+class KennelTrailMapData {
+  const KennelTrailMapData({required this.trails, required this.starts});
+  final List<KennelRunTrail> trails;
+  final List<KennelRunStart> starts;
 }
 
 /// A file the server read: its points ([lat, lon] or [lat, lon, t]).
@@ -287,7 +365,10 @@ class OfficialTrailService {
         available: available,
         canEdit: (row['CanEdit'] as num?)?.toInt() == 1,
         lanes: available
-            ? OfficialTrailLane.parseLanes(row['OfficialTrail'], row['OfficialTrailInfo'])
+            ? OfficialTrailLane.parseLanes(
+                row['OfficialTrail'],
+                row['OfficialTrailInfo'],
+              )
             : const <OfficialTrailLane>[],
       );
     } catch (e, s) {
@@ -349,7 +430,10 @@ class OfficialTrailService {
   /// A GPX / TCX / FIT file read by the server's own parsers (Strava,
   /// Garmin and Fitbit exports included). Nothing is stored. Throws a
   /// message string on failure.
-  static Future<ParsedTrackFile> parseFile(String fileName, List<int> bytes) async {
+  static Future<ParsedTrackFile> parseFile(
+    String fileName,
+    List<int> bytes,
+  ) async {
     final c = _creds();
     if (c == null) throw 'Please sign in again.';
     final http.Response resp = await http
@@ -371,13 +455,18 @@ class OfficialTrailService {
     if (resp.statusCode != 200) {
       throw "That file couldn't be read (${resp.statusCode}). Please try again.";
     }
-    final Map<String, dynamic> j = jsonDecode(resp.body) as Map<String, dynamic>;
+    final Map<String, dynamic> j =
+        jsonDecode(resp.body) as Map<String, dynamic>;
     if (j['success'] != true) {
       throw '${j['errorUserMessage'] ?? "That file has no track Harrier Central can read."}';
     }
     final List<List<num>> pts = <List<num>>[
       for (final dynamic p in (j['points'] as List<dynamic>? ?? <dynamic>[]))
-        if (p is List) <num>[for (final dynamic v in p) if (v is num) v],
+        if (p is List)
+          <num>[
+            for (final dynamic v in p)
+              if (v is num) v,
+          ],
     ];
     return ParsedTrackFile(
       name: '${j['name'] ?? fileName}',
@@ -393,10 +482,11 @@ class OfficialTrailService {
   static ({List<List<num>> points, int distanceM}) lanePointsFrom(
     List<TrackPoint> track,
   ) {
-    final List<TrackPoint> plain = track
-        .where((TrackPoint p) => p.type == null)
-        .toList()
-      ..sort((TrackPoint a, TrackPoint b) => a.timestampMs.compareTo(b.timestampMs));
+    final List<TrackPoint> plain =
+        track.where((TrackPoint p) => p.type == null).toList()..sort(
+          (TrackPoint a, TrackPoint b) =>
+              a.timestampMs.compareTo(b.timestampMs),
+        );
     if (plain.length < 2) return (points: <List<num>>[], distanceM: 0);
     const latlng.Distance d = latlng.Distance();
     final int t0 = plain.first.timestampMs;
@@ -422,9 +512,10 @@ class OfficialTrailService {
     return (points: out, distanceM: meters.round());
   }
 
-  /// Every official trail of the kennel's ended runs, newest first. Null when
-  /// the call failed; an empty list is the ordinary answer for most kennels.
-  static Future<List<KennelRunTrail>?> fetchKennelTrails(HcId kennelId) async {
+  /// The kennel trail map's data: every official trail of the kennel's
+  /// ended runs, newest first, and every run's start point. Null when the
+  /// call failed; empty lists are the ordinary answer for most kennels.
+  static Future<KennelTrailMapData?> fetchKennelTrails(HcId kennelId) async {
     final c = _creds();
     if (c == null) return null;
     final String result = await ServiceCommon.sendHttpPost(
@@ -443,12 +534,22 @@ class OfficialTrailService {
     if (result.startsWith(ERROR_PREFIX)) return null;
     try {
       final List<dynamic> outer = jsonDecode(result) as List<dynamic>;
-      if (outer.isEmpty || outer[0] is! List) return <KennelRunTrail>[];
-      return (outer[0] as List<dynamic>)
-          .whereType<Map<String, dynamic>>()
-          .map(KennelRunTrail.fromRow)
-          .whereType<KennelRunTrail>()
-          .toList(growable: false);
+      List<Map<String, dynamic>> rows(int i) =>
+          outer.length > i && outer[i] is List
+          ? (outer[i] as List<dynamic>)
+                .whereType<Map<String, dynamic>>()
+                .toList()
+          : const <Map<String, dynamic>>[];
+      return KennelTrailMapData(
+        trails: rows(0)
+            .map(KennelRunTrail.fromRow)
+            .whereType<KennelRunTrail>()
+            .toList(growable: false),
+        starts: rows(1)
+            .map(KennelRunStart.fromRow)
+            .whereType<KennelRunStart>()
+            .toList(growable: false),
+      );
     } catch (e, s) {
       BootLogger.logError('[ERROR][TRAILS]', 'kennel trails unreadable: $e', s);
       return null;

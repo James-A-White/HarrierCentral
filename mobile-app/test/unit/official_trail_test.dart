@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:harrier_central/data/models/user_positions/user_positions.dart';
 import 'package:harrier_central/services/official_trails/official_trail_overlay.dart';
 import 'package:harrier_central/services/official_trails/official_trail_service.dart';
+import 'package:harrier_central/util/hc_id.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 
 void main() {
   group('parseLanes', () {
@@ -99,5 +101,33 @@ void main() {
       TrackPoint(lat: 50, lng: 0.002, acc: 5, timestampMs: 3, type: 'OIN'),
     ]);
     expect(out.map((TrackPoint t) => t.timestampMs), <int>[1]);
+  });
+
+  group('kennel start points', () {
+    test('rows parse; a row with no position is skipped', () {
+      final ok = KennelRunStart.fromRow(<String, dynamic>{
+        'EventId': 'ABC', 'EventNumber': 1094, 'EventName': 'Hermitage',
+        'EventStartLocal': '2025-09-14T11:00:00+00:00', 'Lat': 50.84618, 'Lon': '-0.92908',
+      });
+      expect(ok!.eventId, 'abc');
+      expect(ok.point.longitude, closeTo(-0.92908, 1e-9));
+      expect(ok.startLocal, DateTime(2025, 9, 14, 11));
+      expect(KennelRunStart.fromRow(<String, dynamic>{'EventId': 'x', 'Lat': null, 'Lon': 1}), isNull);
+    });
+
+    test('runs at the same place share one pin, newest first', () {
+      KennelRunStart s(int n, double lat, String day) => KennelRunStart(
+        eventId: HcId('e$n'), eventNumber: n, eventName: '',
+        startLocal: DateTime.parse(day), point: latlng.LatLng(lat, -0.9),
+      );
+      final places = KennelRunStart.group(<KennelRunStart>[
+        s(1, 50.80001, '2020-01-05'),
+        s(2, 50.80003, '2024-06-01'), // same place to ~10 m
+        s(3, 50.90000, '2023-01-01'),
+      ]);
+      expect(places, hasLength(2));
+      final busy = places.firstWhere((p) => p.runs.length == 2);
+      expect(busy.runs.map((r) => r.eventNumber), <int>[2, 1]);
+    });
   });
 }

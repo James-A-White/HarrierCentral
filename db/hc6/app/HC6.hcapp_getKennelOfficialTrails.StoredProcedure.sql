@@ -8,9 +8,15 @@ AS
 -- Description: The kennel page's full-screen trail map (E5.F6.S6): every
 --   official trail of the kennel's runs that have ended
 --   (HC6.KennelOfficialTrails), newest first. Fetched when the map opens,
---   never synced.
+--   never synced. Since 2026-10-03 also every run's START POINT (James:
+--   "I would love to see the start points as well") — all of the kennel's
+--   visible runs, past and future, from the trail-independent Sync* columns
+--   the app shows as the run's location. Apps before 1442 read rowset 0 only.
 -- Returns: rowset 0 — { EventId, PublicEventId, EventNumber, EventName,
 --   EventStartLocal, OfficialTrail, OfficialTrailInfo }
+--          rowset 1 — { EventId, EventNumber, EventName, EventStartLocal,
+--   Lat, Lon } newest first; runs with no position (NULL, 0/0, or the
+--   app's -2/-2 "cleared" sentinel) are left out.
 -- Author: Harrier Central
 -- Created: 2026-10-03
 -- =====================================================================
@@ -44,6 +50,21 @@ BEGIN TRY
            t.OfficialTrail, t.OfficialTrailInfo
     FROM HC6.KennelOfficialTrails(@kennelId) t
     ORDER BY t.EventStartDatetimeGmt DESC;
+
+    SELECT LOWER(CAST(e.id AS NVARCHAR(40))) AS EventId,
+           e.EventNumber, e.EventName, e.EventStartLocal,
+           CAST(e.SyncLatitude  AS DECIMAL(9, 6)) AS Lat,
+           CAST(e.SyncLongitude AS DECIMAL(9, 6)) AS Lon
+    FROM HC.Event e
+    WHERE e.KennelId = @kennelId
+      AND e.deleted = 0
+      AND ISNULL(e.removed, 0) = 0
+      AND e.IsVisible = 1
+      AND e.SyncLatitude IS NOT NULL AND e.SyncLongitude IS NOT NULL
+      AND ABS(e.SyncLatitude) <= 90 AND ABS(e.SyncLongitude) <= 180
+      AND NOT (e.SyncLatitude = 0 AND e.SyncLongitude = 0)
+      AND NOT (e.SyncLatitude = -2 AND e.SyncLongitude = -2)
+    ORDER BY e.EventStartDatetimeGmt DESC;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
