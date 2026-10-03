@@ -1,3 +1,11 @@
+## 3.1.9+1443 (2026-10-03)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### Improvements
+- **Kennel trail map opens where the kennel runs**: the view centres on the busiest start area (about 90% of the kennel's runs), instead of zooming out to take in a far-away away day.
+- **Start pins show how busy a place is**: blue dots with a black border, bigger and deeper blue the more runs started there; the selected pin has a white halo.
+### Server (no app change needed)
+- **Official trails for past runs**: 476 runs with a PackTrack now have an official trail, promoted from their best runner track.
+
 ## 3.1.9+1442 (2026-10-03)
 Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
 ### New Features
