@@ -1,3 +1,6 @@
+## 3.1.9+1441 (2026-10-03)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Same code as 1440. Apple refused 1440 (errors 90186/90062): App Store review approved 3.1.8 (build 1435), which closes the 3.1.8 train, so the version moves to 3.1.9 (James, 2026-10-03).
+
 ## 3.1.8+1440 (2026-10-03)
 Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Supersedes 1439, which was bumped but never built. Held from the wider beta until the official-trail features (scout, upload, promote, map overlay, I'm-lost reveal) have been tried on a device; 1436-1440 then reach the wider beta together.
 ### New Features
