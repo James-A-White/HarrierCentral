@@ -1,6 +1,7 @@
 //import 'dart:ui' as ui;
 
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/detail_pages/kennel_trails_map_page.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
@@ -289,248 +290,272 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   children: <Widget>[
                     if (can(KennelFeature.createEditRuns))
                       _adminButton(
-                icon: MaterialCommunityIcons.run_fast,
-                label: 'Add & Edit\r\nruns',
-                onPressed: () async {
-                  if (Utilities.isConnected(showDialog: true)) {
-                    await Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => AddEditEventsPage(
-                          kennel: agg,
-                          pageType: FilterEventsPageType.future,
-                        ),
+                        icon: MaterialCommunityIcons.run_fast,
+                        label: 'Add & Edit\r\nruns',
+                        onPressed: () async {
+                          if (Utilities.isConnected(showDialog: true)) {
+                            await Navigator.push<dynamic>(
+                              context,
+                              MaterialPageRoute<dynamic>(
+                                builder: (BuildContext context) =>
+                                    AddEditEventsPage(
+                                      kennel: agg,
+                                      pageType: FilterEventsPageType.future,
+                                    ),
+                              ),
+                            );
+                            unawaited(controller.refreshFromTable(true));
+                          }
+                        },
                       ),
-                    );
-                    unawaited(controller.refreshFromTable(true));
-                  }
-                },
-              ),
                     if (can(KennelFeature.createEditRuns))
                       _adminButton(
-                icon: MaterialCommunityIcons.playlist_edit,
-                label: 'Past\r\nevents',
-                onPressed: () async {
-                  if (Utilities.isConnected(showDialog: true)) {
-                    await Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => AddEditEventsPage(
-                          kennel: agg,
-                          pageType: FilterEventsPageType.past,
-                        ),
+                        icon: MaterialCommunityIcons.playlist_edit,
+                        label: 'Past\r\nevents',
+                        onPressed: () async {
+                          if (Utilities.isConnected(showDialog: true)) {
+                            await Navigator.push<dynamic>(
+                              context,
+                              MaterialPageRoute<dynamic>(
+                                builder: (BuildContext context) =>
+                                    AddEditEventsPage(
+                                      kennel: agg,
+                                      pageType: FilterEventsPageType.past,
+                                    ),
+                              ),
+                            );
+                            unawaited(controller.refreshFromTable(true));
+                          }
+                        },
                       ),
-                    );
-                    unawaited(controller.refreshFromTable(true));
-                  }
-                },
-              ),
                     if (can(KennelFeature.createEditRuns))
                       _adminButton(
-                icon: MaterialCommunityIcons.qrcode,
-                iconTopPadding: 4,
-                iconSize: 55,
-                labelTopPadding: 7,
-                label: 'Print QR codes',
-                onPressed: () async {
-                  await Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => EventQrCodePage(
-                        kennelShortName: agg.kennel.kennelShortName,
-                        qrContent: agg.kennel.kennelId,
-                        runEndPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_END,
-                        runStartPrefix: QR_PREFIX_KENNEL_GENERIC_RUN_START,
-                        runLink: '',
-                        showRunLink: false,
-                        title: 'Any ${agg.kennel.kennelShortName} run',
-                        kennelWebsiteUrl: agg.kennel.kennelWebsiteUrl,
-                      ),
-                    ),
-                  );
-                },
-              ),
-                    if (can(KennelFeature.createEditRuns))
-                      _adminButton(
-                icon: MaterialIcons.location_on,
-                iconTopPadding: 4,
-                iconSize: 55,
-                labelTopPadding: 7,
-                label: 'View run locations',
-                onPressed: () async {
-                  await Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) =>
-                          RunAndKennelMapPage(kennel: agg.kennel),
-                    ),
-                  );
-                },
-              ),
-                    if (can(KennelFeature.createEditRuns))
-              Container(
-                // 15/15 to match _adminButton's padding. This was 20/15, which
-                // sat this one button 5pt lower than the rest of its row.
-                margin: const EdgeInsets.only(top: 15, bottom: 15),
-                width: 110,
-                height: 110,
-                child: StyleForConnected(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-                    ),
-                    // Scales down only if taller than the tile (1.5x text).
- child: FitHeight(child: Column(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(right: 2.0),
-                          child: Image.asset(
-                            'images/icons/excel.png',
-                            height: 50.0,
-                            width: 50.0,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 10,
-                            right: 10,
-                            top: 8,
-                          ),
-                          child: AutoSizeText(
-                            'Email run stats',
-                            textAlign: TextAlign.center,
-                            style: ts_buttonLabelMedium,
-                            maxLines: 3,
-                            minFontSize: 8,
-                            wrapWords: false,
-                          ),
-                        ),
-                      ],
-                    )),
-                    onPressed: () async {
-                      if (Utilities.isConnected(showDialog: true)) {
-                        final EmailReportsService svc = EmailReportsService();
-                        if (navigatorKey.currentContext != null) {
-                          IveCoreUtilities.showInSnackBar(
-                            navigatorKey.currentContext!,
-                            'Run stats being processed...',
-                            durationInSeconds: 10,
-                          );
-                        }
-                        await svc
-                            .sendKennelRunStatsReportByEmail(
-                              kennelId: agg.kennel.kennelId,
-                              kennelName: agg.kennel.kennelName,
-                              digitsAfterDecimal:
-                                  agg.extensions.digitsAfterDecimal ?? 2,
-                              currencySymbol:
-                                  agg.extensions.currencySymbol ?? r'$',
-                            )
-                            .then((Map<String, String> result) async {
-                              ScaffoldMessenger.of(
-                                navigatorKey.currentContext!,
-                              ).hideCurrentSnackBar();
-                              if ((result['result'] ?? '')
-                                  .toLowerCase()
-                                  .startsWith('success')) {
-                                await Utilities.showAlert(
-                                  'E-mail successfully sent',
-                                  'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                                  'OK',
-                                );
-                              }
-                            });
-                      }
-                    },
-                  ),
-                ),
-              ),
-                    // The whole kennel's pending photos, not one run's. Imports land
-            // on past runs in no order, so a queue that can only be reached
-            // run by run never gets cleared (James, 2026-09-13). Same screen
-            // as the run's own review — it takes an empty eventId to mean
-            // "every run".
-            if (can(KennelFeature.reviewPhotos))
-              _adminButton(
-                icon: MaterialIcons.photo_library,
-                iconTopPadding: 4,
-                iconSize: 48,
-                labelTopPadding: 7,
-                label: 'Review\r\nphotos',
-                onPressed: () async {
-                  await Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => PhotoReviewPage(
-                        kennelId: agg.kennel.kennelId,
-                        eventId: '',
-                        eventName: agg.kennel.kennelShortName,
-                        eventNumber: null,
-                        kennelSlug: agg.kennel.kennelUniqueShortName,
-                        kennelLogoUrl: agg.kennel.kennelLogo,
-                        kennelShortName: agg.kennel.kennelShortName,
-                      ),
-                    ),
-                  );
-                },
-              ),
-                    if (can(KennelFeature.manageMembers))
-              Padding(
-                padding: const EdgeInsets.only(top: 15, bottom: 15),
-                child: SizedBox(
-                  width: 110,
-                  height: 110,
-                  child: StyleForConnected(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-                      ),
-                      // Scales down only if taller than the tile (1.5x text).
- child: FitHeight(child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          const Padding(
-                            padding: EdgeInsets.only(left: 0),
-                            child: Icon(
-                              Ionicons.md_people,
-                              color: Colors.white,
-                              size: 60,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: 10,
-                              right: 10,
-                              top: 4,
-                            ),
-                            child: AutoSizeText(
-                              'Manage Members',
-                              textAlign: TextAlign.center,
-                              style: ts_buttonLabelMedium,
-                              maxLines: 3,
-                              minFontSize: 8,
-                              wrapWords: false,
-                            ),
-                          ),
-                        ],
-                      )),
-                      onPressed: () async {
-                        if (Utilities.isConnected(showDialog: true)) {
-                          final KennelMembersList membersPage =
-                              KennelMembersList(kennelListAggregate: agg);
+                        icon: MaterialCommunityIcons.qrcode,
+                        iconTopPadding: 4,
+                        iconSize: 55,
+                        labelTopPadding: 7,
+                        label: 'Print QR codes',
+                        onPressed: () async {
                           await Navigator.push<dynamic>(
                             context,
                             MaterialPageRoute<dynamic>(
-                              builder: (BuildContext context) => membersPage,
+                              builder: (BuildContext context) =>
+                                  EventQrCodePage(
+                                    kennelShortName: agg.kennel.kennelShortName,
+                                    qrContent: agg.kennel.kennelId,
+                                    runEndPrefix:
+                                        QR_PREFIX_KENNEL_GENERIC_RUN_END,
+                                    runStartPrefix:
+                                        QR_PREFIX_KENNEL_GENERIC_RUN_START,
+                                    runLink: '',
+                                    showRunLink: false,
+                                    title:
+                                        'Any ${agg.kennel.kennelShortName} run',
+                                    kennelWebsiteUrl:
+                                        agg.kennel.kennelWebsiteUrl,
+                                  ),
                             ),
                           );
-                          await controller.refreshMismanagement();
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ),
+                        },
+                      ),
+                    if (can(KennelFeature.createEditRuns))
+                      _adminButton(
+                        icon: MaterialIcons.location_on,
+                        iconTopPadding: 4,
+                        iconSize: 55,
+                        labelTopPadding: 7,
+                        label: 'View run locations',
+                        onPressed: () async {
+                          await Navigator.push<dynamic>(
+                            context,
+                            MaterialPageRoute<dynamic>(
+                              builder: (BuildContext context) =>
+                                  RunAndKennelMapPage(kennel: agg.kennel),
+                            ),
+                          );
+                        },
+                      ),
+                    if (can(KennelFeature.createEditRuns))
+                      Container(
+                        // 15/15 to match _adminButton's padding. This was 20/15, which
+                        // sat this one button 5pt lower than the rest of its row.
+                        margin: const EdgeInsets.only(top: 15, bottom: 15),
+                        width: 110,
+                        height: 110,
+                        child: StyleForConnected(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.only(
+                                top: 8.0,
+                                bottom: 0.0,
+                              ),
+                            ),
+                            // Scales down only if taller than the tile (1.5x text).
+                            child: FitHeight(
+                              child: Column(
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 2.0),
+                                    child: Image.asset(
+                                      'images/icons/excel.png',
+                                      height: 50.0,
+                                      width: 50.0,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 10,
+                                      right: 10,
+                                      top: 8,
+                                    ),
+                                    child: AutoSizeText(
+                                      'Email run stats',
+                                      textAlign: TextAlign.center,
+                                      style: ts_buttonLabelMedium,
+                                      maxLines: 3,
+                                      minFontSize: 8,
+                                      wrapWords: false,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            onPressed: () async {
+                              if (Utilities.isConnected(showDialog: true)) {
+                                final EmailReportsService svc =
+                                    EmailReportsService();
+                                if (navigatorKey.currentContext != null) {
+                                  IveCoreUtilities.showInSnackBar(
+                                    navigatorKey.currentContext!,
+                                    'Run stats being processed...',
+                                    durationInSeconds: 10,
+                                  );
+                                }
+                                await svc
+                                    .sendKennelRunStatsReportByEmail(
+                                      kennelId: agg.kennel.kennelId,
+                                      kennelName: agg.kennel.kennelName,
+                                      digitsAfterDecimal:
+                                          agg.extensions.digitsAfterDecimal ??
+                                          2,
+                                      currencySymbol:
+                                          agg.extensions.currencySymbol ?? r'$',
+                                    )
+                                    .then((Map<String, String> result) async {
+                                      ScaffoldMessenger.of(
+                                        navigatorKey.currentContext!,
+                                      ).hideCurrentSnackBar();
+                                      if ((result['result'] ?? '')
+                                          .toLowerCase()
+                                          .startsWith('success')) {
+                                        await Utilities.showAlert(
+                                          'E-mail successfully sent',
+                                          'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                                          'OK',
+                                        );
+                                      }
+                                    });
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    // The whole kennel's pending photos, not one run's. Imports land
+                    // on past runs in no order, so a queue that can only be reached
+                    // run by run never gets cleared (James, 2026-09-13). Same screen
+                    // as the run's own review — it takes an empty eventId to mean
+                    // "every run".
+                    if (can(KennelFeature.reviewPhotos))
+                      _adminButton(
+                        icon: MaterialIcons.photo_library,
+                        iconTopPadding: 4,
+                        iconSize: 48,
+                        labelTopPadding: 7,
+                        label: 'Review\r\nphotos',
+                        onPressed: () async {
+                          await Navigator.push<dynamic>(
+                            context,
+                            MaterialPageRoute<dynamic>(
+                              builder: (BuildContext context) =>
+                                  PhotoReviewPage(
+                                    kennelId: agg.kennel.kennelId,
+                                    eventId: '',
+                                    eventName: agg.kennel.kennelShortName,
+                                    eventNumber: null,
+                                    kennelSlug:
+                                        agg.kennel.kennelUniqueShortName,
+                                    kennelLogoUrl: agg.kennel.kennelLogo,
+                                    kennelShortName: agg.kennel.kennelShortName,
+                                  ),
+                            ),
+                          );
+                        },
+                      ),
+                    if (can(KennelFeature.manageMembers))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 15, bottom: 15),
+                        child: SizedBox(
+                          width: 110,
+                          height: 110,
+                          child: StyleForConnected(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.only(
+                                  top: 8.0,
+                                  bottom: 0.0,
+                                ),
+                              ),
+                              // Scales down only if taller than the tile (1.5x text).
+                              child: FitHeight(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    const Padding(
+                                      padding: EdgeInsets.only(left: 0),
+                                      child: Icon(
+                                        Ionicons.md_people,
+                                        color: Colors.white,
+                                        size: 60,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 10,
+                                        right: 10,
+                                        top: 4,
+                                      ),
+                                      child: AutoSizeText(
+                                        'Manage Members',
+                                        textAlign: TextAlign.center,
+                                        style: ts_buttonLabelMedium,
+                                        maxLines: 3,
+                                        minFontSize: 8,
+                                        wrapWords: false,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              onPressed: () async {
+                                if (Utilities.isConnected(showDialog: true)) {
+                                  final KennelMembersList membersPage =
+                                      KennelMembersList(
+                                        kennelListAggregate: agg,
+                                      );
+                                  await Navigator.push<dynamic>(
+                                    context,
+                                    MaterialPageRoute<dynamic>(
+                                      builder: (BuildContext context) =>
+                                          membersPage,
+                                    ),
+                                  );
+                                  await controller.refreshMismanagement();
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               );
@@ -565,32 +590,34 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             ),
             onPressed: onPressed,
             // Scales down only if taller than the tile (1.5x text).
- child: FitHeight(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(left: 0, top: iconTopPadding),
-                  child: Icon(icon, color: Colors.white, size: iconSize),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 10,
-                    right: 10,
-                    top: labelTopPadding,
+            child: FitHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.only(left: 0, top: iconTopPadding),
+                    child: Icon(icon, color: Colors.white, size: iconSize),
                   ),
-                  // Shrinks the words rather than splitting one across lines
-                  // ("Membe / rs", "location / s" at 1.5x).
-                  child: AutoSizeText(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: ts_buttonLabelMedium,
-                    maxLines: 3,
-                    minFontSize: 8,
-                    wrapWords: false,
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: 10,
+                      right: 10,
+                      top: labelTopPadding,
+                    ),
+                    // Shrinks the words rather than splitting one across lines
+                    // ("Membe / rs", "location / s" at 1.5x).
+                    child: AutoSizeText(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: ts_buttonLabelMedium,
+                      maxLines: 3,
+                      minFontSize: 8,
+                      wrapWords: false,
+                    ),
                   ),
-                ),
-              ],
-            )),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -762,6 +789,41 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   });
                 }
               },
+            ),
+          ),
+        ),
+        // Every run's official (hare's) trail on one full-screen map
+        // (E5.F6.S6, James 2026-10-03).
+        ConnectedWidget(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 8),
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.route, color: Colors.white),
+                label: const Text(
+                  'Trail map',
+                  style: TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: () => unawaited(
+                  navigatorKey.currentState?.push<void>(
+                        MaterialPageRoute<void>(
+                          builder: (BuildContext context) =>
+                              KennelTrailsMapPage(
+                                kennelId: HcId(agg.kennel.kennelId),
+                                kennelShortName: agg.kennel.kennelShortName,
+                                fallbackCenter: agg.extensions.cityLat == null
+                                    ? null
+                                    : latlng.LatLng(
+                                        agg.extensions.cityLat!,
+                                        agg.extensions.cityLon!,
+                                      ),
+                              ),
+                        ),
+                      ) ??
+                      Future<void>.value(),
+                ),
+              ),
             ),
           ),
         ),
@@ -982,7 +1044,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         // open a specific group with a message, so a button promising that
         // would lie for nearly every kennel.
         if (((agg.kennel.messagingGroupInviteUrl ?? '').trim().isNotEmpty) &&
-            agg.kennel.messagingGroupInviteUrl!.toLowerCase().startsWith('http'))
+            agg.kennel.messagingGroupInviteUrl!.toLowerCase().startsWith(
+              'http',
+            ))
           Column(
             children: <Widget>[
               Container(
@@ -992,13 +1056,21 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 child: StyleForConnected(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
+                      padding: const EdgeInsets.only(
+                        left: 12.0,
+                        top: 8.0,
+                        bottom: 8.0,
+                      ),
                     ),
                     child: Row(
                       children: <Widget>[
                         const SizedBox(
                           width: 45.0,
-                          child: Icon(Icons.group_add, color: Colors.white, size: 28),
+                          child: Icon(
+                            Icons.group_add,
+                            color: Colors.white,
+                            size: 28,
+                          ),
                         ),
                         Expanded(
                           child: Padding(
@@ -1078,12 +1150,16 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                           ),
                         ),
                         Flexible(
- // Wraps (centred) instead of running off a small screen.
- child: Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 0),
-                          child: Text('Open website', style: ts_button, textAlign: TextAlign.center),
+                          // Wraps (centred) instead of running off a small screen.
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 0),
+                            child: Text(
+                              'Open website',
+                              style: ts_button,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ),
-)
                       ],
                     ),
                     onPressed: () async {
@@ -1125,12 +1201,16 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         ),
                       ),
                       Flexible(
- // Wraps (centred) instead of running off a small screen.
- child: Padding(
-                        padding: const EdgeInsets.only(left: 20, right: 0),
-                        child: Text('Run art gallery', style: ts_button, textAlign: TextAlign.center),
+                        // Wraps (centred) instead of running off a small screen.
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 0),
+                          child: Text(
+                            'Run art gallery',
+                            style: ts_button,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
-)
                     ],
                   ),
                   onPressed: () async {
@@ -1236,12 +1316,16 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         ),
                       ),
                       Flexible(
- // Wraps (centred) instead of running off a small screen.
- child: Padding(
-                        padding: const EdgeInsets.only(left: 20, right: 0),
-                        child: Text('Share my photos', style: ts_button, textAlign: TextAlign.center),
+                        // Wraps (centred) instead of running off a small screen.
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 0),
+                          child: Text(
+                            'Share my photos',
+                            style: ts_button,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
-)
                     ],
                   ),
                   onPressed: () async {
