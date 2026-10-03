@@ -29,6 +29,12 @@ class KennelTrailsMapController extends GetxController {
 
   /// Which of the selected place's runs is shown (0 = newest).
   final RxInt placeRunIndex = 0.obs;
+
+  /// Where the map opens and the busiest place's run count — worked out
+  /// once on load (focusArea compares every pair of places).
+  List<latlng.LatLng> focus = const <latlng.LatLng>[];
+  int busiest = 1;
+
   int get startCount =>
       places.fold<int>(0, (int n, KennelStartPlace p) => n + p.runs.length);
 
@@ -60,8 +66,21 @@ class KennelTrailsMapController extends GetxController {
       failed.value = true;
       return;
     }
+    final List<KennelStartPlace> grouped = KennelRunStart.group(got.starts);
+    // Open on where most runs start, not on a box stretched to the furthest
+    // pin. A kennel with trails but no positioned starts falls back to them.
+    focus = grouped.isNotEmpty
+        ? KennelStartPlace.focusArea(grouped)
+        : <latlng.LatLng>[
+            for (final KennelRunTrail t in got.trails)
+              for (final OfficialTrailLane l in t.lanes) ...l.points,
+          ];
+    busiest = grouped.fold<int>(
+      1,
+      (int m, KennelStartPlace p) => math.max(m, p.runs.length),
+    );
     trails.assignAll(got.trails);
-    places.assignAll(KennelRunStart.group(got.starts));
+    places.assignAll(grouped);
   }
 
   void selectPlace(KennelStartPlace p) {
@@ -196,11 +215,8 @@ class KennelTrailsMapPage extends StatelessWidget {
                 ),
               );
             }
-            final List<latlng.LatLng> all = <latlng.LatLng>[
-              for (final KennelRunTrail t in trails)
-                for (final OfficialTrailLane l in t.lanes) ...l.points,
-              for (final KennelStartPlace p in places) p.point,
-            ];
+            final List<latlng.LatLng> all = c.focus;
+            final int busiest = c.busiest;
             final List<Polyline<String>> lines = <Polyline<String>>[
               for (final KennelRunTrail t in trails)
                 for (final OfficialTrailLane l in t.lanes)
@@ -269,6 +285,7 @@ class KennelTrailsMapPage extends StatelessWidget {
                               child: Center(
                                 child: _StartPin(
                                   runs: p.runs.length,
+                                  busiest: busiest,
                                   selected: identical(p, place),
                                 ),
                               ),
@@ -440,28 +457,47 @@ class KennelTrailsMapPage extends StatelessWidget {
   }
 }
 
-/// A start-point pin: white with a dark ring, larger for a place used often,
-/// yellow when selected.
+/// A start-point pin (James, 2026-10-03): a coloured dot with a black
+/// border; the more runs that started there, the bigger the dot and the
+/// deeper its colour — scaled against the kennel's busiest place on a log
+/// curve, so one place used 200 times does not flatten every other pin.
+/// Selected: a thicker border with a white halo.
 class _StartPin extends StatelessWidget {
-  const _StartPin({required this.runs, required this.selected});
+  const _StartPin({
+    required this.runs,
+    required this.busiest,
+    required this.selected,
+  });
   final int runs;
+  final int busiest;
   final bool selected;
+
+  static const double _hue = 217; // blue: clear of the trail colours
 
   @override
   Widget build(BuildContext context) {
-    final double d = (10 + 3 * math.sqrt(runs.toDouble())).clamp(10, 26);
+    final double t = busiest <= 1
+        ? 1
+        : (math.log(runs) / math.log(busiest)).clamp(0.0, 1.0);
+    final double d = 10 + 16 * t;
+    final Color fill = HSLColor.fromAHSL(
+      1,
+      _hue,
+      0.30 + 0.65 * t,
+      0.80 - 0.40 * t,
+    ).toColor();
     return Container(
       width: d,
       height: d,
       decoration: BoxDecoration(
-        color: selected ? const Color(0xFFFACC15) : Colors.white,
+        color: fill,
         shape: BoxShape.circle,
-        border: Border.all(
-          color: const Color(0xFF1E3A8A),
-          width: selected ? 3 : 2,
-        ),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(color: Colors.black38, blurRadius: 2),
+        border: Border.all(color: Colors.black, width: selected ? 3 : 1.5),
+        boxShadow: <BoxShadow>[
+          if (selected)
+            const BoxShadow(color: Colors.white, spreadRadius: 3)
+          else
+            const BoxShadow(color: Colors.black38, blurRadius: 2),
         ],
       ),
     );

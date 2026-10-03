@@ -296,6 +296,75 @@ class KennelStartPlace {
   const KennelStartPlace({required this.point, required this.runs});
   final latlng.LatLng point;
   final List<KennelRunStart> runs;
+
+  /// Where the map should open (James, 2026-10-03): on the area where most
+  /// of the kennel's runs start, not on a box stretched to take in the odd
+  /// away weekend or a mistyped location.
+  ///
+  /// The centre is the place with the most runs starting within
+  /// [clusterKm] of it; the area is the radius holding [share] of all runs
+  /// from that centre, plus a fifth for margin (at least [minKm]). Returns the places inside it —
+  /// fit the camera to those. Pins outside are still drawn.
+  static List<latlng.LatLng> focusArea(
+    List<KennelStartPlace> places, {
+    double clusterKm = 10,
+    double share = 0.90,
+    double minKm = 1.5,
+  }) {
+    if (places.length <= 2) {
+      return <latlng.LatLng>[for (final KennelStartPlace p in places) p.point];
+    }
+    // The centre is one of the busiest places: checking the top 200 against
+    // every place keeps a kennel with thousands of starts cheap.
+    final List<KennelStartPlace> candidates = List<KennelStartPlace>.of(places)
+      ..sort(
+        (KennelStartPlace x, KennelStartPlace y) =>
+            y.runs.length.compareTo(x.runs.length),
+      );
+    KennelStartPlace centre = candidates.first;
+    int bestNear = -1;
+    for (final KennelStartPlace a in candidates.take(200)) {
+      int near = 0;
+      for (final KennelStartPlace b in places) {
+        if (_km(a.point, b.point) <= clusterKm) near += b.runs.length;
+      }
+      if (near > bestNear) {
+        bestNear = near;
+        centre = a;
+      }
+    }
+    final List<(double, int)> byDistance = <(double, int)>[
+      for (final KennelStartPlace p in places)
+        (_km(centre.point, p.point), p.runs.length),
+    ]..sort(((double, int) x, (double, int) y) => x.$1.compareTo(y.$1));
+    final int total = byDistance.fold<int>(
+      0,
+      (int n, (double, int) e) => n + e.$2,
+    );
+    double radius = minKm;
+    int seen = 0;
+    for (final (double, int) e in byDistance) {
+      seen += e.$2;
+      if (seen >= total * share) {
+        radius = math.max(minKm, e.$1 * 1.2);
+        break;
+      }
+    }
+    return <latlng.LatLng>[
+      for (final KennelStartPlace p in places)
+        if (_km(centre.point, p.point) <= radius) p.point,
+    ];
+  }
+
+  /// Kilometres between two points; an equirectangular approximation is
+  /// plenty at a kennel's scale and cheap enough for every pair of places.
+  static double _km(latlng.LatLng a, latlng.LatLng b) {
+    final double x =
+        (b.longitude - a.longitude) *
+        math.cos((a.latitude + b.latitude) * math.pi / 360);
+    final double y = b.latitude - a.latitude;
+    return math.sqrt(x * x + y * y) * 111.195;
+  }
 }
 
 /// What the kennel trail map shows: official trails and run start points.

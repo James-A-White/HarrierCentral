@@ -130,4 +130,35 @@ void main() {
       expect(busy.runs.map((r) => r.eventNumber), <int>[2, 1]);
     });
   });
+
+  group('kennel map focus', () {
+    KennelStartPlace place(double lat, double lon, int runs) => KennelStartPlace(
+      point: latlng.LatLng(lat, lon),
+      runs: List<KennelRunStart>.generate(runs, (int i) => KennelRunStart(
+        eventId: HcId('e$lat$i'), eventNumber: i, eventName: '',
+        point: latlng.LatLng(lat, lon),
+      )),
+    );
+
+    test('a far-away start does not widen the view', () {
+      final places = <KennelStartPlace>[
+        place(50.836, -0.780, 40), // Chichester
+        place(50.850, -0.820, 25),
+        place(50.800, -0.700, 20),
+        place(50.900, -0.900, 10),
+        place(51.507, -0.128, 1), // one London away day
+        place(48.857, 2.352, 1), // and Paris
+      ];
+      final focus = KennelStartPlace.focusArea(places);
+      expect(focus, hasLength(4));
+      expect(focus.every((p) => p.latitude < 51), isTrue);
+    });
+
+    test('a kennel spread evenly keeps most of its starts in view', () {
+      final places = <KennelStartPlace>[
+        for (int i = 0; i < 10; i++) place(50 + i * 0.3, -1.0, 3),
+      ];
+      expect(KennelStartPlace.focusArea(places).length, greaterThanOrEqualTo(8));
+    });
+  });
 }
