@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.74 (2026-10-04 redeploy — track source)
+
+- **An imported track says where it came from.** On a run's PackTrack map the
+  selected runner reads "Hard On On · Garmin" when the track was uploaded
+  from Garmin, Strava, Fitbit and so on.
+
 ## 0.21.74 (2026-10-03 redeploy — official trail replay)
 
 - **A timed official trail follows the replay.** Its first point starts with

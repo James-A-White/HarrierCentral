@@ -1,3 +1,14 @@
+## 3.1.9+1445 (2026-10-04)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### New Features
+- **Open any run from the kennel trail map**: a run that is not on your phone is fetched on its own and opened — no need to follow the kennel.
+- **Imported tracks say where they came from**: on the PackTrack map a selected runner reads "Hard On On · Garmin" when the track was uploaded from Garmin, Strava, Fitbit and so on.
+### Improvements
+- **iPhone PackTrack needs Location set to Always**: Start, Arm auto start and Scout this trail wait until it is, with a button that asks for it. On While Using the phone stopped recording when the screen locked.
+- **Android no longer warns about "Allow all the time"**, which it never needed and most phones do not offer.
+- **Start pins are pink**, deeper and bigger where the kennel starts most often.
+- **Search keyboards close** when you tap a row or scroll, and show the done (checkmark) key.
+
 ## 3.1.9+1444 (2026-10-03)
 Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
 ### Fixes

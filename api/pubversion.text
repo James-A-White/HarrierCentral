@@ -1,3 +1,10 @@
+1.0.61+73
+    • Track source (E5.F5.S9): PositionWriter records where a runner's track came from on
+      HC.HasherEventMap.TrackSource (packtrack for live uploads; the file's GPX creator / TCX
+      Creator / FIT manufacturer for imports; strava for a Strava archive). GetPositions
+      returns it per runner as "trackSource" (cached a minute per run). Both are harmless
+      until the TrackSource column exists.
+
 1.0.61+72
     • ParseTrackFile: reads a GPX/TCX/FIT file for the app's official-trail upload
       (E5.F6.S6) with the import parsers, authenticated by hcapp_authorizeTrackFile;
