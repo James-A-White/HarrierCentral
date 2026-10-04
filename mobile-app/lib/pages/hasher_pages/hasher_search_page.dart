@@ -95,6 +95,10 @@ class HasherSearchPage extends StatelessWidget {
                 color: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: TextField(
+                  // A tap or scroll anywhere else puts the keyboard away (James,
+                  // 2026-10-04): rows claim their own taps, so the app-wide
+                  // empty-space dismiss never heard them.
+                  onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   controller: c.text,
                   autofocus: true,
                   textInputAction: TextInputAction.search,

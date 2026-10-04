@@ -90,6 +90,11 @@ class HistoryListPage extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               child: TextField(
+                // A tap or scroll anywhere else puts the keyboard away (James,
+                // 2026-10-04): rows claim their own taps, so the app-wide
+                // empty-space dismiss never heard them.
+                onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                textInputAction: TextInputAction.search,
                 controller: c.coRunnerSearch,
                 onChanged: (String v) => c.coRunnerQuery.value = v,
                 decoration: InputDecoration(

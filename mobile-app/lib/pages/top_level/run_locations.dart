@@ -150,6 +150,11 @@ class _SearchBar extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                     child: TextField(
+                      // A tap or scroll anywhere else puts the keyboard away (James,
+                      // 2026-10-04): rows claim their own taps, so the app-wide
+                      // empty-space dismiss never heard them.
+                      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                      textInputAction: TextInputAction.search,
                       autocorrect: false,
                       onChanged: controller.onSearchTextChanged,
                       focusNode: controller.searchFocusNode,
