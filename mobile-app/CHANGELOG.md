@@ -1,7 +1,8 @@
 ## 3.1.9+1446 (2026-10-04)
-Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+Dance baby! — all beta testers (TestFlight Hash beta testers + Play internal). Builds 1436-1446 reach the wider beta for the first time: hasher search and By Hasher, official trails (scout, upload, promote, kennel trail map), track sources, the pre-run push, and the iPhone Always requirement.
 ### Improvements
 - **Kennel trail map start points are clustered** like the other maps: a pink bubble says how many runs started in that area; tap to zoom in until it splits into single places.
+- **Runs date filter reaches any year fast**: From and To buttons open a date wheel, and the calendar's month header goes up to a year grid and back down to the days — no more scrolling month by month to 1983.
 ### Server (no app change needed)
 - **Chichester's special events flagged**: 101 runs (Christmas, Hangover Hashes, milestones, BBQs, joint and away weekends, themed runs) now show under 🎉 Events.
 
