@@ -40,9 +40,11 @@ BEGIN TRY
         WHERE e.KennelId = k.id AND e.deleted = 0 AND ISNULL(e.removed, 0) = 0
           AND e.EventStartDatetimeGmt <= SYSDATETIMEOFFSET()
         ORDER BY e.EventStartDatetimeGmt DESC) last
-    WHERE k.RunsPageUrl IS NOT NULL AND LEN(k.RunsPageUrl) > 10
-      AND k.deleted = 0 AND ISNULL(k.removed, 0) = 0
-      AND (@kennelId IS NULL OR k.id = @kennelId);
+    -- One kennel by id (the portal's Test, an "import now") whether or not
+    -- it has a runs page saved yet; otherwise every kennel that has one.
+    WHERE k.deleted = 0 AND ISNULL(k.removed, 0) = 0
+      AND ((@kennelId IS NOT NULL AND k.id = @kennelId)
+           OR (@kennelId IS NULL AND k.RunsPageUrl IS NOT NULL AND LEN(k.RunsPageUrl) > 10));
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

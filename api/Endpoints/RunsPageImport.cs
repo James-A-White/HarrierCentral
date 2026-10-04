@@ -114,10 +114,7 @@ namespace HcWebApi.Endpoints
 
         private async Task<string> ImportOneAsync(string cs, KennelRow k, bool force)
         {
-            string html = await FetchAsync(k.Url);
-            string text = PageToText(html);
-            string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant();
-
+            (string text, string hash) = await ReadPageAsync(k.Url);
             if (!force && string.Equals(hash, k.Hash, StringComparison.OrdinalIgnoreCase))
             {
                 // Unchanged: bookkeeping only (RunsPageCheckedAt never stamps the kennel).
@@ -125,9 +122,31 @@ namespace HcWebApi.Endpoints
                 return "unchanged";
             }
 
+            (JArray runs, int tokens) = await ExtractAndResolveAsync(k, text);
+            ImportResult res = await ImportAsync(cs, k.KennelId, ToSqlJson(runs), dryRun: false);
+            string status = StatusLine(runs.Count, res, tokens);
+            await SetStateAsync(cs, k.KennelId, hash, true, Truncate(status, 500));
+            _log.LogInformation("RunsPageImport: {Kennel}: {Status}", k.ShortName, status);
+            return status;
+        }
+
+        private static async Task<(string text, string hash)> ReadPageAsync(string url)
+        {
+            string html = await FetchAsync(url);
+            string text = PageToText(html);
+            string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant();
+            return (text, hash);
+        }
+
+        private async Task<(JArray runs, int tokens)> ExtractAndResolveAsync(KennelRow k, string text)
+        {
             (JArray runs, int tokens) = await ExtractRunsAsync(k, text);
             await ResolveMapsAsync(runs);
+            return (runs, tokens);
+        }
 
+        private static string ToSqlJson(JArray runs)
+        {
             var forSql = new JArray(runs.Select(r => new JObject
             {
                 ["number"] = r["number"],
@@ -142,17 +161,139 @@ namespace HcWebApi.Endpoints
                 ["description"] = Description(r),
                 ["special"] = (r.Value<bool?>("special") ?? false) ? 1 : 0,
             }));
-            string json = new JObject { ["runs"] = forSql }.ToString(Formatting.None);
+            return new JObject { ["runs"] = forSql }.ToString(Formatting.None);
+        }
 
-            (int inserted, int updated, int unchanged, int already, int rejected) = await ImportAsync(cs, k.KennelId, json);
-            string status = $"{Stamp()} — {runs.Count} run{(runs.Count == 1 ? "" : "s")} on the page: "
-                + $"{inserted} new, {updated} updated, {unchanged} unchanged"
-                + (already > 0 ? $", {already} already in Harrier Central" : "")
-                + (rejected > 0 ? $", {rejected} unreadable" : "")
-                + $" ({tokens:N0} model tokens)";
-            await SetStateAsync(cs, k.KennelId, hash, true, Truncate(status, 500));
-            _log.LogInformation("RunsPageImport: {Kennel}: {Status}", k.ShortName, status);
-            return status;
+        private static string StatusLine(int found, ImportResult r, int tokens) =>
+            $"{Stamp()} — {found} run{(found == 1 ? "" : "s")} on the page: "
+            + $"{r.Inserted} new, {r.Updated} updated, {r.Unchanged} unchanged"
+            + (r.AlreadyInHc > 0 ? $", {r.AlreadyInHc} already in Harrier Central" : "")
+            + (r.Rejected > 0 ? $", {r.Rejected} unreadable" : "")
+            + $" ({tokens:N0} model tokens)";
+
+        // ── The portal's Test button ────────────────────────────────────────
+
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, DateTime> _lastTest = new();
+
+        /// <summary>
+        /// POST /api/RunsPageTest — the portal kennel editor's Test button
+        /// (2026-10-04). Body: { deviceId, accessToken, publicKennelId, url,
+        /// import }. Reads the page now (the address typed in the editor,
+        /// saved or not), asks the model, and answers with every run found and
+        /// what importing would do to it. Writes NOTHING unless import = true.
+        /// Auth: the portal's token, bound to the kennel (ValidatePortalAuth,
+        /// proc 'hcportal_runsPageTest'), and createEditRuns on that kennel.
+        /// </summary>
+        [Function("RunsPageTest")]
+        public async Task<IActionResult> Test([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        {
+            string? cs = Environment.GetEnvironmentVariable("HcDbConnectionString");
+            if (string.IsNullOrWhiteSpace(cs)) return new StatusCodeResult(500);
+            JObject args;
+            try { args = JObject.Parse(await new StreamReader(req.Body).ReadToEndAsync()); }
+            catch { return Fail("The request could not be read.", 400); }
+
+            string deviceId = args.Value<string>("deviceId") ?? "";
+            string accessToken = args.Value<string>("accessToken") ?? "";
+            string publicKennelId = (args.Value<string>("publicKennelId") ?? "").ToLowerInvariant();
+            string url = (args.Value<string>("url") ?? "").Trim();
+            bool doImport = args.Value<bool?>("import") ?? false;
+            if (!Guid.TryParse(deviceId, out Guid dev) || !Guid.TryParse(publicKennelId, out Guid pk) || accessToken.Length == 0)
+                return Fail("The request is missing its sign-in.", 400);
+
+            Guid? hasherId = await ValidatePortalAsync(cs, dev, accessToken, publicKennelId);
+            if (hasherId == null) return Fail("Your sign-in has expired. Please sign in again.", 403);
+            (Guid? kennelId, bool allowed) = await CanTestAsync(cs, hasherId.Value, pk);
+            if (kennelId == null || !allowed)
+                return Fail("Only someone who can edit this kennel's runs can test its runs page.", 403);
+
+            if (_lastTest.TryGetValue(kennelId.Value, out DateTime last) && DateTime.UtcNow - last < TimeSpan.FromSeconds(10))
+                return Fail("Please wait a few seconds between tests.", 429);
+            _lastTest[kennelId.Value] = DateTime.UtcNow;
+
+            List<KennelRow> rows = await LoadKennelsAsync(cs, kennelId);
+            if (rows.Count == 0) return Fail("That kennel could not be found.", 404);
+            KennelRow k = rows[0];
+            if (url.Length == 0) url = k.Url ?? "";
+            if (!(url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)) || url.Length > 500)
+                return Fail("Enter the page's full address, starting with https://", 400);
+
+            try
+            {
+                (string text, string hash) = await ReadPageAsync(url);
+                if (text.Length < 20) return Fail("That page has no readable text (it may need JavaScript, or be behind a login).", 200);
+                (JArray runs, int tokens) = await ExtractAndResolveAsync(k with { Url = url }, text);
+                ImportResult res = await ImportAsync(cs, k.KennelId, ToSqlJson(runs), dryRun: !doImport);
+                string status = StatusLine(runs.Count, res, tokens);
+                if (doImport)
+                {
+                    // Imported from the address on screen: remember its fingerprint
+                    // only if it is the saved address (else the timer reads it anew).
+                    bool saved = string.Equals(url, k.Url, StringComparison.OrdinalIgnoreCase);
+                    await SetStateAsync(cs, k.KennelId, saved ? hash : null, true, Truncate(status, 500));
+                }
+                foreach (JObject r in runs.OfType<JObject>())
+                {
+                    int? n = r.Value<int?>("number");
+                    r["outcome"] = n.HasValue && res.Outcomes.TryGetValue(n.Value, out string? o) ? o : "unreadable";
+                }
+                var reply = new JObject
+                {
+                    ["success"] = true,
+                    ["imported"] = doImport,
+                    ["url"] = url,
+                    ["textChars"] = text.Length,
+                    ["tokens"] = tokens,
+                    ["status"] = status,
+                    ["counts"] = new JObject
+                    {
+                        ["inserted"] = res.Inserted, ["updated"] = res.Updated, ["unchanged"] = res.Unchanged,
+                        ["alreadyInHc"] = res.AlreadyInHc, ["rejected"] = res.Rejected,
+                    },
+                    ["runs"] = runs,
+                };
+                return new ContentResult { Content = reply.ToString(Formatting.None), ContentType = "application/json", StatusCode = 200 };
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning("RunsPageTest: {Kennel} failed: {Message}", k.ShortName, ex.Message);
+                await LogErrorAsync(cs, k with { Url = url }, ex.Message);
+                return Fail($"The page could not be read: {ex.Message}", 200);
+            }
+        }
+
+        private static IActionResult Fail(string message, int status) =>
+            new ObjectResult(new { success = false, errorUserMessage = message }) { StatusCode = status };
+
+        private static async Task<Guid?> ValidatePortalAsync(string cs, Guid deviceId, string accessToken, string publicKennelId)
+        {
+            using var conn = new SqlConnection(cs);
+            await conn.OpenAsync();
+            using var cmd = new SqlCommand("[HC6].[ValidatePortalAuth]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 15 };
+            cmd.Parameters.AddWithValue("@deviceId", deviceId);
+            cmd.Parameters.AddWithValue("@accessToken", accessToken);
+            cmd.Parameters.AddWithValue("@callerProcName", "hcportal_runsPageTest");
+            cmd.Parameters.AddWithValue("@callerParamString", publicKennelId);
+            var err = new SqlParameter("@errorMessage", SqlDbType.NVarChar, 255) { Direction = ParameterDirection.Output };
+            var hasher = new SqlParameter("@hasherId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output };
+            var callerType = new SqlParameter("@callerType", SqlDbType.Int) { Direction = ParameterDirection.Output };
+            cmd.Parameters.Add(err); cmd.Parameters.Add(hasher); cmd.Parameters.Add(callerType);
+            await cmd.ExecuteNonQueryAsync();
+            if (err.Value is not DBNull && err.Value != null) return null;
+            return hasher.Value is Guid g ? g : null;
+        }
+
+        private static async Task<(Guid?, bool)> CanTestAsync(string cs, Guid hasherId, Guid publicKennelId)
+        {
+            using var conn = new SqlConnection(cs);
+            await conn.OpenAsync();
+            using var cmd = new SqlCommand("[HC6].[nonApi_canTestRunsPage]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 15 };
+            cmd.Parameters.Add("@hasherId", SqlDbType.UniqueIdentifier).Value = hasherId;
+            cmd.Parameters.Add("@publicKennelId", SqlDbType.UniqueIdentifier).Value = publicKennelId;
+            using SqlDataReader r = await cmd.ExecuteReaderAsync();
+            if (!await r.ReadAsync()) return (null, false);
+            Guid? kennel = r["KennelId"] is DBNull ? null : Guid.Parse(r["KennelId"].ToString()!);
+            return (kennel, Convert.ToInt32(r["Allowed"]) == 1);
         }
 
         // ── Page → text ─────────────────────────────────────────────────────
@@ -374,16 +515,30 @@ namespace HcWebApi.Endpoints
             return list;
         }
 
-        private static async Task<(int, int, int, int, int)> ImportAsync(string cs, Guid kennelId, string json)
+        private sealed record ImportResult(int Inserted, int Updated, int Unchanged, int AlreadyInHc, int Rejected,
+            Dictionary<int, string> Outcomes);
+
+        private static async Task<ImportResult> ImportAsync(string cs, Guid kennelId, string json, bool dryRun)
         {
             using var conn = new SqlConnection(cs);
             await conn.OpenAsync();
             using var cmd = new SqlCommand("[HC6].[nonApi_importRunsPageRuns]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 120 };
             cmd.Parameters.Add("@kennelId", SqlDbType.UniqueIdentifier).Value = kennelId;
             cmd.Parameters.Add("@runsJson", SqlDbType.NVarChar, -1).Value = json;
+            cmd.Parameters.Add("@dryRun", SqlDbType.SmallInt).Value = dryRun ? 1 : 0;
             using SqlDataReader r = await cmd.ExecuteReaderAsync();
-            if (!await r.ReadAsync()) return (0, 0, 0, 0, 0);
-            return (r.GetInt32(0), r.GetInt32(1), r.GetInt32(2), r.GetInt32(3), r.GetInt32(4));
+            int a = 0, b = 0, c = 0, d = 0, e = 0;
+            if (await r.ReadAsync()) { a = r.GetInt32(0); b = r.GetInt32(1); c = r.GetInt32(2); d = r.GetInt32(3); e = r.GetInt32(4); }
+            var outcomes = new Dictionary<int, string>();
+            if (await r.NextResultAsync())
+            {
+                while (await r.ReadAsync())
+                {
+                    if (r["EventNumber"] is DBNull) continue;
+                    outcomes[Convert.ToInt32(r["EventNumber"])] = r["Outcome"].ToString() ?? "";
+                }
+            }
+            return new ImportResult(a, b, c, d, e, outcomes);
         }
 
         private static async Task SetStateAsync(string cs, Guid kennelId, string? hash, bool changed, string? status)

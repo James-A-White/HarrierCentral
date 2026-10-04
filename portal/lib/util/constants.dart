@@ -53,6 +53,10 @@ const String BASE_AF_API_URL =
 const String BASE_HC6_API_URL =
     'https://harriercentralpublicapi.azurewebsites.net/api/PortalApiHC6';
 
+// The kennel editor's runs-page Test button (2026-10-04): reads the page now
+// and answers with the runs found; imports only when asked.
+const String RUNS_PAGE_TEST_URL =
+    'https://harriercentralpublicapi.azurewebsites.net/api/RunsPageTest';
 const String BASE_GET_PORTAL_UPLOAD_SAS_URL =
     'https://harriercentralpublicapi.azurewebsites.net/api/GetPortalUploadSas';
 

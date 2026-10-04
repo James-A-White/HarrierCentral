@@ -1,6 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[nonApi_importRunsPageRuns]
     @kennelId UNIQUEIDENTIFIER = NULL,
-    @runsJson NVARCHAR(MAX)    = NULL
+    @runsJson NVARCHAR(MAX)    = NULL,
+    @dryRun   SMALLINT         = 0      -- 1 = work it all out, report, write nothing (the portal's Test)
 AS
 -- =====================================================================
 -- Procedure: HC6.nonApi_importRunsPageRuns
@@ -32,6 +33,10 @@ AS
 --               "lat":-33.78,"lon":151.09,"mapUrl":"https://…",
 --               "description":"…","special":1}]}
 -- Returns: rowset 0 — { inserted, updated, unchanged, alreadyInHc, rejected }
+--          rowset 1 — { EventNumber, Outcome } per run: new | update |
+--          unchanged | already in Harrier Central | unreadable
+--   @dryRun = 1 (the portal's Test button, 2026-10-04) does everything
+--   inside the transaction, reports, and rolls it back.
 -- Author: Harrier Central
 -- Created: 2026-10-04
 -- =====================================================================
@@ -39,11 +44,14 @@ SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
 DECLARE @procName NVARCHAR(128) = OBJECT_NAME(@@PROCID);
+-- A table variable: its rows survive the dry run's ROLLBACK.
+DECLARE @out TABLE (EventNumber INT NULL, Outcome NVARCHAR(40));
 
 BEGIN TRY
     IF (@kennelId IS NULL OR ISJSON(@runsJson) <> 1)
     BEGIN
         SELECT 0 AS inserted, 0 AS updated, 0 AS unchanged, 0 AS alreadyInHc, 0 AS rejected;
+        SELECT EventNumber, Outcome FROM @out;
         RETURN;
     END
 
@@ -83,6 +91,9 @@ BEGIN TRY
         description NVARCHAR(MAX) '$.description', special INT '$.special') j;
 
     -- A run needs a number and a date that is real and not absurdly far off.
+    INSERT @out (EventNumber, Outcome) SELECT EventNumber, N'unreadable' FROM #runs
+        WHERE EventNumber IS NULL OR EventNumber <= 0 OR StartDt IS NULL
+           OR StartDt < DATEADD(YEAR, -1, SYSDATETIMEOFFSET()) OR StartDt > DATEADD(YEAR, 2, SYSDATETIMEOFFSET());
     DECLARE @rejected INT = (SELECT COUNT(*) FROM #runs
         WHERE EventNumber IS NULL OR EventNumber <= 0 OR StartDt IS NULL
            OR StartDt < DATEADD(YEAR, -1, SYSDATETIMEOFFSET()) OR StartDt > DATEADD(YEAR, 2, SYSDATETIMEOFFSET()));
@@ -95,6 +106,10 @@ BEGIN TRY
 
     -- The kennel's own runs win: a number it already has from any other
     -- source is not touched.
+    INSERT @out (EventNumber, Outcome) SELECT r.EventNumber, N'already in Harrier Central' FROM #runs r WHERE EXISTS (
+        SELECT 1 FROM HC.Event e
+        WHERE e.KennelId = @kennelId AND e.deleted = 0 AND e.EventNumber = r.EventNumber
+          AND NOT (ISNULL(e.InboundIntegrationId, 0) = 6 AND e.EventFacebookId = r.ExtId));
     DECLARE @alreadyInHc INT = (SELECT COUNT(*) FROM #runs r WHERE EXISTS (
         SELECT 1 FROM HC.Event e
         WHERE e.KennelId = @kennelId AND e.deleted = 0 AND e.EventNumber = r.EventNumber
@@ -105,6 +120,9 @@ BEGIN TRY
           AND NOT (ISNULL(e.InboundIntegrationId, 0) = 6 AND e.EventFacebookId = r.ExtId));
 
     BEGIN TRANSACTION;
+    -- A savepoint, so a dry run undoes only its own work even when called
+    -- inside someone else's transaction.
+    SAVE TRANSACTION runsPageImport;
 
     -- Refresh the runs this page already brought in.
     DECLARE @updated INT, @matched INT;
@@ -124,6 +142,7 @@ BEGIN TRY
         EventGeolocation      = CASE WHEN e.UseFbLatLon = 1
                                      THEN CASE WHEN r.Lat IS NOT NULL THEN geography::Point(r.Lat, r.Lon, 4326) END
                                      ELSE e.EventGeolocation END
+    OUTPUT r.EventNumber, N'update' INTO @out (EventNumber, Outcome)
     FROM HC.Event e
     JOIN #runs r ON e.KennelId = @kennelId AND e.InboundIntegrationId = 6 AND e.EventFacebookId = r.ExtId AND e.deleted = 0
     WHERE ISNULL(e.FbEventStartDatetime, '2000-01-01') <> r.StartDt
@@ -161,6 +180,9 @@ BEGIN TRY
            r.EventNumber, r.Hares, N'Runs page', 0, SYSDATETIMEOFFSET()
     FROM #runs r WHERE r.NewId IS NOT NULL;
     DECLARE @inserted INT = @@ROWCOUNT;
+    INSERT @out (EventNumber, Outcome) SELECT EventNumber, N'new' FROM #runs WHERE NewId IS NOT NULL;
+    INSERT @out (EventNumber, Outcome) SELECT r.EventNumber, N'unchanged' FROM #runs r
+        WHERE r.NewId IS NULL AND NOT EXISTS (SELECT 1 FROM @out o WHERE o.EventNumber = r.EventNumber);
 
     DECLARE @newId UNIQUEIDENTIFIER;
     DECLARE newRuns CURSOR LOCAL FAST_FORWARD FOR SELECT NewId FROM #runs WHERE NewId IS NOT NULL;
@@ -174,16 +196,18 @@ BEGIN TRY
     CLOSE newRuns;
     DEALLOCATE newRuns;
 
-    IF (@inserted + @updated > 0)
+    IF (@dryRun = 0 AND @inserted + @updated > 0)
         INSERT LOG.GeneralLog (LogSource, Message, StrParam1, Data, [Timestamp])
         VALUES ('runsPageImport', CONCAT('runs page import: ', @inserted, ' new, ', @updated, ' updated'),
                 CAST(@kennelId AS NVARCHAR(40)),
                 (SELECT STRING_AGG(CAST(EventNumber AS NVARCHAR(10)), N',') FROM #runs), SYSDATETIMEOFFSET());
 
+    IF (@dryRun = 1) ROLLBACK TRANSACTION runsPageImport;
     COMMIT TRANSACTION;
 
     SELECT @inserted AS inserted, @updated AS updated, @matched - @updated AS unchanged,
            @alreadyInHc AS alreadyInHc, @rejected AS rejected;
+    SELECT EventNumber, Outcome FROM @out ORDER BY EventNumber;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

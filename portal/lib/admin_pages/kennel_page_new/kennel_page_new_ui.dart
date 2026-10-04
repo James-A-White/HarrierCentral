@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 
 import 'kennel_page_new_enums.dart';
+import 'runs_page_test.dart';
 import 'package:hcportal/imports.dart';
 import 'pages/kennel_tags_page/run_tags_tab_content.dart';
 
@@ -415,6 +416,7 @@ class KennelInfoTabContent extends StatelessWidget {
         HelperWidgets().categoryLabelWidget('Runs Page'),
         _buildTextField(KennelInfoField.runsPageUrl),
         _runsPageStatus(),
+        _runsPageTestButton(),
 
         // Search Section
         HelperWidgets().categoryLabelWidget('Search Keywords'),
@@ -480,6 +482,25 @@ class KennelInfoTabContent extends StatelessWidget {
   }
 
   /// Builds an editable text field for the given field type.
+  /// "Test this page": reads the address in the field now and shows what it
+  /// finds, importing only if asked (runs_page_test.dart).
+  Widget _runsPageTestButton() => Obx(() {
+    final String url = (controller.editedData.value.runsPageUrl ?? '').trim();
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: OutlinedButton.icon(
+        icon: const Icon(Icons.play_circle_outline, size: 18),
+        label: const Text('Test this page', textAlign: TextAlign.center),
+        onPressed: url.startsWith('http')
+            ? () => unawaited(showRunsPageTest(
+                  publicKennelId: controller.editedData.value.kennelPublicId.uuid,
+                  url: url,
+                ))
+            : null,
+      ),
+    );
+  });
+
   /// What the last read of the runs page found (read-only), e.g.
   /// "2026-10-05 00:07 UTC — 5 runs on the page: 4 new, 0 updated …".
   Widget _runsPageStatus() {
