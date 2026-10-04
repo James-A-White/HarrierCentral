@@ -1,3 +1,10 @@
+## 3.1.9+1446 (2026-10-04)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### Improvements
+- **Kennel trail map start points are clustered** like the other maps: a pink bubble says how many runs started in that area; tap to zoom in until it splits into single places.
+### Server (no app change needed)
+- **Chichester's special events flagged**: 101 runs (Christmas, Hangover Hashes, milestones, BBQs, joint and away weekends, themed runs) now show under 🎉 Events.
+
 ## 3.1.9+1445 (2026-10-04)
 Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
 ### New Features
