@@ -93,15 +93,34 @@ WHERE h.id = @targetUserId
 
 IF (@inviteCode IS NULL)
 BEGIN
+    -- WHICH condition failed, and for whom (2026-10-04: Dark Dick was
+    -- refused four times on 2026-10-03 and the log could not say why or for
+    -- whom). The message tells the admin the same reason.
+    DECLARE @reason NVARCHAR(40) =
+        CASE
+            WHEN NOT EXISTS (SELECT 1 FROM HC.Hasher h WHERE h.id = @targetUserId AND h.Removed = 0)
+                THEN 'not found'
+            WHEN EXISTS (SELECT 1 FROM HC.Hasher h WHERE h.id = @targetUserId AND h.LastLoginDateTime IS NOT NULL)
+              OR EXISTS (SELECT 1 FROM HC.Device d WHERE d.UserId = @targetUserId)
+                THEN 'already signed in'
+            ELSE 'not your home kennel' END;
     SET @errorCode = 1312; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Invite code not available',
-            'Target user not found, already logged in, or caller lacks permission',
+            CONCAT('Target ', COALESCE(CAST(@targetUserId AS NVARCHAR(40)), 'null'), ': ', @reason,
+                   ' (home kennel ', COALESCE((SELECT CAST(HomeKennelId AS NVARCHAR(40)) FROM HC.Hasher WHERE id = @targetUserId), 'none'), ')'),
             @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Invite code not available' AS errorTitle,
-           'The invite code could not be retrieved. The member may have already '
-           + 'logged in, or you may not have permission to view their code.' AS errorUserMessage,
+           CASE @reason
+               WHEN 'already signed in' THEN
+                   'This member has already signed in on a phone or the web, so their invite code '
+                   + 'can no longer be shown. They can sign in again with "Email me a new invite code".'
+               WHEN 'not found' THEN
+                   'That member could not be found.'
+               ELSE
+                   'Only an admin of this member''s home kennel can see their invite code.'
+           END AS errorUserMessage,
            @procName AS errorProc;
     RETURN;
 END
