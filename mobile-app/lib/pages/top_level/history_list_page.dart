@@ -94,7 +94,7 @@ class HistoryListPage extends StatelessWidget {
                 // 2026-10-04): rows claim their own taps, so the app-wide
                 // empty-space dismiss never heard them.
                 onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-                textInputAction: TextInputAction.search,
+                textInputAction: TextInputAction.done,
                 controller: c.coRunnerSearch,
                 onChanged: (String v) => c.coRunnerQuery.value = v,
                 decoration: InputDecoration(

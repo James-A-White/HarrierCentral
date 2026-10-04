@@ -154,7 +154,7 @@ class _SearchBar extends StatelessWidget {
                       // 2026-10-04): rows claim their own taps, so the app-wide
                       // empty-space dismiss never heard them.
                       onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-                      textInputAction: TextInputAction.search,
+                      textInputAction: TextInputAction.done,
                       autocorrect: false,
                       onChanged: controller.onSearchTextChanged,
                       focusNode: controller.searchFocusNode,

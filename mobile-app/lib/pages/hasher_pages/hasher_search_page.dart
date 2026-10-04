@@ -101,7 +101,7 @@ class HasherSearchPage extends StatelessWidget {
                   onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   controller: c.text,
                   autofocus: true,
-                  textInputAction: TextInputAction.search,
+                  textInputAction: TextInputAction.done,
                   onChanged: (String v) => c.query.value = v,
                   decoration: InputDecoration(
                     hintText: 'Hash name, real name or home kennel',
