@@ -36,15 +36,18 @@ SELECT @userId = id FROM HC.Hasher WHERE email = @email AND Removed = 0;
 
 IF (@userId IS NOT NULL)
 BEGIN
-    -- Guarantee a compliant code before reading it back. Rotation after 60
-    -- minutes is the spam guard this SP has always had; the helper also
+    -- Guarantee a compliant code before reading it back. A code now lives a
+    -- WEEK (10080 minutes; James, 2026-10-04): it was 60 minutes, so asking
+    -- again an hour later killed the code already sent — three people were
+    -- refused "not found" on 2026-10-03. Asking within the week re-sends the
+    -- same code. The helper also
     -- replaces a code that is present but unusable, which this SP used to hand
     -- straight to the caller whenever the timestamp happened to be recent —
     -- '######' (the column default) being the common case, and six characters
     -- long, so the caller's length check accepted it.
     EXEC HC6.nonApi_ensureUserInviteCode
         @userId                   = @userId,
-        @rotateIfOlderThanMinutes = 60;
+        @rotateIfOlderThanMinutes = 10080;  -- one week
 END
 
 DECLARE @inviteCode NVARCHAR(50);

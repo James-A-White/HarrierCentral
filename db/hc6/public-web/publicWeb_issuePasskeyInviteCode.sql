@@ -35,7 +35,8 @@ BEGIN TRY
         RETURN;
     END
 
-    EXEC HC6.nonApi_ensureUserInviteCode @userId = @userId, @rotateIfOlderThanMinutes = 60;
+    -- A code lives a week (James, 2026-10-04; was 60 minutes).
+    EXEC HC6.nonApi_ensureUserInviteCode @userId = @userId, @rotateIfOlderThanMinutes = 10080;
 
     DECLARE @inviteCode NVARCHAR(50);
     SELECT @inviteCode = ResetCode FROM HC.Hasher WHERE id = @userId AND Removed = 0;
