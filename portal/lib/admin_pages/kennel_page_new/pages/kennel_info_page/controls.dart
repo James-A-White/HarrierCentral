@@ -27,6 +27,7 @@ extension KennelInfoControlsExtension on KennelPageFormController {
     _registerKennelDescriptionControl(tabKey, tabIndex);
     _registerAdminEmailListControl(tabKey, tabIndex);
     _registerWebsiteUrlControl(tabKey, tabIndex);
+    _registerRunsPageUrlControl(tabKey, tabIndex);
     _registerKennelSearchTagsControl(tabKey, tabIndex);
   }
 
@@ -238,6 +239,45 @@ extension KennelInfoControlsExtension on KennelPageFormController {
       tabIndex: tabIndex,
       updateEditedValue: (String? value) {
         editedData.value = editedData.value.copyWith(kennelWebsiteUrl: value!);
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+    );
+  }
+
+  /// Registers the runs page control (2026-10-04): the page of upcoming runs
+  /// the API reads 4 times a day and turns into Harrier Central runs. Optional;
+  /// clearing it stops the import. The server refuses anything but an
+  /// http(s) address of at most 500 characters.
+  void _registerRunsPageUrlControl(String tabKey, int tabIndex) {
+    final fieldKey = '${tabKey}_${KennelInfoField.runsPageUrl.name}';
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.string,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Runs page',
+        MaterialCommunityIcons.calendar_import,
+        'If your Kennel lists its upcoming runs on a web page, put the address '
+            'of that page here.\n\n'
+            'Harrier Central reads it four times a day and adds the runs it finds '
+            '— run number, date, time, hares, start and On On. Runs you already '
+            'have in Harrier Central are never touched, and anything you change '
+            'on an imported run stays changed.\n\n'
+            'Leave it empty if you post your runs in Harrier Central.',
+      ),
+      editedFieldValue: editedData.value.runsPageUrl,
+      originalFieldValue: originalData.runsPageUrl,
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Runs page address (https://…)',
+      maxStringLength: 500,
+      minStringLength: 0,
+      maxLines: 1,
+      includeOverrideButton: false,
+      textController: textControllers[fieldKey] = TextEditingController(),
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        editedData.value = editedData.value.copyWith(runsPageUrl: value ?? '');
         uiControls[fieldKey]?.editedFieldValue = value;
       },
     );

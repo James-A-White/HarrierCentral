@@ -84,6 +84,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_editKennel]
 	@distancePreference SMALLINT = NULL,
 	@extApiKey NVARCHAR(120) = NULL,
 	@kennelSearchTags NVARCHAR(4000) = NULL,
+	-- The kennel's page of upcoming runs, read 4 times a day by the API's
+	-- RunsPageImport (2026-10-04). NVARCHAR(MAX) so a long paste is refused
+	-- with a message, not truncated. NULL = unchanged; '' clears.
+	@runsPageUrl NVARCHAR(MAX) = NULL,
 	@excludeFromLeaderboard SMALLINT = NULL,
 	@notificationMinutesBeforeRunForChatPushNotifications SMALLINT = NULL,
 	@notificationMinutesBeforeRunForCheckinReminder SMALLINT = NULL,
@@ -134,6 +138,10 @@ AS
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 -- Changes:
+--   - 2026-10-04: @runsPageUrl (kennel runs-page import). Deploy AFTER
+--     db/hc6/app/2026-10-04_kennel_runs_page.sql has run: the column does
+--     not exist before it. A new address clears RunsPageHash, so the next
+--     read imports the page even if its text has not changed.
 --   - 2026-09-26: @cardPaymentProvider, @cardPaymentMerchantCode (E8.F7.S2).
 --     Deploy AFTER db/hc6/app/2026-09-22_kennel_payment_provider.sql has
 --     run: the columns do not exist before it. Only 'sumup' is accepted
@@ -162,6 +170,15 @@ BEGIN TRY
 	IF @publicKennelId IS NULL
 	BEGIN
 		SELECT 0 AS Success, 'Null or invalid publicKennelId' AS ErrorMessage;
+		RETURN;
+	END
+
+	-- Validation: runs page address (an http(s) URL of at most 500 characters)
+	IF @runsPageUrl IS NOT NULL AND LTRIM(RTRIM(@runsPageUrl)) <> N''
+	   AND (LEN(LTRIM(RTRIM(@runsPageUrl))) > 500
+	        OR NOT (LTRIM(RTRIM(@runsPageUrl)) LIKE N'http://%' OR LTRIM(RTRIM(@runsPageUrl)) LIKE N'https://%'))
+	BEGIN
+		SELECT 0 AS Success, 'The runs page must be a web address starting with https:// (500 characters at most).' AS ErrorMessage;
 		RETURN;
 	END
 
@@ -340,6 +357,13 @@ BEGIN TRY
 		DistancePreference = COALESCE(@distancePreference, DistancePreference),
 		ExtApiKey = COALESCE(@extApiKey, ExtApiKey),
 		KennelSearchTags = COALESCE(@kennelSearchTags, KennelSearchTags),
+		-- NULL = unchanged; '' clears. A changed address forgets the last
+		-- page fingerprint so the next read imports it.
+		RunsPageUrl = CASE WHEN @runsPageUrl IS NULL THEN RunsPageUrl
+		                   ELSE NULLIF(LTRIM(RTRIM(@runsPageUrl)), N'') END,
+		RunsPageHash = CASE WHEN @runsPageUrl IS NULL
+		                     OR ISNULL(NULLIF(LTRIM(RTRIM(@runsPageUrl)), N''), N'') = ISNULL(RunsPageUrl, N'')
+		                    THEN RunsPageHash ELSE NULL END,
 		ExcludeFromLeaderboard = COALESCE(@excludeFromLeaderboard, ExcludeFromLeaderboard),
 		NotificationMinutesBeforeRunForChatPushNotifications = COALESCE(@notificationMinutesBeforeRunForChatPushNotifications, NotificationMinutesBeforeRunForChatPushNotifications),
 		NotificationMinutesBeforeRunForCheckinReminder = COALESCE(@notificationMinutesBeforeRunForCheckinReminder, NotificationMinutesBeforeRunForCheckinReminder),

@@ -485,6 +485,8 @@ const List<String> integrationPlatformNames = <String>[
   'San Diego DB',
   'Google Out',
   'Berlin H3',
+  // 6: a kennel's own runs page, read by the API's RunsPageImport (2026-10-04)
+  'runs page',
 ];
 
 const Map<String, int> runTags1 = <String, int>{

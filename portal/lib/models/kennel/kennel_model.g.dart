@@ -137,6 +137,9 @@ _KennelModel _$KennelModelFromJson(Map<String, dynamic> json) => _KennelModel(
       : DateTime.parse(json['runCountStartDate'] as String),
   distancePreference: (json['distancePreference'] as num?)?.toInt(),
   kennelSearchTags: json['kennelSearchTags'] as String?,
+  runsPageUrl: json['runsPageUrl'] as String?,
+  runsPageStatus: json['runsPageStatus'] as String?,
+  runsPageCheckedAt: json['runsPageCheckedAt'] as String?,
   trailSymbolsConfigJson: json['trailSymbolsConfigJson'] as String?,
   trailTypesConfigJson: json['trailTypesConfigJson'] as String?,
 );
@@ -250,6 +253,9 @@ Map<String, dynamic> _$KennelModelToJson(
   'runCountStartDate': instance.runCountStartDate?.toIso8601String(),
   'distancePreference': instance.distancePreference,
   'kennelSearchTags': instance.kennelSearchTags,
+  'runsPageUrl': instance.runsPageUrl,
+  'runsPageStatus': instance.runsPageStatus,
+  'runsPageCheckedAt': instance.runsPageCheckedAt,
   'trailSymbolsConfigJson': instance.trailSymbolsConfigJson,
   'trailTypesConfigJson': instance.trailTypesConfigJson,
 };

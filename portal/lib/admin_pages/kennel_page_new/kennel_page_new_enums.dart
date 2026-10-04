@@ -241,6 +241,9 @@ enum KennelInfoField {
   /// External website URL.
   kennelWebsiteUrl,
 
+  /// The kennel's page of upcoming runs, imported 4 times a day (2026-10-04).
+  runsPageUrl,
+
   /// Extra free-text keywords that make this kennel findable in search.
   ///
   /// Fed into the search haystack by HC6.hcportal_getEvents,

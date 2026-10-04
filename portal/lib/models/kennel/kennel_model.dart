@@ -127,6 +127,12 @@ abstract class KennelModel with _$KennelModel {
     DateTime? runCountStartDate,
     int? distancePreference,
     String? kennelSearchTags,
+    /// The kennel's page of upcoming runs, read 4 times a day by the API's
+    /// RunsPageImport and turned into runs (2026-10-04).
+    String? runsPageUrl,
+    /// Read-only: what the last read of the runs page found, and when.
+    String? runsPageStatus,
+    String? runsPageCheckedAt,
     String? trailSymbolsConfigJson,
     String? trailTypesConfigJson,
   }) = _KennelModel;

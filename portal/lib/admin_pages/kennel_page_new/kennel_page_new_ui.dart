@@ -411,6 +411,11 @@ class KennelInfoTabContent extends StatelessWidget {
         HelperWidgets().categoryLabelWidget('Website Address'),
         _buildTextField(KennelInfoField.kennelWebsiteUrl),
 
+        // Runs page import (2026-10-04)
+        HelperWidgets().categoryLabelWidget('Runs Page'),
+        _buildTextField(KennelInfoField.runsPageUrl),
+        _runsPageStatus(),
+
         // Search Section
         HelperWidgets().categoryLabelWidget('Search Keywords'),
         _buildTextField(KennelInfoField.kennelSearchTags),
@@ -475,6 +480,25 @@ class KennelInfoTabContent extends StatelessWidget {
   }
 
   /// Builds an editable text field for the given field type.
+  /// What the last read of the runs page found (read-only), e.g.
+  /// "2026-10-05 00:07 UTC — 5 runs on the page: 4 new, 0 updated …".
+  Widget _runsPageStatus() {
+    final String? url = controller.originalData.runsPageUrl;
+    final String? status = controller.originalData.runsPageStatus;
+    final String text = (url == null || url.isEmpty)
+        ? 'Not importing: no runs page set.'
+        : (status == null || status.isEmpty)
+        ? 'Saved — the first read happens at the next import (00:07, 06:07, 12:07 or 18:07 UTC).'
+        : 'Last read: $status';
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 4),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 12, color: Colors.blueGrey.shade700),
+      ),
+    );
+  }
+
   Widget _buildTextField(
     KennelInfoField field, {
     double topPadding = 0,
