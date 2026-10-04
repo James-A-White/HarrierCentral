@@ -52,6 +52,23 @@ namespace HcWebApi.Endpoints
 
         public RunsPageImport(ILogger<RunsPageImport> logger) { _log = logger; }
 
+        /// <summary>
+        /// A failure tagged with the stage it happened in, so HC.ErrorLog says
+        /// WHERE: "Runs page fetch failed" (the kennel's site), "… model failed"
+        /// (Azure OpenAI), "… DB failed" (the import SP — which also logs its
+        /// own SQL error), "… config failed" (settings) (James, 2026-10-04:
+        /// "flag errors whether they happen in the API in the DB or in the AI
+        /// model"). The daily log triage reports each new kind.
+        /// </summary>
+        private sealed class StageException : Exception
+        {
+            public string Stage { get; }
+            public StageException(string stage, string message, Exception? inner = null) : base(message, inner) { Stage = stage; }
+        }
+
+        private static StageException Stage(string stage, Exception ex) =>
+            ex as StageException ?? new StageException(stage, ex.Message, ex);
+
         /// <summary>00:07, 06:07, 12:07 and 18:07 UTC.</summary>
         [Function("RunsPageImport")]
         public async Task Timer([TimerTrigger("0 7 0,6,12,18 * * *")] TimerInfo timer)
@@ -88,33 +105,42 @@ namespace HcWebApi.Endpoints
             try { kennels = await LoadKennelsAsync(cs, onlyKennel); }
             catch (Exception ex)
             {
-                // Before the 2026-10-04 run-once script the columns do not exist.
                 _log.LogWarning("RunsPageImport: kennels not read: {Message}", ex.Message);
+                await LogErrorAsync(cs, null, "DB", "the list of kennels could not be read: " + ex.Message);
                 return results;
             }
 
+            int unchangedN = 0, importedN = 0, failedN = 0;
             foreach (KennelRow k in kennels)
             {
                 string status;
                 try
                 {
                     status = await ImportOneAsync(cs, k, force);
+                    if (status == "unchanged") unchangedN++; else importedN++;
                 }
                 catch (Exception ex)
                 {
-                    status = $"{Stamp()} — could not read the page: {ex.Message}";
-                    _log.LogWarning("RunsPageImport: {Kennel} failed: {Message}", k.ShortName, ex.Message);
-                    await LogErrorAsync(cs, k, ex.Message);
+                    failedN++;
+                    StageException se = Stage("import", ex);
+                    status = $"{Stamp()} — {StageWords(se.Stage)}: {se.Message}";
+                    _log.LogWarning("RunsPageImport: {Kennel} {Stage} failed: {Message}", k.ShortName, se.Stage, se.Message);
+                    await LogErrorAsync(cs, k, se.Stage, se.Message);
                     await SetStateAsync(cs, k.KennelId, null, false, Truncate(status, 500));
                 }
                 results.Add(new { kennel = k.ShortName, status });
             }
+            if (kennels.Count > 0)
+                await LogGeneralAsync(cs, "runsPageRun",
+                    $"runs page timer: {kennels.Count} kennel(s) — {unchangedN} unchanged, {importedN} read by the model, {failedN} failed",
+                    null, string.Join(", ", results.Select(r => r.ToString())));
             return results;
         }
 
         private async Task<string> ImportOneAsync(string cs, KennelRow k, bool force)
         {
             (string text, string hash) = await ReadPageAsync(k.Url);
+            if (text.Length < 20) throw new StageException("fetch", "the page has no readable text (it may need JavaScript, or be behind a login)");
             if (!force && string.Equals(hash, k.Hash, StringComparison.OrdinalIgnoreCase))
             {
                 // Unchanged: bookkeeping only (RunsPageCheckedAt never stamps the kennel).
@@ -122,8 +148,9 @@ namespace HcWebApi.Endpoints
                 return "unchanged";
             }
 
-            (JArray runs, int tokens) = await ExtractAndResolveAsync(k, text);
+            (JArray runs, int tokens) = await ExtractAndResolveAsync(cs, k, text);
             ImportResult res = await ImportAsync(cs, k.KennelId, ToSqlJson(runs), dryRun: false);
+            await FlagSuspectAsync(cs, k, text, runs, res);
             string status = StatusLine(runs.Count, res, tokens);
             await SetStateAsync(cs, k.KennelId, hash, true, Truncate(status, 500));
             _log.LogInformation("RunsPageImport: {Kennel}: {Status}", k.ShortName, status);
@@ -132,15 +159,17 @@ namespace HcWebApi.Endpoints
 
         private static async Task<(string text, string hash)> ReadPageAsync(string url)
         {
-            string html = await FetchAsync(url);
+            string html;
+            try { html = await FetchAsync(url); }
+            catch (Exception ex) { throw Stage("fetch", ex is TaskCanceledException ? new StageException("fetch", "the site did not answer within 30 seconds") : ex); }
             string text = PageToText(html);
             string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant();
             return (text, hash);
         }
 
-        private async Task<(JArray runs, int tokens)> ExtractAndResolveAsync(KennelRow k, string text)
+        private async Task<(JArray runs, int tokens)> ExtractAndResolveAsync(string cs, KennelRow k, string text)
         {
-            (JArray runs, int tokens) = await ExtractRunsAsync(k, text);
+            (JArray runs, int tokens) = await ExtractRunsAsync(cs, k, text);
             await ResolveMapsAsync(runs);
             return (runs, tokens);
         }
@@ -163,6 +192,15 @@ namespace HcWebApi.Endpoints
             }));
             return new JObject { ["runs"] = forSql }.ToString(Formatting.None);
         }
+
+        private static string StageWords(string stage) => stage switch
+        {
+            "fetch" => "could not read the page",
+            "model" => "the reader (AI model) failed",
+            "DB" => "the runs could not be saved",
+            "config" => "the reader is not configured",
+            _ => "the import failed",
+        };
 
         private static string StatusLine(int found, ImportResult r, int tokens) =>
             $"{Stamp()} — {found} run{(found == 1 ? "" : "s")} on the page: "
@@ -221,9 +259,10 @@ namespace HcWebApi.Endpoints
             try
             {
                 (string text, string hash) = await ReadPageAsync(url);
-                if (text.Length < 20) return Fail("That page has no readable text (it may need JavaScript, or be behind a login).", 200);
-                (JArray runs, int tokens) = await ExtractAndResolveAsync(k with { Url = url }, text);
+                if (text.Length < 20) throw new StageException("fetch", "the page has no readable text (it may need JavaScript, or be behind a login)");
+                (JArray runs, int tokens) = await ExtractAndResolveAsync(cs, k with { Url = url }, text);
                 ImportResult res = await ImportAsync(cs, k.KennelId, ToSqlJson(runs), dryRun: !doImport);
+                await FlagSuspectAsync(cs, k with { Url = url }, text, runs, res);
                 string status = StatusLine(runs.Count, res, tokens);
                 if (doImport)
                 {
@@ -256,9 +295,10 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                _log.LogWarning("RunsPageTest: {Kennel} failed: {Message}", k.ShortName, ex.Message);
-                await LogErrorAsync(cs, k with { Url = url }, ex.Message);
-                return Fail($"The page could not be read: {ex.Message}", 200);
+                StageException se = Stage("import", ex);
+                _log.LogWarning("RunsPageTest: {Kennel} {Stage} failed: {Message}", k.ShortName, se.Stage, se.Message);
+                await LogErrorAsync(cs, k with { Url = url }, se.Stage, se.Message);
+                return Fail($"Test failed — {StageWords(se.Stage)}: {se.Message}", 200);
             }
         }
 
@@ -375,12 +415,13 @@ namespace HcWebApi.Endpoints
               ""notes"":  { ""type"": [""string"",""null""] },
               ""special"":{ ""type"": ""boolean"" } } } } } }");
 
-        private async Task<(JArray runs, int tokens)> ExtractRunsAsync(KennelRow k, string text)
+        private async Task<(JArray runs, int tokens)> ExtractRunsAsync(string cs, KennelRow k, string text)
         {
             string endpoint = (Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? "").TrimEnd('/');
             string key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY") ?? "";
             string deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT") ?? "runs-page";
-            if (endpoint.Length == 0 || key.Length == 0) throw new InvalidOperationException("Azure OpenAI is not configured");
+            if (endpoint.Length == 0 || key.Length == 0)
+                throw new StageException("config", "AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY are not set on the Function App");
 
             string user = $"Club: {k.Name} ({k.ShortName})\nClub's local today: {k.LocalToday}\n"
                 + (k.LatestRunNumber.HasValue ? $"Latest run already known: #{k.LatestRunNumber} on {k.LatestRunDate}\n" : "")
@@ -400,21 +441,97 @@ namespace HcWebApi.Endpoints
                     ["json_schema"] = new JObject { ["name"] = "runs", ["strict"] = true, ["schema"] = Schema },
                 },
             };
-            using var req = new HttpRequestMessage(HttpMethod.Post,
-                $"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version=2024-10-21")
-            {
-                Content = new StringContent(payload.ToString(Formatting.None), Encoding.UTF8, "application/json"),
-            };
-            req.Headers.Add("api-key", key);
-            using HttpResponseMessage res = await Http.SendAsync(req);
-            string body = await res.Content.ReadAsStringAsync();
-            if (!res.IsSuccessStatusCode) throw new InvalidOperationException($"model returned {(int)res.StatusCode}: {Truncate(body, 200)}");
 
-            JObject reply = JObject.Parse(body);
-            string content = reply.SelectToken("choices[0].message.content")?.ToString() ?? "{}";
-            int tokens = reply.SelectToken("usage.total_tokens")?.Value<int>() ?? 0;
-            JArray runs = JObject.Parse(content)["runs"] as JArray ?? new JArray();
-            return (runs, tokens);
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            string body = "";
+            int statusCode = 0, attempts = 0;
+            // One retry when the model is busy (429) or hiccups (5xx).
+            while (attempts < 2)
+            {
+                attempts++;
+                using var req = new HttpRequestMessage(HttpMethod.Post,
+                    $"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version=2024-10-21")
+                {
+                    Content = new StringContent(payload.ToString(Formatting.None), Encoding.UTF8, "application/json"),
+                };
+                req.Headers.Add("api-key", key);
+                try
+                {
+                    using HttpResponseMessage res = await Http.SendAsync(req);
+                    statusCode = (int)res.StatusCode;
+                    body = await res.Content.ReadAsStringAsync();
+                    if (res.IsSuccessStatusCode) break;
+                    if (attempts < 2 && (statusCode == 429 || statusCode >= 500))
+                    {
+                        int wait = res.Headers.RetryAfter?.Delta is TimeSpan ra ? (int)Math.Min(ra.TotalMilliseconds, 20_000) : 5_000;
+                        await Task.Delay(wait);
+                        continue;
+                    }
+                    throw new StageException("model", $"Azure OpenAI returned {statusCode}: {Truncate(body, 300)}");
+                }
+                catch (TaskCanceledException)
+                {
+                    if (attempts < 2) continue;
+                    throw new StageException("model", "Azure OpenAI did not answer within 30 seconds");
+                }
+                catch (HttpRequestException ex)
+                {
+                    if (attempts < 2) { await Task.Delay(3_000); continue; }
+                    throw new StageException("model", "Azure OpenAI could not be reached: " + ex.Message, ex);
+                }
+            }
+
+            JObject reply;
+            try { reply = JObject.Parse(body); }
+            catch (Exception ex) { throw new StageException("model", "the model's reply was not JSON: " + Truncate(body, 200), ex); }
+            string finish = reply.SelectToken("choices[0].finish_reason")?.ToString() ?? "";
+            int promptTokens = reply.SelectToken("usage.prompt_tokens")?.Value<int>() ?? 0;
+            int outTokens = reply.SelectToken("usage.completion_tokens")?.Value<int>() ?? 0;
+            string? refusal = reply.SelectToken("choices[0].message.refusal")?.ToString();
+            string content = reply.SelectToken("choices[0].message.content")?.ToString() ?? "";
+
+            JArray runs = new();
+            string? problem = null;
+            if (finish == "length") problem = "the model's answer was cut off (too many runs on one page?)";
+            else if (finish == "content_filter") problem = "Azure's content filter blocked the page";
+            else if (!string.IsNullOrEmpty(refusal)) problem = "the model refused: " + Truncate(refusal, 200);
+            else
+            {
+                try { runs = JObject.Parse(content)["runs"] as JArray ?? new JArray(); }
+                catch (Exception) { problem = "the model's JSON could not be read: " + Truncate(content, 200); }
+            }
+
+            // Every model call, for cost and speed: tokens in/out, time, result.
+            await LogGeneralAsync(cs, "runsPageModel",
+                $"runs page model call: {k.ShortName} — {runs.Count} run(s), {promptTokens}+{outTokens} tokens, {clock.ElapsedMilliseconds} ms, finish={finish}, attempts={attempts}",
+                k.KennelId.ToString(),
+                $"deployment={deployment} status={statusCode} textChars={text.Length}" + (problem == null ? "" : " problem=" + problem));
+
+            if (problem != null) throw new StageException("model", problem);
+            return (runs, promptTokens + outTokens);
+        }
+
+        /// <summary>
+        /// Output that is probably wrong though nothing threw: logged as
+        /// "Runs page output suspect" so the triage surfaces it.
+        /// </summary>
+        private async Task FlagSuspectAsync(string cs, KennelRow k, string text, JArray runs, ImportResult res)
+        {
+            var why = new List<string>();
+            int numberedOnPage = Regex.Matches(text, @"(?:\brun\b\s*(?:no\.?|number)?\s*#?\s*|#)\d{2,5}", RegexOptions.IgnoreCase).Count;
+            if (runs.Count == 0 && numberedOnPage >= 2)
+                why.Add($"the page shows {numberedOnPage} run numbers but the model found no runs");
+            if (res.Rejected >= 2 && res.Rejected * 2 >= runs.Count)
+                why.Add($"{res.Rejected} of {runs.Count} runs were unreadable (no number, or an impossible date)");
+            int withMaps = runs.Count(r => !string.IsNullOrWhiteSpace(r.Value<string>("mapUrl")));
+            int located = runs.Count(r => r["lat"] != null && r["lat"]!.Type != JTokenType.Null);
+            if (withMaps >= 2 && located == 0)
+                why.Add($"{withMaps} map links but none could be turned into a location");
+            if (text.Length >= MaxPageChars)
+                why.Add($"the page is longer than {MaxPageChars:N0} characters and was cut short — later runs may be missing");
+            if (why.Count == 0) return;
+            _log.LogWarning("RunsPageImport: {Kennel} output suspect: {Why}", k.ShortName, string.Join("; ", why));
+            await LogErrorAsync(cs, k, "output", string.Join("; ", why));
         }
 
         // ── Map links → coordinates ─────────────────────────────────────────
@@ -520,6 +637,12 @@ namespace HcWebApi.Endpoints
 
         private static async Task<ImportResult> ImportAsync(string cs, Guid kennelId, string json, bool dryRun)
         {
+            try { return await ImportCoreAsync(cs, kennelId, json, dryRun); }
+            catch (Exception ex) { throw Stage("DB", ex); }
+        }
+
+        private static async Task<ImportResult> ImportCoreAsync(string cs, Guid kennelId, string json, bool dryRun)
+        {
             using var conn = new SqlConnection(cs);
             await conn.OpenAsync();
             using var cmd = new SqlCommand("[HC6].[nonApi_importRunsPageRuns]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 120 };
@@ -557,7 +680,7 @@ namespace HcWebApi.Endpoints
             catch { /* bookkeeping must never fail an import */ }
         }
 
-        private static async Task LogErrorAsync(string cs, KennelRow k, string message)
+        private static async Task LogErrorAsync(string cs, KennelRow? k, string stage, string message)
         {
             try
             {
@@ -565,8 +688,28 @@ namespace HcWebApi.Endpoints
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand(
                     "INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId) " +
-                    "VALUES (NEWID(), '<api>', 'Runs page import failed', @d, 'RunsPageImport', NULL);", conn);
-                cmd.Parameters.Add("@d", SqlDbType.NVarChar, -1).Value = $"{k.ShortName} ({k.KennelId}) {k.Url}: {message}";
+                    "VALUES (NEWID(), '<api>', @n, @d, 'RunsPageImport', NULL);", conn);
+                cmd.Parameters.Add("@n", SqlDbType.NVarChar, 200).Value =
+                    stage == "output" ? "Runs page output suspect" : $"Runs page {stage} failed";
+                cmd.Parameters.Add("@d", SqlDbType.NVarChar, -1).Value =
+                    k == null ? message : $"{k.ShortName} ({k.KennelId}) {k.Url}: {message}";
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch { /* best effort */ }
+        }
+
+        private static async Task LogGeneralAsync(string cs, string source, string message, string? param, string? data)
+        {
+            try
+            {
+                using var conn = new SqlConnection(cs);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "INSERT LOG.GeneralLog (LogSource, Message, StrParam1, Data, [Timestamp]) VALUES (@s, @m, @p, @d, SYSDATETIMEOFFSET());", conn);
+                cmd.Parameters.Add("@s", SqlDbType.NVarChar, 100).Value = source;
+                cmd.Parameters.Add("@m", SqlDbType.NVarChar, -1).Value = Truncate(message, 1000);
+                cmd.Parameters.Add("@p", SqlDbType.NVarChar, 200).Value = (object?)param ?? DBNull.Value;
+                cmd.Parameters.Add("@d", SqlDbType.NVarChar, -1).Value = (object?)data ?? DBNull.Value;
                 await cmd.ExecuteNonQueryAsync();
             }
             catch { /* best effort */ }
