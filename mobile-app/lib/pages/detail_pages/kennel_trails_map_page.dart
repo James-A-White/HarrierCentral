@@ -304,28 +304,52 @@ class KennelTrailsMapPage extends StatelessWidget {
                         polylines: lines,
                       ),
                     ),
-                    // Start points above the trails, one pin per place;
-                    // the busier the place, the bigger the pin.
-                    MarkerLayer(
-                      markers: <Marker>[
-                        for (final KennelStartPlace p in places)
-                          Marker(
-                            point: p.point,
-                            width: 30,
-                            height: 30,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () => c.selectPlace(p),
-                              child: Center(
-                                child: _StartPin(
-                                  runs: p.runs.length,
-                                  busiest: busiest,
-                                  selected: identical(p, place),
+                    // Start points above the trails, clustered as on the other
+                    // maps (James, 2026-10-04): a bubble says how many RUNS
+                    // started in that area, and a tap zooms in until it splits
+                    // into single places — a pink dot, bigger and deeper the
+                    // busier the place. Each pin's key is its place's index,
+                    // so the bubble can count runs rather than pins.
+                    MarkerClusterLayerWidget(
+                      options: MarkerClusterLayerOptions(
+                        maxClusterRadius: 45,
+                        size: const Size(40, 40),
+                        markers: <Marker>[
+                          for (int i = 0; i < places.length; i++)
+                            Marker(
+                              key: ValueKey<int>(i),
+                              point: places[i].point,
+                              width: 30,
+                              height: 30,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => c.selectPlace(places[i]),
+                                child: Center(
+                                  child: _StartPin(
+                                    runs: places[i].runs.length,
+                                    busiest: busiest,
+                                    selected: identical(places[i], place),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                        polygonOptions: const PolygonOptions(
+                          borderColor: Color(0xFFDB2777),
+                          color: Colors.black12,
+                          borderStrokeWidth: 2,
+                        ),
+                        builder: (BuildContext context, List<Marker> markers) {
+                          int runs = 0;
+                          for (final Marker m in markers) {
+                            final Key? k = m.key;
+                            if (k is ValueKey<int> && k.value < places.length) {
+                              runs += places[k.value].runs.length;
+                            }
+                          }
+                          return _RunCluster(runs: runs);
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -559,4 +583,37 @@ class _StartPin extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A cluster of start places: how many runs started in it, on deep pink with
+/// a black border, so it reads as the same family as the pins.
+class _RunCluster extends StatelessWidget {
+  const _RunCluster({required this.runs});
+  final int runs;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: const Color(0xFFBE185D),
+      shape: BoxShape.circle,
+      border: Border.all(color: Colors.black, width: 1.5),
+      boxShadow: const <BoxShadow>[
+        BoxShadow(color: Colors.black38, blurRadius: 3),
+      ],
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(4),
+      child: FittedBox(
+        child: Text(
+          '$runs',
+          style: ts_button.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    ),
+  );
 }
