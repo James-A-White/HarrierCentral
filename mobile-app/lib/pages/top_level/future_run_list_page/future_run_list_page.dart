@@ -1,4 +1,5 @@
 import 'package:calendar_date_picker2/calendar_date_picker2.dart' as calendar;
+import 'package:flutter/cupertino.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
@@ -1249,11 +1250,80 @@ class FutureRunsListPage extends StatelessWidget {
     return precursorText;
   }
 
+  /// The run list's date filter (James, 2026-10-04: picking 1983 meant
+  /// scrolling month by month through forty years). Two ways to choose,
+  /// both kept in step:
+  ///   * From / To buttons open the iPhone-style date wheel, so a year far
+  ///     away is a flick of one wheel;
+  ///   * the calendar shows one month at a time, and its "Month Year ▾"
+  ///     header goes UP to a year grid and a month list, then back DOWN to
+  ///     the days — calendar_date_picker2's day mode, which the old scroll
+  ///     mode had switched off.
   Future<List<DateTime>> _showCalendarDialog(BuildContext context) async {
-    List<DateTime> result = [
+    final Rx<List<DateTime>> picked = Rx<List<DateTime>>(<DateTime>[
       controller.dateFilterStart.value,
       controller.dateFilterEnd.value,
-    ];
+    ]);
+    // Bumped when a wheel changes a date, so the calendar redraws on it.
+    final RxInt calendarKey = 0.obs;
+    final DateTime firstDate = DateTime(1970);
+    final DateTime lastDate = DateTime(DateTime.now().year + 5, 12, 31);
+    final DateFormat dayFmt = DateFormat('d MMM yyyy');
+    bool cancelled = false;
+
+    Future<void> wheel(BuildContext ctx, bool isStart) async {
+      final List<DateTime> now = picked.value;
+      DateTime chosen = isStart ? now.first : (now.length > 1 ? now[1] : now.first);
+      final bool? ok = await showCupertinoModalPopup<bool>(
+        context: ctx,
+        builder: (BuildContext c) => Container(
+          height: 300,
+          color: Colors.white,
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.of(c).pop(false),
+                      child: Text('Cancel', style: TextStyle(color: Colors.blueGrey.shade700), textAlign: TextAlign.center),
+                    ),
+                    Text(isStart ? 'From' : 'To', style: ts_alertDialogTitle, textAlign: TextAlign.center),
+                    TextButton(
+                      onPressed: () => Navigator.of(c).pop(true),
+                      child: Text('Done', style: TextStyle(color: Colors.purple.shade800, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: chosen.isBefore(firstDate)
+                        ? firstDate
+                        : (chosen.isAfter(lastDate) ? lastDate : chosen),
+                    minimumDate: firstDate,
+                    maximumDate: lastDate,
+                    onDateTimeChanged: (DateTime d) => chosen = d,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      if (ok != true) return;
+      DateTime start = isStart ? chosen : now.first;
+      DateTime end = isStart ? (now.length > 1 ? now[1] : chosen) : chosen;
+      if (end.isBefore(start)) {
+        final DateTime t = start;
+        start = end;
+        end = t;
+      }
+      picked.value = <DateTime>[DateUtils.dateOnly(start), DateUtils.dateOnly(end)];
+      calendarKey.value++;
+    }
 
     await showDialog(
       context: context,
@@ -1265,74 +1335,105 @@ class FutureRunsListPage extends StatelessWidget {
           contentPadding: const EdgeInsets.all(16),
           content: SizedBox(
             width: (Get.width - 30).clamp(0.0, 560.0),
-            height: Get.height - 200,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: calendar.CalendarDatePicker2(
+            child: Obx(() {
+              // Read the Rx first (an Obx that can skip its reads throws).
+              final List<DateTime> dates = picked.value;
+              final int key = calendarKey.value;
+              final DateTime start = dates.first;
+              final DateTime end = dates.length > 1 ? dates[1] : dates.first;
+              Widget endButton(String label, DateTime d, bool isStart) =>
+                  OutlinedButton(
+                    onPressed: () => unawaited(wheel(context, isStart)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.purple.shade800,
+                      side: BorderSide(color: Colors.purple.shade800),
+                    ),
+                    child: Text(
+                      '$label  ${dayFmt.format(d)}',
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 10,
+                    runSpacing: 8,
+                    children: <Widget>[
+                      endButton('From', start, true),
+                      endButton('To', end, false),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  calendar.CalendarDatePicker2(
+                    key: ValueKey<int>(key),
                     config: calendar.CalendarDatePicker2WithActionButtonsConfig(
                       firstDayOfWeek: 1,
+                      firstDate: firstDate,
+                      lastDate: lastDate,
                       calendarType: calendar.CalendarDatePicker2Type.range,
-                      selectedDayTextStyle: TextStyle(
+                      selectedDayTextStyle: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                       selectedDayHighlightColor: Colors.purple[800],
                       centerAlignModePicker: true,
-                      customModePickerIcon: SizedBox(),
-                      calendarViewMode: calendar.CalendarDatePicker2Mode.scroll,
+                      calendarViewMode: calendar.CalendarDatePicker2Mode.day,
                     ),
-                    value: [
-                      controller.dateFilterStart.value,
-                      controller.dateFilterEnd.value,
-                    ],
-                    onValueChanged: (dates) => result = dates,
+                    displayedMonthDate: start,
+                    value: dates,
+                    onValueChanged: (List<DateTime> d) {
+                      // A range in progress is one date; keep the end
+                      // until the second tap lands.
+                      if (d.isEmpty) return;
+                      picked.value = d.length == 1
+                          ? <DateTime>[d.first, d.first]
+                          : <DateTime>[d.first, d[1]];
+                    },
                   ),
-                ),
-                const SizedBox(height: 12),
-                Obx(
-                  () => CheckboxListTile(
+                  const SizedBox(height: 4),
+                  CheckboxListTile(
                     dense: true,
-                    controlAffinity: ListTileControlAffinity
-                        .trailing, // 👈 moves checkbox to right
+                    controlAffinity: ListTileControlAffinity.trailing,
                     contentPadding: EdgeInsets.zero,
-                    title: Align(
+                    title: const Align(
                       alignment: AlignmentGeometry.centerRight,
-                      child: const Text('Use these dates every year'),
+                      child: Text('Use these dates every year'),
                     ),
                     value: controller.multiYearDateFilter.value,
                     onChanged: (val) {
                       controller.multiYearDateFilter.value = (val ?? false);
                     },
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(child: SizedBox.shrink()),
-                    TextButton(
-                      onPressed: () {
-                        result = [];
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Cancel', textAlign: TextAlign.center),
-                    ),
-                    SizedBox(width: 20),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK', textAlign: TextAlign.center),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Expanded(child: SizedBox.shrink()),
+                      TextButton(
+                        onPressed: () {
+                          cancelled = true;
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancel', textAlign: TextAlign.center),
+                      ),
+                      const SizedBox(width: 20),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK', textAlign: TextAlign.center),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }),
           ),
         );
       },
     );
 
-    return result;
+    return cancelled ? <DateTime>[] : picked.value;
   }
 }
 
