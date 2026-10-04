@@ -707,9 +707,10 @@ namespace HcWebApi.Endpoints
                 using var cmd = new SqlCommand(
                     "INSERT LOG.GeneralLog (LogSource, Message, StrParam1, Data, [Timestamp]) VALUES (@s, @m, @p, @d, SYSDATETIMEOFFSET());", conn);
                 cmd.Parameters.Add("@s", SqlDbType.NVarChar, 100).Value = source;
-                cmd.Parameters.Add("@m", SqlDbType.NVarChar, -1).Value = Truncate(message, 1000);
-                cmd.Parameters.Add("@p", SqlDbType.NVarChar, 200).Value = (object?)param ?? DBNull.Value;
-                cmd.Parameters.Add("@d", SqlDbType.NVarChar, -1).Value = (object?)data ?? DBNull.Value;
+                // LOG.GeneralLog: Message NVARCHAR(255), StrParam1 500, Data 4000.
+                cmd.Parameters.Add("@m", SqlDbType.NVarChar, 255).Value = Truncate(message, 255);
+                cmd.Parameters.Add("@p", SqlDbType.NVarChar, 500).Value = param == null ? DBNull.Value : Truncate(param, 500);
+                cmd.Parameters.Add("@d", SqlDbType.NVarChar, 4000).Value = data == null ? DBNull.Value : Truncate(data, 4000);
                 await cmd.ExecuteNonQueryAsync();
             }
             catch { /* best effort */ }
