@@ -1,3 +1,11 @@
+1.0.61+74
+    • Runs page import (E3.F6.S3): RunsPageImport timer (00:07/06:07/12:07/18:07 UTC) reads each
+      kennel's runs page, skips unchanged pages by SHA-256, has Azure OpenAI (gpt-4.1-mini,
+      deployment runs-page) extract the runs, and imports them via HC6.nonApi_importRunsPageRuns.
+      RunsPageTest (portal Test button, ValidatePortalAuth + createEditRuns) previews or imports;
+      RunsPageImportNow (X-Api-Key). Errors land in HC.ErrorLog by stage ('Runs page fetch/model/
+      DB/config failed', 'Runs page output suspect'); model calls log tokens to LOG.GeneralLog.
+
 1.0.61+73
     • Track source (E5.F5.S9): PositionWriter records where a runner's track came from on
       HC.HasherEventMap.TrackSource (packtrack for live uploads; the file's GPX creator / TCX

@@ -1,3 +1,7 @@
+## 2.0.87+740 (2026-10-04)
+### New Features
+- **Runs page import**: the kennel editor has a Runs Page field. Harrier Central reads that page four times a day and adds new runs automatically; a **Test this page** button reads it now, shows every run it found and what would happen to each, and imports them on request.
+
 ## 2.0.87+739 (2026-10-01)
 ### Fixes
 - **Run chat opens again**: 738 showed a grey screen in run chat (the reply bar's placement); it now sits in the message box's own slot.

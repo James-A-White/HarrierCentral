@@ -1,3 +1,8 @@
+## 3.1.9+1447 (2026-10-04)
+Dance baby! — all beta testers.
+### Improvements
+- **Runs imported from a kennel's own runs page** show "runs page" as their source.
+
 ## 3.1.9+1446 (2026-10-04)
 Dance baby! — all beta testers (TestFlight Hash beta testers + Play internal). Builds 1436-1446 reach the wider beta for the first time: hasher search and By Hasher, official trails (scout, upload, promote, kennel trail map), track sources, the pre-run push, and the iPhone Always requirement.
 ### Improvements
