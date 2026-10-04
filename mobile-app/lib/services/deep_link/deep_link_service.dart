@@ -1,5 +1,6 @@
 import 'package:app_links/app_links.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/kennel_history.dart';
 
 /// Where a hashruns.org link points, once parsed.
 ///
@@ -458,18 +459,18 @@ class DeepLinkService {
     if (t.nextRun) {
       final String? next = await _nextEventId(kennelId);
       if (next != null) return next;
-      final bool follow = await _offerToFollow(kennelName);
+      final bool follow = await KennelHistory.offerToFollow(kennelName);
       if (!follow) return null;
-      await _followAndReplicate(kennelId);
+      await KennelHistory.followAndLoad(kennelId);
       return _nextEventId(kennelId);
     }
 
     String? eventId = await _eventIdByNumber(kennelId, t.runNumber!);
     if (eventId != null) return eventId;
 
-    final bool follow = await _offerToFollow(kennelName);
+    final bool follow = await KennelHistory.offerToFollow(kennelName);
     if (!follow) return null;
-    await _followAndReplicate(kennelId);
+    await KennelHistory.followAndLoad(kennelId);
     eventId = await _eventIdByNumber(kennelId, t.runNumber!);
     if (eventId == null) {
       debugPrint('[DEEPLINK] followed $kennelName but run ${t.runNumber} still absent');
@@ -522,53 +523,6 @@ class DeepLinkService {
       <Object?>[publicEventId.toLowerCase()],
     );
     return rows.isEmpty ? null : normalizeUuid(rows.first[eh.colEventId] as String);
-  }
-
-  Future<bool> _offerToFollow(String kennelName) async {
-    final BuildContext? ctx = navigatorKey.currentContext;
-    if (ctx == null) return false;
-    final bool? yes = await showDialog<bool>(
-      context: ctx,
-      builder: (BuildContext c) => AlertDialog(
-        title: Text('Follow $kennelName?'),
-        content: Text(
-          "This run belongs to $kennelName, which you don't follow yet. "
-          'Follow them to open it — their runs will then show in your list.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('Not now', textAlign: TextAlign.center),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Follow', textAlign: TextAlign.center),
-          ),
-        ],
-      ),
-    );
-    return yes == true;
-  }
-
-  /// Verbatim the kennel-admin auto-follow: mark followed, clear the stale
-  /// ten-day slice of this kennel's events, then force-replicate its full
-  /// history so the run is actually there.
-  Future<void> _followAndReplicate(String kennelId) async {
-    await HasherKennelMapService().updateHasherKennelStatus(
-      kennelId,
-      AppDomainType.user,
-      followingState: followTypeFollow.value,
-    );
-    await database.rawDelete(
-      'DELETE FROM ${EnumDataTables.events.commonTableName} '
-      'WHERE lower(${tableModel.eventsTableHelper.colKennelId}) = "${normalizeUuid(kennelId)}"',
-    );
-    await tableModel.syncUserDataService.updateFromBackend(
-      EnumDataTables.events.flag,
-      true,
-      forceReplicateAllRunsForKennel: kennelId,
-      debugText: 'deep_link_service: follow + force-replicate to open a linked run',
-    );
   }
 
   Future<void> _openRun(String eventId, RunTab tab, Uri uri) async {

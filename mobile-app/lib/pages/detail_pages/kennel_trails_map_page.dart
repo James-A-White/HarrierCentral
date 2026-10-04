@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/run_on_phone.dart';
 import 'package:harrier_central/services/official_trails/official_trail_service.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
@@ -17,6 +18,9 @@ class KennelTrailsMapController extends GetxController {
   KennelTrailsMapController(this.kennelId);
 
   final HcId kennelId;
+
+  /// Fetching a run that is not on the phone, so it can open.
+  final RxBool opening = false.obs;
   final MapController mapController = MapController();
   final RxList<KennelRunTrail> trails = <KennelRunTrail>[].obs;
   final RxBool loading = true.obs;
@@ -112,27 +116,54 @@ class KennelTrailsMapController extends GetxController {
     );
   }
 
-  /// Opens the run when this phone holds it (it normally does for a kennel
-  /// the hasher follows; very old runs may have aged out).
+  /// Opens a run from the map. Most pins are older runs of a kennel the
+  /// hasher may not follow, and the phone holds only ten days of those — so
+  /// when the run is not here, fetch just that run (RunOnPhone) and open it.
+  /// Before 2026-10-04 this only showed a toast: "nothing happens".
   Future<void> openRun(HcId eventId) async {
-    final List<dynamic> found = await QueryRuns.getRunDetailsAggregates(
-      true,
-      eventId: eventId,
-      queryType: EnumRunQueryType.singleRun,
-      runsTimeScope: RunsTimeScope.future,
-      runsToDisplay: RunsToDisplay.allRuns,
-    );
-    if (isClosed) return;
-    if (found.isEmpty) {
-      hcSnack("That run's details aren't on this phone.");
-      return;
+    if (opening.value) return;
+    try {
+      List<RunDetailsAggregate> found = await _lookup(eventId);
+      if (isClosed) return;
+      if (found.isEmpty) {
+        opening.value = true;
+        final bool ok = await RunOnPhone.load(eventId);
+        if (isClosed) return;
+        found = ok ? await _lookup(eventId) : const <RunDetailsAggregate>[];
+        if (isClosed) return;
+        opening.value = false;
+        if (found.isEmpty) {
+          hcSnack(
+            ok
+                ? "That run isn't available any more."
+                : "That run couldn't be loaded. Check your connection and try again.",
+            error: true,
+          );
+          return;
+        }
+      }
+      await navigatorKey.currentState?.push<dynamic>(
+        MaterialPageRoute<dynamic>(
+          builder: (BuildContext context) =>
+              RunDetailsPage(futureRun: found.first),
+        ),
+      );
+    } catch (e, s) {
+      BootLogger.logError('[KennelTrailsMap.openRun]', e, s);
+      if (!isClosed) hcSnack("That run couldn't be opened.", error: true);
+    } finally {
+      if (!isClosed) opening.value = false;
     }
-    await navigatorKey.currentState?.push<dynamic>(
-      MaterialPageRoute<dynamic>(
-        builder: (BuildContext context) => RunDetailsPage(futureRun: found[0]),
-      ),
-    );
   }
+
+  Future<List<RunDetailsAggregate>> _lookup(HcId eventId) =>
+      QueryRuns.getRunDetailsAggregates(
+        true,
+        eventId: eventId,
+        queryType: EnumRunQueryType.singleRun,
+        runsTimeScope: RunsTimeScope.future,
+        runsToDisplay: RunsToDisplay.allRuns,
+      );
 }
 
 class KennelTrailsMapPage extends StatelessWidget {
@@ -173,8 +204,11 @@ class KennelTrailsMapPage extends StatelessWidget {
         body: DecoratedBox(
           decoration: Backgrounds.defaultHcBackground(),
           child: Obx(() {
+            // Every Rx read before any branch (an Obx that can skip its
+            // reads throws).
             final bool loading = c.loading.value;
             final bool failed = c.failed.value;
+            final bool opening = c.opening.value;
             final List<KennelRunTrail> trails = c.trails.toList();
             final KennelRunTrail? sel = c.selected.value;
             final List<KennelStartPlace> places = c.places.toList();
@@ -366,6 +400,26 @@ class KennelTrailsMapPage extends StatelessWidget {
                           ),
                   ),
                 ),
+                if (opening)
+                  Positioned.fill(
+                    child: ColoredBox(
+                      color: Colors.black54,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            const HcAppCircularProgressIndicator(),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Loading the run…',
+                              style: ts_body,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             );
           }),
