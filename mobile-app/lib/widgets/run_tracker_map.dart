@@ -850,7 +850,12 @@ class RunTrackerMap extends StatelessWidget {
     final id = controller.selectedRunnerId.value;
     if (id == null) return const SizedBox.shrink();
     final runner = controller.userPositions.firstWhereOrNull((r) => r.id == id);
-    final baseName = controller.userNames[id] ?? 'Runner';
+    // An imported track says where it came from: "Hard On On · Garmin".
+    final String? source = GetPositionsApi.sourceLabel(
+      controller.trackSources[id],
+    );
+    final baseName =
+        '${controller.userNames[id] ?? 'Runner'}${source == null ? '' : ' · $source'}';
     final emoji = runner == null
         ? ''
         : controller.trailTypeFor(controller.trailValueForRunner(runner)).emoji;

@@ -138,6 +138,10 @@ class RunTrackerMapController extends GetxController
   bool get hasRecordedTrack => userPositions.any(_hasTrack);
   final RxMap<String, String> userLogos = <String, String>{}.obs;
   final RxMap<String, String> userNames = <String, String>{}.obs;
+
+  /// Where each runner's track came from (GetPositions "trackSource"):
+  /// packtrack, strava, garmin … by runner id (2026-10-04).
+  final RxMap<String, String> trackSources = <String, String>{}.obs;
   final TrackPointFilter _trackFilter = TrackPointFilter();
   /// The run's official (hare's) trail, dashed under the tracks (E5.F6.S6).
   late final OfficialTrailOverlay officialTrail = OfficialTrailOverlay(
@@ -1445,6 +1449,10 @@ class RunTrackerMapController extends GetxController
       // playback AnimationController — a zombie that then re-polls and throws
       // every 15s until app kill (observed 71× in the 2026-08-16 device logs).
       if (isClosed) return;
+      // Where each track came from (Garmin, Strava …), shown by the name.
+      if (_positionsApi.lastTrackSources.isNotEmpty) {
+        trackSources.addAll(_positionsApi.lastTrackSources);
+      }
       // A poll that found nothing reports no mark; keep the one we have so
       // the next poll asks from the same place.
       if (data.latestServerTimestampMs != null) {

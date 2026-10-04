@@ -3,6 +3,25 @@ import 'package:harrier_central/imports.dart';
 import 'package:http/http.dart' as http;
 
 class GetPositionsApi {
+  /// The runners' track sources from the last fetch, by runner id.
+  Map<String, String> lastTrackSources = const <String, String>{};
+
+  /// A track source key as a label; null for the app's own PackTrack, which
+  /// is the normal case and goes unlabelled.
+  static String? sourceLabel(String? key) => switch (key) {
+    null || 'packtrack' => null,
+    'strava' => 'Strava',
+    'garmin' => 'Garmin',
+    'fitbit' => 'Fitbit',
+    'apple' => 'Apple Health',
+    'coros' => 'COROS',
+    'suunto' => 'Suunto',
+    'polar' => 'Polar',
+    'wahoo' => 'Wahoo',
+    'komoot' => 'komoot',
+    _ => 'imported file',
+  };
+
   GetPositionsApi({http.Client? httpClient, Uri? baseUri})
     : _injectedClient = httpClient,
       _baseUri = baseUri ?? Uri.parse(GET_POSITIONS_URL);
@@ -106,9 +125,15 @@ class GetPositionsApi {
     // lowercase them here so every consumer compares like with like (HcId).
     var result = lowerGuidsInPlace(json.decode(resultStr));
 
-    final payload = UserPositionsPayload.fromJson(
-      result as Map<String, dynamic>,
-    );
+    // Where each runner's track came from ("trackSource": strava, garmin …),
+    // read here so the generated UserTrack model stays as it is (2026-10-04).
+    lastTrackSources = <String, String>{
+      for (final dynamic u in ((result as Map<String, dynamic>)['users'] as List<dynamic>? ?? <dynamic>[]))
+        if (u is Map && u['trackSource'] is String && u['id'] is String)
+          u['id'] as String: u['trackSource'] as String,
+    };
+
+    final payload = UserPositionsPayload.fromJson(result);
 
     //lastPositionTimestamp = result['latestServerTimestampMs'] ?? '';
 

@@ -189,6 +189,19 @@ namespace HcWebApi.Endpoints
             };
             } // live path
 
+            // Where each runner's track came from (TrackSources: packtrack,
+            // strava, garmin …) for the maps to show beside the name (James,
+            // 2026-10-04). Cached per run for a minute: live maps poll every
+            // 15-30 s. Absent until HC.HasherEventMap.TrackSource exists.
+            if (response != null && response.Users.Count > 0)
+            {
+                Dictionary<string, string> sources = await TrackSourcesForEventAsync(request.EventId);
+                foreach (UserPositionsResponse u in response.Users)
+                {
+                    if (sources.TryGetValue(u.Id.ToLowerInvariant(), out string? src)) u.TrackSource = src;
+                }
+            }
+
             // Deletions since the viewer's mark (PositionTombstones). A delete
             // never "arrives", so without these an incremental poll could not
             // say a point was gone and the client had to re-download every
@@ -724,6 +737,48 @@ namespace HcWebApi.Endpoints
             [JsonProperty("includeTrimmed")] public bool IncludeTrimmed { get; set; }
         }
 
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime at, Dictionary<string, string> map)> _sourceCache = new();
+
+        /// <summary>
+        /// Every runner's TrackSource on a run, keyed by lowercase user id.
+        /// Best-effort: an empty map on any failure (or before the column
+        /// exists), so a map never fails over a label.
+        /// </summary>
+        private async Task<Dictionary<string, string>> TrackSourcesForEventAsync(string eventId)
+        {
+            string key = eventId.ToLowerInvariant();
+            if (_sourceCache.TryGetValue(key, out var hit) && DateTime.UtcNow - hit.at < TimeSpan.FromMinutes(1))
+            {
+                return hit.map;
+            }
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (!Guid.TryParse(eventId, out Guid eventGuid)) return map;
+            string? connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString");
+            if (string.IsNullOrWhiteSpace(connectionString)) return map;
+            try
+            {
+                using SqlConnection conn = new(connectionString);
+                await conn.OpenAsync();
+                using SqlCommand cmd = new(
+                    "SELECT UserId, TrackSource FROM HC.HasherEventMap " +
+                    " WHERE EventId = @eventId AND removed = 0 AND TrackSource IS NOT NULL;", conn)
+                { CommandTimeout = 5 };
+                cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
+                using SqlDataReader r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                {
+                    map[r.GetGuid(0).ToString("D").ToLowerInvariant()] = r.GetString(1);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogInformation("GetPositions: track sources not read for {EventId}: {Message}", eventId, ex.Message);
+            }
+            _sourceCache[key] = (DateTime.UtcNow, map);
+            if (_sourceCache.Count > 500) _sourceCache.Clear();
+            return map;
+        }
+
         internal class EventPositionsResponse
         {
             [JsonProperty("eventId")] public string EventId { get; set; } = string.Empty;
@@ -756,6 +811,8 @@ namespace HcWebApi.Endpoints
         {
             [JsonProperty("id")] public string Id { get; set; } = string.Empty;
             [JsonProperty("positions")] public List<PositionResponse> Positions { get; set; } = new();
+            // Where the track came from (TrackSources). Absent when unknown.
+            [JsonProperty("trackSource", NullValueHandling = NullValueHandling.Ignore)] public string? TrackSource { get; set; }
         }
 
         internal class PositionResponse

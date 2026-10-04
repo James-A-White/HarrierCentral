@@ -33,7 +33,8 @@ namespace HcWebApi.Endpoints
         /// </summary>
         public static async Task<Outcome> WriteAsync(
             TableServiceClient tables, ILogger log, string eventId, string userId,
-            IReadOnlyList<WritePoint> points, bool resumed = false)
+            IReadOnlyList<WritePoint> points, bool resumed = false,
+            string source = TrackSources.PackTrack)
         {
             TableClient eventTable = tables.GetTableClient(EventTableName);
             TableClient userTable = tables.GetTableClient(UserTableName);
@@ -130,7 +131,8 @@ namespace HcWebApi.Endpoints
 
             if (storedCount > 0)
             {
-                await RecordAsync(log, eventId, userId, storedCount, minTs, maxTs);
+                await RecordAsync(log, eventId, userId, storedCount, minTs, maxTs,
+                    points.Any(p => string.IsNullOrEmpty(p.Type)) ? source : null);
             }
             return new Outcome(storedCount, resumeDeleted);
         }
@@ -163,7 +165,8 @@ namespace HcWebApi.Endpoints
         /// (TrackGzip); the nightly rebuilds it. Best-effort: a SQL hiccup never
         /// turns into a failed store.
         /// </summary>
-        private static async Task RecordAsync(ILogger log, string eventId, string userId, int storedCount, long minTs, long maxTs)
+        private static async Task RecordAsync(ILogger log, string eventId, string userId, int storedCount, long minTs, long maxTs,
+            string? source)
         {
             if (!Guid.TryParse(eventId, out Guid eventGuid)) return;
             string? connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString");
@@ -220,6 +223,36 @@ namespace HcWebApi.Endpoints
                     {
                         log.LogInformation("PositionWriter: no attendance row yet for event {EventId} / user {UserId} — {Stored} point(s) not counted.",
                             eventId, userId, storedCount);
+                    }
+
+                    // Where the track came from (TrackSources), only from a batch
+                    // that carries GPS fixes — an admin's trim marks must not
+                    // relabel a runner's imported track. Its own statement in
+                    // its own try: before TrackSource exists (2026-10-04
+                    // run-once script) it fails and the summary above stands.
+                    // A source-only write is track-only: the trigger leaves
+                    // updatedAt alone, so no phone re-syncs the row.
+                    if (source != null && hemRows > 0)
+                    {
+                        try
+                        {
+                            using SqlCommand srcCmd = new(
+                                "UPDATE HC.HasherEventMap SET TrackSource = @source " +
+                                " WHERE EventId = @eventId AND UserId = @userId AND removed = 0 " +
+                                "   AND (TrackSource IS NULL OR TrackSource <> @source);",
+                                conn)
+                            {
+                                CommandTimeout = 5
+                            };
+                            srcCmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
+                            srcCmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = userGuid;
+                            srcCmd.Parameters.Add("@source", SqlDbType.NVarChar, 40).Value = source;
+                            await srcCmd.ExecuteNonQueryAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            log.LogInformation("PositionWriter: TrackSource not recorded for event {EventId}: {Message}", eventId, ex.Message);
+                        }
                     }
                 }
             }

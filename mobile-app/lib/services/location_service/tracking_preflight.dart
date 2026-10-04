@@ -3,7 +3,9 @@ import 'package:harrier_central/imports.dart';
 
 /// What can stop a phone recording a usable trail, checked before tracking
 /// starts (E5.F1.S13). Every finding is named in plain words with a button
-/// that goes to the right place; none of them blocks the start.
+/// that goes to the right place. Most only warn; a [PreflightIssue.blocking]
+/// one stops the start until it is put right (James, 2026-10-04): an iPhone
+/// on While Using, or no location at all, cannot record a trail.
 enum PreflightIssueKind {
   /// Location Services are off for the whole phone.
   locationServicesOff,
@@ -36,9 +38,14 @@ class PreflightIssue {
     required this.summary,
     this.actionLabel,
     this.action,
+    this.blocking = false,
   });
 
   final PreflightIssueKind kind;
+
+  /// Tracking cannot start until this is fixed: the dialog offers Cancel,
+  /// not "Start anyway".
+  final bool blocking;
 
   /// Bold, one line: `Location is set to While Using`.
   final String title;
@@ -123,9 +130,11 @@ class TrackingPreflight {
           PreflightIssue(
             kind: PreflightIssueKind.locationServicesOff,
             title: 'Location Services are off',
-            detail: 'The phone is not giving any app its position, so there '
+            detail:
+                'The phone is not giving any app its position, so there '
                 'is nothing to record. Turn Location Services on.',
             summary: 'Location Services were off',
+            blocking: true,
             actionLabel: 'Open Location Settings',
             action: () async {
               await Geolocator.openLocationSettings();
@@ -142,10 +151,14 @@ class TrackingPreflight {
             PreflightIssue(
               kind: PreflightIssueKind.locationDenied,
               title: 'Harrier Central cannot see your location',
-              detail: 'Location is off for Harrier Central, so no trail can '
-                  'be recorded. Allow Location, and set it to Always so it '
-                  'keeps working with the phone in your pocket.',
+              detail: ios
+                  ? 'Location is off for Harrier Central, so no trail can '
+                        'be recorded. Allow Location and set it to Always, so '
+                        'it keeps working with the phone in your pocket.'
+                  : 'Location is off for Harrier Central, so no trail can '
+                        'be recorded. Allow Location while using the app.',
               summary: 'Location was denied',
+              blocking: true,
               actionLabel: 'Open Settings',
               action: () async {
                 if (perm == LocationPermission.denied) {
@@ -156,22 +169,34 @@ class TrackingPreflight {
             ),
           );
         case LocationPermission.whileInUse:
+          // iPhone only (James, 2026-10-04). On While Using, iOS stops the
+          // fixes when the screen locks (Mouthwash, WLH3 #2114: 7 points,
+          // then 93 minutes of nothing), so tracking may not start until
+          // Location is Always. Android needs no such thing: its foreground
+          // service ("Tracking run in progress") keeps a while-in-use
+          // session alive, and the app does not even request background
+          // location — telling Android users to pick "Allow all the time"
+          // pointed them at an option their phone does not offer.
+          if (!ios) break;
           issues.add(
             PreflightIssue(
               kind: PreflightIssueKind.locationNotAlways,
-              title: ios
-                  ? 'Location is set to While Using'
-                  : 'Location is only allowed while using the app',
-              detail: 'The moment the screen locks or you switch apps, your '
-                  'phone stops sending PackTrack your position — the trail '
-                  'will have holes in it. ${ios ? 'Set Location to Always' : 'Set Location to "Allow all the time"'} '
-                  'in Settings.',
-              summary: ios
-                  ? 'Location was While Using'
-                  : 'Location was only while using',
-              actionLabel: 'Open Settings',
+              title: 'Location needs to be set to Always',
+              detail:
+                  'On While Using, your iPhone stops sending PackTrack '
+                  'your position the moment the screen locks, so the trail '
+                  'stops at the start. Set Location to Always to track.',
+              summary: 'Location was While Using',
+              blocking: true,
+              actionLabel: 'Set to Always',
               action: () async {
-                await Geolocator.openAppSettings();
+                // iOS offers "Change to Always Allow" once; after that only
+                // Settings can change it.
+                final LocationPermission now =
+                    await Geolocator.requestPermission();
+                if (now != LocationPermission.always) {
+                  await Geolocator.openAppSettings();
+                }
               },
             ),
           );
@@ -186,13 +211,15 @@ class TrackingPreflight {
     // location is granted, which the permission check above already covers.
     if (ios) {
       try {
-        final LocationAccuracyStatus acc = await Geolocator.getLocationAccuracy();
+        final LocationAccuracyStatus acc =
+            await Geolocator.getLocationAccuracy();
         if (acc == LocationAccuracyStatus.reduced) {
           issues.add(
             PreflightIssue(
               kind: PreflightIssueKind.reducedAccuracy,
               title: 'Precise Location is off',
-              detail: 'Without it the phone reports where you are to within a '
+              detail:
+                  'Without it the phone reports where you are to within a '
                   'few kilometres, which draws no trail at all. Turn on '
                   'Precise Location for Harrier Central.',
               summary: 'Precise Location was off',
@@ -243,7 +270,8 @@ class TrackingPreflight {
           PreflightIssue(
             kind: PreflightIssueKind.batteryOptimisation,
             title: 'Battery optimisation is limiting Harrier Central',
-            detail: 'Android may pause the app in your pocket and leave gaps '
+            detail:
+                'Android may pause the app in your pocket and leave gaps '
                 'in the trail. Allow Harrier Central to run unrestricted.',
             summary: 'battery optimisation was on',
             actionLabel: 'Allow unrestricted',

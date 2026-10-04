@@ -11,6 +11,25 @@ export interface TrackPoint {
 export interface UserTrack {
   id: string;
   positions: TrackPoint[];
+  /** Where the track came from: packtrack, strava, garmin … (2026-10-04). */
+  trackSource?: string;
+}
+
+/** A track source as a label; undefined for the app's own PackTrack, the normal case. */
+export function trackSourceLabel(source?: string): string | undefined {
+  switch (source) {
+    case undefined: case "packtrack": return undefined;
+    case "strava": return "Strava";
+    case "garmin": return "Garmin";
+    case "fitbit": return "Fitbit";
+    case "apple": return "Apple Health";
+    case "coros": return "COROS";
+    case "suunto": return "Suunto";
+    case "polar": return "Polar";
+    case "wahoo": return "Wahoo";
+    case "komoot": return "komoot";
+    default: return "imported file";
+  }
 }
 
 export interface PackTrackPayload {
@@ -884,6 +903,10 @@ export async function fetchPackTrack(
 export function createPackTrackPoller(eventId: string) {
   let mark: string | undefined;
   let held = new Map<string, TrackPoint[]>();
+  const sources = new Map<string, string>();
+  const keepSources = (users: UserTrack[] | undefined) => {
+    for (const u of users ?? []) if (u.trackSource) sources.set(u.id.toLowerCase(), u.trackSource);
+  };
   let trailCfg: string | undefined;
   let trimStart: number | undefined;
   let trimEnd: number | undefined;
@@ -895,12 +918,13 @@ export function createPackTrackPoller(eventId: string) {
     trailTypesConfigJson: trailCfg,
     trimStartMs: trimStart,
     trimEndMs: trimEnd,
-    users: [...held.entries()].map(([id, positions]) => ({ id, positions: [...positions] })),
+    users: [...held.entries()].map(([id, positions]) => ({ id, positions: [...positions], trackSource: sources.get(id) })),
   });
 
   const full = async (): Promise<PackTrackPayload | null> => {
     const data = await fetchPackTrack(eventId);
     if (!data) return null;
+    keepSources(data.users);
     held = new Map(
       (data.users ?? []).map(u => [
         u.id.toLowerCase(),
@@ -923,6 +947,7 @@ export function createPackTrackPoller(eventId: string) {
       return full();
     }
     if (data.latestServerTimestampMs) mark = data.latestServerTimestampMs;
+    keepSources(data.users);
     for (const u of data.users ?? []) {
       if (u.positions.length === 0) continue;
       const id = u.id.toLowerCase();

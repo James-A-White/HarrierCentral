@@ -428,9 +428,10 @@ class LiveRunGeneralController extends GetxController
   /// The pre-flight (E5.F1.S13): permission, Precise Location, Low Power
   /// Mode, battery optimisation and the Power Saver tier. Anything found is
   /// put to the runner in ONE dialog with a button per problem and "Start
-  /// anyway"; what they start with regardless goes on the run summary. A
-  /// start is never blocked — returns false only when the dialog was backed
-  /// out of. Best-effort: a check that throws is a clean check.
+  /// anyway"; what they start with regardless goes on the run summary.
+  /// Returns false when the dialog was backed out of, or when a BLOCKING
+  /// finding stands (an iPhone on While Using, no location at all — James,
+  /// 2026-10-04). Best-effort: a check that throws is a clean check.
   Future<bool> _runPreflight() async {
     List<PreflightIssue> found;
     try {
@@ -449,7 +450,8 @@ class LiveRunGeneralController extends GetxController
     // Resolved AFTER the checks above, so it is live when the dialog opens
     // (the lint sees the await, not the order).
     final BuildContext? ctx = Get.context;
-    if (ctx == null) return true; // nowhere to ask: never block a start
+    // Nowhere to ask: start, unless something blocks a start outright.
+    if (ctx == null) return !found.any((PreflightIssue i) => i.blocking);
     final List<PreflightIssue>? left = await showTrackingPreflightDialog(
       // ignore: use_build_context_synchronously
       ctx,

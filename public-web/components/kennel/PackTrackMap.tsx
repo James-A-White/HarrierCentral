@@ -13,7 +13,7 @@ import {
   createPackTrackPoller, fetchRunnerNames, fetchRunPhotos, trackUpTo, sumDistanceMeters,
   withoutPhotoPoints,
   formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
-  resolveTrailTypeMap, trailValueForTrack, photoSrc,
+  resolveTrailTypeMap, trailValueForTrack, photoSrc, trackSourceLabel,
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
 import { AdventureTitle } from "./AdventureTitle";
@@ -1370,6 +1370,9 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
           {selected && (
             <div className="text-center text-white font-semibold text-base leading-tight truncate" suppressHydrationWarning>
               {names[selected.id.toLowerCase()] ?? (users.length > 1 ? `Runner ${selectedIdx + 1}` : "Track")}
+              {/* An imported track says where it came from (2026-10-04). */}
+              {trackSourceLabel(users.find(u => u.id === selected.id)?.trackSource) &&
+                ` · ${trackSourceLabel(users.find(u => u.id === selected.id)?.trackSource)}`}
             </div>
           )}
 

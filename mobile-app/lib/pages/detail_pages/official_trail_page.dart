@@ -213,7 +213,7 @@ class OfficialTrailController extends GetxController {
     if (isClosed) return false;
     if (found.isEmpty) return true;
     final BuildContext? ctx = Get.context;
-    if (ctx == null) return true;
+    if (ctx == null) return !found.any((PreflightIssue i) => i.blocking);
     // ignore: use_build_context_synchronously
     final List<PreflightIssue>? left = await showTrackingPreflightDialog(ctx, found);
     return !isClosed && left != null;

@@ -3,8 +3,9 @@ import 'package:harrier_central/services/location_service/tracking_preflight.dar
 
 /// ONE dialog listing everything the pre-flight found (E5.F1.S13), each with
 /// its own button to the right settings page, plus "Check again" for when
-/// they come back from Settings and "Start anyway", which is always there:
-/// a start is never blocked.
+/// they come back from Settings and "Start anyway" — unless a finding is
+/// blocking (an iPhone on While Using, no location at all), when the only
+/// way on is to fix it, and the dialog offers Cancel instead.
 ///
 /// Returns the issues still standing when the runner chose to go on: empty
 /// when everything was put right (the dialog closes itself the moment a
@@ -96,12 +97,15 @@ Future<List<PreflightIssue>?> showTrackingPreflightDialog(
           child: Obx(() {
             final List<PreflightIssue> list = issues.toList();
             final bool busy = checking.value;
+            final bool blocked = list.any((PreflightIssue i) => i.blocking);
             return Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  list.length == 1
+                  blocked
+                      ? 'PackTrack can\'t start until this is fixed:'
+                      : list.length == 1
                       ? 'One thing will stop this phone recording a good '
                             'trail:'
                       : '${list.length} things will stop this phone recording '
@@ -138,18 +142,23 @@ Future<List<PreflightIssue>?> showTrackingPreflightDialog(
               textAlign: TextAlign.center,
             ),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(issues.toList()),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: hc_red,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(
-              'Start anyway',
-              style: ts_button,
-              textAlign: TextAlign.center,
-            ),
-          ),
+          // Start anyway, unless something blocks the start; then Cancel.
+          Obx(() {
+            final bool blocked = issues.any((PreflightIssue i) => i.blocking);
+            return ElevatedButton(
+              onPressed: () =>
+                  Navigator.of(ctx).pop(blocked ? null : issues.toList()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: blocked ? Colors.blueGrey : hc_red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(
+                blocked ? 'Cancel' : 'Start anyway',
+                style: ts_button,
+                textAlign: TextAlign.center,
+              ),
+            );
+          }),
         ],
       );
     },

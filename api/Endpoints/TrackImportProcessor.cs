@@ -65,6 +65,8 @@ namespace HcWebApi.Endpoints
             [JsonProperty("name")] public string Name = string.Empty;
             [JsonProperty("format")] public string? Format;
             [JsonProperty("sport")] public string? Sport;
+            /// Where the file came from (TrackSources): strava, garmin, file …
+            [JsonProperty("source", NullValueHandling = NullValueHandling.Ignore)] public string? Source;
             [JsonProperty("startUtc")] public DateTime? StartUtc;
             [JsonProperty("endUtc")] public DateTime? EndUtc;
             [JsonProperty("lat")] public double? Lat;
@@ -103,6 +105,9 @@ namespace HcWebApi.Endpoints
             public string Name = string.Empty;
             public string Format = string.Empty;
             public string? Sport;
+            /// Where it came from (TrackSources), from the file's creator /
+            /// FIT manufacturer, or strava for a Strava account archive.
+            public string? Source;
             public List<WritePoint> Points = new();  // GPS points, ascending, untyped
             public List<WritePoint> Marks = new();   // typed marks (from our own GPX waypoints)
             public bool HadUntimedPoints;
@@ -168,6 +173,9 @@ namespace HcWebApi.Endpoints
                 {
                     Activity? act = ParseActivity(entries[i].open(), entries[i].name);
                     ApplyCsvNotes(act, entries[i].name, csvNotes);
+                    // A Strava account archive (it carries activities.csv):
+                    // whatever recorded each activity, it came via Strava.
+                    if (act != null && csvNotes.Count > 0) act.Source = TrackSources.Strava;
                     await DecideAndImportAsync(log, tables, conn, job.HasherId, act, ar, single, replace: false, chosenEventId: null);
                 }
                 catch (Exception ex)
@@ -206,7 +214,12 @@ namespace HcWebApi.Endpoints
             if (index >= entries.Count) throw new InvalidOperationException("The file no longer holds that activity.");
 
             Activity? act = ParseActivity(entries[index].open(), entries[index].name);
-            if (kind == Kind.Zip) ApplyCsvNotes(act, entries[index].name, ReadArchiveNotes(stream));
+            if (kind == Kind.Zip)
+            {
+                Dictionary<string, CsvNotes> notes = ReadArchiveNotes(stream);
+                ApplyCsvNotes(act, entries[index].name, notes);
+                if (act != null && notes.Count > 0) act.Source = TrackSources.Strava;
+            }
             await DecideAndImportAsync(log, tables, conn, job.HasherId, act, ar, single: true, replace, chosenEventId: eventId);
             await UpdateAsync(conn, job.Id, Status.Done, kind, null, entries.Count, result);
             job.ResultJson = JsonConvert.SerializeObject(result);
@@ -224,6 +237,7 @@ namespace HcWebApi.Endpoints
             }
             ar.Format = act.Format;
             ar.Sport = act.Sport;
+            ar.Source = act.Source ?? TrackSources.File;
             if (act.Points.Count == 0)
             {
                 // Parsed fine, nothing to place: a FIT from a wearable without
@@ -330,7 +344,8 @@ namespace HcWebApi.Endpoints
             for (int i = 0; i < toWrite.Count; i += WriteChunk)
             {
                 List<WritePoint> chunk = toWrite.GetRange(i, Math.Min(WriteChunk, toWrite.Count - i));
-                PositionWriter.Outcome o = await PositionWriter.WriteAsync(tables, log, eventKey, userKey, chunk);
+                PositionWriter.Outcome o = await PositionWriter.WriteAsync(tables, log, eventKey, userKey, chunk,
+                    source: act.Source ?? TrackSources.File);
                 written += o.Stored;
             }
             ar.Points = written;
@@ -754,6 +769,7 @@ namespace HcWebApi.Endpoints
         public static Activity ParseGpx(XDocument doc, string name)
         {
             var act = new Activity { Name = name, Format = "gpx" };
+            act.Source = TrackSources.FromCreator(doc.Root?.Attribute("creator")?.Value);
             XElement? trk = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "trk");
             act.Sport = trk?.Elements().FirstOrDefault(e => e.Name.LocalName == "type")?.Value?.Trim();
             act.Title = trk?.Elements().FirstOrDefault(e => e.Name.LocalName == "name")?.Value?.Trim();
@@ -783,6 +799,9 @@ namespace HcWebApi.Endpoints
         public static Activity ParseTcx(XDocument doc, string name)
         {
             var act = new Activity { Name = name, Format = "tcx" };
+            XElement? creator = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Creator");
+            act.Source = TrackSources.FromCreator(
+                creator?.Elements().FirstOrDefault(e => e.Name.LocalName == "Name")?.Value);
             act.Sport = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Activity")?.Attribute("Sport")?.Value;
             foreach (XElement tp in doc.Descendants().Where(e => e.Name.LocalName == "Trackpoint"))
             {
@@ -873,7 +892,7 @@ namespace HcWebApi.Endpoints
                     break; // data before its definition: the file is not readable past here
                 }
                 int start = p;
-                uint? ts = null; int? lat = null, lng = null; double? alt = null; double? acc = null; int? sport = null;
+                uint? ts = null; int? lat = null, lng = null; double? alt = null; double? acc = null; int? sport = null; int? manufacturer = null;
                 foreach ((int num, int size, int baseType) in d.Fields)
                 {
                     if (p + size > end) { p = end; break; }
@@ -893,12 +912,19 @@ namespace HcWebApi.Endpoints
                     {
                         if (b[p] != 0xFF) sport = b[p];
                     }
+                    else if (d.Global == 0 && num == 1 && size == 2)
+                    {
+                        // file_id.manufacturer: who made the recording device.
+                        int v = ReadU16(b, p, d.BigEndian);
+                        if (v != 0xFFFF) manufacturer = v;
+                    }
                     p += size;
                 }
                 p += d.DevBytes;
                 if (p < start) p = start;
 
                 if (d.Global == 18 && sport.HasValue) act.Sport = FitSport(sport.Value);
+                if (d.Global == 0 && manufacturer.HasValue) act.Source ??= TrackSources.FromFitManufacturer(manufacturer.Value);
                 if (d.Global != 20) continue;
 
                 if (compressed)
