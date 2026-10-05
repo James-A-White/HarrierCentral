@@ -1,3 +1,10 @@
+## 3.1.9+1449 (2026-10-05)
+Dance baby! — all beta testers.
+### Fixes
+- **Photo review "Review all" works**: tapping it from a run's photos did nothing; it now opens every pending photo in the kennel, after saving the decisions made on the current run.
+### Improvements
+- **AI-imported runs warn before changes**: saving, changing the map or image, toggling visibility or deleting a run that was imported by AI from a kennel's website asks first — the change makes it a Harrier Central run and the AI stops updating it (a deleted one is not brought back).
+
 ## 3.1.9+1448 (2026-10-05)
 Dance baby! — all beta testers.
 ### Improvements

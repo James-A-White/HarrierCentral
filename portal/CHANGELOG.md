@@ -1,3 +1,8 @@
+## 2.0.87+742 (2026-10-05)
+### Improvements
+- **AI-imported runs warn before saving**: editing a run that was imported by AI from a kennel's runs page asks first, because saving makes it a Harrier Central run and the AI stops updating it from the website. Auto-save waits until you have confirmed.
+- **Usage Data**: the import tiles are a slim band (name and age on one line), so the grid above has more room; its rows keep a readable height and scroll when they do not all fit.
+
 ## 2.0.87+741 (2026-10-05)
 ### New Features
 - **Cost on the monitor**: Usage Data has an **AI Tokens** row (tokens used by AI imports; tap for every call with its cost) and an **Azure Cost** row (£ per complete day, week and month; tap to see which service changed). Both are green when lower.
