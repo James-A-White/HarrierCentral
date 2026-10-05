@@ -199,6 +199,7 @@ namespace HcWebApi.Endpoints
         private async Task<(JArray runs, int tokens)> ExtractAndResolveAsync(string cs, KennelRow k, string text)
         {
             (JArray runs, int tokens) = await ExtractRunsAsync(cs, k, text);
+            FixYears(runs, k.LocalToday);
             await ResolveMapsAsync(runs);
             await GeocodeAsync(cs, k, runs);
             return (runs, tokens);
@@ -469,7 +470,11 @@ namespace HcWebApi.Endpoints
 
             string user = $"Club: {k.Name} ({k.ShortName})\nClub's local today: {k.LocalToday}\n"
                 + (string.IsNullOrEmpty(k.City) ? "" : $"Club's city: {k.City}{(string.IsNullOrEmpty(k.Country) ? "" : ", " + k.Country)}\n")
-                + (k.LatestRunNumber.HasValue ? $"Latest run already known: #{k.LatestRunNumber} on {k.LatestRunDate}\n" : "")
+                // Only a RECENT latest run helps: an old one (STH3's last HC
+                // run was April 2024) pulled the model to the wrong year for a
+                // page that omits years, and every run was rejected (2026-10-05).
+                + (k.LatestRunNumber.HasValue && IsRecent(k.LatestRunDate, k.LocalToday)
+                    ? $"Latest run already known: #{k.LatestRunNumber} on {k.LatestRunDate}\n" : "")
                 + (string.IsNullOrEmpty(k.DefaultStart) ? "" : $"Usual start time: {k.DefaultStart}\n")
                 + "\nPAGE TEXT:\n" + text;
 
@@ -583,6 +588,36 @@ namespace HcWebApi.Endpoints
             if (why.Count == 0) return;
             _log.LogWarning("RunsPageImport: {Kennel} output suspect: {Why}", k.ShortName, string.Join("; ", why));
             await LogErrorAsync(cs, k, "output", string.Join("; ", why));
+        }
+
+        // ── Years ───────────────────────────────────────────────────────────
+
+        private static bool IsRecent(string? date, string today) =>
+            DateTime.TryParse(date, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime d)
+            && DateTime.TryParse(today, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime t)
+            && (t - d).TotalDays <= 183;
+
+        /// <summary>
+        /// A runs page lists upcoming runs and usually leaves the year off;
+        /// the model sometimes picks the wrong one (STH3 came back as 2024).
+        /// A date more than a year back or 18 months ahead is moved to the
+        /// same day and month on or after a month ago, in the club's time.
+        /// </summary>
+        private static void FixYears(JArray runs, string localToday)
+        {
+            if (!DateTime.TryParse(localToday, System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out DateTime today)) return;
+            DateTime from = today.AddDays(-31);
+            foreach (JObject r in runs.OfType<JObject>())
+            {
+                if (!DateTime.TryParseExact(r.Value<string>("date"), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out DateTime d)) continue;
+                if (d >= today.AddYears(-1) && d <= today.AddMonths(18)) continue;
+                if (d.Month == 2 && d.Day == 29) continue;
+                var fixedDate = new DateTime(from.Year, d.Month, d.Day);
+                if (fixedDate < from) fixedDate = fixedDate.AddYears(1);
+                r["date"] = fixedDate.ToString("yyyy-MM-dd");
+            }
         }
 
         // ── Addresses → coordinates (Azure Maps) ─────────────────────────

@@ -1,3 +1,8 @@
+1.0.61+79
+    • Runs page import: dates more than a year back / 18 months ahead are moved to the next
+      occurrence (pages omit the year; STH3 came back as 2024 and all 5 runs were rejected). The
+      'latest run known' hint is sent only when that run is recent.
+
 1.0.61+78
     • Runs page import: placeholder notes ('Hare needed', 'details to be announced', 'Location TBA',
       'On site') no longer count as a description; reads report runs skipped for having no
