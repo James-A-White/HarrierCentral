@@ -71,14 +71,15 @@ class FilterEventListItem extends StatelessWidget {
                       child: Stack(
                         children: <Widget>[
                           Image.asset(
-                            (event.eventInboundIntegrationId ?? 0) <= 2
-                                ? 'images/icons/integration_icon_${event.eventInboundIntegrationId}.png'
+                            _hasOwnIcon(event.eventInboundIntegrationId)
+                                ? 'images/icons/integration_icon_${event.eventInboundIntegrationId ?? 0}.png'
                                 : 'images/icons/integration_icon_x.png',
                             height: iconSize,
                             width: iconSize,
                           ),
-                          if ((event.eventInboundIntegrationId ?? 0) >
-                              2) ...<Widget>[
+                          if (!_hasOwnIcon(
+                            event.eventInboundIntegrationId,
+                          )) ...<Widget>[
                             Positioned(
                               left: 0,
                               right: 0,
@@ -276,3 +277,10 @@ class FilterEventListItem extends StatelessWidget {
     );
   }
 }
+
+/// Sources with their own artwork in `images/icons/integration_icon_<id>.png`:
+/// 0 Harrier Central (the foot), 1 Facebook, 2 Google Calendar, 6 a
+/// kennel's runs page read by AI (foot + sparkles, 2026-10-05). Any other
+/// source gets the generic foot with its name written over it.
+bool _hasOwnIcon(int? integrationId) =>
+    const <int>{0, 1, 2, 6}.contains(integrationId ?? 0);
