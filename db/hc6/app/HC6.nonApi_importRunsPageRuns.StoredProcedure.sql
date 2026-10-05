@@ -139,6 +139,21 @@ BEGIN TRY
         WHERE e.KennelId = @kennelId AND e.deleted = 0 AND e.EventNumber = r.EventNumber
           AND NOT (ISNULL(e.InboundIntegrationId, 0) = 6 AND e.EventFacebookId = r.ExtId));
 
+    -- A run this page brought in that someone then deleted in Harrier
+    -- Central (adopted first, so InboundIntegrationId 0) stays deleted: the
+    -- AI does not bring it back (2026-10-05). The cleanup of empty imports
+    -- leaves InboundIntegrationId 6, so those can return with details.
+    INSERT @out (EventNumber, Outcome)
+    SELECT r.EventNumber, N'deleted in Harrier Central' FROM #runs r
+    WHERE EXISTS (SELECT 1 FROM HC.Event e
+        WHERE e.KennelId = @kennelId AND e.deleted = 1 AND ISNULL(e.InboundIntegrationId, 0) = 0
+          AND e.EventFacebookId = r.ExtId);
+    SET @alreadyInHc += @@ROWCOUNT;
+    DELETE r FROM #runs r
+    WHERE EXISTS (SELECT 1 FROM HC.Event e
+        WHERE e.KennelId = @kennelId AND e.deleted = 1 AND ISNULL(e.InboundIntegrationId, 0) = 0
+          AND e.EventFacebookId = r.ExtId);
+
     -- New runs with nothing in them yet are skipped (a run this page
     -- already brought in keeps being refreshed, details or not).
     INSERT @out (EventNumber, Outcome)
