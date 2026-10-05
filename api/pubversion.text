@@ -1,3 +1,9 @@
+1.0.61+78
+    • Runs page import: placeholder notes ('Hare needed', 'details to be announced', 'Location TBA',
+      'On site') no longer count as a description; reads report runs skipped for having no
+      location or description (SP nonApi_importRunsPageRuns 'skipped'). Imported runs edited in a
+      Harrier Central editor are adopted (nonApi_adoptImportedRun) and left alone by the AI.
+
 1.0.61+77
     • Runs page import: run locations become map pins. The AI writes each start as a full search
       address (geoQuery, using the club's city/country); Azure Maps (harriercentral-maps,
