@@ -220,6 +220,12 @@ DECLARE @resultInt int;
         -- ============================================
         IF (@eventId IS NOT NULL)
         BEGIN
+                -- A run the AI imported from the kennel's runs page becomes
+                -- a Harrier Central run once edited here; the AI stops
+                -- updating it (James, 2026-10-05).
+                DECLARE @adoptedImport SMALLINT = 0;
+                EXEC HC6.nonApi_adoptImportedRun @eventId = @eventId, @adopted = @adoptedImport OUTPUT;
+
                 UPDATE HC.Event WITH (ROWLOCK)
                 SET
                         EventStartDatetime = COALESCE(@eventStartDatetime, EventStartDatetime),
@@ -293,6 +299,11 @@ DECLARE @resultInt int;
                         SELECT 0 AS Success, 'Concurrent modification detected - please refresh and try again' AS ErrorMessage;
                         RETURN;
                 END
+
+                -- An adopted import stays off the import, whatever the editor sent.
+                IF (@adoptedImport = 1)
+                        UPDATE HC.Event SET UseFbRunDetails = 0, UseFbLocation = 0, UseFbLatLon = 0, UseFbImage = 0
+                        WHERE id = @eventId;
 
                 -- Update HEM records if countryId changed
                 IF (@countryId IS NOT NULL)

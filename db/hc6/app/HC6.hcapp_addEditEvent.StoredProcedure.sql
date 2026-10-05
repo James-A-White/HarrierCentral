@@ -281,6 +281,11 @@ BEGIN TRY
         -- ---------------------------------------------------------------
         IF (@eventId IS NOT NULL AND EXISTS (SELECT 1 FROM HC.Event e WHERE e.id = @eventId AND e.KennelId = @kennelId))
         BEGIN
+            -- A run the AI imported from the kennel's runs page becomes a
+            -- Harrier Central run once edited here; the AI stops updating it
+            -- (James, 2026-10-05).
+            DECLARE @adoptedImport SMALLINT = 0;
+            EXEC HC6.nonApi_adoptImportedRun @eventId = @eventId, @adopted = @adoptedImport OUTPUT;
 
             UPDATE HC.Event SET
                 EventStartDatetime     = COALESCE(@startDatetime, EventStartDatetime, GETDATE()),
@@ -336,6 +341,13 @@ BEGIN TRY
                 Hares                  = CASE WHEN @hares = '<remove>' THEN NULL ELSE COALESCE(@hares, Hares) END,
                 updatedAt              = GETDATE()
             WHERE id = @eventId AND KennelId = @kennelId;
+
+            -- An adopted import stays off the import, whatever the editor sent.
+            IF (@adoptedImport = 1)
+                UPDATE HC.Event SET UseFbRunDetails = 0, UseFbLocation = 0, UseFbLatLon = 0, UseFbImage = 0,
+                    EventGeolocation = CASE WHEN Latitude IS NOT NULL AND Longitude IS NOT NULL
+                                            THEN geography::Point(Latitude, Longitude, 4326) END
+                WHERE id = @eventId;
 
         END
         ELSE

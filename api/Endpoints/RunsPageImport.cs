@@ -237,6 +237,7 @@ namespace HcWebApi.Endpoints
             + $"{r.Inserted} new, {r.Updated} updated, {r.Unchanged} unchanged"
             + (r.AlreadyInHc > 0 ? $", {r.AlreadyInHc} already in Harrier Central" : "")
             + (r.Rejected > 0 ? $", {r.Rejected} unreadable" : "")
+            + (r.Skipped > 0 ? $", {r.Skipped} skipped (no location or description yet)" : "")
             + $" ({tokens:N0} model tokens)";
 
         // ── The portal's Test button ────────────────────────────────────────
@@ -325,7 +326,7 @@ namespace HcWebApi.Endpoints
                     ["counts"] = new JObject
                     {
                         ["inserted"] = res.Inserted, ["updated"] = res.Updated, ["unchanged"] = res.Unchanged,
-                        ["alreadyInHc"] = res.AlreadyInHc, ["rejected"] = res.Rejected,
+                        ["alreadyInHc"] = res.AlreadyInHc, ["rejected"] = res.Rejected, ["skipped"] = res.Skipped,
                     },
                     ["runs"] = runs,
                 };
@@ -432,7 +433,8 @@ namespace HcWebApi.Endpoints
             + "or the station name with 'station', then the suburb/town and the club's city and country (given) when the page "
             + "leaves them out. Never invent a street or postcode. null when the start is unknown, TBA or TBC.\n"
             + "- onOn: where the pack goes afterwards (On On / On Inn / pub); null if none.\n"
-            + "- notes: anything else about that run worth keeping (a different weekday, a special arrangement); null if nothing.\n"
+            + "- notes: anything else about that run worth keeping (a different weekday, an earlier start, a special arrangement); "
+            + "null if nothing. Never placeholders such as 'hare needed', 'TBA', 'details to be announced' or 'location TBA'.\n"
             + "- special: true for a joint run, AGM, Christmas or other holiday run, birthday or anniversary run, themed or "
             + "fancy-dress run, away weekend, camping weekend, milestone run number (e.g. 3100); otherwise false. "
             + "A regular seasonal series (e.g. every summer run, 'Yippee Bush') is not special by itself.\n"
@@ -713,11 +715,27 @@ namespace HcWebApi.Endpoints
             return CoordsFromUrl(current);
         }
 
+        // A fragment that says nothing yet: "Hare needed", "Travel details
+        // are yet to be announced", "Location TBA", "On site". Such notes
+        // must not make an empty run look described (James, 2026-10-05).
+        private static readonly Regex Placeholder = new(
+            @"^\s*(hares?\s+(needed|required|wanted)\b.*|.*\b(tba|tbc|tbd)\b.*|.*\bto be (announced|confirmed|arranged)\b.*"
+            + @"|.*\bcontact the hare\s*raiser\b.*|on\s*site|location (unknown|not yet known)|details (to follow|soon)|none|n/?a)\s*[.!]?\s*$",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static string? WithoutPlaceholders(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            var keep = text.Split(new[] { ';', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim()).Where(p => p.Length > 0 && !Placeholder.IsMatch(p)).ToList();
+            return keep.Count == 0 ? null : string.Join("; ", keep);
+        }
+
         private static string? Description(JToken r)
         {
             var parts = new List<string>();
-            string? notes = r.Value<string>("notes");
-            string? onOn = r.Value<string>("onOn");
+            string? notes = WithoutPlaceholders(r.Value<string>("notes"));
+            string? onOn = WithoutPlaceholders(r.Value<string>("onOn"));
             if (!string.IsNullOrWhiteSpace(notes)) parts.Add(notes.Trim());
             if (!string.IsNullOrWhiteSpace(onOn)) parts.Add($"On On: {onOn.Trim()}");
             return parts.Count == 0 ? null : string.Join("\n", parts);
@@ -753,7 +771,7 @@ namespace HcWebApi.Endpoints
         }
 
         private sealed record ImportResult(int Inserted, int Updated, int Unchanged, int AlreadyInHc, int Rejected,
-            Dictionary<int, string> Outcomes);
+            Dictionary<int, string> Outcomes, int Skipped = 0);
 
         private static async Task<ImportResult> ImportAsync(string cs, Guid kennelId, string json, bool dryRun)
         {
@@ -770,8 +788,12 @@ namespace HcWebApi.Endpoints
             cmd.Parameters.Add("@runsJson", SqlDbType.NVarChar, -1).Value = json;
             cmd.Parameters.Add("@dryRun", SqlDbType.SmallInt).Value = dryRun ? 1 : 0;
             using SqlDataReader r = await cmd.ExecuteReaderAsync();
-            int a = 0, b = 0, c = 0, d = 0, e = 0;
-            if (await r.ReadAsync()) { a = r.GetInt32(0); b = r.GetInt32(1); c = r.GetInt32(2); d = r.GetInt32(3); e = r.GetInt32(4); }
+            int a = 0, b = 0, c = 0, d = 0, e = 0, f = 0;
+            if (await r.ReadAsync())
+            {
+                a = r.GetInt32(0); b = r.GetInt32(1); c = r.GetInt32(2); d = r.GetInt32(3); e = r.GetInt32(4);
+                if (r.FieldCount > 5) f = r.GetInt32(5);   // skipped (SP build 37+)
+            }
             var outcomes = new Dictionary<int, string>();
             if (await r.NextResultAsync())
             {
@@ -781,7 +803,7 @@ namespace HcWebApi.Endpoints
                     outcomes[Convert.ToInt32(r["EventNumber"])] = r["Outcome"].ToString() ?? "";
                 }
             }
-            return new ImportResult(a, b, c, d, e, outcomes);
+            return new ImportResult(a, b, c, d, e, outcomes, f);
         }
 
         private static async Task SetStateAsync(string cs, Guid kennelId, string? hash, bool changed, string? status)

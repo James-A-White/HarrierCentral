@@ -32,7 +32,8 @@ AS
 --               "title":"Joint run","hares":"…","start":"Corunna Rd, Eastwood",
 --               "lat":-33.78,"lon":151.09,"mapUrl":"https://…",
 --               "description":"…","special":1}]}
--- Returns: rowset 0 — { inserted, updated, unchanged, alreadyInHc, rejected }
+-- Returns: rowset 0 — { inserted, updated, unchanged, alreadyInHc, rejected,
+--   skipped (new runs with no start, description or theme; 2026-10-05) }
 --          rowset 1 — { EventNumber, Outcome } per run: new | update |
 --          unchanged | already in Harrier Central | unreadable
 --   @dryRun = 1 (the portal's Test button, 2026-10-04) does everything
@@ -50,7 +51,7 @@ DECLARE @out TABLE (EventNumber INT NULL, Outcome NVARCHAR(40));
 BEGIN TRY
     IF (@kennelId IS NULL OR ISJSON(@runsJson) <> 1)
     BEGIN
-        SELECT 0 AS inserted, 0 AS updated, 0 AS unchanged, 0 AS alreadyInHc, 0 AS rejected;
+        SELECT 0 AS inserted, 0 AS updated, 0 AS unchanged, 0 AS alreadyInHc, 0 AS rejected, 0 AS skipped;
         SELECT EventNumber, Outcome FROM @out;
         RETURN;
     END
@@ -68,9 +69,10 @@ BEGIN TRY
         EventNumber INT, ExtId NVARCHAR(250), StartDt DATETIMEOFFSET,
         Name NVARCHAR(250), Hares NVARCHAR(2500), Place NVARCHAR(250),
         Lat DECIMAL(18, 15), Lon DECIMAL(19, 15), MapUrl NVARCHAR(500),
-        Descr NVARCHAR(4000), Special SMALLINT, NewId UNIQUEIDENTIFIER);
+        Descr NVARCHAR(4000), Special SMALLINT, NewId UNIQUEIDENTIFIER,
+        HasDetail SMALLINT NOT NULL DEFAULT 0);
 
-    INSERT #runs (EventNumber, ExtId, StartDt, Name, Hares, Place, Lat, Lon, MapUrl, Descr, Special)
+    INSERT #runs (EventNumber, ExtId, StartDt, Name, Hares, Place, Lat, Lon, MapUrl, Descr, Special, HasDetail)
     SELECT j.number,
            CONCAT(N'runspage:', j.number),
            TRY_CAST(CONCAT(j.runDate, N' ',
@@ -91,7 +93,17 @@ BEGIN TRY
            CASE WHEN ABS(j.lat) <= 90 AND ABS(j.lon) <= 180 AND NOT (j.lat = 0 AND j.lon = 0) THEN j.lon END,
            LEFT(NULLIF(j.mapUrl, N''), 500),
            LEFT(NULLIF(j.description, N''), 4000),
-           CASE WHEN j.special = 1 THEN 1 ELSE 0 END
+           CASE WHEN j.special = 1 THEN 1 ELSE 0 END,
+           -- Worth importing? A known start (pinned or not), a description
+           -- (notes / On On) or a theme title. A run that is only a number,
+           -- a date and perhaps a hare is skipped until the page fills it in
+           -- (James, 2026-10-05: "If the run is largely empty you can
+           -- ignore it").
+           CASE WHEN NULLIF(LTRIM(j.start), N'') IS NOT NULL
+                  OR NULLIF(LTRIM(j.description), N'') IS NOT NULL
+                  OR NULLIF(LTRIM(j.title), N'') IS NOT NULL
+                  OR j.mapUrl LIKE N'http%'
+                THEN 1 ELSE 0 END
     FROM OPENJSON(@runsJson, '$.runs') WITH (
         number INT '$.number', runDate NVARCHAR(10) '$.date', runTime NVARCHAR(5) '$.time',
         title NVARCHAR(500) '$.title', hares NVARCHAR(4000) '$.hares', start NVARCHAR(500) '$.start',
@@ -126,6 +138,17 @@ BEGIN TRY
         SELECT 1 FROM HC.Event e
         WHERE e.KennelId = @kennelId AND e.deleted = 0 AND e.EventNumber = r.EventNumber
           AND NOT (ISNULL(e.InboundIntegrationId, 0) = 6 AND e.EventFacebookId = r.ExtId));
+
+    -- New runs with nothing in them yet are skipped (a run this page
+    -- already brought in keeps being refreshed, details or not).
+    INSERT @out (EventNumber, Outcome)
+    SELECT r.EventNumber, N'skipped - no location or description yet' FROM #runs r
+    WHERE r.HasDetail = 0 AND NOT EXISTS (SELECT 1 FROM HC.Event e
+        WHERE e.KennelId = @kennelId AND e.InboundIntegrationId = 6 AND e.EventFacebookId = r.ExtId AND e.deleted = 0);
+    DECLARE @skipped INT = @@ROWCOUNT;
+    DELETE r FROM #runs r
+    WHERE r.HasDetail = 0 AND NOT EXISTS (SELECT 1 FROM HC.Event e
+        WHERE e.KennelId = @kennelId AND e.InboundIntegrationId = 6 AND e.EventFacebookId = r.ExtId AND e.deleted = 0);
 
     BEGIN TRANSACTION;
     -- A savepoint, so a dry run undoes only its own work even when called
@@ -214,7 +237,7 @@ BEGIN TRY
     COMMIT TRANSACTION;
 
     SELECT @inserted AS inserted, @updated AS updated, @matched - @updated AS unchanged,
-           @alreadyInHc AS alreadyInHc, @rejected AS rejected;
+           @alreadyInHc AS alreadyInHc, @rejected AS rejected, @skipped AS skipped;
     SELECT EventNumber, Outcome FROM @out ORDER BY EventNumber;
 END TRY
 BEGIN CATCH
