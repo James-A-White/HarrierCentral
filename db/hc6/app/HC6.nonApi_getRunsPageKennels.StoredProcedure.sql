@@ -11,7 +11,7 @@ AS
 --   read against it) and its latest run, default start time and time zone.
 -- Returns: rowset 0 — { KennelId, KennelName, KennelShortName, RunsPageUrl,
 --   RunsPageHash, LocalToday, TimeZoneName, LatestRunNumber, LatestRunDate,
---   DefaultStartTime }
+--   DefaultStartTime, CityName, CountryName, AnchorLat, AnchorLon }
 -- Author: Harrier Central
 -- Created: 2026-10-04
 -- =====================================================================
@@ -31,9 +31,18 @@ BEGIN TRY
             CONVERT(NVARCHAR(10), last.EventStartLocal, 23) AS LatestRunDate,
             -- DefaultRunStartTime smuggles a day-of-week in its fractional
             -- seconds (reference_default_run_start_time_hack): hh:mm only.
-            CONVERT(NVARCHAR(5), k.DefaultRunStartTime, 108) AS DefaultStartTime
+            CONVERT(NVARCHAR(5), k.DefaultRunStartTime, 108) AS DefaultStartTime,
+            -- Where the club is (2026-10-05): the AI writes each run's start
+            -- as a full search address using the city and country when the
+            -- page leaves them out, and a geocoded point is accepted only
+            -- near the anchor (the kennel's own point, else its city's).
+            c.CityName                                    AS CityName,
+            co.CountryName                                AS CountryName,
+            CAST(COALESCE(k.Latitude, c.Latitude) AS FLOAT)   AS AnchorLat,
+            CAST(COALESCE(k.Longitude, c.Longitude) AS FLOAT) AS AnchorLon
     FROM HC.Kennel k
     LEFT JOIN HC.City c ON c.id = k.CityId
+    LEFT JOIN HC.Country co ON co.id = k.CountryId
     LEFT JOIN DomainValues.Timezone tz ON tz.id = c.TimezoneId
     OUTER APPLY (
         SELECT TOP 1 e.EventNumber, e.EventStartLocal

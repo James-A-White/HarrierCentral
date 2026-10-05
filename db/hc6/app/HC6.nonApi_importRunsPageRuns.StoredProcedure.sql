@@ -76,8 +76,16 @@ BEGIN TRY
            TRY_CAST(CONCAT(j.runDate, N' ',
                 COALESCE(CASE WHEN j.runTime LIKE N'[0-2][0-9]:[0-5][0-9]' THEN j.runTime END,
                          @defaultTime, N'19:00'), N':00 +00:00') AS DATETIMEOFFSET),
-           LEFT(COALESCE(NULLIF(LTRIM(j.title), N''), NULLIF(LTRIM(j.start), N''), CONCAT(N'Run ', j.number)), 250),
-           LEFT(NULLIF(LTRIM(j.hares), N''), 2500),
+           -- No title = "Run N", never the start: a start is often a full
+           -- address ("The Red Lion, 92-94 Linkfield Road, Isleworth…") and
+           -- it shows on its own line anyway (James, 2026-10-05).
+           LEFT(COALESCE(NULLIF(LTRIM(j.title), N''), CONCAT(N'Run ', j.number)), 250),
+           -- A placeholder is not a hare: "Hare needed - contact the
+           -- Hareraiser", "TBA", "TBC" become no hares (2026-10-05).
+           CASE WHEN j.hares LIKE N'%hare%needed%' OR j.hares LIKE N'%hare%wanted%'
+                  OR j.hares LIKE N'%hares%required%' OR j.hares LIKE N'%volunteer%'
+                  OR LTRIM(RTRIM(j.hares)) IN (N'TBA', N'TBC', N'TBD', N'?', N'-')
+                THEN NULL ELSE LEFT(NULLIF(LTRIM(j.hares), N''), 2500) END,
            LEFT(NULLIF(LTRIM(j.start), N''), 250),
            CASE WHEN ABS(j.lat) <= 90 AND ABS(j.lon) <= 180 AND NOT (j.lat = 0 AND j.lon = 0) THEN j.lat END,
            CASE WHEN ABS(j.lat) <= 90 AND ABS(j.lon) <= 180 AND NOT (j.lat = 0 AND j.lon = 0) THEN j.lon END,

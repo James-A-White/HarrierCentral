@@ -200,6 +200,7 @@ namespace HcWebApi.Endpoints
         {
             (JArray runs, int tokens) = await ExtractRunsAsync(cs, k, text);
             await ResolveMapsAsync(runs);
+            await GeocodeAsync(cs, k, runs);
             return (runs, tokens);
         }
 
@@ -423,10 +424,13 @@ namespace HcWebApi.Endpoints
             + "local today (given), preferring upcoming dates; runs on such pages are almost always within a few months of today.\n"
             + "- time: 24-hour HH:mm, or null if the page does not give one.\n"
             + "- title: a short theme or note only (e.g. 'Joint run', 'Christmas run', 'Summer run - Yippee Bush'); null for an ordinary run. Never the location.\n"
-            + "- hares: as written; null if none.\n"
+            + "- hares: as written; null if none, and null when the page only says a hare is needed or wanted, TBA or TBC.\n"
             + "- start: the start location as written; null if blank or 'TBC'.\n"
             + "- mapUrl: the [url] given next to that run's map link; null if none. If a run's start is blank but it has a map link "
             + "identical to another run's, it is a leftover copy: use null.\n"
+            + "- geoQuery: the start written as a full search address for a map lookup: venue name, street and postcode if given, "
+            + "or the station name with 'station', then the suburb/town and the club's city and country (given) when the page "
+            + "leaves them out. Never invent a street or postcode. null when the start is unknown, TBA or TBC.\n"
             + "- onOn: where the pack goes afterwards (On On / On Inn / pub); null if none.\n"
             + "- notes: anything else about that run worth keeping (a different weekday, a special arrangement); null if nothing.\n"
             + "- special: true for a joint run, AGM, Christmas or other holiday run, birthday or anniversary run, themed or "
@@ -439,7 +443,7 @@ namespace HcWebApi.Endpoints
           ""type"": ""object"", ""additionalProperties"": false, ""required"": [""runs""],
           ""properties"": { ""runs"": { ""type"": ""array"", ""items"": {
             ""type"": ""object"", ""additionalProperties"": false,
-            ""required"": [""number"",""date"",""time"",""title"",""hares"",""start"",""mapUrl"",""onOn"",""notes"",""special""],
+            ""required"": [""number"",""date"",""time"",""title"",""hares"",""start"",""geoQuery"",""mapUrl"",""onOn"",""notes"",""special""],
             ""properties"": {
               ""number"": { ""type"": [""integer"",""null""] },
               ""date"":   { ""type"": [""string"",""null""] },
@@ -447,6 +451,7 @@ namespace HcWebApi.Endpoints
               ""title"":  { ""type"": [""string"",""null""] },
               ""hares"":  { ""type"": [""string"",""null""] },
               ""start"":  { ""type"": [""string"",""null""] },
+              ""geoQuery"": { ""type"": [""string"",""null""] },
               ""mapUrl"": { ""type"": [""string"",""null""] },
               ""onOn"":   { ""type"": [""string"",""null""] },
               ""notes"":  { ""type"": [""string"",""null""] },
@@ -461,6 +466,7 @@ namespace HcWebApi.Endpoints
                 throw new StageException("config", "AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY are not set on the Function App");
 
             string user = $"Club: {k.Name} ({k.ShortName})\nClub's local today: {k.LocalToday}\n"
+                + (string.IsNullOrEmpty(k.City) ? "" : $"Club's city: {k.City}{(string.IsNullOrEmpty(k.Country) ? "" : ", " + k.Country)}\n")
                 + (k.LatestRunNumber.HasValue ? $"Latest run already known: #{k.LatestRunNumber} on {k.LatestRunDate}\n" : "")
                 + (string.IsNullOrEmpty(k.DefaultStart) ? "" : $"Usual start time: {k.DefaultStart}\n")
                 + "\nPAGE TEXT:\n" + text;
@@ -577,6 +583,73 @@ namespace HcWebApi.Endpoints
             await LogErrorAsync(cs, k, "output", string.Join("; ", why));
         }
 
+        // ── Addresses → coordinates (Azure Maps) ─────────────────────────
+
+        // A geocoded point is kept only when it is precise and near the club:
+        // High confidence (an address, station, park), or Medium on a full
+        // postcode; and within this distance of the kennel's anchor. A
+        // suburb's centre is rejected — no pin beats a wrong pin.
+        private const double MaxKmFromAnchor = 60;
+
+        /// <summary>
+        /// For each run still without coordinates after its map link, look up
+        /// the AI's geoQuery with Azure Maps (account harriercentral-maps,
+        /// setting AZURE_MAPS_KEY; free to 5,000 lookups a month). Missing
+        /// key = skipped. Never throws: a failed lookup leaves the run unpinned.
+        /// </summary>
+        private async Task GeocodeAsync(string cs, KennelRow k, JArray runs)
+        {
+            string key = Environment.GetEnvironmentVariable("AZURE_MAPS_KEY") ?? "";
+            if (key.Length == 0) return;
+            int tried = 0, placed = 0, failed = 0;
+            foreach (JObject r in runs.OfType<JObject>())
+            {
+                if (r["lat"] != null && r["lat"]!.Type != JTokenType.Null) continue;
+                string q = (r.Value<string>("geoQuery") ?? "").Trim();
+                if (q.Length < 4) continue;
+                tried++;
+                try
+                {
+                    string url = "https://atlas.microsoft.com/geocode?api-version=2023-06-01&top=1"
+                        + "&query=" + Uri.EscapeDataString(q)
+                        + (k.AnchorLat.HasValue && k.AnchorLon.HasValue
+                            ? "&coordinates=" + k.AnchorLon.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                              + "," + k.AnchorLat.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                            : "")
+                        + "&subscription-key=" + Uri.EscapeDataString(key);
+                    using var res = await Http.GetAsync(url);
+                    if (!res.IsSuccessStatusCode) { failed++; continue; }
+                    JObject d = JObject.Parse(await res.Content.ReadAsStringAsync());
+                    JToken? f = d["features"]?.FirstOrDefault();
+                    if (f == null) continue;
+                    string conf = f.SelectToken("properties.confidence")?.ToString() ?? "";
+                    string type = f.SelectToken("properties.type")?.ToString() ?? "";
+                    bool precise = conf == "High" || (conf == "Medium" && type.StartsWith("Postcode", StringComparison.OrdinalIgnoreCase));
+                    if (!precise) continue;
+                    double lon = f.SelectToken("geometry.coordinates[0]")!.Value<double>();
+                    double lat = f.SelectToken("geometry.coordinates[1]")!.Value<double>();
+                    if (k.AnchorLat.HasValue && k.AnchorLon.HasValue
+                        && DistanceKm(k.AnchorLat.Value, k.AnchorLon.Value, lat, lon) > MaxKmFromAnchor) continue;
+                    r["lat"] = Math.Round(lat, 6);
+                    r["lon"] = Math.Round(lon, 6);
+                    placed++;
+                }
+                catch { failed++; }
+            }
+            if (tried > 0)
+                _log.LogInformation("RunsPageImport: {Kennel} geocoded {Placed}/{Tried} ({Failed} failed)", k.ShortName, placed, tried, failed);
+            if (failed > 0 && failed * 2 >= tried)
+                await LogErrorAsync(cs, k, "geocode", $"{failed} of {tried} Azure Maps lookups failed");
+        }
+
+        private static double DistanceKm(double lat1, double lon1, double lat2, double lon2)
+        {
+            double r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLon = (lon2 - lon1) * r;
+            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+                + Math.Cos(lat1 * r) * Math.Cos(lat2 * r) * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            return 6371 * 2 * Math.Asin(Math.Min(1, Math.Sqrt(a)));
+        }
+
         // ── Map links → coordinates ─────────────────────────────────────────
 
         private static readonly Regex[] CoordPatterns =
@@ -653,7 +726,8 @@ namespace HcWebApi.Endpoints
         // ── SQL ─────────────────────────────────────────────────────────────
 
         private sealed record KennelRow(Guid KennelId, string Name, string ShortName, string Url, string? Hash,
-            string LocalToday, int? LatestRunNumber, string? LatestRunDate, string? DefaultStart);
+            string LocalToday, int? LatestRunNumber, string? LatestRunDate, string? DefaultStart,
+            string? City = null, string? Country = null, double? AnchorLat = null, double? AnchorLon = null);
 
         private static async Task<List<KennelRow>> LoadKennelsAsync(string cs, Guid? onlyKennel)
         {
@@ -670,7 +744,10 @@ namespace HcWebApi.Endpoints
                     Guid.Parse(S("KennelId")!), S("KennelName") ?? "", S("KennelShortName") ?? "", S("RunsPageUrl")!,
                     S("RunsPageHash")?.Trim(), S("LocalToday") ?? DateTime.UtcNow.ToString("yyyy-MM-dd"),
                     r["LatestRunNumber"] is DBNull ? null : Convert.ToInt32(r["LatestRunNumber"]),
-                    S("LatestRunDate"), S("DefaultStartTime")));
+                    S("LatestRunDate"), S("DefaultStartTime"),
+                    S("CityName"), S("CountryName"),
+                    r["AnchorLat"] is DBNull ? null : Convert.ToDouble(r["AnchorLat"]),
+                    r["AnchorLon"] is DBNull ? null : Convert.ToDouble(r["AnchorLon"])));
             }
             return list;
         }

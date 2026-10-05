@@ -1,3 +1,10 @@
+1.0.61+77
+    • Runs page import: run locations become map pins. The AI writes each start as a full search
+      address (geoQuery, using the club's city/country); Azure Maps (harriercentral-maps,
+      AZURE_MAPS_KEY) geocodes runs without a map link. Kept only when precise (High, or Medium on
+      a full postcode) and within 60 km of the kennel's city; a suburb centre is rejected.
+    • "Hare needed" / TBA / TBC are no longer saved as hares.
+
 1.0.61+76
     • HcExternalDataIntegration runs only the methods it implements (GenericJsonQuery,
       IntFacebook): it no longer writes an unfinished job row for integration 6 (RunsPageImport,
