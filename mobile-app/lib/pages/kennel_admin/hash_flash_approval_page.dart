@@ -755,6 +755,11 @@ class PhotoReviewController extends GetxController {
     }
   }
 
+  /// Sends any queued decisions now (before leaving for another view).
+  Future<void> flushQueueNow() async {
+    if (_queue.isNotEmpty) await _flushQueue();
+  }
+
   /// Called by PopScope — flushes pending queue then pops the route.
   Future<void> flushAndPop() async {
     if (_queue.isNotEmpty) await _flushQueue();
@@ -1179,17 +1184,28 @@ class _OtherRunsPendingBanner extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () => Get.to<void>(
-                () => PhotoReviewPage(
-                  kennelId: page.kennelId,
-                  eventId: '',
-                  eventName: '',
-                  eventNumber: null,
-                  kennelSlug: page.kennelSlug,
-                  kennelLogoUrl: page.kennelLogoUrl,
-                  kennelShortName: page.kennelShortName,
-                ),
-              ),
+              onPressed: () async {
+                // Send this run's decisions first, so the kennel-wide list
+                // does not offer photos just reviewed here.
+                await page.controller.flushQueueNow();
+                // preventDuplicates: false — this page IS a PhotoReviewPage,
+                // and GetX names both routes '/PhotoReviewPage', so by
+                // default it silently drops the push: "Review all" did
+                // nothing when the page was opened from run details
+                // (Kilty, 2026-10-05).
+                await Get.to<void>(
+                  () => PhotoReviewPage(
+                    kennelId: page.kennelId,
+                    eventId: '',
+                    eventName: '',
+                    eventNumber: null,
+                    kennelSlug: page.kennelSlug,
+                    kennelLogoUrl: page.kennelLogoUrl,
+                    kennelShortName: page.kennelShortName,
+                  ),
+                  preventDuplicates: false,
+                );
+              },
               child: const Text('Review all', textAlign: TextAlign.center),
             ),
           ],
