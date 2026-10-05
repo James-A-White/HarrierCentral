@@ -180,6 +180,7 @@ export 'package:harrier_central/database/tables.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_page.dart';
 export 'package:harrier_central/services/deep_link/deep_link_service.dart';
 export 'package:harrier_central/util/link_text.dart';
+export 'package:harrier_central/util/ai_run_guard.dart';
 export 'package:harrier_central/util/run_announcement.dart';
 export 'package:harrier_central/widgets/messaging_platform_glyph.dart';
 export 'package:harrier_central/widgets/pin_glyph.dart';

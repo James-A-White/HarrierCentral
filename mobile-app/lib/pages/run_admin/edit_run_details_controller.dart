@@ -399,6 +399,16 @@ class EditRunDetailsController extends GetxController
     // Other tab happens to be built.
     otherDetailsFormKey.currentState?.validate();
 
+    // An AI-imported run stops syncing with the kennel's website once saved
+    // here — ask first (AiRunGuard).
+    if (!isNewRun &&
+        !await AiRunGuard.confirmEdit(
+          eventId: eventAggregate.event.eventId,
+          inboundIntegrationId: eventAggregate.event.eventInboundIntegrationId,
+        )) {
+      return false;
+    }
+
     FocusManager.instance.primaryFocus?.unfocus();
     mutate(() {
       isUpdating.value = true;
@@ -670,6 +680,12 @@ class EditRunDetailsController extends GetxController
   }
 
   Future<void> useExternalSourceDetails() async {
+    if (!await AiRunGuard.confirmEdit(
+      eventId: eventAggregate.event.eventId,
+      inboundIntegrationId: eventAggregate.event.eventInboundIntegrationId,
+    )) {
+      return;
+    }
     mutate(() {
       isUpdating.value = true;
     });

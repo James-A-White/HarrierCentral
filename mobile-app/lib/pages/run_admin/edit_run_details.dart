@@ -866,6 +866,16 @@ class EditRunDetailsPage extends StatelessWidget {
                         return;
                       }
 
+                      // AI-imported runs stop syncing once edited here (AiRunGuard).
+                      if (!await AiRunGuard.confirmEdit(
+                        eventId: c.eventAggregate.event.eventId,
+                        inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                      )) {
+                        c.mutate(() {
+                          c.isUpdating.value = false;
+                        });
+                        return;
+                      }
                       final EventsService nSvc = EventsService();
                       final String eventId = await nSvc.addEditEvent(
                         eventId: c.eventAggregate.event.eventId,
@@ -943,6 +953,16 @@ class EditRunDetailsPage extends StatelessWidget {
                       c.mutate(() {
                         c.isUpdating.value = true;
                       });
+                      // AI-imported runs stop syncing once edited here (AiRunGuard).
+                      if (!await AiRunGuard.confirmEdit(
+                        eventId: c.eventAggregate.event.eventId,
+                        inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                      )) {
+                        c.mutate(() {
+                          c.isUpdating.value = false;
+                        });
+                        return;
+                      }
                       final EventsService nSvc = EventsService();
                       final String eventId = await nSvc.addEditEvent(
                         eventId: c.eventAggregate.event.eventId,
@@ -1097,6 +1117,17 @@ class EditRunDetailsPage extends StatelessWidget {
                                         c.mutate(() {
                                           c.isUpdating.value = true;
                                         });
+                                        // AI-imported runs stop syncing once edited here (AiRunGuard).
+                                        if (!await AiRunGuard.confirmEdit(
+                                          eventId: c.eventAggregate.event.eventId,
+                                          inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                                          deleting: true,
+                                        )) {
+                                          c.mutate(() {
+                                            c.isUpdating.value = false;
+                                          });
+                                          return;
+                                        }
                                         final EventsService nSvc =
                                             EventsService();
                                         final String
@@ -1152,6 +1183,16 @@ class EditRunDetailsPage extends StatelessWidget {
                                           c.mutate(() {
                                             c.isUpdating.value = true;
                                           });
+                                          // AI-imported runs stop syncing once edited here (AiRunGuard).
+                                          if (!await AiRunGuard.confirmEdit(
+                                            eventId: c.eventAggregate.event.eventId,
+                                            inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                                          )) {
+                                            c.mutate(() {
+                                              c.isUpdating.value = false;
+                                            });
+                                            return;
+                                          }
                                           final EventsService nSvc =
                                               EventsService();
                                           final String eventId = await nSvc
@@ -1485,6 +1526,16 @@ class EditRunDetailsPage extends StatelessWidget {
                                 c.mutate(() {
                                   c.isUpdating.value = true;
                                 });
+                                // AI-imported runs stop syncing once edited here (AiRunGuard).
+                                if (!await AiRunGuard.confirmEdit(
+                                  eventId: c.eventAggregate.event.eventId,
+                                  inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                                )) {
+                                  c.mutate(() {
+                                    c.isUpdating.value = false;
+                                  });
+                                  return;
+                                }
                                 final EventsService nSvc = EventsService();
                                 //check to see if "no location" is set. If so, don't overwrite it
                                 if ((c.mapCenter.latitude != CLEAR_LATLONG) &&
@@ -1566,6 +1617,16 @@ class EditRunDetailsPage extends StatelessWidget {
                                 c.mutate(() {
                                   c.isUpdating.value = true;
                                 });
+                                // AI-imported runs stop syncing once edited here (AiRunGuard).
+                                if (!await AiRunGuard.confirmEdit(
+                                  eventId: c.eventAggregate.event.eventId,
+                                  inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                                )) {
+                                  c.mutate(() {
+                                    c.isUpdating.value = false;
+                                  });
+                                  return;
+                                }
                                 final EventsService nSvc = EventsService();
                                 final String eventId = await nSvc
                                     .addEditEvent(

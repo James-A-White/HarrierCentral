@@ -218,6 +218,18 @@ class FilterEventsController extends GetxController {
     int? asboluteEventNumber,
     String? kennelId,
   }) async {
+    // An AI-imported run stops syncing with the kennel's website once edited
+    // here (AiRunGuard).
+    final LiteEventModel? listed = calendarEvents.values
+        .expand((List<LiteEventModel> day) => day)
+        .where((LiteEventModel e) => e.eventId == eventId)
+        .firstOrNull;
+    if (!await AiRunGuard.confirmEdit(
+      eventId: eventId,
+      inboundIntegrationId: listed?.eventInboundIntegrationId,
+    )) {
+      return;
+    }
     await database.transaction<dynamic>((Transaction txn) async {
       final int flag =
           isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
