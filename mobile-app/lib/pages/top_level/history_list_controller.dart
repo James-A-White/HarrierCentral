@@ -73,7 +73,7 @@ class HistoryListController extends GetxController
   Future<void> loadCoRunners({bool force = false}) async {
     if (coRunnersLoading.value || (_coRunnersFetched && !force)) return;
     if (coRunners.isEmpty) {
-      coRunners.assignAll(HasherDirectoryService.cachedCoRunners());
+      coRunners.assignAll(byRunsTogether(HasherDirectoryService.cachedCoRunners()));
     }
     coRunnersLoading.value = true;
     final List<HasherSummary>? fresh =
@@ -86,8 +86,17 @@ class HistoryListController extends GetxController
     }
     _coRunnersFetched = true;
     coRunnersFailed.value = false;
-    coRunners.assignAll(fresh);
+    coRunners.assignAll(byRunsTogether(fresh));
   }
+
+  /// Most runs together first; within the same count, display name A–Z
+  /// (ignoring case) — James, 2026-10-05. Pure, so it is unit-tested.
+  static List<HasherSummary> byRunsTogether(Iterable<HasherSummary> list) =>
+      list.toList()..sort((HasherSummary a, HasherSummary b) {
+        final int byCount = b.runsTogether.compareTo(a.runsTogether);
+        if (byCount != 0) return byCount;
+        return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+      });
 
   StreamSubscription<DataChangeEvent>? _dataChangeSub;
 
