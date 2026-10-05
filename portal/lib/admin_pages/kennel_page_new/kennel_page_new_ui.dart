@@ -412,8 +412,11 @@ class KennelInfoTabContent extends StatelessWidget {
         HelperWidgets().categoryLabelWidget('Website Address'),
         _buildTextField(KennelInfoField.kennelWebsiteUrl),
 
-        // Runs page import (2026-10-04)
-        HelperWidgets().categoryLabelWidget('Runs Page'),
+        // Runs page import (2026-10-04); the Inbound Integration drop-down
+        // is the switch that turns it on (2026-10-05).
+        HelperWidgets().categoryLabelWidget('Inbound Integration'),
+        _inboundIntegrationDropdown(),
+        const SizedBox(height: 12),
         _buildTextField(KennelInfoField.runsPageUrl),
         _runsPageStatus(),
         _runsPageTestButton(),
@@ -482,6 +485,50 @@ class KennelInfoTabContent extends StatelessWidget {
   }
 
   /// Builds an editable text field for the given field type.
+  /// Where this kennel's runs come from (HC.Kennel.InboundIntegrationId).
+  /// "Runs page (AI)" makes the API read the Runs Page address below four
+  /// times a day; any other choice stops it (the Test button still works).
+  /// HC.Integration's Enabled flag does not gate it — it only dims the
+  /// monitor tile (James, 2026-10-05). Facebook and San Diego stay listed
+  /// so a kennel already on them still shows its value.
+  Widget _inboundIntegrationDropdown() => Obx(() {
+    const Map<int, String> sources = <int, String>{
+      0: 'None — runs are entered in Harrier Central',
+      6: 'Runs page (AI) — read the address below 4× a day',
+      2: 'Google Calendar',
+      5: 'Berlin website',
+      3: 'San Diego website',
+      1: 'Facebook group (retired)',
+    };
+    final int current = controller.editedData.value.inboundIntegrationId ?? 0;
+    return SizedBox(
+      width: 460,
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Runs come from',
+          border: OutlineInputBorder(),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<int>(
+            value: sources.containsKey(current) ? current : 0,
+            isDense: true,
+            isExpanded: true,
+            items: <DropdownMenuItem<int>>[
+              for (final MapEntry<int, String> e in sources.entries)
+                DropdownMenuItem<int>(value: e.key, child: Text(e.value)),
+            ],
+            onChanged: (int? v) {
+              if (v == null) return;
+              controller.editedData.value =
+                  controller.editedData.value.copyWith(inboundIntegrationId: v);
+              controller.checkIfFormIsDirty();
+            },
+          ),
+        ),
+      ),
+    );
+  });
+
   /// "Test this page": reads the address in the field now and shows what it
   /// finds, importing only if asked (runs_page_test.dart).
   Widget _runsPageTestButton() => Obx(() {
@@ -506,10 +553,13 @@ class KennelInfoTabContent extends StatelessWidget {
   Widget _runsPageStatus() {
     final String? url = controller.originalData.runsPageUrl;
     final String? status = controller.originalData.runsPageStatus;
+    final bool on = (controller.originalData.inboundIntegrationId ?? 0) == 6;
     final String text = (url == null || url.isEmpty)
         ? 'Not importing: no runs page set.'
+        : !on
+        ? 'Not importing: set "Runs come from" to Runs page (AI) and save. Test this page works either way.'
         : (status == null || status.isEmpty)
-        ? 'Saved — the first read happens at the next import (00:07, 06:07, 12:07 or 18:07 UTC).'
+        ? 'Saved — the first read happens within 15 minutes.'
         : 'Last read: $status';
     return Padding(
       padding: const EdgeInsets.only(top: 6, bottom: 4),

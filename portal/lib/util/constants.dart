@@ -297,6 +297,7 @@ const List<String> INBOUND_DATA_SOURCES = <String>[
   'San Diego website',
   '',
   'Berlin website',
+  'kennel runs page', // 6: read by the AI runs-page import (2026-10-04)
 ];
 
 const String RESET_TO_LOOKTHROUGH_VALUE = 'makeNull';

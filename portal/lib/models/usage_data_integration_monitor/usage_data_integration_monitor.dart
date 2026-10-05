@@ -26,6 +26,12 @@ abstract class UdIntegrationMonitorModel with _$UdIntegrationMonitorModel {
     required DateTime endedAt,
     required int minutesAgo,
     required int futureRunCount,
+    // Runs page (AI) tile only, integration 6 (2026-10-05): runs it added
+    // and runs it refreshed over 14 days, and kennels set to it. Null on
+    // the other tiles.
+    int? newRuns14d,
+    int? updatedRuns14d,
+    int? kennelsUsing,
   }) = _UdIntegrationMonitorModel;
 
   factory UdIntegrationMonitorModel.fromJson(Map<String, dynamic> json) =>

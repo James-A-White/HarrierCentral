@@ -133,6 +133,11 @@ abstract class KennelModel with _$KennelModel {
     /// Read-only: what the last read of the runs page found, and when.
     String? runsPageStatus,
     String? runsPageCheckedAt,
+    /// Where the kennel's runs come from (HC.Integration): 0 Harrier
+    /// Central, 1 Facebook, 2 Google Calendar, 3 San Diego, 5 Berlin,
+    /// 6 Runs page (AI) — 6 is what turns the runs-page reader on
+    /// (2026-10-05).
+    int? inboundIntegrationId,
     String? trailSymbolsConfigJson,
     String? trailTypesConfigJson,
   }) = _KennelModel;

@@ -25,6 +25,9 @@ _UdIntegrationMonitorModel _$UdIntegrationMonitorModelFromJson(
   endedAt: DateTime.parse(json['endedAt'] as String),
   minutesAgo: (json['minutesAgo'] as num).toInt(),
   futureRunCount: (json['futureRunCount'] as num).toInt(),
+  newRuns14d: (json['newRuns14d'] as num?)?.toInt(),
+  updatedRuns14d: (json['updatedRuns14d'] as num?)?.toInt(),
+  kennelsUsing: (json['kennelsUsing'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$UdIntegrationMonitorModelToJson(
@@ -46,4 +49,7 @@ Map<String, dynamic> _$UdIntegrationMonitorModelToJson(
   'endedAt': instance.endedAt.toIso8601String(),
   'minutesAgo': instance.minutesAgo,
   'futureRunCount': instance.futureRunCount,
+  'newRuns14d': instance.newRuns14d,
+  'updatedRuns14d': instance.updatedRuns14d,
+  'kennelsUsing': instance.kennelsUsing,
 };

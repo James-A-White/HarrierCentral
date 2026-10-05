@@ -378,7 +378,8 @@ class _AppStatsRow extends StatelessWidget {
   /// so that lower values show green.
   bool get _higherIsBad {
     final String t = controller.appActivity[index].dataType;
-    return t == 'Error' || t == 'App Error';
+    // Cost rows too: fewer tokens / less money is green (James, 2026-10-05).
+    return t == 'Error' || t == 'App Error' || t == 'AI Tokens' || t == 'Azure Cost';
   }
 
   @override
@@ -422,6 +423,14 @@ class _AppStatsRow extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Azure Cost arrives in pence (the grid is whole numbers) and has no
+  /// hourly figure; everything else is a plain count.
+  String _fmt(int v, int days) {
+    if (controller.appActivity[index].dataType != 'Azure Cost') return v.toString();
+    if (days == 0) return '–';
+    return '£${(v / 100).toStringAsFixed(2)}';
   }
 
   List<Widget> _buildStatsCell(
@@ -487,7 +496,7 @@ class _AppStatsRow extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.bottomCenter,
                           child: AutoSizeText(
-                            value.toString(),
+                            _fmt(value, days),
                             maxLines: 1,
                             maxFontSize: 32,
                             minFontSize: 5,
@@ -505,7 +514,7 @@ class _AppStatsRow extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.topCenter,
                           child: AutoSizeText(
-                            comparisonValue.toString(),
+                            _fmt(comparisonValue, days),
                             maxLines: 1,
                             maxFontSize: 20,
                             minFontSize: 5,
@@ -628,7 +637,9 @@ class _IntegrationBlock extends StatelessWidget {
                     ),
                     Expanded(
                       child: AutoSizeText(
-                        '${integration.minutesAgo} min',
+                        integration.minutesAgo >= 999999
+                            ? 'never'
+                            : '${integration.minutesAgo} min',
                         maxLines: 1,
                         maxFontSize: 56,
                         minFontSize: 5,
@@ -640,7 +651,11 @@ class _IntegrationBlock extends StatelessWidget {
                     ),
                     Expanded(
                       child: AutoSizeText(
-                        '${integration.recordsRead} read / ${integration.errorCount} errors',
+                        // Runs page (AI): what it did over two weeks, not
+                        // just the last tick (James, 2026-10-05).
+                        integration.integrationId == 6
+                            ? '${integration.newRuns14d ?? 0} new / ${integration.updatedRuns14d ?? 0} updated (14 d)'
+                            : '${integration.recordsRead} read / ${integration.errorCount} errors',
                         maxLines: 1,
                         maxFontSize: 32,
                         minFontSize: 5,
@@ -652,7 +667,9 @@ class _IntegrationBlock extends StatelessWidget {
                     ),
                     Expanded(
                       child: AutoSizeText(
-                        '${integration.kennelsSucceeded} Nice / ${integration.kennelsFailed} Naughty',
+                        integration.integrationId == 6
+                            ? '${integration.kennelsUsing ?? 0} kennels / ${integration.errorCount} errors'
+                            : '${integration.kennelsSucceeded} Nice / ${integration.kennelsFailed} Naughty',
                         maxLines: 1,
                         maxFontSize: 32,
                         minFontSize: 5,

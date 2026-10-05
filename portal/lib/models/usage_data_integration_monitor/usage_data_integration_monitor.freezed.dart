@@ -17,7 +17,10 @@ mixin _$UdIntegrationMonitorModel implements DiagnosticableTreeMixin {
 
  int get integrationId; int get recordsRead; int get recordsWritten;// required String recordSuccessInfo,
  String get recordsFailedInfo; int get errorCount; String get errorInfo; int get kennelsSucceeded; String get kennelsSucceededInfo; int get kennelsFailed; String get kennelsFailedInfo; String get integrationAbbreviation; int get integrationEnabled; int get interval;// required DateTime strtedAt,
- DateTime get endedAt; int get minutesAgo; int get futureRunCount;
+ DateTime get endedAt; int get minutesAgo; int get futureRunCount;// Runs page (AI) tile only, integration 6 (2026-10-05): runs it added
+// and runs it refreshed over 14 days, and kennels set to it. Null on
+// the other tiles.
+ int? get newRuns14d; int? get updatedRuns14d; int? get kennelsUsing;
 /// Create a copy of UdIntegrationMonitorModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,21 +34,21 @@ $UdIntegrationMonitorModelCopyWith<UdIntegrationMonitorModel> get copyWith => _$
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'UdIntegrationMonitorModel'))
-    ..add(DiagnosticsProperty('integrationId', integrationId))..add(DiagnosticsProperty('recordsRead', recordsRead))..add(DiagnosticsProperty('recordsWritten', recordsWritten))..add(DiagnosticsProperty('recordsFailedInfo', recordsFailedInfo))..add(DiagnosticsProperty('errorCount', errorCount))..add(DiagnosticsProperty('errorInfo', errorInfo))..add(DiagnosticsProperty('kennelsSucceeded', kennelsSucceeded))..add(DiagnosticsProperty('kennelsSucceededInfo', kennelsSucceededInfo))..add(DiagnosticsProperty('kennelsFailed', kennelsFailed))..add(DiagnosticsProperty('kennelsFailedInfo', kennelsFailedInfo))..add(DiagnosticsProperty('integrationAbbreviation', integrationAbbreviation))..add(DiagnosticsProperty('integrationEnabled', integrationEnabled))..add(DiagnosticsProperty('interval', interval))..add(DiagnosticsProperty('endedAt', endedAt))..add(DiagnosticsProperty('minutesAgo', minutesAgo))..add(DiagnosticsProperty('futureRunCount', futureRunCount));
+    ..add(DiagnosticsProperty('integrationId', integrationId))..add(DiagnosticsProperty('recordsRead', recordsRead))..add(DiagnosticsProperty('recordsWritten', recordsWritten))..add(DiagnosticsProperty('recordsFailedInfo', recordsFailedInfo))..add(DiagnosticsProperty('errorCount', errorCount))..add(DiagnosticsProperty('errorInfo', errorInfo))..add(DiagnosticsProperty('kennelsSucceeded', kennelsSucceeded))..add(DiagnosticsProperty('kennelsSucceededInfo', kennelsSucceededInfo))..add(DiagnosticsProperty('kennelsFailed', kennelsFailed))..add(DiagnosticsProperty('kennelsFailedInfo', kennelsFailedInfo))..add(DiagnosticsProperty('integrationAbbreviation', integrationAbbreviation))..add(DiagnosticsProperty('integrationEnabled', integrationEnabled))..add(DiagnosticsProperty('interval', interval))..add(DiagnosticsProperty('endedAt', endedAt))..add(DiagnosticsProperty('minutesAgo', minutesAgo))..add(DiagnosticsProperty('futureRunCount', futureRunCount))..add(DiagnosticsProperty('newRuns14d', newRuns14d))..add(DiagnosticsProperty('updatedRuns14d', updatedRuns14d))..add(DiagnosticsProperty('kennelsUsing', kennelsUsing));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UdIntegrationMonitorModel&&(identical(other.integrationId, integrationId) || other.integrationId == integrationId)&&(identical(other.recordsRead, recordsRead) || other.recordsRead == recordsRead)&&(identical(other.recordsWritten, recordsWritten) || other.recordsWritten == recordsWritten)&&(identical(other.recordsFailedInfo, recordsFailedInfo) || other.recordsFailedInfo == recordsFailedInfo)&&(identical(other.errorCount, errorCount) || other.errorCount == errorCount)&&(identical(other.errorInfo, errorInfo) || other.errorInfo == errorInfo)&&(identical(other.kennelsSucceeded, kennelsSucceeded) || other.kennelsSucceeded == kennelsSucceeded)&&(identical(other.kennelsSucceededInfo, kennelsSucceededInfo) || other.kennelsSucceededInfo == kennelsSucceededInfo)&&(identical(other.kennelsFailed, kennelsFailed) || other.kennelsFailed == kennelsFailed)&&(identical(other.kennelsFailedInfo, kennelsFailedInfo) || other.kennelsFailedInfo == kennelsFailedInfo)&&(identical(other.integrationAbbreviation, integrationAbbreviation) || other.integrationAbbreviation == integrationAbbreviation)&&(identical(other.integrationEnabled, integrationEnabled) || other.integrationEnabled == integrationEnabled)&&(identical(other.interval, interval) || other.interval == interval)&&(identical(other.endedAt, endedAt) || other.endedAt == endedAt)&&(identical(other.minutesAgo, minutesAgo) || other.minutesAgo == minutesAgo)&&(identical(other.futureRunCount, futureRunCount) || other.futureRunCount == futureRunCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UdIntegrationMonitorModel&&(identical(other.integrationId, integrationId) || other.integrationId == integrationId)&&(identical(other.recordsRead, recordsRead) || other.recordsRead == recordsRead)&&(identical(other.recordsWritten, recordsWritten) || other.recordsWritten == recordsWritten)&&(identical(other.recordsFailedInfo, recordsFailedInfo) || other.recordsFailedInfo == recordsFailedInfo)&&(identical(other.errorCount, errorCount) || other.errorCount == errorCount)&&(identical(other.errorInfo, errorInfo) || other.errorInfo == errorInfo)&&(identical(other.kennelsSucceeded, kennelsSucceeded) || other.kennelsSucceeded == kennelsSucceeded)&&(identical(other.kennelsSucceededInfo, kennelsSucceededInfo) || other.kennelsSucceededInfo == kennelsSucceededInfo)&&(identical(other.kennelsFailed, kennelsFailed) || other.kennelsFailed == kennelsFailed)&&(identical(other.kennelsFailedInfo, kennelsFailedInfo) || other.kennelsFailedInfo == kennelsFailedInfo)&&(identical(other.integrationAbbreviation, integrationAbbreviation) || other.integrationAbbreviation == integrationAbbreviation)&&(identical(other.integrationEnabled, integrationEnabled) || other.integrationEnabled == integrationEnabled)&&(identical(other.interval, interval) || other.interval == interval)&&(identical(other.endedAt, endedAt) || other.endedAt == endedAt)&&(identical(other.minutesAgo, minutesAgo) || other.minutesAgo == minutesAgo)&&(identical(other.futureRunCount, futureRunCount) || other.futureRunCount == futureRunCount)&&(identical(other.newRuns14d, newRuns14d) || other.newRuns14d == newRuns14d)&&(identical(other.updatedRuns14d, updatedRuns14d) || other.updatedRuns14d == updatedRuns14d)&&(identical(other.kennelsUsing, kennelsUsing) || other.kennelsUsing == kennelsUsing));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,integrationId,recordsRead,recordsWritten,recordsFailedInfo,errorCount,errorInfo,kennelsSucceeded,kennelsSucceededInfo,kennelsFailed,kennelsFailedInfo,integrationAbbreviation,integrationEnabled,interval,endedAt,minutesAgo,futureRunCount);
+int get hashCode => Object.hashAll([runtimeType,integrationId,recordsRead,recordsWritten,recordsFailedInfo,errorCount,errorInfo,kennelsSucceeded,kennelsSucceededInfo,kennelsFailed,kennelsFailedInfo,integrationAbbreviation,integrationEnabled,interval,endedAt,minutesAgo,futureRunCount,newRuns14d,updatedRuns14d,kennelsUsing]);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'UdIntegrationMonitorModel(integrationId: $integrationId, recordsRead: $recordsRead, recordsWritten: $recordsWritten, recordsFailedInfo: $recordsFailedInfo, errorCount: $errorCount, errorInfo: $errorInfo, kennelsSucceeded: $kennelsSucceeded, kennelsSucceededInfo: $kennelsSucceededInfo, kennelsFailed: $kennelsFailed, kennelsFailedInfo: $kennelsFailedInfo, integrationAbbreviation: $integrationAbbreviation, integrationEnabled: $integrationEnabled, interval: $interval, endedAt: $endedAt, minutesAgo: $minutesAgo, futureRunCount: $futureRunCount)';
+  return 'UdIntegrationMonitorModel(integrationId: $integrationId, recordsRead: $recordsRead, recordsWritten: $recordsWritten, recordsFailedInfo: $recordsFailedInfo, errorCount: $errorCount, errorInfo: $errorInfo, kennelsSucceeded: $kennelsSucceeded, kennelsSucceededInfo: $kennelsSucceededInfo, kennelsFailed: $kennelsFailed, kennelsFailedInfo: $kennelsFailedInfo, integrationAbbreviation: $integrationAbbreviation, integrationEnabled: $integrationEnabled, interval: $interval, endedAt: $endedAt, minutesAgo: $minutesAgo, futureRunCount: $futureRunCount, newRuns14d: $newRuns14d, updatedRuns14d: $updatedRuns14d, kennelsUsing: $kennelsUsing)';
 }
 
 
@@ -56,7 +59,7 @@ abstract mixin class $UdIntegrationMonitorModelCopyWith<$Res>  {
   factory $UdIntegrationMonitorModelCopyWith(UdIntegrationMonitorModel value, $Res Function(UdIntegrationMonitorModel) _then) = _$UdIntegrationMonitorModelCopyWithImpl;
 @useResult
 $Res call({
- int integrationId, int recordsRead, int recordsWritten, String recordsFailedInfo, int errorCount, String errorInfo, int kennelsSucceeded, String kennelsSucceededInfo, int kennelsFailed, String kennelsFailedInfo, String integrationAbbreviation, int integrationEnabled, int interval, DateTime endedAt, int minutesAgo, int futureRunCount
+ int integrationId, int recordsRead, int recordsWritten, String recordsFailedInfo, int errorCount, String errorInfo, int kennelsSucceeded, String kennelsSucceededInfo, int kennelsFailed, String kennelsFailedInfo, String integrationAbbreviation, int integrationEnabled, int interval, DateTime endedAt, int minutesAgo, int futureRunCount, int? newRuns14d, int? updatedRuns14d, int? kennelsUsing
 });
 
 
@@ -73,7 +76,7 @@ class _$UdIntegrationMonitorModelCopyWithImpl<$Res>
 
 /// Create a copy of UdIntegrationMonitorModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? integrationId = null,Object? recordsRead = null,Object? recordsWritten = null,Object? recordsFailedInfo = null,Object? errorCount = null,Object? errorInfo = null,Object? kennelsSucceeded = null,Object? kennelsSucceededInfo = null,Object? kennelsFailed = null,Object? kennelsFailedInfo = null,Object? integrationAbbreviation = null,Object? integrationEnabled = null,Object? interval = null,Object? endedAt = null,Object? minutesAgo = null,Object? futureRunCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? integrationId = null,Object? recordsRead = null,Object? recordsWritten = null,Object? recordsFailedInfo = null,Object? errorCount = null,Object? errorInfo = null,Object? kennelsSucceeded = null,Object? kennelsSucceededInfo = null,Object? kennelsFailed = null,Object? kennelsFailedInfo = null,Object? integrationAbbreviation = null,Object? integrationEnabled = null,Object? interval = null,Object? endedAt = null,Object? minutesAgo = null,Object? futureRunCount = null,Object? newRuns14d = freezed,Object? updatedRuns14d = freezed,Object? kennelsUsing = freezed,}) {
   return _then(_self.copyWith(
 integrationId: null == integrationId ? _self.integrationId : integrationId // ignore: cast_nullable_to_non_nullable
 as int,recordsRead: null == recordsRead ? _self.recordsRead : recordsRead // ignore: cast_nullable_to_non_nullable
@@ -91,7 +94,10 @@ as int,interval: null == interval ? _self.interval : interval // ignore: cast_nu
 as int,endedAt: null == endedAt ? _self.endedAt : endedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,minutesAgo: null == minutesAgo ? _self.minutesAgo : minutesAgo // ignore: cast_nullable_to_non_nullable
 as int,futureRunCount: null == futureRunCount ? _self.futureRunCount : futureRunCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,newRuns14d: freezed == newRuns14d ? _self.newRuns14d : newRuns14d // ignore: cast_nullable_to_non_nullable
+as int?,updatedRuns14d: freezed == updatedRuns14d ? _self.updatedRuns14d : updatedRuns14d // ignore: cast_nullable_to_non_nullable
+as int?,kennelsUsing: freezed == kennelsUsing ? _self.kennelsUsing : kennelsUsing // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -176,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int integrationId,  int recordsRead,  int recordsWritten,  String recordsFailedInfo,  int errorCount,  String errorInfo,  int kennelsSucceeded,  String kennelsSucceededInfo,  int kennelsFailed,  String kennelsFailedInfo,  String integrationAbbreviation,  int integrationEnabled,  int interval,  DateTime endedAt,  int minutesAgo,  int futureRunCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int integrationId,  int recordsRead,  int recordsWritten,  String recordsFailedInfo,  int errorCount,  String errorInfo,  int kennelsSucceeded,  String kennelsSucceededInfo,  int kennelsFailed,  String kennelsFailedInfo,  String integrationAbbreviation,  int integrationEnabled,  int interval,  DateTime endedAt,  int minutesAgo,  int futureRunCount,  int? newRuns14d,  int? updatedRuns14d,  int? kennelsUsing)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UdIntegrationMonitorModel() when $default != null:
-return $default(_that.integrationId,_that.recordsRead,_that.recordsWritten,_that.recordsFailedInfo,_that.errorCount,_that.errorInfo,_that.kennelsSucceeded,_that.kennelsSucceededInfo,_that.kennelsFailed,_that.kennelsFailedInfo,_that.integrationAbbreviation,_that.integrationEnabled,_that.interval,_that.endedAt,_that.minutesAgo,_that.futureRunCount);case _:
+return $default(_that.integrationId,_that.recordsRead,_that.recordsWritten,_that.recordsFailedInfo,_that.errorCount,_that.errorInfo,_that.kennelsSucceeded,_that.kennelsSucceededInfo,_that.kennelsFailed,_that.kennelsFailedInfo,_that.integrationAbbreviation,_that.integrationEnabled,_that.interval,_that.endedAt,_that.minutesAgo,_that.futureRunCount,_that.newRuns14d,_that.updatedRuns14d,_that.kennelsUsing);case _:
   return orElse();
 
 }
@@ -197,10 +203,10 @@ return $default(_that.integrationId,_that.recordsRead,_that.recordsWritten,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int integrationId,  int recordsRead,  int recordsWritten,  String recordsFailedInfo,  int errorCount,  String errorInfo,  int kennelsSucceeded,  String kennelsSucceededInfo,  int kennelsFailed,  String kennelsFailedInfo,  String integrationAbbreviation,  int integrationEnabled,  int interval,  DateTime endedAt,  int minutesAgo,  int futureRunCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int integrationId,  int recordsRead,  int recordsWritten,  String recordsFailedInfo,  int errorCount,  String errorInfo,  int kennelsSucceeded,  String kennelsSucceededInfo,  int kennelsFailed,  String kennelsFailedInfo,  String integrationAbbreviation,  int integrationEnabled,  int interval,  DateTime endedAt,  int minutesAgo,  int futureRunCount,  int? newRuns14d,  int? updatedRuns14d,  int? kennelsUsing)  $default,) {final _that = this;
 switch (_that) {
 case _UdIntegrationMonitorModel():
-return $default(_that.integrationId,_that.recordsRead,_that.recordsWritten,_that.recordsFailedInfo,_that.errorCount,_that.errorInfo,_that.kennelsSucceeded,_that.kennelsSucceededInfo,_that.kennelsFailed,_that.kennelsFailedInfo,_that.integrationAbbreviation,_that.integrationEnabled,_that.interval,_that.endedAt,_that.minutesAgo,_that.futureRunCount);case _:
+return $default(_that.integrationId,_that.recordsRead,_that.recordsWritten,_that.recordsFailedInfo,_that.errorCount,_that.errorInfo,_that.kennelsSucceeded,_that.kennelsSucceededInfo,_that.kennelsFailed,_that.kennelsFailedInfo,_that.integrationAbbreviation,_that.integrationEnabled,_that.interval,_that.endedAt,_that.minutesAgo,_that.futureRunCount,_that.newRuns14d,_that.updatedRuns14d,_that.kennelsUsing);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -217,10 +223,10 @@ return $default(_that.integrationId,_that.recordsRead,_that.recordsWritten,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int integrationId,  int recordsRead,  int recordsWritten,  String recordsFailedInfo,  int errorCount,  String errorInfo,  int kennelsSucceeded,  String kennelsSucceededInfo,  int kennelsFailed,  String kennelsFailedInfo,  String integrationAbbreviation,  int integrationEnabled,  int interval,  DateTime endedAt,  int minutesAgo,  int futureRunCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int integrationId,  int recordsRead,  int recordsWritten,  String recordsFailedInfo,  int errorCount,  String errorInfo,  int kennelsSucceeded,  String kennelsSucceededInfo,  int kennelsFailed,  String kennelsFailedInfo,  String integrationAbbreviation,  int integrationEnabled,  int interval,  DateTime endedAt,  int minutesAgo,  int futureRunCount,  int? newRuns14d,  int? updatedRuns14d,  int? kennelsUsing)?  $default,) {final _that = this;
 switch (_that) {
 case _UdIntegrationMonitorModel() when $default != null:
-return $default(_that.integrationId,_that.recordsRead,_that.recordsWritten,_that.recordsFailedInfo,_that.errorCount,_that.errorInfo,_that.kennelsSucceeded,_that.kennelsSucceededInfo,_that.kennelsFailed,_that.kennelsFailedInfo,_that.integrationAbbreviation,_that.integrationEnabled,_that.interval,_that.endedAt,_that.minutesAgo,_that.futureRunCount);case _:
+return $default(_that.integrationId,_that.recordsRead,_that.recordsWritten,_that.recordsFailedInfo,_that.errorCount,_that.errorInfo,_that.kennelsSucceeded,_that.kennelsSucceededInfo,_that.kennelsFailed,_that.kennelsFailedInfo,_that.integrationAbbreviation,_that.integrationEnabled,_that.interval,_that.endedAt,_that.minutesAgo,_that.futureRunCount,_that.newRuns14d,_that.updatedRuns14d,_that.kennelsUsing);case _:
   return null;
 
 }
@@ -232,7 +238,7 @@ return $default(_that.integrationId,_that.recordsRead,_that.recordsWritten,_that
 @JsonSerializable()
 
 class _UdIntegrationMonitorModel with DiagnosticableTreeMixin implements UdIntegrationMonitorModel {
-   _UdIntegrationMonitorModel({required this.integrationId, required this.recordsRead, required this.recordsWritten, required this.recordsFailedInfo, required this.errorCount, required this.errorInfo, required this.kennelsSucceeded, required this.kennelsSucceededInfo, required this.kennelsFailed, required this.kennelsFailedInfo, required this.integrationAbbreviation, required this.integrationEnabled, required this.interval, required this.endedAt, required this.minutesAgo, required this.futureRunCount});
+   _UdIntegrationMonitorModel({required this.integrationId, required this.recordsRead, required this.recordsWritten, required this.recordsFailedInfo, required this.errorCount, required this.errorInfo, required this.kennelsSucceeded, required this.kennelsSucceededInfo, required this.kennelsFailed, required this.kennelsFailedInfo, required this.integrationAbbreviation, required this.integrationEnabled, required this.interval, required this.endedAt, required this.minutesAgo, required this.futureRunCount, this.newRuns14d, this.updatedRuns14d, this.kennelsUsing});
   factory _UdIntegrationMonitorModel.fromJson(Map<String, dynamic> json) => _$UdIntegrationMonitorModelFromJson(json);
 
 @override final  int integrationId;
@@ -253,6 +259,12 @@ class _UdIntegrationMonitorModel with DiagnosticableTreeMixin implements UdInteg
 @override final  DateTime endedAt;
 @override final  int minutesAgo;
 @override final  int futureRunCount;
+// Runs page (AI) tile only, integration 6 (2026-10-05): runs it added
+// and runs it refreshed over 14 days, and kennels set to it. Null on
+// the other tiles.
+@override final  int? newRuns14d;
+@override final  int? updatedRuns14d;
+@override final  int? kennelsUsing;
 
 /// Create a copy of UdIntegrationMonitorModel
 /// with the given fields replaced by the non-null parameter values.
@@ -268,21 +280,21 @@ Map<String, dynamic> toJson() {
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'UdIntegrationMonitorModel'))
-    ..add(DiagnosticsProperty('integrationId', integrationId))..add(DiagnosticsProperty('recordsRead', recordsRead))..add(DiagnosticsProperty('recordsWritten', recordsWritten))..add(DiagnosticsProperty('recordsFailedInfo', recordsFailedInfo))..add(DiagnosticsProperty('errorCount', errorCount))..add(DiagnosticsProperty('errorInfo', errorInfo))..add(DiagnosticsProperty('kennelsSucceeded', kennelsSucceeded))..add(DiagnosticsProperty('kennelsSucceededInfo', kennelsSucceededInfo))..add(DiagnosticsProperty('kennelsFailed', kennelsFailed))..add(DiagnosticsProperty('kennelsFailedInfo', kennelsFailedInfo))..add(DiagnosticsProperty('integrationAbbreviation', integrationAbbreviation))..add(DiagnosticsProperty('integrationEnabled', integrationEnabled))..add(DiagnosticsProperty('interval', interval))..add(DiagnosticsProperty('endedAt', endedAt))..add(DiagnosticsProperty('minutesAgo', minutesAgo))..add(DiagnosticsProperty('futureRunCount', futureRunCount));
+    ..add(DiagnosticsProperty('integrationId', integrationId))..add(DiagnosticsProperty('recordsRead', recordsRead))..add(DiagnosticsProperty('recordsWritten', recordsWritten))..add(DiagnosticsProperty('recordsFailedInfo', recordsFailedInfo))..add(DiagnosticsProperty('errorCount', errorCount))..add(DiagnosticsProperty('errorInfo', errorInfo))..add(DiagnosticsProperty('kennelsSucceeded', kennelsSucceeded))..add(DiagnosticsProperty('kennelsSucceededInfo', kennelsSucceededInfo))..add(DiagnosticsProperty('kennelsFailed', kennelsFailed))..add(DiagnosticsProperty('kennelsFailedInfo', kennelsFailedInfo))..add(DiagnosticsProperty('integrationAbbreviation', integrationAbbreviation))..add(DiagnosticsProperty('integrationEnabled', integrationEnabled))..add(DiagnosticsProperty('interval', interval))..add(DiagnosticsProperty('endedAt', endedAt))..add(DiagnosticsProperty('minutesAgo', minutesAgo))..add(DiagnosticsProperty('futureRunCount', futureRunCount))..add(DiagnosticsProperty('newRuns14d', newRuns14d))..add(DiagnosticsProperty('updatedRuns14d', updatedRuns14d))..add(DiagnosticsProperty('kennelsUsing', kennelsUsing));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UdIntegrationMonitorModel&&(identical(other.integrationId, integrationId) || other.integrationId == integrationId)&&(identical(other.recordsRead, recordsRead) || other.recordsRead == recordsRead)&&(identical(other.recordsWritten, recordsWritten) || other.recordsWritten == recordsWritten)&&(identical(other.recordsFailedInfo, recordsFailedInfo) || other.recordsFailedInfo == recordsFailedInfo)&&(identical(other.errorCount, errorCount) || other.errorCount == errorCount)&&(identical(other.errorInfo, errorInfo) || other.errorInfo == errorInfo)&&(identical(other.kennelsSucceeded, kennelsSucceeded) || other.kennelsSucceeded == kennelsSucceeded)&&(identical(other.kennelsSucceededInfo, kennelsSucceededInfo) || other.kennelsSucceededInfo == kennelsSucceededInfo)&&(identical(other.kennelsFailed, kennelsFailed) || other.kennelsFailed == kennelsFailed)&&(identical(other.kennelsFailedInfo, kennelsFailedInfo) || other.kennelsFailedInfo == kennelsFailedInfo)&&(identical(other.integrationAbbreviation, integrationAbbreviation) || other.integrationAbbreviation == integrationAbbreviation)&&(identical(other.integrationEnabled, integrationEnabled) || other.integrationEnabled == integrationEnabled)&&(identical(other.interval, interval) || other.interval == interval)&&(identical(other.endedAt, endedAt) || other.endedAt == endedAt)&&(identical(other.minutesAgo, minutesAgo) || other.minutesAgo == minutesAgo)&&(identical(other.futureRunCount, futureRunCount) || other.futureRunCount == futureRunCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UdIntegrationMonitorModel&&(identical(other.integrationId, integrationId) || other.integrationId == integrationId)&&(identical(other.recordsRead, recordsRead) || other.recordsRead == recordsRead)&&(identical(other.recordsWritten, recordsWritten) || other.recordsWritten == recordsWritten)&&(identical(other.recordsFailedInfo, recordsFailedInfo) || other.recordsFailedInfo == recordsFailedInfo)&&(identical(other.errorCount, errorCount) || other.errorCount == errorCount)&&(identical(other.errorInfo, errorInfo) || other.errorInfo == errorInfo)&&(identical(other.kennelsSucceeded, kennelsSucceeded) || other.kennelsSucceeded == kennelsSucceeded)&&(identical(other.kennelsSucceededInfo, kennelsSucceededInfo) || other.kennelsSucceededInfo == kennelsSucceededInfo)&&(identical(other.kennelsFailed, kennelsFailed) || other.kennelsFailed == kennelsFailed)&&(identical(other.kennelsFailedInfo, kennelsFailedInfo) || other.kennelsFailedInfo == kennelsFailedInfo)&&(identical(other.integrationAbbreviation, integrationAbbreviation) || other.integrationAbbreviation == integrationAbbreviation)&&(identical(other.integrationEnabled, integrationEnabled) || other.integrationEnabled == integrationEnabled)&&(identical(other.interval, interval) || other.interval == interval)&&(identical(other.endedAt, endedAt) || other.endedAt == endedAt)&&(identical(other.minutesAgo, minutesAgo) || other.minutesAgo == minutesAgo)&&(identical(other.futureRunCount, futureRunCount) || other.futureRunCount == futureRunCount)&&(identical(other.newRuns14d, newRuns14d) || other.newRuns14d == newRuns14d)&&(identical(other.updatedRuns14d, updatedRuns14d) || other.updatedRuns14d == updatedRuns14d)&&(identical(other.kennelsUsing, kennelsUsing) || other.kennelsUsing == kennelsUsing));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,integrationId,recordsRead,recordsWritten,recordsFailedInfo,errorCount,errorInfo,kennelsSucceeded,kennelsSucceededInfo,kennelsFailed,kennelsFailedInfo,integrationAbbreviation,integrationEnabled,interval,endedAt,minutesAgo,futureRunCount);
+int get hashCode => Object.hashAll([runtimeType,integrationId,recordsRead,recordsWritten,recordsFailedInfo,errorCount,errorInfo,kennelsSucceeded,kennelsSucceededInfo,kennelsFailed,kennelsFailedInfo,integrationAbbreviation,integrationEnabled,interval,endedAt,minutesAgo,futureRunCount,newRuns14d,updatedRuns14d,kennelsUsing]);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'UdIntegrationMonitorModel(integrationId: $integrationId, recordsRead: $recordsRead, recordsWritten: $recordsWritten, recordsFailedInfo: $recordsFailedInfo, errorCount: $errorCount, errorInfo: $errorInfo, kennelsSucceeded: $kennelsSucceeded, kennelsSucceededInfo: $kennelsSucceededInfo, kennelsFailed: $kennelsFailed, kennelsFailedInfo: $kennelsFailedInfo, integrationAbbreviation: $integrationAbbreviation, integrationEnabled: $integrationEnabled, interval: $interval, endedAt: $endedAt, minutesAgo: $minutesAgo, futureRunCount: $futureRunCount)';
+  return 'UdIntegrationMonitorModel(integrationId: $integrationId, recordsRead: $recordsRead, recordsWritten: $recordsWritten, recordsFailedInfo: $recordsFailedInfo, errorCount: $errorCount, errorInfo: $errorInfo, kennelsSucceeded: $kennelsSucceeded, kennelsSucceededInfo: $kennelsSucceededInfo, kennelsFailed: $kennelsFailed, kennelsFailedInfo: $kennelsFailedInfo, integrationAbbreviation: $integrationAbbreviation, integrationEnabled: $integrationEnabled, interval: $interval, endedAt: $endedAt, minutesAgo: $minutesAgo, futureRunCount: $futureRunCount, newRuns14d: $newRuns14d, updatedRuns14d: $updatedRuns14d, kennelsUsing: $kennelsUsing)';
 }
 
 
@@ -293,7 +305,7 @@ abstract mixin class _$UdIntegrationMonitorModelCopyWith<$Res> implements $UdInt
   factory _$UdIntegrationMonitorModelCopyWith(_UdIntegrationMonitorModel value, $Res Function(_UdIntegrationMonitorModel) _then) = __$UdIntegrationMonitorModelCopyWithImpl;
 @override @useResult
 $Res call({
- int integrationId, int recordsRead, int recordsWritten, String recordsFailedInfo, int errorCount, String errorInfo, int kennelsSucceeded, String kennelsSucceededInfo, int kennelsFailed, String kennelsFailedInfo, String integrationAbbreviation, int integrationEnabled, int interval, DateTime endedAt, int minutesAgo, int futureRunCount
+ int integrationId, int recordsRead, int recordsWritten, String recordsFailedInfo, int errorCount, String errorInfo, int kennelsSucceeded, String kennelsSucceededInfo, int kennelsFailed, String kennelsFailedInfo, String integrationAbbreviation, int integrationEnabled, int interval, DateTime endedAt, int minutesAgo, int futureRunCount, int? newRuns14d, int? updatedRuns14d, int? kennelsUsing
 });
 
 
@@ -310,7 +322,7 @@ class __$UdIntegrationMonitorModelCopyWithImpl<$Res>
 
 /// Create a copy of UdIntegrationMonitorModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? integrationId = null,Object? recordsRead = null,Object? recordsWritten = null,Object? recordsFailedInfo = null,Object? errorCount = null,Object? errorInfo = null,Object? kennelsSucceeded = null,Object? kennelsSucceededInfo = null,Object? kennelsFailed = null,Object? kennelsFailedInfo = null,Object? integrationAbbreviation = null,Object? integrationEnabled = null,Object? interval = null,Object? endedAt = null,Object? minutesAgo = null,Object? futureRunCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? integrationId = null,Object? recordsRead = null,Object? recordsWritten = null,Object? recordsFailedInfo = null,Object? errorCount = null,Object? errorInfo = null,Object? kennelsSucceeded = null,Object? kennelsSucceededInfo = null,Object? kennelsFailed = null,Object? kennelsFailedInfo = null,Object? integrationAbbreviation = null,Object? integrationEnabled = null,Object? interval = null,Object? endedAt = null,Object? minutesAgo = null,Object? futureRunCount = null,Object? newRuns14d = freezed,Object? updatedRuns14d = freezed,Object? kennelsUsing = freezed,}) {
   return _then(_UdIntegrationMonitorModel(
 integrationId: null == integrationId ? _self.integrationId : integrationId // ignore: cast_nullable_to_non_nullable
 as int,recordsRead: null == recordsRead ? _self.recordsRead : recordsRead // ignore: cast_nullable_to_non_nullable
@@ -328,7 +340,10 @@ as int,interval: null == interval ? _self.interval : interval // ignore: cast_nu
 as int,endedAt: null == endedAt ? _self.endedAt : endedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,minutesAgo: null == minutesAgo ? _self.minutesAgo : minutesAgo // ignore: cast_nullable_to_non_nullable
 as int,futureRunCount: null == futureRunCount ? _self.futureRunCount : futureRunCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,newRuns14d: freezed == newRuns14d ? _self.newRuns14d : newRuns14d // ignore: cast_nullable_to_non_nullable
+as int?,updatedRuns14d: freezed == updatedRuns14d ? _self.updatedRuns14d : updatedRuns14d // ignore: cast_nullable_to_non_nullable
+as int?,kennelsUsing: freezed == kennelsUsing ? _self.kennelsUsing : kennelsUsing // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

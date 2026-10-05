@@ -273,6 +273,22 @@ class UsageDataPageController extends GetxController {
   Future<void> integrationBlockPressed(
     UdIntegrationMonitorModel integration,
   ) async {
+    if (integration.integrationId == 6) {
+      final String naughty = integration.kennelsFailedInfo.replaceAll(',', '\r\n');
+      final String nice = integration.kennelsSucceededInfo.replaceAll(',', '\r\n');
+      await IveCoreUtilities.showAlert(
+        navigatorKey.currentContext!,
+        'Runs page (AI) — last read',
+        'Read OK\r\n$nice\r\n\r\nFailed\r\n$naughty'
+            '${integration.errorInfo.isEmpty ? '' : '\r\n\r\n${integration.errorInfo}'}\r\n\r\n'
+            '${integration.kennelsUsing ?? 0} kennels set to Runs page (AI). '
+            'Over 14 days: ${integration.newRuns14d ?? 0} runs added, '
+            '${integration.updatedRuns14d ?? 0} refreshed. '
+            'AI Tokens on the grid shows what it cost.',
+        'Done',
+      );
+      return;
+    }
     if (integration.integrationId == 1) {
       final naughty = integration.kennelsFailedInfo.replaceAll(',', '\r\n');
       final nice = integration.kennelsSucceededInfo.replaceAll(',', '\r\n');
