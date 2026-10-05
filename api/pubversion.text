@@ -1,3 +1,12 @@
+1.0.61+75
+    • AI usage + Azure cost (E14.G3.R7): every runs-page model call is logged to LOG.AiUsage
+      (tokens, USD, outcome, session) via HC6.nonApi_logAiUsage. New AzureDailyCost timer
+      (01:23/07:23/13:23/19:23 UTC) reads Cost Management per day per service with the Function
+      App's managed identity into LOG.AzureDailyCost; AzureDailyCostNow (X-Api-Key) backfills.
+    • Runs page import: timer every 15 min; the SP picks kennels whose Inbound Integration is
+      Runs page (AI) and that are due (every tick on a run day, ~6 h otherwise). Each run writes
+      an HC.IntegrationJob row (integration 6) for the monitor tile. GeneralLog widths fixed.
+
 1.0.61+74
     • Runs page import (E3.F6.S3): RunsPageImport timer (00:07/06:07/12:07/18:07 UTC) reads each
       kennel's runs page, skips unchanged pages by SHA-256, has Azure OpenAI (gpt-4.1-mini,

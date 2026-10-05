@@ -1,3 +1,11 @@
+## 2.0.87+741 (2026-10-05)
+### New Features
+- **Cost on the monitor**: Usage Data has an **AI Tokens** row (tokens used by AI imports; tap for every call with its cost) and an **Azure Cost** row (£ per complete day, week and month; tap to see which service changed). Both are green when lower.
+- **Runs page tile** replaces the retired Facebook tile: runs added and refreshed by the AI runs-page import over 14 days, and how many kennels use it.
+- **Inbound Integration drop-down** in the kennel editor ("Runs come from"): choosing Runs page (AI) switches the runs-page import on for that kennel.
+### Fixes
+- Edit run no longer fails on a run imported from a kennel's runs page.
+
 ## 2.0.87+740 (2026-10-04)
 ### New Features
 - **Runs page import**: the kennel editor has a Runs Page field. Harrier Central reads that page four times a day and adds new runs automatically; a **Test this page** button reads it now, shows every run it found and what would happen to each, and imports them on request.

@@ -1,3 +1,8 @@
+## 3.1.9+1448 (2026-10-05)
+Dance baby! — all beta testers.
+### Improvements
+- **AI badge in run lists**: runs imported from a kennel's own runs page by AI show a new icon — the Harrier Central foot with sparkles.
+
 ## 3.1.9+1447 (2026-10-04)
 Dance baby! — all beta testers.
 ### Improvements
