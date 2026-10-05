@@ -1,3 +1,7 @@
+1.0.61+80
+    • Runs page import: a note that only restates the start time ('12 Noon for 12:30 start') is not
+      a description.
+
 1.0.61+79
     • Runs page import: dates more than a year back / 18 months ahead are moved to the next
       occurrence (pages omit the year; STH3 came back as 2024 and all 5 runs were rejected). The

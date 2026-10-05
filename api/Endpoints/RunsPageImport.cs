@@ -435,7 +435,8 @@ namespace HcWebApi.Endpoints
             + "leaves them out. Never invent a street or postcode. null when the start is unknown, TBA or TBC.\n"
             + "- onOn: where the pack goes afterwards (On On / On Inn / pub); null if none.\n"
             + "- notes: anything else about that run worth keeping (a different weekday, an earlier start, a special arrangement); "
-            + "null if nothing. Never placeholders such as 'hare needed', 'TBA', 'details to be announced' or 'location TBA'.\n"
+            + "null if nothing. Never placeholders such as 'hare needed', 'TBA', 'details to be announced' or 'location TBA', "
+            + "and never the usual start time (e.g. '12 Noon for 12:30 start') — that goes in time.\n"
             + "- special: true for a joint run, AGM, Christmas or other holiday run, birthday or anniversary run, themed or "
             + "fancy-dress run, away weekend, camping weekend, milestone run number (e.g. 3100); otherwise false. "
             + "A regular seasonal series (e.g. every summer run, 'Yippee Bush') is not special by itself.\n"
@@ -758,11 +759,21 @@ namespace HcWebApi.Endpoints
             + @"|.*\bcontact the hare\s*raiser\b.*|on\s*site|location (unknown|not yet known)|details (to follow|soon)|none|n/?a)\s*[.!]?\s*$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        // "12 Noon for 12:30 start", "7pm for 7:15": just the start time,
+        // which the run already carries — not a description.
+        private static readonly Regex TimeWords = new(
+            @"\b(\d{1,2}([:.]\d{2})?\s*(am|pm|h)?|noon|midday|for|start|starts|starting|sharp|meet|meeting|at|from|kick\s*-?off|time)\b|[\s\-–.,:!()]",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static bool OnlyATime(string fragment) =>
+            Regex.IsMatch(fragment, @"\d|noon|midday", RegexOptions.IgnoreCase)
+            && TimeWords.Replace(fragment, "").Length == 0;
+
         private static string? WithoutPlaceholders(string? text)
         {
             if (string.IsNullOrWhiteSpace(text)) return null;
             var keep = text.Split(new[] { ';', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim()).Where(p => p.Length > 0 && !Placeholder.IsMatch(p)).ToList();
+                .Select(p => p.Trim()).Where(p => p.Length > 0 && !Placeholder.IsMatch(p) && !OnlyATime(p)).ToList();
             return keep.Count == 0 ? null : string.Join("; ", keep);
         }
 
