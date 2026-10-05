@@ -1,3 +1,8 @@
+1.0.61+76
+    • HcExternalDataIntegration runs only the methods it implements (GenericJsonQuery,
+      IntFacebook): it no longer writes an unfinished job row for integration 6 (RunsPageImport,
+      which has its own timer) every interval since 6 was marked Enabled.
+
 1.0.61+75
     • AI usage + Azure cost (E14.G3.R7): every runs-page model call is logged to LOG.AiUsage
       (tokens, USD, outcome, session) via HC6.nonApi_logAiUsage. New AzureDailyCost timer

@@ -17,6 +17,9 @@ namespace HcWebApi.Endpoints
             log = logger;
         }
 
+        private static readonly HashSet<string> RunnerMethods =
+            new(StringComparer.OrdinalIgnoreCase) { "GenericJsonQuery", "IntFacebook" };
+
         [Function("HcExternalDataIntegration")]
         public async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer)
         {
@@ -83,6 +86,12 @@ namespace HcWebApi.Endpoints
                     decimal minLat                 = rows.GetDecimal(14);
                     decimal maxLon                 = rows.GetDecimal(15);
                     decimal minLon                 = rows.GetDecimal(16);
+
+                    // Run only the methods this runner implements. Integration 6
+                    // (RunsPageImport) has its own timer; before this check the
+                    // runner wrote an unfinished HC.IntegrationJob row for it
+                    // every interval once it was marked Enabled (2026-10-05).
+                    if (!RunnerMethods.Contains(integrationMethodName)) continue;
 
                     intervalOffset = intervalOffset % interval;
 
