@@ -25,8 +25,18 @@
       "name": "ErrorEnvelope",
       "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -160,6 +170,24 @@
           "type": "INT",
           "nullable": false,
           "description": "Total count of future events (EventStartDatetimeIndexed > GETDATE()). Same value repeated for all rows."
+        },
+        {
+          "name": "newRuns14d",
+          "type": "INT",
+          "nullable": true,
+          "description": "Runs page (6) only: runs added in 14 days"
+        },
+        {
+          "name": "updatedRuns14d",
+          "type": "INT",
+          "nullable": true,
+          "description": "Runs page (6) only: imported runs refreshed in 14 days"
+        },
+        {
+          "name": "kennelsUsing",
+          "type": "INT",
+          "nullable": true,
+          "description": "Runs page (6) only: kennels whose InboundIntegrationId is 6"
         }
       ]
     },
@@ -393,5 +421,8 @@
     "Never change the id sort order values (0-9) in UsageStatistics rowset — append only",
     "Never change the highlight priority values (0-3) in LoginInformation rowset without updating portal UI",
     "Never change the hardcoded excluded user GUIDs without coordinating with callers"
+  ],
+  "changes": [
+    "2026-10-05: integration rowset drops Facebook (1), always lists Runs page (6) — COALESCEd defaults when it has no job yet (minutesAgo 999999) — and adds newRuns14d, updatedRuns14d, kennelsUsing (NULL except integration 6). Activity rowset adds 'AI Tokens' (id 11, LOG.AiUsage.TotalTokens) and 'Azure Cost' (id 12, LOG.AzureDailyCost in PENCE; Day = latest complete day vs the day before; Hour always 0)."
   ]
 }

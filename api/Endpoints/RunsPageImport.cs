@@ -15,7 +15,8 @@ namespace HcWebApi.Endpoints
 {
     /// <summary>
     /// Reads each kennel's RUNS PAGE (HC.Kennel.RunsPageUrl, set in the portal's
-    /// kennel editor) four times a day and turns its list of upcoming runs into
+    /// kennel editor) every 15 minutes on a run day and every ~6 hours
+    /// otherwise (nonApi_getRunsPageKennels decides who is due) and turns its list of upcoming runs into
     /// Harrier Central runs (James, 2026-10-04).
     ///
     /// Per kennel:
@@ -50,6 +51,22 @@ namespace HcWebApi.Endpoints
 
         private const int MaxPageChars = 40_000;
 
+        // gpt-4.1-mini Global Standard list price, USD per million tokens
+        // (2026-10). Overridable without a deploy by AZURE_OPENAI_USD_PER_M_IN
+        // / _OUT, so LOG.AiUsage stays right if the price or model changes.
+        private const decimal DefaultUsdPerMIn = 0.40m;
+        private const decimal DefaultUsdPerMOut = 1.60m;
+
+        // One timer run or one portal Test: LOG.AiUsage.SessionId groups its
+        // model calls. Function classes are created per invocation, so an
+        // instance field is per run.
+        private Guid _sessionId = Guid.NewGuid();
+        private string _feature = "runsPage";
+
+        // This run's totals for its HC.IntegrationJob row (the monitor's
+        // Runs page tile).
+        private int _found, _inserted, _updated;
+
         public RunsPageImport(ILogger<RunsPageImport> logger) { _log = logger; }
 
         /// <summary>
@@ -69,9 +86,9 @@ namespace HcWebApi.Endpoints
         private static StageException Stage(string stage, Exception ex) =>
             ex as StageException ?? new StageException(stage, ex.Message, ex);
 
-        /// <summary>00:07, 06:07, 12:07 and 18:07 UTC.</summary>
+        /// <summary>Every 15 minutes (:07, :22, :37, :52); the SP picks the kennels that are due.</summary>
         [Function("RunsPageImport")]
-        public async Task Timer([TimerTrigger("0 7 0,6,12,18 * * *")] TimerInfo timer)
+        public async Task Timer([TimerTrigger("0 7/15 * * * *")] TimerInfo timer)
         {
             await RunAllAsync(null, force: false);
         }
@@ -97,6 +114,8 @@ namespace HcWebApi.Endpoints
 
         private async Task<List<object>> RunAllAsync(Guid? onlyKennel, bool force)
         {
+            _sessionId = Guid.NewGuid();
+            _feature = "runsPage";
             var results = new List<object>();
             string? cs = Environment.GetEnvironmentVariable("HcDbConnectionString");
             if (string.IsNullOrWhiteSpace(cs)) { _log.LogWarning("RunsPageImport: no HcDbConnectionString"); return results; }
@@ -110,6 +129,10 @@ namespace HcWebApi.Endpoints
                 return results;
             }
 
+            DateTimeOffset started = DateTimeOffset.UtcNow;
+            var nice = new List<string>();
+            var naughty = new List<string>();
+            var errors = new List<string>();
             int unchangedN = 0, importedN = 0, failedN = 0;
             foreach (KennelRow k in kennels)
             {
@@ -118,11 +141,14 @@ namespace HcWebApi.Endpoints
                 {
                     status = await ImportOneAsync(cs, k, force);
                     if (status == "unchanged") unchangedN++; else importedN++;
+                    nice.Add(k.ShortName);
                 }
                 catch (Exception ex)
                 {
                     failedN++;
                     StageException se = Stage("import", ex);
+                    naughty.Add(k.ShortName);
+                    errors.Add($"{k.ShortName}: {se.Stage}: {Truncate(se.Message, 200)}");
                     status = $"{Stamp()} — {StageWords(se.Stage)}: {se.Message}";
                     _log.LogWarning("RunsPageImport: {Kennel} {Stage} failed: {Message}", k.ShortName, se.Stage, se.Message);
                     await LogErrorAsync(cs, k, se.Stage, se.Message);
@@ -131,6 +157,8 @@ namespace HcWebApi.Endpoints
                 results.Add(new { kennel = k.ShortName, status });
             }
             if (kennels.Count > 0)
+                await RecordJobAsync(cs, started, nice, naughty, errors);
+            if (importedN + failedN > 0)
                 await LogGeneralAsync(cs, "runsPageRun",
                     $"runs page timer: {kennels.Count} kennel(s) — {unchangedN} unchanged, {importedN} read by the model, {failedN} failed",
                     null, string.Join(", ", results.Select(r => r.ToString())));
@@ -150,6 +178,7 @@ namespace HcWebApi.Endpoints
 
             (JArray runs, int tokens) = await ExtractAndResolveAsync(cs, k, text);
             ImportResult res = await ImportAsync(cs, k.KennelId, ToSqlJson(runs), dryRun: false);
+            _found += runs.Count; _inserted += res.Inserted; _updated += res.Updated;
             await FlagSuspectAsync(cs, k, text, runs, res);
             string status = StatusLine(runs.Count, res, tokens);
             await SetStateAsync(cs, k.KennelId, hash, true, Truncate(status, 500));
@@ -236,6 +265,8 @@ namespace HcWebApi.Endpoints
             string publicKennelId = (args.Value<string>("publicKennelId") ?? "").ToLowerInvariant();
             string url = (args.Value<string>("url") ?? "").Trim();
             bool doImport = args.Value<bool?>("import") ?? false;
+            _sessionId = Guid.NewGuid();
+            _feature = "runsPageTest";
             if (!Guid.TryParse(deviceId, out Guid dev) || !Guid.TryParse(publicKennelId, out Guid pk) || accessToken.Length == 0)
                 return Fail("The request is missing its sign-in.", 400);
 
@@ -261,8 +292,14 @@ namespace HcWebApi.Endpoints
                 (string text, string hash) = await ReadPageAsync(url);
                 if (text.Length < 20) throw new StageException("fetch", "the page has no readable text (it may need JavaScript, or be behind a login)");
                 (JArray runs, int tokens) = await ExtractAndResolveAsync(cs, k with { Url = url }, text);
+                DateTimeOffset started = DateTimeOffset.UtcNow;
                 ImportResult res = await ImportAsync(cs, k.KennelId, ToSqlJson(runs), dryRun: !doImport);
                 await FlagSuspectAsync(cs, k with { Url = url }, text, runs, res);
+                if (doImport)
+                {
+                    _found = runs.Count; _inserted = res.Inserted; _updated = res.Updated;
+                    await RecordJobAsync(cs, started, new List<string> { k.ShortName + " (Test)" }, new List<string>(), new List<string>());
+                }
                 string status = StatusLine(runs.Count, res, tokens);
                 if (doImport)
                 {
@@ -467,23 +504,30 @@ namespace HcWebApi.Endpoints
                         await Task.Delay(wait);
                         continue;
                     }
+                    await RecordAiUsageAsync(cs, k, deployment, $"http_{statusCode}", 0, 0, clock.ElapsedMilliseconds, $"attempts={attempts}");
                     throw new StageException("model", $"Azure OpenAI returned {statusCode}: {Truncate(body, 300)}");
                 }
                 catch (TaskCanceledException)
                 {
                     if (attempts < 2) continue;
+                    await RecordAiUsageAsync(cs, k, deployment, "timeout", 0, 0, clock.ElapsedMilliseconds, $"attempts={attempts}");
                     throw new StageException("model", "Azure OpenAI did not answer within 30 seconds");
                 }
                 catch (HttpRequestException ex)
                 {
                     if (attempts < 2) { await Task.Delay(3_000); continue; }
+                    await RecordAiUsageAsync(cs, k, deployment, "unreachable", 0, 0, clock.ElapsedMilliseconds, Truncate(ex.Message, 200));
                     throw new StageException("model", "Azure OpenAI could not be reached: " + ex.Message, ex);
                 }
             }
 
             JObject reply;
             try { reply = JObject.Parse(body); }
-            catch (Exception ex) { throw new StageException("model", "the model's reply was not JSON: " + Truncate(body, 200), ex); }
+            catch (Exception ex)
+            {
+                await RecordAiUsageAsync(cs, k, deployment, "bad_json", 0, 0, clock.ElapsedMilliseconds, Truncate(body, 200));
+                throw new StageException("model", "the model's reply was not JSON: " + Truncate(body, 200), ex);
+            }
             string finish = reply.SelectToken("choices[0].finish_reason")?.ToString() ?? "";
             int promptTokens = reply.SelectToken("usage.prompt_tokens")?.Value<int>() ?? 0;
             int outTokens = reply.SelectToken("usage.completion_tokens")?.Value<int>() ?? 0;
@@ -492,20 +536,19 @@ namespace HcWebApi.Endpoints
 
             JArray runs = new();
             string? problem = null;
-            if (finish == "length") problem = "the model's answer was cut off (too many runs on one page?)";
-            else if (finish == "content_filter") problem = "Azure's content filter blocked the page";
-            else if (!string.IsNullOrEmpty(refusal)) problem = "the model refused: " + Truncate(refusal, 200);
+            string outcome = "ok";
+            if (finish == "length") { outcome = "length"; problem = "the model's answer was cut off (too many runs on one page?)"; }
+            else if (finish == "content_filter") { outcome = "content_filter"; problem = "Azure's content filter blocked the page"; }
+            else if (!string.IsNullOrEmpty(refusal)) { outcome = "refusal"; problem = "the model refused: " + Truncate(refusal, 200); }
             else
             {
                 try { runs = JObject.Parse(content)["runs"] as JArray ?? new JArray(); }
-                catch (Exception) { problem = "the model's JSON could not be read: " + Truncate(content, 200); }
+                catch (Exception) { outcome = "bad_json"; problem = "the model's JSON could not be read: " + Truncate(content, 200); }
             }
 
-            // Every model call, for cost and speed: tokens in/out, time, result.
-            await LogGeneralAsync(cs, "runsPageModel",
-                $"runs page model call: {k.ShortName} — {runs.Count} run(s), {promptTokens}+{outTokens} tokens, {clock.ElapsedMilliseconds} ms, finish={finish}, attempts={attempts}",
-                k.KennelId.ToString(),
-                $"deployment={deployment} status={statusCode} textChars={text.Length}" + (problem == null ? "" : " problem=" + problem));
+            // Every model call, for cost: LOG.AiUsage (the monitor's AI Tokens row).
+            await RecordAiUsageAsync(cs, k, deployment, outcome, promptTokens, outTokens, clock.ElapsedMilliseconds,
+                $"runs={runs.Count} textChars={text.Length} attempts={attempts}" + (problem == null ? "" : " — " + problem));
 
             if (problem != null) throw new StageException("model", problem);
             return (runs, promptTokens + outTokens);
@@ -696,6 +739,66 @@ namespace HcWebApi.Endpoints
                 await cmd.ExecuteNonQueryAsync();
             }
             catch { /* best effort */ }
+        }
+
+        private async Task RecordAiUsageAsync(string cs, KennelRow k, string model, string outcome,
+            int promptTokens, int completionTokens, long ms, string? detail)
+        {
+            decimal perMIn = decimal.TryParse(Environment.GetEnvironmentVariable("AZURE_OPENAI_USD_PER_M_IN"),
+                System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out decimal pi) ? pi : DefaultUsdPerMIn;
+            decimal perMOut = decimal.TryParse(Environment.GetEnvironmentVariable("AZURE_OPENAI_USD_PER_M_OUT"),
+                System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out decimal po) ? po : DefaultUsdPerMOut;
+            decimal cost = (promptTokens * perMIn + completionTokens * perMOut) / 1_000_000m;
+            try
+            {
+                using var conn = new SqlConnection(cs);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("HC6.nonApi_logAiUsage", conn) { CommandType = CommandType.StoredProcedure };
+                cmd.Parameters.Add("@sessionId", SqlDbType.UniqueIdentifier).Value = _sessionId;
+                cmd.Parameters.Add("@feature", SqlDbType.NVarChar, -1).Value = _feature;
+                cmd.Parameters.Add("@kennelId", SqlDbType.UniqueIdentifier).Value = k.KennelId;
+                cmd.Parameters.Add("@model", SqlDbType.NVarChar, -1).Value = model;
+                cmd.Parameters.Add("@promptTokens", SqlDbType.Int).Value = promptTokens;
+                cmd.Parameters.Add("@completionTokens", SqlDbType.Int).Value = completionTokens;
+                var c = cmd.Parameters.Add("@costUsd", SqlDbType.Decimal); c.Precision = 12; c.Scale = 8; c.Value = cost;
+                cmd.Parameters.Add("@durationMs", SqlDbType.Int).Value = (int)Math.Min(ms, int.MaxValue);
+                cmd.Parameters.Add("@outcome", SqlDbType.NVarChar, -1).Value = outcome;
+                cmd.Parameters.Add("@detail", SqlDbType.NVarChar, -1).Value = (object?)detail ?? DBNull.Value;
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                // Never fail an import over its own bookkeeping — but say so.
+                _log.LogWarning("RunsPageImport: AI usage not recorded: {Message}", ex.Message);
+                await LogErrorAsync(cs, k, "usage-log", "AI usage row not written: " + ex.Message);
+            }
+        }
+
+        private async Task RecordJobAsync(string cs, DateTimeOffset started,
+            List<string> nice, List<string> naughty, List<string> errors)
+        {
+            try
+            {
+                using var conn = new SqlConnection(cs);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("HC6.nonApi_recordRunsPageJob", conn) { CommandType = CommandType.StoredProcedure };
+                cmd.Parameters.Add("@startedAt", SqlDbType.DateTimeOffset).Value = started;
+                cmd.Parameters.Add("@runsFound", SqlDbType.Int).Value = _found;
+                cmd.Parameters.Add("@runsInserted", SqlDbType.Int).Value = _inserted;
+                cmd.Parameters.Add("@runsUpdated", SqlDbType.Int).Value = _updated;
+                cmd.Parameters.Add("@errorCount", SqlDbType.Int).Value = errors.Count;
+                cmd.Parameters.Add("@errorInfo", SqlDbType.NVarChar, -1).Value = string.Join("\n", errors);
+                cmd.Parameters.Add("@kennelsSucceeded", SqlDbType.Int).Value = nice.Count;
+                cmd.Parameters.Add("@kennelsSucceededInfo", SqlDbType.NVarChar, -1).Value = string.Join(",", nice);
+                cmd.Parameters.Add("@kennelsFailed", SqlDbType.Int).Value = naughty.Count;
+                cmd.Parameters.Add("@kennelsFailedInfo", SqlDbType.NVarChar, -1).Value = string.Join(",", naughty);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning("RunsPageImport: job row not written: {Message}", ex.Message);
+                await LogErrorAsync(cs, null, "DB", "integration job row not written: " + ex.Message);
+            }
         }
 
         private static async Task LogGeneralAsync(string cs, string source, string message, string? param, string? data)

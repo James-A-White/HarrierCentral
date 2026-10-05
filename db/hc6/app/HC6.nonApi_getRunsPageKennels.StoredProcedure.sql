@@ -4,7 +4,8 @@ AS
 -- =====================================================================
 -- Procedure: HC6.nonApi_getRunsPageKennels
 -- Description: The kennels whose runs page the API's RunsPageImport reads
---   (2026-10-04): every live kennel with a RunsPageUrl, with what the
+--   (2026-10-04): every live kennel set to Inbound Integration 6 with a
+--   RunsPageUrl (2026-10-05), with what the
 --   reader needs — the last page fingerprint (skip the model when it has not
 --   changed), the kennel's local "today" (a page that leaves the year off is
 --   read against it) and its latest run, default start time and time zone.
@@ -41,10 +42,27 @@ BEGIN TRY
           AND e.EventStartDatetimeGmt <= SYSDATETIMEOFFSET()
         ORDER BY e.EventStartDatetimeGmt DESC) last
     -- One kennel by id (the portal's Test, an "import now") whether or not
-    -- it has a runs page saved yet; otherwise every kennel that has one.
+    -- it has a runs page saved yet. Otherwise (the timer) every kennel whose
+    -- Inbound Integration drop-down says "Runs page (AI)" and that has a
+    -- runs page address. The drop-down is the switch; HC.Integration 6's
+    -- Enabled flag is shown on the monitor tile only (James, 2026-10-05).
     WHERE k.deleted = 0 AND ISNULL(k.removed, 0) = 0
       AND ((@kennelId IS NOT NULL AND k.id = @kennelId)
-           OR (@kennelId IS NULL AND k.RunsPageUrl IS NOT NULL AND LEN(k.RunsPageUrl) > 10));
+           OR (@kennelId IS NULL AND k.InboundIntegrationId = 6
+               AND k.RunsPageUrl IS NOT NULL AND LEN(k.RunsPageUrl) > 10
+               -- Due? The timer fires every 15 minutes (2026-10-05). On a run
+               -- day (a run on the kennel's local today) every kennel is due
+               -- each time, so a late change of start is caught within 15
+               -- minutes; otherwise once every ~6 hours. Reading an unchanged
+               -- page costs one small fetch — the model runs only when the
+               -- text changed (James, 2026-10-05).
+               AND (k.RunsPageCheckedAt IS NULL
+                    OR k.RunsPageCheckedAt < DATEADD(MINUTE, -350, SYSUTCDATETIME())
+                    OR (k.RunsPageCheckedAt < DATEADD(MINUTE, -13, SYSUTCDATETIME())
+                        AND EXISTS (SELECT 1 FROM HC.Event t
+                                    WHERE t.KennelId = k.id AND t.deleted = 0 AND ISNULL(t.removed, 0) = 0
+                                      AND t.EventStartLocalDate =
+                                          CAST(SYSDATETIMEOFFSET() AT TIME ZONE COALESCE(tz.Timezone, 'UTC') AS DATE))))));
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

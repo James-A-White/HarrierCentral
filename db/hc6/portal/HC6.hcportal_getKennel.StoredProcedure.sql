@@ -184,6 +184,7 @@ BEGIN TRY
 		-- Kennel runs-page import (2026-10-04): the address, and what the last
 		-- read found, for the editor to show.
 		, k.[RunsPageUrl] as runsPageUrl
+		, k.[InboundIntegrationId] as inboundIntegrationId
 		, k.[RunsPageStatus] as runsPageStatus
 		, CONVERT(NVARCHAR(30), k.[RunsPageCheckedAt], 126) as runsPageCheckedAt
 		, k.[TrailSymbolsConfigJson] as trailSymbolsConfigJson

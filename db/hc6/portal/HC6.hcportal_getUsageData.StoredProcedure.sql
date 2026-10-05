@@ -9,7 +9,8 @@ AS
 --              HC admin portal dashboard. Includes app version
 --              distribution, integration job status, usage metrics
 --              across data types (Account, Activity, Event, Kennel,
---              Login, Payment, Portal, Error, Push, App Error), recent login details,
+--              Login, Payment, Portal, Error, Push, App Error, PackTrack,
+--              AI Tokens, Azure Cost [pence] — the last two added 2026-10-05), recent login details,
 --              and recently updated/active events.
 -- Parameters: @deviceId, @accessToken (auth)
 -- Returns: Rowset 1: VersionData (iOS vs Android)
@@ -92,37 +93,67 @@ BEGIN TRY
 	ORDER BY SUBSTRING(HcVersion, PATINDEX('%-%', HcVersion) + 1, 1000) DESC;
 
 	-- Result Set 2: Integration job data
+	-- The AI runs-page reader (integration 6) took the Facebook tile's place
+	-- (James, 2026-10-05; Facebook has been off since 2023). It is listed
+	-- even before its first job, because the portal hides every tile when
+	-- fewer than three come back. For 6 only: newRuns14d / updatedRuns14d
+	-- sum the '<inserted>|<updated>' that HC6.nonApi_recordRunsPageJob
+	-- writes into RecordsSuccessInfo, and kennelsUsing counts kennels whose
+	-- Inbound Integration is set to it. NULL on every other tile.
+	DECLARE @rpNew INT, @rpUpdated INT, @rpKennels INT;
+	SELECT @rpNew = COALESCE(SUM(TRY_CAST(LEFT(ij.RecordsSuccessInfo, CHARINDEX('|', ij.RecordsSuccessInfo) - 1) AS INT)), 0),
+	       @rpUpdated = COALESCE(SUM(TRY_CAST(SUBSTRING(ij.RecordsSuccessInfo, CHARINDEX('|', ij.RecordsSuccessInfo) + 1, 20) AS INT)), 0)
+	FROM HC.IntegrationJob ij WITH (NOLOCK)
+	WHERE ij.IntegrationId = 6 AND ij.endedAt >= DATEADD(DAY, -14, SYSDATETIMEOFFSET())
+	  AND CHARINDEX('|', ij.RecordsSuccessInfo) > 1;
+	SELECT @rpKennels = COUNT(*) FROM HC.Kennel WITH (NOLOCK)
+	WHERE InboundIntegrationId = 6 AND deleted = 0;
+
 	;WITH LatestJobs AS (
 		SELECT
+			intg.IntegrationId,
 			intg.IntegrationAbbreviation,
 			MAX(ij.IntegrationJobId) AS IntegrationJobId,
 			intg.Enabled AS integrationEnabled,
 			intg.Interval
-		FROM HC.IntegrationJob ij WITH (NOLOCK)
-		INNER JOIN HC.Integration intg WITH (NOLOCK) ON ij.IntegrationId = intg.IntegrationId
-		WHERE ij.endedAt IS NOT NULL
-		GROUP BY intg.IntegrationAbbreviation, intg.Enabled, intg.Interval
+		FROM HC.Integration intg WITH (NOLOCK)
+		LEFT JOIN HC.IntegrationJob ij WITH (NOLOCK)
+			ON ij.IntegrationId = intg.IntegrationId AND ij.endedAt IS NOT NULL
+		WHERE intg.IntegrationId <> 1
+		GROUP BY intg.IntegrationId, intg.IntegrationAbbreviation, intg.Enabled, intg.Interval
+		HAVING MAX(ij.IntegrationJobId) IS NOT NULL OR intg.IntegrationId = 6
 	)
 	SELECT TOP 10
 		lj.IntegrationAbbreviation AS integrationAbbreviation,
 		lj.integrationEnabled AS integrationEnabled,
 		lj.Interval AS interval,
-		ij.IntegrationId AS integrationId,
-		ij.RecordsRead AS recordsRead,
-		ij.RecordsWritten AS recordsWritten,
-		ij.RecordsFailedInfo AS recordsFailedInfo,
-		ij.ErrorCount AS errorCount,
-		ij.ErrorInfo AS errorInfo,
-		ij.endedAt AS endedAt,
-		DATEDIFF(MINUTE, ij.endedAt, GETDATE()) AS minutesAgo,
-		ij.KennelsSucceeded AS kennelsSucceeded,
-		ij.KennelsSucceededInfo AS kennelsSucceededInfo,
-		ij.KennelsFailed AS kennelsFailed,
-		ij.KennelsFailedInfo AS kennelsFailedInfo,
-		@futureRunCount AS futureRunCount
+		lj.IntegrationId AS integrationId,
+		COALESCE(ij.RecordsRead, 0) AS recordsRead,
+		COALESCE(ij.RecordsWritten, 0) AS recordsWritten,
+		COALESCE(ij.RecordsFailedInfo, '') AS recordsFailedInfo,
+		COALESCE(ij.ErrorCount, 0) AS errorCount,
+		COALESCE(ij.ErrorInfo, '') AS errorInfo,
+		-- A tile with no job yet reads as "never run": an old date.
+		COALESCE(ij.endedAt, CAST('2000-01-01T00:00:00+00:00' AS DATETIMEOFFSET(7))) AS endedAt,
+		COALESCE(DATEDIFF(MINUTE, ij.endedAt, GETDATE()), 999999) AS minutesAgo,
+		COALESCE(ij.KennelsSucceeded, 0) AS kennelsSucceeded,
+		COALESCE(ij.KennelsSucceededInfo, '') AS kennelsSucceededInfo,
+		COALESCE(ij.KennelsFailed, 0) AS kennelsFailed,
+		COALESCE(ij.KennelsFailedInfo, '') AS kennelsFailedInfo,
+		@futureRunCount AS futureRunCount,
+		CASE WHEN lj.IntegrationId = 6 THEN @rpNew END AS newRuns14d,
+		CASE WHEN lj.IntegrationId = 6 THEN @rpUpdated END AS updatedRuns14d,
+		CASE WHEN lj.IntegrationId = 6 THEN @rpKennels END AS kennelsUsing
 	FROM LatestJobs lj
-	INNER JOIN HC.IntegrationJob ij WITH (NOLOCK) ON lj.IntegrationJobId = ij.IntegrationJobId
+	LEFT JOIN HC.IntegrationJob ij WITH (NOLOCK) ON lj.IntegrationJobId = ij.IntegrationJobId
 	ORDER BY lj.IntegrationAbbreviation;
+
+	-- Azure Cost windows (row 12). Cost arrives per UTC day and keeps
+	-- settling for about a day, so the row compares COMPLETE days only — a
+	-- day read 2+ days after it began. Comparing a half-filled yesterday with
+	-- a full day before would show a false green every morning.
+	DECLARE @costDay DATE = (SELECT MAX(CostDate) FROM LOG.AzureDailyCost
+	                         WHERE RetrievedAt >= DATEADD(DAY, 2, CAST(CostDate AS DATETIME2(0))));
 
 	-- Result Set 3: Usage statistics across different data types
 	;WITH DateBounds AS (
@@ -375,6 +406,47 @@ BEGIN TRY
 		WHERE c.LoggedAt >= b.m2
 			AND (c.ErrorLog LIKE '%[[]ERROR][[]%' OR c.ErrorLog LIKE '[[]METRICKIT]%')
 			AND HC6.ClientLogAppError(c.ErrorLog) IS NOT NULL
+
+		UNION ALL
+
+		-- AI Tokens: tokens billed by AI model calls (LOG.AiUsage — the runs
+		-- page reader today). Fewer is better, so the portal colours it like
+		-- Error: green when lower (James, 2026-10-05). Cost per call is in
+		-- the drill-down.
+		SELECT
+			'AI Tokens' AS dataType,
+			11 AS id,
+			SUM(CASE WHEN a.CalledAt >= b.hr1 THEN a.TotalTokens ELSE 0 END),
+			SUM(CASE WHEN a.CalledAt >= b.hr2 AND a.CalledAt < b.hr1 THEN a.TotalTokens ELSE 0 END),
+			SUM(CASE WHEN a.CalledAt >= b.d1 THEN a.TotalTokens ELSE 0 END),
+			SUM(CASE WHEN a.CalledAt >= b.d2 AND a.CalledAt < b.d1 THEN a.TotalTokens ELSE 0 END),
+			SUM(CASE WHEN a.CalledAt >= b.w1 THEN a.TotalTokens ELSE 0 END),
+			SUM(CASE WHEN a.CalledAt >= b.w2 AND a.CalledAt < b.w1 THEN a.TotalTokens ELSE 0 END),
+			SUM(CASE WHEN a.CalledAt >= b.m1 THEN a.TotalTokens ELSE 0 END),
+			SUM(CASE WHEN a.CalledAt >= b.m2 AND a.CalledAt < b.m1 THEN a.TotalTokens ELSE 0 END)
+		FROM DateBounds b
+		LEFT JOIN LOG.AiUsage a WITH (NOLOCK) ON a.CalledAt >= b.m2
+
+		UNION ALL
+
+		-- Azure Cost, in PENCE (the grid is whole numbers; the portal shows
+		-- £). Day = the latest complete day vs the day before; Week = the 7
+		-- complete days ending then vs the 7 before; Month = 30 vs 30. No
+		-- hourly figure exists, so Hour is 0/0 (neutral). Lower is green.
+		SELECT
+			'Azure Cost' AS dataType,
+			12 AS id,
+			0,
+			0,
+			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate = @costDay THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate = DATEADD(DAY, -1, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate > DATEADD(DAY, -7, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate <= DATEADD(DAY, -7, @costDay) AND c.CostDate > DATEADD(DAY, -14, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate > DATEADD(DAY, -30, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate <= DATEADD(DAY, -30, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT)
+		FROM (SELECT 1 AS one) x
+		LEFT JOIN LOG.AzureDailyCost c WITH (NOLOCK)
+			ON c.CostDate <= @costDay AND c.CostDate > DATEADD(DAY, -60, @costDay)
 	) d
 	ORDER BY d.id;
 

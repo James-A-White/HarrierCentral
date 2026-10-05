@@ -391,6 +391,68 @@ BEGIN TRY
 	END
 
 	-- =============================================
+	-- CATEGORY 11: AI Tokens — one row per model call (LOG.AiUsage).
+	-- sessionId groups the calls of one timer run or one portal Test.
+	-- =============================================
+	IF (@categoryId = 11)
+	BEGIN
+		SELECT
+			a.CalledAt                                    AS calledAt,
+			a.Feature                                     AS feature,
+			COALESCE(k.KennelShortName, '')               AS kennel,
+			a.Model                                       AS model,
+			a.PromptTokens                                AS promptTokens,
+			a.CompletionTokens                            AS completionTokens,
+			a.TotalTokens                                 AS totalTokens,
+			CAST(a.CostUsd AS DECIMAL(12,6))              AS costUsd,
+			a.DurationMs                                  AS durationMs,
+			a.Outcome                                     AS outcome,
+			LEFT(CAST(a.SessionId AS NVARCHAR(40)), 8)    AS session,
+			COALESCE(a.Detail, '')                        AS detail
+		FROM LOG.AiUsage a WITH (NOLOCK)
+		LEFT OUTER JOIN HC.Kennel k WITH (NOLOCK) ON k.id = a.KennelId
+		WHERE a.CalledAt > @cutoffDate
+		ORDER BY a.CalledAt DESC
+		OPTION (RECOMPILE)
+	END
+
+	-- =============================================
+	-- CATEGORY 12: Azure Cost — per day per service, with the change on the
+	-- day before, so a jump names the service that made it. Days come from
+	-- the window (Hour/Day = the last 2 days with data, Week = 14), newest
+	-- first, biggest cost first within a day. Totals rows are service
+	-- '(all services)'.
+	-- =============================================
+	IF (@categoryId = 12)
+	BEGIN
+		DECLARE @costTo DATE = (SELECT MAX(CostDate) FROM LOG.AzureDailyCost);
+		DECLARE @costFrom DATE = DATEADD(DAY, -(CASE WHEN @days >= 7 THEN 14 ELSE 2 END) + 1, @costTo);
+		;WITH c AS (
+			SELECT CostDate, ServiceName, Cost, Currency, RetrievedAt FROM LOG.AzureDailyCost WITH (NOLOCK)
+			UNION ALL
+			SELECT CostDate, '(all services)', SUM(Cost), MAX(Currency), MIN(RetrievedAt)
+			FROM LOG.AzureDailyCost WITH (NOLOCK) GROUP BY CostDate
+		)
+		SELECT
+			cur.CostDate                                          AS costDate,
+			cur.ServiceName                                       AS service,
+			CAST(cur.Cost AS DECIMAL(10,2))                       AS cost,
+			CAST(COALESCE(prev.Cost, 0) AS DECIMAL(10,2))         AS dayBefore,
+			CAST(cur.Cost - COALESCE(prev.Cost, 0) AS DECIMAL(10,2)) AS change,
+			cur.Currency                                          AS currency,
+			CASE WHEN cur.RetrievedAt >= DATEADD(DAY, 2, CAST(cur.CostDate AS DATETIME2(0)))
+			     THEN 'complete' ELSE 'still settling' END        AS status
+		FROM c cur
+		LEFT JOIN c prev ON prev.ServiceName = cur.ServiceName
+		                AND prev.CostDate = DATEADD(DAY, -1, cur.CostDate)
+		WHERE cur.CostDate BETWEEN @costFrom AND @costTo
+		  AND (cur.Cost >= 0.005 OR cur.ServiceName = '(all services)')
+		ORDER BY cur.CostDate DESC,
+		         CASE WHEN cur.ServiceName = '(all services)' THEN 0 ELSE 1 END,
+		         cur.Cost DESC;
+	END
+
+	-- =============================================
 	-- CATEGORY 100: Version Adoption
 	-- =============================================
 	IF (@categoryId = 100)
@@ -436,5 +498,8 @@ BEGIN TRY
 END TRY
 BEGIN CATCH
 	IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+	-- Logged (2026-10-05): this CATCH used to answer without a server record.
+	INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+	VALUES (NEWID(), '<unknown>', 'Unhandled error in getCategoryDetail2', ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), @hasherId);
 	SELECT 0 AS Success, ERROR_MESSAGE() AS ErrorMessage;
 END CATCH

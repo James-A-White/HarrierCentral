@@ -88,6 +88,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_editKennel]
 	-- RunsPageImport (2026-10-04). NVARCHAR(MAX) so a long paste is refused
 	-- with a message, not truncated. NULL = unchanged; '' clears.
 	@runsPageUrl NVARCHAR(MAX) = NULL,
+	-- Where the kennel's runs come from (HC.Integration, Direction 0):
+	-- 0 Harrier Central, 1 Facebook, 2 Google Calendar, 3 San Diego,
+	-- 5 Berlin, 6 Runs page (AI). 6 is what makes the API's timer read the
+	-- runs page (2026-10-05). NULL = unchanged.
+	@inboundIntegrationId INT = NULL,
 	@excludeFromLeaderboard SMALLINT = NULL,
 	@notificationMinutesBeforeRunForChatPushNotifications SMALLINT = NULL,
 	@notificationMinutesBeforeRunForCheckinReminder SMALLINT = NULL,
@@ -138,6 +143,8 @@ AS
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 -- Changes:
+--   - 2026-10-05: @inboundIntegrationId — the editor's Inbound Integration
+--     drop-down; must name an inbound HC.Integration row.
 --   - 2026-10-04: @runsPageUrl (kennel runs-page import). Deploy AFTER
 --     db/hc6/app/2026-10-04_kennel_runs_page.sql has run: the column does
 --     not exist before it. A new address clears RunsPageHash, so the next
@@ -179,6 +186,14 @@ BEGIN TRY
 	        OR NOT (LTRIM(RTRIM(@runsPageUrl)) LIKE N'http://%' OR LTRIM(RTRIM(@runsPageUrl)) LIKE N'https://%'))
 	BEGIN
 		SELECT 0 AS Success, 'The runs page must be a web address starting with https:// (500 characters at most).' AS ErrorMessage;
+		RETURN;
+	END
+
+	-- Validation: inbound integration (an inbound HC.Integration row)
+	IF @inboundIntegrationId IS NOT NULL
+	   AND NOT EXISTS (SELECT 1 FROM HC.Integration WHERE IntegrationId = @inboundIntegrationId AND Direction = 0)
+	BEGIN
+		SELECT 0 AS Success, 'That inbound integration does not exist.' AS ErrorMessage;
 		RETURN;
 	END
 
@@ -364,6 +379,7 @@ BEGIN TRY
 		RunsPageHash = CASE WHEN @runsPageUrl IS NULL
 		                     OR ISNULL(NULLIF(LTRIM(RTRIM(@runsPageUrl)), N''), N'') = ISNULL(RunsPageUrl, N'')
 		                    THEN RunsPageHash ELSE NULL END,
+		InboundIntegrationId = COALESCE(@inboundIntegrationId, InboundIntegrationId),
 		ExcludeFromLeaderboard = COALESCE(@excludeFromLeaderboard, ExcludeFromLeaderboard),
 		NotificationMinutesBeforeRunForChatPushNotifications = COALESCE(@notificationMinutesBeforeRunForChatPushNotifications, NotificationMinutesBeforeRunForChatPushNotifications),
 		NotificationMinutesBeforeRunForCheckinReminder = COALESCE(@notificationMinutesBeforeRunForCheckinReminder, NotificationMinutesBeforeRunForCheckinReminder),
