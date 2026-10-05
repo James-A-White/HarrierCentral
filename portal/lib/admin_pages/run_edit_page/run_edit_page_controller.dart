@@ -118,6 +118,10 @@ class RunEditPageController extends TabUiController
   /// Timer for auto-save interval.
   Timer? _autoSaveTimer;
 
+  /// Set once the editor has agreed that saving takes an AI-imported run
+  /// off the import (integration 6) — asked once per editing session.
+  bool _aiEditConfirmed = false;
+
   /// In-flight save, if any. The auto-save timer and the Save button both call
   /// [save], and `isAddMode` is only cleared once the round trip returns — so
   /// two overlapping calls would both post without a publicEventId and create
@@ -847,6 +851,21 @@ class RunEditPageController extends TabUiController
   Future<void> _save(bool showDialog) async {
     if (!isFormDirty.value) return;
 
+    // A run the AI imported from the kennel's website stops syncing once it
+    // is saved here (the server adopts it as a Harrier Central run — James,
+    // 2026-10-05). Ask first; auto-save never adopts one silently.
+    if (inboundIntegrationId.value == 6 && !_aiEditConfirmed) {
+      if (!showDialog) {
+        autoSaveCounter.value = 0;
+        return;
+      }
+      if (!await _confirmAiEdit()) {
+        autoSaveCounter.value = 0;
+        return;
+      }
+      _aiEditConfirmed = true;
+    }
+
     autoSaveCounter.value = -1; // Show "Saving..."
 
     try {
@@ -1070,6 +1089,34 @@ class RunEditPageController extends TabUiController
         control.textController!.text = control.editedFieldValue ?? '';
       }
     }
+  }
+
+  /// "This run is kept in step with the kennel's website by AI…" — true to
+  /// save anyway.
+  Future<bool> _confirmAiEdit() async {
+    final bool? ok = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Stop syncing this run with the website?'),
+        content: const Text(
+          'This run was imported by AI from the kennel\'s own runs page, and '
+          'Harrier Central keeps it in step with that page.\n\n'
+          'Saving your changes makes it a Harrier Central run: the AI will no '
+          'longer update it from the website, so later changes there will not '
+          'reach this run.',
+        ),
+        actions: [
+          HcButton.secondary(
+            label: 'Cancel',
+            onPressed: () => Get.back<bool>(result: false),
+          ),
+          HcButton.primary(
+            label: 'Save anyway',
+            onPressed: () => Get.back<bool>(result: true),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
   }
 
   /// Closes the editor and navigates back.

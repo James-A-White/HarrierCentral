@@ -43,12 +43,15 @@ class UsageDataPage extends StatelessWidget {
             flex: 60,
             child: Column(
               children: <Widget>[
+                // The grid gets the room; the import tiles are a slim band
+                // (James, 2026-10-05: "reduce the size of the status boxes
+                // … so the lines above can be larger").
                 Expanded(
-                  flex: 55,
+                  flex: 66,
                   child: _AppStats(controller: controller),
                 ),
                 Expanded(
-                  flex: 20,
+                  flex: 9,
                   child: _IntegrationStats(controller: controller),
                 ),
                 const SizedBox(height: 4),
@@ -328,13 +331,40 @@ class _AppStats extends StatelessWidget {
     return Obx(() {
       if (controller.appActivity.isEmpty) return const SizedBox.shrink();
 
-      return Column(
-        children: <Widget>[
-          _AppStatsHeaderRow(),
-          const Divider(color: Colors.grey, height: 1, thickness: 1),
-          for (var i = 0; i < controller.appActivity.length; i++)
-            _AppStatsRow(controller: controller, index: i),
-        ],
+      // Rows share the height, but never shrink below a readable minimum:
+      // past that the grid scrolls (James, 2026-10-05 — 13 rows were
+      // getting squeezed).
+      return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints box) {
+          const double minRow = 44;
+          const double headerHeight = 32;
+          final int n = controller.appActivity.length;
+          final double room = box.maxHeight - headerHeight - 1;
+          final double rowHeight = (room / n).clamp(minRow, double.infinity);
+          return Column(
+            children: <Widget>[
+              SizedBox(height: headerHeight, child: _AppStatsHeaderRow()),
+              const Divider(color: Colors.grey, height: 1, thickness: 1),
+              Expanded(
+                child: Scrollbar(
+                  child: SingleChildScrollView(
+                    primary: false,
+                    child: Column(
+                      children: <Widget>[
+                        for (var i = 0; i < n; i++)
+                          _AppStatsRow(
+                            controller: controller,
+                            index: i,
+                            height: rowHeight,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       );
     });
   }
@@ -368,10 +398,15 @@ class _AppStatsHeaderRow extends StatelessWidget {
 }
 
 class _AppStatsRow extends StatelessWidget {
-  const _AppStatsRow({required this.controller, required this.index});
+  const _AppStatsRow({
+    required this.controller,
+    required this.index,
+    required this.height,
+  });
 
   final UsageDataPageController controller;
   final int index;
+  final double height;
 
   /// Whether higher values are bad (e.g. Error rows). Defaults to false
   /// (higher is better / green). When true, the color scheme is reversed
@@ -385,7 +420,8 @@ class _AppStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = controller.appActivity[index];
-    return Expanded(
+    return SizedBox(
+      height: height,
       child: Column(
         children: <Widget>[
           Expanded(
@@ -565,6 +601,7 @@ class _IntegrationStats extends StatelessWidget {
         return const SizedBox.shrink();
       }
       return Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           _IntegrationBlock(
             controller: controller,
@@ -616,7 +653,6 @@ class _IntegrationBlock extends StatelessWidget {
       child: GestureDetector(
         onTap: () => controller.integrationBlockPressed(integration),
         child: Container(
-          height: 170,
           color: bgColor,
           child: Stack(
             alignment: AlignmentDirectional.center,
@@ -625,26 +661,18 @@ class _IntegrationBlock extends StatelessWidget {
                 opacity: integration.integrationEnabled == 0 ? 0.25 : 1.0,
                 child: Column(
                   children: <Widget>[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 2),
+                    // Name and age on one line: the band is slim now.
                     Expanded(
                       child: AutoSizeText(
-                        integration.integrationAbbreviation,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: AutoSizeText(
-                        integration.minutesAgo >= 999999
-                            ? 'never'
-                            : '${integration.minutesAgo} min',
+                        '${integration.integrationAbbreviation} · '
+                        '${integration.minutesAgo >= 999999 ? 'never' : '${integration.minutesAgo} min'}',
                         maxLines: 1,
-                        maxFontSize: 56,
+                        maxFontSize: 24,
                         minFontSize: 5,
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 56,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -657,7 +685,7 @@ class _IntegrationBlock extends StatelessWidget {
                             ? '${integration.newRuns14d ?? 0} new / ${integration.updatedRuns14d ?? 0} updated (14 d)'
                             : '${integration.recordsRead} read / ${integration.errorCount} errors',
                         maxLines: 1,
-                        maxFontSize: 32,
+                        maxFontSize: 18,
                         minFontSize: 5,
                         style: const TextStyle(
                           fontSize: 22,
@@ -671,7 +699,7 @@ class _IntegrationBlock extends StatelessWidget {
                             ? '${integration.kennelsUsing ?? 0} kennels / ${integration.errorCount} errors'
                             : '${integration.kennelsSucceeded} Nice / ${integration.kennelsFailed} Naughty',
                         maxLines: 1,
-                        maxFontSize: 32,
+                        maxFontSize: 18,
                         minFontSize: 5,
                         style: const TextStyle(
                           fontSize: 22,
@@ -683,10 +711,12 @@ class _IntegrationBlock extends StatelessWidget {
                 ),
               ),
               if (integration.integrationEnabled == 0)
-                const Icon(
-                  MaterialIcons.do_not_disturb,
-                  size: 150,
-                  color: Colors.red,
+                const FittedBox(
+                  child: Icon(
+                    MaterialIcons.do_not_disturb,
+                    size: 150,
+                    color: Colors.red,
+                  ),
                 ),
             ],
           ),
