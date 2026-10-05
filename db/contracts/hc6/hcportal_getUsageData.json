@@ -423,6 +423,7 @@
     "Never change the hardcoded excluded user GUIDs without coordinating with callers"
   ],
   "changes": [
-    "2026-10-05: integration rowset drops Facebook (1), always lists Runs page (6) — COALESCEd defaults when it has no job yet (minutesAgo 999999) — and adds newRuns14d, updatedRuns14d, kennelsUsing (NULL except integration 6). Activity rowset adds 'AI Tokens' (id 11, LOG.AiUsage.TotalTokens) and 'Azure Cost' (id 12, LOG.AzureDailyCost in PENCE; Day = latest complete day vs the day before; Hour always 0)."
+    "2026-10-05: integration rowset drops Facebook (1), always lists Runs page (6) — COALESCEd defaults when it has no job yet (minutesAgo 999999) — and adds newRuns14d, updatedRuns14d, kennelsUsing (NULL except integration 6). Activity rowset adds 'AI Tokens' (id 11, LOG.AiUsage.TotalTokens) and 'Azure Cost' (id 12, LOG.AzureDailyCost in PENCE; Day = latest complete day vs the day before; Hour always 0).",
+    "2026-10-05 (later): 'Azure Cost' pence now INCLUDE VAT via HC6.AzureVatMultiplier() (1.20); LOG.AzureDailyCost stays pre-tax."
   ]
 }

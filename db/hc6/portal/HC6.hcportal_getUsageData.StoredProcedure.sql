@@ -152,6 +152,8 @@ BEGIN TRY
 	-- settling for about a day, so the row compares COMPLETE days only — a
 	-- day read 2+ days after it began. Comparing a half-filled yesterday with
 	-- a full day before would show a false green every morning.
+	-- Shown INCLUDING VAT: Azure reports pre-tax cost (2026-10-05).
+	DECLARE @vat DECIMAL(6,4) = HC6.AzureVatMultiplier();
 	DECLARE @costDay DATE = (SELECT MAX(CostDate) FROM LOG.AzureDailyCost
 	                         WHERE RetrievedAt >= DATEADD(DAY, 2, CAST(CostDate AS DATETIME2(0))));
 
@@ -429,7 +431,7 @@ BEGIN TRY
 
 		UNION ALL
 
-		-- Azure Cost, in PENCE (the grid is whole numbers; the portal shows
+		-- Azure Cost, in PENCE INCLUDING VAT (@vat) (the grid is whole numbers; the portal shows
 		-- £). Day = the latest complete day vs the day before; Week = the 7
 		-- complete days ending then vs the 7 before; Month = 30 vs 30. No
 		-- hourly figure exists, so Hour is 0/0 (neutral). Lower is green.
@@ -438,12 +440,12 @@ BEGIN TRY
 			12 AS id,
 			0,
 			0,
-			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate = @costDay THEN c.Cost ELSE 0 END), 0) AS INT),
-			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate = DATEADD(DAY, -1, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
-			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate > DATEADD(DAY, -7, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
-			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate <= DATEADD(DAY, -7, @costDay) AND c.CostDate > DATEADD(DAY, -14, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
-			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate > DATEADD(DAY, -30, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
-			CAST(ROUND(100 * SUM(CASE WHEN c.CostDate <= DATEADD(DAY, -30, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT)
+			CAST(ROUND(100 * @vat * SUM(CASE WHEN c.CostDate = @costDay THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * @vat * SUM(CASE WHEN c.CostDate = DATEADD(DAY, -1, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * @vat * SUM(CASE WHEN c.CostDate > DATEADD(DAY, -7, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * @vat * SUM(CASE WHEN c.CostDate <= DATEADD(DAY, -7, @costDay) AND c.CostDate > DATEADD(DAY, -14, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * @vat * SUM(CASE WHEN c.CostDate > DATEADD(DAY, -30, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT),
+			CAST(ROUND(100 * @vat * SUM(CASE WHEN c.CostDate <= DATEADD(DAY, -30, @costDay) THEN c.Cost ELSE 0 END), 0) AS INT)
 		FROM (SELECT 1 AS one) x
 		LEFT JOIN LOG.AzureDailyCost c WITH (NOLOCK)
 			ON c.CostDate <= @costDay AND c.CostDate > DATEADD(DAY, -60, @costDay)

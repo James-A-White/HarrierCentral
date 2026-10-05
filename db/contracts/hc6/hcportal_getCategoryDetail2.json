@@ -580,6 +580,7 @@
     "Never restore the HC5 header metadata rowset (col1-col6) — callers have been updated to expect raw typed columns"
   ],
   "changes": [
-    "2026-10-05: category 11 (AI Tokens: one row per model call from LOG.AiUsage) and 12 (Azure Cost per day per service with dayBefore/change, '(all services)' totals; Hour/Day = last 2 days, Week = 14). CATCH now logs to HC.ErrorLog."
+    "2026-10-05: category 11 (AI Tokens: one row per model call from LOG.AiUsage) and 12 (Azure Cost per day per service with dayBefore/change, '(all services)' totals; Hour/Day = last 2 days, Week = 14). CATCH now logs to HC.ErrorLog.",
+    "2026-10-05 (later): category 12 columns are costIncVat, dayBeforeIncVat, change (inc VAT), costExVat — replacing cost/dayBefore the same day they shipped (generic drill-down table; no client reads them by name)."
   ]
 }

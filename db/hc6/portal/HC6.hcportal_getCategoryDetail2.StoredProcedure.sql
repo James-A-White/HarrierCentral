@@ -425,6 +425,9 @@ BEGIN TRY
 	-- =============================================
 	IF (@categoryId = 12)
 	BEGIN
+		-- £ figures INCLUDE VAT (HC6.AzureVatMultiplier); costExVat is
+		-- Azure's own pre-tax figure (2026-10-05).
+		DECLARE @vat DECIMAL(6,4) = HC6.AzureVatMultiplier();
 		DECLARE @costTo DATE = (SELECT MAX(CostDate) FROM LOG.AzureDailyCost);
 		DECLARE @costFrom DATE = DATEADD(DAY, -(CASE WHEN @days >= 7 THEN 14 ELSE 2 END) + 1, @costTo);
 		;WITH c AS (
@@ -436,9 +439,10 @@ BEGIN TRY
 		SELECT
 			cur.CostDate                                          AS costDate,
 			cur.ServiceName                                       AS service,
-			CAST(cur.Cost AS DECIMAL(10,2))                       AS cost,
-			CAST(COALESCE(prev.Cost, 0) AS DECIMAL(10,2))         AS dayBefore,
-			CAST(cur.Cost - COALESCE(prev.Cost, 0) AS DECIMAL(10,2)) AS change,
+			CAST(cur.Cost * @vat AS DECIMAL(10,2))                AS costIncVat,
+			CAST(COALESCE(prev.Cost, 0) * @vat AS DECIMAL(10,2))  AS dayBeforeIncVat,
+			CAST((cur.Cost - COALESCE(prev.Cost, 0)) * @vat AS DECIMAL(10,2)) AS change,
+			CAST(cur.Cost AS DECIMAL(10,2))                       AS costExVat,
 			cur.Currency                                          AS currency,
 			CASE WHEN cur.RetrievedAt >= DATEADD(DAY, 2, CAST(cur.CostDate AS DATETIME2(0)))
 			     THEN 'complete' ELSE 'still settling' END        AS status
