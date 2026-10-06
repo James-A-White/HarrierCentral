@@ -1,3 +1,8 @@
+---
+name: hc-authorizations
+description: "Permission gating in stored procedures and in the app UI: AppAccessFlags vs MismanagementRoles, the CheckKennelPermission and canAccessFeature authorizer, and the known traps. Use when adding or changing a permission gate, or adding any SP that reads or writes kennel-scoped, membership, role or money data. ValidateAppAuth proves identity only, so a missing gate is an open door."
+---
+
 # HC — Authorizations & Permission Gating
 
 > **Load this skill whenever you add or change a permission gate — in a stored

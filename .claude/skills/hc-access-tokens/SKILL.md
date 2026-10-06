@@ -1,3 +1,8 @@
+---
+name: hc-access-tokens
+description: "How access tokens are built in Flutter (Utilities.generateToken) and validated in SQL (CHECK_ACCESS_TOKEN_V2, ValidateAppAuth): standard vs compound tokens, the device secret, the time window, first-time device auth. Use when generating or validating a token, adding a service method that calls an SP, or chasing an auth failure with no stated cause."
+---
+
 # HC Access Token Pattern
 
 > **Always apply this skill when generating or validating access tokens in the

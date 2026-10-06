@@ -1,3 +1,8 @@
+---
+name: hc-event-datetimes
+description: "Which HC.Event start-time column to use. Use for any SP, public-web feed, portal view or mobile query that filters, sorts, groups or displays when a run happens. The wrong column is silently wrong: instants use EventStartDateTimeGmt, the local clock uses EventStartLocal or EventStartLocalDate, and the instant of raw EventStartDatetime is never used."
+---
+
 # HC Event Date/Times — Canonical Reference
 
 > **Load this skill whenever you touch run/event start times** — any SP, public-web

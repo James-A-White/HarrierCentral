@@ -1,3 +1,8 @@
+---
+name: hc-avatars
+description: "How to render a hasher's avatar or profile photo. Use whenever rendering an avatar or reading the photo field. The value is often a bundle://avatar-N reference rather than a URL, and Image.network on it renders blank with no error; go through avatarImageProvider."
+---
+
 # HC — Hasher Avatars & Profile Photos
 
 > **Load this skill whenever you render a hasher's avatar/profile photo, or read

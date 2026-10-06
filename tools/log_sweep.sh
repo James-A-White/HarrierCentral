@@ -9,7 +9,7 @@
 # Reads HC.Device / HC.ErrorLog / HC.ClientErrorLog via sqlcmd using the
 # credentials in .env (same as deploy_hc6.sh). Read-only.
 #
-# See .claude/commands/hc-monitoring.md for how to interpret the output.
+# See .claude/skills/hc-monitoring/SKILL.md for how to interpret the output.
 # =====================================================================
 set -euo pipefail
 
