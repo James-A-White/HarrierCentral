@@ -1135,6 +1135,88 @@ train** — the measurements are here so the question does not have to be asked 
 |---|---|---|
 | `E17.F1.S1` | As a **hasher whose phone is not in English**, I want Harrier Central in my own language, so that the app does not assume the hash is an English-speaking club. **Measured 2026-09-20 — start with the demand, because it is smaller than the country list suggests.** Active devices by locale over 180 days: `en_GB` 514, `en_US` 488, none recorded 453, **`en_BB` 48 — Barbados is already English**, `de_DE` 36, `en_CA` 31, `en_PT` 25, **`zh_Hant_TW` 21**, `en_AU` 19, `nl_NL` 16, `en_BE` 15, `en_DE` 14. So the genuinely non-English populations are ~36 German and ~21 Taiwanese devices, about 3% of the fleet, and half the "foreign" kennels are English-speaking. **Ask the Taiwanese kennel whether they want a translated UI before building one** — at 21 devices that conversation is cheaper than the work. **The surface, counted:** 321 `Text()` literals in the app (249 distinct), 153 `showAlert`/`Get.snackbar` sites (~300 more strings), **96 `errorUserMessage` and 60 `errorTitle` strings inside stored procedures**, 56 push/notification composition sites in SPs, ~59 hardcoded strings in the public web. Roughly 700–900 strings. No scaffolding exists: `intl` is a dependency for date formatting only — no `flutter_localizations`, no `.arb`, no `generate: true`. **The extraction is the easy part. The four that are not:** (1) **a third of the user-facing text lives in the database** — errors, titles and push bodies are composed server-side and arrive rendered, so localising them means either returning a key plus parameters from every SP (a contract change across every client) or storing translations keyed by locale (a new table, which is James's call). `HC.Device.Locale` already exists and is populated, so the server can know who it is speaking to. (2) **Chinese breaks the typography** — the app is set in Avenir Next, which has no CJK glyphs, so Traditional Chinese needs a bundled or fallback font and different line-breaking. (3) **German expands text by about 30%**, and this codebase has already shipped Row-overflow bugs twice — hence claude.md's "two controls side by side want a Wrap, not a Row". Every screen needs re-checking at longer strings, and this cost is larger than the translating. (4) **Hash jargon probably should not be translated** — hare, down-down, on-on, mismanagement, hash cash. What stays in English is a hasher's judgement, not a translator's. **Rough shape:** 2–4 weeks of development for two languages, plus someone to produce ~800 strings per language, plus a permanent tax on every new string (enforceable with a lint banning raw literals in `Text()`). **The cheap first slice, if it is ever wanted:** the app chrome only, one language, driven by the device locale, leaving server errors in English — about a third of the work, proves the pipeline, and serves the German devices without committing to the SP contract change. | `Backlog` |
 
+---
+
+## E18 — Agent infrastructure
+
+Harrier Central is built by one developer and a team of agents, so the agents' instructions, guardrails and checks are part of the product's infrastructure. From the assessment of 2026-10-06 (James asked how to use current Claude Code capabilities rather than for a code review): the root instructions file never loaded on case-sensitive filesystems, it was too long and contradicted the other instruction files, skills had no way to trigger themselves, and guardrails existed only as prose. Items 1–3 below are built on the branch `claude/agent-setup-restructure` (four commits, 2026-10-06), which is not yet merged into `dev`. The assessment's full reasoning is in `docs/history/claude-md-restructure-2026-10.md` on that branch.
+
+### E18.F1 · Instructions that load and agree  
+`App` `Portal` `Web` `API` `DB`
+
+> `CLAUDE.md` is what every agent reads first. It has to load on every machine, stay short enough to be followed, and never contradict the files beside it.
+
+| ID | Story | Status |
+|---|---|---|
+| `E18.F1.S1` | As **James**, I want the root instructions file named `CLAUDE.md` so that it loads on Linux and in cloud sessions, not only on macOS's case-insensitive filesystem. **Built 2026-10-06** on `claude/agent-setup-restructure`. ⚠ Known gap: not merged into `dev`. | `Building` |
+| `E18.F1.S2` | As **James**, I want an always-on core in `CLAUDE.md` with Flutter and SQL rules in path-scoped `.claude/rules/` files, so that an agent carries only the rules for the files it is touching. **Built 2026-10-06** on the branch: 1,215 lines became a 286-line core, `mobile-app/CLAUDE.md` and a release skill. ⚠ Known gap: not merged. | `Building` |
+| `E18.F1.S3` | As **James**, I want the contradictions between the instruction files resolved by me, so that two files never give an agent opposite orders. The open decisions are listed in the 2026-10-06 findings (deploy prompts per release, path-scoping skills, `tsa-eats/CLAUDE.md` absolute paths, `CONTRIBUTING.md` pointing at a section that is now a skill). | `Next` |
+| `E18.F1.S4` | As **James**, I want `/doctor prompt-audit` run on the instruction files now and monthly, so that dead references and instructions written for older models are caught by a sweep. | `Next` |
+
+### E18.F2 · Skills that load themselves  
+`App` `DB` `API`
+
+| ID | Story | Status |
+|---|---|---|
+| `E18.F2.S1` | As **James**, I want each of the twelve skills in `.claude/skills/<name>/SKILL.md` with a description saying when to use it, so that an agent loads the right one without being told. **Built 2026-10-06** on the branch, using the "Load this skill when…" sentences already written. ⚠ Known gap: not merged. | `Building` |
+| `E18.F2.S2` | As **James**, I want "Dance baby!" to be a skill only I can start (`disable-model-invocation: true`), so that a release can never be triggered by an agent and costs no context until I ask for it. | `Building` |
+| `E18.F2.S3` | As **James**, I want skills scoped by `paths:` so that, for example, `packtrack` loads when PackTrack files are touched. Try it on one skill before all twelve. | `Next` |
+
+### E18.F3 · Guardrails that are enforced  
+`App` `Portal` `Web` `API` `DB`
+
+> An instruction is advice. A permission rule or a hook is a mechanism. Anything James would be upset to see skipped belongs in the second group.
+
+| ID | Story | Status |
+|---|---|---|
+| `E18.F3.S1` | As **James**, I want the credentials that were committed in `api/local.settings.json` rotated, so that the copies in the public repository's history no longer work. The file was removed from all four branch tips on 2026-10-06 and is now untracked. The public app `ApiKey` is deliberately not rotated: it is embedded in the shipped app and rotating it would break every installed copy. ⚠ Known gap: rotation not confirmed. | `Next` |
+| `E18.F3.S2` | As **James**, I want every deploy command to ask me first, so that no agent deploys to production on its own initiative, whatever the instructions say. **Built 2026-10-06** on the branch as `ask` rules in `.claude/settings.json`. ⚠ Known gap: not merged. | `Building` |
+| `E18.F3.S3` | As **James**, I want the Dart scans run by a hook before every commit, so that a commit that breaks a scan is stopped rather than noticed. **Built 2026-10-06** on the branch. Add the three "Fixing a crash?" greps (`adHocData[`, `ScaffoldMessenger.of(`, `int.parse(`) as a fourth scan. ⚠ Known gap: not merged. | `Building` |
+| `E18.F3.S4` | As **James**, I want reading `.env` denied in sessions that do not need the database, so that production credentials reach only the sessions that use them. | `Next` |
+| `E18.F3.S5` | As **James**, I want a Stop hook that runs `flutter analyze` on changed packages, if its time cost is acceptable, so that a session cannot end with analyser errors. | `Backlog` |
+
+### E18.F4 · Agents that check their own work  
+`App` `Portal` `Web`
+
+> The real bottleneck: work is generated far faster than it is verified. `docs/verification-backlog.md` holds 161 device checks and none is ticked.
+
+| ID | Story | Status |
+|---|---|---|
+| `E18.F4.S1` | As **James**, I want an agent to build the app, launch it in the iOS Simulator pane, tap through its own change and screenshot it, so that a change arrives already seen running. Pair it with `integration_test/screens_test.dart`. ⚠ Untested with Flutter. | `Next` |
+| `E18.F4.S2` | As **James**, I want an agent to check its own hashruns.org and portal changes in Chrome, console errors included, so that web work is verified in a real browser. | `Next` |
+| `E18.F4.S3` | As **James**, I want agents to use `/verify` and `/goal` (for example "the screen walk passes and both scans print nothing, or stop after 20 turns"), so that a task ends when it is proven done rather than when the agent believes it is. | `Next` |
+| `E18.F4.S4` | As **James**, I want the verification backlog worked through by agents with these tools, so that the checks are run rather than carried. Overlaps `E16.F4.S1`. | `Backlog` |
+
+### E18.F5 · Repeatable audits and release review  
+`DB` `App` `Web` `API`
+
+| ID | Story | Status |
+|---|---|---|
+| `E18.F5.S1` | As **James**, I want a saved workflow that checks every HC6 SP touching kennel or money data against `hc-authorizations` and adversarially verifies each finding, so that the audit can be re-run before each release. First target: the seven portal SPs still using `0x40000081`. Related: `E16.F3.S3`. | `Next` |
+| `E18.F5.S2` | As **James**, I want `/code-review` and `/security-review` run on the dev-to-master diff as step zero of every dance, so that a release is reviewed before it is deployed. | `Next` |
+
+### E18.F6 · Scheduled triage  
+`API` `DB`
+
+| ID | Story | Status |
+|---|---|---|
+| `E18.F6.S1` | As **James**, I want a scheduled agent to investigate each new error fingerprint and draft the fix on a branch, so that triage arrives as a proposed change rather than an alert. A Desktop scheduled task runs on James's Mac with its `.env`, so it can reach Azure SQL; cloud routines suit repo-only work. | `Next` |
+
+### E18.F7 · A disposable database  
+`DB`
+
+| ID | Story | Status |
+|---|---|---|
+| `E18.F7.S1` | As **James**, I want a throwaway SQL Server built from `db/schema` (65 table scripts, triggers, functions and a seed), so that agents can run and test stored procedures without the production database being the test environment. Cloud sessions can run Docker. | `Backlog` |
+
+### E18.F8 · Tooling gaps  
+`Web` `API`
+
+| ID | Story | Status |
+|---|---|---|
+| `E18.F8.S1` | As **James**, I want Serena given the TypeScript and C# language servers, so that semantic code tools work in the public web and the API, not only in Dart. | `Next` |
+| `E18.F8.S2` | As **James**, I want the "label learning moments with 🧠" instruction replaced by the Explanatory or Learning output style, so that the behaviour comes from the setting rather than a line agents may drop. | `Backlog` |
+
 
 Status reflects the working tree at `dev` on 2026-09-12. Epic and story IDs are stable — quote them when assigning work. Where a story is marked **Building** with a known gap, the gap names what is actually missing rather than what remains to polish.
 
