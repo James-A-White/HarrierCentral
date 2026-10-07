@@ -718,13 +718,19 @@ The architecture decision that shapes every story: **the browser is a device.** 
 | `E9.F4.S6` | As a **Platform Admin**, I want a sequence targetable by kennel, event or cohort so that a lesson reaches the people it is relevant to. | `Next` |
 
 ### E9.F5 · Help & support  
-`App`
+`App` `API` `DB`
 
 | ID | Story | Status |
 |---|---|---|
 | `E9.F5.S1` | As a **Hasher**, I want an FAQ and video tutorials in the app so that I can answer my own question at the trail head. | `Shipped` |
 | `E9.F5.S2` | As a **Hasher**, I want a support contact that carries my diagnostic context so that I do not have to describe my setup. | `Shipped` |
 | `E9.F5.S3` | As a **Hasher**, I want in-app help I would actually open, because the current FAQ and tutorial pages are barely used. | `Backlog` |
+| `E9.F5.S4` | **3.2 (James, 2026-10-07).** As a **Hasher**, I want a **Help** chat pinned in my Chats list, where I ask a question the way I would message a person, so that help is somewhere I already go rather than an FAQ page nobody opens. One thread per hasher with Harrier Central, kept like a direct-message thread on the reserved `ThreadId` (no new message table). Supersedes the open question in `E9.F5.S3`. | `Next` |
+| `E9.F5.S5` | **3.2 (James, 2026-10-07).** As a **Hasher** given an answer, I want **Yes, that answered it** and **No** buttons under it, so that a wrong answer is caught rather than left standing. A new message kind carrying the buttons; an older build shows the answer as plain text without them. This and `S4` are the only app work — everything after them is server-side and can keep improving once the app is frozen. | `Next` |
+| `E9.F5.S6` | **3.2 (James, 2026-10-07).** As a **Hasher**, I want my question answered at once by an AI on Azure that knows Harrier Central, so that most questions are answered without waiting for a person (James: "between the backlog and the codebase itself, AI should be able to answer most questions"). Sources: `docs/backlog.md`, the codebase, the app changelog and every saved answer (`S9`). Answers are written for a hasher — what to tap, where — never in developer terms. When it has no grounded answer it says so and escalates (`S8`) rather than guessing. Reuses the AI plumbing and cost monitor built for the runs-page import (`E3.F6.S3`). 3.2 needs a minimal working version; quality improves server-side after. | `Next` |
+| `E9.F5.S7` | **3.2 (James, 2026-10-07).** As a **Platform Admin**, I want **every** help question and the answer it got posted to the Platform Admins room — the AI's answers included — so that we can see what hashers are asking and what they are being told. Each post names the hasher and shows the state: answered by AI, confirmed, rejected, escalated, answered by an admin. | `Next` |
+| `E9.F5.S8` | **3.2 (James, 2026-10-07).** As a **Hasher** whose question the AI could not answer, or who tapped **No**, I want it passed to a person and their answer to arrive in my Help chat, so that I am never left without a reply. The escalated question is flagged in the Platform Admins room; an admin replies from there and the reply is delivered into the hasher's Help thread with a push. Open: who answers, and how quickly. | `Next` |
+| `E9.F5.S9` | **3.2 (James, 2026-10-07).** As a **Platform Admin**, I want to save an answer I gave so that the AI can use it next time, so that the same question reaches a person only once. Saving is a deliberate action, and the admin rewrites the answer in general terms first — a reply about one hasher's kennel or account is never saved as it stands. | `Next` |
 
 ---
 
