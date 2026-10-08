@@ -44,9 +44,13 @@ AS
 --                        ASC (future) or DESC (past), with KennelName /
 --                        PublicEventId as deterministic tiebreakers for
 --                        stable pagination when concurrent events exist.
---              On runtime error: { Success = 0, ErrorMessage } from CATCH.
+--              On runtime error: logged to HC.ErrorLog, then re-raised.
 -- Author:      Harrier Central
 -- Created:     2026-04-14
+-- Updated:     2026-10-08 — page on keys in a CTE, then join the wide columns
+--                           for that page only (the full-width sort spilled to
+--                           tempdb and timed out ~11:00 UTC); OPTION (RECOMPILE)
+--                           for the @IsFuture catch-all; CATCH logs + THROWs.
 -- Updated:     2026-05-04 — return EventStartDatetimeGmt and KennelIANATimezone per
 --                           row; cast EventStartDatetime to datetime2(7) to strip the
 --                           spurious +00:00 offset. OUTER APPLY replaced with a
@@ -92,10 +96,41 @@ BEGIN TRY
                     AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
             OR (@IsFuture = 0
                     AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
-                    AND (e.EventStartDateTimeGmt < ISNULL(@MaxEventDate, @UtcNow) OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < ISNULL(@MaxEventDate, @UtcNow)))));
+                    AND (e.EventStartDateTimeGmt < ISNULL(@MaxEventDate, @UtcNow) OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < ISNULL(@MaxEventDate, @UtcNow)))))
+    OPTION (RECOMPILE);
 
     -- ── Rowset 1: events with kennel context ─────────────────────────────────
+    -- Page on the KEYS first, then fetch the wide columns for that page only.
+    -- The home page asks for every upcoming run (~1,300 rows) in one call;
+    -- sorting them with SyncDescription, w3wJson and the rest attached
+    -- spilled the sort to tempdb and timed out at the S1 tier's busy hour
+    -- (Query Store, 2026-10-06/07: 21 MB tempdb, 10 s). The key-only sort
+    -- is a few bytes a row and stays in memory.
+    -- RECOMPILE: @IsFuture picks one of two different predicates, and a
+    -- plan cached for the 50-row past page was reused for the 1,300-row
+    -- future list with too small a memory grant.
 
+    ;WITH page AS (
+        SELECT e.id, e.EventStartDatetime, k.KennelName, e.PublicEventId
+        FROM   HC.Event  e
+        JOIN   HC.Kennel k ON k.id = e.KennelId
+        WHERE  e.IsVisible = 1
+          AND  e.deleted   = 0
+          AND  e.removed   = 0
+          AND  k.deleted   = 0
+          AND  k.removed   = 0
+          AND  (   (@IsFuture = 1
+                        AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
+                OR (@IsFuture = 0
+                        AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
+                        AND (e.EventStartDateTimeGmt < ISNULL(@MaxEventDate, @UtcNow) OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < ISNULL(@MaxEventDate, @UtcNow)))))
+        ORDER BY
+            CASE WHEN @IsFuture = 1 THEN e.EventStartDatetime END ASC,
+            CASE WHEN @IsFuture = 0 THEN e.EventStartDatetime END DESC,
+            k.KennelName    ASC,
+            e.PublicEventId ASC
+        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY
+    )
     SELECT
         -- ── Event identity ───────────────────────────────────────────────────
         e.PublicEventId,
@@ -190,7 +225,8 @@ BEGIN TRY
             + ' ' + REPLACE(COALESCE(ctr.CountrySearchTags, ''), ',', ' ')
         ))                                                              AS SearchTags
 
-    FROM   HC.Event             e
+    FROM   page                 pg
+    JOIN   HC.Event             e   ON e.id          = pg.id
     JOIN   HC.Kennel            k   ON k.id          = e.KennelId
     LEFT JOIN HC.KennelWebsite  kw  ON kw.KennelId   = k.id
     LEFT JOIN HC.Country        ctr ON ctr.id         = k.CountryId
@@ -208,29 +244,19 @@ BEGIN TRY
         FROM   DomainValues.TimeZoneMap
         GROUP  BY WindowsTimeZone
     ) tzmap ON tzmap.WindowsTimeZone = tz.Timezone COLLATE DATABASE_DEFAULT
-    WHERE  e.IsVisible = 1
-      AND  e.deleted   = 0
-      AND  e.removed   = 0
-      AND  k.deleted   = 0
-      AND  k.removed   = 0
-      AND  (   (@IsFuture = 1
-                    AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
-            OR (@IsFuture = 0
-                    AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
-                    AND (e.EventStartDateTimeGmt < ISNULL(@MaxEventDate, @UtcNow) OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < ISNULL(@MaxEventDate, @UtcNow)))))
     ORDER BY
-        -- Conditional sort: only one branch is active per call.
-        -- The inactive branch evaluates to NULL for every row and
-        -- contributes nothing to the sort (SQL Server treats NULL as lowest
-        -- in ASC — no effect on the active branch's ordering).
-        CASE WHEN @IsFuture = 1 THEN e.EventStartDatetime END ASC,
-        CASE WHEN @IsFuture = 0 THEN e.EventStartDatetime END DESC,
-        k.KennelName    ASC,    -- stable tiebreaker when concurrent events exist
-        e.PublicEventId ASC     -- final tiebreaker for consistent pagination
-    OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+        -- Same order as the page CTE: only one CASE branch is active per call.
+        CASE WHEN @IsFuture = 1 THEN pg.EventStartDatetime END ASC,
+        CASE WHEN @IsFuture = 0 THEN pg.EventStartDatetime END DESC,
+        pg.KennelName    ASC,    -- stable tiebreaker when concurrent events exist
+        pg.PublicEventId ASC     -- final tiebreaker for consistent pagination
+    OPTION (RECOMPILE);
 
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
-    SELECT 0 AS Success, ERROR_MESSAGE() AS ErrorMessage;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in publicWeb_getGlobalRuns',
+            ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), NULL);
+    THROW;
 END CATCH
