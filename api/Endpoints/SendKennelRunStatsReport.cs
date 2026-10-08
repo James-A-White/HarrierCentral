@@ -91,13 +91,12 @@ namespace HcWebApi.Endpoints
                 {
                     await GetRptKennelRunStats(wb, log, deviceIdGuid, accessToken, kennelIdGuid, kennelName, digitsAfterDecimal, currencySymbol);
 
-                    await Utilities.SendEmailAsync(
-                        Utilities.EmailLogicAppUrl,
-                        "james@defenceinnovation.eu",
+                    await HcEmail.SendAsync(
+                        "SendKennelRunStatsReport",
                         emailAddress,
                         $"Here's the run stats report for {kennelName}",
                         $"Hello {userName},<br><br>Attached, you will find the run stats report for {kennelName}.<br><br>Best regards,<br>Harrier Central Service",
-                        Convert.ToBase64String(wb.GetAsByteArray())
+                        EmailAttachment.Excel($"Run stats - {kennelName}", wb.GetAsByteArray())
                     );
                 }
             }

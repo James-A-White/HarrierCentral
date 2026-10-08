@@ -149,15 +149,15 @@ namespace HcWebApi.Endpoints
                     }
                 }
 
-                if (success)
+                // A code is only generated for an address that was found, so email is
+                // set here; the check keeps the compiler and a future refactor honest.
+                if (success && !string.IsNullOrWhiteSpace(email))
                 {
-                    await Utilities.SendEmailAsync(
-                        Utilities.EmailLogicAppUrl,
-                        "james@defenceinnovation.eu",
+                    await HcEmail.SendAsync(
+                        "EmailInviteCode",
                         email,
                         $"Here's your Harrier Central Invite Code",
-                        $"Hello. <br><br>Please use this six letter code <h1><strong>{inviteCode}</strong></h1> to re-connect your Harrier Central app to your account. Please note, this code is comprised only of letters and does not contain any numbers.<br><br>If you are not attempting to reset your Harrier Central account you are receiving this email because someone attempted to set up the Harrier Central app using your email address.<br><br>Thanks! <br><br>The Harrier Central support team.",
-                        null
+                        $"Hello. <br><br>Please use this six letter code <h1><strong>{inviteCode}</strong></h1> to re-connect your Harrier Central app to your account. Please note, this code is comprised only of letters and does not contain any numbers.<br><br>If you are not attempting to reset your Harrier Central account you are receiving this email because someone attempted to set up the Harrier Central app using your email address.<br><br>Thanks! <br><br>The Harrier Central support team."
                     );
 
 

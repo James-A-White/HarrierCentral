@@ -94,13 +94,12 @@ namespace HcWebApi.Endpoints
 
                     await GetMyKennelRunTotals(wb, log, deviceIdGuid, accessToken_getMyKennelRunTotals, accessToken_getMyRuns, kennelIdGuid, userName);
 
-                    await Utilities.SendEmailAsync(
-                            Utilities.EmailLogicAppUrl,
-                            "james@defenceinnovation.eu",
+                    await HcEmail.SendAsync(
+                            "SendRunCountsReport",
                             emailAddress,
                             $"Here's your Harrier Central Run Count Report for {kennelName}",
                             $"<strong>Hello. Attached, you will find your Run Count Report for {kennelName}</strong>",
-                            Convert.ToBase64String(wb.GetAsByteArray())
+                            EmailAttachment.Excel($"Run counts - {kennelName}", wb.GetAsByteArray())
                         );
 
 
