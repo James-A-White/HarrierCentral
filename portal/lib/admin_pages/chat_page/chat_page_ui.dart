@@ -96,6 +96,12 @@ class ChatSheetPage extends StatelessWidget {
         theme: _chatTheme,
         timeFormat: _timeFormat,
         builders: core.Builders(
+          // A REVERSED list: it opens at the bottom — the newest message —
+          // and stays there as messages arrive. The default list jumps to
+          // the end on its first frame, which is before the thread has
+          // loaded, so every chat opened at the top (James, 2026-10-09).
+          chatAnimatedListBuilder: (BuildContext context, itemBuilder) =>
+              ChatAnimatedListReversed(itemBuilder: itemBuilder),
           // Hard cap at HC.EventMessage.MessageContent's width (4,000); the SP
           // refuses more, this keeps a long message in the box instead.
           // A reply shows who and what is being answered above the box, with

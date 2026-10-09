@@ -1,3 +1,6 @@
+2.0.87+745
+    • Chat opens at the bottom of the thread (reversed list), not the top.
+
 2.0.87+744
     • Email members button on the run editor is visible (was white on the light app bar).
 

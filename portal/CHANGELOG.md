@@ -1,3 +1,7 @@
+## 2.0.87+745 (2026-10-09)
+### Fixes
+- **Chat opens at the latest message**: a chat thread opened at the top; it now opens at the bottom and stays there as messages arrive.
+
 ## 2.0.87+744 (2026-10-09)
 ### Fixes
 - **Email members** on the run editor is visible: 743 drew it in white on the light app bar.
