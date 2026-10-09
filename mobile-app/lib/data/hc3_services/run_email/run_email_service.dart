@@ -12,7 +12,12 @@ class RunEmailContext {
     required this.emailSendCount,
     this.emailLastSentAt,
     this.emailLastSentCount,
+    this.instruction = '',
   });
+
+  /// The kennel's saved drafting instruction ("write it in French"),
+  /// pre-filled for every sender; '' when none.
+  final String instruction;
 
   final String title;
   final String when;
@@ -34,6 +39,7 @@ class RunEmailContext {
         ? null
         : DateTime.tryParse(j['emailLastSentAt'] as String)?.toLocal(),
     emailLastSentCount: (j['emailLastSentCount'] as num?)?.toInt(),
+    instruction: (j['instruction'] ?? '') as String,
   );
 }
 
@@ -82,10 +88,14 @@ class RunEmailService {
     HcId eventId, {
     required String subject,
     required String body,
+    String instruction = '',
+    bool saveInstruction = false,
   }) async {
-    final Map<String, dynamic> j = await _call(eventId, 'send', <String, String>{
+    final Map<String, dynamic> j = await _call(eventId, 'send', <String, Object>{
       'subject': subject,
       'body': body,
+      'instruction': instruction,
+      'saveInstruction': saveInstruction,
     });
     return (j['sent'] as num?)?.toInt() ?? 0;
   }
@@ -93,7 +103,7 @@ class RunEmailService {
   Future<Map<String, dynamic>> _call(
     HcId eventId,
     String action, [
-    Map<String, String> extra = const <String, String>{},
+    Map<String, Object> extra = const <String, Object>{},
   ]) async {
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
     final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
@@ -108,7 +118,7 @@ class RunEmailService {
       'hcapp_getRunEmailContext',
       paramString: deviceSecret!,
     );
-    final String payload = jsonEncode(<String, String>{
+    final String payload = jsonEncode(<String, Object>{
       'deviceId': deviceId!,
       'accessToken': accessToken,
       'eventId': eventId,

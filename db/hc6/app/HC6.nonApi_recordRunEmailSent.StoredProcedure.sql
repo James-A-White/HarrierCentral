@@ -2,7 +2,9 @@ CREATE OR ALTER PROCEDURE [HC6].[nonApi_recordRunEmailSent]
 
     @eventId        UNIQUEIDENTIFIER = NULL,
     @userId         UNIQUEIDENTIFIER = NULL,
-    @recipientCount INT              = NULL
+    @recipientCount  INT              = NULL,
+    @instruction     NVARCHAR(500)    = NULL,
+    @saveInstruction SMALLINT         = 0
 
 AS
 -- =====================================================================
@@ -12,7 +14,9 @@ AS
 --   EmailLastSentCount. Called by the RunEmail API endpoint after the
 --   send was handed to the mail service — internal only, no device auth.
 --   The UpdatedAt trigger fires, so the run re-syncs to phones.
--- Parameters: @eventId, @userId (the sender, for the log), @recipientCount
+-- Parameters: @eventId, @userId (the sender, for the log), @recipientCount,
+--   @instruction + @saveInstruction = 1: store the drafting instruction on
+--   HC.Kennel.RunEmailInstruction as the kennel's default (blank clears it).
 -- Returns: { Success, ErrorMessage } envelope.
 -- Author: Harrier Central
 -- Created: 2026-10-09
@@ -29,6 +33,11 @@ BEGIN TRY
         EmailLastSentAt    = SYSDATETIMEOFFSET(),
         EmailLastSentCount = @recipientCount
     WHERE id = @eventId;
+
+    IF (@saveInstruction = 1)
+        UPDATE k SET k.RunEmailInstruction = NULLIF(LTRIM(RTRIM(@instruction)), '')
+        FROM HC.Kennel k JOIN HC.Event e ON e.KennelId = k.id
+        WHERE e.id = @eventId;
 
     INSERT LOG.GeneralLog (LogSource, Message, StrParam1, Data, [Timestamp])
     VALUES ('RunEmail', 'Run email sent', LOWER(CAST(@eventId AS NVARCHAR(40))),

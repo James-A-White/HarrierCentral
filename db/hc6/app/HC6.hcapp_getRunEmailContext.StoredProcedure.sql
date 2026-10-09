@@ -36,7 +36,8 @@ AS
 --               publicEventId, startLocal (wall-clock), hares, venue,
 --               street, city, postCode, description, priceMembers,
 --               priceNonMembers, currencySymbol, kennelId, kennelName,
---               kennelShortName, kennelSlug, kennelLogo, senderName
+--               kennelShortName, kennelSlug, kennelLogo, senderName,
+--               instruction (the kennel's saved drafting instruction)
 --     rowset 1 — emailSendCount, emailLastSentAt, emailLastSentCount,
 --               recipientCount
 --     rowset 2 — (only when @includeRecipients = 1) hasherId, email,
@@ -160,7 +161,8 @@ SELECT
     k.KennelShortName                            AS kennelShortName,
     k.KennelUniqueShortName                      AS kennelSlug,
     k.KennelLogo                                 AS kennelLogo,
-    s.DisplayName                                AS senderName
+    s.DisplayName                                AS senderName,
+    k.RunEmailInstruction                        AS instruction
 FROM HC.Event e
 JOIN HC.Kennel k ON k.id = e.KennelId
 JOIN HC.Hasher s ON s.id = @userId
