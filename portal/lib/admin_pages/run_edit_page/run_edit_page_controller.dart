@@ -1120,14 +1120,18 @@ class RunEditPageController extends TabUiController
     return ok == true;
   }
 
-  /// Drawn by the tabbed layout under Save and Undo, styled as Save.
+  /// Drawn by the tabbed layout under Save and Undo, styled as Save and
+  /// enabled exactly when Save is (James, 2026-10-09). The Rx reads happen
+  /// inside the layout's Obx, so it greys and lights with the form.
   @override
   Widget? buildExtraSaveBarButton() => isAddMode
       ? null
       : HcButton.primary(
           label: 'Save and send',
           icon: Icons.send_rounded,
-          onPressed: saveAndSend,
+          onPressed: (isFormDirty.value && allFieldsAreValid.value)
+              ? saveAndSend
+              : null,
         );
 
   /// "Save and send" (E9.F6.S6, parity with the app, 2026-10-09): an unsaved
