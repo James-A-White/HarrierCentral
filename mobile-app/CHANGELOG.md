@@ -1,3 +1,8 @@
+## 3.1.9+1453 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### Fixes
+- **Email the run**: the subject, message and instruction boxes were white-on-white; the text is dark now, the labels sit above the boxes, and the instruction box grows as you type.
+
 ## 3.1.9+1452 (2026-10-09)
 Private dance — James, Tuna Melt and Kilty.
 ### Fixes

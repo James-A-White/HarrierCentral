@@ -109,6 +109,9 @@ namespace HcWebApi.Endpoints
                         return new BadRequestObjectResult(new { errorUserMessage = "The email needs a subject and some text." });
                     if (subject.Length > MaxSubject) subject = subject[..MaxSubject];
                     if (prose.Length > MaxBody) prose = prose[..MaxBody];
+                    prose = StripSignOff(prose, ctx.SenderName);
+                    if (prose.Length == 0)
+                        return new BadRequestObjectResult(new { errorUserMessage = "The email needs some text." });
                     if (ctx.Recipients.Count == 0)
                         return new BadRequestObjectResult(new { errorUserMessage = "Nobody in this kennel has run emails switched on." });
 
@@ -332,7 +335,7 @@ namespace HcWebApi.Endpoints
             string content = j["choices"]?[0]?["message"]?["content"]?.ToString() ?? throw new InvalidOperationException("no content");
             var o = JObject.Parse(content);
             string subject = (o.Value<string>("subject") ?? ctx.Title).Trim();
-            string prose = (o.Value<string>("body") ?? "").Trim();
+            string prose = StripSignOff((o.Value<string>("body") ?? "").Trim(), ctx.SenderName);
             if (prose.Length == 0) throw new InvalidOperationException("empty draft");
             return (subject.Length > MaxSubject ? subject[..MaxSubject] : subject, prose.Length > MaxBody ? prose[..MaxBody] : prose);
         }
@@ -365,6 +368,34 @@ namespace HcWebApi.Endpoints
         // ── Assembly ───────────────────────────────────────────────────────────
 
         private static string Truncate(string s, int n) => s.Length <= n ? s : s[..n];
+
+        private static readonly Regex SignOffLine = new(
+            @"^\s*(on[\s-]*on|cheers|see you( there| on trail)?|à bientôt|a bientot|bis bald|hasta pronto|regards|best|thanks|merci|salut)[\s!,.]*$",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// Removes a trailing sign-off from the prose — "On on," / "Cheers" and
+        /// the sender's name on their own lines — because the layout always adds
+        /// "On on, &lt;sender&gt;" after the text. The model was told not to sign off
+        /// and did anyway (2026-10-09: "On on, Opee" twice), and a sender may type
+        /// one by habit; a duplicate is worse than a stripped one. Only the TAIL is
+        /// touched, one short line at a time, and only lines that are nothing but a
+        /// sign-off or the name.
+        /// </summary>
+        public static string StripSignOff(string prose, string senderName)
+        {
+            var lines = prose.Replace("\r\n", "\n").Split('\n').ToList();
+            string name = senderName.Trim();
+            bool IsName(string l) => name.Length > 0 && l.Trim().TrimEnd('.', '!', ',').Equals(name, StringComparison.OrdinalIgnoreCase);
+            int removed = 0;
+            while (lines.Count > 0 && removed < 6)
+            {
+                string last = lines[^1].Trim();
+                if (last.Length == 0 || IsName(last) || SignOffLine.IsMatch(last)) { lines.RemoveAt(lines.Count - 1); removed++; }
+                else break;
+            }
+            return string.Join('\n', lines).Trim();
+        }
         private static string H(string s) => WebUtility.HtmlEncode(s);
 
         /// <summary>Plain text → paragraphs. The prose is the sender's words, encoded, never raw HTML.</summary>
