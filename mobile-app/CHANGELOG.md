@@ -1,3 +1,8 @@
+## 3.1.9+1457 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### New Features
+- **Run emails link straight to your settings**: every run email now has "change your email preference for this run / for the kennel" links that open the app on that dialog. The run's image is in the email too.
+
 ## 3.1.9+1456 (2026-10-09)
 Private dance — James, Tuna Melt and Kilty.
 ### New Features

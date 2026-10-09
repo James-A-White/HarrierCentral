@@ -231,7 +231,7 @@ namespace HcWebApi.Endpoints
         {
             public Guid EventId, KennelId, PublicEventId, SenderId;
             public int EventNumber, IsCountedRun, EmailSendCount;
-            public string EventName = "", Hares = "", Venue = "", Street = "", City = "", PostCode = "", Description = "";
+            public string EventName = "", Hares = "", Venue = "", Street = "", City = "", PostCode = "", Description = "", EventImage = "";
             public string KennelName = "", KennelShortName = "", KennelSlug = "", KennelLogo = "", SenderName = "", SenderEmail = "", CurrencySymbol = "", Instruction = "";
             public DateTime StartLocal;
             public decimal PriceMembers, PriceNonMembers;
@@ -246,6 +246,8 @@ namespace HcWebApi.Endpoints
                 ? $"https://www.hashruns.org/{KennelSlug.ToLowerInvariant()}/{EventNumber}"
                 : $"https://www.hashruns.org/#/RID?publicEventId={PublicEventId:D}";
             public string RsvpUrl(bool yes) => Counted ? $"{Url}?RSVP={(yes ? "Yes" : "No")}" : $"{Url}&RSVP={(yes ? "Yes" : "No")}";
+            /// <summary>Opens the app on this run with its email dialog ("run") or the kennel's ("kennel") — E9.F6.S9, 2026-10-09.</summary>
+            public string EmailPrefsUrl(string which) => Counted ? $"{Url}?emailPrefs={which}" : $"{Url}&emailPrefs={which}";
             public string Title => (Counted ? $"{KennelShortName} #{EventNumber}" : KennelShortName) + (EventName.Length > 0 ? $" – {EventName}" : "");
             public string When => StartLocal.ToString("dddd d MMMM yyyy, h:mm tt", CultureInfo.InvariantCulture);
             public string Where
@@ -306,6 +308,7 @@ namespace HcWebApi.Endpoints
                 IsCountedRun = Convert.ToInt32(r["isCountedRun"]), PublicEventId = Guid.Parse(S("publicEventId")),
                 StartLocal = (DateTime)r["startLocal"], Hares = S("hares").Trim(), Venue = S("venue").Trim(), Street = S("street").Trim(),
                 City = S("city").Trim(), PostCode = S("postCode").Trim(), Description = S("description").Trim(),
+                EventImage = HasColumn(r, "eventImage") ? S("eventImage").Trim() : "",
                 PriceMembers = r["priceMembers"] is DBNull ? 0 : Convert.ToDecimal(r["priceMembers"]),
                 PriceNonMembers = r["priceNonMembers"] is DBNull ? 0 : Convert.ToDecimal(r["priceNonMembers"]),
                 CurrencySymbol = S("currencySymbol"), KennelId = Guid.Parse(S("kennelId")), KennelName = S("kennelName"),
@@ -526,6 +529,9 @@ namespace HcWebApi.Endpoints
                           $"<p style=\"margin:0 0 18px;font-size:13px\"><a href=\"{requestedPrefsUrl}\" style=\"color:#2b6cb0\">Your email preferences</a> — stop emails from {H(ctx.KennelShortName)}, or block all email from Harrier Central.</p>");
             sb.Append(Paragraphs(prose));
             sb.Append($"<p style=\"margin:0 0 18px\">On on,<br>{H(ctx.SenderName)}<br><span style=\"color:#6b7785\">{H(ctx.KennelName)}</span></p>");
+            // The run's own image, whole, at its own shape (James, 2026-10-09).
+            if (ctx.EventImage.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                sb.Append($"<img src=\"{H(ctx.EventImage)}\" alt=\"\" style=\"display:block;width:100%;height:auto;border-radius:8px;margin:0 0 14px\">");
             sb.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;background:#f4f6f8;border-radius:8px;padding:14px 16px;font-size:15px\"><tr><td>");
             sb.Append($"<div style=\"font-weight:700;font-size:17px;margin-bottom:6px\">{H(ctx.Title)}</div>");
             sb.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\">");
@@ -537,7 +543,9 @@ namespace HcWebApi.Endpoints
             sb.Append("</div></td></tr></table>");
             if (unsubscribeUrl != null)
                 sb.Append($"<p style=\"margin:18px 0 0;font-size:12px;color:#6b7785\">You get run emails because you switched them on for {H(ctx.KennelName)} in Harrier Central. " +
-                          $"<a href=\"{unsubscribeUrl}\" style=\"color:#6b7785\">Stop run emails from {H(ctx.KennelShortName)}</a>, or change it per run or per kennel in the app.</p>");
+                          $"Change your email preference <a href=\"{ctx.EmailPrefsUrl("run")}\" style=\"color:#2b6cb0\">for this run</a> or " +
+                          $"<a href=\"{ctx.EmailPrefsUrl("kennel")}\" style=\"color:#2b6cb0\">for {H(ctx.KennelShortName)}</a> (opens the app), " +
+                          $"or <a href=\"{unsubscribeUrl}\" style=\"color:#6b7785\">stop run emails from {H(ctx.KennelShortName)}</a> with one tap.</p>");
             return HcEmail.Layout(subject, sb.ToString());
         }
 
@@ -548,7 +556,8 @@ namespace HcWebApi.Endpoints
             if (ctx.Where.Length > 0) sb.Append("Where: ").Append(ctx.Where).Append('\n');
             if (ctx.Hares.Length > 0) sb.Append("Hares: ").Append(ctx.Hares).Append('\n');
             if (ctx.Price.Length > 0) sb.Append("Price: ").Append(ctx.Price).Append('\n');
-            sb.Append("I'm in: ").Append(ctx.RsvpUrl(true)).Append('\n').Append("Can't make it: ").Append(ctx.RsvpUrl(false)).Append('\n').Append("Open the run: ").Append(ctx.Url);
+            sb.Append("I'm in: ").Append(ctx.RsvpUrl(true)).Append('\n').Append("Can't make it: ").Append(ctx.RsvpUrl(false)).Append('\n').Append("Open the run: ").Append(ctx.Url)
+              .Append("\nEmail preference for this run: ").Append(ctx.EmailPrefsUrl("run")).Append("\nEmail preference for the kennel: ").Append(ctx.EmailPrefsUrl("kennel"));
             return sb.ToString();
         }
     }

@@ -14,6 +14,7 @@ class DeepLinkTarget {
     this.nextRun = false,
     this.tab = RunTab.rsvp,
     this.rsvp,
+    this.emailPrefs,
     this.loginScanData,
   });
 
@@ -29,7 +30,14 @@ class DeepLinkTarget {
     int number, {
     RunTab tab = RunTab.rsvp,
     EnumRsvpState? rsvp,
-  }) : this._(kennelSlug: slug, runNumber: number, tab: tab, rsvp: rsvp);
+    String? emailPrefs,
+  }) : this._(
+         kennelSlug: slug,
+         runNumber: number,
+         tab: tab,
+         rsvp: rsvp,
+         emailPrefs: emailPrefs,
+       );
 
   /// The legacy `#/RID?publicEventId=…` form the QR codes still carry.
   const DeepLinkTarget.legacy(String publicEventId, {EnumRsvpState? rsvp})
@@ -57,6 +65,11 @@ class DeepLinkTarget {
   /// nothing about it. Only Yes and No are read — the notice offers no
   /// "maybe", and an unknown value must not be guessed at.
   final EnumRsvpState? rsvp;
+
+  /// `?emailPrefs=run` / `?emailPrefs=kennel` on a run link — the footer of
+  /// every run email (James, 2026-10-09): open the run, then its email dialog
+  /// or the kennel's, so changing a preference is one tap from the email.
+  final String? emailPrefs;
 
   /// The `UWP:<authCode>` text a web sign-in QR carries. Null for run links.
   final String? loginScanData;
@@ -98,13 +111,21 @@ class DeepLinkService {
   DeepLinkService._();
   static final DeepLinkService instance = DeepLinkService._();
 
-  static const Set<String> _hosts = <String>{'www.hashruns.org', 'hashruns.org'};
+  static const Set<String> _hosts = <String>{
+    'www.hashruns.org',
+    'hashruns.org',
+  };
 
   /// The kennel-level pages of the public site. These share the two-segment
   /// shape of a run URL, so they would otherwise parse as "run number
   /// 'songs'". They are the website's, not ours to open.
   static const Set<String> _kennelPages = <String>{
-    'songs', 'about', 'runs', 'events', 'legacy', 'photos',
+    'songs',
+    'about',
+    'runs',
+    'events',
+    'legacy',
+    'photos',
   };
 
   /// Both spellings: the printed QR codes say `nextrun`, the website's route
@@ -157,7 +178,8 @@ class DeepLinkService {
   void _receive(Uri uri, String how) {
     if (uri == _lastHandled &&
         _lastHandledAt != null &&
-        DateTime.now().difference(_lastHandledAt!) < const Duration(seconds: 10)) {
+        DateTime.now().difference(_lastHandledAt!) <
+            const Duration(seconds: 10)) {
       _crumb('duplicate delivery ignored ($how): $uri');
       return;
     }
@@ -190,18 +212,23 @@ class DeepLinkService {
     if (frag.startsWith('/RID')) {
       final int q = frag.indexOf('?');
       if (q >= 0) {
-        final Map<String, String> fragQuery =
-            Uri.splitQueryString(frag.substring(q + 1));
+        final Map<String, String> fragQuery = Uri.splitQueryString(
+          frag.substring(q + 1),
+        );
         final String? id = fragQuery['publicEventId'];
         if (id != null && id.isNotEmpty) {
-          return DeepLinkTarget.legacy(id.toLowerCase(), rsvp: _rsvpOf(fragQuery));
+          return DeepLinkTarget.legacy(
+            id.toLowerCase(),
+            rsvp: _rsvpOf(fragQuery),
+          );
         }
       }
       return null;
     }
 
-    final List<String> seg =
-        uri.pathSegments.where((String s) => s.isNotEmpty).toList();
+    final List<String> seg = uri.pathSegments
+        .where((String s) => s.isNotEmpty)
+        .toList();
     if (seg.length < 2) return null; // "/" and "/<slug>" are the website's.
 
     final String slug = seg[0].toLowerCase();
@@ -210,7 +237,9 @@ class DeepLinkService {
     // browser generated, lower-cased on both sides by the SP).
     if (slug == 'login') {
       final String scan = seg[1];
-      return scan.toUpperCase().startsWith(QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN) &&
+      return scan.toUpperCase().startsWith(
+                QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN,
+              ) &&
               scan.length > QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN.length
           ? DeepLinkTarget.login(scan)
           : null;
@@ -238,7 +267,19 @@ class DeepLinkService {
       number,
       tab: tab,
       rsvp: _rsvpOf(uri.queryParameters),
+      emailPrefs: _emailPrefsOf(uri.queryParameters),
     );
+  }
+
+  /// `emailPrefs=run` / `emailPrefs=kennel`, case-insensitive; anything else
+  /// is ignored.
+  static String? _emailPrefsOf(Map<String, String> query) {
+    for (final MapEntry<String, String> e in query.entries) {
+      if (e.key.toLowerCase() != 'emailprefs') continue;
+      final String v = e.value.trim().toLowerCase();
+      if (v == 'run' || v == 'kennel') return v;
+    }
+    return null;
   }
 
   /// `RSVP=Yes` / `RSVP=No`, key and value case-insensitive — a link is typed
@@ -330,6 +371,14 @@ class DeepLinkService {
       return;
     }
     if (target.rsvp != null) await _applyRsvp(eventId, target.rsvp!);
+    if (target.emailPrefs != null) {
+      // _openRun awaits the run page until it is popped, so the dialog goes
+      // up over it after a beat rather than after the person leaves.
+      unawaited(_openRun(eventId, target.tab, uri));
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+      await _openEmailPrefs(eventId, target.emailPrefs!);
+      return;
+    }
     await _openRun(eventId, target.tab, uri);
   }
 
@@ -344,21 +393,47 @@ class DeepLinkService {
   /// the RSVP buttons on a past run for the same reason. Offline the service
   /// returns nothing and the link degrades to "open the run" — the buttons
   /// are right there.
+  /// The run's or the kennel's email dialog, from the link in a run email.
+  Future<void> _openEmailPrefs(String eventId, String which) async {
+    try {
+      if (which == 'run') {
+        await showRunEmailPrefsDialog(HcId(eventId));
+        return;
+      }
+      final List<Map<String, dynamic>> rows = await database.rawQuery(
+        'SELECT e.kennelId AS kennelId, k.kennelShortName AS kennelShortName '
+        'FROM ${EnumDataTables.events.commonTableName} e '
+        'LEFT JOIN ${EnumDataTables.kennels.commonTableName} k ON k.kennelId = e.kennelId '
+        'WHERE e.eventId = ? LIMIT 1',
+        <Object?>[eventId.toLowerCase()],
+      );
+      if (rows.isEmpty) return;
+      await showKennelEmailPrefsDialog(
+        HcId(rows.first['kennelId'] as String),
+        kennelName: rows.first['kennelShortName'] as String?,
+      );
+    } catch (e, s) {
+      BootLogger.logError(
+        '[DeepLinkService._openEmailPrefs] eventId=$eventId',
+        e,
+        s,
+      );
+    }
+  }
+
   Future<void> _applyRsvp(String eventId, EnumRsvpState rsvp) async {
     final bool yes = rsvp == rsvpYes;
     try {
       if (await _hasStarted(eventId)) {
         _crumb('RSVP ${rsvp.value} ignored: run $eventId has already started');
-        showHcSnackbar('That run has already started, so there is nothing to RSVP to.');
+        showHcSnackbar(
+          'That run has already started, so there is nothing to RSVP to.',
+        );
         return;
       }
       if (currentUserId.isEmpty) return;
-      final List<dynamic> reply = await tableModel.hasherEventMapService.setEventRsvp(
-        eventId,
-        currentUserId,
-        AppDomainType.user,
-        rsvp.value,
-      );
+      final List<dynamic> reply = await tableModel.hasherEventMapService
+          .setEventRsvp(eventId, currentUserId, AppDomainType.user, rsvp.value);
       if (reply.isEmpty) {
         _crumb('RSVP ${rsvp.value} for $eventId did not reach the server');
         showHcSnackbar(
@@ -378,7 +453,11 @@ class DeepLinkService {
             : "Noted — you're marked as not coming.",
       );
     } catch (e, s) {
-      BootLogger.logError('[DeepLinkService._applyRsvp] eventId=$eventId', e, s);
+      BootLogger.logError(
+        '[DeepLinkService._applyRsvp] eventId=$eventId',
+        e,
+        s,
+      );
     }
   }
 
@@ -405,10 +484,12 @@ class DeepLinkService {
     // (validateScan splits it off), and the portal polls with that bare
     // code, so the row holds the bare code. Same here, or the web's poll
     // never matches.
-    final String code = scanData.substring(QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN.length);
+    final String code = scanData.substring(
+      QR_PREFIX_AUTHENTICATE_WEB_PORTAL_LOGIN.length,
+    );
     try {
-      final SingleResultModel? r =
-          await AuthenticateWebPortalService().authenticateWebPortal(code);
+      final SingleResultModel? r = await AuthenticateWebPortalService()
+          .authenticateWebPortal(code);
       final bool ok = r?.result != null && r!.result!.isNotEmpty;
       _crumb('web sign-in ${ok ? 'approved' : 'NOT approved'}');
       showHcSnackbar(
@@ -473,7 +554,9 @@ class DeepLinkService {
     await KennelHistory.followAndLoad(kennelId);
     eventId = await _eventIdByNumber(kennelId, t.runNumber!);
     if (eventId == null) {
-      debugPrint('[DEEPLINK] followed $kennelName but run ${t.runNumber} still absent');
+      debugPrint(
+        '[DEEPLINK] followed $kennelName but run ${t.runNumber} still absent',
+      );
     }
     return eventId;
   }
@@ -497,7 +580,9 @@ class DeepLinkService {
       'AND ${eh.colRemoved} = 0 LIMIT 1',
       <Object?>[kennelId, number],
     );
-    return rows.isEmpty ? null : normalizeUuid(rows.first[eh.colEventId] as String);
+    return rows.isEmpty
+        ? null
+        : normalizeUuid(rows.first[eh.colEventId] as String);
   }
 
   /// The kennel's next visible run — by the true UTC instant, per
@@ -512,7 +597,9 @@ class DeepLinkService {
       'ORDER BY ${eh.colEventStartDatetimeGmt} ASC LIMIT 1',
       <Object?>[kennelId, DateTime.now().toUtc().toIso8601String()],
     );
-    return rows.isEmpty ? null : normalizeUuid(rows.first[eh.colEventId] as String);
+    return rows.isEmpty
+        ? null
+        : normalizeUuid(rows.first[eh.colEventId] as String);
   }
 
   Future<String?> _eventIdByPublicId(String publicEventId) async {
@@ -522,17 +609,20 @@ class DeepLinkService {
       'WHERE lower(${eh.colPublicEventId}) = ? AND ${eh.colRemoved} = 0 LIMIT 1',
       <Object?>[publicEventId.toLowerCase()],
     );
-    return rows.isEmpty ? null : normalizeUuid(rows.first[eh.colEventId] as String);
+    return rows.isEmpty
+        ? null
+        : normalizeUuid(rows.first[eh.colEventId] as String);
   }
 
   Future<void> _openRun(String eventId, RunTab tab, Uri uri) async {
-    final List<RunDetailsAggregate> runs = await QueryRuns.getRunDetailsAggregates(
-      true,
-      eventId: HcId(eventId),
-      queryType: EnumRunQueryType.singleRun,
-      runsTimeScope: RunsTimeScope.future,
-      runsToDisplay: RunsToDisplay.allRuns,
-    );
+    final List<RunDetailsAggregate> runs =
+        await QueryRuns.getRunDetailsAggregates(
+          true,
+          eventId: HcId(eventId),
+          queryType: EnumRunQueryType.singleRun,
+          runsTimeScope: RunsTimeScope.future,
+          runsToDisplay: RunsToDisplay.allRuns,
+        );
     if (runs.isEmpty) {
       debugPrint('[DEEPLINK] event $eventId has no aggregate; bouncing');
       await _openInBrowser(uri);
@@ -550,7 +640,11 @@ class DeepLinkService {
     try {
       await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
     } catch (e, s) {
-      BootLogger.logError('[ERROR][DEEPLINK]', 'could not open in a browser: $e', s);
+      BootLogger.logError(
+        '[ERROR][DEEPLINK]',
+        'could not open in a browser: $e',
+        s,
+      );
       debugPrint('[DEEPLINK] could not open $uri in a browser: $e');
     }
   }
