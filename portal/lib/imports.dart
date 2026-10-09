@@ -35,6 +35,7 @@ export 'package:hcportal/admin_pages/kennel_page_new/kennel_page_new_controller.
 export 'package:hcportal/admin_pages/run_edit_page/run_edit_page_controller.dart';
 export 'package:hcportal/admin_pages/run_edit_page/run_edit_page_enums.dart';
 export 'package:hcportal/admin_pages/run_edit_page/run_edit_page_ui.dart';
+export 'package:hcportal/admin_pages/run_edit_page/run_email_dialog.dart';
 export 'package:hcportal/admin_pages/promotions/promotion_controller.dart';
 export 'package:hcportal/admin_pages/promotions/promotion_form.dart';
 export 'package:hcportal/admin_pages/promotions/promotion_list_page.dart';
@@ -93,6 +94,7 @@ export 'package:hcportal/queries/run_details_query.dart';
 export 'package:hcportal/queries/song_query.dart';
 export 'package:hcportal/routes.dart';
 export 'package:hcportal/services/service_common.dart';
+export 'package:hcportal/services/run_email_service.dart';
 export 'package:hcportal/tabbed_ui_old/widgets/pencil_checkbox.dart';
 export 'package:hcportal/tabbed_ui_old/widgets/tri_state_checkbox.dart';
 export 'package:hcportal/tabbed_ui/classes/sidebar_data.dart';

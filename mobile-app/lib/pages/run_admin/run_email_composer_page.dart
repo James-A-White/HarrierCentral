@@ -58,6 +58,17 @@ class RunEmailComposerPage extends StatelessWidget {
                   style: ts_body,
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 6),
+                Text(
+                  c.history,
+                  style: TextStyle(
+                    color: emailContext.alreadySent
+                        ? Colors.amberAccent
+                        : Colors.white70,
+                    fontSize: 13,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 12),
                 _field(
                   c.savedInstruction.isEmpty
@@ -146,6 +157,12 @@ class RunEmailComposerPage extends StatelessWidget {
                       controller: c.subject,
                       enabled: !c.isSending.value,
                       maxLength: 150,
+                      // Wraps rather than scrolling off the right; Return
+                      // submits (text keyboard), so no line breaks get in.
+                      minLines: 1,
+                      maxLines: 3,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.done,
                       style: _fieldText,
                       decoration: _deco(''),
                     ),

@@ -33,6 +33,8 @@ namespace HcWebApi.Endpoints
     /// "make it funny" can never move the start time.
     ///
     /// Request: POST JSON { deviceId, accessToken, eventId, action,
+    ///   client? ('portal' — then publicEventId instead of eventId and the token
+    ///   is signed for hcportal_getRunEmailContext),
     ///   instruction?, subject?, body?, saveInstruction? }. context returns the
     ///   kennel's saved instruction so the composer pre-fills it. Replies are JSON; the SP's error
     ///   envelope comes back as 400 { errorType, errorUserMessage, errorId }.
@@ -55,8 +57,11 @@ namespace HcWebApi.Endpoints
             catch { return new BadRequestObjectResult(new { errorUserMessage = "Bad request." }); }
 
             string action = (body.Value<string>("action") ?? "").ToLowerInvariant();
+            // The portal signs its token differently (ValidatePortalAuth) and knows
+            // the run by its public id, so it goes through hcportal_getRunEmailContext.
+            bool portal = string.Equals(body.Value<string>("client"), "portal", StringComparison.OrdinalIgnoreCase);
             if (!Guid.TryParse(body.Value<string>("deviceId"), out Guid deviceId)
-                || !Guid.TryParse(body.Value<string>("eventId"), out Guid eventId)
+                || !Guid.TryParse(body.Value<string>(portal ? "publicEventId" : "eventId"), out Guid eventId)
                 || string.IsNullOrEmpty(body.Value<string>("accessToken"))
                 || action is not ("context" or "draft" or "send"))
                 return new BadRequestObjectResult(new { errorUserMessage = "Bad request." });
@@ -67,7 +72,7 @@ namespace HcWebApi.Endpoints
             RunContext ctx;
             try
             {
-                var loaded = await LoadContextAsync(cs, deviceId, body.Value<string>("accessToken")!, eventId, includeRecipients: action == "send");
+                var loaded = await LoadContextAsync(cs, deviceId, body.Value<string>("accessToken")!, eventId, includeRecipients: action == "send", portal: portal);
                 if (loaded.error != null) return new BadRequestObjectResult(loaded.error);
                 ctx = loaded.ctx!;
             }
@@ -103,7 +108,8 @@ namespace HcWebApi.Endpoints
                 {
                     if (!HcListMail.IsConfigured)
                         return new ObjectResult(new { errorUserMessage = "Email sending is not configured." }) { StatusCode = 500 };
-                    string subject = (body.Value<string>("subject") ?? "").Trim();
+                    // A subject is one line whatever the client sent.
+                    string subject = Regex.Replace((body.Value<string>("subject") ?? ""), @"\s*[\r\n]+\s*", " ").Trim();
                     string prose = (body.Value<string>("body") ?? "").Trim();
                     if (subject.Length == 0 || prose.Length == 0)
                         return new BadRequestObjectResult(new { errorUserMessage = "The email needs a subject and some text." });
@@ -213,19 +219,21 @@ namespace HcWebApi.Endpoints
             };
         }
 
-        private static async Task<(RunContext? ctx, object? error)> LoadContextAsync(string cs, Guid deviceId, string accessToken, Guid eventId, bool includeRecipients)
+        private static async Task<(RunContext? ctx, object? error)> LoadContextAsync(string cs, Guid deviceId, string accessToken, Guid eventId, bool includeRecipients, bool portal = false)
         {
             using var conn = new SqlConnection(cs);
             await conn.OpenAsync();
-            using var cmd = new SqlCommand("[HC6].[hcapp_getRunEmailContext]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 30 };
+            using var cmd = new SqlCommand(portal ? "[HC6].[hcportal_getRunEmailContext]" : "[HC6].[hcapp_getRunEmailContext]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 30 };
             cmd.Parameters.Add("@deviceId", SqlDbType.UniqueIdentifier).Value = deviceId;
             cmd.Parameters.Add("@accessToken", SqlDbType.NVarChar, 1000).Value = accessToken;
-            cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventId;
+            cmd.Parameters.Add(portal ? "@publicEventId" : "@eventId", SqlDbType.UniqueIdentifier).Value = eventId;
             cmd.Parameters.Add("@includeRecipients", SqlDbType.SmallInt).Value = includeRecipients ? 1 : 0;
             using var r = await cmd.ExecuteReaderAsync();
             if (!await r.ReadAsync()) return (null, new { errorUserMessage = "Run not found." });
-            if (HasColumn(r, "errorType"))
+            if (HasColumn(r, "errorType"))   // the app SP's error envelope
                 return (null, new { errorType = r["errorType"], errorUserMessage = r["errorUserMessage"], errorId = r["errorId"] });
+            if (HasColumn(r, "Success") && Convert.ToInt32(r["Success"]) == 0)   // the portal SP's
+                return (null, new { errorUserMessage = r["ErrorMessage"]?.ToString() ?? "Not allowed." });
 
             string S(string c) => r[c] as string ?? "";
             var ctx = new RunContext

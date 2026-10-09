@@ -114,7 +114,10 @@ class _RunFormScaffold extends StatelessWidget {
     return AppBar(
       leading: _BackButton(),
       title: _RunTitle(controller: controller),
-      actions: [_AutoSaveControls(controller: controller)],
+      actions: [
+        _EmailMembersButton(controller: controller),
+        _AutoSaveControls(controller: controller),
+      ],
     );
   }
 
@@ -1354,6 +1357,27 @@ class RunPaymentTabContent extends StatelessWidget {
       controller: controller,
       uiControl: uiControl,
       onChanged: (_) => controller.checkIfFormIsDirty(),
+    );
+  }
+}
+
+/// "Email members" (E9.F6.S6–S9, portal parity 2026-10-09): saves the run
+/// if it is dirty, then opens the composer dialog. Hidden while a new run
+/// has not been created yet — there is nothing to email.
+class _EmailMembersButton extends StatelessWidget {
+  const _EmailMembersButton({required this.controller});
+  final RunEditPageController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    if (controller.isAddMode) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: TextButton.icon(
+        onPressed: controller.emailMembers,
+        icon: const Icon(Icons.mail_outline, color: Colors.white),
+        label: const Text('Email members', style: TextStyle(color: Colors.white)),
+      ),
     );
   }
 }

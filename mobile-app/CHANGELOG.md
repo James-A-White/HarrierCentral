@@ -1,3 +1,11 @@
+## 3.1.9+1454 (2026-10-09)
+Dance baby! — all beta testers.
+### New Features
+- **Save and send** (since 1451, first time for most testers): the run editor has **Save** and **Save and send**. Save and send posts the notice to the kennel's WhatsApp and/or **emails the members who have run emails switched on** — drafted for you from the run's details, with an optional instruction ("make it a funny Halloween story", "write it in French"), a Rewrite button, and your edit before anything goes. The date, venue, hares, price and ✓ I'm in / ✗ Can't make it buttons are added automatically. Every email has a one-tap unsubscribe.
+- **Kennel house style**: the instruction can be saved as the kennel's default and is pre-filled for whoever emails the next run.
+### Improvements
+- **Email the run**: shows how many emails have already gone out for the run and when the last one did — on the page and again before you send; the subject box wraps instead of running off the edge.
+
 ## 3.1.9+1453 (2026-10-09)
 Private dance — James, Tuna Melt and Kilty.
 ### Fixes
