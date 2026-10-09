@@ -384,6 +384,9 @@ BEGIN TRY
                 END
             END
 
+            -- The email status describes the ADDRESS: a new address starts Unknown.
+            DECLARE @emailBefore NVARCHAR(250) = (SELECT Email FROM HC.Hasher WHERE id = @targetUserId);
+
             -- UPDATE — edit existing user
             UPDATE HC.Hasher
             SET FirstName                    = COALESCE(@firstName, FirstName),
@@ -396,6 +399,9 @@ BEGIN TRY
                 NameDisplayPreference        = COALESCE(@nameDisplayPreference, NameDisplayPreference),
                 updatedAt                    = GETDATE()
             WHERE id = @targetUserId;
+
+            IF (@email IS NOT NULL AND @email <> ISNULL(@emailBefore, ''))
+                EXEC HC6.nonApi_resetEmailStatus @hasherId = @targetUserId, @reason = 'address changed in the app';
 
             -- Update historical run counts if provided
             IF (@kennelId IS NOT NULL

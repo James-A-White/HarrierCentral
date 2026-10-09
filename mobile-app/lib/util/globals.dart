@@ -191,6 +191,7 @@ Future<void> syncAllUserDataFromBackend({
         DateTime.now(),
       );
       BootLogger.logBreadcrumb('[SYNC] full sync: all steps succeeded');
+      unawaited(promptIfEmailBouncing());
     } else {
       BootLogger.logError(
         '[ERROR][SYNC]',
@@ -316,8 +317,7 @@ class AppModel extends GetxService {
   bool hasLocationPermissions = false;
 
   // TODO(DevTeam): Make sure this is eventually called
-  void dispose() {
-  }
+  void dispose() {}
 }
 
 class TableModel extends GetxService {
@@ -411,8 +411,10 @@ class DeviceInfo extends GetxService {
     // preserve every real phone's sizing exactly and stop the runaway
     // growth beyond phablet dimensions.
     deviceWidthScaleFactor = (deviceWidth / BASE_DEVICE_WIDTH).clamp(0.0, 1.35);
-    deviceHeightScaleFactor =
-        (deviceHeight / BASE_DEVICE_HEIGHT).clamp(0.0, 1.65);
+    deviceHeightScaleFactor = (deviceHeight / BASE_DEVICE_HEIGHT).clamp(
+      0.0,
+      1.65,
+    );
     deviceMaxScaleFactor = max(deviceWidthScaleFactor, deviceHeightScaleFactor);
     deviceMinScaleFactor = min(deviceWidthScaleFactor, deviceHeightScaleFactor);
     deviceTextScaleFactor = textScaleFactor;
@@ -452,7 +454,6 @@ class DeviceInfo extends GetxService {
   }
 }
 
-
 /// One table group in [syncAllUserDataFromBackend].
 class _FullSyncStep {
   const _FullSyncStep(this.label, this.flags, {required this.usePaging});
@@ -473,4 +474,46 @@ Future<void> _waitForConnection(Duration limit) async {
     }
     await Future<void>.delayed(const Duration(seconds: 2));
   }
+}
+
+/// Once per app session, after the boot sync: if the server has seen this
+/// hasher's address hard-bounce (E19.F4), ask for a new one — run emails and
+/// invite codes are going nowhere until it changes. Never nags when the
+/// status cannot be fetched.
+bool _emailBouncePromptShown = false;
+Future<void> promptIfEmailBouncing() async {
+  if (_emailBouncePromptShown) return;
+  final MyEmailStatus? st = await RunEmailService.myEmailStatus();
+  if (st == null || !st.isBounced) return;
+  _emailBouncePromptShown = true;
+  final BuildContext? ctx = navigatorKey.currentContext;
+  if (ctx == null) return;
+  final bool? go = await Utilities.showAlert(
+    'Your email address is bouncing',
+    'Harrier Central could not deliver to ${st.email}. Run emails and invite '
+        'codes will not reach you until it is updated.',
+    'Update it',
+    showCancelButton: true,
+    cancelButtonText: 'Later',
+  );
+  if (go != true) return;
+  final String? userId = getStringPref(StringPrefsEnum.userId);
+  final BuildContext? navCtx = navigatorKey.currentContext;
+  if (userId == null || navCtx == null) return;
+  await Navigator.push<dynamic>(
+    // ignore: use_build_context_synchronously
+    navCtx,
+    MaterialPageRoute<dynamic>(
+      builder: (BuildContext context) => HasherProfilePage(
+        dataContext: EnumDataContext.user,
+        pageType: EnumMyProfilePageType.myProfile,
+        hasherId: userId,
+        uiElementsToDisplay:
+            HasherProfilePage.flagUiElement_autoDisplayRunsDistance |
+            HasherProfilePage.flagUiElement_refresh3rdPartyLogin |
+            HasherProfilePage.flagUiElement_logOutButton |
+            HasherProfilePage.flagUiElement_gdprDeleteAccount,
+      ),
+    ),
+  );
 }

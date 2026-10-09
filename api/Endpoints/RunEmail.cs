@@ -72,7 +72,8 @@ namespace HcWebApi.Endpoints
             RunContext ctx;
             try
             {
-                int include = action == "audience" ? 2 : action == "send" ? 1 : 0;
+                // A send needs both lists too: overrides move members between them.
+                int include = action is "audience" or "send" ? 2 : 0;
                 var loaded = await LoadContextAsync(cs, deviceId, body.Value<string>("accessToken")!, eventId, includeRecipients: include, portal: portal);
                 if (loaded.error != null) return new BadRequestObjectResult(loaded.error);
                 ctx = loaded.ctx!;
@@ -92,8 +93,8 @@ namespace HcWebApi.Endpoints
                     // The "Who gets it" page: names as the check-in list shows them.
                     return new OkObjectResult(new
                     {
-                        recipients = ctx.Recipients.Select(r => new { name = r.Name }),
-                        nonRecipients = ctx.NonRecipients.Select(n => new { name = n.Name, reason = n.Reason }),
+                        recipients = ctx.Recipients.Select(m => m.ToJson()),
+                        nonRecipients = ctx.NonRecipients.Select(m => m.ToJson()),
                     });
 
                 case "draft":
@@ -149,8 +150,24 @@ namespace HcWebApi.Endpoints
                         return new OkObjectResult(new { sent = 1, preview = true });
                     }
 
-                    if (ctx.Recipients.Count == 0)
+                    // Per-send overrides (James, 2026-10-09): this send only, nothing written
+                    // to anybody's preferences. A blocked, bouncing or address-less member
+                    // can never be moved in — the server refuses the id whatever the client
+                    // sent — and at most 20 may be moved in, so this is not a way round the
+                    // preference system for a whole kennel.
+                    var includeIds = Ids(body["includeHasherIds"]);
+                    var excludeIds = Ids(body["excludeHasherIds"]);
+                    var movedIn = ctx.NonRecipients.Where(m => includeIds.Contains(m.HasherId) && m.CanMove).Take(20).ToList();
+                    var refused = ctx.NonRecipients.Where(m => includeIds.Contains(m.HasherId) && !m.CanMove).ToList();
+                    if (refused.Count > 0)
+                        return new BadRequestObjectResult(new { errorUserMessage = $"{refused[0].Name} cannot be sent this email ({Member.ReasonText(refused[0].ReasonCode).ToLowerInvariant()})." });
+                    var movedOut = ctx.Recipients.Where(m => excludeIds.Contains(m.HasherId)).ToList();
+                    var finalList = ctx.Recipients.Where(m => !excludeIds.Contains(m.HasherId)).Concat(movedIn).ToList();
+                    var movedInIds = movedIn.Select(m => m.HasherId).ToHashSet();
+                    if (finalList.Count == 0)
                         return new BadRequestObjectResult(new { errorUserMessage = "Nobody in this kennel has run emails switched on." });
+                    foreach (var m in movedIn) await LogOverrideAsync(cs, ctx, m, "in");
+                    foreach (var m in movedOut) await LogOverrideAsync(cs, ctx, m, "out");
 
                     // The instruction that shaped this email, saved as the kennel's
                     // default when the sender ticked the box (James, 2026-10-09): a
@@ -161,17 +178,20 @@ namespace HcWebApi.Endpoints
 
                     // Record first, so a crash mid-send still shows "emailed" rather
                     // than inviting a second blast; failures are logged per address.
-                    await RecordSentAsync(cs, ctx, ctx.Recipients.Count, instruction, saveInstruction);
+                    await RecordSentAsync(cs, ctx, finalList.Count, instruction, saveInstruction);
                     string plain = PlainText(ctx, prose);
                     _ = Task.Run(async () =>
                     {
                         int ok = 0;
-                        foreach (var r in ctx.Recipients)
+                        foreach (var r in finalList)
                         {
                             try
                             {
                                 string unsub = HcListMail.UnsubscribeUrl(r.HasherId, ctx.KennelId);
-                                await HcListMail.SendAsync(r.Email, subject, BuildHtml(ctx, subject, prose, unsub),
+                                bool requested = movedInIds.Contains(r.HasherId);
+                                string prefs = requested ? HcListMail.PreferencesUrl(r.HasherId, ctx.KennelId) : "";
+                                await HcListMail.SendAsync(r.Email, subject, BuildHtml(ctx, subject, prose, unsub, requested ? prefs : null),
+                                    (requested ? $"{ctx.SenderName} has requested that you receive this email. Your email preferences: {prefs}\n\n" : "") +
                                     plain + $"\n\nUnsubscribe from {ctx.KennelName} run emails: {unsub}", unsub);
                                 ok++;
                             }
@@ -183,9 +203,9 @@ namespace HcWebApi.Endpoints
                             // big kennel inside it rather than tripping 429s.
                             await Task.Delay(250);
                         }
-                        _log.LogInformation("RunEmail: {Ok}/{Total} accepted for event {Event}", ok, ctx.Recipients.Count, eventId);
+                        _log.LogInformation("RunEmail: {Ok}/{Total} accepted for event {Event}", ok, finalList.Count, eventId);
                     });
-                    return new OkObjectResult(new { sent = ctx.Recipients.Count });
+                    return new OkObjectResult(new { sent = finalList.Count, movedIn = movedIn.Count, movedOut = movedOut.Count });
                 }
             }
             return new BadRequestObjectResult(new { errorUserMessage = "Bad request." });
@@ -193,8 +213,19 @@ namespace HcWebApi.Endpoints
 
         // ── Context ────────────────────────────────────────────────────────────
 
-        public sealed record Recipient(Guid HasherId, string Email, string Name);
-        public sealed record NonRecipient(string Name, string Reason);
+        /// <summary>One kennel member as the audience page shows them. reasonCode: 1 on for this
+        /// run, 2 on for the kennel, 3 run emails off, 4 kennel emails off, 5 never switched on,
+        /// 6 no email address, 7 blocked all emails, 8 email bouncing. canMove: an admin may
+        /// override for one send (never 6, 7, 8).</summary>
+        public sealed record Member(Guid HasherId, string Email, string Name, string MortalName, string Photo, int EmailStatus, int ReasonCode, bool CanMove)
+        {
+            public object ToJson() => new { hasherId = HasherId, name = Name, mortalName = MortalName, photo = Photo, emailStatus = EmailStatus, reasonCode = ReasonCode, canMove = CanMove, reason = ReasonText(ReasonCode) };
+            public static string ReasonText(int code) => code switch
+            {
+                1 => "On for this run", 2 => "On for the kennel", 3 => "Run emails off", 4 => "Kennel emails off",
+                5 => "Never switched on", 6 => "No email address", 7 => "Blocked all emails", 8 => "Email bouncing, ask for a new address", _ => "",
+            };
+        }
 
         public sealed class RunContext
         {
@@ -207,8 +238,8 @@ namespace HcWebApi.Endpoints
             public DateTimeOffset? EmailLastSentAt;
             public int? EmailLastSentCount;
             public int RecipientCount;
-            public List<Recipient> Recipients = new();
-            public List<NonRecipient> NonRecipients = new();
+            public List<Member> Recipients = new();
+            public List<Member> NonRecipients = new();
 
             public bool Counted => IsCountedRun == 1 && EventNumber > 0;
             public string Url => Counted
@@ -290,13 +321,38 @@ namespace HcWebApi.Endpoints
                 ctx.EmailLastSentCount = r["emailLastSentCount"] is DBNull ? null : Convert.ToInt32(r["emailLastSentCount"]);
                 ctx.RecipientCount = Convert.ToInt32(r["recipientCount"]);
             }
+            Member Row() => new(Guid.Parse(S("hasherId")), S("email"), S("hashName"), S("mortalName"), S("photo"),
+                Convert.ToInt32(r["emailStatus"]), Convert.ToInt32(r["reasonCode"]), Convert.ToInt32(r["canMove"]) == 1);
             if (includeRecipients >= 1 && await r.NextResultAsync())
-                while (await r.ReadAsync())
-                    ctx.Recipients.Add(new Recipient(Guid.Parse(S("hasherId")), S("email"), S("displayName")));
+                while (await r.ReadAsync()) ctx.Recipients.Add(Row());
             if (includeRecipients == 2 && await r.NextResultAsync())
-                while (await r.ReadAsync())
-                    ctx.NonRecipients.Add(new NonRecipient(S("displayName"), S("reason")));
+                while (await r.ReadAsync()) ctx.NonRecipients.Add(Row());
             return (ctx, null);
+        }
+
+        private static HashSet<Guid> Ids(JToken? t)
+        {
+            var set = new HashSet<Guid>();
+            if (t is JArray a) foreach (var x in a) if (Guid.TryParse(x?.ToString(), out Guid g)) set.Add(g);
+            return set;
+        }
+
+        /// <summary>Every override is logged: admin, member, run, direction, time (LOG.GeneralLog).</summary>
+        private static async Task LogOverrideAsync(string cs, RunContext ctx, Member m, string direction)
+        {
+            try
+            {
+                using var conn = new SqlConnection(cs);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand(
+                    "INSERT LOG.GeneralLog (LogSource, Message, StrParam1, Data, [Timestamp]) VALUES ('RunEmailOverride', @m, @e, @d, SYSDATETIMEOFFSET())", conn);
+                cmd.Parameters.Add("@m", SqlDbType.NVarChar, 200).Value = direction == "in" ? "Moved into the send" : "Moved out of the send";
+                cmd.Parameters.Add("@e", SqlDbType.NVarChar, 100).Value = ctx.EventId.ToString("D");
+                cmd.Parameters.Add("@d", SqlDbType.NVarChar, -1).Value =
+                    $"admin {ctx.SenderId:D} ({ctx.SenderName}), member {m.HasherId:D} ({m.Name}), reason was {Member.ReasonText(m.ReasonCode)}";
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch { /* the log must never stop the send */ }
         }
 
         private static bool HasColumn(SqlDataReader r, string name)
@@ -455,7 +511,7 @@ namespace HcWebApi.Endpoints
         /// built, then the kennel line, inside the shared layout — plus this
         /// recipient's unsubscribe line when one is given.
         /// </summary>
-        public static string BuildHtml(RunContext ctx, string subject, string prose, string? unsubscribeUrl)
+        public static string BuildHtml(RunContext ctx, string subject, string prose, string? unsubscribeUrl, string? requestedPrefsUrl = null)
         {
             string Row(string label, string value) => value.Length == 0 ? "" :
                 $"<tr><td style=\"padding:6px 10px 6px 0;color:#6b7785;white-space:nowrap;vertical-align:top\">{label}</td><td style=\"padding:6px 0;vertical-align:top\">{H(value)}</td></tr>";
@@ -463,6 +519,11 @@ namespace HcWebApi.Endpoints
                 $"<a href=\"{href}\" style=\"display:inline-block;margin:6px 6px 0 0;padding:10px 16px;background:{bg};color:#fff;text-decoration:none;border-radius:6px;font-weight:600\">{H(text)}</a>";
 
             var sb = new StringBuilder();
+            // Moved into the send by an admin: say so at the very top, with the way out
+            // directly under it (James, 2026-10-09). Everyone else gets the normal email.
+            if (requestedPrefsUrl != null)
+                sb.Append($"<p style=\"margin:0 0 4px;font-weight:700\">{H(ctx.SenderName)} has requested that you receive this email.</p>" +
+                          $"<p style=\"margin:0 0 18px;font-size:13px\"><a href=\"{requestedPrefsUrl}\" style=\"color:#2b6cb0\">Your email preferences</a> — stop emails from {H(ctx.KennelShortName)}, or block all email from Harrier Central.</p>");
             sb.Append(Paragraphs(prose));
             sb.Append($"<p style=\"margin:0 0 18px\">On on,<br>{H(ctx.SenderName)}<br><span style=\"color:#6b7785\">{H(ctx.KennelName)}</span></p>");
             sb.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;background:#f4f6f8;border-radius:8px;padding:14px 16px;font-size:15px\"><tr><td>");

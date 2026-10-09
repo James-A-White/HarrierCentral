@@ -1,3 +1,7 @@
+## 2.0.87+747 (2026-10-09)
+### New Features
+- **Who gets the email, reworked**: search box, photo rows with hash and mortal names, the reason each member is in the list, and a per-send override button (Don't send / Send anyway, with Undo) — this send only, nobody's settings change. Blocked and bouncing addresses are badged and cannot be moved in.
+
 ## 2.0.87+746 (2026-10-09)
 ### New Features
 - **Email members › Preview to me** sends the finished email to your own inbox only, without recording a send; **Who gets it** lists the members who will get it and the kennel members who will not, with the reason.

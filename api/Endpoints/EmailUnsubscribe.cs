@@ -25,6 +25,7 @@ namespace HcWebApi.Endpoints
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
             string? h = req.Query["h"], k = req.Query["k"], e = req.Query["e"], s = req.Query["s"];
+            string action = (req.Query["do"].ToString() ?? "").ToLowerInvariant();   // "", "prefs", "block"
             if (!HcListMail.VerifyUnsubscribe(h, k, e, s))
                 return Page(400, "This link is not valid",
                     "It may have expired or been copied incompletely. You can switch run emails off for any kennel from the Harrier Central app: tap the envelope on the kennel.");
@@ -32,20 +33,51 @@ namespace HcWebApi.Endpoints
             string? cs = Environment.GetEnvironmentVariable("HcDbConnectionString");
             if (cs == null) return Page(500, "Something went wrong", "Please try again later.");
 
+            string baseUrl = $"{HcListMail.ApiBase}/api/EmailUnsubscribe?h={h}&k={k}&e={e}&s={s}";
+            string blockUrl = WebUtility.HtmlEncode(baseUrl + "&do=block");
             string kennelName = "the kennel", slug = "";
+
+            // The preferences page: choices, nothing acted on yet. This is the link under
+            // "<admin> has requested that you receive this email".
+            if (action == "prefs")
+            {
+                (kennelName, slug) = await KennelAsync(cs, Guid.Parse(k!));
+                return Page(200, "Your email preferences",
+                    $"Choose what you want from Harrier Central.<br><br>" +
+                    $"<a href=\"{WebUtility.HtmlEncode(baseUrl)}\" style=\"display:inline-block;margin:4px;padding:10px 16px;background:#2b6cb0;color:#fff;border-radius:6px;text-decoration:none\">Stop run emails from {WebUtility.HtmlEncode(kennelName)}</a><br>" +
+                    $"<a href=\"{blockUrl}\" style=\"display:inline-block;margin:4px;padding:10px 16px;background:#9b2c2c;color:#fff;border-radius:6px;text-decoration:none\">Block all email from Harrier Central</a>" +
+                    "<br><span style=\"font-size:13px;color:#6b7785\">Blocking stops every email, including run emails an admin asks us to send you. Invite codes you ask for yourself still arrive.</span>");
+            }
+
             try
             {
                 using var conn = new SqlConnection(cs);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("[HC6].[nonApi_setKennelEmailOff]", conn) { CommandType = CommandType.StoredProcedure };
-                cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = Guid.Parse(h!);
-                cmd.Parameters.Add("@kennelId", SqlDbType.UniqueIdentifier).Value = Guid.Parse(k!);
-                using var r = await cmd.ExecuteReaderAsync();
-                if (await r.ReadAsync())
+                if (action == "block")
                 {
-                    if (Convert.ToInt32(r["Success"]) != 1) throw new InvalidOperationException(r["ErrorMessage"]?.ToString());
-                    kennelName = r["kennelName"] as string ?? kennelName;
-                    slug = r["kennelSlug"] as string ?? "";
+                    // The member's "nothing at all" (E19.F4): beats every preference and every
+                    // admin override from now on.
+                    using var cmd = new SqlCommand("[HC6].[nonApi_setEmailBlocked]", conn) { CommandType = CommandType.StoredProcedure };
+                    cmd.Parameters.Add("@hasherId", SqlDbType.UniqueIdentifier).Value = Guid.Parse(h!);
+                    cmd.Parameters.Add("@blocked", SqlDbType.SmallInt).Value = 1;
+                    using var r = await cmd.ExecuteReaderAsync();
+                    if (await r.ReadAsync() && Convert.ToInt32(r["Success"]) != 1) throw new InvalidOperationException(r["ErrorMessage"]?.ToString());
+                    return Page(200, "All email blocked",
+                        "Harrier Central will not email you about runs again, from any kennel, even when an admin asks us to. " +
+                        "Invite codes you request yourself still arrive. To change this later, ask your kennel's admin.");
+                }
+                else
+                {
+                    using var cmd = new SqlCommand("[HC6].[nonApi_setKennelEmailOff]", conn) { CommandType = CommandType.StoredProcedure };
+                    cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = Guid.Parse(h!);
+                    cmd.Parameters.Add("@kennelId", SqlDbType.UniqueIdentifier).Value = Guid.Parse(k!);
+                    using var r = await cmd.ExecuteReaderAsync();
+                    if (await r.ReadAsync())
+                    {
+                        if (Convert.ToInt32(r["Success"]) != 1) throw new InvalidOperationException(r["ErrorMessage"]?.ToString());
+                        kennelName = r["kennelName"] as string ?? kennelName;
+                        slug = r["kennelSlug"] as string ?? "";
+                    }
                 }
             }
             catch (Exception ex)
@@ -59,7 +91,23 @@ namespace HcWebApi.Endpoints
                 : "";
             return Page(200, "You're unsubscribed",
                 $"You will not get run emails from <strong>{WebUtility.HtmlEncode(kennelName)}</strong> any more. " +
-                "Changed your mind? Open the Harrier Central app and tap the envelope on the kennel to turn them back on." + back);
+                "Changed your mind? Open the Harrier Central app and tap the envelope on the kennel to turn them back on." +
+                $"<br><br><span style=\"font-size:13px\">Want nothing at all from Harrier Central? <a href=\"{blockUrl}\" style=\"color:#9b2c2c\">Block all email</a>.</span>" + back);
+        }
+
+        private static async Task<(string name, string slug)> KennelAsync(string cs, Guid kennelId)
+        {
+            try
+            {
+                using var conn = new SqlConnection(cs);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("SELECT KennelName, KennelUniqueShortName FROM HC.Kennel WHERE id = @k", conn);
+                cmd.Parameters.Add("@k", SqlDbType.UniqueIdentifier).Value = kennelId;
+                using var r = await cmd.ExecuteReaderAsync();
+                if (await r.ReadAsync()) return (r["KennelName"] as string ?? "the kennel", r["KennelUniqueShortName"] as string ?? "");
+            }
+            catch { }
+            return ("the kennel", "");
         }
 
         private static ContentResult Page(int status, string title, string bodyHtml) => new()

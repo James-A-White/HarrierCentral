@@ -1,3 +1,6 @@
+2.0.87+747
+    • Who gets the email: roster-style rows, search, reasons, per-send overrides, Blocked/Bouncing badges.
+
 2.0.87+746
     • Email members: Preview to me (sender only, not recorded) and Who gets it (two pills, reasons).
 

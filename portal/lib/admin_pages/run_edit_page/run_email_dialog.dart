@@ -32,6 +32,15 @@ class RunEmailDialogController extends GetxController {
   final RxString error = ''.obs;
   final RxString notice = ''.obs;
 
+  /// Per-send overrides (James, 2026-10-09): members moved in or out of this
+  /// send only. Never written to anybody's preferences; gone with the
+  /// dialog. The server re-checks every id.
+  final RxSet<String> includeIds = <String>{}.obs;
+  final RxSet<String> excludeIds = <String>{}.obs;
+
+  int get effectiveCount =>
+      (context.value?.recipientCount ?? 0) - excludeIds.length + includeIds.length;
+
   @override
   void onInit() {
     super.onInit();
@@ -130,6 +139,7 @@ class RunEmailDialogController extends GetxController {
       RunEmailAudienceDialog(
         publicEventId: publicEventId,
         kennelShortName: kennelShortName,
+        composer: this,
       ),
     );
     await deleteAfterExit<RunEmailAudienceController>(
@@ -143,18 +153,22 @@ class RunEmailDialogController extends GetxController {
   Future<void> send() async {
     final String subj = subject.text.trim();
     final String text = body.text.trim();
-    final int n = context.value?.recipientCount ?? 0;
+    final int n = effectiveCount;
     if (subj.isEmpty || text.isEmpty) {
       error.value = 'The email needs a subject and some text.';
       return;
     }
+    final String overrides = includeIds.isEmpty && excludeIds.isEmpty
+        ? ''
+        : '\n\nOverrides for this send only: ${includeIds.length} moved in, '
+            '${excludeIds.length} moved out.';
     final bool? go = await Get.dialog<bool>(
       AlertDialog(
         title: Text('Send to $n ${n == 1 ? 'member' : 'members'}?'),
         content: Text(
           'The email goes to everyone in $kennelShortName who has run emails '
           'switched on. The run\'s date, venue, hares, price and the I\'m-in / '
-          'can\'t-make-it buttons are added under your text.\n\n$history',
+          'can\'t-make-it buttons are added under your text.\n\n$history$overrides',
         ),
         actions: [
           HcButton.secondary(
@@ -179,6 +193,8 @@ class RunEmailDialogController extends GetxController {
         body: text,
         instruction: instruction.text.trim(),
         saveInstruction: saveInstruction.value,
+        includeHasherIds: includeIds,
+        excludeHasherIds: excludeIds,
       );
       if (isClosed) return;
       Get.back<int>(result: sent);
@@ -223,7 +239,8 @@ class RunEmailDialog extends StatelessWidget {
             onPressed: () => Get.back<int>(),
           ),
           Obx(() {
-            final int n = c.context.value?.recipientCount ?? 0;
+            // Read the override sets here so a move repaints the button.
+            final int n = (c.context.value?.recipientCount ?? 0) - c.excludeIds.length + c.includeIds.length;
             final bool busy = c.isLoading.value || c.isDrafting.value || c.isSending.value;
             return HcButton.primary(
               icon: Icons.send_rounded,
@@ -369,23 +386,35 @@ class RunEmailDialog extends StatelessWidget {
   }
 }
 
-/// "Who gets it" (James, 2026-10-09): two pills — the members the run email
-/// will reach, and the kennel members it will not, each with the reason.
-/// Names are the ones the check-in list shows; both lists come from the
-/// same procedure that builds the send list.
+/// "Who gets the email" (James, 2026-10-09), portal edition: the attendance
+/// roster's shape — search box, a row per member with photo, hash name,
+/// mortal name and WHY they are in this list — plus one labelled button that
+/// moves them to the other list for this send only. Overrides live in the
+/// composer's two sets; the server re-checks every id. Blocked, bouncing and
+/// address-less members have no button.
 class RunEmailAudienceController extends GetxController {
-  RunEmailAudienceController({required this.publicEventId});
+  RunEmailAudienceController({required this.publicEventId, required this.composer});
   final String publicEventId;
+  final RunEmailDialogController composer;
 
   final Rx<RunEmailAudience?> audience = Rx<RunEmailAudience?>(null);
   final RxBool isLoading = true.obs;
   final RxString error = ''.obs;
   final RxInt pill = 0.obs;
+  final RxString query = ''.obs;
+  final TextEditingController search = TextEditingController();
 
   @override
   void onInit() {
     super.onInit();
+    search.addListener(() => query.value = search.text.trim().toLowerCase());
     unawaited(load());
+  }
+
+  @override
+  void onClose() {
+    search.dispose();
+    super.onClose();
   }
 
   Future<void> load() async {
@@ -403,6 +432,46 @@ class RunEmailAudienceController extends GetxController {
       if (!isClosed) isLoading.value = false;
     }
   }
+
+  bool isMovedIn(RunEmailAudienceEntry e) => composer.includeIds.contains(e.hasherId);
+  bool isMovedOut(RunEmailAudienceEntry e) => composer.excludeIds.contains(e.hasherId);
+
+  List<RunEmailAudienceEntry> get willGet {
+    final RunEmailAudience? a = audience.value;
+    if (a == null) return const [];
+    return [
+      ...a.recipients.where((e) => !isMovedOut(e)),
+      ...a.nonRecipients.where(isMovedIn),
+    ]..sort(_byName);
+  }
+
+  List<RunEmailAudienceEntry> get willNot {
+    final RunEmailAudience? a = audience.value;
+    if (a == null) return const [];
+    return [
+      ...a.nonRecipients.where((e) => !isMovedIn(e)),
+      ...a.recipients.where(isMovedOut),
+    ]..sort(_byName);
+  }
+
+  static int _byName(RunEmailAudienceEntry a, RunEmailAudienceEntry b) =>
+      a.name.toLowerCase().compareTo(b.name.toLowerCase());
+
+  void toggle(RunEmailAudienceEntry e) {
+    if (!e.canMove) return;
+    final RunEmailAudience? a = audience.value;
+    if (a == null) return;
+    final bool naturallyIn = a.recipients.any((r) => r.hasherId == e.hasherId);
+    if (naturallyIn) {
+      if (!composer.excludeIds.remove(e.hasherId)) composer.excludeIds.add(e.hasherId);
+    } else if (!composer.includeIds.remove(e.hasherId)) {
+      if (composer.includeIds.length >= 20) {
+        error.value = 'At most 20 members can be moved in for one send.';
+      } else {
+        composer.includeIds.add(e.hasherId);
+      }
+    }
+  }
 }
 
 class RunEmailAudienceDialog extends StatelessWidget {
@@ -410,41 +479,37 @@ class RunEmailAudienceDialog extends StatelessWidget {
     super.key,
     required this.publicEventId,
     required this.kennelShortName,
+    required this.composer,
   });
 
   final String publicEventId;
   final String kennelShortName;
+  final RunEmailDialogController composer;
 
   static String tagFor(String publicEventId) => 'runemail-audience-$publicEventId';
 
   @override
   Widget build(BuildContext context) {
     return GetBuilder<RunEmailAudienceController>(
-      init: RunEmailAudienceController(publicEventId: publicEventId),
+      init: RunEmailAudienceController(publicEventId: publicEventId, composer: composer),
       tag: tagFor(publicEventId),
       builder: (RunEmailAudienceController c) => AlertDialog(
         title: const Text('Who gets the email'),
         content: SizedBox(
-          width: 520,
-          height: 520,
+          width: 640,
+          height: 600,
           child: Obx(() => _body(c)),
         ),
         actions: [
-          HcButton.primary(
-            label: 'Close',
-            onPressed: () => Get.back<void>(),
-          ),
+          HcButton.primary(label: 'Done', onPressed: () => Get.back<void>()),
         ],
       ),
     );
   }
 
   Widget _body(RunEmailAudienceController c) {
-    if (c.isLoading.value) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    final RunEmailAudience? a = c.audience.value;
-    if (a == null) {
+    if (c.isLoading.value) return const Center(child: CircularProgressIndicator());
+    if (c.audience.value == null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -456,9 +521,17 @@ class RunEmailAudienceDialog extends StatelessWidget {
         ),
       );
     }
-    final bool showingRecipients = c.pill.value == 0;
+    final int movedIn = c.composer.includeIds.length;
+    final int movedOut = c.composer.excludeIds.length;
+    final bool showingGet = c.pill.value == 0;
+    final List<RunEmailAudienceEntry> getList = c.willGet;
+    final List<RunEmailAudienceEntry> notList = c.willNot;
+    final List<RunEmailAudienceEntry> all = showingGet ? getList : notList;
+    final String q = c.query.value;
     final List<RunEmailAudienceEntry> rows =
-        showingRecipients ? a.recipients : a.nonRecipients;
+        q.isEmpty ? all : all.where((e) => e.searchText.contains(q)).toList();
+    String count(int base, int moved) => moved == 0 ? '$base' : '$base + $moved';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -468,12 +541,12 @@ class RunEmailAudienceDialog extends StatelessWidget {
               ButtonSegment<int>(
                 value: 0,
                 icon: const Icon(Icons.mark_email_read_outlined),
-                label: Text('Will get it (${a.recipients.length})'),
+                label: Text('Will get it (${count(getList.length - movedIn, movedIn)})'),
               ),
               ButtonSegment<int>(
                 value: 1,
                 icon: const Icon(Icons.unsubscribe_outlined),
-                label: Text('Will not (${a.nonRecipients.length})'),
+                label: Text('Will not (${count(notList.length - movedOut, movedOut)})'),
               ),
             ],
             selected: {c.pill.value},
@@ -481,36 +554,100 @@ class RunEmailAudienceDialog extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          showingRecipients
-              ? 'Members with run emails on — for this run, or for $kennelShortName as a whole.'
-              : 'Members of $kennelShortName who will not get this email, and why. They can switch run emails on from the envelope on the kennel or the run in the app.',
-          style: const TextStyle(color: Colors.black54, fontSize: 12),
-          textAlign: TextAlign.center,
+        TextField(
+          controller: c.search,
+          decoration: const InputDecoration(
+            isDense: true,
+            prefixIcon: Icon(Icons.search),
+            hintText: 'Enter Hash or mortal name',
+            border: OutlineInputBorder(),
+          ),
         ),
-        const SizedBox(height: 8),
+        if (movedIn + movedOut > 0)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              'For this send only: $movedIn moved in, $movedOut moved out. Nobody\'s settings change.',
+              style: const TextStyle(color: Colors.black54, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        if (c.error.value.isNotEmpty)
+          Text(c.error.value, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+        const SizedBox(height: 6),
         Expanded(
           child: rows.isEmpty
               ? Center(
                   child: Text(
-                    showingRecipients ? 'Nobody yet.' : 'Everyone gets it.',
+                    q.isNotEmpty ? 'Nobody matches.' : showingGet ? 'Nobody yet.' : 'Everyone gets it.',
                     style: ts_alertDialogBody,
                   ),
                 )
               : ListView.separated(
                   itemCount: rows.length,
                   separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (BuildContext context, int i) {
-                    final RunEmailAudienceEntry e = rows[i];
-                    return ListTile(
-                      dense: true,
-                      title: Text(e.name),
-                      subtitle: e.reason.isEmpty ? null : Text(e.reason),
-                    );
-                  },
+                  itemBuilder: (BuildContext context, int i) => _row(c, rows[i], showingGet),
                 ),
         ),
       ],
     );
   }
+
+  Widget _row(RunEmailAudienceController c, RunEmailAudienceEntry e, bool inGetList) {
+    final bool overridden = c.isMovedIn(e) || c.isMovedOut(e);
+    return ListTile(
+      dense: true,
+      leading: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(4),
+          image: e.photo.isEmpty
+              ? null
+              : DecorationImage(fit: BoxFit.cover, image: NetworkImage(e.photo)),
+        ),
+      ),
+      title: Text.rich(
+        TextSpan(
+          text: e.name,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+          children: [
+            if (e.mortalName.isNotEmpty)
+              TextSpan(
+                text: '  (${e.mortalName})',
+                style: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black87),
+              ),
+          ],
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Wrap(
+        spacing: 6,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(e.reason, style: TextStyle(color: e.isBouncing ? Colors.red.shade800 : Colors.black87)),
+          if (overridden) _badge('Override', Colors.blue.shade700),
+          if (e.isBlocked) _badge('Blocked', Colors.black87),
+          if (e.isBouncing && !e.isBlocked) _badge('Bouncing', Colors.red.shade800),
+          if (e.isSuspect && !e.isBouncing) _badge('Check address', Colors.orange.shade800),
+        ],
+      ),
+      trailing: e.canMove
+          ? (overridden
+              ? HcButton.secondary(label: 'Undo', onPressed: () => c.toggle(e))
+              : HcButton.secondary(
+                  label: inGetList ? 'Don\'t send' : 'Send anyway',
+                  onPressed: () => c.toggle(e),
+                ))
+          : null,
+    );
+  }
+
+  Widget _badge(String text, Color color) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
+        child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+      );
 }

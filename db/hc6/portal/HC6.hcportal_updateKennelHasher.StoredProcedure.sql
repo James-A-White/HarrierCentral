@@ -224,6 +224,8 @@ BEGIN TRY
         OR (@hashName IS NOT NULL)
     )
     BEGIN
+        -- The email status describes the ADDRESS: a new address starts Unknown.
+        DECLARE @emailBefore NVARCHAR(250) = (SELECT Email FROM HC.Hasher WHERE id = @hasherBeingEditedId);
         UPDATE HC.Hasher
             SET
                 Email = coalesce(@eMail, Email),
@@ -232,6 +234,8 @@ BEGIN TRY
                 HashName = coalesce(@hashName, HashName),
                 updatedAt = getdate()
             WHERE PublicHasherId = @hasherBeingEditedPublicId
+        IF (@eMail IS NOT NULL AND @eMail <> ISNULL(@emailBefore, ''))
+            EXEC HC6.nonApi_resetEmailStatus @hasherId = @hasherBeingEditedId, @reason = 'address changed in the portal';
     END
 
     -- Update discount fields on HC.HasherKennelMap if any provided

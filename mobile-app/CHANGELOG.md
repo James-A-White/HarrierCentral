@@ -1,3 +1,10 @@
+## 3.1.9+1456 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### New Features
+- **Who gets the email, reworked**: the attendance roster's look — light background, search box, photo rows with hash and mortal names — and, in place of the home kennel, why each member is in the list (On for this run, On for the kennel, Run emails off, Kennel emails off, Never switched on, No email address, Blocked all emails, Email bouncing).
+- **Per-send override**: one button per row moves a member to the other list for this send only — nobody's settings change, and it is logged. Moved members show an Override tag with Undo; tab counts read "Will get it (12 + 3)". Members who blocked all email, or whose address bounces, cannot be moved in. A moved-in member's email opens with "<you> has requested that you receive this email" and a link to their email preferences.
+- **Bouncing addresses**: Harrier Central now hears back from the mail service about each run email; a hard bounce marks the address, three failures in a row flag it, and a delivery clears it. A member whose address bounces is asked in the app to update it, and shows "Email bouncing, ask for a new address" to admins.
+
 ## 3.1.9+1455 (2026-10-09)
 Private dance — James, Tuna Melt and Kilty.
 ### New Features
