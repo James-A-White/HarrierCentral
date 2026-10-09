@@ -59,16 +59,22 @@ class RunEmailComposerPage extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-                TextField(
-                  controller: c.instruction,
-                  enabled: !busy,
-                  maxLength: 300,
-                  style: ts_body,
-                  decoration: _deco(
-                    c.savedInstruction.isEmpty
-                        ? 'Anything to add? (optional)'
-                        : '${eventAggregate.kennel.kennelShortName}\'s usual instruction',
-                    hint: 'e.g. make it a funny Halloween story · write it in French',
+                _field(
+                  c.savedInstruction.isEmpty
+                      ? 'Anything to add? (optional)'
+                      : '${eventAggregate.kennel.kennelShortName}\'s usual instruction',
+                  TextField(
+                    controller: c.instruction,
+                    enabled: !busy,
+                    maxLength: 300,
+                    // Grows with the text: two lines to start, up to eight.
+                    minLines: 2,
+                    maxLines: 8,
+                    keyboardType: TextInputType.multiline,
+                    style: _fieldText,
+                    decoration: _deco(
+                      'e.g. make it a funny Halloween story · write it in French',
+                    ),
                   ),
                 ),
                 CheckboxListTile(
@@ -134,22 +140,29 @@ class RunEmailComposerPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  TextField(
-                    controller: c.subject,
-                    enabled: !c.isSending.value,
-                    maxLength: 150,
-                    style: ts_body,
-                    decoration: _deco('Subject'),
+                  _field(
+                    'Subject',
+                    TextField(
+                      controller: c.subject,
+                      enabled: !c.isSending.value,
+                      maxLength: 150,
+                      style: _fieldText,
+                      decoration: _deco(''),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  TextField(
-                    controller: c.body,
-                    enabled: !c.isSending.value,
-                    minLines: 8,
-                    maxLines: 30,
-                    maxLength: 6000,
-                    style: ts_body,
-                    decoration: _deco('Your message'),
+                  _field(
+                    'Your message',
+                    TextField(
+                      controller: c.body,
+                      enabled: !c.isSending.value,
+                      minLines: 8,
+                      maxLines: 40,
+                      maxLength: 6000,
+                      keyboardType: TextInputType.multiline,
+                      style: _fieldText,
+                      decoration: _deco(''),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   const Text(
@@ -200,12 +213,34 @@ class RunEmailComposerPage extends StatelessWidget {
     child: child,
   );
 
-  InputDecoration _deco(String label, {String? hint}) => InputDecoration(
-    labelText: label,
-    hintText: hint,
-    labelStyle: const TextStyle(color: Colors.white70),
-    hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-    counterStyle: const TextStyle(color: Colors.white38),
+  /// The fields are white, so what is typed in them is dark — the page's
+  /// white text styles vanished on them (1452). The caption sits ABOVE the
+  /// field, in white on the jungle, never floating onto the white fill.
+  static const TextStyle _fieldText = TextStyle(
+    color: Colors.black87,
+    fontSize: 16,
+  );
+
+  Widget _field(String caption, Widget field) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: <Widget>[
+      Padding(
+        padding: const EdgeInsets.only(left: 4, bottom: 4),
+        child: Text(
+          caption,
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+      ),
+      field,
+    ],
+  );
+
+  InputDecoration _deco(String hint) => InputDecoration(
+    hintText: hint.isEmpty ? null : hint,
+    hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
+    counterStyle: const TextStyle(color: Colors.white54),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    isDense: true,
     filled: true,
     fillColor: Colors.white,
     enabledBorder: OutlineInputBorder(
