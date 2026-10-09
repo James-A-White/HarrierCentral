@@ -551,6 +551,24 @@ class RunEmailAudienceDialog extends StatelessWidget {
             ],
             selected: {c.pill.value},
             onSelectionChanged: (Set<int> s) => c.pill.value = s.first,
+            // As in the app: the chosen pill is red with white text.
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.resolveWith(
+                (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                    ? HcButtonTokens.primary
+                    : Colors.white,
+              ),
+              foregroundColor: WidgetStateProperty.resolveWith(
+                (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                    ? Colors.white
+                    : Colors.black87,
+              ),
+              iconColor: WidgetStateProperty.resolveWith(
+                (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                    ? Colors.white
+                    : Colors.black87,
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 8),

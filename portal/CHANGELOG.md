@@ -1,3 +1,7 @@
+## 2.0.87+751 (unreleased)
+### Improvements
+- **Who gets the email**: the chosen pill is red with white text, as in the app.
+
 ## 2.0.87+750 (2026-10-09)
 ### Fixes
 - **Save and send** is enabled and disabled together with Save.
