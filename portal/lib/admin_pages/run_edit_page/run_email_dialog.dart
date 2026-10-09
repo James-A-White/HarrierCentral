@@ -259,9 +259,16 @@ class RunEmailDialog extends StatelessWidget {
 
   Widget _body(RunEmailDialogController c) {
     if (c.isLoading.value) {
-      return const Padding(
-        padding: EdgeInsets.all(24),
-        child: Center(child: CircularProgressIndicator()),
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 12),
+            Text('Checking who gets run emails…', style: ts_alertDialogBodyMedium),
+          ],
+        ),
       );
     }
     final RunEmailContext? ctx = c.context.value;
@@ -271,6 +278,28 @@ class RunEmailDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Everything below is disabled while the model writes, so say so
+          // where the eye is (James, 2026-10-09): a bar at the top and, over
+          // the message area, a spinner with words.
+          if (busy)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Column(
+                children: [
+                  const LinearProgressIndicator(minHeight: 4),
+                  const SizedBox(height: 6),
+                  Text(
+                    c.isDrafting.value
+                        ? 'Writing the email for you — a few seconds…'
+                        : c.isPreviewing.value
+                            ? 'Sending the preview to your inbox…'
+                            : 'Sending…',
+                    style: ts_alertDialogBodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
           if (ctx != null) ...[
             Text(ctx.title, style: ts_alertDialogBodyMedium),
             Text('${ctx.when}\n${ctx.where}', style: ts_alertDialogBody),
@@ -321,31 +350,55 @@ class RunEmailDialog extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 10),
               child: Text(c.error.value, style: const TextStyle(color: Colors.red)),
             ),
-          TextField(
-            controller: c.subject,
-            enabled: !busy,
-            maxLength: 150,
-            minLines: 1,
-            maxLines: 3,
-            keyboardType: TextInputType.text,
-            decoration: const InputDecoration(
-              labelText: 'Subject',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: c.body,
-            enabled: !busy,
-            minLines: 8,
-            maxLines: 30,
-            maxLength: 6000,
-            keyboardType: TextInputType.multiline,
-            decoration: const InputDecoration(
-              labelText: 'Your message',
-              border: OutlineInputBorder(),
-              alignLabelWithHint: true,
-            ),
+          Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: c.subject,
+                    enabled: !busy,
+                    maxLength: 150,
+                    minLines: 1,
+                    maxLines: 3,
+                    keyboardType: TextInputType.text,
+                    decoration: const InputDecoration(
+                      labelText: 'Subject',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: c.body,
+                    enabled: !busy,
+                    minLines: 8,
+                    maxLines: 30,
+                    maxLength: 6000,
+                    keyboardType: TextInputType.multiline,
+                    decoration: const InputDecoration(
+                      labelText: 'Your message',
+                      border: OutlineInputBorder(),
+                      alignLabelWithHint: true,
+                    ),
+                  ),
+                ],
+              ),
+              if (c.isDrafting.value)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 12),
+                        Text('Writing the email…', style: ts_alertDialogBodyMedium),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
           ),
           const Text(
             'The run\'s date, venue, hares, price and the ✓ I\'m in / ✗ Can\'t make it '
@@ -551,6 +604,41 @@ class RunEmailAudienceDialog extends StatelessWidget {
             ],
             selected: {c.pill.value},
             onSelectionChanged: (Set<int> s) => c.pill.value = s.first,
+            // The same style as "Send to N members" (HcButton.primary): the
+            // chosen pill red with white text, the other white; the button's
+            // corner radius, padding, height and type face, no shadow.
+            showSelectedIcon: false,
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.resolveWith(
+                (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                    ? HcButtonTokens.primary
+                    : Colors.white,
+              ),
+              foregroundColor: WidgetStateProperty.resolveWith(
+                (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                    ? HcButtonTokens.onFilled
+                    : HcButtonTokens.primary,
+              ),
+              iconColor: WidgetStateProperty.resolveWith(
+                (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                    ? HcButtonTokens.onFilled
+                    : HcButtonTokens.primary,
+              ),
+              side: const WidgetStatePropertyAll<BorderSide>(
+                BorderSide(color: HcButtonTokens.primary),
+              ),
+              shape: WidgetStatePropertyAll<OutlinedBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(HcButtonTokens.radius),
+                ),
+              ),
+              padding: const WidgetStatePropertyAll<EdgeInsets>(HcButtonTokens.padding),
+              minimumSize: const WidgetStatePropertyAll<Size>(
+                Size(HcButtonTokens.minWidth, HcButtonTokens.minHeight),
+              ),
+              textStyle: const WidgetStatePropertyAll<TextStyle>(HcButtonTokens.textStyle),
+              elevation: const WidgetStatePropertyAll<double>(0),
+            ),
           ),
         ),
         const SizedBox(height: 8),
