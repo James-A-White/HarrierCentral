@@ -1,3 +1,7 @@
+## 2.0.87+749 (2026-10-09)
+### Improvements
+- **Save and send** sits under the Save and Undo buttons, styled like Save, instead of in the title bar.
+
 ## 2.0.87+748 (2026-10-09)
 ### New Features
 - **Save and send** on the run editor, as in the app: saves, then offers **Post to WhatsApp** (opens WhatsApp with the notice ready) and **Email N members** (the composer). Replaces "Email members".

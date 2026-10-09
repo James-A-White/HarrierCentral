@@ -95,29 +95,41 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
                     ),
                   ),
                   Obx(
-                    () => Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    () => Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        HcButton.primary(
-                          label: 'Save',
-                          icon: Icons.save_rounded,
-                          onPressed: (widget.formController.isFormDirty.value &&
-                                  widget.formController.allFieldsAreValid.value)
-                              ? () async {
-                                  await widget.formController.save(true);
-                                }
-                              : null,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            HcButton.primary(
+                              label: 'Save',
+                              icon: Icons.save_rounded,
+                              onPressed: (widget.formController.isFormDirty.value &&
+                                      widget.formController.allFieldsAreValid.value)
+                                  ? () async {
+                                      await widget.formController.save(true);
+                                    }
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            HcButton.secondary(
+                              label: 'Undo',
+                              icon: Icons.undo_rounded,
+                              onPressed: (widget.formController.isFormDirty.value ||
+                                      !widget
+                                          .formController.allFieldsAreValid.value)
+                                  ? widget.formController.undoChanges
+                                  : null,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        HcButton.secondary(
-                          label: 'Undo',
-                          icon: Icons.undo_rounded,
-                          onPressed: (widget.formController.isFormDirty.value ||
-                                  !widget
-                                      .formController.allFieldsAreValid.value)
-                              ? widget.formController.undoChanges
-                              : null,
-                        ),
+                        // The page's own extra action, under Save/Undo and in
+                        // the same style (the run editor's Save and send).
+                        if (widget.formController.buildExtraSaveBarButton()
+                            case final Widget extra) ...[
+                          const SizedBox(height: 12),
+                          extra,
+                        ],
                       ],
                     ),
                   ),
@@ -278,23 +290,33 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
 
           // Center buttons (Undo/Save) - only on narrow/mobile
           if (isNarrowOrMobile)
-            Row(
+            Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                HcButton.secondary(
-                  label: 'Undo',
-                  icon: Icons.undo_rounded,
-                  onPressed:
-                      (isFormDirty || !allFieldsAreValid) ? onUndo : null,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    HcButton.secondary(
+                      label: 'Undo',
+                      icon: Icons.undo_rounded,
+                      onPressed:
+                          (isFormDirty || !allFieldsAreValid) ? onUndo : null,
+                    ),
+                    const SizedBox(width: 8),
+                    HcButton.primary(
+                      label: 'Save',
+                      icon: Icons.save_rounded,
+                      onPressed: (isFormDirty && allFieldsAreValid)
+                          ? () => onSave!(true)
+                          : null,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                HcButton.primary(
-                  label: 'Save',
-                  icon: Icons.save_rounded,
-                  onPressed: (isFormDirty && allFieldsAreValid)
-                      ? () => onSave!(true)
-                      : null,
-                ),
+                if (widget.formController.buildExtraSaveBarButton()
+                    case final Widget extra) ...[
+                  const SizedBox(height: 8),
+                  extra,
+                ],
               ],
             )
           else
