@@ -141,8 +141,7 @@ class RunDetailWidget extends StatelessWidget {
       url = address;
     } else {
       if (!suppressWarning) {
-        unawaited(IveCoreUtilities.showAlert(
-          context,
+        unawaited(Utilities.showAlert(
           'No location information available',
           'There is no location information available for this run and so we cannot display a map',
           'OK',
@@ -775,8 +774,7 @@ class RunDetailWidget extends StatelessWidget {
                     await Clipboard.setData(ClipboardData(text: url));
 
                     if (!context.mounted) return;
-                    await IveCoreUtilities.showAlert(
-                      context,
+                    await Utilities.showAlert(
                       'Copy link',
                       'The link to this run was copied to your clipboard',
                       'OK',
@@ -803,8 +801,7 @@ class RunDetailWidget extends StatelessWidget {
                       openWindow(linkUrl, '_blank');
                       //js.context.callMethod('open', <String>[linkUrl]);
                     } else {
-                      await IveCoreUtilities.showAlert(
-                        context,
+                      await Utilities.showAlert(
                         'Unable to open link',
                         'Harrier Central was unable to open $linkUrl',
                         'OK',
@@ -932,8 +929,7 @@ class RunDetailWidget extends StatelessWidget {
                       if (Uri.parse(link.url).isAbsolute) {
                         openWindow(link.url, '_blank');
                       } else {
-                        await IveCoreUtilities.showAlert(
-                          context,
+                        await Utilities.showAlert(
                           'Unable to open link',
                           'Harrier Central was unable to open ${link.url}',
                           'OK',
@@ -958,8 +954,7 @@ class RunDetailWidget extends StatelessWidget {
                       if (Uri.parse(link.url).isAbsolute) {
                         openWindow(link.url, '_blank');
                       } else {
-                        await IveCoreUtilities.showAlert(
-                          context,
+                        await Utilities.showAlert(
                           'Unable to open link',
                           'Harrier Central was unable to open ${link.url}',
                           'OK',
@@ -996,8 +991,7 @@ class RunDetailWidget extends StatelessWidget {
                   openWindow(linkUrl, '_blank');
                   //js.context.callMethod('open', <String>[linkUrl]);
                 } else {
-                  await IveCoreUtilities.showAlert(
-                    context,
+                  await Utilities.showAlert(
                     'Unable to open link',
                     'Harrier Central was unable to open $linkUrl',
                     'OK',

@@ -30,6 +30,18 @@ class RunEmailComposerController extends GetxController {
   final RxBool isSending = false.obs;
   final RxBool isPreviewing = false.obs;
 
+  /// Subject AND message both have text. Preview, Who gets it and Send are
+  /// disabled until they do (James, 2026-10-09): an empty email is never
+  /// worth a preview, an audience or a send. Kept in step by listeners on
+  /// the two fields, so typing, "Use run description" and "Write with AI"
+  /// all repaint the buttons.
+  final RxBool hasContent = false.obs;
+
+  void _refreshHasContent() {
+    hasContent.value =
+        subject.text.trim().isNotEmpty && body.text.trim().isNotEmpty;
+  }
+
   /// "Save as the kennel's default": the instruction is stored on the kennel
   /// at send time and pre-filled for whoever sends next (James, 2026-10-09).
   final RxBool saveInstruction = false.obs;
@@ -57,6 +69,8 @@ class RunEmailComposerController extends GetxController {
   void onInit() {
     super.onInit();
     instruction.text = context.instruction;
+    subject.addListener(_refreshHasContent);
+    body.addListener(_refreshHasContent);
   }
 
   /// The run's own description as the email, no AI: subject = the run's

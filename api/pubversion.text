@@ -1,3 +1,6 @@
+1.0.61+93
+    • Run email: the run's image sits at the very top, above the message.
+
 1.0.61+92
     • Email audit: every run email, preview and the announcement is kept as a JSON file in the
       private email-audit blob container (text, recipients, sender, overrides), and logged to
