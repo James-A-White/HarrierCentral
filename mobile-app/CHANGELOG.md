@@ -1,4 +1,5 @@
-## 3.1.9+1460 (unreleased)
+## 3.1.9+1460 (2026-10-09)
+All beta testers.
 ### Improvements
 - **Email the run** says *hashers*, not *members*: the audience is members, followers and anyone who RSVP'd, minus anyone who turned emails off.
 ### Fixes

@@ -1,4 +1,4 @@
-## 2.0.87+755 (unreleased)
+## 2.0.87+755 (2026-10-09)
 ### Improvements
 - **Email the run** says *hashers*, not *members*: the audience is members, followers and anyone who RSVP'd, minus anyone who turned emails off.
 
