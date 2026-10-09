@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UdNewEventsModel implements DiagnosticableTreeMixin {
 
- String get kennelName; String get kennelShortName; String get kennelLogo; String get eventName; int get minutesAgoUpdated; int get minutesAgoCreated; int get minutesUntilRun; int get activityLastDay; String get publicEventId;
+ String get kennelName; String get kennelShortName; String get kennelLogo; String get eventName; int get minutesAgoUpdated; int get minutesAgoCreated; int get minutesUntilRun; int get activityLastDay; String get publicEventId;// Added 2026-10-09 for the /<slug>/<number> run link; defaults keep an
+// older SP reply parsing.
+ String get kennelUniqueShortName; int get eventNumber; int get isCountedRun;
 /// Create a copy of UdNewEventsModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,21 +31,21 @@ $UdNewEventsModelCopyWith<UdNewEventsModel> get copyWith => _$UdNewEventsModelCo
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'UdNewEventsModel'))
-    ..add(DiagnosticsProperty('kennelName', kennelName))..add(DiagnosticsProperty('kennelShortName', kennelShortName))..add(DiagnosticsProperty('kennelLogo', kennelLogo))..add(DiagnosticsProperty('eventName', eventName))..add(DiagnosticsProperty('minutesAgoUpdated', minutesAgoUpdated))..add(DiagnosticsProperty('minutesAgoCreated', minutesAgoCreated))..add(DiagnosticsProperty('minutesUntilRun', minutesUntilRun))..add(DiagnosticsProperty('activityLastDay', activityLastDay))..add(DiagnosticsProperty('publicEventId', publicEventId));
+    ..add(DiagnosticsProperty('kennelName', kennelName))..add(DiagnosticsProperty('kennelShortName', kennelShortName))..add(DiagnosticsProperty('kennelLogo', kennelLogo))..add(DiagnosticsProperty('eventName', eventName))..add(DiagnosticsProperty('minutesAgoUpdated', minutesAgoUpdated))..add(DiagnosticsProperty('minutesAgoCreated', minutesAgoCreated))..add(DiagnosticsProperty('minutesUntilRun', minutesUntilRun))..add(DiagnosticsProperty('activityLastDay', activityLastDay))..add(DiagnosticsProperty('publicEventId', publicEventId))..add(DiagnosticsProperty('kennelUniqueShortName', kennelUniqueShortName))..add(DiagnosticsProperty('eventNumber', eventNumber))..add(DiagnosticsProperty('isCountedRun', isCountedRun));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UdNewEventsModel&&(identical(other.kennelName, kennelName) || other.kennelName == kennelName)&&(identical(other.kennelShortName, kennelShortName) || other.kennelShortName == kennelShortName)&&(identical(other.kennelLogo, kennelLogo) || other.kennelLogo == kennelLogo)&&(identical(other.eventName, eventName) || other.eventName == eventName)&&(identical(other.minutesAgoUpdated, minutesAgoUpdated) || other.minutesAgoUpdated == minutesAgoUpdated)&&(identical(other.minutesAgoCreated, minutesAgoCreated) || other.minutesAgoCreated == minutesAgoCreated)&&(identical(other.minutesUntilRun, minutesUntilRun) || other.minutesUntilRun == minutesUntilRun)&&(identical(other.activityLastDay, activityLastDay) || other.activityLastDay == activityLastDay)&&(identical(other.publicEventId, publicEventId) || other.publicEventId == publicEventId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UdNewEventsModel&&(identical(other.kennelName, kennelName) || other.kennelName == kennelName)&&(identical(other.kennelShortName, kennelShortName) || other.kennelShortName == kennelShortName)&&(identical(other.kennelLogo, kennelLogo) || other.kennelLogo == kennelLogo)&&(identical(other.eventName, eventName) || other.eventName == eventName)&&(identical(other.minutesAgoUpdated, minutesAgoUpdated) || other.minutesAgoUpdated == minutesAgoUpdated)&&(identical(other.minutesAgoCreated, minutesAgoCreated) || other.minutesAgoCreated == minutesAgoCreated)&&(identical(other.minutesUntilRun, minutesUntilRun) || other.minutesUntilRun == minutesUntilRun)&&(identical(other.activityLastDay, activityLastDay) || other.activityLastDay == activityLastDay)&&(identical(other.publicEventId, publicEventId) || other.publicEventId == publicEventId)&&(identical(other.kennelUniqueShortName, kennelUniqueShortName) || other.kennelUniqueShortName == kennelUniqueShortName)&&(identical(other.eventNumber, eventNumber) || other.eventNumber == eventNumber)&&(identical(other.isCountedRun, isCountedRun) || other.isCountedRun == isCountedRun));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,kennelName,kennelShortName,kennelLogo,eventName,minutesAgoUpdated,minutesAgoCreated,minutesUntilRun,activityLastDay,publicEventId);
+int get hashCode => Object.hash(runtimeType,kennelName,kennelShortName,kennelLogo,eventName,minutesAgoUpdated,minutesAgoCreated,minutesUntilRun,activityLastDay,publicEventId,kennelUniqueShortName,eventNumber,isCountedRun);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'UdNewEventsModel(kennelName: $kennelName, kennelShortName: $kennelShortName, kennelLogo: $kennelLogo, eventName: $eventName, minutesAgoUpdated: $minutesAgoUpdated, minutesAgoCreated: $minutesAgoCreated, minutesUntilRun: $minutesUntilRun, activityLastDay: $activityLastDay, publicEventId: $publicEventId)';
+  return 'UdNewEventsModel(kennelName: $kennelName, kennelShortName: $kennelShortName, kennelLogo: $kennelLogo, eventName: $eventName, minutesAgoUpdated: $minutesAgoUpdated, minutesAgoCreated: $minutesAgoCreated, minutesUntilRun: $minutesUntilRun, activityLastDay: $activityLastDay, publicEventId: $publicEventId, kennelUniqueShortName: $kennelUniqueShortName, eventNumber: $eventNumber, isCountedRun: $isCountedRun)';
 }
 
 
@@ -54,7 +56,7 @@ abstract mixin class $UdNewEventsModelCopyWith<$Res>  {
   factory $UdNewEventsModelCopyWith(UdNewEventsModel value, $Res Function(UdNewEventsModel) _then) = _$UdNewEventsModelCopyWithImpl;
 @useResult
 $Res call({
- String kennelName, String kennelShortName, String kennelLogo, String eventName, int minutesAgoUpdated, int minutesAgoCreated, int minutesUntilRun, int activityLastDay, String publicEventId
+ String kennelName, String kennelShortName, String kennelLogo, String eventName, int minutesAgoUpdated, int minutesAgoCreated, int minutesUntilRun, int activityLastDay, String publicEventId, String kennelUniqueShortName, int eventNumber, int isCountedRun
 });
 
 
@@ -71,7 +73,7 @@ class _$UdNewEventsModelCopyWithImpl<$Res>
 
 /// Create a copy of UdNewEventsModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? kennelName = null,Object? kennelShortName = null,Object? kennelLogo = null,Object? eventName = null,Object? minutesAgoUpdated = null,Object? minutesAgoCreated = null,Object? minutesUntilRun = null,Object? activityLastDay = null,Object? publicEventId = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? kennelName = null,Object? kennelShortName = null,Object? kennelLogo = null,Object? eventName = null,Object? minutesAgoUpdated = null,Object? minutesAgoCreated = null,Object? minutesUntilRun = null,Object? activityLastDay = null,Object? publicEventId = null,Object? kennelUniqueShortName = null,Object? eventNumber = null,Object? isCountedRun = null,}) {
   return _then(_self.copyWith(
 kennelName: null == kennelName ? _self.kennelName : kennelName // ignore: cast_nullable_to_non_nullable
 as String,kennelShortName: null == kennelShortName ? _self.kennelShortName : kennelShortName // ignore: cast_nullable_to_non_nullable
@@ -82,7 +84,10 @@ as int,minutesAgoCreated: null == minutesAgoCreated ? _self.minutesAgoCreated : 
 as int,minutesUntilRun: null == minutesUntilRun ? _self.minutesUntilRun : minutesUntilRun // ignore: cast_nullable_to_non_nullable
 as int,activityLastDay: null == activityLastDay ? _self.activityLastDay : activityLastDay // ignore: cast_nullable_to_non_nullable
 as int,publicEventId: null == publicEventId ? _self.publicEventId : publicEventId // ignore: cast_nullable_to_non_nullable
-as String,
+as String,kennelUniqueShortName: null == kennelUniqueShortName ? _self.kennelUniqueShortName : kennelUniqueShortName // ignore: cast_nullable_to_non_nullable
+as String,eventNumber: null == eventNumber ? _self.eventNumber : eventNumber // ignore: cast_nullable_to_non_nullable
+as int,isCountedRun: null == isCountedRun ? _self.isCountedRun : isCountedRun // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -167,10 +172,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String kennelName,  String kennelShortName,  String kennelLogo,  String eventName,  int minutesAgoUpdated,  int minutesAgoCreated,  int minutesUntilRun,  int activityLastDay,  String publicEventId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String kennelName,  String kennelShortName,  String kennelLogo,  String eventName,  int minutesAgoUpdated,  int minutesAgoCreated,  int minutesUntilRun,  int activityLastDay,  String publicEventId,  String kennelUniqueShortName,  int eventNumber,  int isCountedRun)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UdNewEventsModel() when $default != null:
-return $default(_that.kennelName,_that.kennelShortName,_that.kennelLogo,_that.eventName,_that.minutesAgoUpdated,_that.minutesAgoCreated,_that.minutesUntilRun,_that.activityLastDay,_that.publicEventId);case _:
+return $default(_that.kennelName,_that.kennelShortName,_that.kennelLogo,_that.eventName,_that.minutesAgoUpdated,_that.minutesAgoCreated,_that.minutesUntilRun,_that.activityLastDay,_that.publicEventId,_that.kennelUniqueShortName,_that.eventNumber,_that.isCountedRun);case _:
   return orElse();
 
 }
@@ -188,10 +193,10 @@ return $default(_that.kennelName,_that.kennelShortName,_that.kennelLogo,_that.ev
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String kennelName,  String kennelShortName,  String kennelLogo,  String eventName,  int minutesAgoUpdated,  int minutesAgoCreated,  int minutesUntilRun,  int activityLastDay,  String publicEventId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String kennelName,  String kennelShortName,  String kennelLogo,  String eventName,  int minutesAgoUpdated,  int minutesAgoCreated,  int minutesUntilRun,  int activityLastDay,  String publicEventId,  String kennelUniqueShortName,  int eventNumber,  int isCountedRun)  $default,) {final _that = this;
 switch (_that) {
 case _UdNewEventsModel():
-return $default(_that.kennelName,_that.kennelShortName,_that.kennelLogo,_that.eventName,_that.minutesAgoUpdated,_that.minutesAgoCreated,_that.minutesUntilRun,_that.activityLastDay,_that.publicEventId);case _:
+return $default(_that.kennelName,_that.kennelShortName,_that.kennelLogo,_that.eventName,_that.minutesAgoUpdated,_that.minutesAgoCreated,_that.minutesUntilRun,_that.activityLastDay,_that.publicEventId,_that.kennelUniqueShortName,_that.eventNumber,_that.isCountedRun);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +213,10 @@ return $default(_that.kennelName,_that.kennelShortName,_that.kennelLogo,_that.ev
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String kennelName,  String kennelShortName,  String kennelLogo,  String eventName,  int minutesAgoUpdated,  int minutesAgoCreated,  int minutesUntilRun,  int activityLastDay,  String publicEventId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String kennelName,  String kennelShortName,  String kennelLogo,  String eventName,  int minutesAgoUpdated,  int minutesAgoCreated,  int minutesUntilRun,  int activityLastDay,  String publicEventId,  String kennelUniqueShortName,  int eventNumber,  int isCountedRun)?  $default,) {final _that = this;
 switch (_that) {
 case _UdNewEventsModel() when $default != null:
-return $default(_that.kennelName,_that.kennelShortName,_that.kennelLogo,_that.eventName,_that.minutesAgoUpdated,_that.minutesAgoCreated,_that.minutesUntilRun,_that.activityLastDay,_that.publicEventId);case _:
+return $default(_that.kennelName,_that.kennelShortName,_that.kennelLogo,_that.eventName,_that.minutesAgoUpdated,_that.minutesAgoCreated,_that.minutesUntilRun,_that.activityLastDay,_that.publicEventId,_that.kennelUniqueShortName,_that.eventNumber,_that.isCountedRun);case _:
   return null;
 
 }
@@ -223,7 +228,7 @@ return $default(_that.kennelName,_that.kennelShortName,_that.kennelLogo,_that.ev
 @JsonSerializable()
 
 class _UdNewEventsModel with DiagnosticableTreeMixin implements UdNewEventsModel {
-   _UdNewEventsModel({required this.kennelName, required this.kennelShortName, required this.kennelLogo, required this.eventName, required this.minutesAgoUpdated, required this.minutesAgoCreated, required this.minutesUntilRun, required this.activityLastDay, required this.publicEventId});
+   _UdNewEventsModel({required this.kennelName, required this.kennelShortName, required this.kennelLogo, required this.eventName, required this.minutesAgoUpdated, required this.minutesAgoCreated, required this.minutesUntilRun, required this.activityLastDay, required this.publicEventId, this.kennelUniqueShortName = '', this.eventNumber = 0, this.isCountedRun = 0});
   factory _UdNewEventsModel.fromJson(Map<String, dynamic> json) => _$UdNewEventsModelFromJson(json);
 
 @override final  String kennelName;
@@ -235,6 +240,11 @@ class _UdNewEventsModel with DiagnosticableTreeMixin implements UdNewEventsModel
 @override final  int minutesUntilRun;
 @override final  int activityLastDay;
 @override final  String publicEventId;
+// Added 2026-10-09 for the /<slug>/<number> run link; defaults keep an
+// older SP reply parsing.
+@override@JsonKey() final  String kennelUniqueShortName;
+@override@JsonKey() final  int eventNumber;
+@override@JsonKey() final  int isCountedRun;
 
 /// Create a copy of UdNewEventsModel
 /// with the given fields replaced by the non-null parameter values.
@@ -250,21 +260,21 @@ Map<String, dynamic> toJson() {
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'UdNewEventsModel'))
-    ..add(DiagnosticsProperty('kennelName', kennelName))..add(DiagnosticsProperty('kennelShortName', kennelShortName))..add(DiagnosticsProperty('kennelLogo', kennelLogo))..add(DiagnosticsProperty('eventName', eventName))..add(DiagnosticsProperty('minutesAgoUpdated', minutesAgoUpdated))..add(DiagnosticsProperty('minutesAgoCreated', minutesAgoCreated))..add(DiagnosticsProperty('minutesUntilRun', minutesUntilRun))..add(DiagnosticsProperty('activityLastDay', activityLastDay))..add(DiagnosticsProperty('publicEventId', publicEventId));
+    ..add(DiagnosticsProperty('kennelName', kennelName))..add(DiagnosticsProperty('kennelShortName', kennelShortName))..add(DiagnosticsProperty('kennelLogo', kennelLogo))..add(DiagnosticsProperty('eventName', eventName))..add(DiagnosticsProperty('minutesAgoUpdated', minutesAgoUpdated))..add(DiagnosticsProperty('minutesAgoCreated', minutesAgoCreated))..add(DiagnosticsProperty('minutesUntilRun', minutesUntilRun))..add(DiagnosticsProperty('activityLastDay', activityLastDay))..add(DiagnosticsProperty('publicEventId', publicEventId))..add(DiagnosticsProperty('kennelUniqueShortName', kennelUniqueShortName))..add(DiagnosticsProperty('eventNumber', eventNumber))..add(DiagnosticsProperty('isCountedRun', isCountedRun));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UdNewEventsModel&&(identical(other.kennelName, kennelName) || other.kennelName == kennelName)&&(identical(other.kennelShortName, kennelShortName) || other.kennelShortName == kennelShortName)&&(identical(other.kennelLogo, kennelLogo) || other.kennelLogo == kennelLogo)&&(identical(other.eventName, eventName) || other.eventName == eventName)&&(identical(other.minutesAgoUpdated, minutesAgoUpdated) || other.minutesAgoUpdated == minutesAgoUpdated)&&(identical(other.minutesAgoCreated, minutesAgoCreated) || other.minutesAgoCreated == minutesAgoCreated)&&(identical(other.minutesUntilRun, minutesUntilRun) || other.minutesUntilRun == minutesUntilRun)&&(identical(other.activityLastDay, activityLastDay) || other.activityLastDay == activityLastDay)&&(identical(other.publicEventId, publicEventId) || other.publicEventId == publicEventId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UdNewEventsModel&&(identical(other.kennelName, kennelName) || other.kennelName == kennelName)&&(identical(other.kennelShortName, kennelShortName) || other.kennelShortName == kennelShortName)&&(identical(other.kennelLogo, kennelLogo) || other.kennelLogo == kennelLogo)&&(identical(other.eventName, eventName) || other.eventName == eventName)&&(identical(other.minutesAgoUpdated, minutesAgoUpdated) || other.minutesAgoUpdated == minutesAgoUpdated)&&(identical(other.minutesAgoCreated, minutesAgoCreated) || other.minutesAgoCreated == minutesAgoCreated)&&(identical(other.minutesUntilRun, minutesUntilRun) || other.minutesUntilRun == minutesUntilRun)&&(identical(other.activityLastDay, activityLastDay) || other.activityLastDay == activityLastDay)&&(identical(other.publicEventId, publicEventId) || other.publicEventId == publicEventId)&&(identical(other.kennelUniqueShortName, kennelUniqueShortName) || other.kennelUniqueShortName == kennelUniqueShortName)&&(identical(other.eventNumber, eventNumber) || other.eventNumber == eventNumber)&&(identical(other.isCountedRun, isCountedRun) || other.isCountedRun == isCountedRun));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,kennelName,kennelShortName,kennelLogo,eventName,minutesAgoUpdated,minutesAgoCreated,minutesUntilRun,activityLastDay,publicEventId);
+int get hashCode => Object.hash(runtimeType,kennelName,kennelShortName,kennelLogo,eventName,minutesAgoUpdated,minutesAgoCreated,minutesUntilRun,activityLastDay,publicEventId,kennelUniqueShortName,eventNumber,isCountedRun);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'UdNewEventsModel(kennelName: $kennelName, kennelShortName: $kennelShortName, kennelLogo: $kennelLogo, eventName: $eventName, minutesAgoUpdated: $minutesAgoUpdated, minutesAgoCreated: $minutesAgoCreated, minutesUntilRun: $minutesUntilRun, activityLastDay: $activityLastDay, publicEventId: $publicEventId)';
+  return 'UdNewEventsModel(kennelName: $kennelName, kennelShortName: $kennelShortName, kennelLogo: $kennelLogo, eventName: $eventName, minutesAgoUpdated: $minutesAgoUpdated, minutesAgoCreated: $minutesAgoCreated, minutesUntilRun: $minutesUntilRun, activityLastDay: $activityLastDay, publicEventId: $publicEventId, kennelUniqueShortName: $kennelUniqueShortName, eventNumber: $eventNumber, isCountedRun: $isCountedRun)';
 }
 
 
@@ -275,7 +285,7 @@ abstract mixin class _$UdNewEventsModelCopyWith<$Res> implements $UdNewEventsMod
   factory _$UdNewEventsModelCopyWith(_UdNewEventsModel value, $Res Function(_UdNewEventsModel) _then) = __$UdNewEventsModelCopyWithImpl;
 @override @useResult
 $Res call({
- String kennelName, String kennelShortName, String kennelLogo, String eventName, int minutesAgoUpdated, int minutesAgoCreated, int minutesUntilRun, int activityLastDay, String publicEventId
+ String kennelName, String kennelShortName, String kennelLogo, String eventName, int minutesAgoUpdated, int minutesAgoCreated, int minutesUntilRun, int activityLastDay, String publicEventId, String kennelUniqueShortName, int eventNumber, int isCountedRun
 });
 
 
@@ -292,7 +302,7 @@ class __$UdNewEventsModelCopyWithImpl<$Res>
 
 /// Create a copy of UdNewEventsModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? kennelName = null,Object? kennelShortName = null,Object? kennelLogo = null,Object? eventName = null,Object? minutesAgoUpdated = null,Object? minutesAgoCreated = null,Object? minutesUntilRun = null,Object? activityLastDay = null,Object? publicEventId = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? kennelName = null,Object? kennelShortName = null,Object? kennelLogo = null,Object? eventName = null,Object? minutesAgoUpdated = null,Object? minutesAgoCreated = null,Object? minutesUntilRun = null,Object? activityLastDay = null,Object? publicEventId = null,Object? kennelUniqueShortName = null,Object? eventNumber = null,Object? isCountedRun = null,}) {
   return _then(_UdNewEventsModel(
 kennelName: null == kennelName ? _self.kennelName : kennelName // ignore: cast_nullable_to_non_nullable
 as String,kennelShortName: null == kennelShortName ? _self.kennelShortName : kennelShortName // ignore: cast_nullable_to_non_nullable
@@ -303,7 +313,10 @@ as int,minutesAgoCreated: null == minutesAgoCreated ? _self.minutesAgoCreated : 
 as int,minutesUntilRun: null == minutesUntilRun ? _self.minutesUntilRun : minutesUntilRun // ignore: cast_nullable_to_non_nullable
 as int,activityLastDay: null == activityLastDay ? _self.activityLastDay : activityLastDay // ignore: cast_nullable_to_non_nullable
 as int,publicEventId: null == publicEventId ? _self.publicEventId : publicEventId // ignore: cast_nullable_to_non_nullable
-as String,
+as String,kennelUniqueShortName: null == kennelUniqueShortName ? _self.kennelUniqueShortName : kennelUniqueShortName // ignore: cast_nullable_to_non_nullable
+as String,eventNumber: null == eventNumber ? _self.eventNumber : eventNumber // ignore: cast_nullable_to_non_nullable
+as int,isCountedRun: null == isCountedRun ? _self.isCountedRun : isCountedRun // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

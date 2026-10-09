@@ -579,7 +579,11 @@ BEGIN TRY
 			  FROM HC.HasherEventMap hem WITH (NOLOCK)
 			  WHERE hem.EventId = evt.id
 				AND hem.updatedAt >= DATEADD(DAY, -1, GETDATE())) AS activityLastDay,
-			evt.PublicEventId AS publicEventId
+			evt.PublicEventId AS publicEventId,
+			-- For the run's web link in the new /<slug>/<number> form (2026-10-09)
+			k.KennelUniqueShortName AS kennelUniqueShortName,
+			evt.EventNumber AS eventNumber,
+			evt.IsCountedRun AS isCountedRun
 		FROM HC.Event evt WITH (NOLOCK)
 		INNER JOIN HC.Kennel k WITH (NOLOCK) ON evt.KennelId = k.id
 		WHERE evt.EventStartLocal > DATEADD(MINUTE, -2880, GETDATE())
@@ -599,7 +603,11 @@ BEGIN TRY
 			  FROM HC.HasherEventMap hem WITH (NOLOCK)
 			  WHERE hem.EventId = evt.id
 				AND hem.updatedAt >= DATEADD(DAY, -1, GETDATE())) AS activityLastDay,
-			evt.PublicEventId AS publicEventId
+			evt.PublicEventId AS publicEventId,
+			-- For the run's web link in the new /<slug>/<number> form (2026-10-09)
+			k.KennelUniqueShortName AS kennelUniqueShortName,
+			evt.EventNumber AS eventNumber,
+			evt.IsCountedRun AS isCountedRun
 		FROM HC.Event evt WITH (NOLOCK)
 		INNER JOIN HC.Kennel k WITH (NOLOCK) ON evt.KennelId = k.id
 		WHERE evt.EventStartLocal > DATEADD(MINUTE, -2880, GETDATE())

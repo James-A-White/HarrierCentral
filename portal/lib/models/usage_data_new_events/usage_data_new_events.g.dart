@@ -17,6 +17,9 @@ _UdNewEventsModel _$UdNewEventsModelFromJson(Map<String, dynamic> json) =>
       minutesUntilRun: (json['minutesUntilRun'] as num).toInt(),
       activityLastDay: (json['activityLastDay'] as num).toInt(),
       publicEventId: json['publicEventId'] as String,
+      kennelUniqueShortName: json['kennelUniqueShortName'] as String? ?? '',
+      eventNumber: (json['eventNumber'] as num?)?.toInt() ?? 0,
+      isCountedRun: (json['isCountedRun'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$UdNewEventsModelToJson(_UdNewEventsModel instance) =>
@@ -30,4 +33,7 @@ Map<String, dynamic> _$UdNewEventsModelToJson(_UdNewEventsModel instance) =>
       'minutesUntilRun': instance.minutesUntilRun,
       'activityLastDay': instance.activityLastDay,
       'publicEventId': instance.publicEventId,
+      'kennelUniqueShortName': instance.kennelUniqueShortName,
+      'eventNumber': instance.eventNumber,
+      'isCountedRun': instance.isCountedRun,
     };

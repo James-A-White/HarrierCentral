@@ -17,6 +17,11 @@ abstract class UdNewEventsModel with _$UdNewEventsModel {
     required int minutesUntilRun,
     required int activityLastDay,
     required String publicEventId,
+    // Added 2026-10-09 for the /<slug>/<number> run link; defaults keep an
+    // older SP reply parsing.
+    @Default('') String kennelUniqueShortName,
+    @Default(0) int eventNumber,
+    @Default(0) int isCountedRun,
   }) = _UdNewEventsModel;
 
   factory UdNewEventsModel.fromJson(Map<String, dynamic> json) =>
