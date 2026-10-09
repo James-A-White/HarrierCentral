@@ -39,15 +39,21 @@ namespace HcWebApi.Endpoints
     /// in. And when the Logic App's send DID fail, it answered HTTP 200 with the
     /// body "Failed", so a failure looked like a send.
     ///
-    /// Transport: Microsoft Graph sendMail (application permission Mail.Send),
-    /// when HC_GRAPH_TENANT_ID / HC_GRAPH_CLIENT_ID / HC_GRAPH_CLIENT_SECRET /
-    /// HC_GRAPH_MAILBOX are set. HC_GRAPH_MAILBOX is the noreply@ SHARED mailbox:
-    /// Graph app-only ignores an alias in "from" and sends as the mailbox's
-    /// primary address, so the sending address must be a mailbox of its own.
-    /// The app is authorised by Exchange RBAC for Applications scoped to that one
-    /// mailbox, not by a tenant-wide Mail.Send grant. Graph answers 202 or a real error, so a failure
-    /// is a failure. Until they are set it falls back to the Logic App, now
-    /// reading its answer — so this can ship before the Graph setup is finished.
+    /// Transport: Microsoft Graph sendMail, configured by HC_GRAPH_TENANT_ID /
+    /// HC_GRAPH_CLIENT_ID / HC_GRAPH_CLIENT_SECRET / HC_GRAPH_MAILBOX. The mailbox
+    /// is the noreply@ SHARED mailbox: Graph app-only ignores an alias in "from"
+    /// and sends as the mailbox's primary address, so the sending address must be
+    /// a mailbox of its own. The app is authorised by Exchange RBAC for
+    /// Applications scoped to that one mailbox, not by a tenant-wide Mail.Send
+    /// grant. Graph answers 202 or a real error, so a failure is a failure.
+    ///
+    /// There is no fallback. The SendEmail Logic App this replaced was deleted
+    /// (E19.F1.S4, 2026-10-09): its signed trigger URL was public in the repo, so
+    /// anyone could send mail through it. Missing settings are an error, logged
+    /// like any other failed send.
+    ///
+    /// Every email is wrapped in one layout (<see cref="Layout"/>, E19.F2.S2), so
+    /// callers pass only their own content.
     ///
     /// Every failure is written to HC.ErrorLog (ProcName 'HcEmail', the caller in
     /// the description, the recipient's DOMAIN only) and then thrown as
@@ -60,8 +66,7 @@ namespace HcWebApi.Endpoints
         private static string? Env(string name) =>
             Environment.GetEnvironmentVariable(name) is { Length: > 0 } v ? v : null;
 
-        /// <summary>The address every email is from. An alias of <see cref="GraphMailbox"/>; the
-        /// tenant must have SendFromAliasEnabled, or Exchange substitutes the mailbox's primary address.</summary>
+        /// <summary>The address every email is from: the primary address of <see cref="GraphMailbox"/>.</summary>
         public static string From => Env("HC_EMAIL_FROM") ?? "noreply@harriercentral.com";
 
         public const string FromName = "Harrier Central";
@@ -70,10 +75,10 @@ namespace HcWebApi.Endpoints
         private static string? ClientId => Env("HC_GRAPH_CLIENT_ID");
         private static string? ClientSecret => Env("HC_GRAPH_CLIENT_SECRET");
 
-        /// <summary>The licensed (or shared) mailbox Graph sends from, by its user principal name.</summary>
+        /// <summary>The shared mailbox Graph sends from, by its address (noreply@harriercentral.com).</summary>
         private static string? GraphMailbox => Env("HC_GRAPH_MAILBOX");
 
-        public static bool UsesGraph =>
+        public static bool IsConfigured =>
             TenantId != null && ClientId != null && ClientSecret != null && GraphMailbox != null;
 
         /// <summary>
@@ -86,11 +91,13 @@ namespace HcWebApi.Endpoints
             if (string.IsNullOrWhiteSpace(to) || string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(html))
                 throw new ArgumentException("to, subject and html must all be non-empty.");
 
-            string via = UsesGraph ? "graph" : "logic-app";
+            const string via = "graph";
             try
             {
-                if (UsesGraph) await SendViaGraphAsync(to, subject, html, attachment);
-                else await SendViaLogicAppAsync(to, subject, html, attachment);
+                if (!IsConfigured)
+                    throw new InvalidOperationException(
+                        "email is not configured: set HC_GRAPH_TENANT_ID, HC_GRAPH_CLIENT_ID, HC_GRAPH_CLIENT_SECRET and HC_GRAPH_MAILBOX");
+                await SendViaGraphAsync(to, subject, Layout(subject, html), attachment);
             }
             catch (Exception ex)
             {
@@ -173,39 +180,44 @@ namespace HcWebApi.Endpoints
                     $"Graph sendMail {(int)resp.StatusCode}: {Trim(await resp.Content.ReadAsStringAsync())}");
         }
 
-        // ── Logic App (legacy, until the Graph settings exist) ──────────────────
+        // ── Layout ─────────────────────────────────────────────────────────────
+
+        private const string LogoUrl = "https://harriercentral.blob.core.windows.net/harrier/hclogo250round.png";
 
         /// <summary>
-        /// The SendEmail Logic App's HTTP trigger. Read from HC_EMAIL_LOGIC_APP_URL;
-        /// the literal fallback is public in the repo (E19.F1.S4) and goes when
-        /// Graph is live.
+        /// The one Harrier Central email layout (E19.F2.S2): the logo, the caller's
+        /// content on a white card no wider than a phone, and a footer saying who sent
+        /// it and why. Built from tables with inline styles, because that is the only
+        /// HTML every mail client renders the same — Outlook ignores most CSS and
+        /// Gmail strips &lt;style&gt; blocks in some views. The logo is the round
+        /// artwork itself, shown whole at its own shape. Callers pass only their own
+        /// content; <paramref name="subject"/> becomes the hidden preheader line that
+        /// inboxes show next to the subject.
         /// </summary>
-        private static string LogicAppUrl =>
-            Env("HC_EMAIL_LOGIC_APP_URL")
-            ?? "https://prod-46.northeurope.logic.azure.com:443/workflows/ea2b7fd09a8d407fa58ab04b64638217/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=aqjP-q4tvhj-S9aemqQKFGP5ZQYBWOBFTL_KSUvcVl8";
-
-        private static async Task SendViaLogicAppAsync(string to, string subject, string html, EmailAttachment? attachment)
+        internal static string Layout(string subject, string content)
         {
-            var payload = new
-            {
-                from = From,   // the Outlook connector ignores it, but the trigger schema has it
-                to,
-                subject,
-                body = html,
-                attachment = attachment == null ? null : new
-                {
-                    filename = attachment.FileName,
-                    contentType = attachment.ContentType,
-                    contentBytes = Convert.ToBase64String(attachment.Content),
-                },
-            };
-            using var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            using var resp = await http.PostAsync(LogicAppUrl, content);
-            string text = (await resp.Content.ReadAsStringAsync()).Trim().Trim('"');
-            // The Logic App answers 200 "Success" — or 200 "Failed" when its send
-            // action failed. Only "Success" is a send.
-            if (!resp.IsSuccessStatusCode || !text.Equals("Success", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException($"Logic App {(int)resp.StatusCode}: {Trim(text)}");
+            string pre = System.Net.WebUtility.HtmlEncode(subject);
+            return
+                "<!DOCTYPE html><html><head><meta charset=\"utf-8\">" +
+                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" +
+                "<body style=\"margin:0;padding:0;background:#eef1f4;\">" +
+                $"<div style=\"display:none;max-height:0;overflow:hidden;\">{pre}</div>" +
+                "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#eef1f4;\"><tr><td align=\"center\" style=\"padding:24px 12px;\">" +
+                "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:560px;\">" +
+                "<tr><td align=\"center\" style=\"padding:0 0 16px;\">" +
+                $"<img src=\"{LogoUrl}\" width=\"64\" height=\"64\" alt=\"Harrier Central\" style=\"display:block;border:0;width:64px;height:64px;\">" +
+                "</td></tr>" +
+                "<tr><td style=\"background:#ffffff;border-radius:8px;padding:28px 24px;" +
+                "font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;color:#1f2933;\">" +
+                content +
+                "</td></tr>" +
+                "<tr><td align=\"center\" style=\"padding:16px 8px 0;" +
+                "font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#6b7785;\">" +
+                "Sent by <a href=\"https://www.harriercentral.com\" style=\"color:#6b7785;\">Harrier Central</a>, " +
+                "the app hash kennels use to run their runs.<br>" +
+                "You are receiving this because of something you or your kennel did in Harrier Central — " +
+                "asking for a code, a report, or a kennel request. We do not send newsletters, so there is nothing to unsubscribe from." +
+                "</td></tr></table></td></tr></table></body></html>";
         }
 
         // ── Error log ──────────────────────────────────────────────────────────
