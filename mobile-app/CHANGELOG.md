@@ -1,3 +1,8 @@
+## 3.1.9+1460 (unreleased)
+### Fixes
+- **Chats open at the bottom** — the newest message is on screen when a chat opens; no scrolling down first. (The list jumped to its end before the thread had loaded.) Pinned by `integration_test/chat_opens_at_bottom_test.dart`.
+- Boot no longer goes blank after the 1.x→2.x legacy re-registration path: the services it tore down are registered again before the app restarts.
+
 ## 3.1.9+1459 (2026-10-09)
 All beta testers (private dance first, then widened the same day).
 ### Improvements
