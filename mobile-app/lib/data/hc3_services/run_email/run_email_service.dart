@@ -52,6 +52,20 @@ class RunEmailDraft {
   final String body;
 }
 
+/// One name on the "Who gets it" page — as the check-in list shows it —
+/// and, for those who will not get the email, why not.
+class RunEmailAudienceEntry {
+  const RunEmailAudienceEntry({required this.name, this.reason = ''});
+  final String name;
+  final String reason;
+}
+
+class RunEmailAudience {
+  const RunEmailAudience({required this.recipients, required this.nonRecipients});
+  final List<RunEmailAudienceEntry> recipients;
+  final List<RunEmailAudienceEntry> nonRecipients;
+}
+
 /// Thrown when the API refused or could not be reached; [message] is for
 /// the sender to read.
 class RunEmailException implements Exception {
@@ -83,19 +97,40 @@ class RunEmailService {
     );
   }
 
-  /// Returns how many recipients the email was sent to.
+  /// Who will get the email and which kennel members will not, with why.
+  Future<RunEmailAudience> audience(HcId eventId) async {
+    final Map<String, dynamic> j = await _call(eventId, 'audience');
+    List<RunEmailAudienceEntry> parse(dynamic list) =>
+        ((list as List<dynamic>?) ?? const <dynamic>[])
+            .map(
+              (dynamic e) => RunEmailAudienceEntry(
+                name: ((e as Map<String, dynamic>)['name'] ?? '') as String,
+                reason: (e['reason'] ?? '') as String,
+              ),
+            )
+            .toList();
+    return RunEmailAudience(
+      recipients: parse(j['recipients']),
+      nonRecipients: parse(j['nonRecipients']),
+    );
+  }
+
+  /// Returns how many recipients the email was sent to. With [previewToSelf]
+  /// the finished email goes to the sender only and nothing is recorded.
   Future<int> send(
     HcId eventId, {
     required String subject,
     required String body,
     String instruction = '',
     bool saveInstruction = false,
+    bool previewToSelf = false,
   }) async {
     final Map<String, dynamic> j = await _call(eventId, 'send', <String, Object>{
       'subject': subject,
       'body': body,
       'instruction': instruction,
       'saveInstruction': saveInstruction,
+      'previewToSelf': previewToSelf,
     });
     return (j['sent'] as num?)?.toInt() ?? 0;
   }

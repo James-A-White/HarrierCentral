@@ -28,6 +28,7 @@ class RunEmailComposerController extends GetxController {
 
   final RxBool isDrafting = true.obs;
   final RxBool isSending = false.obs;
+  final RxBool isPreviewing = false.obs;
 
   /// "Save as the kennel's default": the instruction is stored on the kennel
   /// at send time and pre-filled for whoever sends next (James, 2026-10-09).
@@ -93,6 +94,48 @@ class RunEmailComposerController extends GetxController {
         '${c.emailSendCount == 1 ? 'time' : 'times'} — last to '
         '${c.emailLastSentCount ?? '?'} '
         '${c.emailLastSentCount == 1 ? 'member' : 'members'}$when.';
+  }
+
+  /// The finished email — facts block, buttons, footer — to the sender's own
+  /// inbox and nobody else's. Nothing is recorded (James, 2026-10-09).
+  Future<void> preview() async {
+    final String subj = subject.text.trim();
+    final String text = body.text.trim();
+    if (subj.isEmpty || text.isEmpty) {
+      hcSnack('The email needs a subject and some text.', error: true);
+      return;
+    }
+    isPreviewing.value = true;
+    try {
+      await const RunEmailService().send(
+        _eventId,
+        subject: subj,
+        body: text,
+        previewToSelf: true,
+      );
+      if (isClosed) return;
+      final String me = getStringPref(StringPrefsEnum.email) ?? 'your email';
+      hcSnack('Preview sent to $me — check your inbox.', seconds: 5);
+    } on RunEmailException catch (e) {
+      if (isClosed) return;
+      hcSnack(e.message, error: true, seconds: 6);
+    } catch (e, s) {
+      BootLogger.logError('[RunEmailComposer.preview]', e, s);
+      if (isClosed) return;
+      hcSnack('The preview could not be sent. Try again.', error: true);
+    } finally {
+      if (!isClosed) isPreviewing.value = false;
+    }
+  }
+
+  /// Opens "Who gets it".
+  Future<void> openAudience() async {
+    await Get.to<void>(
+      () => RunEmailAudiencePage(
+        eventAggregate: eventAggregate,
+        recipientCount: context.recipientCount,
+      ),
+    );
   }
 
   /// Sends after one confirmation. Pops the page with the count on success

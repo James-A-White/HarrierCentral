@@ -1,3 +1,9 @@
+## 3.1.9+1455 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### New Features
+- **Email the run › Preview to me**: sends the finished email — facts block, buttons, footer — to your own inbox only, without recording a send.
+- **Email the run › Who gets it**: two pills — the members who will get the email, and the kennel members who will not, with the reason (no email address, emails off for this run, kennel emails off, never switched on). Names as the check-in list shows them.
+
 ## 3.1.9+1454 (2026-10-09)
 Dance baby! — all beta testers.
 ### New Features

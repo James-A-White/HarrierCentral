@@ -1,3 +1,8 @@
+1.0.61+89
+    • Run emails: Preview (the finished email to the sender only, not recorded) and an audience
+      action — who will get it, and which kennel members will not and why — names as the
+      check-in list shows them.
+
 1.0.61+88
     • Run emails from the portal: RunEmail accepts client = 'portal' (publicEventId, portal
       token via hcportal_getRunEmailContext); the send list and context now live in ONE
