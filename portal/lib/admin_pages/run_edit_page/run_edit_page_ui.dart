@@ -1371,12 +1371,15 @@ class _EmailMembersButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (controller.isAddMode) return const SizedBox.shrink();
+    // The portal's app bar is LIGHT (its controls use headingStyleBlack), so
+    // this is a real button, not white text — white text was invisible on
+    // 2.0.87+743 (James, 2026-10-09).
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: TextButton.icon(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: HcButton.secondary(
+        icon: Icons.mail_outline,
+        label: 'Email members',
         onPressed: controller.emailMembers,
-        icon: const Icon(Icons.mail_outline, color: Colors.white),
-        label: const Text('Email members', style: TextStyle(color: Colors.white)),
       ),
     );
   }
