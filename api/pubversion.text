@@ -1,3 +1,7 @@
+1.0.61+87
+    • Run emails: a trailing sign-off in the prose ("On on, <name>") is stripped in code at draft
+      and at send — the layout adds the one sign-off. The model had ignored the instruction.
+
 1.0.61+86
     • Run emails: the I'm in / Can't make it buttons use text glyphs (✓ ✗) so they are white on
       the button, not an emoji in its own red.
