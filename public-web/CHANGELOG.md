@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.74 (2026-10-09 redeploy — quieter map logs)
+
+- Map error reports are no longer sent by automated browsers or browsers that cannot
+  draw a map (one scraper filled the logs for two days); a report that is sent says
+  whether the browser could draw.
+
 ## 0.21.74 (2026-10-04 redeploy — track source)
 
 - **An imported track says where it came from.** On a run's PackTrack map the

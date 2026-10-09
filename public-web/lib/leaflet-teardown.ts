@@ -46,10 +46,21 @@ import L from "leaflet";
 let hardened = false;
 let reported = false;
 
-/** Says once per page load that a guard fired, so a silent miss is visible. */
+/**
+ * Says once per page load that a guard fired, so a silent miss is visible.
+ *
+ * Not from a client that cannot draw a map at all: one with neither SVG nor
+ * canvas gets a null renderer by design, and an automated browser
+ * (`navigator.webdriver`) is not a visitor. A scraper on /bmph3/2031 and
+ * /2048 tripped this hourly for two days in October 2026 behind a rotating
+ * set of made-up user agents, so the UA cannot be the filter. What does reach
+ * the log carries both capability flags, so the next one says which it was.
+ */
 function reportGuard(reason: string): void {
   if (reported) return;
   reported = true;
+  const canDraw = L.Browser.svg || L.Browser.canvas;
+  if (!canDraw || navigator.webdriver) return;
   try {
     void fetch("/api/web-error", {
       method: "POST",
@@ -57,7 +68,8 @@ function reportGuard(reason: string): void {
       body: JSON.stringify({
         source: "leaflet-guard",
         message: `Leaflet teardown guard: ${reason}`,
-        stack: new Error(reason).stack?.slice(0, 2000),
+        // Kept out of `message` so the triage fingerprint stays one line.
+        stack: `svg=${L.Browser.svg} canvas=${L.Browser.canvas}\n${new Error(reason).stack ?? ""}`.slice(0, 2000),
         url: window.location.pathname + window.location.search,
       }),
       keepalive: true,

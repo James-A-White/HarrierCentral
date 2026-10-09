@@ -1,3 +1,10 @@
+## 3.1.9+1450 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### Fixes
+- **Auto start keeps its GPS on Android**: arming auto start and putting the phone away within 30 seconds could stop the location service, so the run never started by itself.
+### Improvements
+- **Run Counts › By Hasher**: the hashers you have run with most come first, then by name A–Z.
+
 ## 3.1.9+1449 (2026-10-05)
 Dance baby! — all beta testers.
 ### Fixes

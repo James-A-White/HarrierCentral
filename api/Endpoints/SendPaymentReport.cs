@@ -92,13 +92,12 @@ namespace HcWebApi.Endpoints
                     // msg.AddAttachment("paymentReport.xlsx", System.Convert.ToBase64String(wb.GetAsByteArray()), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
 
-                    await Utilities.SendEmailAsync(
-                            Utilities.EmailLogicAppUrl,
-                            "james@defenceinnovation.eu",
+                    await HcEmail.SendAsync(
+                            "SendPaymentReport",
                             emailAddress,
                             $"Here's your Harrier Central Payment Report for {eventName}",
                             $"<strong>Hello. Attached, you will find your Payment Report for {eventName}</strong>",
-                            Convert.ToBase64String(wb.GetAsByteArray())
+                            EmailAttachment.Excel($"Payment report - {eventName}", wb.GetAsByteArray())
                         );
 
                 }

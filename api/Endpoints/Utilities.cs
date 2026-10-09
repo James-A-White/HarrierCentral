@@ -10,20 +10,7 @@ namespace HcWebApi.Endpoints
 
     public static class Utilities
     {
-        private static readonly HttpClient httpClient = new();
-
-        /// The email Logic App's HTTP trigger. Every email the API sends goes
-        /// through it. Read from the HC_EMAIL_LOGIC_APP_URL app setting; the
-        /// literal fallback is the URL that used to be pasted into four
-        /// endpoints and is public in the repo — rotate the trigger's key, set
-        /// the app setting, then delete the fallback (2026-09-28).
-        public static string EmailLogicAppUrl =>
-            Environment.GetEnvironmentVariable("HC_EMAIL_LOGIC_APP_URL") is { Length: > 0 } configured
-                ? configured
-                : "https://prod-46.northeurope.logic.azure.com:443/workflows/ea2b7fd09a8d407fa58ab04b64638217/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=aqjP-q4tvhj-S9aemqQKFGP5ZQYBWOBFTL_KSUvcVl8";
-
-        /// The sender every Harrier Central email has used.
-        public const string EmailFrom = "james@defenceinnovation.eu";
+        // Email moved to HcEmail (E19, 2026-10-08).
 
         /// The APNs "aps" block for a chat push. A visible push plays the sound;
         /// a silent one wakes the app (content-available). Either way, when the
@@ -67,51 +54,6 @@ namespace HcWebApi.Endpoints
         /// A run-chat message is a call for help when it is the Send Help text.
         public static bool IsHelpMessage(string? content) =>
             !string.IsNullOrEmpty(content) && content.TrimStart().StartsWith("🆘", StringComparison.Ordinal);
-
-        public static async Task SendEmailAsync(
-            string logicAppUrl,
-            string from,
-            string to,
-            string subject,
-            string bodyHtml,
-            string? base64FileContents)
-        {
-            if (string.IsNullOrWhiteSpace(logicAppUrl) ||
-                string.IsNullOrWhiteSpace(from) ||
-                string.IsNullOrWhiteSpace(to) ||
-                string.IsNullOrWhiteSpace(subject) ||
-                string.IsNullOrWhiteSpace(bodyHtml))
-            {
-                throw new ArgumentException("All arguments must be non-null and non-empty.");
-            }
-
-            var payload = new
-            {
-                from,
-                to,
-                subject,
-                body = bodyHtml,
-                attachment = base64FileContents == null ? null : new
-                {
-                    filename = "run_stats_report.xlsx",
-                    contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    contentBytes = base64FileContents
-                }
-            };
-
-            // var jsonOptions = new JsonSerializerOptions
-            // {
-            //     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            // };
-
-            var json = JsonSerializer.Serialize(payload);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            using var response = await httpClient.PostAsync(logicAppUrl, content);
-            response.EnsureSuccessStatusCode();
-
-            Console.WriteLine("Email sent successfully via Logic App.");
-        }
 
         public static String formatCurrency(decimal amount, String digitsAfterDecimal, String currencySymbol)
         {

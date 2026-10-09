@@ -41,9 +41,8 @@ namespace HcWebApi.Endpoints
             if (email.Length == 0) return false;
             try
             {
-                await Utilities.SendEmailAsync(
-                    Utilities.EmailLogicAppUrl,
-                    Utilities.EmailFrom,
+                await HcEmail.SendAsync(
+                    "KennelRequestEmails",
                     email,
                     $"Your code to add {row.GetValueOrDefault("kennelName")} to Harrier Central",
                     $"Hello {H(row.GetValueOrDefault("firstName"))},<br><br>" +
@@ -71,9 +70,8 @@ namespace HcWebApi.Endpoints
             {
                 try
                 {
-                    await Utilities.SendEmailAsync(
-                        Utilities.EmailLogicAppUrl,
-                        Utilities.EmailFrom,
+                    await HcEmail.SendAsync(
+                        "KennelRequestEmails",
                         to,
                         $"Kennel request waiting: {row.GetValueOrDefault("kennelName")}",
                         $"<strong>{H(row.GetValueOrDefault("kennelName"))}</strong> has asked to join Harrier Central " +
@@ -98,9 +96,8 @@ namespace HcWebApi.Endpoints
                 ? hn : row.GetValueOrDefault("AdminFirstName")?.ToString() ?? "";
             try
             {
-                await Utilities.SendEmailAsync(
-                    Utilities.EmailLogicAppUrl,
-                    Utilities.EmailFrom,
+                await HcEmail.SendAsync(
+                    "KennelRequestEmails",
                     email,
                     $"{row.GetValueOrDefault("KennelName")} is live on Harrier Central",
                     $"Hello {H(name)},<br><br>" +

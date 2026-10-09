@@ -38,7 +38,7 @@ namespace HcWebApi.Endpoints
             {
                 try
                 {
-                    await Utilities.SendEmailAsync(Utilities.EmailLogicAppUrl, Utilities.EmailFrom, to, subject, body, null);
+                    await HcEmail.SendAsync("AbuseReportEmails", to, subject, body);
                 }
                 catch (Exception ex)
                 {

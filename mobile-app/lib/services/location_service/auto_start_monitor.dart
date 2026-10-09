@@ -268,6 +268,13 @@ class AutoStartMonitor {
 
   void _startTick() {
     _tick?.cancel();
+    // arm() opens the stream at THIS precision, so the tick must start from
+    // it. Left at false, the first tick saw a change that never happened and
+    // re-subscribed 30 s after arming. On Android that restarts the location
+    // foreground service, which a phone already in a pocket may not do:
+    // "Starting FGS with type location … requires permissions" (Inspector
+    // Gorse, 1435, 2026-10-07), and auto start lost its stream.
+    _wasPrecise = wantsPrecise;
     _tick = Timer.periodic(const Duration(seconds: 30), (_) => _onTick());
   }
 
