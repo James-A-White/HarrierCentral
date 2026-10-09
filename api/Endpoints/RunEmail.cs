@@ -63,7 +63,7 @@ namespace HcWebApi.Endpoints
             if (!Guid.TryParse(body.Value<string>("deviceId"), out Guid deviceId)
                 || !Guid.TryParse(body.Value<string>(portal ? "publicEventId" : "eventId"), out Guid eventId)
                 || string.IsNullOrEmpty(body.Value<string>("accessToken"))
-                || action is not ("context" or "draft" or "send"))
+                || action is not ("context" or "draft" or "send" or "audience"))
                 return new BadRequestObjectResult(new { errorUserMessage = "Bad request." });
 
             string? cs = Environment.GetEnvironmentVariable("HcDbConnectionString");
@@ -72,7 +72,8 @@ namespace HcWebApi.Endpoints
             RunContext ctx;
             try
             {
-                var loaded = await LoadContextAsync(cs, deviceId, body.Value<string>("accessToken")!, eventId, includeRecipients: action == "send", portal: portal);
+                int include = action == "audience" ? 2 : action == "send" ? 1 : 0;
+                var loaded = await LoadContextAsync(cs, deviceId, body.Value<string>("accessToken")!, eventId, includeRecipients: include, portal: portal);
                 if (loaded.error != null) return new BadRequestObjectResult(loaded.error);
                 ctx = loaded.ctx!;
             }
@@ -86,6 +87,14 @@ namespace HcWebApi.Endpoints
             {
                 case "context":
                     return new OkObjectResult(ctx.ToSummary());
+
+                case "audience":
+                    // The "Who gets it" page: names as the check-in list shows them.
+                    return new OkObjectResult(new
+                    {
+                        recipients = ctx.Recipients.Select(r => new { name = r.Name }),
+                        nonRecipients = ctx.NonRecipients.Select(n => new { name = n.Name, reason = n.Reason }),
+                    });
 
                 case "draft":
                 {
@@ -118,6 +127,28 @@ namespace HcWebApi.Endpoints
                     prose = StripSignOff(prose, ctx.SenderName);
                     if (prose.Length == 0)
                         return new BadRequestObjectResult(new { errorUserMessage = "The email needs some text." });
+
+                    // Preview: the finished email to the SENDER only — not recorded on the
+                    // run, not counted, the sender's own unsubscribe link in it so the
+                    // preview is exactly what a member would get (James, 2026-10-09).
+                    if (body.Value<bool?>("previewToSelf") == true)
+                    {
+                        if (ctx.SenderEmail.Length == 0)
+                            return new BadRequestObjectResult(new { errorUserMessage = "Your account has no email address." });
+                        string unsubSelf = HcListMail.UnsubscribeUrl(ctx.SenderId, ctx.KennelId);
+                        try
+                        {
+                            await HcListMail.SendAsync(ctx.SenderEmail, "[Preview] " + subject, BuildHtml(ctx, subject, prose, unsubSelf),
+                                PlainText(ctx, prose), unsubSelf);
+                        }
+                        catch (Exception ex)
+                        {
+                            await HcListMail.LogFailureAsync("RunEmail.preview", ctx.SenderEmail, ex.Message, eventId);
+                            return new ObjectResult(new { errorUserMessage = "The preview could not be sent just now." }) { StatusCode = 502 };
+                        }
+                        return new OkObjectResult(new { sent = 1, preview = true });
+                    }
+
                     if (ctx.Recipients.Count == 0)
                         return new BadRequestObjectResult(new { errorUserMessage = "Nobody in this kennel has run emails switched on." });
 
@@ -163,19 +194,21 @@ namespace HcWebApi.Endpoints
         // ── Context ────────────────────────────────────────────────────────────
 
         public sealed record Recipient(Guid HasherId, string Email, string Name);
+        public sealed record NonRecipient(string Name, string Reason);
 
         public sealed class RunContext
         {
-            public Guid EventId, KennelId, PublicEventId;
+            public Guid EventId, KennelId, PublicEventId, SenderId;
             public int EventNumber, IsCountedRun, EmailSendCount;
             public string EventName = "", Hares = "", Venue = "", Street = "", City = "", PostCode = "", Description = "";
-            public string KennelName = "", KennelShortName = "", KennelSlug = "", KennelLogo = "", SenderName = "", CurrencySymbol = "", Instruction = "";
+            public string KennelName = "", KennelShortName = "", KennelSlug = "", KennelLogo = "", SenderName = "", SenderEmail = "", CurrencySymbol = "", Instruction = "";
             public DateTime StartLocal;
             public decimal PriceMembers, PriceNonMembers;
             public DateTimeOffset? EmailLastSentAt;
             public int? EmailLastSentCount;
             public int RecipientCount;
             public List<Recipient> Recipients = new();
+            public List<NonRecipient> NonRecipients = new();
 
             public bool Counted => IsCountedRun == 1 && EventNumber > 0;
             public string Url => Counted
@@ -219,7 +252,7 @@ namespace HcWebApi.Endpoints
             };
         }
 
-        private static async Task<(RunContext? ctx, object? error)> LoadContextAsync(string cs, Guid deviceId, string accessToken, Guid eventId, bool includeRecipients, bool portal = false)
+        private static async Task<(RunContext? ctx, object? error)> LoadContextAsync(string cs, Guid deviceId, string accessToken, Guid eventId, int includeRecipients, bool portal = false)
         {
             using var conn = new SqlConnection(cs);
             await conn.OpenAsync();
@@ -227,7 +260,7 @@ namespace HcWebApi.Endpoints
             cmd.Parameters.Add("@deviceId", SqlDbType.UniqueIdentifier).Value = deviceId;
             cmd.Parameters.Add("@accessToken", SqlDbType.NVarChar, 1000).Value = accessToken;
             cmd.Parameters.Add(portal ? "@publicEventId" : "@eventId", SqlDbType.UniqueIdentifier).Value = eventId;
-            cmd.Parameters.Add("@includeRecipients", SqlDbType.SmallInt).Value = includeRecipients ? 1 : 0;
+            cmd.Parameters.Add("@includeRecipients", SqlDbType.SmallInt).Value = includeRecipients;
             using var r = await cmd.ExecuteReaderAsync();
             if (!await r.ReadAsync()) return (null, new { errorUserMessage = "Run not found." });
             if (HasColumn(r, "errorType"))   // the app SP's error envelope
@@ -247,6 +280,8 @@ namespace HcWebApi.Endpoints
                 CurrencySymbol = S("currencySymbol"), KennelId = Guid.Parse(S("kennelId")), KennelName = S("kennelName"),
                 KennelShortName = S("kennelShortName"), KennelSlug = S("kennelSlug"), KennelLogo = S("kennelLogo"), SenderName = S("senderName"),
                 Instruction = HasColumn(r, "instruction") ? S("instruction").Trim() : "",
+                SenderEmail = HasColumn(r, "senderEmail") ? S("senderEmail").Trim() : "",
+                SenderId = HasColumn(r, "senderId") && Guid.TryParse(S("senderId"), out Guid sid) ? sid : Guid.Empty,
             };
             if (await r.NextResultAsync() && await r.ReadAsync())
             {
@@ -255,9 +290,12 @@ namespace HcWebApi.Endpoints
                 ctx.EmailLastSentCount = r["emailLastSentCount"] is DBNull ? null : Convert.ToInt32(r["emailLastSentCount"]);
                 ctx.RecipientCount = Convert.ToInt32(r["recipientCount"]);
             }
-            if (includeRecipients && await r.NextResultAsync())
+            if (includeRecipients >= 1 && await r.NextResultAsync())
                 while (await r.ReadAsync())
                     ctx.Recipients.Add(new Recipient(Guid.Parse(S("hasherId")), S("email"), S("displayName")));
+            if (includeRecipients == 2 && await r.NextResultAsync())
+                while (await r.ReadAsync())
+                    ctx.NonRecipients.Add(new NonRecipient(S("displayName"), S("reason")));
             return (ctx, null);
         }
 

@@ -21,13 +21,17 @@ AS
 --     run setting 0 or no row  -> kennel setting 1 sends; 0 or 2 does not
 --   Removed accounts and accounts without an email never. The sender IS
 --   included when they qualify.
--- Parameters: @eventId, @userId (the sender), @includeRecipients
+-- Parameters: @eventId, @userId (the sender), @includeRecipients:
+--   0 = context only; 1 = + recipients; 2 = + recipients AND the kennel
+--   members who will NOT get it, with the reason (the audience page).
 -- Returns:
 --   rowset 0 — the run + kennel + sender (see hcapp_getRunEmailContext)
 --   rowset 1 — emailSendCount, emailLastSentAt, emailLastSentCount,
 --              recipientCount
---   rowset 2 — (only when @includeRecipients = 1) hasherId, email,
---              displayName
+--   rowset 2 — (when @includeRecipients >= 1) hasherId, email,
+--              displayName — the name as the check-in list shows it:
+--              the kennel hash name, else the hasher's display name
+--   rowset 3 — (when @includeRecipients = 2) displayName, reason
 -- Author: Harrier Central
 -- Created: 2026-10-09
 -- =====================================================================
@@ -37,7 +41,7 @@ DECLARE @kennelId UNIQUEIDENTIFIER = (SELECT e.KennelId FROM HC.Event e WHERE e.
 
 DECLARE @recipients TABLE (hasherId UNIQUEIDENTIFIER PRIMARY KEY, email NVARCHAR(250), displayName NVARCHAR(500));
 INSERT @recipients (hasherId, email, displayName)
-SELECT h.id, h.Email, h.DisplayName
+SELECT h.id, h.Email, COALESCE(NULLIF(hkm.KennelHashName, ''), h.DisplayName)
 FROM HC.HasherKennelMap hkm
 JOIN HC.Hasher h ON h.id = hkm.UserId
 LEFT JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
@@ -71,7 +75,9 @@ SELECT
     k.KennelShortName                            AS kennelShortName,
     k.KennelUniqueShortName                      AS kennelSlug,
     k.KennelLogo                                 AS kennelLogo,
+    LOWER(CAST(s.id AS NVARCHAR(40)))            AS senderId,
     s.DisplayName                                AS senderName,
+    s.Email                                      AS senderEmail,
     k.RunEmailInstruction                        AS instruction
 FROM HC.Event e
 JOIN HC.Kennel k ON k.id = e.KennelId
@@ -88,7 +94,27 @@ FROM HC.Event e
 WHERE e.id = @eventId;
 
 -- rowset 2: who
-IF (@includeRecipients = 1)
+IF (@includeRecipients >= 1)
     SELECT LOWER(CAST(hasherId AS NVARCHAR(40))) AS hasherId, email, displayName
     FROM @recipients
-    ORDER BY displayName;
+    ORDER BY LOWER(displayName);
+
+-- rowset 3: who NOT, and why — every live member of the kennel who is not
+-- in the list above. The reason is the first rule that excluded them.
+IF (@includeRecipients = 2)
+    SELECT COALESCE(NULLIF(hkm.KennelHashName, ''), h.DisplayName) AS displayName,
+           CASE
+               WHEN h.Email NOT LIKE '%_@_%.__%'                       THEN 'no email address'
+               WHEN ISNULL(hem.EventEmailAlertPreference, 0) = 2       THEN 'emails off for this run'
+               WHEN ISNULL(hkm.KennelEmailAlertPreference, 0) = 2      THEN 'kennel emails off'
+               ELSE 'kennel emails never switched on'
+           END AS reason
+    FROM HC.HasherKennelMap hkm
+    JOIN HC.Hasher h ON h.id = hkm.UserId
+    LEFT JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
+    WHERE hkm.KennelId = @kennelId
+      AND hkm.removed = 0
+      AND ISNULL(h.Removed, 0) = 0
+      AND h.deleted = 0
+      AND NOT EXISTS (SELECT 1 FROM @recipients r WHERE r.hasherId = h.id)
+    ORDER BY LOWER(COALESCE(NULLIF(hkm.KennelHashName, ''), h.DisplayName));

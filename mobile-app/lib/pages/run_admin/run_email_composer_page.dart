@@ -36,7 +36,8 @@ class RunEmailComposerPage extends StatelessWidget {
   }
 
   Widget _body(BuildContext context, RunEmailComposerController c) {
-    final bool busy = c.isDrafting.value || c.isSending.value;
+    final bool busy =
+        c.isDrafting.value || c.isSending.value || c.isPreviewing.value;
     final int n = emailContext.recipientCount;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -192,6 +193,50 @@ class RunEmailComposerPage extends StatelessWidget {
                 ],
               ),
             ),
+          const SizedBox(height: 14),
+          // Try it on yourself, and see who it reaches — before it goes.
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
+            children: <Widget>[
+              ElevatedButton.icon(
+                onPressed: busy ? null : c.preview,
+                icon: c.isPreviewing.value
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.mark_email_read_outlined,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                label: Text(
+                  'Preview to me',
+                  style: ts_button,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: c.isSending.value ? null : c.openAudience,
+                icon: const Icon(
+                  Icons.people_outline,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                label: Text(
+                  'Who gets it',
+                  style: ts_button,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 20),
           if (c.isSending.value)
             const HcAppCircularProgressIndicator(key: Key('runemail-sending'))

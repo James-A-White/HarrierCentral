@@ -290,6 +290,7 @@ export 'package:harrier_central/pages/run_admin/payment_report.dart';
 export 'package:harrier_central/pages/run_admin/payment_report_controller.dart';
 export 'package:harrier_central/pages/run_admin/run_email_composer_controller.dart';
 export 'package:harrier_central/pages/run_admin/run_email_composer_page.dart';
+export 'package:harrier_central/pages/run_admin/run_email_audience_page.dart';
 export 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
 export 'package:harrier_central/pages/run_admin/receipts_page.dart';
 export 'package:harrier_central/pages/run_admin/receipts_controller.dart';
