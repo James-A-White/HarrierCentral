@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 
 /// The run email composer (E9.F6.S7): the API drafts a subject and prose,
 /// the sender steers it with an optional instruction and a Rewrite, edits
@@ -79,6 +80,21 @@ class RunEmailComposerController extends GetxController {
     }
   }
 
+  /// How many emails have gone out for this run and when the last did — on
+  /// the page and again in the confirmation, so a second send is a choice
+  /// (James, 2026-10-09).
+  String get history {
+    final RunEmailContext c = context;
+    if (!c.alreadySent) return 'No email has been sent for this run yet.';
+    final String when = c.emailLastSentAt == null
+        ? ''
+        : ' on ${DateFormat('d MMM, HH:mm').format(c.emailLastSentAt!)}';
+    return '⚠ Already emailed ${c.emailSendCount} '
+        '${c.emailSendCount == 1 ? 'time' : 'times'} — last to '
+        '${c.emailLastSentCount ?? '?'} '
+        '${c.emailLastSentCount == 1 ? 'member' : 'members'}$when.';
+  }
+
   /// Sends after one confirmation. Pops the page with the count on success
   /// (the toast is shown by the caller, after the pop — a GetX toast open
   /// during Get.back() swallows the pop).
@@ -95,7 +111,7 @@ class RunEmailComposerController extends GetxController {
       'The email goes to everyone in ${eventAggregate.kennel.kennelShortName} '
           'who has run emails switched on. The run\'s date, venue, hares, '
           'price and the I\'m-in / can\'t-make-it buttons are added under '
-          'your text.',
+          'your text.\n\n$history',
       'Send',
       showCancelButton: true,
     );

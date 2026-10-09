@@ -1,3 +1,7 @@
+2.0.87+743
+    • Email members on a run: AI-drafted run email to opted-in members, kennel house-style
+      instruction, send history shown — the app's Save and send, in the portal.
+
 2.0.85+720
     • Error reports from before sign-in now reach the server; 2.0.84 sent them without a token and the API dropped them.
 

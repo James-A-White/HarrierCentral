@@ -60,6 +60,12 @@ const String RUNS_PAGE_TEST_URL =
 const String BASE_GET_PORTAL_UPLOAD_SAS_URL =
     'https://harriercentralpublicapi.azurewebsites.net/api/GetPortalUploadSas';
 
+// Run emails (E9.F6.S6–S9, portal parity): context, AI draft and send to the
+// kennel's opted-in members. Token proc name: hcportal_getRunEmailContext,
+// standard (deviceSecret) token; the API is told client = 'portal'.
+const String BASE_RUN_EMAIL_URL =
+    'https://harriercentralpublicapi.azurewebsites.net/api/RunEmail';
+
 // const String BASE_AF_API_URL = 'http://localhost:7071/api/PortalApi/';
 
 const String PORTAL_REVERSE_GEOCODE_API_URL =

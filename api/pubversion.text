@@ -1,3 +1,9 @@
+1.0.61+88
+    • Run emails from the portal: RunEmail accepts client = 'portal' (publicEventId, portal
+      token via hcportal_getRunEmailContext); the send list and context now live in ONE
+      procedure, nonApi_runEmailContext, shared by app and portal.
+    • Run emails: a subject is flattened to one line.
+
 1.0.61+87
     • Run emails: a trailing sign-off in the prose ("On on, <name>") is stripped in code at draft
       and at send — the layout adds the one sign-off. The model had ignored the instruction.

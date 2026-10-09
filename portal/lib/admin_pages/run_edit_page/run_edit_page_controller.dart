@@ -1119,6 +1119,36 @@ class RunEditPageController extends TabUiController
     return ok == true;
   }
 
+  /// "Email members" (E9.F6.S6–S9): an unsaved run is saved first, so the
+  /// email describes what the members will see, then the composer opens.
+  Future<void> emailMembers() async {
+    if (isAddMode) return;
+    if (isFormDirty.value) {
+      await save(true);
+      if (isFormDirty.value) return;   // the save was refused or cancelled
+    }
+    final String publicEventId = normalizeUuid(originalData.publicEventId ?? '');
+    if (publicEventId.length < 10) return;
+    final int? sent = await Get.dialog<int>(
+      RunEmailDialog(
+        publicEventId: publicEventId,
+        kennelShortName: kennelData.kennelShortName,
+      ),
+      barrierDismissible: false,
+    );
+    await deleteAfterExit<RunEmailDialogController>(
+      Get.find<RunEmailDialogController>(tag: RunEmailDialog.tagFor(publicEventId)),
+      tag: RunEmailDialog.tagFor(publicEventId),
+    );
+    if (sent != null && sent > 0) {
+      await CoreUtilities.showAlert(
+        'Email sent',
+        'Sent to $sent ${sent == 1 ? 'member' : 'members'}.',
+        'OK',
+      );
+    }
+  }
+
   /// Closes the editor and navigates back.
   @override
   Future<void> close() async {
