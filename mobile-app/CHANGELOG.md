@@ -1,4 +1,5 @@
-## 3.1.9+1458 (unreleased)
+## 3.1.9+1458 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
 ### Improvements
 - **Preview to me** confirms with a dialog once the preview has been sent.
 - **Email the run** opens empty with two ways to fill it: **Use run description** (the run's own words, no AI) or **Write with AI** (steered by the **Write with AI prompt** box, the kennel's usual one pre-filled).
