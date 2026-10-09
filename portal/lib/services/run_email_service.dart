@@ -41,6 +41,20 @@ class RunEmailContext {
       );
 }
 
+/// One name on "Who gets it" — as the check-in list shows it — and, for
+/// those who will not get the email, why not.
+class RunEmailAudienceEntry {
+  const RunEmailAudienceEntry({required this.name, this.reason = ''});
+  final String name;
+  final String reason;
+}
+
+class RunEmailAudience {
+  const RunEmailAudience({required this.recipients, required this.nonRecipients});
+  final List<RunEmailAudienceEntry> recipients;
+  final List<RunEmailAudienceEntry> nonRecipients;
+}
+
 class RunEmailDraft {
   const RunEmailDraft({required this.subject, required this.body});
   final String subject;
@@ -75,19 +89,38 @@ class RunEmailService {
     );
   }
 
-  /// Returns how many recipients the email was sent to.
+  /// Who will get the email and which kennel members will not, with why.
+  Future<RunEmailAudience> audience(String publicEventId) async {
+    final Map<String, dynamic> j = await _call(publicEventId, 'audience');
+    List<RunEmailAudienceEntry> parse(dynamic list) =>
+        ((list as List<dynamic>?) ?? const <dynamic>[])
+            .map((dynamic e) => RunEmailAudienceEntry(
+                  name: ((e as Map<String, dynamic>)['name'] ?? '') as String,
+                  reason: (e['reason'] ?? '') as String,
+                ))
+            .toList();
+    return RunEmailAudience(
+      recipients: parse(j['recipients']),
+      nonRecipients: parse(j['nonRecipients']),
+    );
+  }
+
+  /// Returns how many recipients the email was sent to. With [previewToSelf]
+  /// the finished email goes to the sender only and nothing is recorded.
   Future<int> send(
     String publicEventId, {
     required String subject,
     required String body,
     String instruction = '',
     bool saveInstruction = false,
+    bool previewToSelf = false,
   }) async {
     final Map<String, dynamic> j = await _call(publicEventId, 'send', {
       'subject': subject,
       'body': body,
       'instruction': instruction,
       'saveInstruction': saveInstruction,
+      'previewToSelf': previewToSelf,
     });
     return (j['sent'] as num?)?.toInt() ?? 0;
   }

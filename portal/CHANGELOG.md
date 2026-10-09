@@ -1,3 +1,7 @@
+## 2.0.87+746 (2026-10-09)
+### New Features
+- **Email members › Preview to me** sends the finished email to your own inbox only, without recording a send; **Who gets it** lists the members who will get it and the kennel members who will not, with the reason.
+
 ## 2.0.87+745 (2026-10-09)
 ### Fixes
 - **Chat opens at the latest message**: a chat thread opened at the top; it now opens at the bottom and stays there as messages arrive.

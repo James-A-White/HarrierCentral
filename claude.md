@@ -131,7 +131,18 @@ These are firm decisions that must not be revisited or worked around:
   model the portal already uses. No email/password login, no NextAuth
   credentials provider, no separate user account system for admins.
 
-- **Never convert a `StatelessWidget` to `StatefulWidget` without consulting
+- - **Run editing in the portal and in the app are ONE feature, kept in sync
+  (James, 2026-10-09).** Whatever a run admin can do to a run in the app —
+  edit it, send it, email it, preview the email, see who gets it — they can
+  do in the portal, and the other way round, with the same rules, the same
+  stored procedures where the client allows it, and the same outcome. A
+  capability added to one side is not finished until it is on the other
+  (Save and send shipped in the app on 1451; the portal got Email members
+  the same day, then Preview and Who gets it had to be added to both). When
+  only one side can have something for a technical reason, the gap goes in
+  the backlog as a Known gap, never left silent.
+
+**Never convert a `StatelessWidget` to `StatefulWidget` without consulting
   James first.** The preferred direction is the opposite — migrate
   `StatefulWidget` toward `StatelessWidget` + GetX controller wherever the
   state logic is non-trivial. If you find yourself reaching for `StatefulWidget`
