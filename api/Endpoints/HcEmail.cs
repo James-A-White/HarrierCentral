@@ -215,6 +215,11 @@ namespace HcWebApi.Endpoints
                 "font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#6b7785;\">" +
                 "Sent by <a href=\"https://www.harriercentral.com\" style=\"color:#6b7785;\">Harrier Central</a>, " +
                 "the app hash kennels use to run their runs.<br>" +
+                // Every email is also an on-ramp (James, 2026-10-09): the store links go on all of them.
+                "<span style=\"display:inline-block;margin:8px 0;\">Get the app: " +
+                "<a href=\"https://apps.apple.com/app/harrier-central/id1445513595\" style=\"color:#2b6cb0;font-weight:600;\">iPhone &amp; iPad</a>" +
+                " &nbsp;·&nbsp; " +
+                "<a href=\"https://play.google.com/store/apps/details?id=com.harriercentral.app\" style=\"color:#2b6cb0;font-weight:600;\">Android</a></span><br>" +
                 "You are receiving this because of something you or your kennel did in Harrier Central — " +
                 "asking for a code, a report, or a kennel request. We do not send newsletters, so there is nothing to unsubscribe from." +
                 "</td></tr></table></td></tr></table></body></html>";

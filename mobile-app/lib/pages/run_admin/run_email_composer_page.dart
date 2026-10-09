@@ -65,8 +65,29 @@ class RunEmailComposerPage extends StatelessWidget {
                   maxLength: 300,
                   style: ts_body,
                   decoration: _deco(
-                    'Anything to add? (optional)',
+                    c.savedInstruction.isEmpty
+                        ? 'Anything to add? (optional)'
+                        : '${eventAggregate.kennel.kennelShortName}\'s usual instruction',
                     hint: 'e.g. make it a funny Halloween story · write it in French',
+                  ),
+                ),
+                CheckboxListTile(
+                  value: c.saveInstruction.value,
+                  onChanged: busy
+                      ? null
+                      : (bool? v) => c.saveInstruction.value = v ?? false,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                  checkColor: Colors.black,
+                  activeColor: Colors.white,
+                  side: const BorderSide(color: Colors.white70),
+                  title: Text(
+                    'Save as ${eventAggregate.kennel.kennelShortName}\'s default',
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                  subtitle: const Text(
+                    'Pre-filled for whoever emails the next run. Tick with the box empty to clear it.',
+                    style: TextStyle(color: Colors.white60, fontSize: 12),
                   ),
                 ),
                 Center(

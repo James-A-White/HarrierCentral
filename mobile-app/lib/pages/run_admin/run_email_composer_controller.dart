@@ -28,12 +28,20 @@ class RunEmailComposerController extends GetxController {
   final RxBool isDrafting = true.obs;
   final RxBool isSending = false.obs;
 
+  /// "Save as the kennel's default": the instruction is stored on the kennel
+  /// at send time and pre-filled for whoever sends next (James, 2026-10-09).
+  final RxBool saveInstruction = false.obs;
+
+  /// What the kennel had saved when the page opened; the box starts with it.
+  String get savedInstruction => context.instruction;
+
   /// Set when a draft failed, so the sender can write it by hand instead.
   final RxString draftError = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
+    instruction.text = context.instruction;
     unawaited(draft());
   }
 
@@ -99,6 +107,8 @@ class RunEmailComposerController extends GetxController {
         _eventId,
         subject: subj,
         body: text,
+        instruction: instruction.text.trim(),
+        saveInstruction: saveInstruction.value,
       );
       if (isClosed) return;
       hcPop<int>(result: sent);

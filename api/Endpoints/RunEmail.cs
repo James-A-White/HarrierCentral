@@ -33,7 +33,8 @@ namespace HcWebApi.Endpoints
     /// "make it funny" can never move the start time.
     ///
     /// Request: POST JSON { deviceId, accessToken, eventId, action,
-    ///   instruction?, subject?, body? }. Replies are JSON; the SP's error
+    ///   instruction?, subject?, body?, saveInstruction? }. context returns the
+    ///   kennel's saved instruction so the composer pre-fills it. Replies are JSON; the SP's error
     ///   envelope comes back as 400 { errorType, errorUserMessage, errorId }.
     /// </summary>
     public class RunEmail
@@ -111,9 +112,16 @@ namespace HcWebApi.Endpoints
                     if (ctx.Recipients.Count == 0)
                         return new BadRequestObjectResult(new { errorUserMessage = "Nobody in this kennel has run emails switched on." });
 
+                    // The instruction that shaped this email, saved as the kennel's
+                    // default when the sender ticked the box (James, 2026-10-09): a
+                    // kennel that wants its emails in French always wants them in French.
+                    string instruction = (body.Value<string>("instruction") ?? "").Trim();
+                    if (instruction.Length > MaxInstruction) instruction = instruction[..MaxInstruction];
+                    bool saveInstruction = body.Value<bool?>("saveInstruction") ?? false;
+
                     // Record first, so a crash mid-send still shows "emailed" rather
                     // than inviting a second blast; failures are logged per address.
-                    await RecordSentAsync(cs, ctx, ctx.Recipients.Count);
+                    await RecordSentAsync(cs, ctx, ctx.Recipients.Count, instruction, saveInstruction);
                     string plain = PlainText(ctx, prose);
                     _ = Task.Run(async () =>
                     {
@@ -152,7 +160,7 @@ namespace HcWebApi.Endpoints
             public Guid EventId, KennelId, PublicEventId;
             public int EventNumber, IsCountedRun, EmailSendCount;
             public string EventName = "", Hares = "", Venue = "", Street = "", City = "", PostCode = "", Description = "";
-            public string KennelName = "", KennelShortName = "", KennelSlug = "", KennelLogo = "", SenderName = "", CurrencySymbol = "";
+            public string KennelName = "", KennelShortName = "", KennelSlug = "", KennelLogo = "", SenderName = "", CurrencySymbol = "", Instruction = "";
             public DateTime StartLocal;
             public decimal PriceMembers, PriceNonMembers;
             public DateTimeOffset? EmailLastSentAt;
@@ -197,7 +205,7 @@ namespace HcWebApi.Endpoints
             }
             public object ToSummary() => new
             {
-                eventId = EventId, title = Title, when = When, where = Where, hares = Hares, price = Price, url = Url,
+                eventId = EventId, title = Title, when = When, where = Where, hares = Hares, price = Price, url = Url, instruction = Instruction,
                 recipientCount = RecipientCount, emailSendCount = EmailSendCount, emailLastSentAt = EmailLastSentAt, emailLastSentCount = EmailLastSentCount,
             };
         }
@@ -227,6 +235,7 @@ namespace HcWebApi.Endpoints
                 PriceNonMembers = r["priceNonMembers"] is DBNull ? 0 : Convert.ToDecimal(r["priceNonMembers"]),
                 CurrencySymbol = S("currencySymbol"), KennelId = Guid.Parse(S("kennelId")), KennelName = S("kennelName"),
                 KennelShortName = S("kennelShortName"), KennelSlug = S("kennelSlug"), KennelLogo = S("kennelLogo"), SenderName = S("senderName"),
+                Instruction = HasColumn(r, "instruction") ? S("instruction").Trim() : "",
             };
             if (await r.NextResultAsync() && await r.ReadAsync())
             {
@@ -247,7 +256,7 @@ namespace HcWebApi.Endpoints
             return false;
         }
 
-        private static async Task RecordSentAsync(string cs, RunContext ctx, int count)
+        private static async Task RecordSentAsync(string cs, RunContext ctx, int count, string instruction, bool saveInstruction)
         {
             using var conn = new SqlConnection(cs);
             await conn.OpenAsync();
@@ -255,6 +264,8 @@ namespace HcWebApi.Endpoints
             cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = ctx.EventId;
             cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = DBNull.Value;
             cmd.Parameters.Add("@recipientCount", SqlDbType.Int).Value = count;
+            cmd.Parameters.Add("@instruction", SqlDbType.NVarChar, 500).Value = (object?)(instruction.Length > 0 ? instruction : null) ?? DBNull.Value;
+            cmd.Parameters.Add("@saveInstruction", SqlDbType.SmallInt).Value = saveInstruction ? 1 : 0;
             await cmd.ExecuteNonQueryAsync();
         }
 
