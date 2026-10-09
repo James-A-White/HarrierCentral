@@ -77,6 +77,20 @@ class UsageDataPage extends StatelessWidget {
 // New Events Carousel
 // ---------------------------------------------------------------------------
 
+/// The run's page on hashruns.org in the current form,
+/// `/<kennel slug>/<run number>` — the same rule as the app's RunShareLinks
+/// and the portal's RunAnnouncement. An uncounted run has no number and no
+/// such route, so it keeps the legacy `#/RID` link (James, 2026-10-09).
+String? _runUrl(UdNewEventsModel evt) {
+  if (evt.isCountedRun != 0 && evt.eventNumber > 0 && evt.kennelUniqueShortName.isNotEmpty) {
+    return 'https://www.hashruns.org/${evt.kennelUniqueShortName.toLowerCase()}/${evt.eventNumber}';
+  }
+  if (evt.publicEventId.isNotEmpty) {
+    return 'https://www.hashruns.org/#/RID?publicEventId=${evt.publicEventId}';
+  }
+  return null;
+}
+
 class _NewEventsCarousel extends StatelessWidget {
   const _NewEventsCarousel({required this.controller});
 
@@ -91,12 +105,8 @@ class _NewEventsCarousel extends StatelessWidget {
               builder: (BuildContext context) {
                 return GestureDetector(
                   onTap: () {
-                    if (evt.publicEventId.isNotEmpty) {
-                      openWindow(
-                        'https://www.hashruns.org/#/RID?publicEventId=${evt.publicEventId}&textTheme=light',
-                        '_blank',
-                      );
-                    }
+                    final String? url = _runUrl(evt);
+                    if (url != null) openWindow(url, '_blank');
                   },
                   child: Row(
                     children: <Widget>[
