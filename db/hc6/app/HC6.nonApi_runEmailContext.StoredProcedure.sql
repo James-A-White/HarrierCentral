@@ -13,22 +13,27 @@ AS
 --   authenticated the caller and checked they may edit runs for the
 --   kennel — so the rule cannot drift between the two clients.
 --
---   The send list follows the app's email-alert dialog EXACTLY
---   (James, 2026-10-09; EnumEmailAlertState 0 = use kennel setting,
---   1 = on, 2 = off):
---     run setting 1            -> send, whatever the kennel says
---     run setting 2            -> never
---     run setting 0 or no row  -> kennel setting 1 sends; 0 or 2 does not
---   Removed accounts and accounts without an email never. A member who has
---   BLOCKED all email (HC.Hasher.EmailBlocked) never — it is their
---   unsubscribe and beats every preference and every admin override. A
---   BOUNCING address (EmailStatus 3) is not sent to either. The sender IS
---   included when they qualify.
+--   Who gets it (James, 2026-10-09, evening — replaces the morning's
+--   "kennel setting must be ON" rule): an OPT-IN and no OPT-OUT.
+--     Opt-ins:  a current MEMBER of the kennel (MembershipExpirationDate in
+--               the future), a FOLLOWER (HasherKennelMap.Following = 1), an
+--               RSVP of Yes/Maybe to THIS run (visitors with no kennel row
+--               included), or email explicitly switched ON for the run or
+--               the kennel. "Never chose a setting" (0) is NOT a no.
+--     Opt-outs: run emails OFF (EventEmailAlertPreference 2) beats
+--               everything; kennel emails OFF (KennelEmailAlertPreference 2)
+--               beats every opt-in except run ON (1). Blocked all email
+--               (HC.Hasher.EmailBlocked) is the member's unsubscribe and
+--               beats every preference and every admin override. A bouncing
+--               address (EmailStatus 3) and no/invalid address are never
+--               sent to. Removed accounts never. The sender IS included when
+--               they qualify.
 --   Rows carry a reasonCode so the clients label and badge without their own
---   logic: 1 on for this run, 2 on for the kennel, 3 run emails off,
---   4 kennel emails off, 5 never switched on, 6 no email address,
---   7 blocked all emails, 8 email bouncing. canMove = 1 when an admin may
---   override for one send (never for 6, 7, 8).
+--   logic — gets it: 1 on for this run, 2 on for the kennel, 9 member,
+--   10 follower, 11 RSVP'd; does not: 3 run emails off, 4 kennel emails off,
+--   5 not a member, follower or RSVP, 6 no email address, 7 blocked all
+--   emails, 8 email bouncing. canMove = 1 when an admin may override for one
+--   send (never for 6, 7, 8).
 -- Parameters: @eventId, @userId (the sender), @includeRecipients:
 --   0 = context only; 1 = + recipients; 2 = + recipients AND the kennel
 --   members who will NOT get it, with the reason (the audience page).
@@ -47,8 +52,10 @@ SET NOCOUNT ON;
 
 DECLARE @kennelId UNIQUEIDENTIFIER = (SELECT e.KennelId FROM HC.Event e WHERE e.id = @eventId);
 
--- Every live member once, classified. @members is the audience page; @recipients
--- is the subset the email goes to.
+-- Everyone with a stake in the run once, classified: every live row for the
+-- kennel (members, followers, lapsed) plus anyone with an RSVP row for this
+-- run, kennel row or not. @members is the audience page; @recipients is the
+-- subset the email goes to.
 DECLARE @members TABLE (
     hasherId UNIQUEIDENTIFIER PRIMARY KEY, email NVARCHAR(250), hashName NVARCHAR(500), mortalName NVARCHAR(500),
     photo NVARCHAR(1000), emailStatus SMALLINT, reasonCode SMALLINT, willGet SMALLINT, canMove SMALLINT);
@@ -59,23 +66,29 @@ SELECT h.id, h.Email,
        COALESCE(NULLIF(hkm.KennelUserPhoto, ''), h.Photo),
        h.EmailStatus,
        x.reasonCode,
-       CASE WHEN x.reasonCode IN (1, 2) THEN 1 ELSE 0 END,
+       CASE WHEN x.reasonCode IN (1, 2, 9, 10, 11) THEN 1 ELSE 0 END,
        CASE WHEN x.reasonCode IN (6, 7, 8) THEN 0 ELSE 1 END
-FROM HC.HasherKennelMap hkm
-JOIN HC.Hasher h ON h.id = hkm.UserId
-LEFT JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
+FROM (
+    SELECT hkm.UserId FROM HC.HasherKennelMap hkm WHERE hkm.KennelId = @kennelId AND hkm.removed = 0
+    UNION
+    SELECT hem.UserId FROM HC.HasherEventMap hem WHERE hem.EventId = @eventId
+) p
+JOIN HC.Hasher h ON h.id = p.UserId
+LEFT JOIN HC.HasherKennelMap hkm ON hkm.KennelId = @kennelId AND hkm.UserId = p.UserId AND hkm.removed = 0
+LEFT JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = p.UserId
 CROSS APPLY (SELECT CASE
         WHEN h.EmailBlocked = 1                                          THEN 7
         WHEN h.Email NOT LIKE '%_@_%.__%'                                THEN 6
         WHEN h.EmailStatus = 3                                           THEN 8
-        WHEN ISNULL(hem.EventEmailAlertPreference, 0) = 1                THEN 1
-        WHEN ISNULL(hem.EventEmailAlertPreference, 0) = 2                THEN 3
+        WHEN ISNULL(hem.EventEmailAlertPreference, 0) = 2                THEN 3   -- run OFF beats everything
+        WHEN ISNULL(hem.EventEmailAlertPreference, 0) = 1                THEN 1   -- run ON beats kennel OFF
+        WHEN ISNULL(hkm.KennelEmailAlertPreference, 0) = 2               THEN 4   -- kennel OFF beats the opt-ins
         WHEN hkm.KennelEmailAlertPreference = 1                          THEN 2
-        WHEN ISNULL(hkm.KennelEmailAlertPreference, 0) = 2               THEN 4
+        WHEN hkm.MembershipExpirationDate > SYSDATETIMEOFFSET()          THEN 9   -- member
+        WHEN hkm.Following = 1                                           THEN 10  -- follower
+        WHEN hem.RsvpState IN (2, 3)                                     THEN 11  -- RSVP'd Yes/Maybe to this run
         ELSE 5 END AS reasonCode) x
-WHERE hkm.KennelId = @kennelId
-  AND hkm.removed = 0
-  AND ISNULL(h.Removed, 0) = 0
+WHERE ISNULL(h.Removed, 0) = 0
   AND h.deleted = 0;
 
 DECLARE @recipients TABLE (hasherId UNIQUEIDENTIFIER PRIMARY KEY, email NVARCHAR(250), displayName NVARCHAR(500));

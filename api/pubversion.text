@@ -1,3 +1,8 @@
+1.0.61+94
+    • Run email audience: member OR follower OR RSVP'd (Yes/Maybe) is the opt-in; run/kennel
+      emails OFF and the block are the opt-outs — "never chose" no longer means no. Visitors who
+      RSVP'd without a kennel row are included. New reasons: Member / Follower / RSVP'd to this run.
+
 1.0.61+93
     • Run email: the run's image sits at the very top, above the message.
 

@@ -240,8 +240,9 @@ namespace HcWebApi.Endpoints
             public object ToJson() => new { hasherId = HasherId, name = Name, mortalName = MortalName, photo = Photo, emailStatus = EmailStatus, reasonCode = ReasonCode, canMove = CanMove, reason = ReasonText(ReasonCode) };
             public static string ReasonText(int code) => code switch
             {
-                1 => "On for this run", 2 => "On for the kennel", 3 => "Run emails off", 4 => "Kennel emails off",
-                5 => "Never switched on", 6 => "No email address", 7 => "Blocked all emails", 8 => "Email bouncing, ask for a new address", _ => "",
+                1 => "On for this run", 2 => "On for the kennel", 9 => "Member", 10 => "Follower", 11 => "RSVP'd to this run",
+                3 => "Run emails off", 4 => "Kennel emails off", 5 => "Not a member, follower or RSVP",
+                6 => "No email address", 7 => "Blocked all emails", 8 => "Email bouncing, ask for a new address", _ => "",
             };
         }
 
