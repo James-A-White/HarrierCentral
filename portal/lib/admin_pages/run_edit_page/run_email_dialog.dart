@@ -27,8 +27,10 @@ class RunEmailDialogController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxBool isDrafting = false.obs;
   final RxBool isSending = false.obs;
+  final RxBool isPreviewing = false.obs;
   final RxBool saveInstruction = false.obs;
   final RxString error = ''.obs;
+  final RxString notice = ''.obs;
 
   @override
   void onInit() {
@@ -91,6 +93,51 @@ class RunEmailDialogController extends GetxController {
     return '⚠ Already emailed ${c.emailSendCount} '
         '${c.emailSendCount == 1 ? 'time' : 'times'} — last to '
         '${c.emailLastSentCount ?? '?'} ${c.emailLastSentCount == 1 ? 'member' : 'members'}$when.';
+  }
+
+  /// The finished email — facts block, buttons, footer — to the sender's own
+  /// inbox only. Nothing is recorded (James, 2026-10-09).
+  Future<void> preview() async {
+    final String subj = subject.text.trim();
+    final String text = body.text.trim();
+    if (subj.isEmpty || text.isEmpty) {
+      error.value = 'The email needs a subject and some text.';
+      return;
+    }
+    isPreviewing.value = true;
+    error.value = '';
+    notice.value = '';
+    try {
+      await const RunEmailService().send(
+        publicEventId,
+        subject: subj,
+        body: text,
+        previewToSelf: true,
+      );
+      if (isClosed) return;
+      notice.value = 'Preview sent to your inbox.';
+    } on RunEmailException catch (e) {
+      if (isClosed) return;
+      error.value = e.message;
+    } finally {
+      if (!isClosed) isPreviewing.value = false;
+    }
+  }
+
+  /// "Who gets it": the two pills, in a dialog over this one.
+  Future<void> openAudience() async {
+    await Get.dialog<void>(
+      RunEmailAudienceDialog(
+        publicEventId: publicEventId,
+        kennelShortName: kennelShortName,
+      ),
+    );
+    await deleteAfterExit<RunEmailAudienceController>(
+      Get.find<RunEmailAudienceController>(
+        tag: RunEmailAudienceDialog.tagFor(publicEventId),
+      ),
+      tag: RunEmailAudienceDialog.tagFor(publicEventId),
+    );
   }
 
   Future<void> send() async {
@@ -201,7 +248,7 @@ class RunEmailDialog extends StatelessWidget {
       );
     }
     final RunEmailContext? ctx = c.context.value;
-    final bool busy = c.isDrafting.value || c.isSending.value;
+    final bool busy = c.isDrafting.value || c.isSending.value || c.isPreviewing.value;
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -288,8 +335,182 @@ class RunEmailDialog extends StatelessWidget {
             'buttons are added under your message automatically, so they are always right.',
             style: TextStyle(color: Colors.black54, fontSize: 12),
           ),
+          const SizedBox(height: 12),
+          // Try it on yourself, and see who it reaches — before it goes.
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              HcButton.secondary(
+                icon: Icons.mark_email_read_outlined,
+                label: c.isPreviewing.value ? 'Sending preview…' : 'Preview to me',
+                onPressed: busy ? null : c.preview,
+              ),
+              HcButton.secondary(
+                icon: Icons.people_outline,
+                label: 'Who gets it',
+                onPressed: c.isSending.value ? null : c.openAudience,
+              ),
+            ],
+          ),
+          if (c.notice.value.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                c.notice.value,
+                style: TextStyle(color: Colors.green.shade800),
+                textAlign: TextAlign.center,
+              ),
+            ),
         ],
       ),
+    );
+  }
+}
+
+/// "Who gets it" (James, 2026-10-09): two pills — the members the run email
+/// will reach, and the kennel members it will not, each with the reason.
+/// Names are the ones the check-in list shows; both lists come from the
+/// same procedure that builds the send list.
+class RunEmailAudienceController extends GetxController {
+  RunEmailAudienceController({required this.publicEventId});
+  final String publicEventId;
+
+  final Rx<RunEmailAudience?> audience = Rx<RunEmailAudience?>(null);
+  final RxBool isLoading = true.obs;
+  final RxString error = ''.obs;
+  final RxInt pill = 0.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    unawaited(load());
+  }
+
+  Future<void> load() async {
+    isLoading.value = true;
+    error.value = '';
+    try {
+      final RunEmailAudience a =
+          await const RunEmailService().audience(publicEventId);
+      if (isClosed) return;
+      audience.value = a;
+    } on RunEmailException catch (e) {
+      if (isClosed) return;
+      error.value = e.message;
+    } finally {
+      if (!isClosed) isLoading.value = false;
+    }
+  }
+}
+
+class RunEmailAudienceDialog extends StatelessWidget {
+  const RunEmailAudienceDialog({
+    super.key,
+    required this.publicEventId,
+    required this.kennelShortName,
+  });
+
+  final String publicEventId;
+  final String kennelShortName;
+
+  static String tagFor(String publicEventId) => 'runemail-audience-$publicEventId';
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<RunEmailAudienceController>(
+      init: RunEmailAudienceController(publicEventId: publicEventId),
+      tag: tagFor(publicEventId),
+      builder: (RunEmailAudienceController c) => AlertDialog(
+        title: const Text('Who gets the email'),
+        content: SizedBox(
+          width: 520,
+          height: 520,
+          child: Obx(() => _body(c)),
+        ),
+        actions: [
+          HcButton.primary(
+            label: 'Close',
+            onPressed: () => Get.back<void>(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _body(RunEmailAudienceController c) {
+    if (c.isLoading.value) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final RunEmailAudience? a = c.audience.value;
+    if (a == null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(c.error.value, style: ts_alertDialogBody, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            HcButton.secondary(label: 'Try again', onPressed: c.load),
+          ],
+        ),
+      );
+    }
+    final bool showingRecipients = c.pill.value == 0;
+    final List<RunEmailAudienceEntry> rows =
+        showingRecipients ? a.recipients : a.nonRecipients;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(
+          child: SegmentedButton<int>(
+            segments: [
+              ButtonSegment<int>(
+                value: 0,
+                icon: const Icon(Icons.mark_email_read_outlined),
+                label: Text('Will get it (${a.recipients.length})'),
+              ),
+              ButtonSegment<int>(
+                value: 1,
+                icon: const Icon(Icons.unsubscribe_outlined),
+                label: Text('Will not (${a.nonRecipients.length})'),
+              ),
+            ],
+            selected: {c.pill.value},
+            onSelectionChanged: (Set<int> s) => c.pill.value = s.first,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          showingRecipients
+              ? 'Members with run emails on — for this run, or for $kennelShortName as a whole.'
+              : 'Members of $kennelShortName who will not get this email, and why. They can switch run emails on from the envelope on the kennel or the run in the app.',
+          style: const TextStyle(color: Colors.black54, fontSize: 12),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: rows.isEmpty
+              ? Center(
+                  child: Text(
+                    showingRecipients ? 'Nobody yet.' : 'Everyone gets it.',
+                    style: ts_alertDialogBody,
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: rows.length,
+                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  itemBuilder: (BuildContext context, int i) {
+                    final RunEmailAudienceEntry e = rows[i];
+                    return ListTile(
+                      dense: true,
+                      title: Text(e.name),
+                      subtitle: e.reason.isEmpty ? null : Text(e.reason),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }
