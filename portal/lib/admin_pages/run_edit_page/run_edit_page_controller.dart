@@ -1120,6 +1120,16 @@ class RunEditPageController extends TabUiController
     return ok == true;
   }
 
+  /// Drawn by the tabbed layout under Save and Undo, styled as Save.
+  @override
+  Widget? buildExtraSaveBarButton() => isAddMode
+      ? null
+      : HcButton.primary(
+          label: 'Save and send',
+          icon: Icons.send_rounded,
+          onPressed: saveAndSend,
+        );
+
   /// "Save and send" (E9.F6.S6, parity with the app, 2026-10-09): an unsaved
   /// run is saved first, then two tick boxes — post the notice to WhatsApp
   /// (wa.me, pre-filled) and email the members who have run emails on, with

@@ -3,6 +3,11 @@
 import 'package:hcportal/imports.dart';
 
 abstract class TabUiController extends GetxController {
+  /// An extra action the page wants drawn under Save and Undo, in the same
+  /// bar and the same style — the run editor's "Save and send" (James,
+  /// 2026-10-09). Null (the default) draws nothing.
+  Widget? buildExtraSaveBarButton() => null;
+
   late TabController tabController;
   bool _tabControllerInitialized = false;
   final RxInt currentIndex = 0.obs;

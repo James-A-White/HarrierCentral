@@ -114,10 +114,7 @@ class _RunFormScaffold extends StatelessWidget {
     return AppBar(
       leading: _BackButton(),
       title: _RunTitle(controller: controller),
-      actions: [
-        _SaveAndSendButton(controller: controller),
-        _AutoSaveControls(controller: controller),
-      ],
+      actions: [_AutoSaveControls(controller: controller)],
     );
   }
 
@@ -1357,27 +1354,6 @@ class RunPaymentTabContent extends StatelessWidget {
       controller: controller,
       uiControl: uiControl,
       onChanged: (_) => controller.checkIfFormIsDirty(),
-    );
-  }
-}
-
-/// "Save and send" (E9.F6.S6, the app's button, 2026-10-09): saves the run
-/// if it is dirty, then offers WhatsApp and/or email. Hidden while a new run
-/// has not been created yet — there is nothing to send.
-class _SaveAndSendButton extends StatelessWidget {
-  const _SaveAndSendButton({required this.controller});
-  final RunEditPageController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    if (controller.isAddMode) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      child: HcButton.primary(
-        icon: Icons.send_rounded,
-        label: 'Save and send',
-        onPressed: controller.saveAndSend,
-      ),
     );
   }
 }
