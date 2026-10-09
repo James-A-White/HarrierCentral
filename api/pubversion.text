@@ -1,3 +1,12 @@
+1.0.61+90
+    • Run emails: per-send admin overrides (move a member in or out for ONE send, logged, never
+      written to preferences; blocked, bouncing and address-less members cannot be moved in;
+      moved-in members get "<admin> has requested that you receive this email" and a preferences link).
+    • Email status tracking: EmailDeliveryEvents receives ACS delivery reports (Event Grid) and
+      sets HC.Hasher.EmailStatus — OK / Suspect (3 soft bounces) / Bounced — without re-syncing.
+    • Email preferences page: stop one kennel's run emails or block all email from Harrier Central.
+    • Audience rows carry photo, hash and mortal names, reason and status for the roster-style page.
+
 1.0.61+89
     • Run emails: Preview (the finished email to the sender only, not recorded) and an audience
       action — who will get it, and which kennel members will not and why — names as the

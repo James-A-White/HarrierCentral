@@ -70,6 +70,10 @@ namespace HcWebApi.Endpoints
             return $"{ApiBase}/api/EmailUnsubscribe?h={hasherId:D}&k={kennelId:D}&e={exp}&s={sig}";
         }
 
+        /// <summary>The email-preferences page: the same signed token, shown as choices
+        /// rather than acted on at once (do=prefs).</summary>
+        public static string PreferencesUrl(Guid hasherId, Guid kennelId) => UnsubscribeUrl(hasherId, kennelId) + "&do=prefs";
+
         /// <summary>True when the signature matches and the token has not expired.</summary>
         public static bool VerifyUnsubscribe(string? h, string? k, string? e, string? s)
         {

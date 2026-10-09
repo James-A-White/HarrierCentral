@@ -38,7 +38,9 @@ class RunEmailComposerPage extends StatelessWidget {
   Widget _body(BuildContext context, RunEmailComposerController c) {
     final bool busy =
         c.isDrafting.value || c.isSending.value || c.isPreviewing.value;
-    final int n = emailContext.recipientCount;
+    // Read inside the Obx so a move on the audience page updates the button.
+    final int n =
+        emailContext.recipientCount - c.excludeIds.length + c.includeIds.length;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       child: Column(

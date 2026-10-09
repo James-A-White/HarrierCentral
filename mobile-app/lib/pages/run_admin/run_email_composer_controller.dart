@@ -37,6 +37,16 @@ class RunEmailComposerController extends GetxController {
   /// What the kennel had saved when the page opened; the box starts with it.
   String get savedInstruction => context.instruction;
 
+  /// Per-send overrides (James, 2026-10-09): members moved in or out of this
+  /// send only. Never written to anybody's preferences; gone when the page
+  /// closes. The server re-checks them (a blocked member is refused).
+  final RxSet<HcId> includeIds = <HcId>{}.obs;
+  final RxSet<HcId> excludeIds = <HcId>{}.obs;
+
+  /// Who the email will reach with the overrides applied.
+  int get effectiveCount =>
+      context.recipientCount - excludeIds.length + includeIds.length;
+
   /// Set when a draft failed, so the sender can write it by hand instead.
   final RxString draftError = ''.obs;
 
@@ -128,13 +138,10 @@ class RunEmailComposerController extends GetxController {
     }
   }
 
-  /// Opens "Who gets it".
+  /// Opens "Who gets it"; it reads and edits this page's override sets.
   Future<void> openAudience() async {
     await Get.to<void>(
-      () => RunEmailAudiencePage(
-        eventAggregate: eventAggregate,
-        recipientCount: context.recipientCount,
-      ),
+      () => RunEmailAudiencePage(eventAggregate: eventAggregate, composer: this),
     );
   }
 
@@ -148,13 +155,17 @@ class RunEmailComposerController extends GetxController {
       hcSnack('The email needs a subject and some text.', error: true);
       return;
     }
-    final int n = context.recipientCount;
+    final int n = effectiveCount;
+    final String overrides = includeIds.isEmpty && excludeIds.isEmpty
+        ? ''
+        : '\n\nOverrides for this send only: ${includeIds.length} moved in, '
+              '${excludeIds.length} moved out.';
     final bool? go = await Utilities.showAlert(
       'Send to $n ${n == 1 ? 'member' : 'members'}?',
       'The email goes to everyone in ${eventAggregate.kennel.kennelShortName} '
           'who has run emails switched on. The run\'s date, venue, hares, '
           'price and the I\'m-in / can\'t-make-it buttons are added under '
-          'your text.\n\n$history',
+          'your text.\n\n$history$overrides',
       'Send',
       showCancelButton: true,
     );
@@ -168,6 +179,8 @@ class RunEmailComposerController extends GetxController {
         body: text,
         instruction: instruction.text.trim(),
         saveInstruction: saveInstruction.value,
+        includeHasherIds: includeIds,
+        excludeHasherIds: excludeIds,
       );
       if (isClosed) return;
       hcPop<int>(result: sent);

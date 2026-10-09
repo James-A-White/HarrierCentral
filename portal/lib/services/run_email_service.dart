@@ -41,12 +41,48 @@ class RunEmailContext {
       );
 }
 
-/// One name on "Who gets it" — as the check-in list shows it — and, for
-/// those who will not get the email, why not.
+/// One kennel member on "Who gets it", with why they are in that list and
+/// whether an admin may move them for one send. reasonCode: 1 on for this
+/// run, 2 on for the kennel, 3 run emails off, 4 kennel emails off, 5 never
+/// switched on, 6 no email address, 7 blocked all emails, 8 email bouncing.
+/// emailStatus: 0 Unknown, 1 OK, 2 Suspect, 3 Bounced.
 class RunEmailAudienceEntry {
-  const RunEmailAudienceEntry({required this.name, this.reason = ''});
+  const RunEmailAudienceEntry({
+    required this.hasherId,
+    required this.name,
+    this.mortalName = '',
+    this.photo = '',
+    this.reason = '',
+    this.reasonCode = 0,
+    this.emailStatus = 0,
+    this.canMove = false,
+  });
+
+  final String hasherId;
   final String name;
+  final String mortalName;
+  final String photo;
   final String reason;
+  final int reasonCode;
+  final int emailStatus;
+  final bool canMove;
+
+  bool get isBlocked => reasonCode == 7;
+  bool get isBouncing => reasonCode == 8 || emailStatus == 3;
+  bool get isSuspect => emailStatus == 2;
+  String get searchText => '$name $mortalName'.toLowerCase();
+
+  factory RunEmailAudienceEntry.fromJson(Map<String, dynamic> e) =>
+      RunEmailAudienceEntry(
+        hasherId: normalizeUuid((e['hasherId'] ?? '') as String),
+        name: (e['name'] ?? '') as String,
+        mortalName: (e['mortalName'] ?? '') as String,
+        photo: (e['photo'] ?? '') as String,
+        reason: (e['reason'] ?? '') as String,
+        reasonCode: (e['reasonCode'] as num?)?.toInt() ?? 0,
+        emailStatus: (e['emailStatus'] as num?)?.toInt() ?? 0,
+        canMove: e['canMove'] == true,
+      );
 }
 
 class RunEmailAudience {
@@ -94,10 +130,8 @@ class RunEmailService {
     final Map<String, dynamic> j = await _call(publicEventId, 'audience');
     List<RunEmailAudienceEntry> parse(dynamic list) =>
         ((list as List<dynamic>?) ?? const <dynamic>[])
-            .map((dynamic e) => RunEmailAudienceEntry(
-                  name: ((e as Map<String, dynamic>)['name'] ?? '') as String,
-                  reason: (e['reason'] ?? '') as String,
-                ))
+            .map((dynamic e) =>
+                RunEmailAudienceEntry.fromJson(e as Map<String, dynamic>))
             .toList();
     return RunEmailAudience(
       recipients: parse(j['recipients']),
@@ -114,6 +148,8 @@ class RunEmailService {
     String instruction = '',
     bool saveInstruction = false,
     bool previewToSelf = false,
+    Iterable<String> includeHasherIds = const <String>[],
+    Iterable<String> excludeHasherIds = const <String>[],
   }) async {
     final Map<String, dynamic> j = await _call(publicEventId, 'send', {
       'subject': subject,
@@ -121,6 +157,8 @@ class RunEmailService {
       'instruction': instruction,
       'saveInstruction': saveInstruction,
       'previewToSelf': previewToSelf,
+      'includeHasherIds': includeHasherIds.toList(),
+      'excludeHasherIds': excludeHasherIds.toList(),
     });
     return (j['sent'] as num?)?.toInt() ?? 0;
   }

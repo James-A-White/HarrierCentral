@@ -52,12 +52,60 @@ class RunEmailDraft {
   final String body;
 }
 
-/// One name on the "Who gets it" page — as the check-in list shows it —
-/// and, for those who will not get the email, why not.
+/// One kennel member on "Who gets it", as the check-in roster shows them,
+/// with why they are in that list and whether an admin may move them for
+/// one send. reasonCode: 1 on for this run, 2 on for the kennel, 3 run
+/// emails off, 4 kennel emails off, 5 never switched on, 6 no email
+/// address, 7 blocked all emails, 8 email bouncing. emailStatus: 0 Unknown,
+/// 1 OK, 2 Suspect, 3 Bounced.
 class RunEmailAudienceEntry {
-  const RunEmailAudienceEntry({required this.name, this.reason = ''});
+  const RunEmailAudienceEntry({
+    required this.hasherId,
+    required this.name,
+    this.mortalName = '',
+    this.photo = '',
+    this.reason = '',
+    this.reasonCode = 0,
+    this.emailStatus = 0,
+    this.canMove = false,
+  });
+
+  final HcId hasherId;
   final String name;
+  final String mortalName;
+  final String photo;
   final String reason;
+  final int reasonCode;
+  final int emailStatus;
+  final bool canMove;
+
+  bool get isBlocked => reasonCode == 7;
+  bool get isBouncing => reasonCode == 8 || emailStatus == 3;
+  bool get isSuspect => emailStatus == 2;
+
+  /// The roster's lower-cased haystack: hash name and mortal name.
+  String get searchText => '$name $mortalName'.toLowerCase();
+
+  factory RunEmailAudienceEntry.fromJson(Map<String, dynamic> e) =>
+      RunEmailAudienceEntry(
+        hasherId: HcId((e['hasherId'] ?? '') as String),
+        name: (e['name'] ?? '') as String,
+        mortalName: (e['mortalName'] ?? '') as String,
+        photo: (e['photo'] ?? '') as String,
+        reason: (e['reason'] ?? '') as String,
+        reasonCode: (e['reasonCode'] as num?)?.toInt() ?? 0,
+        emailStatus: (e['emailStatus'] as num?)?.toInt() ?? 0,
+        canMove: e['canMove'] == true,
+      );
+}
+
+/// The signed-in hasher's own email delivery status (hcapp_getMyEmailStatus).
+class MyEmailStatus {
+  const MyEmailStatus({required this.email, required this.status, required this.blocked});
+  final String email;
+  final int status;
+  final bool blocked;
+  bool get isBounced => status == 3;
 }
 
 class RunEmailAudience {
@@ -103,10 +151,8 @@ class RunEmailService {
     List<RunEmailAudienceEntry> parse(dynamic list) =>
         ((list as List<dynamic>?) ?? const <dynamic>[])
             .map(
-              (dynamic e) => RunEmailAudienceEntry(
-                name: ((e as Map<String, dynamic>)['name'] ?? '') as String,
-                reason: (e['reason'] ?? '') as String,
-              ),
+              (dynamic e) =>
+                  RunEmailAudienceEntry.fromJson(e as Map<String, dynamic>),
             )
             .toList();
     return RunEmailAudience(
@@ -124,6 +170,8 @@ class RunEmailService {
     String instruction = '',
     bool saveInstruction = false,
     bool previewToSelf = false,
+    Iterable<HcId> includeHasherIds = const <HcId>[],
+    Iterable<HcId> excludeHasherIds = const <HcId>[],
   }) async {
     final Map<String, dynamic> j = await _call(eventId, 'send', <String, Object>{
       'subject': subject,
@@ -131,8 +179,52 @@ class RunEmailService {
       'instruction': instruction,
       'saveInstruction': saveInstruction,
       'previewToSelf': previewToSelf,
+      'includeHasherIds': includeHasherIds.toList(),
+      'excludeHasherIds': excludeHasherIds.toList(),
     });
     return (j['sent'] as num?)?.toInt() ?? 0;
+  }
+
+  /// The signed-in hasher's own address status, for the "update your email"
+  /// prompt. Null when it could not be fetched — never a reason to nag.
+  static Future<MyEmailStatus?> myEmailStatus() async {
+    final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
+    final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
+    final String? userId = getStringPref(StringPrefsEnum.userId);
+    if ((userId ?? '').isEmpty || (deviceId ?? '').isEmpty || (deviceSecret ?? '').isEmpty) {
+      return null;
+    }
+    try {
+      final http.Response r = await http
+          .post(
+            Uri.parse(BASE_AF_API_URL),
+            headers: <String, String>{'content-type': 'application/json'},
+            body: jsonEncode(<String, String>{
+              'queryType': 'getMyEmailStatus',
+              'deviceId': deviceId!,
+              'accessToken': Utilities.generateToken(
+                userId!,
+                'hcapp_getMyEmailStatus',
+                paramString: deviceSecret!,
+              ),
+            }),
+          )
+          .timeout(const Duration(seconds: 20));
+      if (r.statusCode != 200) return null;
+      final dynamic j = jsonDecode(r.body);
+      final Map<String, dynamic>? row =
+          (j is List && j.isNotEmpty && j[0] is List && (j[0] as List).isNotEmpty)
+          ? (j[0] as List)[0] as Map<String, dynamic>
+          : null;
+      if (row == null) return null;
+      return MyEmailStatus(
+        email: (row['email'] ?? '') as String,
+        status: (row['emailStatus'] as num?)?.toInt() ?? 0,
+        blocked: (row['emailBlocked'] as num?)?.toInt() == 1,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<Map<String, dynamic>> _call(
