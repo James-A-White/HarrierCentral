@@ -534,7 +534,7 @@ namespace HcWebApi.Endpoints
                 .Select(p => $"<p style=\"margin:0 0 14px\">{H(p).Replace("\n", "<br>")}</p>"));
 
         /// <summary>
-        /// The whole email: the sender's prose, then the facts block that code
+        /// The whole email: the run image, the sender's prose, then the facts block that code
         /// built, then the kennel line, inside the shared layout — plus this
         /// recipient's unsubscribe line when one is given.
         /// </summary>
@@ -551,11 +551,12 @@ namespace HcWebApi.Endpoints
             if (requestedPrefsUrl != null)
                 sb.Append($"<p style=\"margin:0 0 4px;font-weight:700\">{H(ctx.SenderName)} has requested that you receive this email.</p>" +
                           $"<p style=\"margin:0 0 18px;font-size:13px\"><a href=\"{requestedPrefsUrl}\" style=\"color:#2b6cb0\">Your email preferences</a> — stop emails from {H(ctx.KennelShortName)}, or block all email from Harrier Central.</p>");
+            // The run's own image, whole, at its own shape, at the very top of
+            // the email — above the prose (James, 2026-10-09).
+            if (ctx.EventImage.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                sb.Append($"<img src=\"{H(ctx.EventImage)}\" alt=\"\" style=\"display:block;width:100%;height:auto;border-radius:8px;margin:0 0 18px\">");
             sb.Append(Paragraphs(prose));
             sb.Append($"<p style=\"margin:0 0 18px\">On on,<br>{H(ctx.SenderName)}<br><span style=\"color:#6b7785\">{H(ctx.KennelName)}</span></p>");
-            // The run's own image, whole, at its own shape (James, 2026-10-09).
-            if (ctx.EventImage.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                sb.Append($"<img src=\"{H(ctx.EventImage)}\" alt=\"\" style=\"display:block;width:100%;height:auto;border-radius:8px;margin:0 0 14px\">");
             sb.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;background:#f4f6f8;border-radius:8px;padding:14px 16px;font-size:15px\"><tr><td>");
             sb.Append($"<div style=\"font-weight:700;font-size:17px;margin-bottom:6px\">{H(ctx.Title)}</div>");
             sb.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\">");

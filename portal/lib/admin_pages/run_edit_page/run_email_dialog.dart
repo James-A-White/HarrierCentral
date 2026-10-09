@@ -33,6 +33,17 @@ class RunEmailDialogController extends GetxController {
   final RxBool isSending = false.obs;
   final RxBool isPreviewing = false.obs;
   final RxBool saveInstruction = false.obs;
+
+  /// Subject AND message both have text. Preview, Who gets it and Send are
+  /// disabled until they do (James, 2026-10-09) — same rule as the app.
+  /// Listeners on the two fields keep it current whether the text was
+  /// typed, taken from the run description or written by the model.
+  final RxBool hasContent = false.obs;
+
+  void _refreshHasContent() {
+    hasContent.value =
+        subject.text.trim().isNotEmpty && body.text.trim().isNotEmpty;
+  }
   final RxString error = ''.obs;
   final RxString notice = ''.obs;
 
@@ -48,6 +59,8 @@ class RunEmailDialogController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    subject.addListener(_refreshHasContent);
+    body.addListener(_refreshHasContent);
     unawaited(_load());
   }
 
@@ -268,6 +281,7 @@ class RunEmailDialog extends StatelessWidget {
             // Read the override sets here so a move repaints the button.
             final int n = (c.context.value?.recipientCount ?? 0) - c.excludeIds.length + c.includeIds.length;
             final bool busy = c.isLoading.value || c.isDrafting.value || c.isSending.value;
+            final bool empty = !c.hasContent.value;
             return HcButton.primary(
               icon: Icons.send_rounded,
               label: c.isSending.value
@@ -275,7 +289,7 @@ class RunEmailDialog extends StatelessWidget {
                   : n == 0
                       ? 'Nobody has run emails on'
                       : 'Send to $n ${n == 1 ? 'member' : 'members'}',
-              onPressed: busy || n == 0 ? null : c.send,
+              onPressed: busy || empty || n == 0 ? null : c.send,
             );
           }),
         ],
@@ -299,6 +313,8 @@ class RunEmailDialog extends StatelessWidget {
     }
     final RunEmailContext? ctx = c.context.value;
     final bool busy = c.isDrafting.value || c.isSending.value || c.isPreviewing.value;
+    // Nothing to preview, target or send until both fields have text.
+    final bool empty = !c.hasContent.value;
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -327,9 +343,17 @@ class RunEmailDialog extends StatelessWidget {
               ),
             ),
           if (ctx != null) ...[
-            Text(ctx.title, style: ts_alertDialogBodyMedium),
-            Text('${ctx.when}\n${ctx.where}', style: ts_alertDialogBody),
-            const SizedBox(height: 6),
+            // The run, then when and where, each with room to breathe: the
+            // dialog styles carry height 0.9, which scrunched the three lines
+            // into one block (James, 2026-10-09).
+            Text(
+              ctx.title,
+              style: ts_alertDialogBody.copyWith(fontWeight: FontWeight.bold, height: 1.3),
+            ),
+            const SizedBox(height: 4),
+            Text(ctx.when, style: ts_alertDialogBody.copyWith(height: 1.3)),
+            Text(ctx.where, style: ts_alertDialogBody.copyWith(height: 1.3)),
+            const SizedBox(height: 8),
             Text(
               c.history,
               style: ts_alertDialogBody.copyWith(
@@ -451,12 +475,12 @@ class RunEmailDialog extends StatelessWidget {
               HcButton.secondary(
                 icon: Icons.mark_email_read_outlined,
                 label: c.isPreviewing.value ? 'Sending preview…' : 'Preview to me',
-                onPressed: busy ? null : c.preview,
+                onPressed: busy || empty ? null : c.preview,
               ),
               HcButton.secondary(
                 icon: Icons.people_outline,
                 label: 'Who gets it',
-                onPressed: c.isSending.value ? null : c.openAudience,
+                onPressed: c.isSending.value || empty ? null : c.openAudience,
               ),
             ],
           ),

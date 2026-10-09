@@ -874,8 +874,7 @@ class RunEditPageController extends TabUiController
 
       if (changes.isEmpty) {
         if (showDialog) {
-          await IveCoreUtilities.showAlert(
-            navigatorKey.currentContext!,
+          await Utilities.showAlert(
             'No changes',
             'No changes were made so nothing was saved.',
             'OK',
@@ -947,8 +946,7 @@ class RunEditPageController extends TabUiController
       isFormDirty.value = false;
 
       if (showDialog) {
-        await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext!,
+        await Utilities.showAlert(
           'Success',
           resultForDisplay ?? 'Changes were saved.',
           'Done',
@@ -956,8 +954,7 @@ class RunEditPageController extends TabUiController
       }
     } catch (e) {
       if (showDialog) {
-        await IveCoreUtilities.showAlert(
-          navigatorKey.currentContext!,
+        await Utilities.showAlert(
           'Error',
           'Failed to save changes: $e',
           'OK',

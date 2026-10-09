@@ -1,3 +1,9 @@
+## 2.0.87+753 (unreleased)
+### Improvements
+- **Email the run**: Preview to me, Who gets it and Send are disabled until both the subject and the message have text; the run title is bold with the date and venue on their own lines.
+### Fixes
+- Every alert's Done / OK button is now a red Harrier Central button (the run-save "Success" alert and twelve others still used an unstyled one).
+
 ## 2.0.87+752 (2026-10-09)
 ### Improvements
 - **Preview to me** confirms with a dialog once the preview has been sent.

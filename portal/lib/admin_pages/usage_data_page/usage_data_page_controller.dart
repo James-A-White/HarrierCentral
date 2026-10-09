@@ -276,8 +276,7 @@ class UsageDataPageController extends GetxController {
     if (integration.integrationId == 6) {
       final String naughty = integration.kennelsFailedInfo.replaceAll(',', '\r\n');
       final String nice = integration.kennelsSucceededInfo.replaceAll(',', '\r\n');
-      await IveCoreUtilities.showAlert(
-        navigatorKey.currentContext!,
+      await Utilities.showAlert(
         'Runs page (AI) — last read',
         'Read OK\r\n$nice\r\n\r\nFailed\r\n$naughty'
             '${integration.errorInfo.isEmpty ? '' : '\r\n\r\n${integration.errorInfo}'}\r\n\r\n'
@@ -292,8 +291,7 @@ class UsageDataPageController extends GetxController {
     if (integration.integrationId == 1) {
       final naughty = integration.kennelsFailedInfo.replaceAll(',', '\r\n');
       final nice = integration.kennelsSucceededInfo.replaceAll(',', '\r\n');
-      await IveCoreUtilities.showAlert(
-        navigatorKey.currentContext!,
+      await Utilities.showAlert(
         'Naughty / Nice list',
         'Naughty List\r\n$naughty\r\nNice List\r\n$nice',
         'Done',

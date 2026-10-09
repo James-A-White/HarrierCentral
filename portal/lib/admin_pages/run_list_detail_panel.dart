@@ -731,8 +731,7 @@ class RunListDetailPanel extends StatelessWidget {
                     '${isLocal ? 'localhost:8080' : 'https://www.hashruns.org'}/${rdm.kennelUniqueShortName}/${rdm.absoluteEventNumber ?? rdm.eventNumber}';
                 await Clipboard.setData(ClipboardData(text: url));
                 if (!context.mounted) return;
-                await IveCoreUtilities.showAlert(
-                  context,
+                await Utilities.showAlert(
                   'Copy link',
                   'The link to this run was copied to your clipboard',
                   'OK',

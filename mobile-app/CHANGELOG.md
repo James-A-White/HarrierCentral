@@ -1,3 +1,7 @@
+## 3.1.9+1459 (unreleased)
+### Improvements
+- **Email the run**: Preview to me, Who gets it and Send are disabled until both the subject and the message have text; the run title is bold with the date and venue on their own lines.
+
 ## 3.1.9+1458 (2026-10-09)
 Private dance — James, Tuna Melt and Kilty.
 ### Improvements

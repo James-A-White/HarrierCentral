@@ -38,6 +38,8 @@ class RunEmailComposerPage extends StatelessWidget {
   Widget _body(BuildContext context, RunEmailComposerController c) {
     final bool busy =
         c.isDrafting.value || c.isSending.value || c.isPreviewing.value;
+    // Nothing to preview, target or send until both fields have text.
+    final bool empty = !c.hasContent.value;
     // Read inside the Obx so a move on the audience page updates the button.
     final int n =
         emailContext.recipientCount - c.excludeIds.length + c.includeIds.length;
@@ -50,18 +52,29 @@ class RunEmailComposerPage extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
+                // Bold run title, then when and where on their own lines with
+                // room between them — the same header as the portal dialog
+                // (James, 2026-10-09).
                 Text(
                   emailContext.title,
-                  style: ts_titleMedium,
+                  style: ts_titleMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                    height: 1.3,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${emailContext.when}\n${emailContext.where}',
-                  style: ts_body,
+                  emailContext.when,
+                  style: ts_body.copyWith(height: 1.3),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 6),
+                Text(
+                  emailContext.where,
+                  style: ts_body.copyWith(height: 1.3),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
                 Text(
                   c.history,
                   style: TextStyle(
@@ -226,7 +239,7 @@ class RunEmailComposerPage extends StatelessWidget {
             runSpacing: 8,
             children: <Widget>[
               ElevatedButton.icon(
-                onPressed: busy ? null : c.preview,
+                onPressed: busy || empty ? null : c.preview,
                 icon: c.isPreviewing.value
                     ? const SizedBox(
                         width: 16,
@@ -248,7 +261,7 @@ class RunEmailComposerPage extends StatelessWidget {
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: c.isSending.value ? null : c.openAudience,
+                onPressed: c.isSending.value || empty ? null : c.openAudience,
                 icon: const Icon(
                   Icons.people_outline,
                   color: Colors.white,
@@ -269,7 +282,7 @@ class RunEmailComposerPage extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: busy || n == 0 ? null : c.send,
+                onPressed: busy || empty || n == 0 ? null : c.send,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: hc_red,
                   disabledBackgroundColor: Colors.grey,

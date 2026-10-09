@@ -344,8 +344,7 @@ class ServiceCommon {
                 errorJson['errorUserMessage'] as String? ??
                 errorJson['errorMessage'] as String? ??
                 'An error occurred. Please try again.';
-            await IveCoreUtilities.showAlert(
-              navigatorKey.currentContext!,
+            await Utilities.showAlert(
               'Error',
               errorMessage,
               'OK',
