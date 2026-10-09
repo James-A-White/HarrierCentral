@@ -1,0 +1,116 @@
+import 'package:harrier_central/imports.dart';
+
+/// The run email composer (E9.F6.S7): the API drafts a subject and prose,
+/// the sender steers it with an optional instruction and a Rewrite, edits
+/// what came back, and sends. The facts — date, venue, hares, price, the app
+/// link and the I'm-in / can't-make-it links — are added by the server and
+/// never editable here, so a "make it funny" cannot move the start time.
+///
+/// Stateless page over this controller; every await is followed by an
+/// isClosed check.
+class RunEmailComposerController extends GetxController {
+  RunEmailComposerController({
+    required this.eventAggregate,
+    required this.context,
+  });
+
+  final RunAdminAggregate eventAggregate;
+  final RunEmailContext context;
+
+  static String tagFor(String eventId) => 'runemail-$eventId';
+
+  HcId get _eventId => HcId(eventAggregate.event.eventId);
+
+  final TextEditingController subject = TextEditingController();
+  final TextEditingController body = TextEditingController();
+  final TextEditingController instruction = TextEditingController();
+
+  final RxBool isDrafting = true.obs;
+  final RxBool isSending = false.obs;
+
+  /// Set when a draft failed, so the sender can write it by hand instead.
+  final RxString draftError = ''.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    unawaited(draft());
+  }
+
+  @override
+  void onClose() {
+    subject.dispose();
+    body.dispose();
+    instruction.dispose();
+    super.onClose();
+  }
+
+  /// First draft on open, and every Rewrite. The instruction box is read
+  /// each time, so "now in French" on top of a finished draft just works.
+  Future<void> draft() async {
+    isDrafting.value = true;
+    draftError.value = '';
+    try {
+      final RunEmailDraft d = await const RunEmailService().draft(
+        _eventId,
+        instruction: instruction.text.trim(),
+      );
+      if (isClosed) return;
+      subject.text = d.subject;
+      body.text = d.body;
+    } on RunEmailException catch (e) {
+      if (isClosed) return;
+      draftError.value = e.message;
+      if (subject.text.trim().isEmpty) subject.text = context.title;
+    } catch (e, s) {
+      BootLogger.logError('[RunEmailComposer.draft]', e, s);
+      if (isClosed) return;
+      draftError.value = 'The draft could not be written. You can write it yourself.';
+    } finally {
+      if (!isClosed) isDrafting.value = false;
+    }
+  }
+
+  /// Sends after one confirmation. Pops the page with the count on success
+  /// (the toast is shown by the caller, after the pop — a GetX toast open
+  /// during Get.back() swallows the pop).
+  Future<void> send() async {
+    final String subj = subject.text.trim();
+    final String text = body.text.trim();
+    if (subj.isEmpty || text.isEmpty) {
+      hcSnack('The email needs a subject and some text.', error: true);
+      return;
+    }
+    final int n = context.recipientCount;
+    final bool? go = await Utilities.showAlert(
+      'Send to $n ${n == 1 ? 'member' : 'members'}?',
+      'The email goes to everyone in ${eventAggregate.kennel.kennelShortName} '
+          'who has run emails switched on. The run\'s date, venue, hares, '
+          'price and the I\'m-in / can\'t-make-it buttons are added under '
+          'your text.',
+      'Send',
+      showCancelButton: true,
+    );
+    if (go != true || isClosed) return;
+
+    isSending.value = true;
+    try {
+      final int sent = await const RunEmailService().send(
+        _eventId,
+        subject: subj,
+        body: text,
+      );
+      if (isClosed) return;
+      hcPop<int>(result: sent);
+    } on RunEmailException catch (e) {
+      if (isClosed) return;
+      hcSnack(e.message, error: true, seconds: 6);
+    } catch (e, s) {
+      BootLogger.logError('[RunEmailComposer.send]', e, s);
+      if (isClosed) return;
+      hcSnack('The email could not be sent. Try again.', error: true);
+    } finally {
+      if (!isClosed) isSending.value = false;
+    }
+  }
+}

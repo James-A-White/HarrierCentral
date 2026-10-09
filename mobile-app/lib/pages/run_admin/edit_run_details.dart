@@ -42,12 +42,20 @@ class EditRunDetailsPage extends StatelessWidget {
       // even on a tab the user chose not to fill in.
       final bool enabled =
           (c.isDirty.value || c.isNewRun) && !c.isUpdating.value;
-      final String label = c.isNewRun
-          ? (c.currentTab.value == EditingTabEnum.other ? 'Finish' : 'Next')
-          : 'Save changes to Harrier Central';
+      // One button mid-wizard (Next); two everywhere else: save, or save and
+      // publish (E9.F6.S6). A Wrap, not a Row — at a large text size two
+      // buttons are wider than a phone (CLAUDE.md).
+      final bool finalStep = !c.isNewRun || c.currentTab.value == EditingTabEnum.other;
+      final String saveLabel = c.isNewRun ? (finalStep ? 'Finish' : 'Next') : 'Save';
+      final String sendLabel = c.isNewRun ? 'Finish and send' : 'Save and send';
+      final ButtonStyle style = ElevatedButton.styleFrom(
+        backgroundColor: hc_red,
+        disabledBackgroundColor: Colors.grey,
+        disabledForegroundColor: Colors.white70,
+      );
 
       return Container(
-        height: 70.0,
+        constraints: const BoxConstraints(minHeight: 70.0),
         color: Colors.yellow[100],
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
         child: Center(
@@ -57,18 +65,33 @@ class EditRunDetailsPage extends StatelessWidget {
                   width: 45.0,
                   child: HcAppCircularProgressIndicator(key: Key('331904772')),
                 )
-              : SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: hc_red,
-                      disabledBackgroundColor: Colors.grey,
-                      disabledForegroundColor: Colors.white70,
+              : finalStep
+                  ? Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: <Widget>[
+                        ElevatedButton(
+                          style: style,
+                          onPressed: enabled ? c.onSaveBarPressed : null,
+                          child: Text(saveLabel, style: ts_button, textAlign: TextAlign.center),
+                        ),
+                        ElevatedButton.icon(
+                          style: style,
+                          onPressed: enabled ? c.onSaveAndSendPressed : null,
+                          icon: const Icon(Icons.send, color: Colors.white, size: 18),
+                          label: Text(sendLabel, style: ts_button, textAlign: TextAlign.center),
+                        ),
+                      ],
+                    )
+                  : SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: style,
+                        onPressed: enabled ? c.onSaveBarPressed : null,
+                        child: Text(saveLabel, style: ts_button, textAlign: TextAlign.center),
+                      ),
                     ),
-                    onPressed: enabled ? c.onSaveBarPressed : null,
-                    child: Text(label, style: ts_button, textAlign: TextAlign.center),
-                  ),
-                ),
         ),
       );
     });

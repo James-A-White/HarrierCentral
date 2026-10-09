@@ -1,3 +1,9 @@
+## 3.1.9+1451 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### New Features
+- **Save and send**: the run editor now has **Save** and **Save and send**. Save and send offers two tick boxes — post the notice to the kennel's WhatsApp (as before) and **email the members who have run emails switched on**, with the live count. If the run has already been emailed it says so and lets you send an update.
+- **Emails written for you**: the email is drafted from the run's details, with an optional instruction — "make it a funny Halloween story", "write it in French" — and a Rewrite button. You edit and approve before anything is sent. The date, venue, hares, price and ✅ I'm in / ❌ Can't make it buttons are added under your text automatically, so they are always right. Every email carries a one-tap unsubscribe.
+
 ## 3.1.9+1450 (2026-10-09)
 Private dance — James, Tuna Melt and Kilty.
 ### Fixes

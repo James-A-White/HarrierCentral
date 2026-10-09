@@ -112,6 +112,11 @@ const String EMAIL_INVITE_CODE_API_URL =
 const String EMAIL_PAYMENT_API_URL =
     'https://$BASE_AF_URL/api/SendPaymentReport';
 
+// Save and send → Email (E9.F6.S6–S9): context, AI draft and send for a
+// run's email to opted-in members. Token proc name: hcapp_getRunEmailContext,
+// standard (deviceSecret) token.
+const String RUN_EMAIL_API_URL = 'https://$BASE_AF_URL/api/RunEmail';
+
 const String EMAIL_RUN_REPORT_API_URL =
     'https://$BASE_AF_URL/api/SendRunCountsReport';
 

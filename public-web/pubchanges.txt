@@ -1,3 +1,6 @@
+0.21.74 (2026-10-09 redeploy — quieter map logs)
+    • Leaflet guard reports skip automated browsers and clients with neither SVG nor canvas; reports carry svg=/canvas= flags.
+
 0.21.74 (2026-09-29 redeploy — direct messages)
     • Message <name>, DM page (mute/block/end), requests in the chat list, Direct messages setting.
 

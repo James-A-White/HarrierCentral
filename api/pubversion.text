@@ -1,3 +1,10 @@
+1.0.61+83
+    • Run emails (Save and send): RunEmail endpoint — context, AI draft (Azure OpenAI, usage on
+      the AI monitor) and send to the kennel's opted-in members, one message each through Azure
+      Communication Services as runs@harriercentral.com with one-click List-Unsubscribe; the
+      facts block and RSVP links are built by code, never by the model. EmailUnsubscribe (signed
+      one-tap link) and RunEmailAnnouncement (the one-off launch notice, internal, dry-run default).
+
 1.0.61+82
     • Email: every email has one Harrier Central layout — logo, the message on a
       phone-width card, and a footer saying who sent it and why.

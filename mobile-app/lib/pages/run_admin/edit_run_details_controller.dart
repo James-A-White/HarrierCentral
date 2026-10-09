@@ -501,7 +501,14 @@ class EditRunDetailsController extends GetxController
     mutate(() {});
   }
 
-  Future<void> onSaveBarPressed() async {
+  /// Save. Nothing is offered afterwards — Save and send is the other button.
+  Future<void> onSaveBarPressed() => _saveThen(andSend: false);
+
+  /// Save, then offer to publish: the kennel's messenger and/or an email to
+  /// the members who have run emails on (E9.F6.S6).
+  Future<void> onSaveAndSendPressed() => _saveThen(andSend: true);
+
+  Future<void> _saveThen({required bool andSend}) async {
     final bool didAddressChange = addressChanged;
     final bool saved = await saveAll();
     if (!saved) return;
@@ -510,7 +517,7 @@ class EditRunDetailsController extends GetxController
       if (currentTab.value == EditingTabEnum.other) {
         // A brand-new run is the one most worth announcing. Offer before the
         // editor goes, while the aggregate is still to hand.
-        await _offerWhatsAppPost();
+        if (andSend) await _offerSaveAndSend();
         Navigator.of(navigatorKey.currentContext!).pop();
         return;
       }
@@ -532,59 +539,139 @@ class EditRunDetailsController extends GetxController
     if (didAddressChange) {
       await _offerAutoLocateAfterAddressChange();
     }
-    await _offerWhatsAppPost();
+    if (andSend) await _offerSaveAndSend();
   }
 
-  /// The publish moment. A saved run is worth nothing until the kennel hears
-  /// about it, and today that means WhatsApp — so the offer sits right where
-  /// the admin already is, with the notice already written. Declining costs
-  /// one tap; the same notice is always available from the run's share
-  /// sheet later (James, 2026-09-15).
+  /// The publish moment (E9.F6.S6). A saved run is worth nothing until the
+  /// kennel hears about it. Two tick boxes: the kennel's messenger (the
+  /// notice pre-filled into the admin's own WhatsApp, as before) and an
+  /// email to the members with run emails on — with the live count, and a
+  /// warning when the run has already been emailed, so a second send is a
+  /// choice and never an accident (James, 2026-10-09).
   ///
   /// Hidden runs are not offered: announcing something the kennel cannot
   /// open would be an invitation to a locked door.
-  Future<void> _offerWhatsAppPost() async {
-    if (!isVisible) return;
-    final BuildContext? ctx = navigatorKey.currentContext;
-    if (ctx == null) return;
-
+  Future<void> _offerSaveAndSend() async {
+    if (!isVisible) {
+      hcSnack('The run is hidden, so it was saved but not sent.');
+      return;
+    }
     final RunAnnouncement announcement = RunAnnouncement(
       event: eventAggregate.event,
       kennel: eventAggregate.kennel,
     );
     final MessagingPlatform platform = announcement.preferred;
-    final bool? post = await showDialog<bool>(
-      context: ctx,
-      builder: (BuildContext c) => AlertDialog(
-        title: Row(
-          children: <Widget>[
-            MessagingPlatformGlyph(platform, size: 26),
-            const SizedBox(width: 10),
-            Expanded(child: Text('Share on ${platform.label}?')),
-          ],
-        ),
-        content: Text(
-          platform.opensWithNotice
-              ? 'Send the run notice — date, hares, venue, price and the '
-                    'link — to the kennel group. ${platform.label} opens with '
-                    'it ready; you pick the group and tap send.'
-              : 'Send the run notice — date, hares, venue, price and the '
-                    'link — to the kennel group via the share sheet.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('Not now', textAlign: TextAlign.center),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Share', textAlign: TextAlign.center),
-          ),
-        ],
+
+    // The reach, fetched live: the rule lives in one SP, not in the app.
+    RunEmailContext? emailContext;
+    String emailUnavailable = '';
+    try {
+      emailContext = await const RunEmailService().context(
+        HcId(eventAggregate.event.eventId),
+      );
+    } on RunEmailException catch (e) {
+      emailUnavailable = e.message;
+    } catch (e, s) {
+      BootLogger.logError('[EditRunDetails._offerSaveAndSend]', e, s);
+      emailUnavailable = 'Email is not available just now.';
+    }
+    if (isClosed) return;
+    final int n = emailContext?.recipientCount ?? 0;
+    // Re-read after the await: the navigator's context is a global, not the
+    // one captured above.
+    final BuildContext? dialogCtx = navigatorKey.currentContext;
+    if (dialogCtx == null) return;
+
+    bool doPost = true;
+    bool doEmail = emailContext != null && n > 0;
+    final bool? go = await showDialog<bool>(
+      // Read AFTER the await above, so the lint's concern does not apply.
+      // ignore: use_build_context_synchronously
+      context: dialogCtx,
+      builder: (BuildContext c) => StatefulBuilder(
+        builder: (BuildContext c, void Function(void Function()) setDialog) =>
+            AlertDialog(
+              title: const Text('Send the run to the kennel?'),
+              contentPadding: const EdgeInsets.fromLTRB(8, 16, 8, 0),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  CheckboxListTile(
+                    value: doPost,
+                    onChanged: (bool? v) => setDialog(() => doPost = v ?? false),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    secondary: MessagingPlatformGlyph(platform, size: 26),
+                    title: Text('Post to ${platform.label}'),
+                    subtitle: Text(
+                      platform.opensWithNotice
+                          ? 'The notice opens in ${platform.label}; you pick the group and tap send.'
+                          : 'The notice goes to ${platform.label} via the share sheet.',
+                    ),
+                  ),
+                  CheckboxListTile(
+                    value: doEmail,
+                    onChanged: emailContext == null || n == 0
+                        ? null
+                        : (bool? v) => setDialog(() => doEmail = v ?? false),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    secondary: const Icon(Icons.mail_outline, size: 26),
+                    title: Text(
+                      emailContext == null
+                          ? 'Email members'
+                          : 'Email $n ${n == 1 ? 'member' : 'members'}',
+                    ),
+                    subtitle: Text(_emailSubtitle(emailContext, emailUnavailable)),
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(c).pop(false),
+                  child: const Text('Not now', textAlign: TextAlign.center),
+                ),
+                TextButton(
+                  onPressed: doPost || doEmail
+                      ? () => Navigator.of(c).pop(true)
+                      : null,
+                  child: const Text('Continue', textAlign: TextAlign.center),
+                ),
+              ],
+            ),
       ),
     );
-    if (post != true) return;
-    await announcement.sendVia(platform);
+    if (go != true || isClosed) return;
+
+    if (doPost) await announcement.sendVia(platform);
+    if (doEmail && emailContext != null) {
+      final int? sent = await Get.to<int>(
+        () => RunEmailComposerPage(
+          eventAggregate: eventAggregate,
+          emailContext: emailContext!,
+        ),
+      );
+      if (sent != null && sent > 0) {
+        hcSnack('Email sent to $sent ${sent == 1 ? 'member' : 'members'}.');
+      }
+    }
+  }
+
+  static String _emailSubtitle(RunEmailContext? c, String unavailable) {
+    if (c == null) return unavailable;
+    final StringBuffer b = StringBuffer();
+    if (c.recipientCount == 0) {
+      b.write('Nobody in the kennel has run emails switched on.');
+    } else {
+      b.write('Written for you, with the date, venue, hares, price and '
+          'I\'m-in / can\'t-make-it buttons.');
+    }
+    if (c.alreadySent) {
+      final String when = c.emailLastSentAt == null
+          ? ''
+          : ' on ${DateFormat('d MMM').format(c.emailLastSentAt!)}';
+      b.write('\n⚠ Already emailed to ${c.emailLastSentCount ?? '?'}$when · '
+          '${c.emailSendCount} ${c.emailSendCount == 1 ? 'email' : 'emails'} so far.');
+    }
+    return b.toString();
   }
 
   /// A new address usually means the map pin is now wrong, so offer to move it.
