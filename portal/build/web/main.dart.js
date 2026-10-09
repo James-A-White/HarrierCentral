@@ -151062,7 +151062,10 @@ s=1
 break
 case 1:return A.k(q,r)}})
 return A.l($async$Q9,r)},
-a6H(){return this.ry?null:A.hZ(B.I1,"Save and send",!1,this.gaF2())},
+a6H(){var s,r=this
+if(r.ry)s=null
+else s=A.hZ(B.I1,"Save and send",!1,r.k3.gj(0)&&r.k4.gj(0)?r.gaF2():null)
+return s},
 qo(){return this.aF3()},
 aF3(){var s=0,r=A.m(t.H),q,p=2,o=[],n=this,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7
 var $async$qo=A.n(function(a8,a9){if(a8===1){o.push(a9)

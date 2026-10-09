@@ -1,3 +1,7 @@
+## 2.0.87+750 (2026-10-09)
+### Fixes
+- **Save and send** is enabled and disabled together with Save.
+
 ## 2.0.87+749 (2026-10-09)
 ### Improvements
 - **Save and send** sits under the Save and Undo buttons, styled like Save, instead of in the title bar.
