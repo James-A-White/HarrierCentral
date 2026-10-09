@@ -393,7 +393,9 @@ namespace HcWebApi.Endpoints
             sb.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\">");
             sb.Append(Row("When", ctx.When)).Append(Row("Where", ctx.Where)).Append(Row("Hares", ctx.Hares)).Append(Row("Price", ctx.Price));
             sb.Append("</table><div style=\"margin-top:10px\">");
-            sb.Append(Button(ctx.RsvpUrl(true), "✅ I'm in", "#2f855a")).Append(Button(ctx.RsvpUrl(false), "❌ Can't make it", "#9b2c2c")).Append(Button(ctx.Url, "Open the run", "#2b6cb0"));
+            // Text glyphs, not emoji: an emoji keeps its own colour (a red ✕ on the red
+            // button, 2026-10-09), a glyph takes the button's white.
+            sb.Append(Button(ctx.RsvpUrl(true), "✓ I'm in", "#2f855a")).Append(Button(ctx.RsvpUrl(false), "✗ Can't make it", "#9b2c2c")).Append(Button(ctx.Url, "Open the run", "#2b6cb0"));
             sb.Append("</div></td></tr></table>");
             if (unsubscribeUrl != null)
                 sb.Append($"<p style=\"margin:18px 0 0;font-size:12px;color:#6b7785\">You get run emails because you switched them on for {H(ctx.KennelName)} in Harrier Central. " +

@@ -1,3 +1,7 @@
+1.0.61+86
+    • Run emails: the I'm in / Can't make it buttons use text glyphs (✓ ✗) so they are white on
+      the button, not an emoji in its own red.
+
 1.0.61+85
     • Run emails: the drafting instruction can be saved as the kennel's default
       (HC.Kennel.RunEmailInstruction) and is returned with the context, so every sender starts
