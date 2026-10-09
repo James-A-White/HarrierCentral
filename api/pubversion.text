@@ -1,3 +1,9 @@
+1.0.61+82
+    • Email: every email has one Harrier Central layout — logo, the message on a
+      phone-width card, and a footer saying who sent it and why.
+    • Email: the Logic App fallback is removed (the SendEmail Logic App was deleted
+      2026-10-09); missing mail settings are a logged failure.
+
 1.0.61+81
     • Email: every email now goes through Microsoft 365 (Graph) as Harrier Central
       <noreply@harriercentral.com>, DKIM-signed. Gmail, Proton and GMX had been silently
