@@ -1,3 +1,11 @@
+## 3.1.9+1452 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### Fixes
+- **Run editor**: the Save / Save and send bar had swallowed the whole screen on 1451; the editor is back.
+### Improvements
+- **Kennel house style for run emails**: the instruction box is pre-filled with the kennel's saved instruction, and **Save as <kennel>'s default** stores yours for whoever emails the next run — a kennel that wants its emails in French always gets them in French.
+- Every Harrier Central email now links to the app on the App Store and Google Play.
+
 ## 3.1.9+1451 (2026-10-09)
 Private dance — James, Tuna Melt and Kilty.
 ### New Features
