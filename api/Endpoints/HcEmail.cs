@@ -26,7 +26,7 @@ namespace HcWebApi.Endpoints
     public sealed class EmailSendException(string message, Exception? inner = null) : Exception(message, inner);
 
     /// <summary>
-    /// The one way the API sends email (E18). Every message goes out as
+    /// The one way the API sends email (E19). Every message goes out as
     /// noreply@harriercentral.com, DKIM-signed by Microsoft 365. There is no
     /// Reply-To: a reply lands in the noreply@ shared mailbox, which James reads
     /// (his choice, 2026-10-09).
@@ -177,7 +177,7 @@ namespace HcWebApi.Endpoints
 
         /// <summary>
         /// The SendEmail Logic App's HTTP trigger. Read from HC_EMAIL_LOGIC_APP_URL;
-        /// the literal fallback is public in the repo (E18.F1.S4) and goes when
+        /// the literal fallback is public in the repo (E19.F1.S4) and goes when
         /// Graph is live.
         /// </summary>
         private static string LogicAppUrl =>

@@ -10,7 +10,7 @@ namespace HcWebApi.Endpoints
 
     public static class Utilities
     {
-        // Email moved to HcEmail (E18, 2026-10-08).
+        // Email moved to HcEmail (E19, 2026-10-08).
 
         /// The APNs "aps" block for a chat push. A visible push plays the sound;
         /// a silent one wakes the app (content-available). Either way, when the
