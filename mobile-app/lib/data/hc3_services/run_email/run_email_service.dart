@@ -54,8 +54,9 @@ class RunEmailDraft {
 
 /// One kennel member on "Who gets it", as the check-in roster shows them,
 /// with why they are in that list and whether an admin may move them for
-/// one send. reasonCode: 1 on for this run, 2 on for the kennel, 3 run
-/// emails off, 4 kennel emails off, 5 never switched on, 6 no email
+/// one send. reasonCode — gets it: 1 on for this run, 2 on for
+/// the kennel, 9 member, 10 follower, 11 RSVP'd; not: 3 run emails off,
+/// 4 kennel emails off, 5 not a member, follower or RSVP, 6 no email
 /// address, 7 blocked all emails, 8 email bouncing. emailStatus: 0 Unknown,
 /// 1 OK, 2 Suspect, 3 Bounced.
 class RunEmailAudienceEntry {

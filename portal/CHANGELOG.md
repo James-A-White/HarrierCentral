@@ -1,3 +1,7 @@
+## 2.0.87+755 (2026-10-09)
+### Improvements
+- **Email the run** says *hashers*, not *members*: the audience is members, followers and anyone who RSVP'd, minus anyone who turned emails off.
+
 ## 2.0.87+754 (2026-10-09)
 ### Fixes
 - **Usage Data**: tapping a run in the recent-runs carousel opens its page in the current `hashruns.org/<kennel>/<number>` form (uncounted runs keep the legacy link). Needs `hcportal_getUsageData` from the same release.

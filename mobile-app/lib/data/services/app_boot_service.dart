@@ -436,6 +436,13 @@ class AppBootService {
     await srv.authorizeDevice(userId: userId);
     await DBProvider.deleteDb(DB_NAME);
     await Get.deleteAll(force: true);
+    // Re-register the services the next boot needs (AppModel first among
+    // them): deleteAll took them with it, and the reset path at
+    // resetAndReboot does the same before it restarts. Without this the new
+    // AppEntryPage's boot threw '"AppModel" not found' at
+    // _prepareDeviceContext and the app sat on a blank gradient (seen on the
+    // simulator 2026-10-09 with userId present and deviceId null).
+    await initServices();
     await Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const AppEntryPage()),
       (route) => false,

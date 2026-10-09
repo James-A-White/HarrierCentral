@@ -124,6 +124,13 @@ class ChatPage extends StatelessWidget {
       theme: _chatTheme,
       timeFormat: _timeFormat,
       builders: core.Builders(
+        // A REVERSED list: it opens at the bottom — the newest message — and
+        // stays there as messages arrive. The default list jumps to the end
+        // on its first frame, which is before onInitAsync has fetched the
+        // thread, so every chat opened at the top and had to be scrolled
+        // (James, 2026-10-09). Same fix as the portal's chat page.
+        chatAnimatedListBuilder: (BuildContext context, itemBuilder) =>
+            ChatAnimatedListReversed(itemBuilder: itemBuilder),
         // A spinner until the first fetch has answered; the package's own
         // 'No messages yet' only once we know the chat is empty.
         emptyChatListBuilder: (BuildContext context) => Obx(() {

@@ -290,8 +290,8 @@ class RunEmailComposerPage extends StatelessWidget {
                 ),
                 child: Text(
                   n == 0
-                      ? 'Nobody has run emails on'
-                      : 'Send to $n ${n == 1 ? 'member' : 'members'}',
+                      ? 'Nobody to email'
+                      : 'Send to $n ${n == 1 ? 'hasher' : 'hashers'}',
                   style: ts_button,
                   textAlign: TextAlign.center,
                 ),

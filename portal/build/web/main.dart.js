@@ -142150,7 +142150,7 @@ $1(a){return a.gcu(a)===this.a},
 $S:49}
 A.aMo.prototype={
 $1(a){var s=null
-return A.oE(!1,s,s,s,!0,s,s,s,!0,s,s,B.ajO,s,s,s,s,s,new A.aMn(this.a,a),!1,s,s,s,s,s,B.bEt,s,s,s)},
+return A.oE(!1,s,s,s,!0,s,s,s,!0,s,s,B.ajO,s,s,s,s,s,new A.aMn(this.a,a),!1,s,s,s,s,s,B.bEs,s,s,s)},
 $S:222}
 A.aMn.prototype={
 $0(){A.eA(this.b,!1).fu()
@@ -145116,7 +145116,7 @@ Sn(){var s=0,r=A.m(t.H),q
 var $async$Sn=A.n(function(a,b){if(a===1)return A.j(b,r)
 for(;;)switch(s){case 0:q=$.ao()
 s=2
-return A.d(A.kW(q,A.n9(A.b([A.eI(null,"Cancel",!1,new A.b_L()),A.EJ(null,"Regenerate",!1,new A.b_M())],t.p),null,null,null,B.bEu,null,null,B.bEQ,null),!0,null,t.y),$async$Sn)
+return A.d(A.kW(q,A.n9(A.b([A.eI(null,"Cancel",!1,new A.b_L()),A.EJ(null,"Regenerate",!1,new A.b_M())],t.p),null,null,null,B.bEt,null,null,B.bEQ,null),!0,null,t.y),$async$Sn)
 case 2:if(b===!0)A.mq(q,"API Key","API key regeneration is not yet implemented",null,null,B.jy,null,B.de)
 return A.k(null,r)}})
 return A.l($async$Sn,r)}}
@@ -151153,7 +151153,7 @@ s=23
 return A.d(A.n5(j.dF(0,"runemail-"+m,a4),"runemail-"+m,a4),$async$qo)
 case 23:s=a3!=null&&a3>0?24:25
 break
-case 24:a4=a3===1?"member":"members"
+case 24:a4=a3===1?"hasher":"hashers"
 s=26
 return A.d(A.iV("Email sent","Sent to "+A.f(a3)+" "+a4+".","OK","Cancel",null,null,!1,null),$async$qo)
 case 26:case 25:case 21:case 1:return A.k(q,r)
@@ -151663,15 +151663,15 @@ return p.charCodeAt(0)==0?p:p},
 $S:87}
 A.bi9.prototype={
 $2(a,b){var s,r=this,q=null,p=r.a,o=A.c05(q,B.qt,new A.bi5(p,b),B.ake,B.bDv,B.bCo,p.c),n=p.d,m=p.a==null,l=m||r.b===0?q:new A.bi6(p,b)
-if(m)m="Email members"
+if(m)m="Email hashers"
 else{m=r.b
-s=m===1?"member":"members"
+s=m===1?"hasher":"hashers"
 s="Email "+m+" "+s
 m=s}m=A.O(m,q,q,q,q,q,q,q,q,q,q,q,q)
 s=t.p
 n=A.ad(A.b([o,A.c05(q,B.qt,l,B.ajE,A.O(r.c.$0(),q,q,q,q,q,q,q,q,q,q,q,q),m,n)],s),B.y,B.r,B.U,0,B.C)
 m=A.eI(q,"Not now",!1,new A.bi7())
-return A.n9(A.b([m,A.i_(q,"Continue",!1,p.c||p.d?new A.bi8():q)],s),q,q,q,new A.aq(520,q,n,q),q,q,B.bEv,q)},
+return A.n9(A.b([m,A.i_(q,"Continue",!1,p.c||p.d?new A.bi8():q)],s),q,q,q,new A.aq(520,q,n,q),q,q,B.bEu,q)},
 $S:925}
 A.bi5.prototype={
 $1(a){return this.b.$1(new A.bi4(this.a,a))},
@@ -152524,7 +152524,7 @@ s=n.e
 q=s===1?"time":"times"
 p=n.r
 o=A.f(p==null?"?":p)
-p=p===1?"member":"members"
+p=p===1?"hasher":"hashers"
 return"\u26a0 Already emailed "+s+" "+q+" \u2014 last to "+o+" "+p+r+"."},
 N7(){var s=0,r=A.m(t.H),q,p=2,o=[],n=[],m=this,l,k,j,i,h,g,f,e
 var $async$N7=A.n(function(a,b){if(a===1){o.push(b)
@@ -152599,7 +152599,7 @@ else{a=h.gj(0)
 a=a.gq(a)
 i=j.gj(0)
 e="\n\nOverrides for this send only: "+a+" moved in, "+i.gq(i)+" moved out."}a=$.ao()
-i=f===1?"member":"members"
+i=f===1?"hasher":"hashers"
 i=A.O("Send to "+f+" "+i+"?",null,null,null,null,null,null,null,null,null,null,null,null)
 g=A.O("The email goes to everyone in "+m.ay+" who has run emails switched on. The run's date, venue, hares, price and the I'm-in / can't-make-it buttons are added under your text.\n\n"+m.gayc(0)+e,null,null,null,null,null,null,null,null,null,null,null,null)
 s=3
@@ -152688,7 +152688,7 @@ if(r.gj(0).length!==0)n.push(new A.a9(B.kX,A.O(r.gj(0),h,h,h,h,h,h,h,A.bf(h,h,B.
 return A.eh(A.ad(n,B.bk,B.r,B.U,0,B.C),B.N,h,B.L,B.ad,h,h,h,h,h,h,!1,B.a2)}}
 A.biz.prototype={
 $1(a){var s=null
-return A.n9(A.b([A.eI(s,"Cancel",!1,new A.biw()),new A.aH(new A.bix(a),s)],t.p),s,s,s,new A.aq(600,s,new A.aH(new A.biy(this.a,a),s),s),s,s,B.bEq,s)},
+return A.n9(A.b([A.eI(s,"Cancel",!1,new A.biw()),new A.aH(new A.bix(a),s)],t.p),s,s,s,new A.aq(600,s,new A.aH(new A.biy(this.a,a),s),s),s,s,B.bEx,s)},
 $S:938}
 A.biy.prototype={
 $0(){return this.a.a0i(0,this.b)},
@@ -152707,8 +152707,8 @@ q=n-s+r.gq(r)
 p=o.dx.gj(0)||o.dy.gj(0)||o.fr.gj(0)
 n=o.go.gj(0)
 if(o.fr.gj(0))s="Sending\u2026"
-else if(q===0)s="Nobody has run emails on"
-else{s=q===1?"member":"members"
+else if(q===0)s="Nobody to email"
+else{s=q===1?"hasher":"hashers"
 s="Send to "+q+" "+s}return A.i_(B.I2,s,!1,p||!n||q===0?null:o.gaFK(o))},
 $S:244}
 A.biv.prototype={
@@ -152786,7 +152786,7 @@ q=b.a
 if(!r.K(0,q))r.G(0,q)}else{r=o.ay.k2
 q=b.a
 if(!r.K(0,q)){p=r.gj(0)
-if(p.gq(p)>=20)o.cx.sj(0,"At most 20 members can be moved in for one send.")
+if(p.gq(p)>=20)o.cx.sj(0,"At most 20 hashers can be moved in for one send.")
 else r.G(0,q)}}}}
 A.bic.prototype={
 $0(){var s=this.a,r=B.p.aD(s.dx.a.a).toLowerCase()
@@ -160535,7 +160535,7 @@ s=n.d
 r=s.ay.gj(0)
 q=s.ch.gj(0)
 p=s.gaHY()
-p=A.b([A.Ub(B.bCS,!1,p),A.Ub(B.a0F,!0,p),A.Ub(B.bER,!0,p),A.Ub(B.bCu,!0,p),A.Ub(B.bDu,!0,p),A.Ub(B.bEw,!0,p)],t.wk)
+p=A.b([A.Ub(B.bCS,!1,p),A.Ub(B.a0F,!0,p),A.Ub(B.bER,!0,p),A.Ub(B.bCu,!0,p),A.Ub(B.bDu,!0,p),A.Ub(B.bEv,!0,p)],t.wk)
 s=s.gbt0()
 o=A.X(s).i("W<1,om>")
 s=A.F(new A.W(s,new A.bbG(n.a,n.b),o),o.i("al.E"))
@@ -203246,8 +203246,8 @@ B.bCx=new A.ab("No matching locations",null,null,null,null,null,null,null,null,n
 B.a8d=new A.fW(B.aa,null,null,B.bCx,null)
 B.bEp=new A.ab("No interactions recorded yet.",null,B.fU,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.a8e=new A.fW(B.aa,null,null,B.bEp,null)
-B.bEs=new A.ab("No app sessions uploaded in the last 14 days",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a8f=new A.fW(B.aa,null,null,B.bEs,null)
+B.bEr=new A.ab("No app sessions uploaded in the last 14 days",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.a8f=new A.fW(B.aa,null,null,B.bEr,null)
 B.qd=new A.Y(61183,"MaterialIcons",null,!1)
 B.kM=new A.B(0.3843137254901961,1,1,1,B.v)
 B.ajj=new A.bv(B.qd,48,null,B.kM,null,null)
@@ -205579,8 +205579,8 @@ B.vo=new A.vh(1,"minute")
 B.OE=s([B.mo,B.vo],A.ae("y<vh>"))
 B.bE2=new A.ab("Keep / Merge",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.abR=new A.hw(B.bE2,!1,null)
-B.bEx=new A.ab("Kennels followed",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.abM=new A.hw(B.bEx,!1,null)
+B.bEw=new A.ab("Kennels followed",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.abM=new A.hw(B.bEw,!1,null)
 B.bDn=new A.ab("Last used app",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.abY=new A.hw(B.bDn,!1,null)
 B.bCD=new A.ab("Last runs",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
@@ -206152,8 +206152,8 @@ B.bCJ=new A.ab("\u2014",null,null,null,null,null,null,null,null,null,null,null,n
 B.acN=new A.cA(B.tk,B.bCJ,B.b4,null,t.Ba)
 B.tl=new A.k3(1,"keep")
 B.bzv=new A.H(!0,B.hB,null,null,null,null,null,B.b3,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.bEr=new A.ab("Keep",null,B.bzv,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.acK=new A.cA(B.tl,B.bEr,B.b4,null,t.Ba)
+B.bEq=new A.ab("Keep",null,B.bzv,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.acK=new A.cA(B.tl,B.bEq,B.b4,null,t.Ba)
 B.AL=new A.k3(2,"merge")
 B.a0t=new A.H(!0,B.dD,null,null,null,null,null,B.b3,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.bD5=new A.ab("Merge",null,B.a0t,null,null,null,null,null,null,null,null,null,null,null,null,null)
@@ -212277,11 +212277,11 @@ B.bEk=new A.ab("Drop a pin",null,null,null,B.ai,null,null,null,null,null,null,nu
 B.bEl=new A.ab("Add one and it reaches every phone on the next sync.",null,B.i6,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.bEn=new A.ab("Import these runs",null,null,null,B.ai,null,null,null,null,null,null,null,null,null,null,null)
 B.bEo=new A.ab("Filters",null,B.m1,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.bEq=new A.ab("Email the run to members",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.bEt=new A.ab("Photo",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.bEu=new A.ab("This will invalidate your current API key. Any integrations using the old key will stop working. Continue?",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.bEv=new A.ab("Send the run to the kennel?",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.bEw=new A.ab("Credit",null,null,null,B.cn,null,null,null,null,null,null,null,null,null,null,null)
+B.bEs=new A.ab("Photo",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.bEt=new A.ab("This will invalidate your current API key. Any integrations using the old key will stop working. Continue?",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.bEu=new A.ab("Send the run to the kennel?",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.bEv=new A.ab("Credit",null,null,null,B.cn,null,null,null,null,null,null,null,null,null,null,null)
+B.bEx=new A.ab("Email the run",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.bEy=new A.ab("Copy link to run",null,B.kd,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.bEz=new A.ab("Save",null,B.kd,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.bEB=new A.ab("Hash run check-in sheets",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)

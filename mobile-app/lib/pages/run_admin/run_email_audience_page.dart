@@ -112,7 +112,7 @@ class RunEmailAudienceController extends GetxController {
         composer.includeIds.remove(e.hasherId);
       } else if (composer.includeIds.length >= 20) {
         hcSnack(
-          'At most 20 members can be moved in for one send.',
+          'At most 20 hashers can be moved in for one send.',
           error: true,
         );
       } else {
