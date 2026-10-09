@@ -551,7 +551,10 @@ class RunEmailAudienceDialog extends StatelessWidget {
             ],
             selected: {c.pill.value},
             onSelectionChanged: (Set<int> s) => c.pill.value = s.first,
-            // As in the app: the chosen pill is red with white text.
+            // The same style as "Send to N members" (HcButton.primary): the
+            // chosen pill red with white text, the other white; the button's
+            // corner radius, padding, height and type face, no shadow.
+            showSelectedIcon: false,
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.resolveWith(
                 (Set<WidgetState> states) => states.contains(WidgetState.selected)
@@ -560,14 +563,28 @@ class RunEmailAudienceDialog extends StatelessWidget {
               ),
               foregroundColor: WidgetStateProperty.resolveWith(
                 (Set<WidgetState> states) => states.contains(WidgetState.selected)
-                    ? Colors.white
-                    : Colors.black87,
+                    ? HcButtonTokens.onFilled
+                    : HcButtonTokens.primary,
               ),
               iconColor: WidgetStateProperty.resolveWith(
                 (Set<WidgetState> states) => states.contains(WidgetState.selected)
-                    ? Colors.white
-                    : Colors.black87,
+                    ? HcButtonTokens.onFilled
+                    : HcButtonTokens.primary,
               ),
+              side: const WidgetStatePropertyAll<BorderSide>(
+                BorderSide(color: HcButtonTokens.primary),
+              ),
+              shape: WidgetStatePropertyAll<OutlinedBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(HcButtonTokens.radius),
+                ),
+              ),
+              padding: const WidgetStatePropertyAll<EdgeInsets>(HcButtonTokens.padding),
+              minimumSize: const WidgetStatePropertyAll<Size>(
+                Size(HcButtonTokens.minWidth, HcButtonTokens.minHeight),
+              ),
+              textStyle: const WidgetStatePropertyAll<TextStyle>(HcButtonTokens.textStyle),
+              elevation: const WidgetStatePropertyAll<double>(0),
             ),
           ),
         ),
