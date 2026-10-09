@@ -27,8 +27,9 @@ namespace HcWebApi.Endpoints
 
     /// <summary>
     /// The one way the API sends email (E18). Every message goes out as
-    /// noreply@harriercentral.com, DKIM-signed by Microsoft 365, with replies to
-    /// connect@harriercentral.com.
+    /// noreply@harriercentral.com, DKIM-signed by Microsoft 365. There is no
+    /// Reply-To: a reply lands in the noreply@ shared mailbox, which James reads
+    /// (his choice, 2026-10-09).
     ///
     /// Why it exists: until 2026-10-08 every endpoint posted to a Logic App that
     /// sent through an Outlook.com connector as gd@jamesawhite.com. That domain
@@ -40,7 +41,11 @@ namespace HcWebApi.Endpoints
     ///
     /// Transport: Microsoft Graph sendMail (application permission Mail.Send),
     /// when HC_GRAPH_TENANT_ID / HC_GRAPH_CLIENT_ID / HC_GRAPH_CLIENT_SECRET /
-    /// HC_GRAPH_MAILBOX are set. Graph answers 202 or a real error, so a failure
+    /// HC_GRAPH_MAILBOX are set. HC_GRAPH_MAILBOX is the noreply@ SHARED mailbox:
+    /// Graph app-only ignores an alias in "from" and sends as the mailbox's
+    /// primary address, so the sending address must be a mailbox of its own.
+    /// The app is authorised by Exchange RBAC for Applications scoped to that one
+    /// mailbox, not by a tenant-wide Mail.Send grant. Graph answers 202 or a real error, so a failure
     /// is a failure. Until they are set it falls back to the Logic App, now
     /// reading its answer — so this can ship before the Graph setup is finished.
     ///
@@ -58,9 +63,6 @@ namespace HcWebApi.Endpoints
         /// <summary>The address every email is from. An alias of <see cref="GraphMailbox"/>; the
         /// tenant must have SendFromAliasEnabled, or Exchange substitutes the mailbox's primary address.</summary>
         public static string From => Env("HC_EMAIL_FROM") ?? "noreply@harriercentral.com";
-
-        /// <summary>Where replies go — a mailbox a person reads.</summary>
-        public static string ReplyTo => Env("HC_EMAIL_REPLY_TO") ?? "connect@harriercentral.com";
 
         public const string FromName = "Harrier Central";
 
@@ -143,7 +145,6 @@ namespace HcWebApi.Endpoints
                 ["body"] = new { contentType = "HTML", content = html },
                 ["from"] = Address(From, FromName),
                 ["toRecipients"] = new[] { Address(to) },
-                ["replyTo"] = new[] { Address(ReplyTo, FromName) },
             };
             if (attachment != null)
             {
