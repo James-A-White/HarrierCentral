@@ -1,0 +1,402 @@
+using System.Data;
+using System.Globalization;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+
+namespace HcWebApi.Endpoints
+{
+    /// <summary>
+    /// Save and send → Email (E9.F6.S6–S9). One endpoint, three actions, all
+    /// authenticated with the app's own device token against
+    /// hcapp_getRunEmailContext (the SP also gates on "may edit runs"):
+    ///
+    ///   context — the run, how many would receive an email, and whether one
+    ///             has already gone out (the dialog's "Email N members" line)
+    ///   draft   — Azure OpenAI writes the subject and the prose, optionally
+    ///             steered by the sender's instruction ("a Halloween story",
+    ///             "in French"); the sender edits and approves in the app
+    ///   send    — the approved subject + prose, the FACTS block built by code
+    ///             (date, venue, hares, price, app link, I'm-in / can't-make-it
+    ///             links), the layout, and each recipient's own unsubscribe
+    ///             link — one message per recipient through ACS; then the send
+    ///             is recorded on HC.Event
+    ///
+    /// The model never writes a fact. It is given the facts so the prose can
+    /// refer to them, but the block the reader acts on is generated here, so
+    /// "make it funny" can never move the start time.
+    ///
+    /// Request: POST JSON { deviceId, accessToken, eventId, action,
+    ///   instruction?, subject?, body? }. Replies are JSON; the SP's error
+    ///   envelope comes back as 400 { errorType, errorUserMessage, errorId }.
+    /// </summary>
+    public class RunEmail
+    {
+        private readonly ILogger<RunEmail> _log;
+        private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(60) };
+        public RunEmail(ILogger<RunEmail> log) { _log = log; }
+
+        public const int MaxInstruction = 300;
+        public const int MaxBody = 6000;
+        public const int MaxSubject = 150;
+
+        [Function("RunEmail")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+        {
+            JObject body;
+            try { body = JObject.Parse(await new StreamReader(req.Body).ReadToEndAsync()); }
+            catch { return new BadRequestObjectResult(new { errorUserMessage = "Bad request." }); }
+
+            string action = (body.Value<string>("action") ?? "").ToLowerInvariant();
+            if (!Guid.TryParse(body.Value<string>("deviceId"), out Guid deviceId)
+                || !Guid.TryParse(body.Value<string>("eventId"), out Guid eventId)
+                || string.IsNullOrEmpty(body.Value<string>("accessToken"))
+                || action is not ("context" or "draft" or "send"))
+                return new BadRequestObjectResult(new { errorUserMessage = "Bad request." });
+
+            string? cs = Environment.GetEnvironmentVariable("HcDbConnectionString");
+            if (cs == null) return new ObjectResult(new { errorUserMessage = "Server not configured." }) { StatusCode = 500 };
+
+            RunContext ctx;
+            try
+            {
+                var loaded = await LoadContextAsync(cs, deviceId, body.Value<string>("accessToken")!, eventId, includeRecipients: action == "send");
+                if (loaded.error != null) return new BadRequestObjectResult(loaded.error);
+                ctx = loaded.ctx!;
+            }
+            catch (Exception ex)
+            {
+                _log.LogError("RunEmail context failed: {Message}", ex.Message);
+                return new ObjectResult(new { errorUserMessage = "Could not load the run." }) { StatusCode = 500 };
+            }
+
+            switch (action)
+            {
+                case "context":
+                    return new OkObjectResult(ctx.ToSummary());
+
+                case "draft":
+                {
+                    string instruction = (body.Value<string>("instruction") ?? "").Trim();
+                    if (instruction.Length > MaxInstruction) instruction = instruction[..MaxInstruction];
+                    try
+                    {
+                        var (subject, prose) = await DraftAsync(cs, ctx, instruction);
+                        return new OkObjectResult(new { subject, body = prose, preview = BuildHtml(ctx, subject, prose, null) });
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.LogError("RunEmail draft failed: {Message}", ex.Message);
+                        await HcListMail.LogFailureAsync("RunEmail.draft", "-", ex.Message, eventId);
+                        return new ObjectResult(new { errorUserMessage = "The draft could not be written just now. Try again, or write it yourself." }) { StatusCode = 502 };
+                    }
+                }
+
+                case "send":
+                {
+                    if (!HcListMail.IsConfigured)
+                        return new ObjectResult(new { errorUserMessage = "Email sending is not configured." }) { StatusCode = 500 };
+                    string subject = (body.Value<string>("subject") ?? "").Trim();
+                    string prose = (body.Value<string>("body") ?? "").Trim();
+                    if (subject.Length == 0 || prose.Length == 0)
+                        return new BadRequestObjectResult(new { errorUserMessage = "The email needs a subject and some text." });
+                    if (subject.Length > MaxSubject) subject = subject[..MaxSubject];
+                    if (prose.Length > MaxBody) prose = prose[..MaxBody];
+                    if (ctx.Recipients.Count == 0)
+                        return new BadRequestObjectResult(new { errorUserMessage = "Nobody in this kennel has run emails switched on." });
+
+                    // Record first, so a crash mid-send still shows "emailed" rather
+                    // than inviting a second blast; failures are logged per address.
+                    await RecordSentAsync(cs, ctx, ctx.Recipients.Count);
+                    string plain = PlainText(ctx, prose);
+                    _ = Task.Run(async () =>
+                    {
+                        int ok = 0;
+                        foreach (var r in ctx.Recipients)
+                        {
+                            try
+                            {
+                                string unsub = HcListMail.UnsubscribeUrl(r.HasherId, ctx.KennelId);
+                                await HcListMail.SendAsync(r.Email, subject, BuildHtml(ctx, subject, prose, unsub),
+                                    plain + $"\n\nUnsubscribe from {ctx.KennelName} run emails: {unsub}", unsub);
+                                ok++;
+                            }
+                            catch (Exception ex)
+                            {
+                                await HcListMail.LogFailureAsync("RunEmail.send", r.Email, ex.Message, eventId);
+                            }
+                            // ACS paces at tens of messages a minute; a short gap keeps a
+                            // big kennel inside it rather than tripping 429s.
+                            await Task.Delay(250);
+                        }
+                        _log.LogInformation("RunEmail: {Ok}/{Total} accepted for event {Event}", ok, ctx.Recipients.Count, eventId);
+                    });
+                    return new OkObjectResult(new { sent = ctx.Recipients.Count });
+                }
+            }
+            return new BadRequestObjectResult(new { errorUserMessage = "Bad request." });
+        }
+
+        // ── Context ────────────────────────────────────────────────────────────
+
+        public sealed record Recipient(Guid HasherId, string Email, string Name);
+
+        public sealed class RunContext
+        {
+            public Guid EventId, KennelId, PublicEventId;
+            public int EventNumber, IsCountedRun, EmailSendCount;
+            public string EventName = "", Hares = "", Venue = "", Street = "", City = "", PostCode = "", Description = "";
+            public string KennelName = "", KennelShortName = "", KennelSlug = "", KennelLogo = "", SenderName = "", CurrencySymbol = "";
+            public DateTime StartLocal;
+            public decimal PriceMembers, PriceNonMembers;
+            public DateTimeOffset? EmailLastSentAt;
+            public int? EmailLastSentCount;
+            public int RecipientCount;
+            public List<Recipient> Recipients = new();
+
+            public bool Counted => IsCountedRun == 1 && EventNumber > 0;
+            public string Url => Counted
+                ? $"https://www.hashruns.org/{KennelSlug.ToLowerInvariant()}/{EventNumber}"
+                : $"https://www.hashruns.org/#/RID?publicEventId={PublicEventId:D}";
+            public string RsvpUrl(bool yes) => Counted ? $"{Url}?RSVP={(yes ? "Yes" : "No")}" : $"{Url}&RSVP={(yes ? "Yes" : "No")}";
+            public string Title => (Counted ? $"{KennelShortName} #{EventNumber}" : KennelShortName) + (EventName.Length > 0 ? $" – {EventName}" : "");
+            public string When => StartLocal.ToString("dddd d MMMM yyyy, h:mm tt", CultureInfo.InvariantCulture);
+            public string Where
+            {
+                get
+                {
+                    var parts = new List<string>();
+                    if (Venue.Length > 0) parts.Add(Venue);
+                    if (Street.Length > 0 && !Venue.Contains(Street, StringComparison.OrdinalIgnoreCase)) parts.Add(Street);
+                    if (City.Length > 0 && !string.Join(' ', parts).Contains(City, StringComparison.OrdinalIgnoreCase)) parts.Add(City);
+                    if (PostCode.Length > 0) parts.Add(PostCode);
+                    return string.Join(", ", parts);
+                }
+            }
+            public string Price
+            {
+                get
+                {
+                    string Money(decimal v)
+                    {
+                        string sym = CurrencySymbol.Length > 0 ? CurrencySymbol : "^";
+                        if (!sym.Contains('^')) sym += "^";
+                        return sym.Replace("^", v.ToString("0.00", CultureInfo.InvariantCulture));
+                    }
+                    if (PriceMembers <= 0 && PriceNonMembers <= 0) return "";
+                    if (PriceMembers == PriceNonMembers || PriceMembers <= 0) return Money(PriceNonMembers);
+                    if (PriceNonMembers <= 0) return Money(PriceMembers);
+                    return $"{Money(PriceMembers)} (members) · {Money(PriceNonMembers)} (non-members)";
+                }
+            }
+            public object ToSummary() => new
+            {
+                eventId = EventId, title = Title, when = When, where = Where, hares = Hares, price = Price, url = Url,
+                recipientCount = RecipientCount, emailSendCount = EmailSendCount, emailLastSentAt = EmailLastSentAt, emailLastSentCount = EmailLastSentCount,
+            };
+        }
+
+        private static async Task<(RunContext? ctx, object? error)> LoadContextAsync(string cs, Guid deviceId, string accessToken, Guid eventId, bool includeRecipients)
+        {
+            using var conn = new SqlConnection(cs);
+            await conn.OpenAsync();
+            using var cmd = new SqlCommand("[HC6].[hcapp_getRunEmailContext]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 30 };
+            cmd.Parameters.Add("@deviceId", SqlDbType.UniqueIdentifier).Value = deviceId;
+            cmd.Parameters.Add("@accessToken", SqlDbType.NVarChar, 1000).Value = accessToken;
+            cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventId;
+            cmd.Parameters.Add("@includeRecipients", SqlDbType.SmallInt).Value = includeRecipients ? 1 : 0;
+            using var r = await cmd.ExecuteReaderAsync();
+            if (!await r.ReadAsync()) return (null, new { errorUserMessage = "Run not found." });
+            if (HasColumn(r, "errorType"))
+                return (null, new { errorType = r["errorType"], errorUserMessage = r["errorUserMessage"], errorId = r["errorId"] });
+
+            string S(string c) => r[c] as string ?? "";
+            var ctx = new RunContext
+            {
+                EventId = (Guid)Guid.Parse(S("eventId")), EventNumber = Convert.ToInt32(r["eventNumber"]), EventName = S("eventName").Trim(),
+                IsCountedRun = Convert.ToInt32(r["isCountedRun"]), PublicEventId = Guid.Parse(S("publicEventId")),
+                StartLocal = (DateTime)r["startLocal"], Hares = S("hares").Trim(), Venue = S("venue").Trim(), Street = S("street").Trim(),
+                City = S("city").Trim(), PostCode = S("postCode").Trim(), Description = S("description").Trim(),
+                PriceMembers = r["priceMembers"] is DBNull ? 0 : Convert.ToDecimal(r["priceMembers"]),
+                PriceNonMembers = r["priceNonMembers"] is DBNull ? 0 : Convert.ToDecimal(r["priceNonMembers"]),
+                CurrencySymbol = S("currencySymbol"), KennelId = Guid.Parse(S("kennelId")), KennelName = S("kennelName"),
+                KennelShortName = S("kennelShortName"), KennelSlug = S("kennelSlug"), KennelLogo = S("kennelLogo"), SenderName = S("senderName"),
+            };
+            if (await r.NextResultAsync() && await r.ReadAsync())
+            {
+                ctx.EmailSendCount = Convert.ToInt32(r["emailSendCount"]);
+                ctx.EmailLastSentAt = r["emailLastSentAt"] is DBNull ? null : (DateTimeOffset)r["emailLastSentAt"];
+                ctx.EmailLastSentCount = r["emailLastSentCount"] is DBNull ? null : Convert.ToInt32(r["emailLastSentCount"]);
+                ctx.RecipientCount = Convert.ToInt32(r["recipientCount"]);
+            }
+            if (includeRecipients && await r.NextResultAsync())
+                while (await r.ReadAsync())
+                    ctx.Recipients.Add(new Recipient(Guid.Parse(S("hasherId")), S("email"), S("displayName")));
+            return (ctx, null);
+        }
+
+        private static bool HasColumn(SqlDataReader r, string name)
+        {
+            for (int i = 0; i < r.FieldCount; i++) if (r.GetName(i).Equals(name, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
+        private static async Task RecordSentAsync(string cs, RunContext ctx, int count)
+        {
+            using var conn = new SqlConnection(cs);
+            await conn.OpenAsync();
+            using var cmd = new SqlCommand("[HC6].[nonApi_recordRunEmailSent]", conn) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = ctx.EventId;
+            cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = DBNull.Value;
+            cmd.Parameters.Add("@recipientCount", SqlDbType.Int).Value = count;
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        // ── Draft ──────────────────────────────────────────────────────────────
+
+        private const string SystemPrompt =
+            "You write short, warm emails from a hash house harriers club to its members, announcing a run. " +
+            "You are given the facts; a separate block in the email will show them exactly, so DO NOT repeat the date, time, address, price or links as a list — " +
+            "refer to them in prose if you like, but never change or invent any fact. Never invent hares, venues, times or prices. " +
+            "Write in the sender's voice (first person plural: 'we'). Keep it to 60–180 words unless the instruction asks for a story. " +
+            "Hash jargon (hare, on-on, down-down, circle) stays as it is. No subject-line clickbait. " +
+            "If an instruction asks for another language, write the whole email in that language. " +
+            "Return JSON: {\"subject\": string (under 80 characters), \"body\": string (plain text; paragraphs separated by blank lines; no HTML; no sign-off line — one is added)}.";
+
+        private static async Task<(string subject, string body)> DraftAsync(string cs, RunContext ctx, string instruction)
+        {
+            string endpoint = (Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? "").TrimEnd('/');
+            string key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY") ?? "";
+            string deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT") ?? "runs-page";
+            if (endpoint.Length == 0 || key.Length == 0) throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY are not set");
+
+            var facts = new StringBuilder();
+            facts.AppendLine($"Club: {ctx.KennelName} ({ctx.KennelShortName})");
+            facts.AppendLine($"Run: {ctx.Title}");
+            facts.AppendLine($"When: {ctx.When}");
+            if (ctx.Where.Length > 0) facts.AppendLine($"Where: {ctx.Where}");
+            if (ctx.Hares.Length > 0) facts.AppendLine($"Hares: {ctx.Hares}");
+            if (ctx.Price.Length > 0) facts.AppendLine($"Price: {ctx.Price}");
+            if (ctx.Description.Length > 0) facts.AppendLine($"Notes from the organiser: {Truncate(ctx.Description, 1200)}");
+            facts.AppendLine($"Sender: {ctx.SenderName}");
+            if (instruction.Length > 0) facts.AppendLine($"\nInstruction from the sender: {instruction}");
+
+            var payload = new JObject
+            {
+                ["messages"] = new JArray(
+                    new JObject { ["role"] = "system", ["content"] = SystemPrompt },
+                    new JObject { ["role"] = "user", ["content"] = facts.ToString() }),
+                ["temperature"] = 0.7,
+                ["max_tokens"] = 1200,
+                ["response_format"] = new JObject
+                {
+                    ["type"] = "json_schema",
+                    ["json_schema"] = new JObject
+                    {
+                        ["name"] = "run_email", ["strict"] = true,
+                        ["schema"] = JObject.Parse("{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"subject\",\"body\"],\"properties\":{\"subject\":{\"type\":\"string\"},\"body\":{\"type\":\"string\"}}}"),
+                    },
+                },
+            };
+
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            using var req = new HttpRequestMessage(HttpMethod.Post, $"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version=2024-10-21")
+            { Content = new StringContent(payload.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json") };
+            req.Headers.Add("api-key", key);
+            using HttpResponseMessage res = await Http.SendAsync(req);
+            string text = await res.Content.ReadAsStringAsync();
+            var j = JObject.Parse(text);
+            int pt = j["usage"]?.Value<int>("prompt_tokens") ?? 0, ct = j["usage"]?.Value<int>("completion_tokens") ?? 0;
+            await LogAiUsageAsync(cs, ctx.KennelId, deployment, res.IsSuccessStatusCode ? "ok" : $"http_{(int)res.StatusCode}", pt, ct, clock.ElapsedMilliseconds);
+            if (!res.IsSuccessStatusCode) throw new InvalidOperationException($"Azure OpenAI {(int)res.StatusCode}: {Truncate(text, 300)}");
+
+            string content = j["choices"]?[0]?["message"]?["content"]?.ToString() ?? throw new InvalidOperationException("no content");
+            var o = JObject.Parse(content);
+            string subject = (o.Value<string>("subject") ?? ctx.Title).Trim();
+            string prose = (o.Value<string>("body") ?? "").Trim();
+            if (prose.Length == 0) throw new InvalidOperationException("empty draft");
+            return (subject.Length > MaxSubject ? subject[..MaxSubject] : subject, prose.Length > MaxBody ? prose[..MaxBody] : prose);
+        }
+
+        private static async Task LogAiUsageAsync(string cs, Guid kennelId, string model, string outcome, int pt, int ct, long ms)
+        {
+            // Same table and prices as the runs-page import, so the AI monitor sees it.
+            decimal perMIn = decimal.TryParse(Environment.GetEnvironmentVariable("AZURE_OPENAI_USD_PER_M_IN"), NumberStyles.Number, CultureInfo.InvariantCulture, out decimal pi) ? pi : 0.15m;
+            decimal perMOut = decimal.TryParse(Environment.GetEnvironmentVariable("AZURE_OPENAI_USD_PER_M_OUT"), NumberStyles.Number, CultureInfo.InvariantCulture, out decimal po) ? po : 0.60m;
+            try
+            {
+                using var conn = new SqlConnection(cs);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("HC6.nonApi_logAiUsage", conn) { CommandType = CommandType.StoredProcedure };
+                cmd.Parameters.Add("@sessionId", SqlDbType.UniqueIdentifier).Value = Guid.NewGuid();
+                cmd.Parameters.Add("@feature", SqlDbType.NVarChar, -1).Value = "run-email";
+                cmd.Parameters.Add("@kennelId", SqlDbType.UniqueIdentifier).Value = kennelId;
+                cmd.Parameters.Add("@model", SqlDbType.NVarChar, -1).Value = model;
+                cmd.Parameters.Add("@promptTokens", SqlDbType.Int).Value = pt;
+                cmd.Parameters.Add("@completionTokens", SqlDbType.Int).Value = ct;
+                var c = cmd.Parameters.Add("@costUsd", SqlDbType.Decimal); c.Precision = 12; c.Scale = 8; c.Value = (pt * perMIn + ct * perMOut) / 1_000_000m;
+                cmd.Parameters.Add("@durationMs", SqlDbType.Int).Value = (int)Math.Min(ms, int.MaxValue);
+                cmd.Parameters.Add("@outcome", SqlDbType.NVarChar, -1).Value = outcome;
+                cmd.Parameters.Add("@detail", SqlDbType.NVarChar, -1).Value = DBNull.Value;
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch { /* bookkeeping never fails a draft */ }
+        }
+
+        // ── Assembly ───────────────────────────────────────────────────────────
+
+        private static string Truncate(string s, int n) => s.Length <= n ? s : s[..n];
+        private static string H(string s) => WebUtility.HtmlEncode(s);
+
+        /// <summary>Plain text → paragraphs. The prose is the sender's words, encoded, never raw HTML.</summary>
+        private static string Paragraphs(string prose) =>
+            string.Concat(Regex.Split(prose.Replace("\r\n", "\n"), @"\n\s*\n")
+                .Select(p => p.Trim()).Where(p => p.Length > 0)
+                .Select(p => $"<p style=\"margin:0 0 14px\">{H(p).Replace("\n", "<br>")}</p>"));
+
+        /// <summary>
+        /// The whole email: the sender's prose, then the facts block that code
+        /// built, then the kennel line, inside the shared layout — plus this
+        /// recipient's unsubscribe line when one is given.
+        /// </summary>
+        public static string BuildHtml(RunContext ctx, string subject, string prose, string? unsubscribeUrl)
+        {
+            string Row(string label, string value) => value.Length == 0 ? "" :
+                $"<tr><td style=\"padding:6px 10px 6px 0;color:#6b7785;white-space:nowrap;vertical-align:top\">{label}</td><td style=\"padding:6px 0;vertical-align:top\">{H(value)}</td></tr>";
+            string Button(string href, string text, string bg) =>
+                $"<a href=\"{href}\" style=\"display:inline-block;margin:6px 6px 0 0;padding:10px 16px;background:{bg};color:#fff;text-decoration:none;border-radius:6px;font-weight:600\">{H(text)}</a>";
+
+            var sb = new StringBuilder();
+            sb.Append(Paragraphs(prose));
+            sb.Append($"<p style=\"margin:0 0 18px\">On on,<br>{H(ctx.SenderName)}<br><span style=\"color:#6b7785\">{H(ctx.KennelName)}</span></p>");
+            sb.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;background:#f4f6f8;border-radius:8px;padding:14px 16px;font-size:15px\"><tr><td>");
+            sb.Append($"<div style=\"font-weight:700;font-size:17px;margin-bottom:6px\">{H(ctx.Title)}</div>");
+            sb.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\">");
+            sb.Append(Row("When", ctx.When)).Append(Row("Where", ctx.Where)).Append(Row("Hares", ctx.Hares)).Append(Row("Price", ctx.Price));
+            sb.Append("</table><div style=\"margin-top:10px\">");
+            sb.Append(Button(ctx.RsvpUrl(true), "✅ I'm in", "#2f855a")).Append(Button(ctx.RsvpUrl(false), "❌ Can't make it", "#9b2c2c")).Append(Button(ctx.Url, "Open the run", "#2b6cb0"));
+            sb.Append("</div></td></tr></table>");
+            if (unsubscribeUrl != null)
+                sb.Append($"<p style=\"margin:18px 0 0;font-size:12px;color:#6b7785\">You get run emails because you switched them on for {H(ctx.KennelName)} in Harrier Central. " +
+                          $"<a href=\"{unsubscribeUrl}\" style=\"color:#6b7785\">Stop run emails from {H(ctx.KennelShortName)}</a>, or change it per run or per kennel in the app.</p>");
+            return HcEmail.Layout(subject, sb.ToString());
+        }
+
+        private static string PlainText(RunContext ctx, string prose)
+        {
+            var sb = new StringBuilder(prose).Append("\n\nOn on,\n").Append(ctx.SenderName).Append('\n').Append(ctx.KennelName).Append("\n\n");
+            sb.Append(ctx.Title).Append('\n').Append("When: ").Append(ctx.When).Append('\n');
+            if (ctx.Where.Length > 0) sb.Append("Where: ").Append(ctx.Where).Append('\n');
+            if (ctx.Hares.Length > 0) sb.Append("Hares: ").Append(ctx.Hares).Append('\n');
+            if (ctx.Price.Length > 0) sb.Append("Price: ").Append(ctx.Price).Append('\n');
+            sb.Append("I'm in: ").Append(ctx.RsvpUrl(true)).Append('\n').Append("Can't make it: ").Append(ctx.RsvpUrl(false)).Append('\n').Append("Open the run: ").Append(ctx.Url);
+            return sb.ToString();
+        }
+    }
+}

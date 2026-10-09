@@ -766,9 +766,11 @@ against **every row**, stamping a current `UpdatedAt` on all of them. The sync
 system then treats every row as recently modified and forces a full re-sync to
 all clients — unnecessary load for every user.
 
-**Rule:** Never write or suggest an `ALTER TABLE ADD COLUMN` script for a
-synced table without explicitly noting that James must disable the `UpdatedAt`
-trigger first, run the ALTER, then re-enable it. Do not run this autonomously.
+**Rule (James, 2026-10-09 — replaces the earlier "James must do it"):** Claude
+runs the ALTER itself, inside one script that first `DISABLE TRIGGER`s the
+table's `UpdatedAt` trigger (verify the name in `sys.triggers`), adds the
+columns, and `ENABLE TRIGGER`s it again — idempotent (`IF COL_LENGTH(...) IS
+NULL`), run once, then archived. Never an ALTER with the trigger live.
 
 **After any page migration or new `Obx`, run the on-device screen walk
 (Flutter/Dart):**

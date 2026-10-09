@@ -112,6 +112,7 @@ export 'package:harrier_central/data/hc3_services/kennels/kennels_model_ns.dart'
 export 'package:harrier_central/data/hc3_services/kennels/kennels_service.dart';
 export 'package:harrier_central/data/hc3_services/payments/payments_model_ns.dart';
 export 'package:harrier_central/data/hc3_services/payments/payments_service.dart';
+export 'package:harrier_central/data/hc3_services/run_email/run_email_service.dart';
 export 'package:harrier_central/data/hc3_services/receipts/receipts_model_ns.dart';
 export 'package:harrier_central/data/hc3_services/receipts/receipts_service.dart';
 export 'package:harrier_central/data/hc3_services/regions/regions_model_ns.dart';
@@ -287,6 +288,8 @@ export 'package:harrier_central/pages/run_admin/other_payment_popup.dart';
 export 'package:harrier_central/pages/run_admin/payment_popup.dart';
 export 'package:harrier_central/pages/run_admin/payment_report.dart';
 export 'package:harrier_central/pages/run_admin/payment_report_controller.dart';
+export 'package:harrier_central/pages/run_admin/run_email_composer_controller.dart';
+export 'package:harrier_central/pages/run_admin/run_email_composer_page.dart';
 export 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
 export 'package:harrier_central/pages/run_admin/receipts_page.dart';
 export 'package:harrier_central/pages/run_admin/receipts_controller.dart';
