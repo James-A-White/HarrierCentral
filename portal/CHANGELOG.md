@@ -1,4 +1,4 @@
-## 2.0.87+754 (unreleased)
+## 2.0.87+754 (2026-10-09)
 ### Fixes
 - **Usage Data**: tapping a run in the recent-runs carousel opens its page in the current `hashruns.org/<kennel>/<number>` form (uncounted runs keep the legacy link). Needs `hcportal_getUsageData` from the same release.
 
