@@ -131,7 +131,7 @@ class RunEmailDialogController extends GetxController {
         : ' on ${DateFormat('d MMM, HH:mm').format(c.emailLastSentAt!)}';
     return '⚠ Already emailed ${c.emailSendCount} '
         '${c.emailSendCount == 1 ? 'time' : 'times'} — last to '
-        '${c.emailLastSentCount ?? '?'} ${c.emailLastSentCount == 1 ? 'member' : 'members'}$when.';
+        '${c.emailLastSentCount ?? '?'} ${c.emailLastSentCount == 1 ? 'hasher' : 'hashers'}$when.';
   }
 
   /// The finished email — facts block, buttons, footer — to the sender's own
@@ -200,7 +200,7 @@ class RunEmailDialogController extends GetxController {
             '${excludeIds.length} moved out.';
     final bool? go = await Get.dialog<bool>(
       AlertDialog(
-        title: Text('Send to $n ${n == 1 ? 'member' : 'members'}?'),
+        title: Text('Send to $n ${n == 1 ? 'hasher' : 'hashers'}?'),
         content: Text(
           'The email goes to everyone in $kennelShortName who has run emails '
           'switched on. The run\'s date, venue, hares, price and the I\'m-in / '
@@ -267,7 +267,7 @@ class RunEmailDialog extends StatelessWidget {
       ),
       tag: tagFor(publicEventId),
       builder: (RunEmailDialogController c) => AlertDialog(
-        title: const Text('Email the run to members'),
+        title: const Text('Email the run'),
         content: SizedBox(
           width: 600,
           child: Obx(() => _body(c)),
@@ -287,8 +287,8 @@ class RunEmailDialog extends StatelessWidget {
               label: c.isSending.value
                   ? 'Sending…'
                   : n == 0
-                      ? 'Nobody has run emails on'
-                      : 'Send to $n ${n == 1 ? 'member' : 'members'}',
+                      ? 'Nobody to email'
+                      : 'Send to $n ${n == 1 ? 'hasher' : 'hashers'}',
               onPressed: busy || empty || n == 0 ? null : c.send,
             );
           }),
@@ -579,7 +579,7 @@ class RunEmailAudienceController extends GetxController {
       if (!composer.excludeIds.remove(e.hasherId)) composer.excludeIds.add(e.hasherId);
     } else if (!composer.includeIds.remove(e.hasherId)) {
       if (composer.includeIds.length >= 20) {
-        error.value = 'At most 20 members can be moved in for one send.';
+        error.value = 'At most 20 hashers can be moved in for one send.';
       } else {
         composer.includeIds.add(e.hasherId);
       }

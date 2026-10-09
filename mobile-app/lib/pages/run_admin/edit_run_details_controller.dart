@@ -617,8 +617,8 @@ class EditRunDetailsController extends GetxController
                     secondary: const Icon(Icons.mail_outline, size: 26),
                     title: Text(
                       emailContext == null
-                          ? 'Email members'
-                          : 'Email $n ${n == 1 ? 'member' : 'members'}',
+                          ? 'Email hashers'
+                          : 'Email $n ${n == 1 ? 'hasher' : 'hashers'}',
                     ),
                     subtitle: Text(_emailSubtitle(emailContext, emailUnavailable)),
                   ),
@@ -650,7 +650,7 @@ class EditRunDetailsController extends GetxController
         ),
       );
       if (sent != null && sent > 0) {
-        hcSnack('Email sent to $sent ${sent == 1 ? 'member' : 'members'}.');
+        hcSnack('Email sent to $sent ${sent == 1 ? 'hasher' : 'hashers'}.');
       }
     }
   }

@@ -1200,7 +1200,7 @@ class RunEditPageController extends TabUiController
                       : (bool? v) => setDialog(() => doEmail = v ?? false),
                   controlAffinity: ListTileControlAffinity.leading,
                   secondary: const Icon(Icons.mail_outline),
-                  title: Text(emailContext == null ? 'Email members' : 'Email $n ${n == 1 ? 'member' : 'members'}'),
+                  title: Text(emailContext == null ? 'Email hashers' : 'Email $n ${n == 1 ? 'hasher' : 'hashers'}'),
                   subtitle: Text(emailSubtitle()),
                 ),
               ],
@@ -1239,7 +1239,7 @@ class RunEditPageController extends TabUiController
         tag: RunEmailDialog.tagFor(publicEventId),
       );
       if (sent != null && sent > 0) {
-        await CoreUtilities.showAlert('Email sent', 'Sent to $sent ${sent == 1 ? 'member' : 'members'}.', 'OK');
+        await CoreUtilities.showAlert('Email sent', 'Sent to $sent ${sent == 1 ? 'hasher' : 'hashers'}.', 'OK');
       }
     }
   }

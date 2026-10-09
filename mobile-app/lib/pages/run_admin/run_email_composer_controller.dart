@@ -132,7 +132,7 @@ class RunEmailComposerController extends GetxController {
     return '⚠ Already emailed ${c.emailSendCount} '
         '${c.emailSendCount == 1 ? 'time' : 'times'} — last to '
         '${c.emailLastSentCount ?? '?'} '
-        '${c.emailLastSentCount == 1 ? 'member' : 'members'}$when.';
+        '${c.emailLastSentCount == 1 ? 'hasher' : 'hashers'}$when.';
   }
 
   /// The finished email — facts block, buttons, footer — to the sender's own
@@ -198,7 +198,7 @@ class RunEmailComposerController extends GetxController {
         : '\n\nOverrides for this send only: ${includeIds.length} moved in, '
               '${excludeIds.length} moved out.';
     final bool? go = await Utilities.showAlert(
-      'Send to $n ${n == 1 ? 'member' : 'members'}?',
+      'Send to $n ${n == 1 ? 'hasher' : 'hashers'}?',
       'The email goes to everyone in ${eventAggregate.kennel.kennelShortName} '
           'who has run emails switched on. The run\'s date, venue, hares, '
           'price and the I\'m-in / can\'t-make-it buttons are added under '
