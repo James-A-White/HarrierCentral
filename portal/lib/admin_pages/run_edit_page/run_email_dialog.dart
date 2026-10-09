@@ -125,6 +125,12 @@ class RunEmailDialogController extends GetxController {
       );
       if (isClosed) return;
       notice.value = 'Preview sent to your inbox.';
+      await CoreUtilities.showAlert(
+        'Preview sent',
+        'The finished email has been sent to your inbox. Check the spam folder '
+            'if it is not there in a minute. Nothing was recorded against the run.',
+        'OK',
+      );
     } on RunEmailException catch (e) {
       if (isClosed) return;
       error.value = e.message;

@@ -125,7 +125,15 @@ class RunEmailComposerController extends GetxController {
       );
       if (isClosed) return;
       final String me = getStringPref(StringPrefsEnum.email) ?? 'your email';
-      hcSnack('Preview sent to $me — check your inbox.', seconds: 5);
+      // A dialog, not a toast: the sender should not have to wonder whether
+      // the tap took (James, 2026-10-09).
+      await Utilities.showAlert(
+        'Preview sent',
+        'The finished email has been sent to $me. Check your inbox — and '
+            'the spam folder if it is not there in a minute. Nothing was '
+            'recorded against the run.',
+        'OK',
+      );
     } on RunEmailException catch (e) {
       if (isClosed) return;
       hcSnack(e.message, error: true, seconds: 6);

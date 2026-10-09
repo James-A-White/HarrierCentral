@@ -1,3 +1,7 @@
+## 3.1.9+1458 (unreleased)
+### Improvements
+- **Preview to me** confirms with a dialog once the preview has been sent.
+
 ## 3.1.9+1457 (2026-10-09)
 Private dance — James, Tuna Melt and Kilty.
 ### New Features

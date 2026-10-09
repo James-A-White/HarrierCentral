@@ -1,3 +1,8 @@
+## 2.0.87+752 (unreleased)
+### Improvements
+- **Preview to me** confirms with a dialog once the preview has been sent.
+- **Usage Data**: an Email row — how many people run emails reached — with a drill-down listing each send (run, sender, subject, recipients, overrides, audit copy).
+
 ## 2.0.87+751 (2026-10-09)
 ### Improvements
 - **Who gets the email**: the chosen pill is red with white text, as in the app.

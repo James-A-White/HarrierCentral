@@ -73,7 +73,29 @@ ORDER BY h.DisplayName;";
                 await Task.Delay(250);
             }
             _log.LogInformation("RunEmailAnnouncement: {Ok}/{Total} accepted", ok, rows.Count);
-            return new OkObjectResult(new { recipients = rows.Count, accepted = ok, dryRun = false });
+            // The audit copy: the text once, every recipient, and a log row for the monitor.
+            string? audit = await EmailAudit.WriteAsync(new EmailAudit.Record
+            {
+                Kind = "announcement", Subject = "New: run emails from your kennel, when you want them",
+                Html = Html("{name}", "{kennel}", "{unsubscribe}"), PlainText = Plain("{name}", "{kennel}", "{unsubscribe}"),
+                Sender = "Harrier Central",
+                Recipients = rows.Select(x => (object)new { hasherId = x.hasherId, email = x.email, name = x.name, kennel = x.kennelName }).ToList(),
+            });
+            try
+            {
+                using var conn = new SqlConnection(cs);
+                await conn.OpenAsync();
+                using var cmd = new SqlCommand("[HC6].[nonApi_recordRunEmailSent]", conn) { CommandType = CommandType.StoredProcedure };
+                cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = DBNull.Value;
+                cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = DBNull.Value;
+                cmd.Parameters.Add("@recipientCount", SqlDbType.Int).Value = ok;
+                cmd.Parameters.Add("@kind", SqlDbType.NVarChar, 20).Value = "announcement";
+                cmd.Parameters.Add("@subject", SqlDbType.NVarChar, 200).Value = "New: run emails from your kennel, when you want them";
+                cmd.Parameters.Add("@auditPath", SqlDbType.NVarChar, 400).Value = (object?)audit ?? DBNull.Value;
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) { _log.LogWarning("RunEmailAnnouncement: log row not written: {Message}", ex.Message); }
+            return new OkObjectResult(new { recipients = rows.Count, accepted = ok, dryRun = false, audit });
         }
 
         private static string Html(string name, string kennelName, string unsub)

@@ -9,7 +9,7 @@ AS
 --              HC admin portal dashboard. Includes app version
 --              distribution, integration job status, usage metrics
 --              across data types (Account, Activity, Event, Kennel,
---              Login, Payment, Portal, Error, Push, App Error, PackTrack,
+--              Login, Payment, Portal, Error, Push, App Error, PackTrack, Email,
 --              AI Tokens, Azure Cost [pence] — the last two added 2026-10-05), recent login details,
 --              and recently updated/active events.
 -- Parameters: @deviceId, @accessToken (auth)
@@ -382,6 +382,31 @@ BEGIN TRY
 		CROSS JOIN DateBounds b
 		WHERE pl.SentAt >= b.m2
 			AND pl.IsVisible = 1
+
+		UNION ALL
+
+		-- Email: people a run email reached — one GeneralLog row per send
+		-- (nonApi_recordRunEmailSent), its JSON Data carrying the recipient
+		-- count; previews and the launch announcement are not run emails.
+		-- Rows written before 2026-10-09 are plain text and count 0 — ISJSON
+		-- keeps JSON_VALUE from throwing on them.
+		SELECT
+			'Email' AS dataType,
+			13 AS id,
+			SUM(CASE WHEN g.[Timestamp] >= b.hr1 THEN g.n ELSE 0 END),
+			SUM(CASE WHEN g.[Timestamp] >= b.hr2 AND g.[Timestamp] < b.hr1 THEN g.n ELSE 0 END),
+			SUM(CASE WHEN g.[Timestamp] >= b.d1 THEN g.n ELSE 0 END),
+			SUM(CASE WHEN g.[Timestamp] >= b.d2 AND g.[Timestamp] < b.d1 THEN g.n ELSE 0 END),
+			SUM(CASE WHEN g.[Timestamp] >= b.w1 THEN g.n ELSE 0 END),
+			SUM(CASE WHEN g.[Timestamp] >= b.w2 AND g.[Timestamp] < b.w1 THEN g.n ELSE 0 END),
+			SUM(CASE WHEN g.[Timestamp] >= b.m1 THEN g.n ELSE 0 END),
+			SUM(CASE WHEN g.[Timestamp] >= b.m2 AND g.[Timestamp] < b.m1 THEN g.n ELSE 0 END)
+		FROM (SELECT gl.[Timestamp],
+		             CASE WHEN ISJSON(gl.Data) = 1 THEN TRY_CAST(JSON_VALUE(gl.Data, '$.recipients') AS INT) ELSE 0 END AS n
+		      FROM LOG.GeneralLog gl WITH (NOLOCK)
+		      WHERE gl.LogSource = 'RunEmail' AND gl.Message = 'Run email sent') g
+		CROSS JOIN DateBounds b
+		WHERE g.[Timestamp] >= b.m2
 
 		UNION ALL
 
