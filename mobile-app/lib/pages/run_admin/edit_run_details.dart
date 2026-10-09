@@ -45,8 +45,11 @@ class EditRunDetailsPage extends StatelessWidget {
       // One button mid-wizard (Next); two everywhere else: save, or save and
       // publish (E9.F6.S6). A Wrap, not a Row — at a large text size two
       // buttons are wider than a phone (CLAUDE.md).
-      final bool finalStep = !c.isNewRun || c.currentTab.value == EditingTabEnum.other;
-      final String saveLabel = c.isNewRun ? (finalStep ? 'Finish' : 'Next') : 'Save';
+      final bool finalStep =
+          !c.isNewRun || c.currentTab.value == EditingTabEnum.other;
+      final String saveLabel = c.isNewRun
+          ? (finalStep ? 'Finish' : 'Next')
+          : 'Save';
       final String sendLabel = c.isNewRun ? 'Finish and send' : 'Save and send';
       final ButtonStyle style = ElevatedButton.styleFrom(
         backgroundColor: hc_red,
@@ -54,44 +57,70 @@ class EditRunDetailsPage extends StatelessWidget {
         disabledForegroundColor: Colors.white70,
       );
 
+      // A bottomNavigationBar is given UNBOUNDED height, so this must size to
+      // its content: a min-height Column, never a Center (which fills whatever
+      // it is given — that put the two buttons alone on a yellow screen).
       return Container(
         constraints: const BoxConstraints(minHeight: 70.0),
         color: Colors.yellow[100],
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-        child: Center(
-          child: c.isUpdating.value
-              ? const SizedBox(
-                  height: 45.0,
-                  width: 45.0,
-                  child: HcAppCircularProgressIndicator(key: Key('331904772')),
-                )
-              : finalStep
-                  ? Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 12,
-                      runSpacing: 8,
-                      children: <Widget>[
-                        ElevatedButton(
-                          style: style,
-                          onPressed: enabled ? c.onSaveBarPressed : null,
-                          child: Text(saveLabel, style: ts_button, textAlign: TextAlign.center),
-                        ),
-                        ElevatedButton.icon(
-                          style: style,
-                          onPressed: enabled ? c.onSaveAndSendPressed : null,
-                          icon: const Icon(Icons.send, color: Colors.white, size: 18),
-                          label: Text(sendLabel, style: ts_button, textAlign: TextAlign.center),
-                        ),
-                      ],
-                    )
-                  : SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            c.isUpdating.value
+                ? const SizedBox(
+                    height: 45.0,
+                    width: 45.0,
+                    child: HcAppCircularProgressIndicator(
+                      key: Key('331904772'),
+                    ),
+                  )
+                : finalStep
+                ? Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: <Widget>[
+                      ElevatedButton(
                         style: style,
                         onPressed: enabled ? c.onSaveBarPressed : null,
-                        child: Text(saveLabel, style: ts_button, textAlign: TextAlign.center),
+                        child: Text(
+                          saveLabel,
+                          style: ts_button,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        style: style,
+                        onPressed: enabled ? c.onSaveAndSendPressed : null,
+                        icon: const Icon(
+                          Icons.send,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        label: Text(
+                          sendLabel,
+                          style: ts_button,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  )
+                : SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: style,
+                      onPressed: enabled ? c.onSaveBarPressed : null,
+                      child: Text(
+                        saveLabel,
+                        style: ts_button,
+                        textAlign: TextAlign.center,
                       ),
                     ),
+                  ),
+          ],
         ),
       );
     });
@@ -652,7 +681,10 @@ class EditRunDetailsPage extends StatelessWidget {
                                     onPressed: enabled
                                         ? c.openLocationLookup
                                         : null,
-                                    child: const Text('Lookup', textAlign: TextAlign.center),
+                                    child: const Text(
+                                      'Lookup',
+                                      textAlign: TextAlign.center,
+                                    ),
                                   );
                                 },
                               ),
@@ -862,7 +894,11 @@ class EditRunDetailsPage extends StatelessWidget {
                       40,
                     ), // double.infinity is the width and 30 is the height
                   ),
-                  child: Text('Use this image', style: ts_button, textAlign: TextAlign.center),
+                  child: Text(
+                    'Use this image',
+                    style: ts_button,
+                    textAlign: TextAlign.center,
+                  ),
                   onPressed: () async {
                     if ((c.eventAggregate.event.eventId.isNotEmpty) &&
                         (c.eventAggregate.event.eventId != GUID_EMPTY)) {
@@ -892,7 +928,8 @@ class EditRunDetailsPage extends StatelessWidget {
                       // AI-imported runs stop syncing once edited here (AiRunGuard).
                       if (!await AiRunGuard.confirmEdit(
                         eventId: c.eventAggregate.event.eventId,
-                        inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                        inboundIntegrationId:
+                            c.eventAggregate.event.eventInboundIntegrationId,
                       )) {
                         c.mutate(() {
                           c.isUpdating.value = false;
@@ -950,7 +987,11 @@ class EditRunDetailsPage extends StatelessWidget {
                       40,
                     ), // double.infinity is the width and 30 is the height
                   ),
-                  child: Text('Select again from gallery', style: ts_button, textAlign: TextAlign.center),
+                  child: Text(
+                    'Select again from gallery',
+                    style: ts_button,
+                    textAlign: TextAlign.center,
+                  ),
                   onPressed: () async {
                     await c.getImageFromGallery(ImageSource.gallery);
                   },
@@ -979,7 +1020,8 @@ class EditRunDetailsPage extends StatelessWidget {
                       // AI-imported runs stop syncing once edited here (AiRunGuard).
                       if (!await AiRunGuard.confirmEdit(
                         eventId: c.eventAggregate.event.eventId,
-                        inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                        inboundIntegrationId:
+                            c.eventAggregate.event.eventInboundIntegrationId,
                       )) {
                         c.mutate(() {
                           c.isUpdating.value = false;
@@ -1021,7 +1063,11 @@ class EditRunDetailsPage extends StatelessWidget {
                       40,
                     ), // double.infinity is the width and 30 is the height
                   ),
-                  child: Text('Use original image', style: ts_button, textAlign: TextAlign.center),
+                  child: Text(
+                    'Use original image',
+                    style: ts_button,
+                    textAlign: TextAlign.center,
+                  ),
                   onPressed: () {
                     c.mutate(() {
                       c.imageFromGallery = Future<File?>.value(null);
@@ -1121,7 +1167,10 @@ class EditRunDetailsPage extends StatelessWidget {
                                                 onPressed: () => Navigator.of(
                                                   ctx,
                                                 ).pop(false),
-                                                child: const Text('Cancel', textAlign: TextAlign.center),
+                                                child: const Text(
+                                                  'Cancel',
+                                                  textAlign: TextAlign.center,
+                                                ),
                                               ),
                                               ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
@@ -1131,7 +1180,10 @@ class EditRunDetailsPage extends StatelessWidget {
                                                 ),
                                                 onPressed: () =>
                                                     Navigator.of(ctx).pop(true),
-                                                child: const Text('Delete', textAlign: TextAlign.center),
+                                                child: const Text(
+                                                  'Delete',
+                                                  textAlign: TextAlign.center,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -1142,8 +1194,12 @@ class EditRunDetailsPage extends StatelessWidget {
                                         });
                                         // AI-imported runs stop syncing once edited here (AiRunGuard).
                                         if (!await AiRunGuard.confirmEdit(
-                                          eventId: c.eventAggregate.event.eventId,
-                                          inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                                          eventId:
+                                              c.eventAggregate.event.eventId,
+                                          inboundIntegrationId: c
+                                              .eventAggregate
+                                              .event
+                                              .eventInboundIntegrationId,
                                           deleting: true,
                                         )) {
                                           c.mutate(() {
@@ -1208,8 +1264,12 @@ class EditRunDetailsPage extends StatelessWidget {
                                           });
                                           // AI-imported runs stop syncing once edited here (AiRunGuard).
                                           if (!await AiRunGuard.confirmEdit(
-                                            eventId: c.eventAggregate.event.eventId,
-                                            inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                                            eventId:
+                                                c.eventAggregate.event.eventId,
+                                            inboundIntegrationId: c
+                                                .eventAggregate
+                                                .event
+                                                .eventInboundIntegrationId,
                                           )) {
                                             c.mutate(() {
                                               c.isUpdating.value = false;
@@ -1218,17 +1278,16 @@ class EditRunDetailsPage extends StatelessWidget {
                                           }
                                           final EventsService nSvc =
                                               EventsService();
-                                          final String eventId = await nSvc
-                                              .addEditEvent(
-                                                eventId: c
-                                                    .eventAggregate
-                                                    .event
-                                                    .eventId,
-                                                // The SP needs the kennel even for a one-field edit (2026-09-30):
-                                                // without it the call was refused before the procedure ran.
-                                                kennelId: c.eventAggregate.event.kennelId,
-                                                useFbImage: 1,
-                                              );
+                                          final String
+                                          eventId = await nSvc.addEditEvent(
+                                            eventId:
+                                                c.eventAggregate.event.eventId,
+                                            // The SP needs the kennel even for a one-field edit (2026-09-30):
+                                            // without it the call was refused before the procedure ran.
+                                            kennelId:
+                                                c.eventAggregate.event.kennelId,
+                                            useFbImage: 1,
+                                          );
 
                                           await c.refreshAfterSave(eventId);
                                           c.mutate(() {
@@ -1280,7 +1339,11 @@ class EditRunDetailsPage extends StatelessWidget {
                               40,
                             ), // double.infinity is the width and 30 is the height
                           ),
-                          child: Text('Select from gallery', style: ts_button, textAlign: TextAlign.center),
+                          child: Text(
+                            'Select from gallery',
+                            style: ts_button,
+                            textAlign: TextAlign.center,
+                          ),
                           onPressed: () async {
                             await c.getImageFromGallery(ImageSource.gallery);
                           },
@@ -1289,7 +1352,11 @@ class EditRunDetailsPage extends StatelessWidget {
                     ],
                     if (c.isNewRun) ...<Widget>[
                       ElevatedButton(
-                        child: Text('Skip', style: ts_button, textAlign: TextAlign.center),
+                        child: Text(
+                          'Skip',
+                          style: ts_button,
+                          textAlign: TextAlign.center,
+                        ),
                         onPressed: () {
                           c.mutate(() {
                             c.tabController.animateTo(c.currentTab.value.next);
@@ -1507,7 +1574,11 @@ class EditRunDetailsPage extends StatelessWidget {
                         children: <Widget>[
                           if (c.isNewRun) ...<Widget>[
                             ElevatedButton(
-                              child: Text('Skip', style: ts_button, textAlign: TextAlign.center),
+                              child: Text(
+                                'Skip',
+                                style: ts_button,
+                                textAlign: TextAlign.center,
+                              ),
                               onPressed: () {
                                 c.mutate(() {
                                   c.tabController.animateTo(
@@ -1519,7 +1590,11 @@ class EditRunDetailsPage extends StatelessWidget {
                             const SizedBox(width: 10.0),
                             ElevatedButton(
                               onPressed: c.geocodeAndNavigateToMap,
-                              child: Text('Auto-locate', style: ts_button, textAlign: TextAlign.center),
+                              child: Text(
+                                'Auto-locate',
+                                style: ts_button,
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                             const SizedBox(width: 10.0),
                           ],
@@ -1552,7 +1627,10 @@ class EditRunDetailsPage extends StatelessWidget {
                                 // AI-imported runs stop syncing once edited here (AiRunGuard).
                                 if (!await AiRunGuard.confirmEdit(
                                   eventId: c.eventAggregate.event.eventId,
-                                  inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                                  inboundIntegrationId: c
+                                      .eventAggregate
+                                      .event
+                                      .eventInboundIntegrationId,
                                 )) {
                                   c.mutate(() {
                                     c.isUpdating.value = false;
@@ -1643,7 +1721,10 @@ class EditRunDetailsPage extends StatelessWidget {
                                 // AI-imported runs stop syncing once edited here (AiRunGuard).
                                 if (!await AiRunGuard.confirmEdit(
                                   eventId: c.eventAggregate.event.eventId,
-                                  inboundIntegrationId: c.eventAggregate.event.eventInboundIntegrationId,
+                                  inboundIntegrationId: c
+                                      .eventAggregate
+                                      .event
+                                      .eventInboundIntegrationId,
                                 )) {
                                   c.mutate(() {
                                     c.isUpdating.value = false;
@@ -1651,23 +1732,19 @@ class EditRunDetailsPage extends StatelessWidget {
                                   return;
                                 }
                                 final EventsService nSvc = EventsService();
-                                final String eventId = await nSvc
-                                    .addEditEvent(
-                                      eventId: c.eventAggregate.event.eventId,
-                                      // The SP needs the kennel even for a one-field edit (2026-09-30):
-                                      // without it the call was refused before the procedure ran.
-                                      kennelId: c.eventAggregate.event.kennelId,
-                                      useFbLatLon: 1,
-                                    );
+                                final String eventId = await nSvc.addEditEvent(
+                                  eventId: c.eventAggregate.event.eventId,
+                                  // The SP needs the kennel even for a one-field edit (2026-09-30):
+                                  // without it the call was refused before the procedure ran.
+                                  kennelId: c.eventAggregate.event.kennelId,
+                                  useFbLatLon: 1,
+                                );
 
                                 await c.refreshAfterSave(eventId);
                                 c.mutate(() {
                                   if ((c.eventAggregate.extensions.latitude ==
                                           null) ||
-                                      (c
-                                              .eventAggregate
-                                              .extensions
-                                              .longitude ==
+                                      (c.eventAggregate.extensions.longitude ==
                                           null)) {
                                     c.mapCenter = latlng.LatLng(
                                       c.eventAggregate.extensions.kenlLat,
