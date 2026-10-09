@@ -1,6 +1,7 @@
 ## 2.0.87+751 (unreleased)
 ### Improvements
 - **Who gets the email**: the chosen pill is red with white text, as in the app.
+- **Email the run**: a progress bar and "Writing the email for you…" while the draft is written, and over the message boxes; "Checking who gets run emails…" while the dialog opens.
 
 ## 2.0.87+750 (2026-10-09)
 ### Fixes
