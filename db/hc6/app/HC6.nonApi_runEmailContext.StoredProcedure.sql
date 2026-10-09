@@ -96,6 +96,7 @@ SELECT
     e.SyncLocationCity                           AS city,
     e.SyncLocationPostCode                       AS postCode,
     e.SyncDescription                            AS description,
+    e.EventImage                                 AS eventImage,
     COALESCE(e.EventPriceForMembers,    k.DefaultEventPriceForMembers)    AS priceMembers,
     COALESCE(e.EventPriceForNonMembers, k.DefaultEventPriceForNonMembers) AS priceNonMembers,
     k.CurrencySymbol                             AS currencySymbol,

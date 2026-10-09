@@ -1,3 +1,7 @@
+1.0.61+91
+    • Run emails: the run's image, whole, above the facts block; footer links that open the app
+      on the run's email dialog (?emailPrefs=run) or the kennel's (?emailPrefs=kennel).
+
 1.0.61+90
     • Run emails: per-send admin overrides (move a member in or out for ONE send, logged, never
       written to preferences; blocked, bouncing and address-less members cannot be moved in;
