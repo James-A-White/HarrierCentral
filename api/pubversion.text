@@ -1,3 +1,7 @@
+1.0.61+84
+    • Run emails: the model is told not to sign off (code adds "On on" + the sender) and not to
+      state the price in figures or guess a currency (the facts block carries it).
+
 1.0.61+83
     • Run emails (Save and send): RunEmail endpoint — context, AI draft (Azure OpenAI, usage on
       the AI monitor) and send to the kennel's opted-in members, one message each through Azure

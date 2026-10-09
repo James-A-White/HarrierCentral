@@ -266,8 +266,10 @@ namespace HcWebApi.Endpoints
             "refer to them in prose if you like, but never change or invent any fact. Never invent hares, venues, times or prices. " +
             "Write in the sender's voice (first person plural: 'we'). Keep it to 60–180 words unless the instruction asks for a story. " +
             "Hash jargon (hare, on-on, down-down, circle) stays as it is. No subject-line clickbait. " +
+            "Do NOT write a sign-off, a closing line, or the sender's name — 'On on' and the sender's name are added after your text. " +
+            "Do NOT state the price in figures or add a currency symbol (you do not know the currency); say 'the usual run fee' or nothing. " +
             "If an instruction asks for another language, write the whole email in that language. " +
-            "Return JSON: {\"subject\": string (under 80 characters), \"body\": string (plain text; paragraphs separated by blank lines; no HTML; no sign-off line — one is added)}.";
+            "Return JSON: {\"subject\": string (under 80 characters), \"body\": string (plain text; paragraphs separated by blank lines; no HTML)}.";
 
         private static async Task<(string subject, string body)> DraftAsync(string cs, RunContext ctx, string instruction)
         {
