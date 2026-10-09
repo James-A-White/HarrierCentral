@@ -1230,7 +1230,11 @@ class RunEditPageController extends TabUiController
     }
     if (doEmail && emailContext != null) {
       final int? sent = await Get.dialog<int>(
-        RunEmailDialog(publicEventId: publicEventId, kennelShortName: kennelData.kennelShortName),
+        RunEmailDialog(
+          publicEventId: publicEventId,
+          kennelShortName: kennelData.kennelShortName,
+          runDescription: originalData.eventDescription,
+        ),
         barrierDismissible: false,
       );
       await deleteAfterExit<RunEmailDialogController>(

@@ -26,7 +26,7 @@ class RunEmailComposerController extends GetxController {
   final TextEditingController body = TextEditingController();
   final TextEditingController instruction = TextEditingController();
 
-  final RxBool isDrafting = true.obs;
+  final RxBool isDrafting = false.obs;
   final RxBool isSending = false.obs;
   final RxBool isPreviewing = false.obs;
 
@@ -50,11 +50,26 @@ class RunEmailComposerController extends GetxController {
   /// Set when a draft failed, so the sender can write it by hand instead.
   final RxString draftError = ''.obs;
 
+  /// Opens with the fields empty and the kennel's prompt pre-filled; the
+  /// sender then picks "Use run description" or "Write with AI" (James,
+  /// 2026-10-09) — nothing is drafted, and no AI is spent, until they do.
   @override
   void onInit() {
     super.onInit();
     instruction.text = context.instruction;
-    unawaited(draft());
+  }
+
+  /// The run's own description as the email, no AI: subject = the run's
+  /// title, body = the description as written in the run.
+  void useRunDescription() {
+    final String desc = (eventAggregate.event.eventDescription ?? '').trim();
+    if (desc.isEmpty) {
+      hcSnack('This run has no description yet.', error: true);
+      return;
+    }
+    subject.text = context.title;
+    body.text = desc;
+    draftError.value = '';
   }
 
   @override
