@@ -95,6 +95,7 @@ export 'package:hcportal/queries/song_query.dart';
 export 'package:hcportal/routes.dart';
 export 'package:hcportal/services/service_common.dart';
 export 'package:hcportal/services/run_email_service.dart';
+export 'package:hcportal/util/run_announcement.dart';
 export 'package:hcportal/tabbed_ui_old/widgets/pencil_checkbox.dart';
 export 'package:hcportal/tabbed_ui_old/widgets/tri_state_checkbox.dart';
 export 'package:hcportal/tabbed_ui/classes/sidebar_data.dart';

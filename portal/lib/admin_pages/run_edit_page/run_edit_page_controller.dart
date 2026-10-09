@@ -12,6 +12,7 @@
 
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
+import 'package:intl/intl.dart';
 import 'package:hcportal/admin_pages/kennel_page_new/kennel_page_new_enums.dart';
 import 'package:hcportal/admin_pages/run_list_page_controller.dart';
 import 'package:hcportal/models/azure_geo_model.dart';
@@ -1119,33 +1120,112 @@ class RunEditPageController extends TabUiController
     return ok == true;
   }
 
-  /// "Email members" (E9.F6.S6–S9): an unsaved run is saved first, so the
-  /// email describes what the members will see, then the composer opens.
-  Future<void> emailMembers() async {
+  /// "Save and send" (E9.F6.S6, parity with the app, 2026-10-09): an unsaved
+  /// run is saved first, then two tick boxes — post the notice to WhatsApp
+  /// (wa.me, pre-filled) and email the members who have run emails on, with
+  /// the live count and a warning when the run was already emailed.
+  Future<void> saveAndSend() async {
     if (isAddMode) return;
     if (isFormDirty.value) {
       await save(true);
-      if (isFormDirty.value) return;   // the save was refused or cancelled
+      if (isFormDirty.value) return; // the save was refused or cancelled
     }
     final String publicEventId = normalizeUuid(originalData.publicEventId ?? '');
     if (publicEventId.length < 10) return;
-    final int? sent = await Get.dialog<int>(
-      RunEmailDialog(
-        publicEventId: publicEventId,
-        kennelShortName: kennelData.kennelShortName,
-      ),
-      barrierDismissible: false,
-    );
-    await deleteAfterExit<RunEmailDialogController>(
-      Get.find<RunEmailDialogController>(tag: RunEmailDialog.tagFor(publicEventId)),
-      tag: RunEmailDialog.tagFor(publicEventId),
-    );
-    if (sent != null && sent > 0) {
-      await CoreUtilities.showAlert(
-        'Email sent',
-        'Sent to $sent ${sent == 1 ? 'member' : 'members'}.',
-        'OK',
+
+    final RunAnnouncement announcement =
+        RunAnnouncement(run: originalData, kennel: kennelData);
+
+    // The reach, fetched live: the rule lives in one SP, not in the portal.
+    RunEmailContext? emailContext;
+    String emailUnavailable = '';
+    try {
+      emailContext = await const RunEmailService().context(publicEventId);
+    } on RunEmailException catch (e) {
+      emailUnavailable = e.message;
+    }
+    final int n = emailContext?.recipientCount ?? 0;
+    bool doPost = true;
+    bool doEmail = emailContext != null && n > 0;
+
+    String emailSubtitle() {
+      if (emailContext == null) return emailUnavailable;
+      final StringBuffer b = StringBuffer(
+        n == 0
+            ? 'Nobody in the kennel has run emails switched on.'
+            : 'Written for you, with the date, venue, hares, price and I\'m-in / can\'t-make-it buttons.',
       );
+      if (emailContext.alreadySent) {
+        final String when = emailContext.emailLastSentAt == null
+            ? ''
+            : ' on ${DateFormat('d MMM').format(emailContext.emailLastSentAt!)}';
+        b.write('\n⚠ Already emailed to ${emailContext.emailLastSentCount ?? '?'}$when · '
+            '${emailContext.emailSendCount} ${emailContext.emailSendCount == 1 ? 'email' : 'emails'} so far.');
+      }
+      return b.toString();
+    }
+
+    final bool? go = await Get.dialog<bool>(
+      StatefulBuilder(
+        builder: (BuildContext c, void Function(void Function()) setDialog) => AlertDialog(
+          title: const Text('Send the run to the kennel?'),
+          content: SizedBox(
+            width: 520,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CheckboxListTile(
+                  value: doPost,
+                  onChanged: (bool? v) => setDialog(() => doPost = v ?? false),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  secondary: const Icon(Icons.chat_bubble_outline),
+                  title: const Text('Post to WhatsApp'),
+                  subtitle: const Text('WhatsApp opens with the notice ready; you pick the group and send.'),
+                ),
+                CheckboxListTile(
+                  value: doEmail,
+                  onChanged: emailContext == null || n == 0
+                      ? null
+                      : (bool? v) => setDialog(() => doEmail = v ?? false),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  secondary: const Icon(Icons.mail_outline),
+                  title: Text(emailContext == null ? 'Email members' : 'Email $n ${n == 1 ? 'member' : 'members'}'),
+                  subtitle: Text(emailSubtitle()),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            HcButton.secondary(label: 'Not now', onPressed: () => Get.back<bool>(result: false)),
+            HcButton.primary(
+              label: 'Continue',
+              onPressed: doPost || doEmail ? () => Get.back<bool>(result: true) : null,
+            ),
+          ],
+        ),
+      ),
+    );
+    if (go != true) return;
+
+    if (doPost) {
+      try {
+        await launchUrl(announcement.whatsAppUri, mode: LaunchMode.externalApplication, webOnlyWindowName: '_blank');
+      } catch (_) {
+        await CoreUtilities.showAlert('WhatsApp', 'WhatsApp could not be opened from this browser.', 'OK');
+      }
+    }
+    if (doEmail && emailContext != null) {
+      final int? sent = await Get.dialog<int>(
+        RunEmailDialog(publicEventId: publicEventId, kennelShortName: kennelData.kennelShortName),
+        barrierDismissible: false,
+      );
+      await deleteAfterExit<RunEmailDialogController>(
+        Get.find<RunEmailDialogController>(tag: RunEmailDialog.tagFor(publicEventId)),
+        tag: RunEmailDialog.tagFor(publicEventId),
+      );
+      if (sent != null && sent > 0) {
+        await CoreUtilities.showAlert('Email sent', 'Sent to $sent ${sent == 1 ? 'member' : 'members'}.', 'OK');
+      }
     }
   }
 

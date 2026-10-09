@@ -33,44 +33,30 @@ class Utilities {
     String cancelButtonText = 'Cancel',
     TextAlign textAlign = TextAlign.justify,
   }) async {
-    return Get.defaultDialog(
-      title: title,
-      content: SingleChildScrollView(
-        child: ListBody(
-          children: <Widget>[
-            Text(
-              body.replaceAll('~', '\r\n'),
-              textAlign: textAlign,
-              style: ts_alertDialogBody,
-            ),
-          ],
-        ),
-      ),
-      actions: <Widget>[
-        if (showCancelButton)
-          ElevatedButton(
-            style: defaultButtonStyle,
-            onPressed: () {
-              Get.back(result: false);
-            },
-            child: Text(
-              cancelButtonText,
-              style: ts_button,
-            ),
-          )
-        else
-          Container(),
-        ElevatedButton(
-          style: defaultButtonStyle,
-          onPressed: () {
-            Get.back(result: true);
-          },
+    // An AlertDialog with the portal's own buttons: Get.defaultDialog drew
+    // the Done button with no colour (James, 2026-10-09).
+    return Get.dialog<bool>(
+      AlertDialog(
+        title: Text(title),
+        content: SingleChildScrollView(
           child: Text(
-            buttonText,
-            style: ts_button,
+            body.replaceAll('~', '\r\n'),
+            textAlign: textAlign,
+            style: ts_alertDialogBody,
           ),
-        )
-      ],
+        ),
+        actions: <Widget>[
+          if (showCancelButton)
+            HcButton.secondary(
+              label: cancelButtonText,
+              onPressed: () => Get.back<bool>(result: false),
+            ),
+          HcButton.primary(
+            label: buttonText,
+            onPressed: () => Get.back<bool>(result: true),
+          ),
+        ],
+      ),
     );
   }
 }
