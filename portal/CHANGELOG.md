@@ -1,3 +1,9 @@
+## 2.0.87+748 (2026-10-09)
+### New Features
+- **Save and send** on the run editor, as in the app: saves, then offers **Post to WhatsApp** (opens WhatsApp with the notice ready) and **Email N members** (the composer). Replaces "Email members".
+### Fixes
+- The "Success" alert's Done button is red again (it had no colour).
+
 ## 2.0.87+747 (2026-10-09)
 ### New Features
 - **Who gets the email, reworked**: search box, photo rows with hash and mortal names, the reason each member is in the list, and a per-send override button (Don't send / Send anyway, with Undo) — this send only, nobody's settings change. Blocked and bouncing addresses are badged and cannot be moved in.
