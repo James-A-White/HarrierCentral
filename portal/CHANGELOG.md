@@ -1,3 +1,7 @@
+## 2.0.87+744 (2026-10-09)
+### Fixes
+- **Email members** on the run editor is visible: 743 drew it in white on the light app bar.
+
 ## 2.0.87+743 (2026-10-09)
 ### New Features
 - **Email members** on a run (top right of the run editor): drafts an email to the members who have run emails switched on — from the run's details, steered by the kennel's saved instruction or your own, with Rewrite and your edit before it goes. Shows how many emails the run has already had and when the last went out. Same rules and same email as the app's Save and send.
