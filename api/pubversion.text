@@ -1,3 +1,8 @@
+1.0.61+92
+    • Email audit: every run email, preview and the announcement is kept as a JSON file in the
+      private email-audit blob container (text, recipients, sender, overrides), and logged to
+      LOG.GeneralLog as JSON; the Usage Data monitor has an Email row (people reached).
+
 1.0.61+91
     • Run emails: the run's image, whole, above the facts block; footer links that open the app
       on the run's email dialog (?emailPrefs=run) or the kennel's (?emailPrefs=kennel).

@@ -14,10 +14,14 @@ class RunEmailDialogController extends GetxController {
   RunEmailDialogController({
     required this.publicEventId,
     required this.kennelShortName,
+    this.runDescription = '',
   });
 
   final String publicEventId;
   final String kennelShortName;
+
+  /// The run's own description, for "Use run description" (no AI).
+  final String runDescription;
 
   final TextEditingController subject = TextEditingController();
   final TextEditingController body = TextEditingController();
@@ -63,7 +67,8 @@ class RunEmailDialogController extends GetxController {
       context.value = c;
       instruction.text = c.instruction;
       isLoading.value = false;
-      await draft();
+      // Nothing is drafted until the sender picks "Use run description" or
+      // "Write with AI" (James, 2026-10-09).
     } on RunEmailException catch (e) {
       if (isClosed) return;
       error.value = e.message;
@@ -71,7 +76,19 @@ class RunEmailDialogController extends GetxController {
     }
   }
 
-  /// First draft, and every Rewrite; the instruction box is read each time.
+  /// The run's own description as the email, no AI.
+  void useRunDescription() {
+    final String desc = runDescription.trim();
+    if (desc.isEmpty) {
+      error.value = 'This run has no description yet.';
+      return;
+    }
+    subject.text = context.value?.title ?? '';
+    body.text = desc;
+    error.value = '';
+  }
+
+  /// "Write with AI", every time it is pressed; the prompt box is read each time.
   Future<void> draft() async {
     isDrafting.value = true;
     error.value = '';
@@ -125,6 +142,12 @@ class RunEmailDialogController extends GetxController {
       );
       if (isClosed) return;
       notice.value = 'Preview sent to your inbox.';
+      await CoreUtilities.showAlert(
+        'Preview sent',
+        'The finished email has been sent to your inbox. Check the spam folder '
+            'if it is not there in a minute. Nothing was recorded against the run.',
+        'OK',
+      );
     } on RunEmailException catch (e) {
       if (isClosed) return;
       error.value = e.message;
@@ -212,10 +235,12 @@ class RunEmailDialog extends StatelessWidget {
     super.key,
     required this.publicEventId,
     required this.kennelShortName,
+    this.runDescription = '',
   });
 
   final String publicEventId;
   final String kennelShortName;
+  final String runDescription;
 
   static String tagFor(String publicEventId) => 'runemail-$publicEventId';
 
@@ -225,6 +250,7 @@ class RunEmailDialog extends StatelessWidget {
       init: RunEmailDialogController(
         publicEventId: publicEventId,
         kennelShortName: kennelShortName,
+        runDescription: runDescription,
       ),
       tag: tagFor(publicEventId),
       builder: (RunEmailDialogController c) => AlertDialog(
@@ -320,8 +346,8 @@ class RunEmailDialog extends StatelessWidget {
             maxLines: 6,
             decoration: InputDecoration(
               labelText: (ctx?.instruction ?? '').isEmpty
-                  ? 'Anything to add? (optional)'
-                  : '$kennelShortName\'s usual instruction',
+                  ? 'Write with AI prompt (optional)'
+                  : 'Write with AI prompt — $kennelShortName\'s usual',
               hintText: 'e.g. make it a funny Halloween story · write it in French',
               border: const OutlineInputBorder(),
             ),
@@ -336,13 +362,23 @@ class RunEmailDialog extends StatelessWidget {
               'Pre-filled for whoever emails the next run. Tick with the box empty to clear it.',
             ),
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: HcButton.secondary(
-              icon: Icons.auto_awesome,
-              label: c.isDrafting.value ? 'Writing…' : 'Rewrite',
-              onPressed: busy ? null : c.draft,
-            ),
+          // Two ways to fill the email: the run's own words, or the AI.
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              HcButton.secondary(
+                icon: Icons.description_outlined,
+                label: 'Use run description',
+                onPressed: busy ? null : c.useRunDescription,
+              ),
+              HcButton.secondary(
+                icon: Icons.auto_awesome,
+                label: c.isDrafting.value ? 'Writing…' : 'Write with AI',
+                onPressed: busy ? null : c.draft,
+              ),
+            ],
           ),
           const SizedBox(height: 14),
           if (c.error.value.isNotEmpty)

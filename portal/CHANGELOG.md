@@ -1,3 +1,9 @@
+## 2.0.87+752 (2026-10-09)
+### Improvements
+- **Preview to me** confirms with a dialog once the preview has been sent.
+- **Email the run** opens empty with two ways to fill it: **Use run description** (the run's own words, no AI) or **Write with AI** (steered by the **Write with AI prompt** box, the kennel's usual one pre-filled).
+- **Usage Data**: an Email row — how many people run emails reached — with a drill-down listing each send (run, sender, subject, recipients, overrides, audit copy).
+
 ## 2.0.87+751 (2026-10-09)
 ### Improvements
 - **Who gets the email**: the chosen pill is red with white text, as in the app.

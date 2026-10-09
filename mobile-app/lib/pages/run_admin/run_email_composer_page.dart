@@ -75,8 +75,8 @@ class RunEmailComposerPage extends StatelessWidget {
                 const SizedBox(height: 12),
                 _field(
                   c.savedInstruction.isEmpty
-                      ? 'Anything to add? (optional)'
-                      : '${eventAggregate.kennel.kennelShortName}\'s usual instruction',
+                      ? 'Write with AI prompt (optional)'
+                      : 'Write with AI prompt — ${eventAggregate.kennel.kennelShortName}\'s usual',
                   TextField(
                     controller: c.instruction,
                     enabled: !busy,
@@ -110,16 +110,39 @@ class RunEmailComposerPage extends StatelessWidget {
                     style: TextStyle(color: Colors.white60, fontSize: 12),
                   ),
                 ),
-                Center(
-                  child: ElevatedButton.icon(
-                    onPressed: busy ? null : c.draft,
-                    icon: const Icon(Icons.auto_awesome, color: Colors.white),
-                    label: Text(
-                      c.subject.text.isEmpty ? 'Write it for me' : 'Rewrite',
-                      style: ts_button,
-                      textAlign: TextAlign.center,
+                // Two ways to fill the email: the run's own words, or the AI.
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: <Widget>[
+                    ElevatedButton.icon(
+                      onPressed: busy ? null : c.useRunDescription,
+                      icon: const Icon(
+                        Icons.description_outlined,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      label: Text(
+                        'Use run description',
+                        style: ts_button,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  ),
+                    ElevatedButton.icon(
+                      onPressed: busy ? null : c.draft,
+                      icon: const Icon(
+                        Icons.auto_awesome,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      label: Text(
+                        'Write with AI',
+                        style: ts_button,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

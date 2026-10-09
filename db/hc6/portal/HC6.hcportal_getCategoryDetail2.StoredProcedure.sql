@@ -325,6 +325,34 @@ BEGIN TRY
 	END
 
 	-- =============================================
+	-- CATEGORY 13: Email — one row per run email sent, with its audit copy
+	-- (nonApi_recordRunEmailSent; the JSON Data holds the detail). Previews
+	-- and the launch announcement show too, with their own kind.
+	-- =============================================
+	IF (@categoryId = 13)
+	BEGIN
+		SELECT
+			gl.[Timestamp]                                                        AS SentAt,
+			JSON_VALUE(gl.Data, '$.kind')                                         AS Kind,
+			COALESCE(k.KennelShortName + ' #' + CAST(e.EventNumber AS NVARCHAR(10)), '')  AS Run,
+			COALESCE(hs.DisplayName, 'Harrier Central')                           AS SenderName,
+			COALESCE(JSON_VALUE(gl.Data, '$.subject'), '')                        AS Subject,
+			TRY_CAST(JSON_VALUE(gl.Data, '$.recipients') AS INT)                  AS Recipients,
+			TRY_CAST(JSON_VALUE(gl.Data, '$.movedIn') AS INT)                     AS MovedIn,
+			TRY_CAST(JSON_VALUE(gl.Data, '$.movedOut') AS INT)                    AS MovedOut,
+			COALESCE(JSON_VALUE(gl.Data, '$.audit'), '')                          AS AuditPath
+		FROM LOG.GeneralLog gl WITH (NOLOCK)
+		LEFT OUTER JOIN HC.Event  e  WITH (NOLOCK) ON e.id = TRY_CAST(gl.StrParam1 AS UNIQUEIDENTIFIER)
+		LEFT OUTER JOIN HC.Kennel k  WITH (NOLOCK) ON k.id = e.KennelId
+		LEFT OUTER JOIN HC.Hasher hs WITH (NOLOCK) ON hs.id = TRY_CAST(JSON_VALUE(gl.Data, '$.sender') AS UNIQUEIDENTIFIER)
+		WHERE gl.[Timestamp] > @cutoffDate
+			AND gl.LogSource = 'RunEmail'
+			AND ISJSON(gl.Data) = 1
+		ORDER BY gl.[Timestamp] DESC
+		OPTION (RECOMPILE)
+	END
+
+	-- =============================================
 	-- CATEGORY 9: App Errors (client-side session logs)
 	-- One row per uploaded session that HC6.ClientLogAppError classes as an
 	-- app error — the same definition as the 'App Error' row in

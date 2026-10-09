@@ -137,16 +137,24 @@ namespace HcWebApi.Endpoints
                         if (ctx.SenderEmail.Length == 0)
                             return new BadRequestObjectResult(new { errorUserMessage = "Your account has no email address." });
                         string unsubSelf = HcListMail.UnsubscribeUrl(ctx.SenderId, ctx.KennelId);
+                        string previewHtml = BuildHtml(ctx, subject, prose, unsubSelf);
                         try
                         {
-                            await HcListMail.SendAsync(ctx.SenderEmail, "[Preview] " + subject, BuildHtml(ctx, subject, prose, unsubSelf),
-                                PlainText(ctx, prose), unsubSelf);
+                            await HcListMail.SendAsync(ctx.SenderEmail, "[Preview] " + subject, previewHtml, PlainText(ctx, prose), unsubSelf);
                         }
                         catch (Exception ex)
                         {
                             await HcListMail.LogFailureAsync("RunEmail.preview", ctx.SenderEmail, ex.Message, eventId);
                             return new ObjectResult(new { errorUserMessage = "The preview could not be sent just now." }) { StatusCode = 502 };
                         }
+                        string? previewAudit = await EmailAudit.WriteAsync(new EmailAudit.Record
+                        {
+                            Kind = "preview", EventId = ctx.EventId, Run = ctx.Title, KennelId = ctx.KennelId, Kennel = ctx.KennelName,
+                            SenderId = ctx.SenderId, Sender = ctx.SenderName, Instruction = (body.Value<string>("instruction") ?? "").Trim(),
+                            Subject = "[Preview] " + subject, Html = previewHtml, PlainText = PlainText(ctx, prose),
+                            Recipients = { new { hasherId = ctx.SenderId, email = ctx.SenderEmail, name = ctx.SenderName } },
+                        });
+                        await RecordSentAsync(cs, ctx, 1, "", false, kind: "preview", subject: subject, auditPath: previewAudit);
                         return new OkObjectResult(new { sent = 1, preview = true });
                     }
 
@@ -176,10 +184,20 @@ namespace HcWebApi.Endpoints
                     if (instruction.Length > MaxInstruction) instruction = instruction[..MaxInstruction];
                     bool saveInstruction = body.Value<bool?>("saveInstruction") ?? false;
 
-                    // Record first, so a crash mid-send still shows "emailed" rather
+                    // The audit copy (one JSON per send: text, who, overrides), then the
+                    // record — first, so a crash mid-send still shows "emailed" rather
                     // than inviting a second blast; failures are logged per address.
-                    await RecordSentAsync(cs, ctx, finalList.Count, instruction, saveInstruction);
                     string plain = PlainText(ctx, prose);
+                    string? auditPath = await EmailAudit.WriteAsync(new EmailAudit.Record
+                    {
+                        Kind = "send", EventId = ctx.EventId, Run = ctx.Title, KennelId = ctx.KennelId, Kennel = ctx.KennelName,
+                        SenderId = ctx.SenderId, Sender = ctx.SenderName, Instruction = instruction,
+                        Subject = subject, Html = BuildHtml(ctx, subject, prose, "{unsubscribe}", movedIn.Count > 0 ? "{preferences}" : null), PlainText = plain,
+                        Recipients = finalList.Select(m => (object)new { hasherId = m.HasherId, email = m.Email, name = m.Name, movedIn = movedInIds.Contains(m.HasherId) }).ToList(),
+                        MovedIn = movedIn.Select(m => (object)new { hasherId = m.HasherId, name = m.Name, reasonWas = Member.ReasonText(m.ReasonCode) }).ToList(),
+                        MovedOut = movedOut.Select(m => (object)new { hasherId = m.HasherId, name = m.Name }).ToList(),
+                    });
+                    await RecordSentAsync(cs, ctx, finalList.Count, instruction, saveInstruction, subject: subject, auditPath: auditPath, movedIn: movedIn.Count, movedOut: movedOut.Count);
                     _ = Task.Run(async () =>
                     {
                         int ok = 0;
@@ -364,16 +382,22 @@ namespace HcWebApi.Endpoints
             return false;
         }
 
-        private static async Task RecordSentAsync(string cs, RunContext ctx, int count, string instruction, bool saveInstruction)
+        private static async Task RecordSentAsync(string cs, RunContext ctx, int count, string instruction, bool saveInstruction,
+            string kind = "send", string subject = "", string? auditPath = null, int movedIn = 0, int movedOut = 0)
         {
             using var conn = new SqlConnection(cs);
             await conn.OpenAsync();
             using var cmd = new SqlCommand("[HC6].[nonApi_recordRunEmailSent]", conn) { CommandType = CommandType.StoredProcedure };
             cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = ctx.EventId;
-            cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = DBNull.Value;
+            cmd.Parameters.Add("@userId", SqlDbType.UniqueIdentifier).Value = ctx.SenderId == Guid.Empty ? DBNull.Value : ctx.SenderId;
             cmd.Parameters.Add("@recipientCount", SqlDbType.Int).Value = count;
             cmd.Parameters.Add("@instruction", SqlDbType.NVarChar, 500).Value = (object?)(instruction.Length > 0 ? instruction : null) ?? DBNull.Value;
             cmd.Parameters.Add("@saveInstruction", SqlDbType.SmallInt).Value = saveInstruction ? 1 : 0;
+            cmd.Parameters.Add("@kind", SqlDbType.NVarChar, 20).Value = kind;
+            cmd.Parameters.Add("@subject", SqlDbType.NVarChar, 200).Value = (object?)(subject.Length > 0 ? subject : null) ?? DBNull.Value;
+            cmd.Parameters.Add("@auditPath", SqlDbType.NVarChar, 400).Value = (object?)auditPath ?? DBNull.Value;
+            cmd.Parameters.Add("@movedIn", SqlDbType.Int).Value = movedIn;
+            cmd.Parameters.Add("@movedOut", SqlDbType.Int).Value = movedOut;
             await cmd.ExecuteNonQueryAsync();
         }
 
