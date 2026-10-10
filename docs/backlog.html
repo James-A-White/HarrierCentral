@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>19</b> epics</div>
     <div><b>99</b> features</div>
-    <div><b>418</b> stories</div>
+    <div><b>419</b> stories</div>
     <div><b>50</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -336,7 +336,7 @@
   <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">6 features · 23 stories</span></a>
   <a class="idx" href="#e17"><span class="idx-id">E17</span><span class="idx-name">Speaking the hasher's language</span><span class="idx-count">1 features · 1 stories</span></a>
   <a class="idx" href="#e18"><span class="idx-id">E18</span><span class="idx-name">Agent infrastructure</span><span class="idx-count">8 features · 22 stories</span></a>
-  <a class="idx" href="#e19"><span class="idx-id">E19</span><span class="idx-name">Email that arrives</span><span class="idx-count">4 features · 13 stories</span></a>
+  <a class="idx" href="#e19"><span class="idx-id">E19</span><span class="idx-name">Email that arrives</span><span class="idx-count">4 features · 14 stories</span></a>
 </div></section>
 <section class="epic" id="e1">
   <div class="epic-head">
@@ -1653,10 +1653,11 @@
     </div>
     <ul class="stories">
       <li class="story"><span class="s-id">E19.F4.S1</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to know which members' addresses bounce, so that I know who to ask for a new one. <em>Shipped 2026-10-09 (SP 44, API 1.0.61+90):</em> <code>HC.Hasher.EmailStatus</code> (0 Unknown, 1 OK, 2 Suspect, 3 Bounced), <code>EmailStatusChangedAt</code>, <code>EmailSoftBounceCount</code> — written only by <code>nonApi_setEmailDeliveryStatus</code>, which applies Azure Communication Services delivery reports (Delivered → OK and count 0; Bounced/Suppressed → Bounced; Failed/Quarantined/FilteredSpam → soft bounce, three in a row → Suspect), writes only on change and never sets <code>updatedAt</code> (the Hasher triggers only stamp it when an SP sets it or a name/photo changes). Reports arrive through an Event Grid subscription on <code>harriercentral-comms</code> to <code>EmailDeliveryEvents</code> (web hook, <code>HC_EVENTGRID_KEY</code>), matched by recipient address. The status is reset to Unknown when the address changes (<code>hcapp_addEditUser</code>, <code>hcportal_updateKennelHasher</code>). Audience rows show "Email bouncing, ask for a new address" (never sent, never movable) and a "Check address" badge for Suspect.</span><span class="chip c-ship">Shipped</span>
-        <span class="gap">ACS has no spam-complaint event, so a complaint cannot set the block; only the member's own link does. An admin cannot yet clear a bounce from the card (the reset proc exists).</span></li>
+        <span class="gap">ACS has no spam-complaint event, so a complaint cannot set the block; only the member's own link does. Clearing a bounce from the card: E19.F4.S5.</span></li>
       <li class="story"><span class="s-id">E19.F4.S2</span><span class="s-text">As a <em>hasher whose address bounces</em>, I want the app to tell me and take me to my profile to fix it, so that run emails and invite codes reach me again. <em>Shipped in app 3.1.9+1456:</em> once per session after the boot sync, <code>hcapp_getMyEmailStatus</code> (own status only — not in the hashers sync rowset) → an alert with "Update it" opening My profile.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E19.F4.S3</span><span class="s-text">As a <em>hasher</em>, I want to block ALL email from Harrier Central with one tap, so that unsubscribing is never harder than subscribing. <em>Shipped 2026-10-09:</em> <code>HC.Hasher.EmailBlocked</code>/<code>EmailBlockedAt</code> via <code>nonApi_setEmailBlocked</code> (also switches every kennel and run setting off); offered on the email-preferences page (<code>EmailUnsubscribe?do=prefs</code>, the link under an admin's "requested" line) and on the unsubscribe confirmation. Blocked members are never sent to and never movable — enforced in <code>nonApi_runEmailContext</code> and again in <code>RunEmail</code>.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E19.F4.S4</span><span class="s-text">As a <em>Platform Admin</em>, I want the text of every email we send kept for audit, and to see on the monitor how many people emails reached. <em>Shipped 2026-10-09 (SP 46, API 1.0.61+92, portal 752):</em> every run email, preview and the launch announcement is written as one JSON file to the private <code>email-audit</code> blob container (subject, HTML, plain text, every recipient, sender, instruction, overrides) — no table, no size cap — and <code>nonApi_recordRunEmailSent</code> logs a JSON row to <code>LOG.GeneralLog</code> (<code>RunEmail</code>) with the count and the audit path. Usage Data gets an <em>Email</em> row (people reached, id 13) with a drill-down per send; previews are kept but not counted.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E19.F4.S5</span><span class="s-text">As a <em>Kennel HC Admin</em> (or anyone who may edit the run), I want to clear a hasher's bounced address from the *Who gets the email* card once I have checked it with them, so that a full mailbox or a fixed typo does not cut them off for good. <em>Built 2026-10-10 (app 1463, portal 757, SPs queued):</em> a <em>Clear bounce</em> button on bouncing rows, behind a confirm dialog, in the app and the portal; <code>hcapp_clearEmailBounce</code> / <code>hcportal_clearEmailBounce</code> check <code>createEditRuns</code> on the run's kennel and that the hasher has a row for the kennel or the run, then call <code>nonApi_resetEmailStatus</code> (Unknown, soft-bounce count 0, logged to <code>LOG.GeneralLog</code> with the admin). Never clears the member's own block. A fresh bounce marks it again.</span><span class="chip c-build">Building</span></li>
     </ul>
   </div>
 </section>

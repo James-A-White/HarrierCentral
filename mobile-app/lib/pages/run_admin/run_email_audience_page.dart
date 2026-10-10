@@ -93,6 +93,48 @@ class RunEmailAudienceController extends GetxController {
   int get movedInCount => composer.includeIds.length;
   int get movedOutCount => composer.excludeIds.length;
 
+  /// Clears a bounced address so the next email tries it again (E19.F4.S5).
+  /// Asks first: it is for an address the admin has checked with the hasher
+  /// (a full mailbox, a typo already fixed elsewhere). If it bounces again,
+  /// the delivery report marks it again.
+  Future<void> clearBounce(RunEmailAudienceEntry e) async {
+    final bool? go = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text('Clear the bounce?', style: ts_alertDialogTitle, textAlign: TextAlign.center),
+        content: Text(
+          'Emails to ${e.name} bounced, so they have stopped. Clear it when you have '
+          'checked the address with them — the next email will try it again. '
+          'If it bounces again, it will be marked again.',
+          style: ts_alertDialogBody,
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => hcPop<bool>(result: false),
+            child: Text('Cancel', style: ts_button, textAlign: TextAlign.center),
+          ),
+          ElevatedButton(
+            onPressed: () => hcPop<bool>(result: true),
+            child: Text('Clear bounce', style: ts_button, textAlign: TextAlign.center),
+          ),
+        ],
+      ),
+    );
+    if (go != true || isClosed) return;
+    try {
+      await RunEmailService.clearBounce(HcId(eventAggregate.event.eventId), HcId(e.hasherId));
+      if (isClosed) return;
+      hcSnack('Bounce cleared for ${e.name}.');
+      await load();
+    } on RunEmailException catch (err) {
+      hcSnack(err.message, error: true);
+    } catch (err, s) {
+      BootLogger.logError('[RunEmailAudience.clearBounce]', err, s);
+      hcSnack('The bounce could not be cleared. Try again.', error: true);
+    }
+  }
+
   /// Moves a member to the other list for this send, or undoes that move.
   void toggle(RunEmailAudienceEntry e) {
     if (!e.canMove) return;
@@ -427,6 +469,28 @@ class RunEmailAudiencePage extends StatelessWidget {
                               : inGetList
                               ? 'Don\'t send'
                               : 'Send anyway',
+                          style: ts_button,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  : (e.isBouncing && !e.isBlocked)
+                  // A bounced address cannot be moved in, but an admin may
+                  // clear the bounce once they have checked it (E19.F4.S5).
+                  ? SizedBox(
+                      width: 104,
+                      child: ElevatedButton(
+                        key: Key('runemail-clear-bounce-${e.hasherId}'),
+                        onPressed: () => c.clearBounce(e),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange.shade800,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 8,
+                          ),
+                        ),
+                        child: Text(
+                          'Clear bounce',
                           style: ts_button,
                           textAlign: TextAlign.center,
                         ),

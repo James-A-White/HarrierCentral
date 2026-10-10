@@ -1,3 +1,7 @@
+## 2.0.87+757 (unreleased)
+### New Features
+- **Who gets the email**: a **Clear bounce** button on a hasher whose emails bounced — for when you have checked the address with them. Same as the app. (E19.F4.S5)
+
 ## 2.0.87+756 (2026-10-10)
 ### New Features
 - Run editor: **Post to WhatsApp** and **Email hashers** under Save and send — the two halves on their own, for the saved run, as the app's Run Admin has them. They wait while the form has unsaved changes; Save and send is the button for that.
