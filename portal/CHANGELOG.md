@@ -1,4 +1,4 @@
-## 2.0.87+757 (unreleased)
+## 2.0.87+757 (2026-10-10)
 ### New Features
 - **Who gets the email**: a **Clear bounce** button on a hasher whose emails bounced — for when you have checked the address with them. Same as the app. (E19.F4.S5)
 
