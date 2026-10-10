@@ -148,9 +148,10 @@ sp HcListMail List email failed (…)	fixed:2026-10-10	ACS refused a display nam
 sp hcapp_getDirectMessageRequests Device not registered	noise	a device whose HC.Device row is gone (reinstall/simulator); the app shows Device No Longer Registered → Reload. Spike across devices = look
 sp hcapp_getEventBadgeCount Device not registered	noise	same as getDirectMessageRequests: boot calls from an unregistered device
 portal portal-flutter NoSuchMethodError: method not found: 'searchText'	open	portal 742 (2026-10-08), one hit, minified JS so no page; not seen on 752+ yet — close as fixed:portal 2.0.87+752 if it stays quiet
-web app-error An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. 	open	digest 3791756875, one AlohaBrowser iPhone 2026-10-08; message hidden in prod — look up the digest in the web app's logs if it recurs
 app FLUTTER Bad state: File: '/private/var/mobile/Containers/Data/Application/<id>/tmp/image_picker_4C86CDC7-14EE-494C-A9BE-CB9652047CF7-N-00000AA014BF4 @ flutter FileImage._loadAsync	noise	image_picker handed back an empty temp file (iOS, 1392); the picker's problem, one hit
 app ASYNC User denied permissions to access the device's location. @ app_boot_service.dart AppBootService._prepareDeviceContext	noise	user declined location at boot (1392); handled, logged by the async guard
 app FLUTTER Null check operator used on a null value @ flutter SliverMultiBoxAdaptorElement.createChild	open	1449, one hit 2026-10-08, no stack into our code (a list rebuilt while scrolling?) — watch for a repeat on 1454+
 app HTTP 503 getCompletedDownDowns	noise	Function App 503 during a restart/deploy; retried
 app HTTP 503 syncEventAdminData	noise	Function App 503 during a restart/deploy; retried
+
+        ↳ web app-error An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. 	open	digest 3791756875, one AlohaBrowser iPhone 2026-10-08; message hidden in prod — look up the digest in the web app logs if it recurs
