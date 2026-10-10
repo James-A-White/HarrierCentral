@@ -41,6 +41,51 @@
             "exclude": true
           },
           {
+            "/": "/me/*",
+            "exclude": true,
+            "comment": "web member pages"
+          },
+          {
+            "/": "/rd/*",
+            "exclude": true,
+            "comment": "legacy redirect"
+          },
+          {
+            "/": "/login",
+            "exclude": true,
+            "comment": "web sign-in"
+          },
+          {
+            "/": "/add-kennel",
+            "exclude": true,
+            "comment": "kennel request form"
+          },
+          {
+            "/": "/calendar",
+            "exclude": true,
+            "comment": "global calendar"
+          },
+          {
+            "/": "/.well-known/*",
+            "exclude": true
+          },
+          {
+            "/": "/_next/*",
+            "exclude": true
+          },
+          {
+            "/": "/images/*",
+            "exclude": true
+          },
+          {
+            "/": "/robots.txt",
+            "exclude": true
+          },
+          {
+            "/": "/sitemap*",
+            "exclude": true
+          },
+          {
             "/": "/*/*",
             "comment": "/<kennel-slug>/<run-number> and its sub-pages open the app"
           },
@@ -48,6 +93,10 @@
             "/": "/",
             "#": "/RID?*",
             "comment": "legacy hash-route run links from printed QR codes"
+          },
+          {
+            "/": "/*",
+            "comment": "/<kennel-slug> \u2014 the kennel's page opens the app (the OPEN banner on a kennel page did nothing before, 2026-10-10)"
           }
         ]
       }

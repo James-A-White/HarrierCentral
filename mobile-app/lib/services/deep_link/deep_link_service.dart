@@ -12,6 +12,7 @@ class DeepLinkTarget {
     this.runNumber,
     this.publicEventId,
     this.nextRun = false,
+    this.kennel = false,
     this.tab = RunTab.rsvp,
     this.rsvp,
     this.emailPrefs,
@@ -49,10 +50,18 @@ class DeepLinkTarget {
   const DeepLinkTarget.nextRun(String slug)
     : this._(kennelSlug: slug, nextRun: true);
 
+  /// `/<slug>` — the kennel's own page. Safari's "Open in the Harrier Central
+  /// app" banner on a kennel page did nothing until this existed (James,
+  /// 2026-10-10): the site's app-link rules now include the bare slug, and
+  /// the app lands on the kennel page the map's pin opens.
+  const DeepLinkTarget.kennel(String slug)
+    : this._(kennelSlug: slug, kennel: true);
+
   final String? kennelSlug;
   final int? runNumber;
   final String? publicEventId;
   final bool nextRun;
+  final bool kennel;
 
   /// Check-in by default (James, 2026-09-15: "opens the app to the check-in
   /// page to that specific run"). The map and photo sub-pages open on their
@@ -76,6 +85,7 @@ class DeepLinkTarget {
 
   bool get isLogin => loginScanData != null;
   bool get isLegacy => publicEventId != null;
+  bool get isKennel => kennel;
 
   String get _rsvpSuffix => rsvp == null
       ? ''
@@ -88,6 +98,8 @@ class DeepLinkTarget {
       ? 'DeepLinkTarget(web sign-in)'
       : isLegacy
       ? 'DeepLinkTarget(legacy $publicEventId$_rsvpSuffix)'
+      : kennel
+      ? 'DeepLinkTarget(kennel $kennelSlug)'
       : nextRun
       ? 'DeepLinkTarget($kennelSlug/next run$_rsvpSuffix)'
       : 'DeepLinkTarget($kennelSlug/$runNumber → ${tab.name}$_rsvpSuffix)';
@@ -132,6 +144,12 @@ class DeepLinkService {
   /// is `next-run`. A link that opens the app and then cannot be read is the
   /// worst outcome — the app appears AND a browser does — so both are read.
   static const Set<String> _nextRunPages = <String>{'nextrun', 'next-run'};
+
+  /// Top-level paths that are pages of the website, never a kennel slug.
+  static const Set<String> _webRoots = <String>{
+    'me', 'login', 'rd', 'add-kennel', 'calendar', 'api', 'images', '_next',
+    'robots.txt', 'sitemap.xml', 'sitemap-global.xml', '.well-known',
+  };
 
   final AppLinks _links = AppLinks();
   StreamSubscription<Uri>? _sub;
@@ -229,7 +247,13 @@ class DeepLinkService {
     final List<String> seg = uri.pathSegments
         .where((String s) => s.isNotEmpty)
         .toList();
-    if (seg.length < 2) return null; // "/" and "/<slug>" are the website's.
+    if (seg.isEmpty) return null; // "/" — the global landing page is the website's.
+    if (seg.length == 1) {
+      // "/<slug>" is the kennel's page; the site's other top-level routes are
+      // the website's (they are excluded in its app-link rules too).
+      final String one = seg[0].toLowerCase();
+      return _webRoots.contains(one) ? null : DeepLinkTarget.kennel(one);
+    }
 
     final String slug = seg[0].toLowerCase();
     // A reserved slug: no kennel is called "login". The segment after it is
@@ -359,6 +383,17 @@ class DeepLinkService {
 
     if (target.isLogin) {
       await _approveWebSignIn(target.loginScanData!);
+      return;
+    }
+
+    if (target.isKennel) {
+      final Map<String, dynamic>? kennel = await _kennelBySlug(target.kennelSlug!);
+      final bool opened = kennel != null &&
+          await openKennelPage(HcId(normalizeUuid(kennel[tableModel.kennelsTableHelper.colKennelId] as String)));
+      if (!opened) {
+        _crumb('kennel ${target.kennelSlug} not on this phone, bouncing to the site');
+        await _openInBrowser(uri);
+      }
       return;
     }
 

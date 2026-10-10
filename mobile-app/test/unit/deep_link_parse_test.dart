@@ -76,13 +76,18 @@ void main() {
       }
     });
 
-    test('root, a bare kennel, and nonsense run numbers are not ours', () {
+    test('root and nonsense run numbers are not ours; a bare kennel is its page', () {
       expect(p('https://www.hashruns.org/'), isNull);
-      expect(p('https://www.hashruns.org/lh3'), isNull);
-      expect(p('https://www.hashruns.org/lh3/'), isNull);
-      expect(p('https://www.hashruns.org/lh3/0'), isNull);
-      expect(p('https://www.hashruns.org/lh3/-5'), isNull);
       expect(p('https://www.hashruns.org/lh3/abc'), isNull);
+      expect(p('https://www.hashruns.org/lh3/0'), isNull);
+      final DeepLinkTarget? k = p('https://www.hashruns.org/FILTH');
+      expect(k, isNotNull);
+      expect(k!.isKennel, isTrue);
+      expect(k.kennelSlug, 'filth');
+      // The website's own top-level pages are never a kennel.
+      for (final String root in <String>['me', 'login', 'rd', 'add-kennel', 'calendar', 'api']) {
+        expect(p('https://www.hashruns.org/$root'), isNull, reason: root);
+      }
     });
 
     test('the legacy QR form is read from the fragment', () {
