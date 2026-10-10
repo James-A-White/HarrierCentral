@@ -142,6 +142,28 @@ These are firm decisions that must not be revisited or worked around:
   only one side can have something for a technical reason, the gap goes in
   the backlog as a Known gap, never left silent.
 
+- **The Facebook integration is defunct (James, 2026-10-10).** Facebook no
+  longer allows the Graph API access it relied on, so importing runs from
+  Facebook groups and pages is gone for good (`HC.Integration` 1 "Import from
+  Facebook Groups", `Enabled = 0`; the last run it imported was 2026-06-20).
+  Code that exists ONLY for that integration may be removed whenever it is
+  touched: the `IntFacebook` path in `api/Endpoints/HcExternalDataIntegration.cs`,
+  Facebook token handling and token-expired emails (`KennelFacebookToken*`,
+  `IntegrationSendTokenExpiredEmails`), "Facebook" as an integration choice in
+  the portal and app, and help text that promises a Facebook data exchange
+  (the app FAQ). **What must stay:**
+  - **The `Fb*` mirror columns, the `UseFb*` flags, `EventFacebookId` and
+    `InboundIntegrationId` on `HC.Event`, and the logic that reads them.** They
+    hold 5,092 historical Facebook runs, AND every live import writes through
+    them under the Facebook name: San Diego (integration 3, 1,791 runs),
+    Berlin (5, 364), the runs-page import (6, `EventFacebookId` =
+    `runspage:<n>`). They are the generic import mirror, misnamed — never
+    drop or repurpose them as "Facebook clean-up".
+  - **Facebook as a link.** A kennel's Facebook page or group is a social link
+    like Instagram (`E12.F4.S4`), not the integration.
+  87 kennels still have `InboundIntegrationId = 1`; resetting them is a data
+  change for James to approve, not part of a code clean-up.
+
 **Never convert a `StatelessWidget` to `StatefulWidget` without consulting
   James first.** The preferred direction is the opposite — migrate
   `StatefulWidget` toward `StatelessWidget` + GetX controller wherever the
