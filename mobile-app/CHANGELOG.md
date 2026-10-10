@@ -1,3 +1,7 @@
+## 3.1.9+1463 (unreleased)
+### Fixes
+- **A phone with a wrong clock now corrects itself on the first refused request.** The retry that learns the server's time on an invalid-token reply never ran — it was looking for a field the server no longer sends. (E1.F1.S7)
+
 ## 3.1.9+1462 (2026-10-10)
 All beta testers.
 ### New Features
