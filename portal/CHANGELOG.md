@@ -1,4 +1,4 @@
-## 2.0.87+759 (unreleased)
+## 2.0.87+759 (2026-10-10)
 ### New Features
 - **Members › Add members › Import from file**: Excel, CSV, Word or PDF in any layout; the AI fills the grid with names, hash names, emails, runs and hares for you to check before saving. People already in the kennel are left alone and counted; accounts from other kennels are linked; everyone added gets an invite code. (E2.F2.S6)
 - **Email invite codes**: to the hashers just imported, or to everyone in the kennel who has never signed in — each gets their own code from "<kennel> via Harrier Central". Shows who will be skipped (no address, undeliverable, invited this week) before sending.
