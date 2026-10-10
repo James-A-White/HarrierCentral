@@ -1,3 +1,8 @@
+1.0.61+99
+    • RosterImport: reads a member list (xlsx/csv/docx/pdf) and has the AI map it to add-member rows (gated by hcportal_authorizeRosterImport; AI usage logged as roster-import).
+    • InviteEmails: emails invite codes from "<kennel> via Harrier Central" (imported / never signed in), skipping placeholder, undeliverable (no MX/A) and recently-invited addresses; stamps HC.Hasher.InviteEmailedAt; stops on the ACS quota.
+    • Packages: PdfPig, DocumentFormat.OpenXml, DnsClient.
+
 1.0.61+98
     • Run email audience rows carry the hasher's email address when the caller is a kennel admin /
       hare raiser (callerMaySeeEmails from the SP); a hare who may edit only this run does not get it.

@@ -4,7 +4,13 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_bulkAddHashers]
 @deviceId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @publicKennelId uniqueidentifier = NULL,
-@newHasherJson nvarchar(MAX) = NULL
+@newHasherJson nvarchar(MAX) = NULL,
+-- 1 = called by "Import from file" (E2.F2.S6, 2026-10-10): rows already in
+-- this kennel are left untouched (ALREADY IN KENNEL), a row with no email
+-- is matched to a kennel member by name or gets a placeholder address
+-- (hc-<id>@noemail.invalid — .invalid can never be delivered), and every
+-- added hasher is given an invite code. 0 = the paste grid, unchanged.
+@fromImport smallint = 0
 
 AS
 -- =====================================================================
@@ -31,6 +37,18 @@ AS
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 --   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
+-- 2026-10-10: @fromImport (see the parameter). An import row may also carry
+--   matchPublicHasherId (the admin said it is that member) and updateEmail
+--   (use the file's address — allowed only under the 2026-09-23 ownership
+--   rule, checked here again: never signed in, home kennel is this one or
+--   none, address not another account's). People already in the kennel
+--   keep everything but their HISTORIC run / haring counts, which take the
+--   file's numbers when given (> 0) — the file is runs before Harrier
+--   Central, nothing is subtracted. Statuses: ALREADY IN KENNEL,
+--   RUN COUNTS UPDATED, EMAIL UPDATED, EMAIL NOT CHANGED.
+-- 2026-10-10: results are matched back to
+--   input rows by position, not email (an import row may have none); the
+--   CATCH now logs to HC.ErrorLog.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -89,18 +107,22 @@ BEGIN TRY
     END
 
     -- Parse JSON into temp table
-    SELECT
-        publicHasherId
-        , publicKennelId
-        , firstName
-        , lastName
-        , email
-        , hashName
-        , historicTotalRuns
-        , historicHaring
-        , addHasherStatus
+        SELECT
+        CAST(j.[key] AS INT) AS rowNo
+        , x.publicHasherId
+        , x.publicKennelId
+        , x.firstName
+        , x.lastName
+        , x.email
+        , x.hashName
+        , x.historicTotalRuns
+        , x.historicHaring
+                , x.addHasherStatus
+        , x.matchPublicHasherId
+        , x.updateEmail
         into #newHasherTemp
-    FROM OPENJSON(@newHasherJson)
+    FROM OPENJSON(@newHasherJson) j
+    CROSS APPLY OPENJSON(j.value)
         WITH (
         publicHasherId NVARCHAR(500) '$.publicHasherId',
         publicKennelId NVARCHAR(500) '$.publicKennelId',
@@ -110,13 +132,21 @@ BEGIN TRY
         hashName nvarchar(500) '$.hashName',
         historicTotalRuns int '$.historicTotalRuns',
         historicHaring int '$.historicHaring',
-        addHasherStatus nvarchar(500) '$.addHasherStatus'
-        );
+        addHasherStatus nvarchar(500) '$.addHasherStatus',
+        matchPublicHasherId nvarchar(50) '$.matchPublicHasherId',
+        updateEmail smallint '$.updateEmail'
+        ) x;
 
     -- Create output table to track results
     SELECT * into #outputTable FROM #newHasherTemp
 
-    DECLARE
+            DECLARE
+    @rowNo int,
+    @matchPublicHasherId nvarchar(50),
+    @updateEmail smallint,
+    @emailUpdated smallint,
+    @emailRefused smallint,
+    @countsUpdated int,
     @firstName nvarchar(500),
     @lastName nvarchar(500),
     @email nvarchar(500),
@@ -125,19 +155,23 @@ BEGIN TRY
     @historicTotalRuns int,
     @historicHaring int
 
-    DECLARE nhCrsr CURSOR FOR SELECT
-        firstName
+            DECLARE nhCrsr CURSOR LOCAL FOR SELECT
+        rowNo
+        , matchPublicHasherId
+        , updateEmail
+        , firstName
         , lastName
         , hashName
         , email
         , historicTotalRuns
         , historicHaring
         , addHasherStatus
-    FROM #newHasherTemp
+        FROM #newHasherTemp
+    ORDER BY rowNo
 
     OPEN nhCrsr
 
-    FETCH NEXT FROM nhCrsr into @firstName, @lastName, @hashName, @email, @historicTotalRuns, @historicHaring, @addHasherStatus
+    FETCH NEXT FROM nhCrsr into @rowNo, @matchPublicHasherId, @updateEmail, @firstName, @lastName, @hashName, @email, @historicTotalRuns, @historicHaring, @addHasherStatus
 
     DECLARE @newHasherId uniqueidentifier,
         @newPublicHasherId uniqueidentifier,
@@ -151,17 +185,100 @@ BEGIN TRY
     WHILE (@@FETCH_STATUS = 0)
     BEGIN
 
-        SET @newHasherId = NULL
+                SET @newHasherId = NULL
         SET @newPublicHasherId = NULL
         SET @ahStatus = NULL
+        SET @hkmId = NULL
+                SET @email = NULLIF(LTRIM(RTRIM(@email)), '')
+        SET @emailUpdated = 0
+        SET @emailRefused = 0
 
-        SELECT
-            @newHasherId = id,
-            @newPublicHasherId = PublicHasherId
-        FROM HC.Hasher where Email = @email
+        -- The admin said this row IS that member (hcportal_matchImportRows).
+        IF (@fromImport = 1 AND TRY_CAST(@matchPublicHasherId AS UNIQUEIDENTIFIER) IS NOT NULL)
+        BEGIN
+            SELECT @newHasherId = h.id, @newPublicHasherId = h.PublicHasherId
+            FROM HC.Hasher h
+            JOIN HC.HasherKennelMap k ON k.UserId = h.id AND k.KennelId = @kennelId AND k.removed = 0
+            WHERE h.PublicHasherId = TRY_CAST(@matchPublicHasherId AS UNIQUEIDENTIFIER) AND ISNULL(h.Removed, 0) = 0;
+            IF (@newHasherId IS NOT NULL)
+            BEGIN
+                SET @ahStatus = 'ALREADY IN KENNEL'
+                IF (@updateEmail = 1 AND @email LIKE '%_@__%.__%')
+                BEGIN
+                    -- The ownership rule, again here: the portal's offer is not trusted.
+                    IF EXISTS (SELECT 1 FROM HC.Hasher h
+                               WHERE h.id = @newHasherId
+                                 AND h.LastLoginDateTime IS NULL
+                                 AND NOT EXISTS (SELECT 1 FROM HC.Device d WHERE d.UserId = h.id)
+                                 AND (h.HomeKennelId = @kennelId OR h.HomeKennelId IS NULL))
+                       AND NOT EXISTS (SELECT 1 FROM HC.Hasher x WHERE x.Email = @email AND x.id <> @newHasherId)
+                    BEGIN
+                        UPDATE HC.Hasher SET Email = @email WHERE id = @newHasherId;
+                        -- The delivery status described the old address.
+                        DECLARE @reset TABLE (Success INT, ErrorMessage NVARCHAR(MAX));
+                        DELETE @reset;
+                        INSERT @reset EXEC HC6.nonApi_resetEmailStatus @hasherId = @newHasherId, @reason = 'email changed by roster import';
+                        SET @emailUpdated = 1
+                    END
+                    ELSE
+                        SET @emailRefused = 1
+                END
+            END
+        END
 
-        -- if the email is not valid don't even attempt to process
-        IF (@email LIKE '%_@__%.__%')
+        IF (@fromImport = 1 AND @ahStatus IS NULL AND @email IS NULL)
+        BEGIN
+            -- No address: is this somebody already in the kennel? Match on hash
+            -- name, else on first + last name (re-importing a file must not
+            -- duplicate the people who had no email the first time).
+            SELECT TOP 1 @newHasherId = h.id, @newPublicHasherId = h.PublicHasherId
+            FROM HC.HasherKennelMap k
+            JOIN HC.Hasher h ON h.id = k.UserId
+            WHERE k.KennelId = @kennelId AND k.removed = 0 AND ISNULL(h.Removed, 0) = 0
+              AND ((NULLIF(LTRIM(RTRIM(@hashName)), '') IS NOT NULL AND LOWER(LTRIM(RTRIM(h.HashName))) = LOWER(LTRIM(RTRIM(@hashName))))
+                OR (NULLIF(LTRIM(RTRIM(@firstName)), '') IS NOT NULL AND NULLIF(LTRIM(RTRIM(@lastName)), '') IS NOT NULL
+                    AND LOWER(LTRIM(RTRIM(h.FirstName))) = LOWER(LTRIM(RTRIM(@firstName)))
+                    AND LOWER(LTRIM(RTRIM(h.LastName))) = LOWER(LTRIM(RTRIM(@lastName)))));
+            IF (@newHasherId IS NOT NULL)
+                SET @ahStatus = 'ALREADY IN KENNEL'
+            ELSE
+                SET @email = 'hc-' + LOWER(LEFT(REPLACE(CAST(NEWID() AS NVARCHAR(40)), '-', ''), 12)) + '@noemail.invalid';
+        END
+
+        IF (@ahStatus IS NULL)
+            SELECT
+                @newHasherId = id,
+                @newPublicHasherId = PublicHasherId
+            FROM HC.Hasher where Email = @email
+
+                -- An import leaves people already in this kennel as they are...
+        IF (@fromImport = 1 AND @ahStatus IS NULL AND @newHasherId IS NOT NULL
+            AND EXISTS (SELECT 1 FROM HC.HasherKennelMap k WHERE k.UserId = @newHasherId AND k.KennelId = @kennelId AND k.removed = 0))
+            SET @ahStatus = 'ALREADY IN KENNEL'
+
+        -- ...except their HISTORIC counts here, which take the file's numbers
+        -- when given (James, 2026-10-10). 0 means "not in the file".
+        IF (@fromImport = 1 AND @ahStatus = 'ALREADY IN KENNEL')
+        BEGIN
+            SET @countsUpdated = 0
+            UPDATE HC.HasherKennelMap SET HistoricalTotalRunCount = @historicTotalRuns
+            WHERE UserId = @newHasherId AND KennelId = @kennelId AND removed = 0
+              AND ISNULL(@historicTotalRuns, 0) > 0 AND HistoricalTotalRunCount <> @historicTotalRuns;
+            SET @countsUpdated += @@ROWCOUNT
+            UPDATE HC.HasherKennelMap SET HistoricalHaringCount = @historicHaring
+            WHERE UserId = @newHasherId AND KennelId = @kennelId AND removed = 0
+              AND ISNULL(@historicHaring, 0) > 0 AND HistoricalHaringCount <> @historicHaring;
+            SET @countsUpdated += @@ROWCOUNT
+            IF (@countsUpdated > 0)
+                EXEC [HC6].[nonApi_updateRunCountsByUser] @userId = @newHasherId
+            SET @ahStatus = CASE WHEN @emailUpdated = 1 THEN 'EMAIL UPDATED'
+                                 WHEN @emailRefused = 1 THEN 'EMAIL NOT CHANGED'
+                                 WHEN @countsUpdated > 0 THEN 'RUN COUNTS UPDATED'
+                                 ELSE 'ALREADY IN KENNEL' END
+        END
+
+                -- if the email is not valid don't even attempt to process
+        IF (@ahStatus IS NULL AND @email LIKE '%_@__%.__%')
         BEGIN
             IF (@newHasherId IS NULL)
             BEGIN
@@ -250,12 +367,20 @@ BEGIN TRY
                     @userId = @newHasherId
             END
 
-            SET @ahStatus = coalesce(@ahStatus, 'NO CHANGE')
+                        SET @ahStatus = coalesce(@ahStatus, 'NO CHANGE')
+
+            -- Everyone an import adds gets an invite code to be emailed.
+            IF (@fromImport = 1 AND @ahStatus IN ('NEW HC USER', 'NEW MEMBER'))
+                EXEC HC6.nonApi_ensureUserInviteCode @userId = @newHasherId;
 
         END -- end of email check
-        UPDATE #outputTable SET publicHasherId = @newPublicHasherId, addHasherStatus = coalesce(@ahStatus, 'ERROR') WHERE Email = @email
+        UPDATE #outputTable
+           SET publicHasherId = @newPublicHasherId,
+               email = coalesce(@email, email),
+               addHasherStatus = coalesce(@ahStatus, 'ERROR')
+         WHERE rowNo = @rowNo
 
-        FETCH NEXT FROM nhCrsr into @firstName, @lastName, @hashName, @email, @historicTotalRuns, @historicHaring, @addHasherStatus
+        FETCH NEXT FROM nhCrsr into @rowNo, @matchPublicHasherId, @updateEmail, @firstName, @lastName, @hashName, @email, @historicTotalRuns, @historicHaring, @addHasherStatus
     END
 
     COMMIT TRANSACTION;
@@ -273,8 +398,9 @@ BEGIN TRY
         hashName,
         historicTotalRuns,
         historicHaring,
-        addHasherStatus
+                addHasherStatus
     FROM #outputTable
+    ORDER BY rowNo
 
 END TRY
 BEGIN CATCH
@@ -287,5 +413,7 @@ BEGIN CATCH
         DEALLOCATE nhCrsr;
     END
 
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<portal>', 'Unhandled error in hcportal_bulkAddHashers', ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), @hasherId);
     SELECT 0 AS Success, ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
