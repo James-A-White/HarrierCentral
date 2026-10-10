@@ -1,4 +1,4 @@
-## 2.0.87+758 (unreleased)
+## 2.0.87+758 (2026-10-10)
 ### New Features
 - **Who gets the email** shows each hasher's email address (selectable) between their name and the reason — for kennel admins and hare raisers only. Same as the app.
 
