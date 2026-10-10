@@ -1,3 +1,7 @@
+1.0.61+98
+    • Run email audience rows carry the hasher's email address when the caller is a kennel admin /
+      hare raiser (callerMaySeeEmails from the SP); a hare who may edit only this run does not get it.
+
 1.0.61+97
     • Run email text/plain part: "Not running with the <kennel>? Unsubscribe: <link>" first and the
       unsubscribe link again last — same shape as the HTML; previews carry it too.

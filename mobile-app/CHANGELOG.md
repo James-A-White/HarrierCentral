@@ -1,3 +1,7 @@
+## 3.1.9+1464 (unreleased)
+### New Features
+- **Who gets the email** shows each hasher's email address between their name and the reason — for kennel admins and hare raisers; a hare who may edit only this run does not see addresses. Search matches addresses too.
+
 ## 3.1.9+1463 (2026-10-10)
 All beta testers.
 ### New Features

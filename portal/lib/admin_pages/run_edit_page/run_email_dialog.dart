@@ -804,15 +804,30 @@ class RunEmailAudienceDialog extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      subtitle: Wrap(
-        spacing: 6,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      // The address between the name and the reason (James, 2026-10-10),
+      // when the caller may see it — same as the app.
+      isThreeLine: e.email.isNotEmpty,
+      subtitle: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(e.reason, style: TextStyle(color: e.isBouncing ? Colors.red.shade800 : Colors.black87)),
-          if (overridden) _badge('Override', Colors.blue.shade700),
-          if (e.isBlocked) _badge('Blocked', Colors.black87),
-          if (e.isBouncing && !e.isBlocked) _badge('Bouncing', Colors.red.shade800),
-          if (e.isSuspect && !e.isBouncing) _badge('Check address', Colors.orange.shade800),
+          if (e.email.isNotEmpty)
+            SelectableText(
+              e.email,
+              maxLines: 1,
+              style: TextStyle(color: e.isBouncing ? Colors.red.shade800 : Colors.black54, fontSize: 13),
+            ),
+          Wrap(
+            spacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(e.reason, style: TextStyle(color: e.isBouncing ? Colors.red.shade800 : Colors.black87)),
+              if (overridden) _badge('Override', Colors.blue.shade700),
+              if (e.isBlocked) _badge('Blocked', Colors.black87),
+              if (e.isBouncing && !e.isBlocked) _badge('Bouncing', Colors.red.shade800),
+              if (e.isSuspect && !e.isBouncing) _badge('Check address', Colors.orange.shade800),
+            ],
+          ),
         ],
       ),
       trailing: e.canMove

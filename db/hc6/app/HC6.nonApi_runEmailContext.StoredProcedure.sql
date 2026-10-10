@@ -2,7 +2,8 @@ CREATE OR ALTER PROCEDURE [HC6].[nonApi_runEmailContext]
 
     @eventId           UNIQUEIDENTIFIER = NULL,
     @userId            UNIQUEIDENTIFIER = NULL,
-    @includeRecipients SMALLINT         = 0
+    @includeRecipients SMALLINT         = 0,
+    @callerMaySeeEmails SMALLINT        = 0
 
 AS
 -- =====================================================================
@@ -132,7 +133,10 @@ SELECT
     e.EmailSendCount                     AS emailSendCount,
     e.EmailLastSentAt                    AS emailLastSentAt,
     e.EmailLastSentCount                 AS emailLastSentCount,
-    (SELECT COUNT(*) FROM @recipients)   AS recipientCount
+    (SELECT COUNT(*) FROM @recipients)   AS recipientCount,
+    -- Addresses are shown on the audience page only to a kennel admin / hare
+    -- raiser, never to a hare who may edit just this run (James, 2026-10-10).
+    ISNULL(@callerMaySeeEmails, 0)       AS callerMaySeeEmails
 FROM HC.Event e
 WHERE e.id = @eventId;
 

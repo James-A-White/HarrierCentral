@@ -67,7 +67,12 @@ BEGIN
 END
 
 BEGIN TRY
-    EXEC HC6.nonApi_runEmailContext @eventId = @eventId, @userId = @hasherId, @includeRecipients = @includeRecipients;
+    -- May the caller see addresses? Only as an admin of the kennel's runs —
+    -- the same permission without the hare-of-this-run exemption.
+    DECLARE @seeEmails SMALLINT = 0;
+    EXEC HC6.CheckKennelPermission @userId = @hasherId, @kennelId = @kennelId, @functionKey = 'createEditRuns',
+         @isHareOfEvent = 0, @allowed = @seeEmails OUTPUT;
+    EXEC HC6.nonApi_runEmailContext @eventId = @eventId, @userId = @hasherId, @includeRecipients = @includeRecipients, @callerMaySeeEmails = @seeEmails;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
