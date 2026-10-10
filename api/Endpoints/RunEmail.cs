@@ -140,7 +140,7 @@ namespace HcWebApi.Endpoints
                         string previewHtml = BuildHtml(ctx, subject, prose, unsubSelf);
                         try
                         {
-                            await HcListMail.SendAsync(ctx.SenderEmail, "[Preview] " + subject, previewHtml, PlainText(ctx, prose), unsubSelf);
+                            await HcListMail.SendAsync(ctx.SenderEmail, "[Preview] " + subject, previewHtml, PlainText(ctx, prose), unsubSelf, ctx.KennelSlug, ctx.KennelShortName);
                         }
                         catch (Exception ex)
                         {
@@ -210,7 +210,7 @@ namespace HcWebApi.Endpoints
                                 string prefs = requested ? HcListMail.PreferencesUrl(r.HasherId, ctx.KennelId) : "";
                                 await HcListMail.SendAsync(r.Email, subject, BuildHtml(ctx, subject, prose, unsub, requested ? prefs : null),
                                     (requested ? $"{ctx.SenderName} has requested that you receive this email. Your email preferences: {prefs}\n\n" : "") +
-                                    plain + $"\n\nUnsubscribe from {ctx.KennelName} run emails: {unsub}", unsub);
+                                    plain + $"\n\nUnsubscribe from {ctx.KennelName} run emails: {unsub}", unsub, ctx.KennelSlug, ctx.KennelShortName);
                                 ok++;
                             }
                             catch (Exception ex)
@@ -336,6 +336,8 @@ namespace HcWebApi.Endpoints
                 SenderEmail = HasColumn(r, "senderEmail") ? S("senderEmail").Trim() : "",
                 SenderId = HasColumn(r, "senderId") && Guid.TryParse(S("senderId"), out Guid sid) ? sid : Guid.Empty,
             };
+            // Email clients cannot show AVIF: use the logo's PNG twin when it has one.
+            ctx.KennelLogo = await HcEmail.EmailLogoAsync(ctx.KennelLogo);
             if (await r.NextResultAsync() && await r.ReadAsync())
             {
                 ctx.EmailSendCount = Convert.ToInt32(r["emailSendCount"]);
@@ -568,11 +570,22 @@ namespace HcWebApi.Endpoints
             sb.Append(Button(ctx.RsvpUrl(true), "✓ I'm in", "#2f855a")).Append(Button(ctx.RsvpUrl(false), "✗ Can't make it", "#9b2c2c")).Append(Button(ctx.Url, "Open the run", "#2b6cb0"));
             sb.Append("</div></td></tr></table>");
             if (unsubscribeUrl != null)
-                sb.Append($"<p style=\"margin:18px 0 0;font-size:12px;color:#6b7785\">You get run emails because you switched them on for {H(ctx.KennelName)} in Harrier Central. " +
+                sb.Append($"<p style=\"margin:18px 0 0;font-size:12px;color:#6b7785\">You get run emails from {H(ctx.KennelName)} because you belong to it, follow it or answered this run in Harrier Central. " +
                           $"Change your email preference <a href=\"{ctx.EmailPrefsUrl("run")}\" style=\"color:#2b6cb0\">for this run</a> or " +
                           $"<a href=\"{ctx.EmailPrefsUrl("kennel")}\" style=\"color:#2b6cb0\">for {H(ctx.KennelShortName)}</a> (opens the app), " +
                           $"or <a href=\"{unsubscribeUrl}\" style=\"color:#6b7785\">stop run emails from {H(ctx.KennelShortName)}</a> with one tap.</p>");
-            return HcEmail.Layout(subject, sb.ToString());
+            // The kennel's own logo at the top, and above it "Not running with the
+            // <kennel>?" with a small Unsubscribe button — the way out in the first screen,
+            // not only in the footer (James, 2026-10-10). Previews carry the sender's
+            // own unsubscribe link, so the button is real there too.
+            string? topBar = unsubscribeUrl == null ? null :
+                "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#0f2a19;border-radius:8px;\"><tr>" +
+                $"<td style=\"padding:9px 12px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.4;color:#e6eee8;\">Not running with the <strong style=\"color:#ffffff\">{H(ctx.KennelShortName)}</strong>?</td>" +
+                $"<td align=\"right\" style=\"padding:6px 8px;white-space:nowrap;\"><a href=\"{unsubscribeUrl}\" style=\"display:inline-block;padding:5px 10px;border:1px solid #9bb8a5;border-radius:6px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:#ffffff;text-decoration:none;\">Unsubscribe</a></td>" +
+                "</tr></table>";
+            string? footerLine = unsubscribeUrl == null ? null :
+                $"<a href=\"{unsubscribeUrl}\" style=\"color:#ffffff;font-weight:600;\">Unsubscribe from {H(ctx.KennelShortName)} run emails</a>";
+            return HcEmail.Layout(subject, sb.ToString(), ctx.KennelLogo, ctx.KennelName, topBar, footerLine);
         }
 
         private static string PlainText(RunContext ctx, string prose)

@@ -186,7 +186,7 @@ namespace HcWebApi.Endpoints
             }
         }
 
-        private static async Task<string> ManagedIdentityTokenAsync(string resource)
+        internal static async Task<string> ManagedIdentityTokenAsync(string resource)
         {
             string? endpoint = Environment.GetEnvironmentVariable("IDENTITY_ENDPOINT");
             string? header = Environment.GetEnvironmentVariable("IDENTITY_HEADER");

@@ -1,3 +1,14 @@
+1.0.61+95
+    • Run emails arrive from "<kennel> via Harrier Central": each kennel has its own ACS sender
+      username runs-<slug>@ (tools/acs_kennel_senders.py); a kennel without one falls back to runs@ for that email and the API creates its
+      username through ARM (identity: Contributor on harriercentral-email; HC_ACS_EMAIL_SERVICE_ID).
+    • Run emails open with 'Not running with the <kennel>?' and a small Unsubscribe button, and
+      end with an Unsubscribe link in the footer; the
+      kennel logo stands bare on the jungle (no white tile).
+    • Every email sits on the Harrier Central jungle (deep green where images are blocked);
+      run emails carry the kennel's own logo (an AVIF logo uses its PNG twin; none → ours). Footer light on
+      dark; run-email footer says why you get it under the new audience rule.
+
 1.0.61+94
     • Run email audience: member OR follower OR RSVP'd (Yes/Maybe) is the opt-in; run/kennel
       emails OFF and the block are the opt-outs — "never chose" no longer means no. Visitors who

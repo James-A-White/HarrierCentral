@@ -185,44 +185,91 @@ namespace HcWebApi.Endpoints
         private const string LogoUrl = "https://harriercentral.blob.core.windows.net/harrier/hclogo250round.png";
 
         /// <summary>
-        /// The one Harrier Central email layout (E19.F2.S2): the logo, the caller's
-        /// content on a white card no wider than a phone, and a footer saying who sent
-        /// it and why. Built from tables with inline styles, because that is the only
-        /// HTML every mail client renders the same — Outlook ignores most CSS and
-        /// Gmail strips &lt;style&gt; blocks in some views. The logo is the round
-        /// artwork itself, shown whole at its own shape. Callers pass only their own
-        /// content; <paramref name="subject"/> becomes the hidden preheader line that
-        /// inboxes show next to the subject.
+        /// A kennel logo an email client can show. Gmail and Outlook cannot draw AVIF,
+        /// so an AVIF logo is swapped for its PNG twin — the same blob name ending in
+        /// .png, transparency kept — when that twin exists (41 were made on
+        /// 2026-10-10). No twin: an empty string, and the layout shows our logo.
         /// </summary>
-        internal static string Layout(string subject, string content)
+        internal static async Task<string> EmailLogoAsync(string? url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return "";
+            string path = url.Split('?')[0];
+            if (!path.EndsWith(".avif", StringComparison.OrdinalIgnoreCase)) return url;
+            string twin = path[..^5] + ".png";
+            try
+            {
+                using var head = new HttpRequestMessage(HttpMethod.Head, twin);
+                using var res = await http.SendAsync(head);
+                return res.IsSuccessStatusCode ? twin : "";
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>The jungle the app and hashruns.org stand on, served by the public web.</summary>
+        private const string JungleUrl = "https://www.hashruns.org/images/jungle_background.jpg";
+
+        /// <summary>
+        /// The one Harrier Central email layout (E19.F2.S2): a logo, the caller's
+        /// content on a white card no wider than a phone, and a footer saying who sent
+        /// it and why, all on the Harrier Central jungle (James, 2026-10-10). Built from
+        /// tables with inline styles, because that is the only HTML every mail client
+        /// renders the same — Outlook ignores most CSS and Gmail strips &lt;style&gt;
+        /// blocks in some views. The jungle is set three ways (body, table attribute,
+        /// inline style) with a deep-green colour behind it, so a client that refuses
+        /// background images (desktop Outlook) still shows a green page, never white
+        /// text on white.
+        ///
+        /// <paramref name="logoUrl"/> lets a kennel's email carry the kennel's own logo
+        /// instead of ours. A logo is shown whole at its own shape on a white tile —
+        /// never cropped, with no tile behind it. Pass it through <see cref="EmailLogoAsync"/> first: an AVIF
+        /// logo that reaches here still falls back to ours, because Gmail and Outlook
+        /// cannot show AVIF. <paramref name="subject"/> becomes the hidden
+        /// preheader line that inboxes show next to the subject.
+        /// </summary>
+        internal static string Layout(string subject, string content, string? logoUrl = null, string? logoAlt = null, string? topBar = null, string? footerLine = null)
         {
             string pre = System.Net.WebUtility.HtmlEncode(subject);
+            bool own = !string.IsNullOrWhiteSpace(logoUrl)
+                       && logoUrl!.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                       && !logoUrl.Split('?')[0].EndsWith(".avif", StringComparison.OrdinalIgnoreCase);
+            // The logo stands straight on the jungle — no tile behind it (James,
+            // 2026-10-10) — whole, at its own shape, never cropped.
+            string logo = own
+                ? $"<img src=\"{System.Net.WebUtility.HtmlEncode(logoUrl)}\" width=\"120\" alt=\"{System.Net.WebUtility.HtmlEncode(logoAlt ?? "Kennel logo")}\" " +
+                  "style=\"display:block;border:0;width:120px;max-width:120px;height:auto;max-height:160px;\">"
+                : $"<img src=\"{LogoUrl}\" width=\"72\" height=\"72\" alt=\"Harrier Central\" style=\"display:block;border:0;width:72px;height:72px;\">";
+            const string font = "font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;";
+            const string ground = "background-color:#1f4d2c;background-image:url('" + JungleUrl + "');background-repeat:repeat;background-position:center top;";
             return
                 "<!DOCTYPE html><html><head><meta charset=\"utf-8\">" +
-                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" +
-                "<body style=\"margin:0;padding:0;background:#eef1f4;\">" +
+                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" +
+                "<meta name=\"color-scheme\" content=\"light only\"></head>" +
+                $"<body style=\"margin:0;padding:0;{ground}\" background=\"{JungleUrl}\" bgcolor=\"#1f4d2c\">" +
                 $"<div style=\"display:none;max-height:0;overflow:hidden;\">{pre}</div>" +
-                "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#eef1f4;\"><tr><td align=\"center\" style=\"padding:24px 12px;\">" +
+                $"<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" background=\"{JungleUrl}\" bgcolor=\"#1f4d2c\" style=\"{ground}\"><tr><td align=\"center\" style=\"padding:28px 12px 32px;\">" +
                 "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:560px;\">" +
-                "<tr><td align=\"center\" style=\"padding:0 0 16px;\">" +
-                $"<img src=\"{LogoUrl}\" width=\"64\" height=\"64\" alt=\"Harrier Central\" style=\"display:block;border:0;width:64px;height:64px;\">" +
-                "</td></tr>" +
-                "<tr><td style=\"background:#ffffff;border-radius:8px;padding:28px 24px;" +
-                "font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;color:#1f2933;\">" +
+                // An optional strip above everything: a list email says what it is and
+                // offers the way out before the reader has scrolled (James, 2026-10-10).
+                (topBar == null ? "" : $"<tr><td style=\"padding:0 0 14px;\">{topBar}</td></tr>") +
+                $"<tr><td align=\"center\" style=\"padding:0 0 20px;\">{logo}</td></tr>" +
+                "<tr><td style=\"background:#ffffff;border-radius:10px;padding:28px 24px;" + font + "font-size:16px;line-height:1.5;color:#1f2933;\">" +
                 content +
                 "</td></tr>" +
-                "<tr><td align=\"center\" style=\"padding:16px 8px 0;" +
-                "font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#6b7785;\">" +
-                "Sent by <a href=\"https://www.harriercentral.com\" style=\"color:#6b7785;\">Harrier Central</a>, " +
+                "<tr><td align=\"center\" style=\"padding:18px 8px 0;" + font + "font-size:12px;line-height:1.5;color:#e6eee8;\">" +
+                "<span style=\"background:rgba(10,30,18,0.72);background-color:#0f2a19;border-radius:8px;padding:10px 14px;display:inline-block;\">" +
+                "Sent by <a href=\"https://www.harriercentral.com\" style=\"color:#ffffff;\">Harrier Central</a>, " +
                 "the app hash kennels use to run their runs.<br>" +
                 // Every email is also an on-ramp (James, 2026-10-09): the store links go on all of them.
                 "<span style=\"display:inline-block;margin:8px 0;\">Get the app: " +
-                "<a href=\"https://apps.apple.com/app/harrier-central/id1445513595\" style=\"color:#2b6cb0;font-weight:600;\">iPhone &amp; iPad</a>" +
+                "<a href=\"https://apps.apple.com/app/harrier-central/id1445513595\" style=\"color:#ffffff;font-weight:600;\">iPhone &amp; iPad</a>" +
                 " &nbsp;·&nbsp; " +
-                "<a href=\"https://play.google.com/store/apps/details?id=com.harriercentral.app\" style=\"color:#2b6cb0;font-weight:600;\">Android</a></span><br>" +
+                "<a href=\"https://play.google.com/store/apps/details?id=com.harriercentral.app\" style=\"color:#ffffff;font-weight:600;\">Android</a></span><br>" +
                 "You are receiving this because of something you or your kennel did in Harrier Central — " +
-                "asking for a code, a report, or a kennel request. We do not send newsletters, so there is nothing to unsubscribe from." +
-                "</td></tr></table></td></tr></table></body></html>";
+                "asking for a code, a report, a kennel request, or a run you follow." +
+                // A list email adds its own last line here — the unsubscribe link, so the
+                // way out is at the bottom of the screen as well as the top (James, 2026-10-10).
+                (footerLine == null ? "" : "<br>" + footerLine) +
+                "</span></td></tr></table></td></tr></table></body></html>";
         }
 
         // ── Error log ──────────────────────────────────────────────────────────
