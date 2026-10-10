@@ -32,7 +32,7 @@ CROSS APPLY (SELECT TOP 1 m.KennelId FROM HC.HasherKennelMap m
              WHERE m.UserId = h.id AND m.removed = 0 AND m.KennelEmailAlertPreference = 1
              ORDER BY m.updatedAt DESC) x
 JOIN HC.Kennel k ON k.id = x.KennelId
-WHERE ISNULL(h.Removed, 0) = 0 AND h.deleted = 0 AND h.Email LIKE '%_@_%.__%'
+WHERE ISNULL(h.Removed, 0) = 0 AND h.deleted = 0 AND h.Email LIKE '%_@_%.__%' AND HC6.IsGeneratedEmail(h.Email) = 0
 ORDER BY h.DisplayName;";
 
         [Function("RunEmailAnnouncement")]

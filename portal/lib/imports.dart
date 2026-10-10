@@ -128,6 +128,7 @@ export 'package:hcportal/util/api_result.dart';
 export 'package:hcportal/util/constants.dart';
 export 'package:hcportal/util/core_uutilities.dart';
 export 'package:hcportal/util/extensions.dart';
+export 'package:hcportal/util/generated_email.dart';
 export 'package:hcportal/util/uuid_utils.dart';
 export 'package:hcportal/util/tz_abbrev.dart';
 export 'package:hcportal/util/hex_color.dart';

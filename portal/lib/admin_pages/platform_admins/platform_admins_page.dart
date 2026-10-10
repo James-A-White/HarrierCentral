@@ -325,7 +325,10 @@ class _CandidatesTable extends StatelessWidget {
           ),
         );
       }
-      return Card(
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+      Card(
         elevation: 1,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -350,7 +353,7 @@ class _CandidatesTable extends StatelessWidget {
                       ),
                     ),
                     DataCell(Text(m.name.isEmpty ? '—' : m.name)),
-                    DataCell(Text(m.email.isEmpty ? '—' : m.email)),
+                    DataCell(Text(m.email.isEmpty ? '—' : m.email, style: emailTextStyle(m.email))),
                     DataCell(Text(m.s('HomeKennel') ?? '—')),
                     DataCell(Text('${m.n('RunsAttended')}')),
                     DataCell(
@@ -366,6 +369,10 @@ class _CandidatesTable extends StatelessWidget {
             ],
           ),
         ),
+      ),
+          // The dark-red note, when an address listed is one we made up.
+          GeneratedEmailNote(show: rows.any((MergeCandidate m) => isGeneratedEmail(m.email))),
+        ],
       );
     });
   }

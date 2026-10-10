@@ -123,7 +123,15 @@ class KennelHashersController extends TabUiController
       field: 'lastName',
       type: TrinaColumnType.text(),
     ),
-    TrinaColumn(title: 'Email', field: 'eMail', type: TrinaColumnType.text()),
+    TrinaColumn(
+      title: 'Email',
+      field: 'eMail',
+      type: TrinaColumnType.text(),
+      renderer: (TrinaColumnRendererContext rendererContext) {
+        final String v = rendererContext.cell.value.toString();
+        return Text(v, style: emailTextStyle(v));
+      },
+    ),
     TrinaColumn(
       title: 'Photo',
       field: 'photo',
@@ -335,11 +343,13 @@ class KennelHashersController extends TabUiController
       type: TrinaColumnType.text(),
       width: 300,
       renderer: (TrinaColumnRendererContext rendererContext) {
+        final String v = rendererContext.cell.value.toString();
         return Text(
-          rendererContext.cell.value.toString(),
+          v,
           style: TextStyle(
             fontFamily: 'AvenirNextBold',
-            color: Colors.blue.shade700,
+            // Dark red: an address we made up (generated_email.dart).
+            color: isGeneratedEmail(v) ? kGeneratedEmailColor : Colors.blue.shade700,
             fontWeight: FontWeight.bold,
           ),
         );
@@ -702,11 +712,13 @@ class KennelHashersController extends TabUiController
       type: TrinaColumnType.text(),
       width: 250,
       renderer: (TrinaColumnRendererContext rendererContext) {
+        final String v = rendererContext.cell.value.toString();
         return Text(
-          rendererContext.cell.value.toString(),
+          v,
           style: TextStyle(
             fontFamily: 'AvenirNextBold',
-            color: Colors.blue.shade700,
+            // Dark red: an address we made up (generated_email.dart).
+            color: isGeneratedEmail(v) ? kGeneratedEmailColor : Colors.blue.shade700,
             fontWeight: FontWeight.bold,
           ),
         );
@@ -780,7 +792,7 @@ class KennelHashersController extends TabUiController
               cellValue,
               style: TextStyle(
                 fontFamily: 'AvenirNextBold',
-                color: Colors.blue.shade700,
+                color: isGeneratedEmail(cellValue) ? kGeneratedEmailColor : Colors.blue.shade700,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -851,6 +863,12 @@ class KennelHashersController extends TabUiController
   /// only be replaced for someone who has never signed in and whose home
   /// kennel this is (2026-09-23 rule) — the SP says which, and bulk-add
   /// checks again on save.
+  /// Whether the grid on screen has an Email column with an address we made
+  /// up in it: the page then shows the dark-red note under the grid.
+  bool get gridShowsGeneratedEmail =>
+      columns.any((TrinaColumn col) => col.field == 'eMail') &&
+      rows.any((TrinaRow r) => isGeneratedEmail(r.cells['eMail']?.value?.toString()));
+
   /// A unique address for a hasher with none, in the same shape the SP
   /// makes: hc-<12 hex>@noemail.invalid.
   static String _placeholderEmail() {
@@ -936,7 +954,12 @@ class KennelHashersController extends TabUiController
                           children: <Widget>[
                             Text('In the file: ${[f.hashName, '${f.firstName ?? ''} ${f.lastName ?? ''}'.trim()].where((String? x) => (x ?? '').isNotEmpty).join(' · ')}  —  ${f.eMail}',
                                 style: const TextStyle(fontWeight: FontWeight.w600)),
-                            Text('In ${kennel.kennelShortName}: $member  —  ${c['currentEmail'] ?? ''}'),
+                            Text.rich(TextSpan(children: <InlineSpan>[
+                              TextSpan(text: 'In ${kennel.kennelShortName}: $member  —  '),
+                              TextSpan(
+                                  text: (c['currentEmail'] ?? '').toString(),
+                                  style: emailTextStyle((c['currentEmail'] ?? '').toString())),
+                            ])),
                             if (!canChange)
                               Padding(
                                 padding: const EdgeInsets.only(top: 4),
@@ -959,6 +982,10 @@ class KennelHashersController extends TabUiController
                       );
                     }),
                   ],
+                  GeneratedEmailNote(
+                    show: cands.any((Map<String, dynamic> c) => isGeneratedEmail((c['currentEmail'] ?? '').toString())),
+                    padding: const EdgeInsets.only(top: 4),
+                  ),
                 ],
               ),
             ),
@@ -1984,7 +2011,7 @@ class KennelHashersController extends TabUiController
           if ((h.addHasherStatus == 'NEW HC USER' || h.addHasherStatus == 'NEW MEMBER') &&
               (h.publicHasherId ?? '').isNotEmpty) {
             lastImportedPublicHasherIds.add(h.publicHasherId!);
-            if ((h.eMail ?? '').endsWith('@noemail.invalid')) noEmail++;
+            if (isGeneratedEmail(h.eMail)) noEmail++;
           }
         }
         fromImport = false;
@@ -2195,6 +2222,7 @@ class _KennelHashersContent extends StatelessWidget {
                         ],
                       ),
               ),
+              GeneratedEmailNote(show: !useCards && c.gridShowsGeneratedEmail),
               if (c.columnsType ==
                   EKennelGridOptions.addNewMembers) ...<Widget>[
                 Padding(
@@ -2401,8 +2429,10 @@ class _MemberCardState extends State<_MemberCard> {
             'Email',
             h.eMail,
             keyboardType: TextInputType.emailAddress,
+            style: emailTextStyle(h.eMail),
           ),
           _readonly('Invite code', h.inviteCode),
+          if (isGeneratedEmail(h.eMail)) const GeneratedEmailNote(padding: EdgeInsets.only(top: 4)),
         ];
       case EKennelGridOptions.notificationAndEmail:
         return [
@@ -2489,6 +2519,7 @@ class _MemberCardState extends State<_MemberCard> {
     String label,
     String initial, {
     TextInputType? keyboardType,
+    TextStyle? style,
   }) {
     final ctrl = _ctrlFor(field, initial);
     _committed.putIfAbsent(field, () => initial);
@@ -2505,6 +2536,7 @@ class _MemberCardState extends State<_MemberCard> {
       TextField(
         controller: ctrl,
         keyboardType: keyboardType,
+        style: style,
         decoration: const InputDecoration(
           isDense: true,
           border: OutlineInputBorder(),

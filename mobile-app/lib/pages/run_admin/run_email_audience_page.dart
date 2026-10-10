@@ -344,6 +344,13 @@ class RunEmailAudiencePage extends StatelessWidget {
                       _row(context, c, rows[i], inGetList: showingGet),
                 ),
         ),
+        // The dark-red note, when an address on the list is one we made up.
+        SafeArea(
+          top: false,
+          child: GeneratedEmailNote(
+            show: rows.any((RunEmailAudienceEntry e) => isGeneratedEmail(e.email)),
+          ),
+        ),
       ],
     );
   }
@@ -432,7 +439,11 @@ class RunEmailAudiencePage extends StatelessWidget {
                   fontFamily: 'AvenirNextCondensedMedium',
                   fontSize: 15,
                   height: 1.0,
-                  color: e.isBouncing ? Colors.red.shade800 : Colors.black54,
+                  color: isGeneratedEmail(e.email)
+                      ? kGeneratedEmailColor
+                      : e.isBouncing
+                      ? Colors.red.shade800
+                      : Colors.black54,
                 ),
               ),
             ),
