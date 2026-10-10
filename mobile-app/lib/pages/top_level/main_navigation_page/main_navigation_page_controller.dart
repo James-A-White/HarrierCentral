@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:harrier_central/imports.dart';
+import 'package:http/http.dart' as http;
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 
 enum MainPageContent { initial, loading, splashSequence, appContent }
@@ -205,16 +208,36 @@ class MainNavigationController extends GetxController
         await resetNewVersionPromoScreen();
       }
 
-      // always display version change splash sequences if they exist on the server
-      if (!isFirstEverRun && hcCurrentVersion != hcPreviousVersion) {
+      // The upgrade decks to show: the version deck when the minor version
+      // changed, then a deck for every BUILD crossed since the last one seen
+      // that has one on the server (James, 2026-10-10: "many features are
+      // added on builds and not just with major versions"). Upload
+      // build_<N>_1.avif, _2, … to splash-sequences and anyone upgrading
+      // past N sees it once.
+      final List<String> upgradeDecks = isFirstEverRun
+          ? const <String>[]
+          : <String>[
+              if (hcCurrentVersion != hcPreviousVersion)
+                'version_$hcCurrentVersion',
+              ...await _buildDecksSince(
+                getIntPref(IntPrefsEnum.previousBuildNumber),
+                int.tryParse(pkg.buildNumber),
+              ),
+            ];
+
+      // always display upgrade splash sequences if they exist on the server
+      if (upgradeDecks.isNotEmpty) {
         debugPrint(
-          '[BOOT] MainNavController: version changed $hcPreviousVersion→$hcCurrentVersion, preloading images: ${DateTime.now().millisecondsSinceEpoch}ms',
+          '[BOOT] MainNavController: upgrade decks $upgradeDecks ($hcPreviousVersion→$hcCurrentVersion), preloading images: ${DateTime.now().millisecondsSinceEpoch}ms',
         );
         // Show the splash state BEFORE the download so the bundled first
         // slide + "Please wait" appear instantly instead of bare jungle.
-        currentSplashRootName = 'version_$hcCurrentVersion';
+        currentSplashRootName = upgradeDecks.first;
         mainScreenContent.value = MainPageContent.splashSequence;
-        final imgCount = await _preloadImages('version_$hcCurrentVersion');
+        int imgCount = 0;
+        for (final String deck in upgradeDecks) {
+          imgCount = await _preloadImages(deck);
+        }
         debugPrint(
           '[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms',
         );
@@ -440,6 +463,45 @@ class MainNavigationController extends GetxController
     return version;
   }
 
+  /// Builds after [previous] up to and including [current] that have a deck
+  /// on the server (`build_<N>_1.avif` exists), oldest first. A phone that
+  /// has never recorded a build checks only [current]; at most the last
+  /// [_maxBuildsBack] builds are probed, concurrently, with HEAD requests.
+  static const int _maxBuildsBack = 40;
+  /// Which builds to probe for a deck: after [previous] up to [current],
+  /// at most [_maxBuildsBack] of them; only [current] when no build was ever
+  /// recorded; none on a downgrade or a reinstall of the same build.
+  @visibleForTesting
+  static List<int> buildsToProbe(int? previous, int? current) {
+    if (current == null) return const <int>[];
+    if (previous != null && previous >= current) return const <int>[];
+    final int from = previous == null
+        ? current
+        : math.max(previous + 1, current - _maxBuildsBack + 1);
+    return <int>[for (int b = from; b <= current; b++) b];
+  }
+
+  Future<List<String>> _buildDecksSince(int? previous, int? current) async {
+    final List<int> builds = buildsToProbe(previous, current);
+    if (builds.isEmpty) return const <String>[];
+    final List<bool> found = await Future.wait(
+      builds.map((int b) async {
+        try {
+          final http.Response r = await http
+              .head(Uri.parse('${BASE_NEW_VERSION_IMAGES_URL}build_${b}_1.avif'))
+              .timeout(const Duration(seconds: 5));
+          return r.statusCode == 200;
+        } catch (_) {
+          return false;
+        }
+      }),
+    );
+    return <String>[
+      for (int i = 0; i < builds.length; i++)
+        if (found[i]) 'build_${builds[i]}',
+    ];
+  }
+
   Future<int> _preloadImages(String splashSequenceRootName) async {
     isLoadingImages.value = true;
     splashLoadStalled.value = false;
@@ -490,6 +552,8 @@ class MainNavigationController extends GetxController
     final List<Image?> results = await Future.wait(slideFutures);
     for (final Image? img in results) {
       if (img == null) break; // first gap ends the contiguous deck
+      // Decks append (a version deck, then build decks); 20 slides in all.
+      if (splashImages.length >= maxImages) break;
       splashImages.add(img);
     }
 
@@ -588,6 +652,9 @@ class MainNavigationController extends GetxController
           ? pkg.version
           : (getStringPref(StringPrefsEnum.harrierCentralVersion) ?? ''),
     );
+    // And the build: build decks crossed up to here have now been seen.
+    final int? build = int.tryParse(pkg.buildNumber);
+    if (build != null) await setIntPref(IntPrefsEnum.previousBuildNumber, build);
 
     if (isLoadingData) {
       mainScreenContent.value = MainPageContent.loading;

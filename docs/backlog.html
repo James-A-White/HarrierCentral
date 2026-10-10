@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>19</b> epics</div>
     <div><b>99</b> features</div>
-    <div><b>419</b> stories</div>
+    <div><b>420</b> stories</div>
     <div><b>50</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -326,7 +326,7 @@
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 20 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">8 features · 36 stories</span></a>
-  <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 84 stories</span></a>
+  <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 85 stories</span></a>
   <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 18 stories</span></a>
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 22 stories</span></a>
   <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">7 features · 25 stories</span></a>
@@ -1058,6 +1058,7 @@
       <li class="story"><span class="s-id">E9.F4.S2</span><span class="s-text">As a <em>Platform Admin</em>, I want to retire a sequence with a flag rather than by deleting its images so that retiring one is reversible.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E9.F4.S3</span><span class="s-text">As a <em>Hasher</em> upgrading, I want to be shown what is new so that a release does not arrive unexplained.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E9.F4.S4</span><span class="s-text">As a <em>Hasher</em> on my very first run of the app, I want not to be shown an upgrade announcement so that my first screen is not about a version I never had.</span><span class="chip c-ship">Shipped</span></li>
+      <li class="story"><span class="s-id">E9.F4.S5</span><span class="s-text">As <em>James</em>, I want a promo deck tied to a BUILD as well as to a version, so that a feature that ships in a build is announced to everyone who upgrades past it, not only when the minor version changes (James, 2026-10-10). Upload <code>build_&lt;N&gt;_1.avif</code>, <code>_2</code>, … (and an optional <code>build_&lt;N&gt;_background.avif</code>) to the <code>splash-sequences</code> container; a phone upgrading past build N shows it once, after the version deck if that changed too. The phone records the last build whose decks it has seen (<code>previousBuildNumber</code>) and probes builds after it with HEAD requests — at most the last 40, concurrently; a phone that never recorded a build checks only its own; 20 slides in all. <em>Built 2026-10-10 (app 1463)</em>, range rule unit-tested.</span><span class="chip c-build">Building</span></li>
       <li class="story"><span class="s-id">E9.F4.S5</span><span class="s-text">As a <em>Platform Admin</em>, I want an agent to author and schedule teaching sequences so that new features are explained without a release or hand-built artwork.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E9.F4.S6</span><span class="s-text">As a <em>Platform Admin</em>, I want a sequence targetable by kennel, event or cohort so that a lesson reaches the people it is relevant to.</span><span class="chip c-next">Next</span></li>
     </ul>

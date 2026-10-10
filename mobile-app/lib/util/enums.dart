@@ -110,6 +110,7 @@ enum IntPrefsEnum {
   timeWindow,
   trackingQuality, // 0 = Power Saver, 1 = Balanced, 2 = Best (default when set)
   clockOffsetMs, // server UTC minus this phone's UTC, applied to every token (E1.F1.S7)
+  previousBuildNumber, // the build whose promo decks have been seen (E9.F4.S5)
 }
 
 enum DatePrefsEnum {
