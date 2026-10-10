@@ -390,6 +390,65 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
+    // The two halves of "Save and send", reachable without editing the run
+    // (James, 2026-10-10): the notice to the kennel's messenger, and the run
+    // email. Same rules as the editor's dialog — a hidden run is not sent.
+    if (can(KennelFeature.createEditRuns)) {
+      planButtons.add(
+        _buildButton(
+          label: 'Post to\r\n${RunAnnouncement(event: aggregate.event, kennel: aggregate.kennel).preferred.label}',
+          iconAsset: 'images/icons/post_notice_icon.png',
+          size: btnSize,
+          onPressed: () async {
+            if (aggregate.event.isVisible != 1) {
+              hcSnack('The run is hidden, so it cannot be posted.');
+              return;
+            }
+            final RunAnnouncement announcement = RunAnnouncement(
+              event: aggregate.event,
+              kennel: aggregate.kennel,
+            );
+            await announcement.sendVia(announcement.preferred);
+          },
+        ),
+      );
+      planButtons.add(
+        _buildButton(
+          label: 'Email\r\nhashers',
+          iconAsset: 'images/icons/email_icon.png',
+          size: btnSize,
+          onPressed: () async {
+            if (aggregate.event.isVisible != 1) {
+              hcSnack('The run is hidden, so it cannot be emailed.');
+              return;
+            }
+            RunEmailContext emailContext;
+            try {
+              emailContext = await const RunEmailService().context(
+                HcId(aggregate.event.eventId),
+              );
+            } on RunEmailException catch (e) {
+              hcSnack(e.message, error: true);
+              return;
+            } catch (e, s) {
+              BootLogger.logError('[RunAdmin.emailHashers]', e, s);
+              hcSnack('Email is not available just now.', error: true);
+              return;
+            }
+            final int? sent = await Get.to<int>(
+              () => RunEmailComposerPage(
+                eventAggregate: aggregate,
+                emailContext: emailContext,
+              ),
+            );
+            if (sent != null && sent > 0) {
+              hcSnack('Email sent to $sent ${sent == 1 ? 'hasher' : 'hashers'}.');
+            }
+          },
+        ),
+      );
+    }
+
     if (can(KennelFeature.manageReceipts)) {
       planButtons.add(
         _buildButton(
